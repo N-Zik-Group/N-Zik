@@ -36,13 +36,11 @@ import app.n_zik.android.ui.components.themed.Title
 
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.searchResultScreenTabIndexKey
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.typography
 import androidx.compose.material3.Icon
-import app.n_zik.android.components.ui.UiIconButton as IconButton
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GlassDropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -120,15 +118,7 @@ fun SearchResultScreen(
                             icon = R.drawable.discover,
                             contentDescription = stringResource(R.string.accessibility_filter),
                             onClick = { showFilterMenu.value = true },
-                        ) {
-                            IconButton(onClick = { showFilterMenu.value = true }) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.discover),
-                                    contentDescription = stringResource(R.string.accessibility_filter),
-                                    tint = colorPalette().text
-                                )
-                            }
-                        }
+                        )
                         GlassDropdownMenu(
                             expanded = showFilterMenu.value,
                             containerColor = colorPalette().background0,
@@ -158,15 +148,7 @@ fun SearchResultScreen(
                             icon = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid,
                             contentDescription = stringResource(R.string.accessibility_switch_mode),
                             onClick = { setUseGrid(!useGrid) },
-                        ) {
-                            IconButton(onClick = { setUseGrid(!useGrid) }) {
-                                Icon(
-                                    painter = painterResource(id = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid),
-                                    contentDescription = stringResource(R.string.accessibility_switch_mode),
-                                    tint = colorPalette().text
-                                )
-                            }
-                        }
+                        )
                     }
                 }
             }

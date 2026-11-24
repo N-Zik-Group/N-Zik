@@ -13,12 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -73,18 +70,17 @@ class SearchResultHeaderActionsTest {
                 Box(Modifier.size(360.dp, 80.dp), contentAlignment = Alignment.TopCenter) {
                     SearchResultHeaderActions(true, {}) {
                         trigger = requireNotNull(LocalGlassMenuTrigger.current)
-                        SearchResultHeaderIcon(R.drawable.discover, "native globe", {}) {
-                            IconButton(onClick = {}) { Icon(painterResource(R.drawable.discover), "native globe") }
-                        }
-                        SearchResultHeaderIcon(R.drawable.sort_grid, "native layout", {}) {
-                            IconButton(onClick = {}) { Icon(painterResource(R.drawable.sort_grid), "native layout") }
-                        }
+                        SearchResultHeaderIcon(R.drawable.discover, "native globe", {})
+                        SearchResultHeaderIcon(R.drawable.sort_grid, "native layout", {})
                     }
                 }
             }
         }
         val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search_title))
         val layout = compose.onNodeWithContentDescription("native layout")
+        pencil.assertWidthIsEqualTo(36.dp)
+        compose.onNodeWithContentDescription("native globe").assertWidthIsEqualTo(36.dp)
+        layout.assertWidthIsEqualTo(36.dp)
         val before = listOf(pencil.fetchSemanticsNode().boundsInRoot, layout.fetchSemanticsNode().boundsInRoot)
         val source = trigger.bounds
         compose.runOnIdle {
@@ -148,11 +144,7 @@ class SearchResultHeaderActionsTest {
                 Box {
                     SearchResultHeaderActions(false, {}) {
                         Box {
-                            SearchResultHeaderIcon(R.drawable.discover, "globe", { expanded.value = true }) {
-                                IconButton(onClick = { expanded.value = true }) {
-                                    Icon(painterResource(R.drawable.discover), "globe")
-                                }
-                            }
+                            SearchResultHeaderIcon(R.drawable.discover, "globe", { expanded.value = true })
                             GlassDropdownMenu(expanded.value, { expanded.value = false }, Color.DarkGray, CircleShape) {
                                 DropdownMenuItem(text = { Text("Native filter") }, onClick = {
                                     selected = true
@@ -210,7 +202,7 @@ class SearchResultHeaderActionsTest {
                         Box(Modifier.align(Alignment.TopEnd)) {
                             SearchResultHeaderActions(true, { clicks[0]++ }) {
                                 Box {
-                                    SearchResultHeaderIcon(R.drawable.discover, "globe", { expanded.value = true }) {}
+                                    SearchResultHeaderIcon(R.drawable.discover, "globe", { expanded.value = true })
                                     GlassDropdownMenu(expanded.value, { expanded.value = false }, Color.Transparent, CircleShape) {
                                         DropdownMenuItem(text = { Text("Choose filter") }, onClick = {
                                             selected++
@@ -218,7 +210,7 @@ class SearchResultHeaderActionsTest {
                                         })
                                     }
                                 }
-                                SearchResultHeaderIcon(R.drawable.sort_grid, "layout", { clicks[1]++ }) {}
+                                SearchResultHeaderIcon(R.drawable.sort_grid, "layout", { clicks[1]++ })
                             }
                         }
                         GlassOverlayHost(host)
@@ -269,9 +261,9 @@ class SearchResultHeaderActionsTest {
         compose.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 SearchResultHeaderActions(showToggle.value, { clicks[0]++ }) {
-                    SearchResultHeaderIcon(R.drawable.discover, "filter", { clicks[1]++ }) {}
+                    SearchResultHeaderIcon(R.drawable.discover, "filter", { clicks[1]++ })
                     if (showToggle.value) {
-                        SearchResultHeaderIcon(R.drawable.sort_grid, "layout", { clicks[2]++ }) {}
+                        SearchResultHeaderIcon(R.drawable.sort_grid, "layout", { clicks[2]++ })
                     }
                 }
             }
@@ -280,7 +272,7 @@ class SearchResultHeaderActionsTest {
         compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performTouchInput { click() }
         compose.onNodeWithContentDescription("filter").performTouchInput { click() }
         compose.runOnIdle { showToggle.value = true }
-        compose.onNodeWithContentDescription("layout").assertWidthIsEqualTo(44.dp).performTouchInput { click() }
+        compose.onNodeWithContentDescription("layout").assertWidthIsEqualTo(36.dp).performTouchInput { click() }
         compose.onNodeWithContentDescription("filter").performTouchInput { click() }
         compose.runOnIdle { assertEquals(listOf(1, 2, 1), clicks.toList()) }
     }

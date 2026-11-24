@@ -23,7 +23,6 @@ import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.GlassSettings
-import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -37,7 +36,7 @@ import org.robolectric.annotation.Config
 class HeaderIconActionTest {
     @get:Rule val compose = createComposeRule()
 
-    @Test fun `share has one full native feedback canvas while the Glass toolbar keeps its existing seat`() {
+    @Test fun `share uses the app header canvas in Normal and Glass`() {
         val mode = mutableStateOf(GlassAreaMode.Disabled)
         val roundness = mutableStateOf(0.dp)
         var clicks = 0
@@ -48,10 +47,8 @@ class HeaderIconActionTest {
             CompositionLocalProvider(LocalAppearance provides Appearance(ColorPalette.fallback,
                 Typography.fallback, shape, shape, shape), LocalGlassPreviewSettings provides settings) {
                 GlassRippleProvider(settings) {
-                    GlassToolbarRow(1, settings = settings) {
-                        HeaderIconAction({ clicks++ }, R.drawable.share_social, Color.Blue,
-                            contentDescription = "share", iconSize = 24.dp)
-                    }
+                    HeaderIconAction({ clicks++ }, R.drawable.share_social, Color.Blue,
+                        contentDescription = "share")
                 }
             }
         }
@@ -60,7 +57,7 @@ class HeaderIconActionTest {
             for (nativeMode in listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly)) {
                 compose.runOnIdle { mode.value = nativeMode }
                 val action = compose.onNodeWithContentDescription("share")
-                action.assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(42.dp)
+                action.assertWidthIsEqualTo(36.dp).assertHeightIsEqualTo(36.dp)
                 compose.onNodeWithContentDescription("share", useUnmergedTree = true)
                     .assertWidthIsEqualTo(24.dp).assertHeightIsEqualTo(24.dp)
                 repeat(4) { edge -> action.performTouchInput {
@@ -74,8 +71,10 @@ class HeaderIconActionTest {
             }
             for (glassMode in listOf(GlassAreaMode.GlassOnly, GlassAreaMode.GlassAndContour)) {
                 compose.runOnIdle { mode.value = glassMode }
-                compose.onNodeWithContentDescription("share").assertWidthIsEqualTo(40.dp)
-                    .assertHeightIsEqualTo(40.dp).performTouchInput { click() }
+                compose.onNodeWithContentDescription("share").assertWidthIsEqualTo(36.dp)
+                    .assertHeightIsEqualTo(36.dp).performTouchInput { click() }
+                compose.onNodeWithContentDescription("share", useUnmergedTree = true)
+                    .assertWidthIsEqualTo(20.dp).assertHeightIsEqualTo(20.dp)
             }
         }
         compose.runOnIdle { assertEquals(20, clicks) }

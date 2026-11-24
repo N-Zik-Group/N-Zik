@@ -64,10 +64,9 @@ class GlassSectionActionsTest {
             }
         }
         compose.onNodeWithTag("actions").assertDoesNotExist()
-        // The single 40dp bubble is centered in the same 44dp action seat as a capsule cell.
-        listOf(1 to 44.dp, 2 to 88.dp, 3 to 132.dp).forEach { (size, width) ->
+        listOf(1 to 36.dp, 2 to 72.dp, 3 to 108.dp).forEach { (size, width) ->
             compose.runOnIdle { count.value = size }
-            compose.onNodeWithTag("actions").assertWidthIsEqualTo(width).assertHeightIsEqualTo(40.dp)
+            compose.onNodeWithTag("actions").assertWidthIsEqualTo(width).assertHeightIsEqualTo(36.dp)
             repeat(size) { index ->
                 compose.onNodeWithContentDescription("action.$index").performTouchInput { click() }
             }
@@ -99,7 +98,7 @@ class GlassSectionActionsTest {
         compose.runOnIdle { assertEquals(11, clicks) }
         listOf(GlassAreaMode.GlassOnly, GlassAreaMode.GlassAndContour).forEach { materialMode ->
             compose.runOnIdle { mode.value = materialMode }
-            compose.onNodeWithTag("actions").assertWidthIsEqualTo(88.dp).assertHeightIsEqualTo(40.dp)
+            compose.onNodeWithTag("actions").assertWidthIsEqualTo(72.dp).assertHeightIsEqualTo(36.dp)
         }
     }
 
@@ -118,16 +117,16 @@ class GlassSectionActionsTest {
         }
         for (nativeMode in listOf(GlassAreaMode.Disabled, GlassAreaMode.ContourOnly)) {
             compose.runOnIdle { mode.value = nativeMode; loading.value = false }
-            compose.onNodeWithTag("native.actions").assertWidthIsEqualTo(126.dp)
-                .assertHeightIsEqualTo(42.dp)
+            compose.onNodeWithTag("native.actions").assertWidthIsEqualTo(108.dp)
+                .assertHeightIsEqualTo(36.dp)
             val bounds = (0..2).map { compose.onNodeWithContentDescription("native.$it")
                 .fetchSemanticsNode().boundsInRoot }
             bounds.zipWithNext().forEach { (left, right) ->
                 assertEquals(left.width, right.center.x - left.center.x, .01f)
             }
             compose.runOnIdle { loading.value = true }
-            compose.onNodeWithTag("native.actions").assertWidthIsEqualTo(126.dp)
-                .assertHeightIsEqualTo(42.dp)
+            compose.onNodeWithTag("native.actions").assertWidthIsEqualTo(108.dp)
+                .assertHeightIsEqualTo(36.dp)
             compose.onNodeWithContentDescription("native.0").assertDoesNotExist()
         }
     }
@@ -220,7 +219,7 @@ class GlassSectionActionsTest {
         compose.onNode(SemanticsMatcher.expectValue(SemanticsProperties.ProgressBarRangeInfo,
             ProgressBarRangeInfo.Indeterminate)).assertExists()
         assertEquals(bounds, compose.onNodeWithTag("sync.actions").fetchSemanticsNode().boundsInRoot)
-        compose.onNodeWithTag("sync.actions").performTouchInput { click(androidx.compose.ui.geometry.Offset(22f, 20f)) }
+        compose.onNodeWithTag("sync.actions").performTouchInput { click(Offset(width / 4f, center.y)) }
         compose.onNodeWithContentDescription("expand").performTouchInput { click() }
         compose.runOnIdle { assertEquals(1, refreshes); assertEquals(1, expands); syncing.value = false }
         compose.onNodeWithContentDescription("refresh").assertExists()

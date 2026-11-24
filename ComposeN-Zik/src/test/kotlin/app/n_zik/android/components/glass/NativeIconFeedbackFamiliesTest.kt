@@ -44,7 +44,7 @@ class NativeIconFeedbackFamiliesTest {
     private val shape = RoundedCornerShape(4.dp)
     private val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
 
-    @Test fun `native dice play settings and refresh reserve equal nonoverlapping action seats`() {
+    @Test fun `native section actions and standalone refresh reserve independent action seats`() {
         val clicks = IntArray(4)
         compose.setContent {
             val settings = GlassSettings(enabled = false)
@@ -62,7 +62,8 @@ class NativeIconFeedbackFamiliesTest {
         }
         val bounds = listOf("dice", "play", "settings", "refresh").mapIndexed { index, name ->
             val node = compose.onNodeWithContentDescription(name)
-            node.assertWidthIsEqualTo(42.dp).assertHeightIsEqualTo(42.dp)
+            val size = if (name == "refresh") 42.dp else 36.dp
+            node.assertWidthIsEqualTo(size).assertHeightIsEqualTo(size)
             for (edge in 0..3) node.performTouchInput {
                 click(when (edge) {
                     0 -> Offset(1f, center.y)

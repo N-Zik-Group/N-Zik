@@ -20,6 +20,7 @@ import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.GlassTitleActionRow
 import app.n_zik.android.typography
+import app.n_zik.android.components.navigation.header.sectionHeaderPadding
 import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 
 /** Home section navigation keeps its native heading click and single trailing action. */
@@ -35,6 +36,7 @@ internal fun HomeSectionTitle(
             .padding(LocalSideRailContentInsets.current.asPaddingValues()),
         verticalPadding = verticalPadding,
         hasTrailingActions = true,
+        contentPadding = sectionHeaderPadding(verticalPadding),
         onClick = onClick,
     ) {
         Text(

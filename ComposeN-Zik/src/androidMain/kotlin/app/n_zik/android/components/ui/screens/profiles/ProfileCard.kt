@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
-import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -603,15 +602,6 @@ fun ProfileCard(
                                 contentDescription = stringResource(R.string.profile_rename),
                                 onClick = onRename,
                             )),
-                            nativeContent = {
-                                IconButton(onClick = onRename) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.pencil),
-                                        contentDescription = stringResource(R.string.profile_rename),
-                                        tint = palette.textSecondary,
-                                    )
-                                }
-                            },
                         )
                     }
                     if (onDelete != null) {

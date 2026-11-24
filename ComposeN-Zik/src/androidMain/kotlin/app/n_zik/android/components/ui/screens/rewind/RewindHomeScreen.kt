@@ -67,7 +67,6 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
-import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.uiRoundnessShape
@@ -477,7 +476,7 @@ private fun RewindHomeSectionHeader(
     }
 }
 
-/** Section-heading sort toggle; native mode keeps the shared toolbar icon and rotation. */
+/** The section sort arrow rotates with the active order. */
 @Composable
 private fun RewindHomeSortArrow(
     order: SortOrder,
@@ -489,20 +488,10 @@ private fun RewindHomeSortArrow(
                 icon = R.drawable.arrow_up,
                 contentDescription = stringResource(R.string.library_sort_order_title),
                 iconModifier = Modifier.graphicsLayer { rotationZ = order.rotationZ },
+                nativeColor = colorPalette().text,
                 onClick = onToggle,
             )
         ),
-        nativeContent = {
-            TabToolBar.Icon(
-                iconId = R.drawable.arrow_up,
-                tint = colorPalette().text,
-                size = 32.dp,
-                enabled = true,
-                modifier = Modifier.graphicsLayer { rotationZ = order.rotationZ },
-                onShortClick = onToggle,
-                onLongClick = {}
-            )
-        },
     )
 }
 

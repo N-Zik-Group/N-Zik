@@ -1,11 +1,15 @@
 # Code Quality Rules
 
-**Version:** 1.14.0 | **Last updated:** 2026-11-23
+**Version:** 1.15.0 | **Last updated:** 2026-11-24
 
 ## Portable theme settings
 
 - New appearance settings need a round-trip check against the typed Theme Store codec, the catalog schema, and the preview. Read ordered choices from their UI owners, and keep the same defaults in the live app and theme generation.
 - Export allowlisted appearance and interface customization preferences, including controls outside the Customize pages. Account credentials, library content, and transient runtime state belong outside public theme documents.
+
+## Section header actions
+
+- Use `GlassSectionActions` for grouped section actions and `HeaderIconAction` for a standalone action. Keep the shared App Header geometry for Normal and Glass, including loading slots.
 
 ## Naming Conventions
 

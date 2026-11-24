@@ -41,6 +41,7 @@ import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.GlassTitleActionRow
 import app.n_zik.android.components.glass.NativeSectionIconAction
+import app.n_zik.android.components.navigation.header.HeaderActionCanvasSize
 import app.n_zik.android.components.glass.glassOverflowFade
 import app.n_zik.android.components.glass.glassNativeActionContour
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -148,7 +149,7 @@ fun SearchHistorySection(
                             NativeSectionIconAction(
                                 icon = R.drawable.trash,
                                 contentDescription = stringResource(R.string.common_action_delete),
-                                iconSize = 20.dp,
+                                canvasSize = HeaderActionCanvasSize,
                                 color = colorPalette().textDisabled,
                                 settings = glassSettings,
                                 onClick = { onQueryDelete(query) },
@@ -159,7 +160,7 @@ fun SearchHistorySection(
                                 NativeSectionIconAction(
                                     icon = R.drawable.pencil,
                                     contentDescription = stringResource(R.string.search_title),
-                                    iconSize = 22.dp,
+                                    canvasSize = HeaderActionCanvasSize,
                                     color = colorPalette().textDisabled,
                                     settings = glassSettings,
                                     enabled = !shimmer,

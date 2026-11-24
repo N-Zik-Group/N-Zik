@@ -29,8 +29,11 @@ import app.n_zik.android.R
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
-import app.n_zik.android.components.glass.GlassToolbarRow
-import app.n_zik.android.components.glass.NativeIconActionSize
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.navigation.header.HeaderActionCanvasSize
+import app.n_zik.android.components.navigation.header.headerActionEndPadding
 import app.n_zik.android.components.ui.HeaderIconAction
 import app.n_zik.android.core.coil.imageLoadingViewport
 import app.n_zik.android.core.coil.rememberImageLoadingViewportPainter
@@ -111,14 +114,14 @@ internal fun CollectionArtworkHeader(
 /** Common position and action seat for the control over collection artwork. */
 @Composable
 internal fun BoxScope.CollectionArtworkTopAction(action: @Composable () -> Unit) {
+    val glass = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
     Box(
         modifier = Modifier.align(Alignment.TopEnd)
-            .padding(top = 5.dp, end = 12.dp)
-            .size(NativeIconActionSize),
+            .padding(top = 5.dp, end = headerActionEndPadding(glass))
+            .size(HeaderActionCanvasSize),
         contentAlignment = Alignment.Center,
-    ) {
-        GlassToolbarRow(1) { action() }
-    }
+        content = { action() },
+    )
 }
 
 @Composable
@@ -126,7 +129,6 @@ internal fun CollectionArtworkShareButton(shareUrl: String?) {
     val context = LocalContext.current
     HeaderIconAction(
         icon = R.drawable.share_social,
-        iconSize = 24.dp,
         color = if (shareUrl == null) colorPalette().textDisabled else colorPalette().text,
         contentDescription = stringResource(R.string.player_mini_button_share),
         enabled = shareUrl != null,

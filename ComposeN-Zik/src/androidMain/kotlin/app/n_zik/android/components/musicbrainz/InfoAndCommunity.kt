@@ -1,6 +1,5 @@
 package app.n_zik.android.components.musicbrainz
 
-import app.n_zik.android.components.glass.NativeIconActionSize
 
 import android.text.format.DateUtils
 import androidx.compose.animation.AnimatedVisibility
@@ -9,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,13 +34,12 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.GlassSectionAction
-import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.GlassTitleActionRow
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.navigation.header.headerActionEndPadding
 import app.n_zik.android.components.ui.screens.album.Translate
-import app.n_zik.android.components.ui.InlineCircularLoader
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.utils.shimmerEffect
 import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
@@ -110,7 +105,7 @@ fun InfoAndCommunity(
         GlassTitleActionRow(
             modifier = Modifier.fillMaxWidth(),
             verticalPadding = 0.dp,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = headerActionEndPadding(materialActions), top = 24.dp, bottom = 8.dp),
             hasTrailingActions = true,
             onClick = if (materialActions) null else ({ readMore = !readMore }),
         ) {
@@ -154,29 +149,6 @@ fun InfoAndCommunity(
                     ))
                 },
                 settings = glass,
-                nativeContent = {
-                    if (isSyncing) {
-                        Box(Modifier.size(NativeIconActionSize), contentAlignment = Alignment.Center) {
-                            InlineCircularLoader(
-                                modifier = Modifier.size(18.dp),
-                                color = colorPalette().textSecondary,
-                            )
-                        }
-                    } else {
-                        NativeSectionIconAction(
-                            icon = R.drawable.refresh,
-                            contentDescription = resyncDescription,
-                            iconSize = 18.dp,
-                            settings = glass,
-                            onClick = onResyncClick,
-                        )
-                    }
-                    Icon(
-                        painter = painterResource(if (readMore) R.drawable.chevron_up else R.drawable.chevron_down),
-                        contentDescription = null,
-                        tint = colorPalette().textSecondary
-                    )
-                },
             )
         }
         Column(
@@ -299,7 +271,7 @@ fun InfoAndCommunity(
         GlassTitleActionRow(
             modifier = Modifier.fillMaxWidth(),
             verticalPadding = 0.dp,
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 24.dp, bottom = 8.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = headerActionEndPadding(materialActions), top = 24.dp, bottom = 8.dp),
             hasTrailingActions = true,
             onClick = if (materialActions) null else onInsightsClick,
         ) {
@@ -313,13 +285,6 @@ fun InfoAndCommunity(
                     R.drawable.chevron_forward, stringResource(R.string.metadata_musicbrainz_insights), onClick = onInsightsClick,
                 )),
                 settings = glass,
-                nativeContent = {
-                    Icon(
-                        painter = painterResource(R.drawable.chevron_forward),
-                        contentDescription = null,
-                        tint = colorPalette().textSecondary
-                    )
-                },
             )
         }
     }

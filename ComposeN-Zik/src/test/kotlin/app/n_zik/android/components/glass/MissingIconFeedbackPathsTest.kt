@@ -160,8 +160,7 @@ class MissingIconFeedbackPathsTest {
             compose.runOnIdle { enabled.value = glass; radius.value = roundness }
             compose.onAllNodes(hasClickAction()).assertCountEquals(2)
             val suggestion = compose.onAllNodes(hasClickAction())[0]
-            val suggestionSize = if (glass) 40.dp else 42.dp
-            suggestion.assertWidthIsEqualTo(suggestionSize).assertHeightIsEqualTo(suggestionSize)
+            suggestion.assertWidthIsEqualTo(36.dp).assertHeightIsEqualTo(36.dp)
             compose.onNodeWithTag("small.fab").assertWidthIsEqualTo(40.dp).assertHeightIsEqualTo(40.dp)
             compose.onNodeWithTag("fab.glyph", true).assertWidthIsEqualTo(24.dp).assertHeightIsEqualTo(24.dp)
             if (!glass) compose.onNodeWithTag("suggestion.glyph", true)

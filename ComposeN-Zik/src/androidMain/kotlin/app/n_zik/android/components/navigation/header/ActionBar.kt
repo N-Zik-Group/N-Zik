@@ -32,9 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Box
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.unit.DpSize
 import app.n_zik.android.components.glass.LocalGlassActionCellSize
-import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -406,7 +404,7 @@ fun ActionBar(
     }
     val notificationIcon: @Composable () -> Unit = {
         val palette = colorPalette()
-        val iconSize = if (glass.usesGlassMaterial(GlassArea.Header)) GlassActionIconSize else 24.dp
+        val iconSize = if (glass.usesGlassMaterial(GlassArea.Header)) GlassActionIconSize else HeaderNativeActionIconSize
         Box(Modifier.size(HeaderActionCanvasSize), contentAlignment = Alignment.Center) {
             Icon(painterResource(R.drawable.notification2), stringResource(R.string.notification_inbox_title),
                 modifier = Modifier.size(iconSize))
@@ -439,7 +437,7 @@ fun ActionBar(
             )
         }
     }
-    CompositionLocalProvider(LocalGlassActionCellSize provides DpSize(HeaderActionCanvasSize, HeaderActionCanvasSize)) {
+    CompositionLocalProvider(LocalGlassActionCellSize provides HeaderActionCellSize) {
     if (vertical) {
         GlassVerticalActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
             actionCount = profileIndex + 1) {

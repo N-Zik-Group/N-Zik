@@ -7,7 +7,9 @@ import app.n_zik.android.components.glass.GlassActionIconSize
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
@@ -43,16 +45,29 @@ import app.n_zik.android.components.glass.surfaceBackdropColor
 
 /** Matches the visible N-ZIK logo bounds without resizing its glyphs. */
 internal val HeaderActionCanvasSize = 36.dp
+internal val HeaderActionCellSize = DpSize(HeaderActionCanvasSize, HeaderActionCanvasSize)
+internal val HeaderNativeActionIconSize = 24.dp
 
 /** Keep the trailing control center on the same axis as section actions. */
 internal fun headerActionEndPadding(glass: Boolean): Dp = 12.dp +
     ((if (glass) GlassActionCellWidth else NativeIconActionSize) - HeaderActionCanvasSize) / 2
 
 @Composable
+internal fun sectionHeaderPadding(vertical: Dp, hasTrailingActions: Boolean = true): PaddingValues {
+    val glass = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
+    return PaddingValues(
+        start = 12.dp,
+        end = if (hasTrailingActions) headerActionEndPadding(glass) else 12.dp,
+        top = vertical,
+        bottom = vertical,
+    )
+}
+
+@Composable
 internal fun HeaderIcon(
     iconId: Int,
     tint: Color = LocalContentColor.current,
-    size: Dp = 24.dp,
+    size: Dp = HeaderNativeActionIconSize,
     menuTrigger: GlassMenuTriggerState? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit

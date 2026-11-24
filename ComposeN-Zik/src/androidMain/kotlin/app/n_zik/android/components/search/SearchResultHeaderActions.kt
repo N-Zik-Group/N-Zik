@@ -10,30 +10,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import app.n_zik.android.components.ui.UiIconButton as IconButton
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassToolbarIcon
 import app.n_zik.android.components.glass.GlassActionGroup
 import app.n_zik.android.components.glass.GlassActionGroupNativeItem
 import app.n_zik.android.components.glass.GlassActionGroupItem
-import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.components.glass.GlassActionIconSize
 import app.n_zik.android.components.glass.GlassMenuTriggerState
 import app.n_zik.android.components.glass.GlassMenuTrigger
 import app.n_zik.android.components.glass.LocalGlassMenuTrigger
+import app.n_zik.android.components.glass.LocalGlassActionCellSize
+import app.n_zik.android.components.glass.NativeSectionIconAction
+import app.n_zik.android.components.navigation.header.HeaderActionCanvasSize
+import app.n_zik.android.components.navigation.header.HeaderActionCellSize
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.usesGlassContour
 
 private val LocalSearchResultMenuTrigger = staticCompositionLocalOf<GlassMenuTriggerState?> { null }
 
-/** Both rendering modes share neighbor motion while native actions keep their original controls. */
+/** Both rendering modes share action dimensions and dropdown neighbor motion. */
 @Composable
 fun SearchResultHeaderActions(
     showLayoutToggle: Boolean,
@@ -42,30 +42,29 @@ fun SearchResultHeaderActions(
 ) {
     val settings = rememberGlassSettings()
     val trigger = remember { GlassMenuTriggerState() }
-    CompositionLocalProvider(LocalSearchResultMenuTrigger provides trigger, LocalGlassMenuTrigger provides trigger) {
+    CompositionLocalProvider(
+        LocalSearchResultMenuTrigger provides trigger,
+        LocalGlassMenuTrigger provides trigger,
+        LocalGlassActionCellSize provides HeaderActionCellSize,
+    ) {
         val glass = settings.usesGlassMaterial(GlassArea.ActionButtons)
         val count = if (showLayoutToggle) 3 else 2
         GlassActionGroup(settings, GlassArea.ActionButtons,
-            modifier = if (glass) Modifier.width(GlassActionCellWidth * count) else Modifier,
+            modifier = Modifier.width(HeaderActionCanvasSize * count),
             trailingTrigger = trigger, menuActionCount = count, menuTriggerIndex = 1,
             drawSurface = glass || settings.usesGlassContour(GlassArea.ActionButtons), separatorBefore = emptySet()) {
-            SearchResultHeaderIcon(R.drawable.pencil, stringResource(R.string.search_title), onEditQuery) {
-                IconButton(onClick = onEditQuery) {
-                    Icon(painterResource(R.drawable.pencil), stringResource(R.string.search_title), tint = colorPalette().text)
-                }
-            }
+            SearchResultHeaderIcon(R.drawable.pencil, stringResource(R.string.search_title), onEditQuery)
             content()
         }
     }
 }
 
-/** Uses the shared toolbar gesture and icon renderer, with the caller's exact native fallback. */
+/** Keeps the filter control anchored when its dropdown borrows the source glyph. */
 @Composable
 fun SearchResultHeaderIcon(
     @DrawableRes icon: Int,
     contentDescription: String,
     onClick: () -> Unit,
-    nativeContent: @Composable () -> Unit,
 ) {
     val trigger = LocalSearchResultMenuTrigger.current
     val settings = rememberGlassSettings()
@@ -80,21 +79,22 @@ fun SearchResultHeaderIcon(
         }
         return
     }
-    if (trigger != null) {
+    val nativeContent: @Composable () -> Unit = {
+        NativeSectionIconAction(
+            icon = icon,
+            contentDescription = contentDescription,
+            color = colorPalette().text,
+            settings = settings,
+            canvasSize = HeaderActionCanvasSize,
+            onClick = onClick,
+        )
+    }
+    if (trigger == null) {
+        nativeContent()
+    } else {
         GlassActionGroupNativeItem(index) {
-            if (icon == R.drawable.discover) GlassMenuTrigger(trigger, uiRoundnessShape(), content = nativeContent)
+            if (index == 1) GlassMenuTrigger(trigger, uiRoundnessShape(), content = nativeContent)
             else nativeContent()
         }
-        return
-    }
-    if (!GlassToolbarIcon(
-            icon = painterResource(icon),
-            tint = colorPalette().text,
-            size = 24.dp,
-            enabled = true,
-            onClick = onClick,
-            contentDescription = contentDescription,
-        )) {
-        nativeContent()
     }
 }

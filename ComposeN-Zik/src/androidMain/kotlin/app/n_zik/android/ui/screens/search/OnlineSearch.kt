@@ -8,6 +8,7 @@ import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import androidx.compose.ui.unit.Dp
 
 import app.n_zik.android.components.search.SearchSuggestionEditAction
+import app.n_zik.android.components.navigation.header.HeaderNativeActionIconSize
 
 import androidx.compose.ui.draw.clip
 
@@ -540,7 +541,7 @@ fun OnlineSearch(
                                     contentDescription = null,
                                     colorFilter = ColorFilter.tint(colorPalette().textDisabled),
                                     modifier = Modifier
-                                        .size(22.dp)
+                                        .size(HeaderNativeActionIconSize)
                                 )
                             }
                         }
@@ -583,7 +584,7 @@ private fun SearchQuerySuggestionPlaceholder(query: String?) {
                 painter = painterResource(R.drawable.pencil),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(HeaderNativeActionIconSize),
             )
         }
     }

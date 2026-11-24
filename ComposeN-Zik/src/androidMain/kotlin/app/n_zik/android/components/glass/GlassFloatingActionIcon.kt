@@ -55,7 +55,7 @@ fun GlassFloatingActionIcon(
     val film = glassFilmColor(settings.forArea(GlassArea.ActionButtons), filmColor, menu = false)
     val foreground = if (enabled) playerForegroundOnSharedFrame(tint,
         glassPaneForeground(tint, effectiveSurfaceColor(surfaceBackdropColor(), film),
-            IconContrast, glassSurfaceDarkness(settings), glyph = true)) else tint
+            IconContrast, glassSurfaceDarkness(settings), glyph = true), correctSampledGlyph = true) else tint
     val glyph: @Composable () -> Unit = {
         Icon(icon, contentDescription, Modifier.size(iconSize).then(iconModifier),
             tint = if (enabled) foreground else foreground.copy(alpha = foreground.alpha * .5f))

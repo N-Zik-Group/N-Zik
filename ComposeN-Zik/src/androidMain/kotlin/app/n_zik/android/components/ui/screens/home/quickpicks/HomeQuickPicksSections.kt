@@ -2,12 +2,14 @@ package app.n_zik.android.components.ui.screens.home.quickpicks
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.GlassActionGroup
-import app.n_zik.android.components.glass.NativeIconActionSize
 import app.n_zik.android.components.glass.NativeSectionIconAction
 import app.n_zik.android.components.glass.GlassActionGroupItem
-import app.n_zik.android.components.glass.GlassActionCellWidth
-import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassActionIconSize
+import app.n_zik.android.components.glass.LocalGlassActionCellSize
+import app.n_zik.android.components.navigation.header.HeaderActionCanvasSize
+import app.n_zik.android.components.navigation.header.HeaderActionCellSize
+import app.n_zik.android.components.navigation.header.sectionHeaderPadding
+import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -115,6 +117,7 @@ fun QuickPicksHeader(
     modifier: Modifier = Modifier,
 ) {
     val menuState = LocalMenuState.current
+    val glass = rememberGlassSettings()
 
     @Composable
     fun MenuIcon(@DrawableRes icon: Int) {
@@ -141,7 +144,7 @@ fun QuickPicksHeader(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .padding(sectionHeaderPadding(12.dp))
         ) {
             Text(
                 text = stringResource(R.string.recommendations_for_you_title),
@@ -154,7 +157,6 @@ fun QuickPicksHeader(
                 modifier = Modifier.weight(1f)
             )
 
-            val glass = rememberGlassSettings()
             val onSortClick: () -> Unit = {
                 menuState.display {
                     ListMenu.Menu(title = stringResource(R.string.library_sort_order_title)) {
@@ -186,39 +188,41 @@ fun QuickPicksHeader(
                 }
             }
             if (glass.usesGlassMaterial(GlassArea.ActionButtons)) {
-                GlassActionGroup(glass, GlassArea.ActionButtons, separatorBefore = setOf(2)) {
-                    if (isLoading) {
-                        Box(Modifier.size(GlassActionCellWidth * 2, GlassActionCellHeight), contentAlignment = Alignment.Center) {
-                            InlineCircularLoader(Modifier.size(GlassActionIconSize), color = colorPalette().textSecondary)
+                CompositionLocalProvider(LocalGlassActionCellSize provides HeaderActionCellSize) {
+                    GlassActionGroup(glass, GlassArea.ActionButtons, separatorBefore = setOf(2)) {
+                        if (isLoading) {
+                            Box(Modifier.size(HeaderActionCanvasSize * 2, HeaderActionCanvasSize), contentAlignment = Alignment.Center) {
+                                InlineCircularLoader(Modifier.size(GlassActionIconSize), color = colorPalette().textSecondary)
+                            }
+                        } else {
+                            GlassActionGroupItem(onClick = onDiceClick) {
+                                Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_effect_action_shuffle), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                            }
+                            GlassActionGroupItem(onClick = onPlayAllClick) {
+                                Icon(painterResource(R.drawable.play), stringResource(R.string.glass_effect_action_play_all), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                            }
                         }
-                    } else {
-                        GlassActionGroupItem(onClick = onDiceClick) {
-                            Icon(painterResource(R.drawable.dice), stringResource(R.string.glass_effect_action_shuffle), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
+                        GlassActionGroupItem(onClick = onSortClick) {
+                            Icon(painterResource(R.drawable.settings), stringResource(R.string.library_sort_order_title), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
                         }
-                        GlassActionGroupItem(onClick = onPlayAllClick) {
-                            Icon(painterResource(R.drawable.play), stringResource(R.string.glass_effect_action_play_all), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
-                        }
-                    }
-                    GlassActionGroupItem(onClick = onSortClick) {
-                        Icon(painterResource(R.drawable.settings), stringResource(R.string.library_sort_order_title), tint = colorPalette().text, modifier = Modifier.size(GlassActionIconSize))
                     }
                 }
             } else {
                 if (isLoading) {
-                    Box(Modifier.size(NativeIconActionSize * 2, NativeIconActionSize), contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(HeaderActionCanvasSize * 2, HeaderActionCanvasSize), contentAlignment = Alignment.Center) {
                         InlineCircularLoader(Modifier.size(24.dp), color = colorPalette().textSecondary)
                     }
                 } else {
                     NativeSectionIconAction(R.drawable.dice, stringResource(R.string.glass_effect_action_shuffle),
                         endSpacing = 12.dp, color = colorPalette().text,
-                        settings = glass, onClick = onDiceClick)
+                        settings = glass, canvasSize = HeaderActionCanvasSize, onClick = onDiceClick)
                     NativeSectionIconAction(R.drawable.play, stringResource(R.string.glass_effect_action_play_all),
                         endSpacing = 12.dp, color = colorPalette().text,
-                        settings = glass, onClick = onPlayAllClick)
+                        settings = glass, canvasSize = HeaderActionCanvasSize, onClick = onPlayAllClick)
                 }
                 NativeSectionIconAction(R.drawable.settings, stringResource(R.string.library_sort_order_title),
                         color = colorPalette().text,
-                        settings = glass, onClick = onSortClick)
+                        settings = glass, canvasSize = HeaderActionCanvasSize, onClick = onSortClick)
             }
         }
 

@@ -72,7 +72,8 @@ import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
-import app.n_zik.android.components.glass.NativeIconActionSize
+import app.n_zik.android.components.navigation.header.HeaderActionCanvasSize
+import app.n_zik.android.components.navigation.header.headerActionEndPadding
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -174,8 +175,9 @@ internal fun ArtistOverview(
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
+    val sectionActionsUseGlass = rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons)
     val sectionTextModifier = Modifier
-        .padding(horizontal = 12.dp)
+        .padding(start = 12.dp, end = headerActionEndPadding(sectionActionsUseGlass))
         .padding(top = 24.dp, bottom = 8.dp)
     val albumThumbnailSizeDp = 108.dp
     val albumThumbnailSizePx = albumThumbnailSizeDp.px
@@ -451,10 +453,10 @@ internal fun ArtistOverview(
                         val shuffleDescription = stringResource(R.string.glass_effect_action_shuffle)
                         val playDescription = stringResource(R.string.glass_effect_action_play_all)
                         if (isSectionLoading) {
-                            val loadingModifier = if (rememberGlassSettings().usesGlassMaterial(GlassArea.ActionButtons))
-                                Modifier.padding(end = 12.dp).size(24.dp)
-                            else Modifier.size(NativeIconActionSize * 2, NativeIconActionSize)
-                            Box(loadingModifier, contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier.size(HeaderActionCanvasSize * 2, HeaderActionCanvasSize),
+                                contentAlignment = Alignment.Center,
+                            ) {
                                 InlineCircularLoader(
                                     modifier = Modifier.size(24.dp),
                                     color = colorPalette().textSecondary,

@@ -6,9 +6,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertHeightIsEqualTo
+import androidx.compose.ui.test.assertWidthIsEqualTo
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -21,6 +26,9 @@ import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.*
 import app.n_zik.android.components.ui.screens.home.quickpicks.HomeSectionTitle
+import app.n_zik.android.components.ui.screens.home.quickpicks.QuickPicksHeader
+import app.n_zik.android.enums.PlayEventsType
+import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -35,6 +43,12 @@ class SectionTrailingAxisTest {
 
     @Test fun `standalone arrows grouped actions and header share a trailing center`() {
         val glass = mutableStateOf(false)
+        val loading = mutableStateOf(false)
+        val clicks = IntArray(2)
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        val diceLabel = app.getString(R.string.glass_effect_action_shuffle)
+        val playLabel = app.getString(R.string.glass_effect_action_play_all)
+        val sortLabel = app.getString(R.string.library_sort_order_title)
         compose.setContent {
             val settings = GlassSettings(enabled = glass.value, quality = GlassQuality.Performance)
             val shape = RoundedCornerShape(8.dp)
@@ -42,14 +56,10 @@ class SectionTrailingAxisTest {
                 LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape)) {
                 GlassRippleProvider(settings) {
                     Column(Modifier.width(300.dp)) {
-                        Row(Modifier.fillMaxWidth().padding(horizontal = 12.dp)) {
-                            Spacer(Modifier.weight(1f))
-                            GlassSectionActions(listOf(
-                                GlassSectionAction(R.drawable.dice, "dice", onClick = {}),
-                                GlassSectionAction(R.drawable.play, "play", onClick = {}),
-                                GlassSectionAction(R.drawable.settings, "settings", onClick = {}),
-                            ))
-                        }
+                        QuickPicksHeader(
+                            PlayEventsType.MostPlayed, {}, { clicks[0]++ }, { clicks[1]++ },
+                            isLoading = loading.value,
+                        )
                         HomeSectionTitle("Home section", onClick = {})
                         Title("Other section", onClick = {})
                         Box(Modifier.fillMaxWidth().padding(end = headerActionEndPadding(glass.value)),
@@ -62,7 +72,16 @@ class SectionTrailingAxisTest {
         }
         for (enabled in listOf(false, true)) {
             compose.runOnIdle { glass.value = enabled }
-            val settings = compose.onNodeWithContentDescription("settings", useUnmergedTree = true).getUnclippedBoundsInRoot()
+            val glyphSize = if (enabled) 20.dp else 24.dp
+            for (label in listOf(diceLabel, playLabel, sortLabel)) {
+                compose.onNodeWithContentDescription(label)
+                    .assertWidthIsEqualTo(36.dp).assertHeightIsEqualTo(36.dp)
+                compose.onNodeWithContentDescription(label, useUnmergedTree = true)
+                    .assertWidthIsEqualTo(glyphSize).assertHeightIsEqualTo(glyphSize)
+            }
+            compose.onNodeWithContentDescription(diceLabel).performTouchInput { click(Offset(width - 1f, center.y)) }
+            compose.onNodeWithContentDescription(playLabel).performTouchInput { click(Offset(1f, center.y)) }
+            val settings = compose.onNodeWithContentDescription(sortLabel, useUnmergedTree = true).getUnclippedBoundsInRoot()
             val expectedCenter = (settings.left + settings.right) / 2
             for (label in listOf("Home section", "Other section")) {
                 val arrow = compose.onNodeWithContentDescription(label, useUnmergedTree = true).getUnclippedBoundsInRoot()
@@ -70,6 +89,13 @@ class SectionTrailingAxisTest {
             }
             val header = compose.onNodeWithTag("profile-canvas").getUnclippedBoundsInRoot()
             assertEquals(expectedCenter, (header.left + header.right) / 2)
+            compose.runOnIdle { loading.value = true }
+            assertEquals(settings,
+                compose.onNodeWithContentDescription(sortLabel, useUnmergedTree = true).getUnclippedBoundsInRoot())
+            compose.onNodeWithContentDescription(diceLabel).assertDoesNotExist()
+            compose.onNodeWithContentDescription(playLabel).assertDoesNotExist()
+            compose.runOnIdle { loading.value = false }
         }
+        compose.runOnIdle { assertEquals(listOf(2, 2), clicks.toList()) }
     }
 }

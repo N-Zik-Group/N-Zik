@@ -4,27 +4,36 @@ import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.glass.GlassToolbarIcon
-import app.n_zik.android.components.glass.NativeSectionIconAction
+import app.n_zik.android.components.glass.GlassSectionAction
+import app.n_zik.android.components.glass.GlassSectionActions
+import app.n_zik.android.components.navigation.header.HeaderNativeActionIconSize
 
-/** Header glyphs keep their size inside the shared native action canvas or Glass toolbar. */
+/** Artwork actions use the same Normal and Glass geometry as other section headers. */
 @Composable
 internal fun HeaderIconAction(
     onClick: () -> Unit,
     @DrawableRes icon: Int,
     color: Color,
     modifier: Modifier = Modifier,
-    iconSize: Dp = 20.dp,
+    iconSize: Dp = HeaderNativeActionIconSize,
     contentDescription: String? = null,
     onLongClick: (() -> Unit)? = null,
     enabled: Boolean = true,
 ) {
-    if (GlassToolbarIcon(painterResource(icon), color, iconSize, enabled = enabled,
-            modifier = modifier, modifierOnContainer = true, onClick = onClick,
-            onLongClick = onLongClick, contentDescription = contentDescription)) return
-    NativeSectionIconAction(icon, contentDescription, modifier = modifier, iconSize = iconSize,
-        color = color, enabled = enabled, onClick = onClick, onLongClick = onLongClick)
+    GlassSectionActions(
+        actions = listOf(
+            GlassSectionAction(
+                icon = icon,
+                contentDescription = contentDescription,
+                nativeIconSize = iconSize,
+                nativeColor = color,
+                glassColor = color,
+                onClick = onClick,
+                onLongClick = onLongClick,
+                enabled = enabled,
+            ),
+        ),
+        modifier = modifier,
+    )
 }
