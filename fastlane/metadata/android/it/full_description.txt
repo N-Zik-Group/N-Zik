@@ -38,7 +38,6 @@ Crediti: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop 
 - Scrobbling Last.fm con Now Playing e love/unlove
 - Informazioni su artisti e album di MusicBrainz
 - Discord Rich Presence, modalità avanzata con anteprima live
-- Invidious per lo streaming YouTube alternativo
 - Importazione/esportazione playlist: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Ascolta Insieme</b>
