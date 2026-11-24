@@ -29,6 +29,30 @@
         <item quantity="one">%1$d nummer</item>
         <item quantity="other">%1$d nummers</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">%1$d track van deze afspeellijst toevoegen aan favorieten?</item>
+        <item quantity="other">%1$d nummers van deze afspeellijst toevoegen aan favorieten?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">%1$d track in deze afspeellijst uit favorieten verwijderen?</item>
+        <item quantity="other">%1$d nummers in deze afspeellijst uit favorieten verwijderen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">%1$d track uit dit album toevoegen aan favorieten?</item>
+        <item quantity="other">%1$d nummers vanuit dit album toevoegen aan favorieten?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">%1$d track uit favorieten verwijderen?</item>
+        <item quantity="other">%1$d nummers in dit album uit favorieten verwijderen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">%1$d aflevering van deze podcast toevoegen aan favorieten?</item>
+        <item quantity="other">%1$d afleveringen van deze podcast toevoegen aan favorieten?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">%1$d aflevering uit favorieten verwijderen?</item>
+        <item quantity="other">%1$d afleveringen in deze podcast uit favorieten verwijderen?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d vertaler</item>
         <item quantity="other">%1$d vertalers</item>
