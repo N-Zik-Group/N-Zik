@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Aggiungi ai preferiti</string>
     <string name="library_favorites_added">Aggiunto ai preferiti</string>
     <string name="library_favorites_removed">Rimosso dai preferiti</string>
+    <string name="library_collection_favorites_action_remove">Rimuovi dai preferiti</string>
+    <string name="library_collection_favorites_update_failed">Impossibile aggiornare i preferiti.</string>
+    <string name="library_collection_favorites_sync_failed">Non sincronizzare alcuni preferiti con YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Anno Album</string>
