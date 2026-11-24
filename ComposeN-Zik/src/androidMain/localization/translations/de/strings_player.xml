@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">Zur Warteschlange hinzufügen</string>
     <string name="player_action_hide_stats_for_nerds">Statistiken für Nerds verbergen</string>
     <string name="player_action_like">Möge</string>
-    <string name="player_action_listen_on_invidious">Auf %1$s anhören</string>
     <string name="player_action_listen_on_youtube">Auf YouTube anhören</string>
     <string name="player_action_listen_on_youtube_music">Auf YouTube Music anhören</string>
     <string name="player_action_locate_current_song">Finde den Titel, der gerade abgespielt wird</string>
