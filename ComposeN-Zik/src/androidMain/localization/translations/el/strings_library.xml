@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Προσθήκη στα αγαπημένα</string>
     <string name="library_favorites_added">Προστέθηκε στα αγαπημένα</string>
     <string name="library_favorites_removed">Αφαιρέθηκε από τα αγαπημένα</string>
+    <string name="library_collection_favorites_action_remove">Αφαίρεση από τα αγαπημένα</string>
+    <string name="library_collection_favorites_update_failed">Δεν ήταν δυνατή η ενημέρωση των αγαπημένων.</string>
+    <string name="library_collection_favorites_sync_failed">Δεν ήταν δυνατός ο συγχρονισμός με το YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Άλμπουμ</string>
     <string name="library_sort_album_year">Έτος Άλμπουμ</string>
