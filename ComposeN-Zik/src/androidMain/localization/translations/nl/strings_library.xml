@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Toevoegen aan favorieten</string>
     <string name="library_favorites_added">Toegevoegd aan favorieten</string>
     <string name="library_favorites_removed">Verwijderd uit favorieten</string>
+    <string name="library_collection_favorites_action_remove">Verwijderen uit favorieten</string>
+    <string name="library_collection_favorites_update_failed">Kon favorieten niet bijwerken.</string>
+    <string name="library_collection_favorites_sync_failed">Kan sommige favorieten niet synchroniseren met YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album Jaar</string>
