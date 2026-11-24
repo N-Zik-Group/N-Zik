@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Автоматично завантажувати пісні на основі ваших уподобань</string>
     <string name="settings_downloads_on_album_bookmark_description">Автоматично завантажувати пісні при додаванні до закладок альбому</string>
     <string name="settings_downloads_on_like_description">Автоматично завантажувати пісні коли вони вам подобаються</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Автоматично завантажувати пісні при додаванні до обраного списку відтворення</string>
     <string name="settings_downloads_storage_limit_label">Максимальний розмір завантаження пісень</string>
     <string name="settings_enable_autodownload_song">Увімкнути автоматичне завантаження пісні</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Автозавантаження пісні, коли альбом в закладці</string>
     <string name="settings_enable_autodownload_song_when_liked">Автоматичне скачування пісні, що сподобалася</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Автоматично завантажувати пісні у позначених списках відтворення</string>
     <string name="settings_enable_pip">Увімкнути зображення в зображенні</string>
     <string name="settings_enable_pip_auto">Увімкнути автоматичне зображення із зображенням</string>
     <string name="settings_font_include_padding_description">Додавання інтервалів навколо текстів</string>
