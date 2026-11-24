@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">즐겨찾기에 추가</string>
     <string name="library_favorites_added">즐겨찾기에 추가</string>
     <string name="library_favorites_removed">즐겨찾기에서 제거됨</string>
+    <string name="library_collection_favorites_action_remove">Remove from favorites</string>
+    <string name="library_collection_favorites_update_failed">Couldn’t update favorites.</string>
+    <string name="library_collection_favorites_sync_failed">Couldn’t sync some favorites with YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">앨범</string>
     <string name="library_sort_album_year">앨범 연도</string>
