@@ -321,3 +321,23 @@ Refactor:
   - Share search suggestion rendering, backup import orchestration, playlist download state, Rewind scheduling, Listen Together form handling and Innertube artist row parsing.
   - Remove the unused Invidious startup fetch and obsolete navigation code, keep the active header and navigation components, and preserve widget drawable names through aliases.
   - Share APK assembly, provenance checks and artifact upload across the five stable jobs while retaining signing dependencies. Document ownership in AGENTS.md, CODE.md and BUILD.md.
+
+Audit follow-up:
+- perf(artwork): limit learned thumbnails to collections
+  - Persist collection thumbnail aliases only for playlist and podcast artwork. Ignore stale video records and keep cache metadata bound to the active profile.
+- perf(runtime): reuse network clients and back off storage scans
+  - Retain the existing network client for unchanged configuration. Sample unchanged storage totals at longer intervals and resume promptly on changes.
+- perf(widget): update timing without rebuilding artwork
+  - Reuse widget layouts and images during progress updates, preserve the native chronometer where appropriate, and distinguish liked, neutral, and disliked states.
+- fix(ui): align section actions with the app header
+  - Share action geometry and loading slots across Normal and Glass, including collection share actions.
+- fix(player): preserve favorite tint during palette fades
+  - Resolve the heart against the source palette throughout the foreground transition. Crossfade only when the actual favorite drawable changes, and smooth regional contrast corrections.
+  - Verify the heart on the Pixel and cover palette endpoints, outline-to-dislike transition, and the remaining tap bounds in Compose.
+- refactor(app): extract rescue and library screen responsibilities
+  - Share SQLite replacement operations in the Rescue package, isolate playlist matching from the song screen, and move Theme Store preview presentation to its own file.
+  - Remove the unused themed menu, legacy browse model, and unreferenced launch helpers.
+- refactor(integrations): remove Invidious
+  - Remove both implementations, their Gradle wiring and startup hooks, and the external link from the Listen on menu. Preserve the YouTube and YouTube Music actions.
+  - Drop the former labels from 49 localization catalogs and the feature listing from 49 Fastlane descriptions. Update project documentation and module ownership.
+  - Assemble Debug, pass 374 targeted tests, and verify the app integration classes and resources are absent from the APK installed on the Pixel.
