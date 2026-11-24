@@ -22,6 +22,24 @@
     <plurals name="library_song_count">
         <item quantity="other">%1$d 歌曲</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="other">从此播放列表中添加 %1$d 曲目到收藏夹吗？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="other">从收藏夹中移除此播放列表中的 %1$d 曲目吗？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="other">将此相册的 %1$d 曲目添加到收藏夹吗？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="other">从收藏夹中移除此相册中的 %1$d 曲目吗？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="other">从播客添加 %1$d 集到收藏夹？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="other">删除收藏夹中的 %1$d 集？</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="other">%1$d 翻译者</item>
     </plurals>
