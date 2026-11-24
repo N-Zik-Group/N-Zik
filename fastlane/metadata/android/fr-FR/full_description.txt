@@ -38,7 +38,6 @@ Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / 
 - Scrobbling Last.fm avec Now Playing et love/unlove
 - Analyses MusicBrainz des artistes et des albums
 - Discord Rich Presence, mode avancé avec aperçu en direct
-- Invidious pour streaming YouTube alternatif
 - Import/export de playlists : RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Écouter ensemble</b>

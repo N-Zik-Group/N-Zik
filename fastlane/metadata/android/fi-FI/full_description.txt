@@ -38,7 +38,6 @@ Lasiluotot: Neliö / Convx projekti (GPL-3.0); Kyant0 AndroidLiquidGlass / Backd
 - Last.fm scrobbling nyt pelaaminen ja rakkaus / unlove
 - MusicBrainz-taiteilijan ja levyn oivalluksia
 - Discord Rich Presence, mukaan lukien edistynyt tila live esikatselu
-- Invidious integraatio vaihtoehtoiseen YouTube-suoratoistoon
 - Soittolistan tuonti/vienti: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Kuuntele Yhdessä</b>

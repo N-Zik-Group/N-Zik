@@ -1,6 +1,6 @@
 # AGENTS.md — NZik
 
-**Version:** 1.18.2 | **Last updated:** 2026-11-23
+**Version:** 1.18.3 | **Last updated:** 2026-11-24
 
 **MANDATORY: Read this file + rules/*.md before any task.**
 
@@ -103,7 +103,7 @@ N-Zik/                     ← git repo root (run gradlew/git from here)
 │   ├── main/                  res (drawables, mipmap) + proto/listentogether.proto (protobuf source set for Listen Together)
 │   ├── test/                  Tests
 │   └── debug/                 Per-buildType source set — `debug` holds its own AndroidManifest.xml (the Compose test-harness activity); the other build types have no source set dir (see rules/BUILD.md)
-├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, invidious, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` removed entirely (v75)
+├── extensions/              API Gradle modules (innertube → module `:oldtube`, kugou, lrclib, musicbrainz, ktor-client-brotli, lastfm — module names in `settings.gradle.kts`); `piped/` removed entirely (v75)
 ├── modules/                 Feature submodules — `betterlyrics`, `discordrpc`, `nextvisualizer` are **git submodules**: after a fresh clone run `git submodule update --init --recursive` or Gradle sync fails
 ├── gradle/libs.versions.toml  Version catalog
 ├── assets/notes/              Done.txt + Changelog_Template.txt + TODO.txt (repo-root working files — NOT an Android assets source set)

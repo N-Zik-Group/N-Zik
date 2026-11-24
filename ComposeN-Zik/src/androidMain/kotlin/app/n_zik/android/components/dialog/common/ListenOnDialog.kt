@@ -6,7 +6,7 @@ import app.n_zik.android.R
 import app.n_zik.android.models.Info
 import app.n_zik.android.utils.ExternalUris
 
-/** "Listen on" dialog: opens the current media on an external app (YouTube / YouTube Music / Invidious) via the shared [ValueSelectorDialog]. */
+/** "Listen on" dialog: opens the current media on an external app (YouTube / YouTube Music) via the shared [ValueSelectorDialog]. */
 @Composable
 fun ListenOnDialog(
     mediaId: String,
@@ -26,14 +26,6 @@ fun ListenOnDialog(
                 ExternalUris.youtubeMusic(mediaId),
                 stringResource(R.string.player_action_listen_on_youtube_music)
             ),
-
-            Info(
-                ExternalUris.invidious(mediaId),
-                stringResource(
-                    R.string.player_action_listen_on_invidious,
-                    stringResource(R.string.player_brand_invidious)
-                )
-            )
         ),
         onValueSelected = {
             onPlayOnUrl(it.id)

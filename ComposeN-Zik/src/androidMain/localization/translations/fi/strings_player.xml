@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Poista kiinteä tausta soittimen toiminta-painikkeiden takana.</string>
     <string name="player_action_enqueue">Lisää jonoon</string>
     <string name="player_action_like">Tykkää</string>
-    <string name="player_action_listen_on_invidious">Kuuntele %1$sissa</string>
     <string name="player_action_listen_on_youtube">Kuuntele YouTubessa</string>
     <string name="player_action_listen_on_youtube_music">Kuuntele YouTube Musicissa</string>
     <string name="player_action_locate_current_song">Näytä tällä hetkellä soitettava kappale</string>

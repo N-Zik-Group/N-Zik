@@ -229,7 +229,6 @@ private fun aliases6(): Map<String, String> = mapOf(
     "player_action_bar_transparent_background_description" to "settings_desc_appearance_player_action_bar_action_bar_transparent_background",
     "player_action_enqueue" to "enqueue",
     "player_action_enqueue_songs" to "info_enqueue_songs",
-    "player_action_listen_on_invidious" to "listen_on_invidious",
     "player_action_listen_on_youtube" to "listen_on_youtube",
     "player_action_listen_on_youtube_music" to "listen_on_youtube_music",
     "player_action_locate_current_song" to "info_find_the_song_that_is_playing",

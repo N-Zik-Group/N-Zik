@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Rimuovere lo sfondo solido dietro i pulsanti di azione del giocatore.</string>
     <string name="player_action_enqueue">Aggiungi alla coda</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">Ascolta su %1$s</string>
     <string name="player_action_listen_on_youtube">Ascolta su YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ascolta su YouTube Music</string>
     <string name="player_action_locate_current_song">Mostra il brano in riproduzione</string>

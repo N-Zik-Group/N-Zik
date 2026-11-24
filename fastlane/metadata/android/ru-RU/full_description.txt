@@ -38,7 +38,6 @@
 - Scrobbling Last.fm с Now Playing и love/unlove
 - Профили исполнителей и альбомы MusicBrainz
 - Discord Rich Presence, включая продвинутый режим с живым предпросмотром
-- Интеграция Invidious для альтернативного YouTube-стриминга
 - Импорт/экспорт плейлистов: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Слушайте вместе</b>

@@ -113,12 +113,10 @@ import app.n_zik.android.widget.WidgetAppearance
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YouTubeSession
 import app.n_zik.innertube.hasYouTubeAuthCookie
-import app.n_zik.invidious.Invidious
 import app.n_zik.innertube.models.ArtistConjunctions
 import app.n_zik.innertube.utils.InnertubeLogger
 import app.n_zik.innertube.utils.ProxyPreferenceItem
 import app.n_zik.innertube.utils.ProxyPreferences
-import app.n_zik.invidious.utils.InvidiousLogger
 import app.n_zik.kugou.KuGou
 import app.n_zik.lastfm.LastFm
 import app.n_zik.lrclib.LrcLib
@@ -239,16 +237,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 InnertubeLogger.Level.INFO -> Timber.tag(tag).i(throwable, "%s", message)
                 InnertubeLogger.Level.WARN -> Timber.tag(tag).w(throwable, "%s", message)
                 InnertubeLogger.Level.ERROR -> Timber.tag(tag).e(throwable, "%s", message)
-            }
-        }
-
-        // Route InvidiousLogger (JVM module) to Timber (Android debug log)
-        InvidiousLogger.addListener { tag, level, message, throwable ->
-            when (level) {
-                InvidiousLogger.Level.DEBUG -> Timber.tag(tag).d(throwable, "%s", message)
-                InvidiousLogger.Level.INFO -> Timber.tag(tag).i(throwable, "%s", message)
-                InvidiousLogger.Level.WARN -> Timber.tag(tag).w(throwable, "%s", message)
-                InvidiousLogger.Level.ERROR -> Timber.tag(tag).e(throwable, "%s", message)
             }
         }
 
@@ -389,7 +377,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             KuGou.offlineGate = NetworkGate::isOnline
             BetterLyrics.offlineGate = NetworkGate::isOnline
             GatewayWebSocket.offlineGate = NetworkGate::isOnline
-            Invidious.offlineGate = NetworkGate::isOnline
 
             // Preserve the search preference across login changes. Guests already search anonymously.
             if (encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)) {

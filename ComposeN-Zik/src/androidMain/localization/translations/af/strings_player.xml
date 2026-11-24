@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Remove the solid background behind the player action buttons.</string>
     <string name="player_action_enqueue">Voeg in tou</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">Luister op %1$s</string>
     <string name="player_action_listen_on_youtube">Luister op YouTube</string>
     <string name="player_action_listen_on_youtube_music">Luister op YouTube Music</string>
     <string name="player_action_locate_current_song">Find the song that is playing</string>

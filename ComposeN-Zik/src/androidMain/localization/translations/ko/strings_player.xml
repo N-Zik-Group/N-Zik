@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Remove the solid background behind the player action buttons.</string>
     <string name="player_action_enqueue">대기열에 추가</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">%1$s에서 듣기</string>
     <string name="player_action_listen_on_youtube">YouTube에서 듣기</string>
     <string name="player_action_listen_on_youtube_music">YouTube Music에서 듣기</string>
     <string name="player_action_locate_current_song">Show currently playing song</string>

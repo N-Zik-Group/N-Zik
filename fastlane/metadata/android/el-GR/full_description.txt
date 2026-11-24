@@ -38,7 +38,6 @@
 - Last.fm scrobbling με τώρα Παίζοντας και αγάπη/unlove
 - MusicBrainz καλλιτέχνη και πληροφορίες άλμπουμ
 - Discord Rich Presence, συμπεριλαμβανομένης της προηγμένης λειτουργίας με ζωντανή προεπισκόπηση
-- Invidious ενσωμάτωση για την εναλλακτική ροή YouTube
 - Εισαγωγή / εξαγωγή λίστας αναπαραγωγής: RiPlay, Spotify, Μουσική YouTube, N-Zik
 
 👥 <b>Listen Together</b>

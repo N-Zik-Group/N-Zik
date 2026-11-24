@@ -38,7 +38,6 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 - Last.fm scrobblen met nu spelen en liefde/los
 - MusicBrainz artiest en album inzichten
 - Discord Rich Presence, inclusief geavanceerde modus met live voorbeeld
-- Onbenauwde integratie voor alternatieve YouTube streaming
 - Afspeellijst import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Luister samen</b>

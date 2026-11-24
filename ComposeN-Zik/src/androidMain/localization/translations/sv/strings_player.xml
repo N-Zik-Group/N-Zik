@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Ta bort den fasta bakgrunden bakom spelarens actionknappar.</string>
     <string name="player_action_enqueue">Kö</string>
     <string name="player_action_like">Gilla</string>
-    <string name="player_action_listen_on_invidious">Lyssna på %1$s</string>
     <string name="player_action_listen_on_youtube">Lyssna på YouTube</string>
     <string name="player_action_listen_on_youtube_music">Lyssna på YouTube Musik</string>
     <string name="player_action_locate_current_song">Visa just nu uppspelning av låt</string>

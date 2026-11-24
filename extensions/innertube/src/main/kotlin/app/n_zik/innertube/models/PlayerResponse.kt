@@ -1,6 +1,5 @@
 package app.n_zik.innertube.models
 
-import app.n_zik.invidious.models.AdaptiveFormat
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -72,31 +71,6 @@ data class PlayerResponse(
                     formats.findLast { it.itag == 249 || it.itag == 139 || it.itag == 171 }
                         ?: formats.maxByOrNull { it.bitrate ?: 0 }
                 }
-
-
-
-//        @Serializable
-//        data class AdaptiveFormat(
-//            val itag: Int,
-//            val mimeType: String,
-//            val bitrate: Long?,
-//            val averageBitrate: Long?,
-//            val contentLength: Long?,
-//            val audioQuality: String?,
-//            val approxDurationMs: Long?,
-//            val lastModified: Long?,
-//            val loudnessDb: Double?,
-//            val audioSampleRate: Int?,
-//            val url: String?,
-//            val width: Int?,
-//            val signatureCipher: String?
-//        ) {
-//            val isAudio: Boolean
-//                get() = width == null
-//
-//            val isVideo: Boolean
-//                get() = width != null
-//        }
 
         @Serializable
         data class Format(

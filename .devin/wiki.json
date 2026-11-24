@@ -59,15 +59,6 @@
       ]
     },
     {
-      "title": "Extension: Invidious",
-      "parent": "Extensions",
-      "page_notes": [
-        {
-          "content": "Documentation for the Invidious API integration."
-        }
-      ]
-    },
-    {
       "title": "Extension: Piped",
       "parent": "Extensions",
       "page_notes": [

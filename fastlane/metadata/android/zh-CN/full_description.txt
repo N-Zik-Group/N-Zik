@@ -38,7 +38,6 @@ Android的多语言YouTube音乐前端，侧重于性能，UI/UX精炼，功能�
 - Last.fm 正在播放和爱情/取消爱情游戏
 - 音乐Brainz艺术家和专辑洞见解。
 - Discord Rich Presence，包括高级模式和实时预览
-- 替代的 YouTube 串流的邀请集成
 - 播放列表导入/导出：Riplay、Spotify、YouTube Music、N-Zik
 
 👥 <b>Listen Together</b>

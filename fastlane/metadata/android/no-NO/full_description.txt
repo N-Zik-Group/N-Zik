@@ -38,7 +38,6 @@ Glasskreditter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ba
 -Last.fm scrobbling med nå Spill og kjærlighet/ukjærlighet
 - MusicBrainz artist og album innsikt
 - Discord Rich Presence, inkludert avansert modus med live forhåndsvisning
-- Inviverdig integrasjon for alternative YouTube-strømming
 -Spilleliste import/eksport: RiPlay, Spotify, YouTube Musikk, N-Zik
 
 👥 <b>Listen Together</b>

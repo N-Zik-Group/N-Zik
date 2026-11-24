@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Видалити суцільний фон за кнопками дії гравця.</string>
     <string name="player_action_enqueue">Зачекайте</string>
     <string name="player_action_like">Подобається</string>
-    <string name="player_action_listen_on_invidious">Слухайте на %1$s</string>
     <string name="player_action_listen_on_youtube">Слухати на YouTube</string>
     <string name="player_action_listen_on_youtube_music">Слухайте на YouTube Music</string>
     <string name="player_action_locate_current_song">Показати пісню, яка зараз відтворюється</string>

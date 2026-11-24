@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Remove the solid background behind the player action buttons.</string>
     <string name="player_action_enqueue">Dodaj u red</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">Slusaj na %1$s</string>
     <string name="player_action_listen_on_youtube">Slušaj na YouTube</string>
     <string name="player_action_listen_on_youtube_music">Slušaj na YouTube Music</string>
     <string name="player_action_locate_current_song">Pronađi pesmu koja svira</string>

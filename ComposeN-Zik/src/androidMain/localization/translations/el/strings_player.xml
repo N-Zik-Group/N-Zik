@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Αφαιρέστε το στερεό φόντο πίσω από τα κουμπιά δράσης του παίκτη.</string>
     <string name="player_action_enqueue">Προσθήκη στη λίστα αναπαραγωγής</string>
     <string name="player_action_like">Αρέσει</string>
-    <string name="player_action_listen_on_invidious">Ακούστε στο %1$s</string>
     <string name="player_action_listen_on_youtube">Ακούστε στο YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ακούστε στο YouTube Music</string>
     <string name="player_action_locate_current_song">Find the song that is playing</string>

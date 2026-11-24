@@ -38,7 +38,6 @@
 - تسجيل الاستماع على Last.fm مع Now Playing وlove/unlove
 - معلومات عن الفنانين والألبومات من MusicBrainz
 - Discord Rich Presence، بما في ذلك الوضع المتقدم مع معاينة حية
-- تكامل Invidious للبث البديل على YouTube
 - استيراد/تصدير قوائم التشغيل: RiPlay وSpotify وYouTube Music وN-Zik
 
 👥 <b>الاستماع معاً</b>

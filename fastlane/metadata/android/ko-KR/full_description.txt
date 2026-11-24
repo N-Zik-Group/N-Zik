@@ -38,7 +38,6 @@ Glass 크레딧: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 - Now Playing과 love/unlove를 갖춘 Last.fm 스크로블링
 - MusicBrainz 아티스트 및 앨범 정보
 - Discord Rich Presence, 라이브 미리보기가 있는 고급 모드 포함
-- 대체 YouTube 스트리밍용 Invidious 통합
 - 재생 목록 가져오기/내보내기: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>함께 듣기</b>

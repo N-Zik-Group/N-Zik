@@ -156,7 +156,6 @@
     <string name="player_action_bar_transparent_background_description">Remueve el fondo sólido detrás de los botones de acción del jugador.</string>
     <string name="player_action_enqueue">Añadir a la cola</string>
     <string name="player_action_like">Me gusta</string>
-    <string name="player_action_listen_on_invidious">Escuchar en %1$s</string>
     <string name="player_action_listen_on_youtube">Escuchar en YouTube</string>
     <string name="player_action_listen_on_youtube_music">Escuchar en YouTube Music</string>
     <string name="player_action_locate_current_song">Encuentra la canción que se está reproduciendo</string>

@@ -86,7 +86,6 @@ kotlin {
 
 
             implementation(projects.oldtube)
-            implementation(projects.invidious)
 
 
             implementation(libs.room)

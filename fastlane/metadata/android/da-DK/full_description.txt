@@ -38,7 +38,6 @@ Glas credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Back
 - Last.fm scrobbling med Nu Spille og kærlighed/handske
 - MusicBrainz kunstner og album indsigt
 - Discord Rich Presence, herunder avanceret tilstand med live preview
-- Invidious integration for alternative YouTube-streaming
 - Spilleliste import/eksport: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Lyt Sammen</b>

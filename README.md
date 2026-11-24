@@ -142,7 +142,6 @@ Join the N-Zik Discord:
 - 🗑️ **Smart Trash**: Intelligent cleanup of songs based on listen count thresholds.
 - 🔇 **Hidden Songs**: Hide or unhide songs from your library view.
 - 👨‍👩‍👧‍👦 **Parental Control**: Block explicit content based on your settings.
-- 🔗 **Invidious Integration**: Use an alternative YouTube frontend for streaming.
 - 🌐 **Proxy Support**: Configurable proxy for YouTube API requests.
 - 📶 **Network Quality Adaptation**: Adaptive streaming based on your connection quality.
 - 📋 **Log Export**: Export app logs to a file, or copy them to the clipboard, for easy debugging and reporting.
