@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Автоматически загружать песни на основе ваших предпочтений</string>
     <string name="settings_downloads_on_album_bookmark_description">Автоматически загружать песни при добавлении в закладки альбома</string>
     <string name="settings_downloads_on_like_description">Автоматически загружать песни, когда вам нравится</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Автоматически загружать песни, когда вы добавляете в закладки плейлист</string>
     <string name="settings_downloads_storage_limit_label">Макс. размер загруженных песен</string>
     <string name="settings_enable_autodownload_song">Включить автоматическую загрузку песен</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Автоматически загружать песню при закладках на альбом</string>
     <string name="settings_enable_autodownload_song_when_liked">Автоматическое скачивание понравившейся песни</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Автозагрузка песен в закладки плейлистов</string>
     <string name="settings_enable_pip">Включить изображение в картинке</string>
     <string name="settings_enable_pip_auto">Включить автоматическое изображение в картинке</string>
     <string name="settings_font_include_padding_description">Добавить расстояние между текстом</string>
