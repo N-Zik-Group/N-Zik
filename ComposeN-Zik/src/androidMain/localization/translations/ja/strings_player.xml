@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">プレイヤーの上スワイプで再生キューを開きます。</string>
     <string name="player_action_bar_transparent_background_description">プレイヤーアクションボタンの背景を削除します。</string>
     <string name="player_action_enqueue">キューへ追加</string>
+    <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">いいね！</string>
     <string name="player_action_listen_on_youtube">YouTubeで再生</string>
     <string name="player_action_listen_on_youtube_music">YouTube Musicで再生</string>
@@ -167,6 +168,7 @@
     <string name="player_action_seek_forward">転送</string>
     <string name="player_action_seek_forward_30_seconds">30秒前に進む</string>
     <string name="player_action_seek_forward_5_seconds">5秒転送</string>
+    <string name="player_action_show_stats_for_nerds">オタクの統計情報を表示</string>
     <string name="player_action_shuffle">シャッフル</string>
     <string name="player_action_shuffle_hint">シャッフル</string>
     <string name="player_appearance">プレイヤーの外観</string>

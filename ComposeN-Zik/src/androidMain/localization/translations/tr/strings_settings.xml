@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Albüm ve Sanatçı üst bilgisi</string>
     <string name="settings_player_header_icons_visible_label">Simge ile bilgi göster</string>
     <string name="settings_player_header_style_label">Başlık stili</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Oynatıcı açıkken, duraklatılmış olsa bile M3E şekillerinin animasyonlarının devam etmesini sağlayın.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Şekilleri her zaman göster</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Tema Sallama Hassasiyeti</string>
     <string name="settings_player_mini_style_label">Mini Oynatıcı Türü</string>
     <string name="settings_player_next_queue_visible_label">Sonraki şarkı kuyruğunu göster</string>

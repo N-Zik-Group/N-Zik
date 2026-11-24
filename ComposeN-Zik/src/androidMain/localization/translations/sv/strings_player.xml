@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Öppna uppspelningskön med ett uppåtsvep i spelaren.</string>
     <string name="player_action_bar_transparent_background_description">Ta bort den fasta bakgrunden bakom spelarens actionknappar.</string>
     <string name="player_action_enqueue">Kö</string>
+    <string name="player_action_hide_stats_for_nerds">Dölj statistik för nördar</string>
     <string name="player_action_like">Gilla</string>
     <string name="player_action_listen_on_youtube">Lyssna på YouTube</string>
     <string name="player_action_listen_on_youtube_music">Lyssna på YouTube Musik</string>
@@ -167,6 +168,7 @@
     <string name="player_action_seek_forward">Framåt</string>
     <string name="player_action_seek_forward_30_seconds">Framåt 30 sekunder</string>
     <string name="player_action_seek_forward_5_seconds">Vidarebefordra 5 sekunder</string>
+    <string name="player_action_show_stats_for_nerds">Visa statistik för nördar</string>
     <string name="player_action_shuffle">Blanda</string>
     <string name="player_action_shuffle_hint">Blanda</string>
     <string name="player_appearance">Utseende för spelare</string>

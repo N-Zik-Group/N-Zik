@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Nagłówek albumu i wykonawcy</string>
     <string name="settings_player_header_icons_visible_label">Pokaż info z ikonami</string>
     <string name="settings_player_header_style_label">Styl nagłówka</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Zachowaj kształty M3E animowane, gdy gracz jest otwarty, nawet gdy jest wstrzymany.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Zawsze pokazuj kształty</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Czułość potrząsania motywu</string>
     <string name="settings_player_mini_style_label">Typ mini-odtwarzacza</string>
     <string name="settings_player_next_queue_visible_label">Pokaż kolejkę kolejnych piosenek</string>

@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album och Artist header</string>
     <string name="settings_player_header_icons_visible_label">Visa information med ikoner</string>
     <string name="settings_player_header_style_label">Stil på sidhuvud</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Håll M3E former animerade medan spelaren är öppen, även när pausad.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Visa alltid former</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Tema skakar känslighet</string>
     <string name="settings_player_mini_style_label">Minispelare typ</string>
     <string name="settings_player_next_queue_visible_label">Visa nästa låtkö</string>

@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Откройте очередь воспроизведения с свайпом вверх в игроке.</string>
     <string name="player_action_bar_transparent_background_description">Снимите сплошной фон за кнопками действия игрока.</string>
     <string name="player_action_enqueue">В очередь</string>
+    <string name="player_action_hide_stats_for_nerds">Скрыть статистику для Nerds</string>
     <string name="player_action_like">Лайкнуть</string>
     <string name="player_action_listen_on_youtube">Слушать в YouTube</string>
     <string name="player_action_listen_on_youtube_music">Слушать в YouTube Music</string>
@@ -167,6 +168,7 @@
     <string name="player_action_seek_forward">Вперёд</string>
     <string name="player_action_seek_forward_30_seconds">Переслать на 30 секунд</string>
     <string name="player_action_seek_forward_5_seconds">Переслать на 5 секунд</string>
+    <string name="player_action_show_stats_for_nerds">Показать статистику для Nerds</string>
     <string name="player_action_shuffle">Перемешать</string>
     <string name="player_action_shuffle_hint">Перемешать</string>
     <string name="player_appearance">Внешний вид игрока</string>

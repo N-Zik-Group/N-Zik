@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Antet album și artist</string>
     <string name="settings_player_header_icons_visible_label">Afișează informațiile cu iconițe</string>
     <string name="settings_player_header_style_label">Stil antet</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Țineți formele M3E animate în timp ce jucătorul este deschis, chiar și atunci când este pauzat.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Întotdeauna arată forme</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Tema Sensitate la Shake</string>
     <string name="settings_player_mini_style_label">Tip mini-player</string>
     <string name="settings_player_next_queue_visible_label">Afișează următoarele melodii în player</string>

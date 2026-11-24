@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Альбом і заголовок виконавця</string>
     <string name="settings_player_header_icons_visible_label">Показувати інформацію за допомогою значків</string>
     <string name="settings_player_header_style_label">Стиль заголовка</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Тримати M3E фігури анімовані, коли гравець відкритий, навіть якщо він призупинився.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Завжди показувати фігури</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Чутливість до струсу теми</string>
     <string name="settings_player_mini_style_label">Тип Міні Програвача</string>
     <string name="settings_player_next_queue_visible_label">Показати чергу наступної пісні</string>

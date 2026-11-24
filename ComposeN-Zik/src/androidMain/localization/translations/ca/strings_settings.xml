@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Àlbum i nom de l\'artista</string>
     <string name="settings_player_header_icons_visible_label">Mostra la informació amb icones</string>
     <string name="settings_player_header_style_label">Tipus d\'informació</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Keep M3E shapes animated while the player is open, even when paused.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Always show shapes</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Theme Shake Sensitivity</string>
     <string name="settings_player_mini_style_label">Tipus de mini reproductor</string>
     <string name="settings_player_next_queue_visible_label">Mostra la mini cua al reproductor</string>

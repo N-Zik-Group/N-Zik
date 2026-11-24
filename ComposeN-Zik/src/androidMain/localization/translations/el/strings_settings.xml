@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album and artist name</string>
     <string name="settings_player_header_icons_visible_label">Εμφάνιση πληροφοριών με εικονίδια</string>
     <string name="settings_player_header_style_label">Info type</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Κρατήστε τα σχήματα M3E κινούμενα ενώ ο παίκτης είναι ανοιχτός, ακόμη και όταν είναι σε παύση.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Πάντα εμφάνιση σχημάτων</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Ευαισθησία Του Θέματος Κούνημα</string>
     <string name="settings_player_mini_style_label">Τύπος Μίνι Αναπαραγωγέα</string>
     <string name="settings_player_next_queue_visible_label">Show next songs in player</string>

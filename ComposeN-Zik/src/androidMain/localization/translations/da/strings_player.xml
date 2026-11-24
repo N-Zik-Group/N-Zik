@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Åbn afspilningskø med et stryg opad i afspilleren.</string>
     <string name="player_action_bar_transparent_background_description">Fjern den solide baggrund bag afspillerens handlingsknapper.</string>
     <string name="player_action_enqueue">Sæt i kø</string>
+    <string name="player_action_hide_stats_for_nerds">Skjul statistik for Nerds</string>
     <string name="player_action_like">Ligesom</string>
     <string name="player_action_listen_on_youtube">Lyt på YouTube</string>
     <string name="player_action_listen_on_youtube_music">Lyt på YouTube Musik</string>
@@ -167,6 +168,7 @@
     <string name="player_action_seek_forward">Fremad</string>
     <string name="player_action_seek_forward_30_seconds">Videresend 30 sekunder</string>
     <string name="player_action_seek_forward_5_seconds">Videresend 5 sekunder</string>
+    <string name="player_action_show_stats_for_nerds">Vis statistik for Nerds</string>
     <string name="player_action_shuffle">Bland</string>
     <string name="player_action_shuffle_hint">Bland</string>
     <string name="player_appearance">Udseende</string>

@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">アルバムとアーティストのヘッダー</string>
     <string name="settings_player_header_icons_visible_label">アイコン付きの情報を表示</string>
     <string name="settings_player_header_style_label">ヘッダーのスタイル</string>
+    <string name="settings_player_m3e_always_show_shapes_description">一時停止中でも、プレイヤーが開いている間はM3Eシェイプをアニメーション化しておきます。</string>
+    <string name="settings_player_m3e_always_show_shapes_label">常に図形を表示</string>
     <string name="settings_player_m3e_motion_sensitivity_label">テーマの振動感度</string>
     <string name="settings_player_mini_style_label">ミニプレーヤーの種類</string>
     <string name="settings_player_next_queue_visible_label">次の曲のキューを表示</string>

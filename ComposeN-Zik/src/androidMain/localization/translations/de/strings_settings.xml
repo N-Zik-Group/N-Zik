@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album und Interpreten Header</string>
     <string name="settings_player_header_icons_visible_label">Zeige Information mit Symbolen</string>
     <string name="settings_player_header_style_label">Kopfzeilen-Stil</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Behalte die M3E-Formen animiert, während der Spieler geöffnet ist, auch wenn er pausiert ist.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Formen immer anzeigen</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Theme-Shake-Empfindlichkeit</string>
     <string name="settings_player_mini_style_label">Mini-Player-Typ</string>
     <string name="settings_player_next_queue_visible_label">Nächsten Song im Player anzeigen</string>

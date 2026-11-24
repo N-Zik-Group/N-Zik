@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Deschide coada de redare cu o glisare în sus în jucător.</string>
     <string name="player_action_bar_transparent_background_description">Șterge fundalul solid din spatele butoanelor de acțiune ale jucătorului.</string>
     <string name="player_action_enqueue">Adaugă în coadă</string>
+    <string name="player_action_hide_stats_for_nerds">Ascunde statistici pentru Nerds</string>
     <string name="player_action_like">Apreciere</string>
     <string name="player_action_listen_on_youtube">Ascultă pe YouTube</string>
     <string name="player_action_listen_on_youtube_music">Ascultă pe YouTube Music</string>
@@ -167,6 +168,7 @@
     <string name="player_action_seek_forward">Redirecționare</string>
     <string name="player_action_seek_forward_30_seconds">Redirecţionează 30 de secunde</string>
     <string name="player_action_seek_forward_5_seconds">Redirecţionează 5 secunde</string>
+    <string name="player_action_show_stats_for_nerds">Arată statistici pentru Nerds</string>
     <string name="player_action_shuffle">Amestecă</string>
     <string name="player_action_shuffle_hint">Amestecă</string>
     <string name="player_appearance">Aspectul playerului</string>

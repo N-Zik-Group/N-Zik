@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album and artist name</string>
     <string name="settings_player_header_icons_visible_label">إظهار المعلومات مع الأيقونات</string>
     <string name="settings_player_header_style_label">Info type</string>
+    <string name="settings_player_m3e_always_show_shapes_description">الحفاظ على الأشكال M3E المتحركة أثناء فتح اللاعب، حتى عند الإيقاف مؤقتاً.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">إظهار الأشكال دائماً</string>
     <string name="settings_player_m3e_motion_sensitivity_label">حساسية اهتزاز الموضوع</string>
     <string name="settings_player_mini_style_label">نوع اللاعب الصغير</string>
     <string name="settings_player_next_queue_visible_label">Show next songs in player</string>

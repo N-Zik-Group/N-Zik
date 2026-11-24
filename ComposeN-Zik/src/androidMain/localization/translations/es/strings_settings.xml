@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Nombre del álbum y del artista</string>
     <string name="settings_player_header_icons_visible_label">Mostrar información con iconos</string>
     <string name="settings_player_header_style_label">Tipo de información</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Mantén las formas M3E animadas mientras el jugador está abierto, incluso cuando está en pausa.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Mostrar siempre formas</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Sagitar Tema</string>
     <string name="settings_player_mini_style_label">Tipo de mini reproductor</string>
     <string name="settings_player_next_queue_visible_label">Mostrar mini cola en el reproductor</string>

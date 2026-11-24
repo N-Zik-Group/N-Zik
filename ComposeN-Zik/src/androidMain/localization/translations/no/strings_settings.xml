@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">Album og Artistens overskrift</string>
     <string name="settings_player_header_icons_visible_label">Vis informasjon med ikoner</string>
     <string name="settings_player_header_style_label">Topptekst stil</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Behold M3E figurer animert mens spilleren er åpen, selv når den er pause.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Vis alltid figurer</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Tema Rist Følsomhet</string>
     <string name="settings_player_mini_style_label">Mini avspiller Type</string>
     <string name="settings_player_next_queue_visible_label">Vis neste sangkø</string>

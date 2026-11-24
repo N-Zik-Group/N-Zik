@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">এলবাম আর আর্টিস্টের নাম</string>
     <string name="settings_player_header_icons_visible_label">Show info with icons</string>
     <string name="settings_player_header_style_label">ইনফোর ধরন</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Keep M3E shapes animated while the player is open, even when paused.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Always show shapes</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Theme Shake Sensitivity</string>
     <string name="settings_player_mini_style_label">মিনি প্লেয়ারের ধরন</string>
     <string name="settings_player_next_queue_visible_label">পরের গান প্লেয়ারে দেখান</string>

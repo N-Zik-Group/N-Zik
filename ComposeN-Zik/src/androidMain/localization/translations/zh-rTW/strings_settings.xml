@@ -369,6 +369,8 @@
     <string name="settings_player_header_album_artist_description">專輯及藝人名稱</string>
     <string name="settings_player_header_icons_visible_label">Show info with icons</string>
     <string name="settings_player_header_style_label">資訊類別</string>
+    <string name="settings_player_m3e_always_show_shapes_description">Keep M3E shapes animated while the player is open, even when paused.</string>
+    <string name="settings_player_m3e_always_show_shapes_label">Always show shapes</string>
     <string name="settings_player_m3e_motion_sensitivity_label">Theme Shake Sensitivity</string>
     <string name="settings_player_mini_style_label">縮小播放器類型</string>
     <string name="settings_player_next_queue_visible_label">在播放器底下顯示下兩首歌曲</string>

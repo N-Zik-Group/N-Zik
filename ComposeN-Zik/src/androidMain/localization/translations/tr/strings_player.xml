@@ -155,6 +155,7 @@
     <string name="player_action_bar_swipe_up_to_open_the_queue_description">Oynatıcıda parmağınızı yukarı doğru kaydırarak oynatma kuyruğunu açın.</string>
     <string name="player_action_bar_transparent_background_description">Oyuncu eylem düğmelerinin arkasındaki düz arka planı kaldırın.</string>
     <string name="player_action_enqueue">Sıraya ekle</string>
+    <string name="player_action_hide_stats_for_nerds">Meraklılar için İstatistikleri gizle</string>
     <string name="player_action_like">Beğen</string>
     <string name="player_action_listen_on_youtube">YouTube\'da dinle</string>
     <string name="player_action_listen_on_youtube_music">YouTube Music\'te dinle</string>
@@ -167,6 +168,7 @@
     <string name="player_action_seek_forward">İleri</string>
     <string name="player_action_seek_forward_30_seconds">30 saniye ileri sar</string>
     <string name="player_action_seek_forward_5_seconds">5 saniye ileri sar</string>
+    <string name="player_action_show_stats_for_nerds">Meraklılar için İstatistikleri göster</string>
     <string name="player_action_shuffle">Karıştır</string>
     <string name="player_action_shuffle_hint">Karıştır</string>
     <string name="player_appearance">Oynatıcı Görünümü</string>
