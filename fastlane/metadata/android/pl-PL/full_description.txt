@@ -38,7 +38,6 @@ Wyłączone na świeżych instalacjach. Włącz w ustawieniach: natywne, tylko k
 - Scrobbling Last.fm z teraz odtwarzaniem i miłością/niemiłością
 - Artysta MusicBrainz i wgląd w albumy
 - Discord Rich Presence, w tym tryb zaawansowany z podglądem na żywo
-- Invidious integration for alternative YouTube streaming
 - Import / eksport playlisty: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Słuchaj razem</b>
