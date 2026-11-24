@@ -24,8 +24,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.R
@@ -114,29 +112,5 @@ internal fun HeaderIcon(
                 .glassAreaContour(glass, GlassArea.Header, shape).clickable(onClick = onClick),
             contentAlignment = Alignment.Center,
         ) { icon() }
-    }
-}
-
-internal class Preference {
-
-    internal companion object {
-
-        @Composable
-        fun parentalControl(): Boolean =
-            rememberPreference( parentalControlEnabledKey, false ).value
-    }
-}
-
-internal class AppBar {
-
-    internal companion object {
-
-        @Composable
-        fun contentColor(): Color =
-            // Keyed on the effective tone, not the mode (spec-achromatic-ramp-luminance-cap):
-            // the palette's own text is always readable on its backgrounds,
-
-            // including PitchBlack, whose override forces text = Color.White.
-            colorPalette().text
     }
 }

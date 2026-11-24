@@ -3,10 +3,8 @@ package app.n_zik.android.components.ui.screens.home.quickpicks
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -19,7 +17,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,7 +27,6 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -39,7 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -58,7 +53,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.ShimmerHost
-import app.n_zik.android.ui.components.themed.TextPlaceholder
 import app.n_zik.android.ui.components.themed.Title
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.items.ArtistItem
@@ -92,51 +86,6 @@ import app.n_zik.android.enums.DownloadedStateMedia
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
-
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
-@UnstableApi
-@Composable
-fun HomeBottomShimmer(
-    albumThumbnailSizeDp: Dp,
-    artistThumbnailSizeDp: Dp,
-    endPaddingValues: PaddingValues
-) {
-    Column {
-        ShimmerHost {
-            repeat(3) {
-                // Album/Playlist Section Placeholder
-                TextPlaceholder(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 16.dp, bottom = 8.dp)
-                )
-                LazyRow(contentPadding = endPaddingValues) {
-                    items(5, key = { it }, contentType = { "placeholder" }) {
-                        AlbumItemPlaceholder(
-                            thumbnailSizeDp = albumThumbnailSizeDp,
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
-                    }
-                }
-
-                // Artist Section Placeholder
-                TextPlaceholder(
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 16.dp, bottom = 8.dp)
-                )
-                LazyRow(contentPadding = endPaddingValues) {
-                    items(5, key = { it }, contentType = { "placeholder" }) {
-                        ArtistItemPlaceholder(
-                            thumbnailSizeDp = artistThumbnailSizeDp,
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
@@ -339,10 +288,6 @@ fun YtmSectionItems(
                             }
                             is Innertube.ArtistItem -> {
                                 val menuState = LocalMenuState.current
-                                // Album card format (album-size thumbnail, name centered
-                                // below) so artist items match the album geometry of
-//
-                                // the other cards.
                                 ArtistItem(
                                     artist = item,
                                     thumbnailSizePx = albumThumbnailSizePx,

@@ -341,3 +341,9 @@ Audit follow-up:
   - Remove both implementations, their Gradle wiring and startup hooks, and the external link from the Listen on menu. Preserve the YouTube and YouTube Music actions.
   - Drop the former labels from 49 localization catalogs and the feature listing from 49 Fastlane descriptions. Update project documentation and module ownership.
   - Assemble Debug, pass 374 targeted tests, and verify the app integration classes and resources are absent from the APK installed on the Pixel.
+
+Credits and cleanup:
+- chore(app): consolidate credits and remove unused code
+  - Keep shared attributions in credits.md, group Rubik and Poppins under the same OFL text, and use consistent names for packaged licenses.
+  - Remove orphaned blurred-cover, header, shimmer, download and extension helpers after confirming their references.
+  - Pass 54 targeted tests and verify all six license files and the final credits page in the Debug APK installed on the Pixel.

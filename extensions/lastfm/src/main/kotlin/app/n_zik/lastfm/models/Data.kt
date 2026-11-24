@@ -23,12 +23,6 @@ data class LastFmResponse(
 }
 
 @Serializable
-data class LastFmError(
-    val error: Int,
-    val message: String? = null
-)
-
-@Serializable
 data class SessionKey(
     @SerialName("key") val key: String,
     @SerialName("name") val name: String

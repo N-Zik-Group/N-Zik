@@ -10,14 +10,15 @@ N-Zik is built with contributions from developers, designers, translators, and u
 
 ### Glass
 
-- [**Square / Convx Project**](https://github.com/Lelonio/Square): Glass material, interaction physics and presentation adaptations, licensed under GPL-3.0. See the [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
-- [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt).
+- [**Square / Convx Project**](https://github.com/Lelonio/Square): Copyright 2026. N-Zik adapts the Glass material, preference profiles, shapes, settings, dropdown presentation and navigation lens from the Convx Project under GPL-3.0. See the [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt).
+- [**Kyant0 / AndroidLiquidGlass (Backdrop)**](https://github.com/Kyant0/AndroidLiquidGlass): The underlying backdrop and optical rendering sources, licensed separately under Apache-2.0. See the [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/assets/licenses/backdrop-apache-2.0.txt).
 
 ### Design and icons
 
 - Current banner and logo [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Player design: [**aneesh1122**](https://github.com/aneesh1122), [**OrangeZXZ**](https://github.com/OrangeZXZ), [**NEVARLeVrai**](https://github.com/NEVARLeVrai)
 - Icons: [**Ionicons**](https://github.com/ionic-team/ionicons), [**FlatIcon.com**](https://www.flaticon.com)
+- Android fonts include [Rubik](https://github.com/googlefonts/rubik) by the Rubik Project Authors and [Poppins](https://github.com/itfoundry/Poppins) by the Poppins Project Authors. Both use SIL Open Font License 1.1. See the bundled [Android font license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/assets/licenses/android-fonts-ofl-1.1.txt).
 
 ### Libraries and services
 
@@ -31,7 +32,7 @@ N-Zik is built with contributions from developers, designers, translators, and u
 | Logging and audio math | [Timber](https://github.com/JakeWharton/timber), [Apache Commons Math3](https://commons.apache.org/proper/commons-math/) |
 | Platform | [Kotlin](https://kotlinlang.org/), [JetBrains Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/), [Crowdin](https://crowdin.com/), [Android Open Source Project (AOSP)](https://source.android.com/) |
 
-[HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) powers Compose shader effects. The Android engine (0.6.0) is Apache 2.0, and its shader collection contains CC BY-NC-SA 3.0 and MIT works.
+[HypnoticCanvas](https://mikepenz.github.io/HypnoticCanvas/) by Mike Penz and contributors powers Compose shader effects. The Android engine (0.6.0) is Apache 2.0. The [shader sources](https://github.com/mikepenz/HypnoticCanvas/tree/v0.6.0/hypnoticcanvas-shaders) identify authors and works under CC BY-NC-SA 3.0 or MIT.
 
 ### Individual contributions
 
@@ -49,10 +50,6 @@ N-Zik is built with contributions from developers, designers, translators, and u
 N-Zik's project license is GPLv3. Third-party components retain the licenses listed in their notices. The four RiPlay-derived album and artist screens and MusicBrainz insights screens were adapted from RiPlay. The [RiPlay snapshot from the port date](https://github.com/fast4x/RiPlay/blob/f69d6760bd09b29e18591cdc1339d3dd8b6bdf55/LICENSE) declares GPLv3 and the compared files have no separate license header.
 
 - [N-Zik license](https://github.com/N-Zik-Group/N-Zik/blob/main/LICENSE)
-- [Square attribution notice](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/NOTICE-square.txt)
-- [Backdrop license](https://github.com/N-Zik-Group/N-Zik/blob/main/ComposeN-Zik/src/androidMain/kotlin/app/n_zik/android/components/glass/LICENSE-backdrop.txt)
-- [Better Lyrics module license](https://github.com/N-Zik-Group/Better-Lyrics/blob/main/LICENSE)
-- [Discord RPC module license](https://github.com/N-Zik-Group/DiscordRPC/blob/main/LICENSE)
 
 ---
 

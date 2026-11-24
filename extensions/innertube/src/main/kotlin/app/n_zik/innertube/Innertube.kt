@@ -10,14 +10,10 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import io.ktor.client.request.headers
-import io.ktor.client.request.parameter
-import io.ktor.client.request.post
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
-import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
 import app.n_zik.innertube.clients.YouTubeLocale
 import app.n_zik.innertube.models.AccountInfo
@@ -51,7 +47,6 @@ import okhttp3.Cache
 object Innertube {
 
     private const val YOUTUBE_MUSIC_HOST = "music.youtube.com"
-    private const val VISITOR_DATA_PREFIX = "Cgt"
     const val DEFAULT_VISITOR_DATA = "CgtMN0FkbDFaWERfdyi8t4u7BjIKCgJWThIEGgAgWQ%3D%3D"
 
     /**

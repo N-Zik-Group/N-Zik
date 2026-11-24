@@ -32,12 +32,10 @@ import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
-import androidx.media3.exoplayer.offline.DownloadNotificationHelper
 import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.exoplayer.offline.DownloadService
 import androidx.media3.exoplayer.scheduler.Requirements
 import app.n_zik.android.utils.artistTextOrDb
-import app.n_zik.android.playback.services.createDataSourceFactory
 import app.n_zik.android.playback.services.createDownloadDataSourceFactory
 
 import app.n_zik.android.enums.DownloadQualityFormat
@@ -47,7 +45,6 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
-import app.n_zik.android.appContext
 import app.n_zik.android.utils.autoDownloadSongKey
 import app.n_zik.android.utils.autoDownloadSongWhenAlbumBookmarkedKey
 import app.n_zik.android.utils.autoDownloadSongWhenLikedKey
@@ -64,7 +61,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -77,7 +73,6 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.yield
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.core.notifications.channelId
 
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -133,7 +128,6 @@ object MyDownloadHelper {
     private lateinit var databaseProvider: DatabaseProvider
     lateinit var downloadCache: Cache
 
-    private lateinit var downloadNotificationHelper: DownloadNotificationHelper
     private lateinit var downloadManager: DownloadManager
     lateinit var downloadQualityFormat: DownloadQualityFormat
 
@@ -231,17 +225,6 @@ object MyDownloadHelper {
         }
         downloads.value = result
 
-    }
-
-
-    @Synchronized
-    fun getDownloadNotificationHelper(context: Context?): DownloadNotificationHelper {
-        if (!MyDownloadHelper::downloadNotificationHelper.isInitialized) {
-            val appContext = context ?: return downloadNotificationHelper
-            downloadNotificationHelper =
-                DownloadNotificationHelper(appContext, channelId(DOWNLOAD_NOTIFICATION_CHANNEL_ID, getActiveProfile(appContext)))
-        }
-        return downloadNotificationHelper
     }
 
     @Synchronized
