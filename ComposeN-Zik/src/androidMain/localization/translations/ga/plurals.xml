@@ -50,6 +50,48 @@
         <item quantity="many">%1$d songs</item>
         <item quantity="other">%1$d songs</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Add %1$d track from this playlist to favorites?</item>
+        <item quantity="two">Add %1$d tracks from this playlist to favorites?</item>
+        <item quantity="few">Add %1$d tracks from this playlist to favorites?</item>
+        <item quantity="many">Add %1$d tracks from this playlist to favorites?</item>
+        <item quantity="other">Add %1$d tracks from this playlist to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Remove %1$d track in this playlist from favorites?</item>
+        <item quantity="two">Remove %1$d tracks in this playlist from favorites?</item>
+        <item quantity="few">Remove %1$d tracks in this playlist from favorites?</item>
+        <item quantity="many">Remove %1$d tracks in this playlist from favorites?</item>
+        <item quantity="other">Remove %1$d tracks in this playlist from favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Add %1$d track from this album to favorites?</item>
+        <item quantity="two">Add %1$d tracks from this album to favorites?</item>
+        <item quantity="few">Add %1$d tracks from this album to favorites?</item>
+        <item quantity="many">Add %1$d tracks from this album to favorites?</item>
+        <item quantity="other">Add %1$d tracks from this album to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Remove %1$d track in this album from favorites?</item>
+        <item quantity="two">Remove %1$d tracks in this album from favorites?</item>
+        <item quantity="few">Remove %1$d tracks in this album from favorites?</item>
+        <item quantity="many">Remove %1$d tracks in this album from favorites?</item>
+        <item quantity="other">Remove %1$d tracks in this album from favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Add %1$d episode from this podcast to favorites?</item>
+        <item quantity="two">Add %1$d episodes from this podcast to favorites?</item>
+        <item quantity="few">Add %1$d episodes from this podcast to favorites?</item>
+        <item quantity="many">Add %1$d episodes from this podcast to favorites?</item>
+        <item quantity="other">Add %1$d episodes from this podcast to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Remove %1$d episode in this podcast from favorites?</item>
+        <item quantity="two">Remove %1$d episodes in this podcast from favorites?</item>
+        <item quantity="few">Remove %1$d episodes in this podcast from favorites?</item>
+        <item quantity="many">Remove %1$d episodes in this podcast from favorites?</item>
+        <item quantity="other">Remove %1$d episodes in this podcast from favorites?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d translator</item>
         <item quantity="two">%1$d translators</item>
