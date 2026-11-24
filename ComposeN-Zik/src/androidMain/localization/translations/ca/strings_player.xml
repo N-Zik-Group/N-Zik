@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">Afegeix a la cua</string>
     <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">Escolta a %1$s</string>
     <string name="player_action_listen_on_youtube">Escolta a YouTube</string>
     <string name="player_action_listen_on_youtube_music">Escolta a YouTube Music</string>
     <string name="player_action_locate_current_song">Cerca la cançó que s\'està reproduint</string>
