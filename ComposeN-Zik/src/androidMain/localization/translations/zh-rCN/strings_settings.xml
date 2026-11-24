@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">根据您的偏好自动下载歌曲</string>
     <string name="settings_downloads_on_album_bookmark_description">将相册加入书签时自动下载歌曲</string>
     <string name="settings_downloads_on_like_description">当您喜欢歌曲时自动下载</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">将音乐列表加入书签时自动下载歌曲</string>
     <string name="settings_downloads_storage_limit_label">歌曲下载最大大小</string>
     <string name="settings_enable_autodownload_song">启用自动下载歌曲</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">当专辑被收藏时自动下载</string>
     <string name="settings_enable_autodownload_song_when_liked">点喜欢后自动下载歌曲</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">自动下载书签播放列表中的歌曲</string>
     <string name="settings_enable_pip">启用画中画</string>
     <string name="settings_enable_pip_auto">启用画中画动画</string>
     <string name="settings_font_include_padding_description">在文本周围添加间距</string>
