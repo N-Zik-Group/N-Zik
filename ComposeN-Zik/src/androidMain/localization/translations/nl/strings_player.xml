@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">In wachtrij plaatsen</string>
     <string name="player_action_hide_stats_for_nerds">Verberg statistieken voor Nerds</string>
     <string name="player_action_like">vind-ik-leuk</string>
-    <string name="player_action_listen_on_invidious">Luister op %1$s</string>
     <string name="player_action_listen_on_youtube">Luister op YouTube</string>
     <string name="player_action_listen_on_youtube_music">Luister via YouTube Muziek</string>
     <string name="player_action_locate_current_song">Toon het huidige afgespeelde nummer</string>
