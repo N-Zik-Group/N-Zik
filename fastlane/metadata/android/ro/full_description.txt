@@ -38,7 +38,6 @@ Credite de sticlă: Proiect pătrat / Convx (GPL-3.0); Kyant0 AndroidLiquidGass 
 - Scrobbling Last.fm cu Acum Redă și iubește/dezvăluie
 - Ştiri despre MusicBrainz şi album
 - Discord Rich Presence, inclusiv modul avansat cu previzualizare în direct
--Integrare invidioasă pentru streaming YouTube alternativ
 - Playlist import/export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Ascultă Împreună</b>
