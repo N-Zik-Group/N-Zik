@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Додати до Обраного</string>
     <string name="library_favorites_added">Додано до обраного</string>
     <string name="library_favorites_removed">Видалено з обраного</string>
+    <string name="library_collection_favorites_action_remove">Видалити з улюблених</string>
+    <string name="library_collection_favorites_update_failed">Не вдалося оновити улюблені.</string>
+    <string name="library_collection_favorites_sync_failed">Не вдалося синхронізувати деякі закладки з YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Альбом</string>
     <string name="library_sort_album_year">Рік альбому</string>
