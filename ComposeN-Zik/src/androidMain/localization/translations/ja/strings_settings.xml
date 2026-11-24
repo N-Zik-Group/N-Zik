@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">設定に基づいて曲を自動的にダウンロードする</string>
     <string name="settings_downloads_on_album_bookmark_description">アルバムをブックマークしたときに曲を自動的にダウンロードする</string>
     <string name="settings_downloads_on_like_description">好きなときに曲を自動的にダウンロードする</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">音楽プレイリストをブックマークしたときに曲を自動的にダウンロードする</string>
     <string name="settings_downloads_storage_limit_label">曲ダウンロードの最大サイズ</string>
     <string name="settings_enable_autodownload_song">曲の自動ダウンロードを有効にする</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">アルバムがブックマークされたときに曲を自動的にダウンロードする</string>
     <string name="settings_enable_autodownload_song_when_liked">いいねをした時に自動で曲をダウンロードする</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">ブックマークされたプレイリストの曲を自動的にダウンロードする</string>
     <string name="settings_enable_pip">ピクチャーインピクチャーを有効にする</string>
     <string name="settings_enable_pip_auto">自動ピクチャーインピクチャーを有効にする</string>
     <string name="settings_font_include_padding_description">テキストの周りにすき間を追加</string>
