@@ -36,6 +36,36 @@
         <item quantity="few">%1$d melodii</item>
         <item quantity="other">%1$d melodii</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Adaugă piesa %1$d din această listă la favorite?</item>
+        <item quantity="few">Adaugă piesele %1$d din această listă la favorite?</item>
+        <item quantity="other">Adaugă piesele %1$d din această listă la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Elimină melodia %1$d din lista de redare de la favorite?</item>
+        <item quantity="few">Eliminați piesele %1$d din această listă de redare de la favorite?</item>
+        <item quantity="other">Eliminați piesele %1$d din această listă de redare de la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Adaugă %1$d melodie din acest album la favorite?</item>
+        <item quantity="few">Adaugă piesele %1$d din acest album la favorite?</item>
+        <item quantity="other">Adaugă piesele %1$d din acest album la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Eliminați %1$d melodie în acest album de la favorite?</item>
+        <item quantity="few">Eliminați piesele %1$d din acest album de la favorite?</item>
+        <item quantity="other">Eliminați piesele %1$d din acest album de la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Adăugați un episod %1$d din acest podcast la favorite?</item>
+        <item quantity="few">Adauga %1$d episoade din acest podcast la favorite?</item>
+        <item quantity="other">Adauga %1$d episoade din acest podcast la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Eliminați episodul %1$d din acest podcast de la favorite?</item>
+        <item quantity="few">Elimină episoadele %1$d din favorite?</item>
+        <item quantity="other">Elimină episoadele %1$d din favorite?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">Traducător %1$d</item>
         <item quantity="few">Traducători %1$d</item>
