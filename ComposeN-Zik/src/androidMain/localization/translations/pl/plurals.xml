@@ -43,6 +43,42 @@
         <item quantity="many">%1$d utworów</item>
         <item quantity="other">%1$d utworów</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Dodać utwór %1$d z tej playlisty do ulubionych?</item>
+        <item quantity="few">Dodać utwory %1$d z tej playlisty do ulubionych?</item>
+        <item quantity="many">Dodać utwory %1$d z tej playlisty do ulubionych?</item>
+        <item quantity="other">Dodać utwory %1$d z tej playlisty do ulubionych?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Usunąć utwór %1$d z tej playlisty z ulubionych?</item>
+        <item quantity="few">Usunąć utwory %1$d z tej playlisty z ulubionych?</item>
+        <item quantity="many">Usunąć utwory %1$d z tej playlisty z ulubionych?</item>
+        <item quantity="other">Usunąć utwory %1$d z tej playlisty z ulubionych?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Dodać utwór %1$d z tego albumu do ulubionych?</item>
+        <item quantity="few">Add %1$d tracks from this album to favorites?</item>
+        <item quantity="many">Add %1$d tracks from this album to favorites?</item>
+        <item quantity="other">Add %1$d tracks from this album to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Usunąć utwór %1$d w tym albumie z ulubionych?</item>
+        <item quantity="few">Usunąć utwory %1$d z ulubionych?</item>
+        <item quantity="many">Usunąć utwory %1$d z ulubionych?</item>
+        <item quantity="other">Usunąć utwory %1$d z ulubionych?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Dodać odcinek %1$d z tego podcastu do ulubionych?</item>
+        <item quantity="few">Dodać %1$d odcinki z tego podcastu do ulubionych?</item>
+        <item quantity="many">Dodać %1$d odcinki z tego podcastu do ulubionych?</item>
+        <item quantity="other">Dodać %1$d odcinki z tego podcastu do ulubionych?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Usunąć odcinek %1$d w tym podcast z ulubionych?</item>
+        <item quantity="few">Usunąć %1$d odcinki w tym podcast z ulubionych?</item>
+        <item quantity="many">Usunąć %1$d odcinki w tym podcast z ulubionych?</item>
+        <item quantity="other">Usunąć %1$d odcinki w tym podcast z ulubionych?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d tłumacz</item>
         <item quantity="few">%1$d tłumaczy</item>
