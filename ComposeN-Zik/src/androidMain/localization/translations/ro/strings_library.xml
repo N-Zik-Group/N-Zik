@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Adaugă la favorite</string>
     <string name="library_favorites_added">Adăugat la favorite</string>
     <string name="library_favorites_removed">Eliminat din favorite</string>
+    <string name="library_collection_favorites_action_remove">Elimină din favorite</string>
+    <string name="library_collection_favorites_update_failed">Nu s-au putut actualiza favoritele.</string>
+    <string name="library_collection_favorites_sync_failed">Nu s-a putut sincroniza unele favorite cu YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Anul albumului</string>
