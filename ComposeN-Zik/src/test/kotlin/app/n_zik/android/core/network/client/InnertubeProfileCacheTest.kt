@@ -1,14 +1,19 @@
 package app.n_zik.android.core.network.client
 
+import app.n_zik.innertube.Innertube
 import com.sun.net.httpserver.HttpServer
+import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
-import app.n_zik.innertube.Innertube
+import java.io.File
 import java.net.InetSocketAddress
+import java.net.Proxy
 import kotlinx.coroutines.runBlocking
 import okhttp3.Cache
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -16,6 +21,43 @@ import org.junit.rules.TemporaryFolder
 
 class InnertubeProfileCacheTest {
     @get:Rule val folder = TemporaryFolder()
+
+    @Test
+    fun repeatedConfigurationKeepsNetworkClientsUntilTheProxyChanges() {
+        val directory = folder.newFolder("network")
+        fun proxy(port: Int) = Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved("proxy.test", port))
+
+        NetworkClientFactory.configure(proxy(8080), directory)
+        val okhttp = NetworkClientFactory.getClient()
+        val cache = checkNotNull(okhttp.cache)
+        val ktorClients = mutableListOf<HttpClient>()
+        try {
+            val cachedKtor = NetworkClientFactory.getKtorClient(cacheless = false).also(ktorClients::add)
+            val cachelessKtor = NetworkClientFactory.getKtorClient().also(ktorClients::add)
+            val innertube = Innertube.client
+
+            NetworkClientFactory.configure(proxy(8080), File(directory.path))
+
+            assertSame(okhttp, NetworkClientFactory.getClient())
+            assertSame(cachedKtor, NetworkClientFactory.getKtorClient(cacheless = false))
+            assertSame(cachelessKtor, NetworkClientFactory.getKtorClient())
+            assertSame(innertube, Innertube.client)
+
+            val newProxy = proxy(8081)
+            NetworkClientFactory.configure(newProxy, directory)
+
+            val updated = NetworkClientFactory.getClient()
+            assertNotSame(okhttp, updated)
+            assertEquals(newProxy, updated.proxy)
+            assertSame(cache, updated.cache)
+            assertNotSame(cachedKtor, NetworkClientFactory.getKtorClient(cacheless = false).also(ktorClients::add))
+            assertNotSame(cachelessKtor, NetworkClientFactory.getKtorClient().also(ktorClients::add))
+        } finally {
+            NetworkClientFactory.configure(null, null)
+            ktorClients.forEach(HttpClient::close)
+            cache.close()
+        }
+    }
 
     @Test
     fun innertubeUsesTheCurrentProfileNetworkCache() = runBlocking {

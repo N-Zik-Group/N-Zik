@@ -166,37 +166,44 @@ class DataStorageBreakdownTest {
     }
 
     @Test
-    fun samplesImmediatelyAndEveryTwoSecondsAndSkipsFailuresUntilCancelled() = runTest {
+    fun samplesImmediatelyThenBacksOffOnlyWhileStorageIsUnchanged() = runTest {
         val first = requireNotNull(partitionStorage(100L, 80L, emptyMap()))
         val afterDownload = requireNotNull(partitionStorage(100L, 70L, mapOf(StorageCategory.DOWNLOADS to 10L)))
-        val received = mutableListOf<StorageBreakdown>()
-        val readings = listOf(null, first, null, afterDownload, first)
+        val received = mutableListOf<StorageBreakdown?>()
+        val readings = listOf(first, first, first, first, afterDownload, null, first)
         var attempts = 0
         val sample: suspend () -> StorageBreakdown? = { readings[attempts++] }
         val collection = launch { storageSamples(sample).collect { received += it } }
 
         runCurrent()
         assertEquals(1, attempts)
-        assertEquals(emptyList<StorageBreakdown>(), received)
-        advanceTimeBy(2_000)
-        runCurrent()
         assertEquals(listOf(first), received)
         advanceTimeBy(2_000)
         runCurrent()
-        assertEquals(listOf(first), received)
-        advanceTimeBy(2_000)
+        assertEquals(2, attempts)
+        advanceTimeBy(4_000)
         runCurrent()
-        assertEquals(listOf(first, afterDownload), received)
-
-        collection.cancelAndJoin()
-        advanceTimeBy(2_000)
+        assertEquals(3, attempts)
+        advanceTimeBy(8_000)
         runCurrent()
         assertEquals(4, attempts)
+        assertEquals(listOf(first), received)
+        advanceTimeBy(8_000)
+        runCurrent()
+        assertEquals(listOf(first, afterDownload), received)
+        advanceTimeBy(2_000)
+        runCurrent()
+        assertEquals(listOf(first, afterDownload, null), received)
 
-        // A cleanup restarts collection and does not wait for the next timer tick.
+        collection.cancelAndJoin()
+        advanceTimeBy(8_000)
+        runCurrent()
+        assertEquals(6, attempts)
+
+        // Cleanup and resume each restart collection with an immediate sample.
         val afterCleanup = launch { storageSamples(sample).collect { received += it } }
         runCurrent()
-        assertEquals(listOf(first, afterDownload, first), received)
+        assertEquals(listOf(first, afterDownload, null, first), received)
         afterCleanup.cancelAndJoin()
     }
 }

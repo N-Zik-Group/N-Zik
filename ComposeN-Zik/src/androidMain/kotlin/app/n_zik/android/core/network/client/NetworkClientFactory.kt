@@ -12,8 +12,17 @@ import java.net.Proxy
 import java.util.concurrent.TimeUnit
 
 object NetworkClientFactory {
+    private data class Configuration(
+        val proxy: Proxy?,
+        val cacheDir: File?,
+        val connectTimeout: Long,
+        val readTimeout: Long,
+    )
+
     internal fun profileCacheDirectory(context: Context, profileId: String = getActiveProfile(context)): File =
         (context.externalCacheDir ?: context.cacheDir).resolve("nzik-profile-network/$profileId")
+
+    private var appliedConfiguration: Configuration? = null
 
     @Volatile
     private var client: OkHttpClient? = null
@@ -31,6 +40,11 @@ object NetworkClientFactory {
         readTimeout: Long = 30L
     ) {
         synchronized(this) {
+            val requested = Configuration(proxy, cacheDir, connectTimeout, readTimeout)
+            if (appliedConfiguration == requested) return
+            // A failed reconfiguration can leave the clients partially updated.
+            appliedConfiguration = null
+
             val currentClient = client
             if (currentClient == null) {
                 val builder = OkHttpClient.Builder()
@@ -57,6 +71,7 @@ object NetworkClientFactory {
             ktorClient = null
             ktorCachelessClient = null
             Innertube.bindTransportCache(client?.cache)
+            appliedConfiguration = requested
         }
     }
 

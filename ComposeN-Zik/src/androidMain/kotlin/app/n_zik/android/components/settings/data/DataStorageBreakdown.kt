@@ -175,10 +175,23 @@ internal data class ProfileStorageUsage(
     val chart: StorageBreakdown get() = StorageBreakdown(bytes.values.sum(), bytes)
 }
 
-internal fun storageSamples(measure: suspend () -> StorageBreakdown?): Flow<StorageBreakdown> = flow {
+private const val STORAGE_SAMPLE_INTERVAL_MS = 2_000L
+private const val STORAGE_IDLE_SAMPLE_INTERVAL_MS = 8_000L
+
+internal fun storageSamples(measure: suspend () -> StorageBreakdown?): Flow<StorageBreakdown?> = flow {
+    var previous: StorageBreakdown? = null
+    var interval = STORAGE_SAMPLE_INTERVAL_MS
+    var first = true
     while (true) {
-        measure()?.let { emit(it) }
-        delay(2_000)
+        val sample = measure()
+        val unchanged = !first && sample == previous
+        if (!unchanged) emit(sample)
+        interval = if (unchanged && sample != null) {
+            (interval * 2).coerceAtMost(STORAGE_IDLE_SAMPLE_INTERVAL_MS)
+        } else STORAGE_SAMPLE_INTERVAL_MS
+        previous = sample
+        first = false
+        delay(interval)
     }
 }
 
@@ -274,11 +287,9 @@ internal fun DataStorageCard(
     }
     LaunchedEffect(appContext, lifecycle, interactive, cleanupRevision, measure) {
         if (interactive) lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            while (true) {
-                val sample = measure(appContext)
+            storageSamples { measure(appContext) }.collect { sample ->
                 unavailable = sample == null
                 if (sample != null) breakdown = sample
-                delay(2_000)
             }
         }
     }
