@@ -38,7 +38,6 @@ Skleněné kredity: Square / Convx projekt (GPL-3.0); Kyant0 AndroidLiquidGlass 
 - Last.fm scrobbling s láskou/nemilovnou
 - Zhlédnutí umělce a alba MusicBrainz
 - Discord Rich Presence, včetně pokročilého režimu s živým náhledem
-- Neviditelná integrace pro alternativní YouTube streamování
 - import/export playlistu: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Poslechněte společně</b>
