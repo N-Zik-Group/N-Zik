@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">Sæt i kø</string>
     <string name="player_action_hide_stats_for_nerds">Skjul statistik for Nerds</string>
     <string name="player_action_like">Ligesom</string>
-    <string name="player_action_listen_on_invidious">Lyt på %1$s</string>
     <string name="player_action_listen_on_youtube">Lyt på YouTube</string>
     <string name="player_action_listen_on_youtube_music">Lyt på YouTube Musik</string>
     <string name="player_action_locate_current_song">Find sangen, der bliver afspillet</string>
