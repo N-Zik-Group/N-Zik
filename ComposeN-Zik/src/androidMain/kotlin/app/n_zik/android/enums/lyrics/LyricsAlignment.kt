@@ -3,7 +3,6 @@ package app.n_zik.android.enums.lyrics
 import androidx.compose.ui.text.style.TextAlign
 
 
-// TODO: Remove this
 enum class LyricsAlignment {
     Left,
     Center,

@@ -210,7 +210,6 @@ private suspend fun Context.readDeviceLibraryLocked(
             if (blockedFolders.any { PathUtils.isExcluded(relPath, it) }) continue
 
             // Nullable so SongItem can display "--:--"
-            // TODO apply some non-null method
             val durationText =
                 cursor.getInt( durationColumn )
                     .takeIf { it > 0 }

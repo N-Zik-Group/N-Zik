@@ -153,7 +153,7 @@ class LayerBackdrop internal constructor(
                 try {
                     layerCoordinates.localPositionOf(coordinates)
                 } catch (_: Exception) {
-                    // TODO: outer transformations lead to wrong position calculation
+                    // Window coordinates are a fallback and may differ when outer layers are transformed.
                     coordinates.positionInWindow() - layerCoordinates.positionInWindow()
                 }
             translate(-offset.x, -offset.y)

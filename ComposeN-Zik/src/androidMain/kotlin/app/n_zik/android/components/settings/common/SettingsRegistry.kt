@@ -421,6 +421,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.downloads_title, R.string.settings_enable_autodownload_song,
             R.string.settings_enable_autodownload_song_when_liked,
             R.string.settings_enable_autodownload_song_when_album_bookmarked,
+            R.string.settings_enable_autodownload_song_when_playlist_bookmarked,
+            R.string.settings_downloads_on_playlist_bookmark_description,
         )),
     SettingsCardRegistryEntry(6, R.string.settings_reset, R.drawable.refresh,
         keywordRes = listOf(R.string.settings_reset, R.string.settings_restore_default_settings)),

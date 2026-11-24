@@ -53,9 +53,23 @@ object BookmarkStateManager {
 
     fun getPlaylistBookmarkStates(browseIds: List<String>): Flow<Map<String, Boolean>> {
         if (browseIds.isEmpty()) return flowOf(emptyMap())
-        return combine(chunkedFlows(browseIds) { Database.playlistTable.getBookmarkStatesForPlaylists(it) }) { chunks ->
-            chunks.flatMap { it }.associate { it.browseId to it.isBookmarked() }
+        val aliases = browseIds.associateWith(::playlistBookmarkAliases)
+        val queryIds = aliases.values.flatten().distinct()
+        return combine(chunkedFlows(queryIds) { Database.playlistTable.getBookmarkStatesForPlaylists(it) }) { chunks ->
+            resolvePlaylistBookmarkBadges(aliases, chunks.flatMap { it })
+        }.distinctUntilChanged()
+    }
+}
+
+internal fun resolvePlaylistBookmarkBadges(
+    aliases: Map<String, List<String>>,
+    rows: List<PlaylistBookmarkState>,
+): Map<String, Boolean> {
+    val byId = rows.groupBy(PlaylistBookmarkState::browseId)
+    return buildMap {
+        aliases.forEach { (browseId, ids) ->
+            val matching = ids.flatMap { byId[it].orEmpty() }
+            if (matching.isNotEmpty()) put(browseId, matching.any { it.isBookmarked() })
         }
-            .distinctUntilChanged()
     }
 }

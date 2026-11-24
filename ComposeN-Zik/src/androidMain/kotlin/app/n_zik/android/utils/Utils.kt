@@ -34,8 +34,6 @@ import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.innertube.requests.LibraryPage
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic.addToPlaylist
-import app.n_zik.innertube.YtMusic.likeVideoOrSong
-import app.n_zik.innertube.YtMusic.removelikeVideoOrSong
 import app.n_zik.innertube.requests.playlistPage
 import app.n_zik.innertube.requests.playlistPageContinuation
 import app.n_zik.kugou.KuGou
@@ -53,12 +51,10 @@ import app.n_zik.android.models.Album
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.models.Song
 import app.n_zik.android.stripExplicitEmoji
-import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -629,34 +625,3 @@ suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylist
             }
     }
 }
-
-@OptIn(UnstableApi::class)
-suspend fun addToYtLikedSongs(mediaItems: List<MediaItem>){
-    if( !isYouTubeSyncEnabled() ) return
-    if( !canPushToYTM() ) return
-    if( !isNetworkConnected(appContext()) ) return
-
-    mediaItems.forEachIndexed { index, item ->
-        delay(1000)
-
-        likeVideoOrSong( item.mediaId )
-            .onSuccess {
-                Database.asyncTransaction {
-                    insertIgnore( item )
-                    songTable.likeState( item.mediaId, true )
-                    MyDownloadHelper.autoDownloadWhenLiked(
-                        context(),
-                        item
-                    )
-
-                    Toaster.s(
-                        "${index + 1}/${mediaItems.size} " + appTextResources().getString(R.string.sync_youtube_like_success)
-                    )
-                }
-            }
-            .onFailure {
-                Toaster.e(R.string.sync_youtube_like_failed_with_index, formatArgs = arrayOf("${index + 1}/${mediaItems.size}", appTextResources().getString(R.string.sync_youtube_like_failed)))
-            }
-    }
-}
-

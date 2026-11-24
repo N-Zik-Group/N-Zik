@@ -1,5 +1,9 @@
 package app.n_zik.android.core.database
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.MODIFIED_PREFIX
 
@@ -17,6 +21,24 @@ fun playlistLinkKind(browseId: String?): PlaylistLinkKind {
         else -> PlaylistLinkKind.Local
     }
 }
+
+internal fun playlistBookmarkAliases(browseId: String): List<String> {
+    if (playlistLinkKind(browseId) != PlaylistLinkKind.YouTubePlaylist || browseId.startsWith(MODIFIED_PREFIX)) {
+        return listOf(browseId)
+    }
+    val playlistId = browseId.removePrefix("VL")
+    return listOf("VL$playlistId", playlistId)
+}
+
+internal fun PlaylistTable.findMusicBookmarkRows(browseId: String): Flow<List<Playlist>> =
+    combine(playlistBookmarkAliases(browseId).map(::findByBrowseId)) { aliases ->
+        aliases.filterNotNull().distinctBy(Playlist::id)
+    }
+
+internal fun PlaylistTable.findMusicBookmarkByBrowseId(browseId: String): Flow<Playlist?> =
+    findMusicBookmarkRows(browseId).map { rows ->
+        rows.firstOrNull { isPlaylistBookmarked(it) } ?: rows.firstOrNull()
+    }
 
 /** Bookmark controls represent linked sources, excluding modified copies and special account lists. */
 fun canBookmarkPlaylist(playlist: Playlist?): Boolean {

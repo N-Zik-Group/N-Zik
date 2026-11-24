@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.colorPalette
 import app.n_zik.android.ui.components.tab.toolbar.Clickable
@@ -38,6 +39,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.innertube.YtMusic
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
@@ -137,10 +139,14 @@ fun AlbumBookmark(
                     else YtMusic.likePlaylistOrAlbum(playlistId)
                 }
             }
+            val cachedAlbumFetch = Database.albumTable.findByIdDirect(albumId)?.lastFetch
             if (showDisliked) {
                 Database.albumTable.rotateLikeState( albumId )
             } else {
                 Database.albumTable.toggleBookmark( albumId )
+            }
+            if (!localOnly && Database.albumTable.isBookmarked(albumId).first()) {
+                MyDownloadHelper.downloadBookmarkedAlbum(appContext(), albumId, cachedAlbumFetch)
             }
             val newState = if (showDisliked) {
                 when(likeState) {

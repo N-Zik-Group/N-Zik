@@ -17,6 +17,7 @@ import app.n_zik.android.R
 import app.n_zik.android.utils.autoDownloadSongKey
 import app.n_zik.android.utils.autoDownloadSongWhenAlbumBookmarkedKey
 import app.n_zik.android.utils.autoDownloadSongWhenLikedKey
+import app.n_zik.android.utils.autoDownloadSongWhenPlaylistBookmarkedKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -24,10 +25,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
 @Composable
-internal fun NetworkDownloadCard(query: String) {
+internal fun NetworkDownloadCard(query: String, searchTarget: String) {
     var autoDownloadSong by rememberPreference(autoDownloadSongKey, false)
     var autoDownloadSongWhenLiked by rememberPreference(autoDownloadSongWhenLikedKey, false)
     var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
+    var autoDownloadSongWhenPlaylistBookmarked by rememberPreference(autoDownloadSongWhenPlaylistBookmarkedKey, false)
+    val revealCategoryOptions = query.isNotBlank() ||
+        searchTarget.startsWith("network.download.settings_enable_autodownload_song_when_")
 
     SettingsSectionCard(
         title = stringResource(R.string.downloads_title),
@@ -47,7 +51,7 @@ internal fun NetworkDownloadCard(query: String) {
             }
 
             AnimatedVisibility(
-                visible = autoDownloadSong,
+                visible = autoDownloadSong || revealCategoryOptions,
                 enter = fadeIn(animationSpec = tween(400)) + scaleIn(
                     animationSpec = tween(400),
                     initialScale = 0.9f
@@ -83,6 +87,19 @@ internal fun NetworkDownloadCard(query: String) {
                                 autoDownloadSongWhenAlbumBookmarked = it
                             },
                             icon = R.drawable.bookmark
+                        )
+                    }
+
+                    val playlistTitle = stringResource(R.string.settings_enable_autodownload_song_when_playlist_bookmarked)
+                    val playlistDescription = stringResource(R.string.settings_downloads_on_playlist_bookmark_description)
+                    if (query.isBlank() || playlistTitle.contains(query, true) || playlistDescription.contains(query, true)) {
+                        OtherSwitchSettingEntry(
+                            modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_playlist_bookmarked"),
+                            title = playlistTitle,
+                            text = playlistDescription,
+                            isChecked = autoDownloadSongWhenPlaylistBookmarked,
+                            onCheckedChange = { autoDownloadSongWhenPlaylistBookmarked = it },
+                            icon = R.drawable.bookmark,
                         )
                     }
                 }

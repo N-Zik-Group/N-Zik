@@ -15,6 +15,7 @@ import app.n_zik.android.core.profiles.profileSharedItems
 import app.n_zik.android.core.profiles.resolveProfileDataDirNames
 import app.n_zik.android.core.profiles.settingsProfileFor
 import java.io.File
+import java.util.UUID
 
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.download.services.ProfileDownloadCommands
@@ -41,6 +42,7 @@ import app.n_zik.android.playback.services.createDownloadDataSourceFactory
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
 import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.asMediaItem
@@ -79,10 +81,18 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.asExecutor
 import timber.log.Timber
 import kotlin.io.path.createTempDirectory
-import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.utils.isExplicit
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
 import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.innertube.YtMusic
+import app.n_zik.android.utils.autoDownloadSongWhenPlaylistBookmarkedKey
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.database.playlistLinkKind
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.components.playlist.loadPlaylistSource
 
 @UnstableApi
 /**
@@ -113,6 +123,10 @@ object MyDownloadHelper {
     }
 
     private val downloadCommandLocks = mutableMapOf<Pair<ProfileDownloadCommands, String>, DownloadCommandLock>()
+    private val pendingDownloadAdds = mutableMapOf<Pair<ProfileDownloadCommands, String>, String>()
+    private data class PendingRemoval(val token: String, val previousAdd: String?)
+
+    private val pendingDownloadRemovals = mutableMapOf<Pair<ProfileDownloadCommands, String>, PendingRemoval>()
 
     // Scheduling seam lets the failure test exercise the real toast deterministically.
     internal var scheduleDownloadRequest: (ProfileDownloadCommands, Context, DownloadRequest) -> Result<Unit> =
@@ -297,6 +311,7 @@ object MyDownloadHelper {
         if (!MyDownloadHelper::downloadManager.isInitialized) {
             val active = getActiveProfile(context)
             val protected = LegacyMediaAccess.isProtected(context, active, ProfileDataItem.DOWNLOADS)
+            val commandOwner = ProfileDownloadCommands.capture(context)
             downloadManager = DownloadManager(
                 context,
                 getDatabaseProvider(context, LegacyMediaAccess.downloadIndex(context, active, downloadIndexDbName(context))),
@@ -325,7 +340,7 @@ object MyDownloadHelper {
                             download: Download,
                             finalException: Exception?
                         ) = run {
-                            syncDownloads(download)
+                            syncDownloads(download, commandOwner)
 
                             // Handle expired stream errors: invalidate URL cache and retry
                             if (download.state == Download.STATE_FAILED && isExpiredStreamError(finalException)) {
@@ -350,7 +365,7 @@ object MyDownloadHelper {
                             downloadManager: DownloadManager,
                             download: Download
                         ) = run {
-                            syncDownloads(download)
+                            syncDownloads(download, commandOwner, removed = true)
                             // Clean up progress when removed
                             mutableProgresses.update { it.toMutableMap().apply { remove(download.request.id) } }
                         }
@@ -503,21 +518,38 @@ object MyDownloadHelper {
 
     /** Download-manager event sink — internal (not private) as the test seam MyDownloadHelperSessionDownloadsTest drives, so the session-row invariant is covered without a live [DownloadManager]. */
     @Synchronized
-    internal fun syncDownloads(download: Download) {
+    internal fun syncDownloads(
+        download: Download,
+        owner: ProfileDownloadCommands? = null,
+        removed: Boolean = false,
+    ) {
         downloads.update { map ->
             map.toMutableMap().apply {
-                if (download.state == Download.STATE_REMOVING) {
+                if (removed || download.state == Download.STATE_REMOVING) {
                     remove(download.request.id)
                 } else {
                     set(download.request.id, download)
                 }
             }
         }
+        if (owner != null) {
+            val key = owner to download.request.id
+            val token = downloadAddToken(download.request.data)
+            if (removed) {
+                if (pendingDownloadRemovals[key]?.previousAdd == token) pendingDownloadRemovals.remove(key)
+                if (token != null) pendingDownloadAdds.remove(key, token)
+            } else if (download.state != Download.STATE_REMOVING && token != null &&
+                pendingDownloadAdds[key] == token
+            ) {
+                pendingDownloadAdds.remove(key)
+                if (pendingDownloadRemovals[key]?.previousAdd != token) pendingDownloadRemovals.remove(key)
+            }
+        }
         // Same event-driven update for the session row (never seeded from the index, so
         // the Downloads row resets to empty on every process start)
         sessionDownloads.update { map ->
             map.toMutableMap().apply {
-                if (download.state == Download.STATE_REMOVING) {
+                if (removed || download.state == Download.STATE_REMOVING) {
                     remove(download.request.id)
                 } else {
                     set(download.request.id, download)
@@ -540,8 +572,17 @@ object MyDownloadHelper {
     }
 
     fun addDownload(context: Context, mediaItem: MediaItem) {
-        if (mediaItem.isLocal) return
         val owner = ProfileDownloadCommands.capture(context) ?: return
+        enqueueDownload(context, mediaItem, owner, skipExisting = false)
+    }
+
+    private fun enqueueDownload(
+        context: Context,
+        mediaItem: MediaItem,
+        owner: ProfileDownloadCommands,
+        skipExisting: Boolean,
+    ) {
+        if (mediaItem.isLocal || owner != ProfileDownloadCommands.capture(context)) return
 
         if( !isNetworkConnected( context ) ) {
             Toaster.noInternet()
@@ -550,8 +591,8 @@ object MyDownloadHelper {
 
         val parentalControlEnabled = context.preferences.getBoolean(parentalControlEnabledKey, false)
         if (parentalControlEnabled) {
-            val isExplicit = mediaItem.mediaMetadata.title?.startsWith(EXPLICIT_PREFIX, true) == true
-            if (isExplicit) {
+            val title = mediaItem.mediaMetadata.title?.toString().orEmpty()
+            if (mediaItem.isExplicit || title.hasExplicitPrefix() || title.startsWith("\uD83C\uDD74 ")) {
                 Toaster.w(R.string.parental_control_is_enabled)
                 return
             }
@@ -563,9 +604,8 @@ object MyDownloadHelper {
 
         // Join the track's queue before dispatching to DATA so a following removal cannot overtake.
         coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            addDownloadInternal(context, mediaItem, owner)
+            addDownloadInternal(context, mediaItem, owner, skipExisting)
         }
-
     }
 
     /** Runs commands for the same profile and track in arrival order, with independent tracks using separate locks. */
@@ -593,53 +633,88 @@ object MyDownloadHelper {
         }
     }
 
-    /** Suspended core of [addDownload], with lyrics and artwork preloaded after releasing the command lock. */
-    // internal (not private): the A2 failure test drives the scheduling path directly
-    // (P14, review 2026-10-23) instead of going through the DB-backed [addDownload] entry.
+    /** Preloads lyrics and artwork after the add command leaves the queue. */
     internal suspend fun addDownloadInternal(
         context: Context,
         mediaItem: MediaItem,
         owner: ProfileDownloadCommands? = ProfileDownloadCommands.capture(context),
+        skipExisting: Boolean = false,
     ) {
         if (owner == null) return
-        withDownloadCommand(owner, mediaItem.mediaId) {
-            prepareAndScheduleDownload(context, mediaItem, owner)
+        val scheduled = withDownloadCommand(owner, mediaItem.mediaId) {
+            prepareAndScheduleDownload(context, mediaItem, owner, skipExisting)
         }
-        preloadDownloadMetadata(context, mediaItem, owner)
+        if (!skipExisting || scheduled) preloadDownloadMetadata(context, mediaItem, owner)
+    }
+
+    @Synchronized
+    private fun isDownloadAlreadyRequested(owner: ProfileDownloadCommands, mediaId: String): Boolean {
+        val key = owner to mediaId
+        // Media3 may still show the previous request while a removal is queued.
+        val pendingRemoval = pendingDownloadRemovals[key]
+        val pendingAdd = pendingDownloadAdds[key]
+        return (pendingAdd != null && pendingAdd != pendingRemoval?.previousAdd) ||
+            (pendingRemoval == null && !canAutoDownloadInState(downloads.value[mediaId]?.state))
+    }
+
+    @Synchronized
+    private fun reserveDownloadAdd(
+        owner: ProfileDownloadCommands,
+        mediaId: String,
+        token: String,
+        skipExisting: Boolean,
+    ): Boolean {
+        if (skipExisting && isDownloadAlreadyRequested(owner, mediaId)) return false
+        pendingDownloadAdds[owner to mediaId] = token
+        return true
+    }
+
+    @Synchronized
+    internal fun releaseDownloadAdd(request: DownloadRequest) {
+        val token = downloadAddToken(request.data) ?: return
+        pendingDownloadAdds.entries.removeAll { it.key.second == request.id && it.value == token }
     }
 
     private suspend fun prepareAndScheduleDownload(
         context: Context,
         mediaItem: MediaItem,
         owner: ProfileDownloadCommands,
-    ) {
-        downloadPreparationSemaphore.withPermit {
-            if (owner != ProfileDownloadCommands.capture(context)) return
-            val artistTextRaw = mediaItem.artistTextOrDb()
-            if (owner != ProfileDownloadCommands.capture(context)) return
-            val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.metadata_unknown_artist) else artistTextRaw
-            val titleTextRaw = cleanPrefix(mediaItem.mediaMetadata.title?.toString().orEmpty())
-            val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.metadata_unknown_title) else titleTextRaw
-            val notificationTitle = "$artistText - $titleText"
+        skipExisting: Boolean = false,
+    ): Boolean = downloadPreparationSemaphore.withPermit {
+        if (owner != ProfileDownloadCommands.capture(context)) return@withPermit false
+        if (skipExisting && isDownloadAlreadyRequested(owner, mediaItem.mediaId)) return@withPermit false
+        val artistTextRaw = mediaItem.artistTextOrDb()
+        if (owner != ProfileDownloadCommands.capture(context)) return@withPermit false
+        val artistText = if (artistTextRaw == "null" || artistTextRaw.isBlank()) context.getString(R.string.metadata_unknown_artist) else artistTextRaw
+        val titleTextRaw = cleanPrefix(mediaItem.mediaMetadata.title?.toString().orEmpty())
+        val titleText = if (titleTextRaw == "null" || titleTextRaw.isBlank()) context.getString(R.string.metadata_unknown_title) else titleTextRaw
+        val notificationTitle = "$artistText - $titleText"
 
-            val downloadRequest = DownloadRequest
-                .Builder(
-                    /* id      = */ mediaItem.mediaId,
-                    /* uri     = */ mediaItem.requestMetadata.mediaUri
-                        ?: Uri.parse(ExternalUris.youtubeMusic(mediaItem.mediaId))
-                )
-                .setCustomCacheKey(mediaItem.mediaId)
-                .setData(encodeDownloadDisplayName(notificationTitle))
-                .build()
+        val token = UUID.randomUUID().toString()
+        val downloadRequest = DownloadRequest
+            .Builder(
+                /* id      = */ mediaItem.mediaId,
+                /* uri     = */ mediaItem.requestMetadata.mediaUri
+                    ?: Uri.parse(ExternalUris.youtubeMusic(mediaItem.mediaId))
+            )
+            .setCustomCacheKey(mediaItem.mediaId)
+            .setData(encodeDownloadDisplayName(notificationTitle, token))
+            .build()
 
-            scheduleDownloadRequest(owner, context, downloadRequest).exceptionOrNull()?.let {
-                if (it is CancellationException) throw it
-
-                Timber.tag("MyDownloadHelper").e("scheduleDownload exception ${it.stackTraceToString()}")
-                // A2 (offline audit, 2026-10-22): download-domain string — error_playback_failed was
-                // shown without format args, so the user saw the literal "Playback failed: %1$s"
+        if (!reserveDownloadAdd(owner, mediaItem.mediaId, token, skipExisting)) return@withPermit false
+        var accepted = false
+        try {
+            val error = scheduleDownloadRequest(owner, context, downloadRequest).exceptionOrNull()
+            if (error is CancellationException) throw error
+            if (error != null) {
+                Timber.tag("MyDownloadHelper").e(error, "Unable to schedule download")
                 Toaster.e(R.string.downloads_failed)
+                return@withPermit false
             }
+            accepted = true
+            true
+        } finally {
+            if (!accepted) releaseDownloadAdd(downloadRequest)
         }
     }
 
@@ -667,13 +742,27 @@ object MyDownloadHelper {
     /**
      * Sends the removal intent to [MyDownloadService].
      */
+    @Synchronized
     private fun removeDownloadInternal(context: Context, mediaId: String, owner: ProfileDownloadCommands) {
-        owner.sendRemove(context, mediaId).exceptionOrNull()?.let {
-            if (it is CancellationException) throw it
-
-            Timber.tag("MyDownloadHelper").e(it.stackTraceToString())
-            Timber.tag("MyDownloadHelper").e("removeDownload exception ${it.stackTraceToString()}")
+        val key = owner to mediaId
+        val pendingAdd = pendingDownloadAdds[key]
+        val indexedDownload = downloads.value[mediaId]
+        val removal = if (pendingAdd != null || indexedDownload != null) {
+            PendingRemoval(UUID.randomUUID().toString(), pendingAdd ?: indexedDownload?.request?.data?.let(::downloadAddToken))
+        } else null
+        val error = owner.sendRemove(context, mediaId, removal?.token).exceptionOrNull()
+        if (error is CancellationException) throw error
+        if (error != null) {
+            Timber.tag("MyDownloadHelper").e(error, "Unable to schedule download removal")
+            return
         }
+
+        if (removal != null) pendingDownloadRemovals[key] = removal
+    }
+
+    @Synchronized
+    internal fun releaseDownloadRemoval(mediaId: String, token: String) {
+        pendingDownloadRemovals.entries.removeAll { it.key.second == mediaId && it.value.token == token }
     }
 
     /** Refreshes [downloadQualityFormat] whenever the download quality setting changes so downloads scheduled after the change use the new quality immediately. */
@@ -773,46 +862,70 @@ object MyDownloadHelper {
         context.startService(target.intent(context, DownloadService.ACTION_RESUME_DOWNLOADS))
     }
 
-    fun autoDownload(context: Context, mediaItem: MediaItem) {
-        if (context.preferences.getBoolean(autoDownloadSongKey, false)) {
-            if (downloads.value[mediaItem.mediaId]?.state != Download.STATE_COMPLETED)
-                addDownload(context, mediaItem)
+    /** Enqueues a newly liked title using the current profile's download settings. */
+    internal fun downloadNewlyLiked(context: Context, mediaItem: MediaItem) {
+        val owner = favoriteDownloadOwner(context, autoDownloadSongWhenLikedKey) ?: return
+        enqueueDownload(context, mediaItem, owner, skipExisting = true)
+    }
+
+    /** Removes a title that leaves favorites when like-based downloads are enabled. */
+    internal fun removeNewlyUnliked(context: Context, mediaItem: MediaItem) {
+        if (favoriteDownloadOwner(context, autoDownloadSongWhenLikedKey) != null) {
+            removeDownload(context, mediaItem)
         }
     }
 
-    fun autoDownloadWhenLiked(context: Context, mediaItem: MediaItem) {
-        if (context.preferences.getBoolean(autoDownloadSongWhenLikedKey, false)) {
-            Database.asyncQuery {
-                if( songTable.isLikedDirect( mediaItem.mediaId ) )
-                    autoDownload(context, mediaItem)
-                else
-                    removeDownload(context, mediaItem)
+    /** Uses cached tracks for a known album and fetches uncached online albums on demand. */
+    internal fun downloadBookmarkedAlbum(context: Context, albumId: String, previousAlbumFetch: Long?) {
+        if (isDeviceAlbumId(albumId)) return
+        val owner = favoriteDownloadOwner(context, autoDownloadSongWhenAlbumBookmarkedKey) ?: return
+        coroutineScope.launch {
+            if (owner != ProfileDownloadCommands.capture(context)) return@launch
+            val cached = Database.songAlbumMapTable.allSongsOfDirect(albumId).map { it.asMediaItem }
+            val hasFullCache = cached.isNotEmpty() && previousAlbumFetch != null
+            val mediaItems = if (hasFullCache) cached else {
+                YtMusic.getAlbum(albumId.removePrefix(MODIFIED_PREFIX)).onFailure { error ->
+                    if (error is CancellationException) throw error
+                    Timber.tag("MyDownloadHelper").w(error, "Unable to load tracks for bookmarked album")
+                }.getOrNull()?.songs?.map { it.asMediaItem } ?: cached
+            }
+            mediaItems.distinctBy(MediaItem::mediaId).forEach {
+                enqueueDownload(context, it, owner, skipExisting = true)
             }
         }
     }
 
-    fun downloadOnLike( mediaItem: MediaItem, likeState: Boolean?, context: Context ) {
-        // Only continues when this setting is enabled
-        val isSettingEnabled = context.preferences.getBoolean( autoDownloadSongWhenLikedKey, false )
-        if( !isSettingEnabled || !isNetworkConnected( context ) )
-            return
-
-        // [likeState] is a tri-state value,
-        // only `true` represents like,
-        //
-        // so `true` must be value set to download
-        if( likeState == true )
-            autoDownload( context, mediaItem )
-        else
-            removeDownload( context, mediaItem )
-    }
-
-    fun autoDownloadWhenAlbumBookmarked(context: Context, mediaItems: List<MediaItem>) {
-        if (context.preferences.getBoolean(autoDownloadSongWhenAlbumBookmarkedKey, false)) {
-            mediaItems.forEach { mediaItem ->
-                autoDownload(context, mediaItem)
+    /** Downloads the saved membership or loads the full remote source for a new music playlist. */
+    internal suspend fun downloadBookmarkedPlaylist(
+        context: Context,
+        browseId: String?,
+        playlist: Playlist? = null,
+        completeTracks: List<MediaItem>? = null,
+    ) {
+        if (browseId == null || playlistLinkKind(browseId) != PlaylistLinkKind.YouTubePlaylist) return
+        if (browseId.removePrefix("VL") in listOf("LM", "SE")) return
+        val owner = favoriteDownloadOwner(context, autoDownloadSongWhenPlaylistBookmarkedKey) ?: return
+        if (owner != ProfileDownloadCommands.capture(context)) return
+        val saved = playlist?.let { Database.songPlaylistMapTable.songsByPositionDirect(it.id) }
+            .orEmpty().map { it.asMediaItem }
+        val mediaItems = completeTracks ?: if (playlist?.isEditable == true) saved else {
+            val remote = loadPlaylistSource(browseId)
+            if (owner != ProfileDownloadCommands.capture(context)) return
+            chooseBookmarkedPlaylistTracks(remote, saved) {
+                Timber.tag("MyDownloadHelper").w("Unable to load full tracks for bookmarked playlist")
+                Toaster.e(R.string.downloads_failed)
             }
         }
+        mediaItems.distinctBy(MediaItem::mediaId).forEach {
+            enqueueDownload(context, it, owner, skipExisting = true)
+        }
+    }
+
+    private fun favoriteDownloadOwner(context: Context, categoryKey: String): ProfileDownloadCommands? {
+        if (!isFavoriteAutoDownloadEnabled(context.preferences, categoryKey) || !isNetworkConnected(context)) {
+            return null
+        }
+        return ProfileDownloadCommands.capture(context)
     }
 
     fun handleDownload(context: Context, song: Song, removeIfDownloaded: Boolean = false ) {
@@ -860,3 +973,19 @@ internal suspend fun initDownloadManagerOffMain(context: Context) {
 
 
 
+
+internal fun isFavoriteAutoDownloadEnabled(preferences: SharedPreferences, categoryKey: String): Boolean =
+    preferences.getBoolean(autoDownloadSongKey, false) && preferences.getBoolean(categoryKey, false)
+
+internal fun canAutoDownloadInState(state: Int?): Boolean =
+    state == null || state == Download.STATE_FAILED
+
+internal fun chooseBookmarkedPlaylistTracks(
+    remote: List<MediaItem>?,
+    saved: List<MediaItem>,
+    onIncomplete: () -> Unit,
+): List<MediaItem> {
+    if (remote != null) return remote
+    onIncomplete()
+    return saved.filterNot { it.isLocal }
+}

@@ -50,7 +50,12 @@ class ArtworkColorSnapshotTest {
 
     // JUnit's synchronous entry point waits for the production MEDIA extraction.
     @Test fun `one quantization preserves both original tones and derives dark neutral display roles`() = runBlocking {
-        for (color in listOf(0xffebE9e4.toInt(), 0xff383634.toInt(), 0xff1e78c8.toInt())) {
+        val fixtures = listOf(
+            android.graphics.Color.rgb(235, 233, 228) to true,
+            android.graphics.Color.rgb(56, 54, 52) to true,
+            android.graphics.Color.rgb(30, 120, 200) to false,
+        )
+        for ((color, monochrome) in fixtures) {
             val source = bitmap(color)
             var calls = 0
             var thread = ""
@@ -61,10 +66,13 @@ class ArtworkColorSnapshotTest {
             }
             assertEquals(1, calls)
             assertTrue(thread.startsWith("nzik-media-"))
+            val shared = requireNotNull(SharedArtworkColors.fromBitmap(source))
+            assertEquals(monochrome, shared.isMonochrome)
             for (dark in listOf(false, true)) {
-                val original = requireNotNull(extractCoverPalette(source, dark))
-                assertEquals(original.palette, raw.display(dark, false).palette)
-                assertEquals(original.colors, raw.display(dark, false).colors)
+                val original = shared.display(dark, keepDark = false)
+                assertNotNull(original.palette)
+                assertNotNull(original.colors)
+                assertEquals(original, raw.display(dark, keepDark = false))
                 val forced = raw.display(dark, true)
                 if (raw.isMonochrome) {
                     assertTrue(forced.forceDark)
@@ -73,9 +81,24 @@ class ArtworkColorSnapshotTest {
                     assertTrue(requireNotNull(forced.foreground).luminance() > .6f)
                     assertNotEquals(forced.background, forced.foreground)
                 } else assertEquals(raw.display(dark, false), forced)
-                assertEquals(original.palette, raw.display(dark, false).palette)
+                assertEquals(original, raw.display(dark, keepDark = false))
             }
         }
+    }
+
+    // JUnit waits for the suspend production quantizer.
+    @Test fun `transparent artwork has no filtered palette or swatches`() = runBlocking {
+        val source = bitmap(android.graphics.Color.TRANSPARENT)
+        val filterPasses = mutableListOf<Boolean>()
+        val raw = analyzeArtworkColors(source) { image, unfiltered ->
+            filterPasses += unfiltered
+            Palette.from(image).maximumColorCount(8).apply { if (unfiltered) clearFilters() }.generate()
+        }
+        assertEquals(listOf(false, true), filterPasses)
+        assertEquals(null, raw.lightPalette)
+        assertEquals(null, raw.darkPalette)
+        assertEquals(null, raw.lightColors)
+        assertEquals(null, raw.darkColors)
     }
 
     // JUnit's synchronous entry point waits for the production MEDIA extraction.

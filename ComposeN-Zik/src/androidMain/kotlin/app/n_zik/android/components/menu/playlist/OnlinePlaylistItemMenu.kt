@@ -38,6 +38,7 @@ import androidx.navigation.NavController
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -63,6 +64,7 @@ import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.menuStyleKey
@@ -93,7 +95,10 @@ import app.n_zik.android.components.podcast.togglePodcastBookmark
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.findMusicBookmarkByBrowseId
+import app.n_zik.android.core.database.findMusicBookmarkRows
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.surfaceColor
@@ -231,7 +236,7 @@ class OnlinePlaylistItemMenu private constructor(
                         )
                     }
 
-                    val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
+                    val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findMusicBookmarkByBrowseId(playlist.key) }
                     val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
                     val isBookmarked = isPlaylistBookmarked(localPlaylist)
 
@@ -275,7 +280,7 @@ class OnlinePlaylistItemMenu private constructor(
                 }
 
                 // Trailing content (Bookmark & Share)
-                val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
+                val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findMusicBookmarkByBrowseId(playlist.key) }
                 val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
                 val isBookmarked = isPlaylistBookmarked(localPlaylist)
                 val coroutineScope = rememberCoroutineScope()
@@ -318,29 +323,43 @@ class OnlinePlaylistItemMenu private constructor(
                                 }
                                 return@IconButton
                             }
-                            coroutineScope.launch(NzikDispatchers.DATA) {
-                                val browseId = playlist.key
-                                if (isYouTubeSyncEnabled()) {
-                                    if (isBookmarked) {
-                                        YtMusic.removelikePlaylistOrAlbum(browseId)
-                                    } else {
-                                        YtMusic.likePlaylistOrAlbum(browseId)
-                                    }
-                                }
-                                val existing = localPlaylist
-                                if (existing != null) {
-                                    Database.playlistTable.update(existing.copy(isYoutubePlaylist = !isBookmarked))
-                                } else {
-                                    Database.playlistTable.insert(
-                                        Playlist(
-                                            name = playlist.title ?: "",
-                                            browseId = browseId,
+                            bookmarkBusy = true
+                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                try {
+                                    val browseId = playlist.key
+                                    val playlistId = browseId.removePrefix("VL")
+                                    val updated = Database.awaitWriteBatch {
+                                        val rows = playlistTable.findMusicBookmarkRows(browseId).first()
+                                        val bookmarkedRows = rows.filter { isPlaylistBookmarked(it) }
+                                        if (bookmarkedRows.isNotEmpty()) {
+                                            transaction {
+                                                bookmarkedRows.forEach { playlistTable.update(it.copy(isYoutubePlaylist = false)) }
+                                            }
+                                            return@awaitWriteBatch bookmarkedRows.first().copy(isYoutubePlaylist = false)
+                                        }
+
+                                        val existing = rows.firstOrNull()
+                                        val saved = existing?.copy(isYoutubePlaylist = true) ?: Playlist(
+                                            name = playlist.title.orEmpty(),
+                                            browseId = "VL$playlistId",
                                             isYoutubePlaylist = true,
-                                            isEditable = false
+                                            isEditable = false,
                                         )
-                                    )
+                                        if (existing != null) saved.takeIf { playlistTable.update(saved) > 0 }
+                                        else playlistTable.insert(saved).takeIf { it > 0 }?.let { saved.copy(id = it) }
+                                    } ?: return@launch
+                                    val bookmarked = updated.isYoutubePlaylist
+                                    if (bookmarked) {
+                                        MyDownloadHelper.downloadBookmarkedPlaylist(context, browseId, updated)
+                                    }
+                                    if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
+                                        if (bookmarked) YtMusic.likePlaylistOrAlbum(playlistId)
+                                        else YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                    }
+                                    Toaster.s(if (bookmarked) R.string.library_favorites_added else R.string.library_favorites_removed)
+                                } finally {
+                                    withContext(NzikDispatchers.UI) { bookmarkBusy = false }
                                 }
-                                Toaster.s( if (isBookmarked) R.string.library_favorites_removed else R.string.library_favorites_added )
                             }
                         },
                         modifier = Modifier
@@ -383,7 +402,7 @@ class OnlinePlaylistItemMenu private constructor(
         var displayAuthor by remember { mutableStateOf(playlist.channel?.name) }
         var displayThumbnailUrl by remember { mutableStateOf(playlist.thumbnail?.url) }
 
-        val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findByBrowseId(playlist.key) }
+        val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findMusicBookmarkByBrowseId(playlist.key) }
         val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
         val songs by rememberMenuSongs(fetchedSongs)
         val changePlaylistId = if (localPlaylist != null) {

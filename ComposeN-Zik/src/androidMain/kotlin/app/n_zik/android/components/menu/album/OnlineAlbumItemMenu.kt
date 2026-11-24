@@ -39,6 +39,7 @@ import androidx.navigation.NavController
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.albumPage
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -104,6 +105,7 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.surfaceColor
@@ -365,10 +367,14 @@ class OnlineAlbumItemMenu private constructor(
                                         YtMusic.removelikePlaylistOrAlbum(playlistId)
                                     }
                                 }
+                                val cachedAlbumFetch = Database.albumTable.findByIdDirect(album.key)?.lastFetch
                                 if (showDisliked.isEnabled) {
                                     Database.albumTable.rotateLikeState(album.key)
                                 } else {
                                     Database.albumTable.toggleBookmark(album.key)
+                                }
+                                if (Database.albumTable.isBookmarked(album.key).first()) {
+                                    MyDownloadHelper.downloadBookmarkedAlbum(appContext(), album.key, cachedAlbumFetch)
                                 }
                             }
                             val newState = if (showDisliked.isEnabled) {

@@ -1,6 +1,5 @@
 package app.n_zik.android.components.dialog.playlist
 
-
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
@@ -13,39 +12,38 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.R
-import app.n_zik.innertube.YtMusic
-import app.n_zik.android.core.database.Database
-
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
-import app.n_zik.android.models.Playlist
-import app.n_zik.android.utils.preferences
-import app.n_zik.android.ui.components.tab.toolbar.Descriptive
-import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
-import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.syncPushPlaylistKey
-import app.n_zik.android.utils.syncDirectionKey
-import app.n_zik.android.utils.getSyncDirection
-import app.n_zik.android.utils.isNetworkConnected
-import app.n_zik.android.enums.SyncDirection
-import app.n_zik.android.appContext
-import kotlinx.coroutines.CoroutineScope
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
-import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
 import app.n_zik.android.components.dialog.common.TextInputDialog
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.enums.SyncDirection
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.getSyncDirection
+import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.syncDirectionKey
+import app.n_zik.android.utils.syncPushPlaylistKey
+import app.n_zik.innertube.YtMusic
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 class NewPlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
     valueState: MutableState<TextFieldValue>,
-    private val coroutineScope: kotlinx.coroutines.CoroutineScope,
+    private val coroutineScope: CoroutineScope,
+    private val suggestedNamePrefix: String,
     private val onPlaylistCreated: (Playlist) -> Unit = {}
-): TextInputDialog(InputDialogConstraints.ALL), MenuIcon, Descriptive {
+): TextInputDialog(InputDialogConstraints.ALL, focusOnOpen = true), MenuIcon, Descriptive {
 
     companion object {
         @Composable
@@ -57,6 +55,7 @@ class NewPlaylistDialog private constructor(
                     mutableStateOf( TextFieldValue() )
                 },
                 coroutineScope,
+                stringResource(R.string.playlist_action_create),
                 onPlaylistCreated
             )
         }
@@ -77,10 +76,18 @@ class NewPlaylistDialog private constructor(
 
     override fun onShortClick() = showDialog()
 
+    override fun showDialog() {
+        if (isActive) return
+
+        val name = "$suggestedNamePrefix ${(1000..9999).random()}"
+        value = TextFieldValue(text = name, selection = TextRange(0, name.length))
+        errorMessage = ""
+        super.showDialog()
+    }
+
     override fun hideDialog() {
         super.hideDialog()
-        // TODO: Add a random name generator here
-        value = value.copy( "" )
+        value = TextFieldValue()
     }
 
     @Composable

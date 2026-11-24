@@ -8,6 +8,7 @@ import app.n_zik.android.utils.audioQualityFormatKey
 import app.n_zik.android.utils.autoDownloadSongKey
 import app.n_zik.android.utils.autoDownloadSongWhenAlbumBookmarkedKey
 import app.n_zik.android.utils.autoDownloadSongWhenLikedKey
+import app.n_zik.android.utils.autoDownloadSongWhenPlaylistBookmarkedKey
 import app.n_zik.android.utils.imageQualityFormatKey
 import app.n_zik.android.utils.isConnectionMeteredEnabledKey
 import app.n_zik.android.utils.preferences
@@ -33,6 +34,7 @@ internal fun applyNetworkDefaults(context: Context) {
         putBoolean(autoDownloadSongKey, false)
         putBoolean(autoDownloadSongWhenLikedKey, false)
         putBoolean(autoDownloadSongWhenAlbumBookmarkedKey, false)
+        putBoolean(autoDownloadSongWhenPlaylistBookmarkedKey, false)
         putEnum(audioQualityFormatKey, AudioQualityFormat.Auto)
         putEnum(downloadQualityFormatKey, DownloadQualityFormat.Auto)
         putEnum(imageQualityFormatKey, ImageQualityFormat.Auto)

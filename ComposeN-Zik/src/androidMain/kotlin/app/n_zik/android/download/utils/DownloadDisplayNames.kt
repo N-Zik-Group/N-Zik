@@ -7,11 +7,22 @@ private const val LABEL_SEPARATOR = " - "
 // A trailing NUL marks a display-ready label in the Media3 request's opaque data bytes.
 private const val DISPLAY_LABEL_V1 = "\u0000"
 
-internal fun encodeDownloadDisplayName(label: String): ByteArray =
-    (label + DISPLAY_LABEL_V1).encodeToByteArray()
+// The request data also carries an opaque ID to match manager events to the queued add.
+private const val ADD_TOKEN_LENGTH = 36
+private const val DOWNLOAD_ADD_MARKER = "\u0000nzik-add:"
+
+internal fun encodeDownloadDisplayName(label: String, addToken: String? = null): ByteArray =
+    (label + (addToken?.let { DOWNLOAD_ADD_MARKER + it } ?: DISPLAY_LABEL_V1)).encodeToByteArray()
+
+internal fun downloadAddToken(data: ByteArray): String? =
+    data.decodeToString().substringAfterLast(DOWNLOAD_ADD_MARKER, "").takeIf { it.length == ADD_TOKEN_LENGTH }
 
 /** Cleans legacy request labels, including modified titles after an artist containing separators. */
 internal fun downloadDisplayName(label: String): String {
+    val addMarker = label.lastIndexOf(DOWNLOAD_ADD_MARKER)
+    if (addMarker >= 0 && label.length - addMarker - DOWNLOAD_ADD_MARKER.length == ADD_TOKEN_LENGTH) {
+        return label.substring(0, addMarker)
+    }
     if (label.endsWith(DISPLAY_LABEL_V1)) return label.removeSuffix(DISPLAY_LABEL_V1)
 
     val artistEnd = label.indexOf(LABEL_SEPARATOR)

@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.screens.player
 
-import android.graphics.Bitmap
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.PagerState
@@ -11,28 +10,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.toArgb
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.common.Player
 import app.n_zik.android.components.player.ArtworkDisplayColors
 import app.n_zik.android.components.player.CarouselButtonNavigation
 import app.n_zik.android.components.player.slide.slideSettledPageEffect
 import app.n_zik.android.components.player.animatePlayerArtworkScrollToPage
-import app.n_zik.android.components.player.extractCoverPalette
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.playAtIndex
-
-/** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */
-internal data class PlayerDynamicPaletteResult(
-    val palette: ColorPalette,
-    val dominant: Int,
-    val vibrant: Int,
-    val lightVibrant: Int,
-    val darkVibrant: Int,
-    val muted: Int,
-    val lightMuted: Int,
-    val darkMuted: Int,
-)
 
 internal data class PlayerBackgroundArtwork(
     val mediaId: String,
@@ -41,40 +26,6 @@ internal data class PlayerBackgroundArtwork(
     val display: ArtworkDisplayColors?,
     val palette: ColorPalette,
 )
-
-/** Computes the palette and background swatches from one shared cover extraction. */
-internal suspend fun computePlayerDynamicPalette(
-    bitmap: Bitmap,
-    isDark: Boolean,
-    fallbackColor: ColorPalette,
-): PlayerDynamicPaletteResult {
-    val extracted = extractCoverPalette(bitmap, isDark)
-    val colors = extracted?.colors
-    if (colors == null) {
-        // Without a dominant swatch, retain the caller's palette and accent.
-        val accent = fallbackColor.accent.toArgb()
-        return PlayerDynamicPaletteResult(
-            palette = fallbackColor,
-            dominant = accent,
-            vibrant = accent,
-            lightVibrant = accent,
-            darkVibrant = accent,
-            muted = accent,
-            lightMuted = accent,
-            darkMuted = accent,
-        )
-    }
-    return PlayerDynamicPaletteResult(
-        palette = requireNotNull(extracted).palette,
-        dominant = colors.dominant,
-        vibrant = colors.vibrant,
-        lightVibrant = colors.lightVibrant,
-        darkVibrant = colors.darkVibrant,
-        muted = colors.muted,
-        lightMuted = colors.lightMuted,
-        darkMuted = colors.darkMuted,
-    )
-}
 
 @Composable
 internal fun rememberPlayerExpansionState(

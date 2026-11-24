@@ -1,6 +1,6 @@
 package app.n_zik.innertube
 
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 
 /**
  * Exception thrown when an InnerTube API call returns a non-success HTTP status.

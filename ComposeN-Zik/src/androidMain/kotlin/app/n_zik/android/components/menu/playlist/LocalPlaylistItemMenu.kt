@@ -104,6 +104,7 @@ import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.canBookmarkPlaylist
@@ -503,9 +504,12 @@ class LocalPlaylistItemMenu private constructor(
                             Timber.tag("LocalPlaylistItemMenu").e(e, "Failed to toggle YTM bookmark")
                         }
                     }
-                    Database.playlistTable.update(
+                    val updated = Database.playlistTable.update(
                         playlistPreview.playlist.copy(isYoutubePlaylist = !wasBookmarked)
                     )
+                    if (!wasBookmarked && updated > 0) {
+                        MyDownloadHelper.downloadBookmarkedPlaylist(context, playlistPreview.playlist.browseId, playlistPreview.playlist)
+                    }
                     withContext(NzikDispatchers.UI) {
                         isBookmarked = !wasBookmarked
                     }
@@ -639,9 +643,12 @@ class LocalPlaylistItemMenu private constructor(
                             Timber.tag("LocalPlaylistItemMenu").e(e, "Failed to toggle YTM bookmark from header")
                         }
                     }
-                    Database.playlistTable.update(
+                    val updated = Database.playlistTable.update(
                         playlistPreview.playlist.copy(isYoutubePlaylist = !wasBookmarked)
                     )
+                    if (!wasBookmarked && updated > 0) {
+                        MyDownloadHelper.downloadBookmarkedPlaylist(context, playlistPreview.playlist.browseId, playlistPreview.playlist)
+                    }
                     withContext(NzikDispatchers.UI) {
                         isBookmarked = !wasBookmarked
                     }

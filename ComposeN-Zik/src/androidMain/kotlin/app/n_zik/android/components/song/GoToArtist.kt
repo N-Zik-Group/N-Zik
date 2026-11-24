@@ -34,7 +34,6 @@ class GoToArtist(
 ): MenuIcon, Descriptive {
 
     override val iconId: Int = R.drawable.people
-    // TODO: Add string "About this artist"
     override val messageId: Int = R.string.library_artists_title
     override val menuIconTitle: String
         @Composable

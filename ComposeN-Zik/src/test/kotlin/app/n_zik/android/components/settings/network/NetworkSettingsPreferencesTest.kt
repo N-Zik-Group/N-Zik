@@ -39,6 +39,7 @@ class NetworkSettingsPreferencesTest {
         "autoDownloadSong" to false,
         "autoDownloadSongWhenLiked" to false,
         "autoDownloadSongWhenAlbumBookmarked" to false,
+        "autoDownloadSongWhenPlaylistBookmarked" to false,
         "audioQualityFormat" to "Auto",
         "downloadQualityFormat" to "Auto",
         "imageQualityFormat" to "Auto",
@@ -103,5 +104,6 @@ class NetworkSettingsPreferencesTest {
         assertEquals(listOf("pcserver", "offline"), NetworkSettingTargets.cards.mapNotNull { it.focusId })
         assertEquals(NetworkSettingTargets.ids.size, NetworkSettingTargets.ids.distinct().size)
         assertTrue(NetworkSettingTargets.ids.contains("network.card.offline.setting.fullOfflineModeEnabled"))
+        assertTrue(NetworkSettingTargets.ids.contains("network.card.download.setting.autoDownloadSongWhenPlaylistBookmarked"))
     }
 }

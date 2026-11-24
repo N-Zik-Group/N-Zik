@@ -11,10 +11,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
@@ -29,7 +33,8 @@ import app.n_zik.android.utils.conditional
 
 abstract class TextInputDialog(
     @MagicConstant(valuesFromClass = InputDialogConstraints::class)
-    constraint: String
+    constraint: String,
+    private val focusOnOpen: Boolean = false,
 ): InputDialog {
 
     private val constraintRegex: Regex = Regex( constraint )
@@ -63,6 +68,14 @@ abstract class TextInputDialog(
 
     @Composable
     override fun DialogBody() {
+        val focusModifier = if (focusOnOpen) {
+            val requester = remember { FocusRequester() }
+            LaunchedEffect(isActive) {
+                if (isActive) requester.requestFocus()
+            }
+            Modifier.focusRequester(requester)
+        } else Modifier
+
         TextField(
             enabled = dialogInputEnabled,
             value = value,
@@ -77,7 +90,7 @@ abstract class TextInputDialog(
             visualTransformation = visualTransformation,
             leadingIcon = { LeadingIcon() },
             trailingIcon = { TrailingIcon() },
-            modifier = Modifier.fillMaxWidth()
+            modifier = focusModifier.fillMaxWidth()
             .conditional( keyboardOption.keyboardType == KeyboardType.Password
                     || keyboardOption.keyboardType == KeyboardType.NumberPassword
             ) {

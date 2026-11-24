@@ -84,23 +84,28 @@ class ArtworkConsumerReactivityTest {
         }
 
         val uri = mutableStateOf(previousUri)
-        var displayed: ArtworkDisplayColors? = null
+        var displayed: ArtworkDisplayResult? = null
         compose.setContent {
             val source = uri.value
-            displayed = rememberArtworkDisplayColors(source, isDark = true)
+            displayed = rememberArtworkDisplayResult(source, isDark = true)
             BasicText(source)
         }
-        compose.waitUntil(5_000) { displayed != null }
+        compose.waitUntil(5_000) { displayed?.resolved == true && displayed?.colors != null }
         val oldDisplay = compose.runOnIdle {
-            requireNotNull(displayed).also { uri.value = nextUri }
+            requireNotNull(displayed?.colors).also { uri.value = nextUri }
         }
         shadowOf(Looper.getMainLooper()).idle()
         compose.waitForIdle()
         compose.waitUntil(5_000) { started.isCompleted }
-        compose.runOnIdle { assertEquals(oldDisplay, displayed) }
+        compose.runOnIdle {
+            assertEquals(oldDisplay, displayed?.colors)
+            assertFalse(requireNotNull(displayed).resolved)
+        }
 
         pending.complete(next)
-        compose.waitUntil(5_000) { displayed != null && displayed != oldDisplay }
+        compose.waitUntil(5_000) {
+            displayed?.resolved == true && displayed?.colors?.let { it != oldDisplay } == true
+        }
     }
 
     @Test fun `two live cover consumers toggle and change mode without replacing their source`() {
@@ -123,15 +128,15 @@ class ArtworkConsumerReactivityTest {
         assertSame(preferences, context.getSharedPreferences("preferences_artwork_consumers_test", Context.MODE_PRIVATE))
         val requestedDark = mutableStateOf(false)
         var player: ArtworkDisplayColors? = null
-        var lyrics: ArtworkDisplayColors? = null
+        var miniPlayer: ArtworkDisplayColors? = null
         compose.setContent {
-            player = rememberArtworkDisplayColors(uri, requestedDark.value)
-            lyrics = rememberArtworkDisplayColors(uri, requestedDark.value)
+            player = rememberArtworkDisplayResult(uri, requestedDark.value).colors
+            miniPlayer = rememberArtworkDisplayColors(uri, requestedDark.value)
         }
-        compose.waitUntil(5_000) { player != null && lyrics != null }
+        compose.waitUntil(5_000) { player != null && miniPlayer != null }
         compose.runOnIdle {
             assertEquals(source.display(false, false), player)
-            assertEquals(player, lyrics)
+            assertEquals(player, miniPlayer)
             assertFalse(requireNotNull(player).forceDark)
             var delivered = false
             val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -152,7 +157,7 @@ class ArtworkConsumerReactivityTest {
         compose.waitForIdle()
         compose.runOnIdle {
             assertEquals(source.display(false, true), player)
-            assertEquals(player, lyrics)
+            assertEquals(player, miniPlayer)
             val roles = requireNotNull(player)
             assertTrue(requireNotNull(roles.palette).isDark)
             assertTrue(requireNotNull(roles.foreground) != roles.background)
@@ -161,20 +166,20 @@ class ArtworkConsumerReactivityTest {
         compose.waitForIdle()
         compose.runOnIdle {
             assertEquals(source.display(true, true), player)
-            assertEquals(player, lyrics)
+            assertEquals(player, miniPlayer)
             context.preferences.edit().putBoolean(dynamicThemeRespectBrightnessKey, false).commit()
         }
         shadowOf(Looper.getMainLooper()).idle()
         compose.waitForIdle()
         compose.runOnIdle {
             assertEquals(source.display(true, false), player)
-            assertEquals(player, lyrics)
+            assertEquals(player, miniPlayer)
             requestedDark.value = false
         }
         compose.waitForIdle()
         compose.runOnIdle {
             assertEquals(source.display(false, false), player)
-            assertEquals(player, lyrics)
+            assertEquals(player, miniPlayer)
         }
         // The original pixels and repository result survive every policy-only change.
         assertEquals(android.graphics.Color.rgb(190, 190, 190), bitmap.getPixel(0, 0))

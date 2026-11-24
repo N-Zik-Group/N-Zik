@@ -5,30 +5,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.palette.graphics.Palette
-import app.n_zik.android.ui.screens.player.computePlayerDynamicPalette
-import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import app.n_zik.android.ui.styling.hsl
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Unit coverage for the shared M3E cover-color extractor used by the player background
- * (`CoverColor` / `CoverColorGradient`), the lyrics screen and the visualizer ("cover" color
- * options).
- *
- * Robolectric is required (not a plain JVM unit test) because `Bitmap`/`Palette` need real pixel
- * backing to generate a deterministic swatch -- the same technique
- * `PlayerDynamicPaletteOffMainTest` uses for an equivalent palette extraction.
- */
+// JUnit invokes these tests synchronously while the artwork facade suspends on the media dispatcher.
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class CoverPaletteExtractorTest {
@@ -59,57 +48,7 @@ class CoverPaletteExtractorTest {
         twoRegionBitmap(android.graphics.Color.rgb(150, 110, 170), android.graphics.Color.rgb(100, 30, 200))
 
     @Test
-    fun `extractM3ECoverColors returns the same 7 swatches as computePlayerDynamicPalette`() = runBlocking {
-        for (isDark in listOf(true, false)) {
-            // Solid blue bitmap: every swatch is the same color, so the parity assertions below
-            // are exact (no get*Color fallback is used).
-            val bitmap = solidBitmap(android.graphics.Color.rgb(30, 120, 200))
-
-            val colors = extractM3ECoverColors(bitmap, isDark)
-            val reference = computePlayerDynamicPalette(bitmap, isDark, DefaultDarkColorPalette)
-
-            assertNotNull("expected 7 swatches for a solid bitmap (isDark=$isDark)", colors)
-            assertEquals(reference.dominant, colors!!.dominant)
-            assertEquals(reference.vibrant, colors.vibrant)
-            assertEquals(reference.lightVibrant, colors.lightVibrant)
-            assertEquals(reference.darkVibrant, colors.darkVibrant)
-            assertEquals(reference.muted, colors.muted)
-            assertEquals(reference.lightMuted, colors.lightMuted)
-            assertEquals(reference.darkMuted, colors.darkMuted)
-        }
-    }
-
-    /**
-     * Null contract (matrix row `ECHOU_EXTRATION`): `extractM3ECoverColors` (and with it
-     * `m3eDynamicColorPaletteOf`) returns `null` exactly when the legacy null gate
-     * `dynamicColorPaletteOf` cannot derive a dominant swatch — an all-transparent bitmap is
-     * the trigger. The gate's null result is asserted first as a fixture premise, so any
-     * Robolectric/palette behavior change fails loudly at the premise instead of masking a
-     * contract regression. Callers then keep their own fallbacks (violet MainActivity,
-     * DKGRAY lyrics, dominant local visualizer).
-     */
-    @Test
-    fun `extractM3ECoverColors and m3eDynamicColorPaletteOf return null without a dominant swatch`() = runBlocking {
-        val bitmap = Bitmap.createBitmap(16, 16, Bitmap.Config.ARGB_8888)
-        bitmap.eraseColor(android.graphics.Color.TRANSPARENT)
-        for (isDark in listOf(true, false)) {
-            assertNull(
-                "fixture premise: the legacy null gate must yield no dominant swatch for a transparent bitmap (isDark=$isDark)",
-                dynamicColorPaletteOf(bitmap, isDark),
-            )
-            assertNull(
-                "extractM3ECoverColors must propagate the null gate (isDark=$isDark)",
-                extractM3ECoverColors(bitmap, isDark),
-            )
-            assertNull(
-                "m3eDynamicColorPaletteOf must propagate the null gate (isDark=$isDark)",
-                m3eDynamicColorPaletteOf(bitmap, isDark),
-            )
-        }
-    }
-
-    @Test
-    fun `m3eDynamicColorPaletteOf builds the capped palette from the dominant swatch`() = runBlocking {
+    fun `shared artwork builds the capped palette from the dominant swatch`() = runBlocking {
         for (isDark in listOf(true, false)) {
             // Solid blue bitmap: every swatch is the same color, so the expected palette is exact.
             val bitmap = solidBitmap(android.graphics.Color.rgb(30, 120, 200))
@@ -117,20 +56,18 @@ class CoverPaletteExtractorTest {
             val dominantHsl = FloatArray(3)
             colorToHSL(dominant, dominantHsl)
 
-            val result = m3eDynamicColorPaletteOf(bitmap, isDark)
+            val result = SharedArtworkColors.fromBitmap(bitmap)?.display(isDark, keepDark = false)?.palette
 
             assertNotNull("expected a dominant-based palette for a solid bitmap (isDark=$isDark)", result)
             assertEquals(dynamicColorPaletteOf(dominantHsl, isDark), result)
-            // For a colored cover the app's result is the RiPlay reference itself.
-            assertEquals(dynamicColorPaletteOf(bitmap, isDark), result)
         }
     }
 
     @Test
-    fun `m3eDynamicColorPaletteOf accent keeps the dominant hue with capped saturation and fixed lightness`() = runBlocking {
+    fun `artwork accent keeps the dominant hue with capped saturation and fixed lightness`() = runBlocking {
         val bitmap = solidBitmap(android.graphics.Color.rgb(200, 30, 30))
 
-        val result = m3eDynamicColorPaletteOf(bitmap, false)
+        val result = SharedArtworkColors.fromBitmap(bitmap)?.display(isDark = false, keepDark = false)?.palette
 
         assertNotNull(result)
         val accent = result!!.accent.hsl
@@ -152,11 +89,10 @@ class CoverPaletteExtractorTest {
     fun `flat match song cover background equals the dominant swatch color`() = runBlocking {
         // Reddish (hue ~0); solid bitmap -> every swatch is the bitmap color.
         val bitmap = solidBitmap(android.graphics.Color.rgb(200, 30, 30))
-        val colors = extractM3ECoverColors(bitmap, false)
-        assertNotNull("expected swatches for a solid bitmap", colors)
-
+        val snapshot = requireNotNull(SharedArtworkColors.fromBitmap(bitmap))
+        val colors = requireNotNull(snapshot.display(isDark = false, keepDark = false).colors)
         val swatchHsl = FloatArray(3)
-        colorToHSL(colors!!.dominant, swatchHsl)
+        colorToHSL(colors.dominant, swatchHsl)
         val hue = swatchHsl[0]
         val saturation = swatchHsl[1]
         val lightness = swatchHsl[2]
@@ -166,14 +102,14 @@ class CoverPaletteExtractorTest {
 
         // Dark theme: saturation +0.35 (the swatch is saturated) clamped at 1.0, lightness kept,
         // then RGB x0.5
-        val dark = m3eSaturate(colors.dominant, lightTheme = false).m3eDarkenBy(lightTheme = false)
+        val dark = requireNotNull(snapshot.display(isDark = true, keepDark = false).background)
         val expectedDark = hslToRgb(hue, saturation + 0.35f, lightness, darken = 0.5f)
         assertEquals(expectedDark.red, dark.red, 0.01f)
         assertEquals(expectedDark.green, dark.green, 0.01f)
         assertEquals(expectedDark.blue, dark.blue, 0.01f)
 
         // Light theme: no saturation boost, lightness raised to at least 0.5, no darkening
-        val light = m3eSaturate(colors.dominant, lightTheme = true).m3eDarkenBy(lightTheme = true)
+        val light = requireNotNull(snapshot.display(isDark = false, keepDark = false).background)
         val expectedLight = hslToRgb(hue, saturation, lightness.coerceAtLeast(0.5f), darken = 1f)
         assertEquals(expectedLight.red, light.red, 0.01f)
         assertEquals(expectedLight.green, light.green, 0.01f)
@@ -246,9 +182,8 @@ class CoverPaletteExtractorTest {
         assertEquals(input, light)
     }
 
-    /** Contract pinned on the two-region fixture (dominant ≠ vibrant): the app's dynamic palette is built from the **dominant** swatch and equals the legacy RiPlay reference `dynamicColorPaletteOf(bitmap, isDark)` bit-for-bit -- NOT the vibrant-based palette the pre-2026-09-28 code produced. */
     @Test
-    fun `m3eDynamicColorPaletteOf matches the RiPlay reference on a two-region cover, dominant not vibrant`() = runBlocking {
+    fun `a two-region cover uses the dominant swatch for its palette`() = runBlocking {
         for (isDark in listOf(true, false)) {
             val bitmap = twoRegionBitmap()
             val swatchPalette = Palette.from(bitmap).maximumColorCount(8).generate()
@@ -259,33 +194,26 @@ class CoverPaletteExtractorTest {
             val vibrantHsl = FloatArray(3)
             colorToHSL(vibrant, vibrantHsl)
 
-            val reference = dynamicColorPaletteOf(bitmap, isDark)
+            val reference = dynamicColorPaletteOf(dominantHsl, isDark)
             val vibrantBased = dynamicColorPaletteOf(vibrantHsl, isDark)
-            val result = m3eDynamicColorPaletteOf(bitmap, isDark)
+            val result = SharedArtworkColors.fromBitmap(bitmap)?.display(isDark, keepDark = false)?.palette
 
-            assertNotNull("expected a palette from the RiPlay reference (isDark=$isDark)", reference)
             assertNotNull(result)
             assertNotEquals(
-                "fixture must distinguish the hue sources (dominant-based != vibrant-based, isDark=$isDark)",
+                "fixture must distinguish the dominant and vibrant hues (isDark=$isDark)",
                 reference,
                 vibrantBased,
             )
             assertEquals(
-                "the app's palette must be the RiPlay reference (isDark=$isDark)",
+                "the shared palette must use the dominant hue (isDark=$isDark)",
                 reference,
-                result,
-            )
-            assertEquals(
-                "the palette must be built from the dominant swatch's HSL (isDark=$isDark)",
-                dynamicColorPaletteOf(dominantHsl, isDark),
                 result,
             )
         }
     }
 
-    /** RiPlay rescue (DOMINANT_PEU_SATURE edge case): a non-achromatic cover (maximum swatch channel spread ≥ threshold) whose dominant swatch is below the S<0.08 rescue threshold takes its hue from the most saturated non-zero swatch instead -- pinned against the legacy reference, which performs the rescue, and against the no-rescue dominant-based palette, which it must NOT produce. */
     @Test
-    fun `low-saturation dominant is rescued to the most saturated swatch, matching the RiPlay reference`() = runBlocking {
+    fun `low-saturation dominant is rescued to the most saturated swatch`() = runBlocking {
         // 70% near-neutral mid-tone (S < 0.08, own channel spread < 0.10) + 30% saturated red
         // (spread ≈ 0.74): the cover is NOT achromatic overall, so no neutralization -- but the
 
@@ -307,18 +235,18 @@ class CoverPaletteExtractorTest {
                 swatchPalette.swatches.maxOf { channelDelta(it.rgb) } >= ACHROMATIC_CHANNEL_DELTA_THRESHOLD,
             )
 
-            val reference = dynamicColorPaletteOf(bitmap, isDark)
+            val saturated = requireNotNull(swatchPalette.swatches.maxByOrNull { it.hsl[1] })
+            val reference = dynamicColorPaletteOf(saturated.hsl, isDark)
             val noRescueDominantBased = dynamicColorPaletteOf(dominantHsl, isDark)
-            val result = m3eDynamicColorPaletteOf(bitmap, isDark)
+            val result = SharedArtworkColors.fromBitmap(bitmap)?.display(isDark, keepDark = false)?.palette
 
-            assertNotNull("expected a palette from the RiPlay reference (isDark=$isDark)", reference)
             assertNotNull(result)
             assertNotEquals(
                 "the rescue must change the result versus the no-rescue dominant palette (isDark=$isDark)",
                 noRescueDominantBased,
                 result,
             )
-            assertEquals("the rescue must match the RiPlay reference (isDark=$isDark)", reference, result)
+            assertEquals("the rescue must use the saturated swatch (isDark=$isDark)", reference, result)
             // !! is safe here: `result` was asserted non-null two lines above.
             val accentHue = result!!.accent.hsl
             assertEquals("the rescue must pick the red swatch's hue (isDark=$isDark)", 0f, accentHue.hue, 5f)
@@ -328,7 +256,7 @@ class CoverPaletteExtractorTest {
     @Test
     fun `m3eCoverBackgroundColor renders the dominant swatch, not the vibrant one`() = runBlocking {
         val bitmap = twoRegionBitmap()
-        val colors = extractM3ECoverColors(bitmap, false)
+        val colors = SharedArtworkColors.fromBitmap(bitmap)?.display(isDark = false, keepDark = false)?.colors
         assertNotNull("expected swatches for a two-region bitmap", colors)
 
         val vibrant = colors!!.vibrant
@@ -352,7 +280,7 @@ class CoverPaletteExtractorTest {
     @Test
     fun `m3eCoverForegroundArgb uses the dominant swatch, not the vibrant one`() = runBlocking {
         val bitmap = twoRegionBitmap()
-        val colors = extractM3ECoverColors(bitmap, false)
+        val colors = SharedArtworkColors.fromBitmap(bitmap)?.display(isDark = false, keepDark = false)?.colors
         assertNotNull("expected swatches for a two-region bitmap", colors)
 
         val vibrant = colors!!.vibrant
@@ -372,31 +300,4 @@ class CoverPaletteExtractorTest {
             m3eCoverForegroundArgb(dominant, lightTheme = false),
         )
     }
-    @Test
-    fun `bundle quantizes once on MEDIA while preserving colored and neutral policies`() = runBlocking {
-        // JUnit's synchronous test API needs a blocking bridge; extraction dispatches to MEDIA.
-        val callerThread = Thread.currentThread()
-        for (rgb in listOf(
-            android.graphics.Color.rgb(30, 120, 200),
-            android.graphics.Color.rgb(58, 56, 54),
-            android.graphics.Color.rgb(235, 233, 228),
-        )) {
-            val bitmap = Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888).apply { eraseColor(rgb) }
-            for (isDark in listOf(false, true)) {
-                var calls = 0
-                var workerThread: Thread? = null
-                val bundle = requireNotNull(extractCoverPalette(bitmap, isDark) {
-                    calls++
-                    workerThread = Thread.currentThread()
-                    Palette.from(it).maximumColorCount(8).generate()
-                })
-                assertEquals("one quantization per complete bundle", 1, calls)
-                assertTrue("quantization must leave the caller thread", workerThread !== callerThread)
-                assertTrue("quantization must use MEDIA", workerThread?.name?.startsWith("nzik-media-") == true)
-                assertEquals(extractM3ECoverColors(bitmap, isDark), bundle.colors)
-                assertEquals(m3eDominantDynamicPaletteOf(bundle.colors, bitmap, isDark), bundle.palette)
-            }
-        }
-    }
-
 }

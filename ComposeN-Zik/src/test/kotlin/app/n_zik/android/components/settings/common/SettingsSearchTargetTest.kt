@@ -31,6 +31,7 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.autoDownloadSongKey
 import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.enablePictureInPictureKey
 import app.n_zik.android.utils.playerTypeKey
@@ -140,6 +141,21 @@ class SettingsSearchTargetTest {
         assertTrue("there must be no fifth pulse", highlighted(parent, false))
         assertEquals("fallback message must be emitted only once", 1, messages.size)
         assertEquals("target focus and highlight must never apply preferences", before, context.preferences.all)
+    }
+
+    @Test fun playlistDownloadSearchRevealsItsToggleWithAutomaticDownloadsOff() {
+        context.preferences.edit().putBoolean(autoDownloadSongKey, false).commit()
+        val before = context.preferences.all.toMap()
+        val entry = AllSettingsEntryTargets.single {
+            it.id == "network.download.settings_enable_autodownload_song_when_playlist_bookmarked"
+        }
+        show(entry.parentCard().categoryId(), entry.id, settingsCardTargetId(context, entry.tab, entry.cardTitleRes))
+        pumpUntil("The playlist download toggle must be highlighted with automatic downloads off") {
+            highlighted(entry.id, true)
+        }
+        composeRule.onNodeWithTag("settings.target.${entry.id}", useUnmergedTree = true).assertIsDisplayed()
+        assertTrue(messages.isEmpty())
+        assertEquals(before, context.preferences.all)
     }
 
     @Test fun farOffscreenCardIsComposedBeforeExactTargetAvailabilityIsChecked() {

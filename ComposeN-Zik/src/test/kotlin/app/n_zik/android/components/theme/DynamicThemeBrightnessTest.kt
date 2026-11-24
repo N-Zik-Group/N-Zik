@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
-import app.n_zik.android.components.player.extractCoverPalette
+import app.n_zik.android.components.player.SharedArtworkColors
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -33,10 +33,11 @@ class DynamicThemeBrightnessTest {
                 eraseColor(cover.toArgb())
             }
             try {
+                val source = requireNotNull(SharedArtworkColors.fromBitmap(bitmap))
                 for (themeIsDark in listOf(true, false)) {
-                    val extracted = requireNotNull(extractCoverPalette(bitmap, themeIsDark))
-                    val originalSwatches = extracted.colors.copy()
-                    val normalized = extracted.palette.keepMonochromeColorsDark(true)
+                    val extracted = source.display(themeIsDark, keepDark = false)
+                    val originalSwatches = requireNotNull(extracted.colors).copy()
+                    val normalized = requireNotNull(extracted.palette).keepMonochromeColorsDark(true)
                     assertEquals(dynamicColorPaletteOf(Color.Gray, true), normalized)
                     assertEquals(originalSwatches, extracted.colors)
                     assertEquals(cover.toArgb(), bitmap.getPixel(0, 0))

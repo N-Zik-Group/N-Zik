@@ -1,4 +1,10 @@
 Added:
+- feat(library): confirm collection favorite actions
+  - Share one count-based confirmation across album, local playlist, online playlist and podcast pages.
+  - Keep the heart and selection actions in the online More menu. Restrict favorite changes to checked items when selection is active.
+  - Keep downloaded files on bulk unlike and report the local result and any separate YouTube sync failure.
+- feat(playlists): suggest a name when creating a playlist
+  - Prefill a localized title with a random number and focus and select it so typing replaces the suggestion.
 - feat(player): add Stats for Nerds to the item menu
   - Place the Radio-style toggle below Information. Update its label, icon and tint with playback stats state, and share the Stop icon with debug logs.
   - Follow the visible artwork when present and keep statistics available with artwork hidden.
@@ -16,6 +22,9 @@ Added:
   - Preserve completed matches and import order when interrupted. Report unmatched and unprocessed tracks separately and exclude removed playlist members from retry.
 
 Improved:
+- refactor(artwork): test the active palette facade
+  - Move legacy palette assertions to SharedArtworkColors and the active player and widget entry points. Remove the unused palette functions and isImageCached.
+  - Replace the audited wildcard imports and stale TODO comments. Keep the packaged YouTube HTML and Play Store and Android TV assets.
 - refactor(navigation): separate library deep-link parsing
   - Classify library links outside MainActivity while keeping navigation, lookup and playback at the original call site.
   - Keep theme validation, invitation precedence and existing route behavior.
@@ -111,6 +120,10 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(downloads): honor automatic favorite downloads
+  - Use the current profile's master switch and per-category settings for liked tracks and bookmarked albums and music playlists.
+  - Skip local and existing downloads, preserve saved playlist membership during partial loads, and reconcile playlist bookmark aliases.
+  - Release rejected add and remove commands without interfering with newer requests.
 - fix(appearance): recover dynamic colors from artwork without color space
   - Normalize incompatible bitmap input before color extraction and avoid sampling alpha-only thumbnail masks.
   - Use one purple fallback in the app and player if extraction still fails.

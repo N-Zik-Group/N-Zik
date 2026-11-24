@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
@@ -77,10 +78,9 @@ class WidgetArtworkColorsTest {
         context.preferences.edit().putString(colorPaletteModeKey, "Light")
             .putBoolean(dynamicThemeRespectBrightnessKey, true).commit()
         val bitmap = cover(android.graphics.Color.WHITE)
-        val actual = NZikWidgetManager.extractPalette(context, bitmap)
-        val playlist = PlaylistWidgetManager.extractPalette(context, bitmap)
+        val raw = loadWidgetArtworkColors(context, null, bitmap)
+        val actual = widgetArtworkPalette(context, raw)
         assertTrue(actual.isDark)
-        assertEquals(actual, playlist)
         assertNotEquals(Color.Magenta, actual.accent)
         assertNotEquals(actual.background1, actual.text)
     }
@@ -114,5 +114,13 @@ class WidgetArtworkColorsTest {
         assertTrue(actual.isDark)
         assertEquals(raw.display(false, true).palette, actual)
         assertNotEquals(actual.background1, actual.text)
+    }
+    // Robolectric waits for the suspend URI-less artwork path.
+    @Test fun `a widget without artwork uses the selected tone's default palette`() = runBlocking {
+        setActiveProfile("default", context)
+        context.preferences.edit().putString(colorPaletteModeKey, "Light").commit()
+        val snapshot = loadWidgetArtworkColors(context, uri = null, bitmap = null)
+        assertEquals(null, snapshot)
+        assertEquals(DefaultLightColorPalette, widgetArtworkPalette(context, snapshot))
     }
 }

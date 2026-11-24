@@ -16,6 +16,8 @@ import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.settingsProfileFor
 
+internal const val DOWNLOAD_REMOVE_TOKEN_EXTRA = "app.n_zik.android.download.REMOVE_TOKEN"
+
 @UnstableApi
 internal data class ProfileDownloadCommands(
     val consumer: ProfileStorageIdentity,
@@ -49,10 +51,11 @@ internal data class ProfileDownloadCommands(
         Unit
     }
 
-    fun sendRemove(context: Context, mediaId: String): Result<Unit> = runCatching {
+    fun sendRemove(context: Context, mediaId: String, commandToken: String? = null): Result<Unit> = runCatching {
         check(this == capture(context)) { "The download profile changed" }
         val intent = DownloadService.buildRemoveDownloadIntent(context, MyDownloadService::class.java, mediaId, false)
             .setData(identityUri())
+        if (commandToken != null) intent.putExtra(DOWNLOAD_REMOVE_TOKEN_EXTRA, commandToken)
         context.startService(intent)
         Unit
     }

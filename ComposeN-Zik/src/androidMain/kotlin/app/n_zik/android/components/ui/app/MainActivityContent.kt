@@ -246,8 +246,6 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
     UiFrameClockDiagnostics()
     val selectedPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
-    //TODO: Check internet connection
-
     val coroutineScope = rememberCoroutineScope()
     val isSystemInDarkTheme by rememberUpdatedState(isSystemInDarkTheme())
     val navController = rememberNavController()

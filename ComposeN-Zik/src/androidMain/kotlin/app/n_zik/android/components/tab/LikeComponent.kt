@@ -4,8 +4,11 @@ package app.n_zik.android.components.tab
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.models.Song
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
@@ -31,19 +34,16 @@ class LikeComponent private constructor(
 
     override fun onShortClick() {
         Database.asyncTransaction {
-            getSongs().forEach {
-                songTable.likeState( it.id, true )
+            getSongs().forEach { song ->
+                if (!songTable.isLikedDirect(song.id) && songTable.likeState(song.id, true) > 0) {
+                    MyDownloadHelper.downloadNewlyLiked(appContext(), song.asMediaItem)
+                }
             }
 
             Toaster.done()
         }
 
-        /*
-        This part is explicitly placed outside
-        [Database.asyncTransaction] to ensure
-        user can continue using the app while songs
-        are getting modified
-        */
+        // Close the menu while the queued database write runs.
         menuState.hide()
     }
 }

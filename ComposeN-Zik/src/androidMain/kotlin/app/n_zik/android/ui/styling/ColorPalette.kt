@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.styling
 
-import android.graphics.Bitmap
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.SaverScope
@@ -8,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
-import androidx.palette.graphics.Palette
 import app.n_zik.android.ui.saveable.reportSaveableMismatch
 import app.n_zik.android.ui.saveable.reportTruncatedSaveable
 import app.n_zik.android.enums.ColorPaletteMode
@@ -159,38 +157,6 @@ fun colorPaletteOf(
         }
         ColorPaletteName.PureBlack -> PureBlackColorPalette
         ColorPaletteName.ModernBlack -> ModernBlackColorPalette
-    }
-}
-
-fun dynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPalette? {
-    val palette = Palette
-        .from(bitmap)
-        .maximumColorCount(8)
-        //.addFilter(if (isDark) ({ _, hsl -> hsl[0] !in 36f..100f }) else null)
-        .generate()
-
-
-
-    val hsl = if (isDark) {
-        palette.dominantSwatch ?: Palette
-            .from(bitmap)
-            .maximumColorCount(8)
-            .generate()
-            .dominantSwatch
-    } else {
-        palette.dominantSwatch
-    }?.hsl ?: return null
-
-    return if (hsl[1] < 0.08) {
-        val newHsl = palette.swatches
-            .map(Palette.Swatch::getHsl)
-            .sortedByDescending(FloatArray::component2)
-            .find { it[1] != 0f }
-            ?: hsl
-        dynamicColorPaletteOf(newHsl, isDark)
-
-    } else {
-        dynamicColorPaletteOf(hsl, isDark)
     }
 }
 

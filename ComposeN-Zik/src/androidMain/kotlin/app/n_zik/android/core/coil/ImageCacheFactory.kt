@@ -1135,8 +1135,6 @@ object ImageCacheFactory {
     private fun String.withFileRevision(revision: String): String =
         if (revision.isEmpty()) this else "$this-$revision"
 
-    fun isImageCached(thumbnailUrl: String?): Boolean = cacheMetadataStore.get(thumbnailUrl ?: "") != null
-
     fun getDiskCache(): DiskCache = DISK_CACHE
 
     /** Reads encoded cover bytes while the cache snapshot prevents eviction. */

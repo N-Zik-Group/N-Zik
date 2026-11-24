@@ -8,7 +8,7 @@ internal object NetworkSettingTargets {
         NetworkCardTargets("network.card.quality", listOf("audioQualityFormat", "imageQualityFormat", "downloadQualityFormat"), listOf("update-downloads", "restart-player")),
         NetworkCardTargets("network.card.connection", listOf("isConnectionMeteredEnabled")),
         NetworkCardTargets("network.card.offline", listOf("fullOfflineModeEnabled"), focusId = "offline"),
-        NetworkCardTargets("network.card.download", listOf("autoDownloadSong", "autoDownloadSongWhenLiked", "autoDownloadSongWhenAlbumBookmarked")),
+        NetworkCardTargets("network.card.download", listOf("autoDownloadSong", "autoDownloadSongWhenLiked", "autoDownloadSongWhenAlbumBookmarked", "autoDownloadSongWhenPlaylistBookmarked")),
         NetworkCardTargets("network.card.reset", emptyList(), listOf("applyNetworkDefaults")),
     )
     val ids = cards.flatMap { card ->

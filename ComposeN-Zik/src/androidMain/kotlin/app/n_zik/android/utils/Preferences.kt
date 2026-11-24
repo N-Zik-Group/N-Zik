@@ -520,6 +520,7 @@ const val topPaddingKey = "topPadding"
 const val autoDownloadSongKey = "autoDownloadSong"
 const val autoDownloadSongWhenLikedKey = "autoDownloadSongWhenLiked"
 const val autoDownloadSongWhenAlbumBookmarkedKey = "autoDownloadSongWhenAlbumBookmarked"
+const val autoDownloadSongWhenPlaylistBookmarkedKey = "autoDownloadSongWhenPlaylistBookmarked"
 
 const val queueSwipeLeftActionKey = "queueSwipeLeftAction"
 const val queueSwipeRightActionKey = "queueSwipeRightAction"

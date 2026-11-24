@@ -90,9 +90,12 @@ class DownloadDisplayNamesTest {
     @Test
     fun `progress leaves display-ready request labels untouched`() {
         val label = "Artist - modified:Project - Title"
-        val encoded = encodeDownloadDisplayName(label).decodeToString()
-        val notification = DownloadProgressNotification(context).build(listOf(download(encoded)), false, 1, 0)
-
-        assertEquals(label, notification.extras.getString(Notification.EXTRA_TEXT))
+        val builder = DownloadProgressNotification(context)
+        val token = "12345678-1234-1234-1234-123456789abc"
+        for (marker in listOf(null, token)) {
+            val encoded = encodeDownloadDisplayName(label, marker).decodeToString()
+            val notification = builder.build(listOf(download(encoded)), false, 1, 0)
+            assertEquals(label, notification.extras.getString(Notification.EXTRA_TEXT))
+        }
     }
 }

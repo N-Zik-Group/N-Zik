@@ -105,6 +105,8 @@ import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.ui.components.themed.ItemsList
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -534,6 +536,23 @@ fun AlbumDetails(
     fun getMediaItems() = getSongs().map(Song::asMediaItem)
 
     val bookmark = AlbumBookmark(browseId)
+    val albumSongIds = remember(items) { items.map(Song::id) }
+    val likeStatesMap by remember(albumSongIds, preview) {
+        if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(albumSongIds)
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val collectionMediaItems = remember(items) { items.map(Song::asMediaItem) }
+    val selectedFavoriteIds = itemSelector.takeIf { it.isActive }?.mapTo(HashSet(), Song::id)
+    val favoriteMediaItems = remember(collectionMediaItems, selectedFavoriteIds) {
+        if (selectedFavoriteIds == null) collectionMediaItems
+        else collectionMediaItems.filter { it.mediaId in selectedFavoriteIds }
+    }
+    val favorites = rememberCollectionFavoritesButton(
+        mediaItems = favoriteMediaItems,
+        kind = CollectionFavoritesKind.Album,
+        enabled = !songsLoading && !songsLoadFailed && !forceSongPlaceholders && preview == null,
+        collectionKey = browseId,
+        likeStates = likeStatesMap,
+    )
 
     val deleteAllDownloadsDialog = DeleteAllDownloadedSongsDialog(::getSongs)
     val downloadALlDialog = DownloadAllSongsDialog(::getSongs)
@@ -639,10 +658,6 @@ fun AlbumDetails(
             if (items.isEmpty() && !initialSongsLoading) {
                 AlbumSongsPageStatus(loadedSongsCount, forceSongPlaceholders, songsLoadFailed)
             } else {
-                val albumSongIds = remember(items) { items.map { it.id } }
-                val likeStatesMap by remember(albumSongIds) {
-                    if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(albumSongIds)
-                }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
                 val playlistStatesMap by remember(albumSongIds) {
                     if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else PlaylistStateManager.getPlaylistStates(albumSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -739,6 +754,7 @@ fun AlbumDetails(
                                     playNext,
                                     enqueue,
                                     addToPlaylist,
+                                    favorites,
                                 ),
                                 enabled = !initialSongsLoading,
                             )

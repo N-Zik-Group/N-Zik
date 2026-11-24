@@ -2,10 +2,8 @@
 package app.n_zik.android.ui.screens.player
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
-import app.n_zik.android.components.player.m3eDynamicColorPaletteOf
 import app.n_zik.android.components.player.rememberMiniPlayerProgress
 
-import android.graphics.Bitmap
 
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
@@ -178,7 +176,6 @@ import app.n_zik.android.utils.playerControlsColorsKey
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.platform.LocalDensity
 import android.os.Build
-import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.rememberPlayerColorFade
@@ -833,7 +830,3 @@ private fun Modifier.miniFoldSize(
     ))
     layout(child.width, child.height) { child.placeRelative(0, 0) }
 }
-
-/** Pure compatibility seam for extraction regression tests; production uses the shared artwork facade. */
-internal suspend fun computeMiniPlayerPalette(bitmap: Bitmap, dark: Boolean): ColorPalette? =
-    m3eDynamicColorPaletteOf(bitmap, dark)

@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +61,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -92,7 +95,13 @@ import app.n_zik.android.ui.components.themed.AutoResizeText
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.ui.components.themed.HeaderIconButton
+import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.ui.CollectionToolbar
+import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
+import app.n_zik.android.core.database.collectionFavoriteSongId
+import app.n_zik.android.models.Song
+import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
@@ -237,6 +246,23 @@ fun Podcast(
     val forceShimmer = forceLoadingShimmerPreview()
     val initialLoading = podcastPage == null && podcastLoadState.status == PodcastPageStatus.Loading
     val showShimmer = initialLoading || forceShimmer
+    val itemSelector = key(browseId) { ItemSelector<Song>() }
+    val collectionEpisodes = podcastPage?.listEpisode
+    val collectionMediaItems = remember(collectionEpisodes) {
+        collectionEpisodes.orEmpty().map(Innertube.Podcast.EpisodeItem::asMediaItem)
+    }
+    val selectedFavoriteIds = itemSelector.takeIf { it.isActive }?.mapTo(HashSet(), Song::id)
+    val favoriteMediaItems = remember(collectionMediaItems, selectedFavoriteIds) {
+        if (selectedFavoriteIds == null) collectionMediaItems
+        else collectionMediaItems.filter { collectionFavoriteSongId(it.mediaId) in selectedFavoriteIds }
+    }
+    val favorites = rememberCollectionFavoritesButton(
+        mediaItems = favoriteMediaItems,
+        kind = CollectionFavoritesKind.Podcast,
+        enabled = !showShimmer && podcastLoadState.status == PodcastPageStatus.Content,
+        collectionKey = browseId,
+    )
+    val moreActions = EllipsisMenuComponent.init { listOf(favorites, itemSelector) }
 
     LayoutWithAdaptiveThumbnail(
         thumbnailContent = thumbnailContent,
@@ -604,6 +630,18 @@ fun Podcast(
                                                 }
                                     )
                                 },
+                                {
+                                    val menuLabel = stringResource(R.string.common_menu_label)
+                                    HeaderIconButton(
+                                        icon = moreActions.iconId,
+                                        color = if (forceShimmer) colorPalette().textDisabled else colorPalette().text,
+                                        enabled = !forceShimmer,
+                                        modifier = Modifier
+                                            .padding(horizontal = 5.dp)
+                                            .semantics { contentDescription = menuLabel },
+                                        onClick = moreActions::onShortClick,
+                                    )
+                                },
                             )
                             CollectionToolbar(bookmark = bookmarkAction, actions = toolbarActions)
                         } else {
@@ -615,6 +653,7 @@ fun Podcast(
                                 shuffleButtonIcon(),
                                 radioButtonIcon(),
                                 R.drawable.add_in_playlist,
+                                moreActions.iconId,
                             )
                             CollectionToolbar(
                                 bookmark = { DisabledPodcastAction(R.drawable.bookmark_outline) },
@@ -729,8 +768,10 @@ fun Podcast(
                             binder?.player?.enqueue(song.asMediaItem)
                         }
                     ) {
+                        val episode = song.asMediaItem.asSong
                         SongItem(
-                            song = song.asMediaItem.asSong,
+                            song = episode,
+                            itemSelector = itemSelector,
                             navController = navController,
                             modifier = Modifier
                                 .background(colorPalette().background0)
@@ -745,13 +786,17 @@ fun Podcast(
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                             },
                             onClick = {
-                                searching = false
-                                filter = null
-                                podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
-                                    ?.let { mediaItems ->
-                                        binder?.stopRadio()
-                                        binder?.player?.forcePlayAtIndex(mediaItems, index)
-                                    }
+                                if (itemSelector.isActive) {
+                                    if (!itemSelector.remove(episode)) itemSelector.add(episode)
+                                } else {
+                                    searching = false
+                                    filter = null
+                                    podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
+                                        ?.let { mediaItems ->
+                                            binder?.stopRadio()
+                                            binder?.player?.forcePlayAtIndex(mediaItems, index)
+                                        }
+                                }
                             }
                         )
                     }

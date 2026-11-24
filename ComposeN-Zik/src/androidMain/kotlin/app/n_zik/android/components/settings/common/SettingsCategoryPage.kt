@@ -295,6 +295,7 @@ fun SettingsCategoryPage(
                             tab, contentSearch, navController, selection,
                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
                             normalizePreferences = target.isBlank(),
+                            searchTarget = target,
                         )
                     }
                 }
@@ -371,6 +372,7 @@ fun SettingsCategoryPage(
                                             tab, contentSearch, navController, setOf(R.string.settings_reset),
                                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
                                             normalizePreferences = false,
+                                            searchTarget = "",
                                         )
                                     }
                                 }
@@ -419,6 +421,7 @@ private fun SettingsSourceContent(
     selection: Set<Int>,
     decorate: @Composable (Int) -> Modifier,
     normalizePreferences: Boolean,
+    searchTarget: String,
 ) {
     when (tab) {
         0 -> GeneralSettingsContent(search, selectedCards = selection, cardModifier = decorate)
@@ -427,7 +430,9 @@ private fun SettingsSourceContent(
         3 -> AIRecommendationSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         4 -> DataSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         5 -> AccountsSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
-        6 -> NetworkSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
+        6 -> NetworkSettingsContent(
+            search, navController, selectedCards = selection, cardModifier = decorate, searchTarget = searchTarget,
+        )
         7 -> OtherSettingsContent(search, selectedCards = selection, cardModifier = decorate)
         8 -> AboutSettingsContent(selectedCards = selection, cardModifier = decorate)
         9 -> {

@@ -530,9 +530,6 @@ object NZikWidgetManager {
         )
     }
 
-    internal suspend fun extractPalette(context: Context, albumArt: Bitmap?): ColorPalette =
-        widgetArtworkPalette(context, loadWidgetArtworkColors(context, null, albumArt))
-
     private fun applyWidgetTheme(views: RemoteViews, palette: ColorPalette) {
         val bgArgb = palette.background1.toArgb()
         val accentArgb = palette.accent.toArgb()

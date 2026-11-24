@@ -11,8 +11,6 @@ import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
 
-import app.n_zik.android.utils.excludeDislikedSongsKey
-import app.n_zik.android.enums.DislikeMode
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -51,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,6 +71,8 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
@@ -90,15 +91,16 @@ import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.resize
 import app.n_zik.android.compose.persist.persist
-import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.PlaylistPage
 import app.n_zik.android.components.ui.UiButton
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.findMusicBookmarkByBrowseId
+import app.n_zik.android.core.database.findMusicBookmarkRows
+import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.appContext
-import app.n_zik.android.utils.preferences
 import app.n_zik.android.cleanPrefix
 
 import app.n_zik.android.colorPalette
@@ -118,6 +120,10 @@ import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
 import app.n_zik.android.components.ui.CollectionToolbar
+import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
+import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
@@ -137,7 +143,6 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.addNext
-import app.n_zik.android.utils.addToYtLikedSongs
 import app.n_zik.android.utils.align
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
@@ -148,7 +153,6 @@ import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
-import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.utils.isDownloadedSong
@@ -279,7 +283,6 @@ fun PlaylistSongList(
     var filter: String? by rememberSaveable { mutableStateOf(null) }
     var showConfirmDownloadAllDialog by remember { mutableStateOf(false) }
     var showConfirmDeleteDownloadDialog by remember { mutableStateOf(false) }
-    var saveCheck by remember { mutableStateOf(false) }
 
     val sectionTextModifier = Modifier
         .padding(horizontal = 16.dp)
@@ -299,9 +302,9 @@ fun PlaylistSongList(
     }
     val languageDestination = activeTranslateLang.contentTranslationTarget
 
-    val localPlaylist by remember( saveCheck ) {
-        Database.playlistTable
-                .findByBrowseId( browseId )
+    val bookmarkBrowseId = if (browseId.startsWith("VL")) browseId else "VL$browseId"
+    val localPlaylist by remember(browseId) {
+        Database.playlistTable.findMusicBookmarkByBrowseId(browseId)
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
 
     // Derived from playlistSongs (parental-control filtered + deduplicated), not the raw page songs
@@ -309,40 +312,8 @@ fun PlaylistSongList(
         playlistSongs.applyFilter(filter)
     }
 
-    var playlistNotLikedSongs by persistList<Innertube.SongItem>("playlist/$browseId/notLikedSongs")
-
     var searching by rememberSaveable { mutableStateOf(false) }
 
-
-    var showYoutubeLikeConfirmDialog by remember {
-        mutableStateOf(false)
-    }
-    var totalMinutesToLike by remember { mutableStateOf("") }
-
-    if (showYoutubeLikeConfirmDialog) {
-        LaunchedEffect(playlistSongs) {
-            playlistNotLikedSongs = withContext(NzikDispatchers.DATA) {
-                playlistSongs.filter {
-                    Database.songTable.isLiked( it.asSong.id ).first()
-                }
-            }
-            totalMinutesToLike = formatAsDuration(playlistNotLikedSongs.size.toLong()*1000)
-        }
-    }
-    DialogPresence(visible = showYoutubeLikeConfirmDialog) {
-        ConfirmationDialog(
-            title = stringResource(R.string.playlist_like_all_dialog_title),
-            confirmText = stringResource(R.string.playlist_like_all_dialog_title),
-            text = stringResource(R.string.playlist_like_all_duration_confirmation_format, totalMinutesToLike),
-            onDismiss = { showYoutubeLikeConfirmDialog = false },
-            onConfirm = {
-                showYoutubeLikeConfirmDialog = false
-                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    addToYtLikedSongs(playlistNotLikedSongs.map {it.asMediaItem})
-                }
-            }
-        )
-    }
 
     var totalPlayTimes = 0L
     filteredPageSongs?.forEach {
@@ -397,6 +368,21 @@ fun PlaylistSongList(
     val likeStatesMap by remember(playlistSongIds) {
         LikeStateManager.getLikeStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val itemSelector = key(browseId) { ItemSelector<Song>() }
+    val collectionMediaItems = remember(playlistSongs) { playlistSongs.map(Innertube.SongItem::asMediaItem) }
+    val selectedFavoriteIds = itemSelector.takeIf { it.isActive }?.mapTo(HashSet(), Song::id)
+    val favoriteMediaItems = remember(collectionMediaItems, selectedFavoriteIds) {
+        if (selectedFavoriteIds == null) collectionMediaItems
+        else collectionMediaItems.filter { it.mediaId in selectedFavoriteIds }
+    }
+    val favorites = rememberCollectionFavoritesButton(
+        mediaItems = favoriteMediaItems,
+        kind = CollectionFavoritesKind.Playlist,
+        enabled = playlistPage != null && playlistPage?.songsContinuation == null && !forceSongPlaceholders && preview == null,
+        collectionKey = browseId,
+        likeStates = likeStatesMap,
+    )
+    val moreActions = EllipsisMenuComponent.init { listOf(favorites, itemSelector) }
     val playlistStatesMap by remember(playlistSongIds) {
         PlaylistStateManager.getPlaylistStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -579,33 +565,66 @@ fun PlaylistSongList(
                                     modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                     onClick = {
                                         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                            if (localPlaylist?.isYoutubePlaylist == true) {
+                                            val stored = Database.playlistTable.findMusicBookmarkByBrowseId(browseId).first()
+                                            if (stored?.isYoutubePlaylist == true) {
                                                 if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                                    YtMusic.removelikePlaylistOrAlbum(browseId.substringAfter("VL"))
+                                                    YtMusic.removelikePlaylistOrAlbum(browseId.removePrefix("VL"))
                                                 }
-                                                Database.playlistTable
-                                                    .findByBrowseId(browseId)
-                                                    .first()
-                                                    ?.let { Database.playlistTable.delete(it) }
+                                                Database.awaitWriteBatch {
+                                                    transaction {
+                                                        playlistTable.findMusicBookmarkRows(browseId).first()
+                                                            .filter { isPlaylistBookmarked(it) }
+                                                            .forEach { existing ->
+                                                                if (existing.isEditable) {
+                                                                    playlistTable.update(existing.copy(isYoutubePlaylist = false))
+                                                                } else {
+                                                                    playlistTable.delete(existing)
+                                                                }
+                                                            }
+                                                    }
+                                                }
                                             } else {
                                                 if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                                    YtMusic.likePlaylistOrAlbum(browseId.substringAfter("VL"))
+                                                    YtMusic.likePlaylistOrAlbum(browseId.removePrefix("VL"))
                                                 }
-                                                Database.asyncTransaction {
-                                                    val normalizedBrowseId = if (browseId.startsWith("VL")) browseId else "VL$browseId"
-                                                    val playlist = Playlist(
-                                                        name = (playlistPage?.playlist?.title ?: ""),
-                                                        browseId = normalizedBrowseId,
-                                                        isYoutubePlaylist = true,
-                                                        isEditable = false
+                                                val completeTracks = playlistPage
+                                                    ?.takeIf { it.songsContinuation == null }
+                                                    ?.songs
+                                                    ?.map(Innertube.SongItem::asMediaItem)
+                                                val saved = Database.awaitWriteBatch {
+                                                    var addedPlaylist: Playlist? = null
+                                                    transaction {
+                                                        val existing = playlistTable.findMusicBookmarkByBrowseId(browseId).first()
+                                                        if (existing?.isYoutubePlaylist == true) return@transaction
+
+                                                        val playlist = existing?.copy(isYoutubePlaylist = true) ?: Playlist(
+                                                            name = playlistPage?.playlist?.title.orEmpty(),
+                                                            browseId = bookmarkBrowseId,
+                                                            isYoutubePlaylist = true,
+                                                            isEditable = false,
+                                                        )
+                                                        val id = if (existing == null) playlistTable.insert(playlist) else {
+                                                            if (playlistTable.update(playlist) == 0) return@transaction
+                                                            existing.id
+                                                        }
+                                                        if (id <= 0) return@transaction
+
+                                                        val savedPlaylist = playlist.copy(id = id)
+                                                        if (!savedPlaylist.isEditable) {
+                                                            playlistSongs?.map(Innertube.SongItem::asMediaItem)
+                                                                ?.let { mapIgnore(savedPlaylist, *it.toTypedArray()) }
+                                                        }
+                                                        addedPlaylist = savedPlaylist
+                                                    }
+                                                    addedPlaylist
+                                                }
+                                                if (saved != null) {
+                                                    MyDownloadHelper.downloadBookmarkedPlaylist(
+                                                        context, saved.browseId, saved, completeTracks.takeUnless { saved.isEditable },
                                                     )
-                                                    filteredPageSongs
-                                                        ?.map( Innertube.SongItem::asMediaItem )
-                                                        ?.let { mapIgnore( playlist, *it.toTypedArray() ) }
                                                 }
                                             }
                                             Toaster.done()
-                                            saveCheck = !saveCheck
                                         }
                                     },
                                     onLongClick = {
@@ -822,7 +841,7 @@ fun PlaylistSongList(
                                                                         if (!canEditStoredPlaylistMembership(playlistPreview.playlist.id)) return@launch
                                                                         YtMusic.addPlaylistToPlaylist(
                                                                             cleanPrefix(playlistPreview.playlist.browseId ?: ""),
-                                                                            browseId.substringAfter("VL")
+                                                                            browseId.removePrefix("VL")
 
                                                                             )
                                                                         }
@@ -842,39 +861,15 @@ fun PlaylistSongList(
                                     )
                                 },
                                 {
+                                    val menuLabel = stringResource(R.string.common_menu_label)
                                     HeaderIconButton(
-                                        icon = R.drawable.heart,
-                                        enabled = filteredPageSongs?.isNotEmpty() == true,
-                                        color = colorPalette().text,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    if (!isNetworkConnected(appContext()) && isYouTubeSyncEnabled()) {
-                                                        Toaster.noInternet()
-                                                    } else if (!isYouTubeSyncEnabled()){
-                                                        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                            val showDisliked = appContext().preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
-                                                            filteredPageSongs
-                                                                          ?.map{ it.asSong.id }
-                                                                          ?.filter {
-                                                                              !Database.songTable.isLiked( it ).first()
-                                                                          }
-                                                                          ?.forEach { id ->
-                                                                              if (showDisliked) {
-                                                                                  Database.songTable.rotateLikeState(id)
-                                                                              } else {
-                                                                                  Database.songTable.toggleLike(id)
-                                                                              }
-                                                                          }
-
-                                                            Toaster.done()
-                                                        }
-                                                    } else {
-                                                        showYoutubeLikeConfirmDialog = true
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( R.string.library_favorites_action_add )
-                                                }
+                                        icon = moreActions.iconId,
+                                        color = if (showSongPlaceholders) colorPalette().textDisabled else colorPalette().text,
+                                        enabled = !showSongPlaceholders,
+                                        modifier = Modifier
+                                            .padding(horizontal = 5.dp)
+                                            .semantics { contentDescription = menuLabel },
+                                        onClick = moreActions::onShortClick,
                                     )
                                 },
                             )
@@ -891,7 +886,7 @@ fun PlaylistSongList(
                                 shuffleButtonIcon(),
                                 radioButtonIcon(),
                                 R.drawable.add_in_playlist,
-                                R.drawable.heart,
+                                moreActions.iconId,
                             )
                             CollectionToolbar(
                                 bookmark = {
@@ -1120,8 +1115,10 @@ fun PlaylistSongList(
                     }
                 } else items(
                     items = playlistSongs,
-                    key = Innertube.SongItem::key
+                    key = Innertube.SongItem::key,
+                    contentType = { "song" },
                 ) { ytSong ->
+                    val song = remember(ytSong) { ytSong.asSong }
                     val isLocal by remember { derivedStateOf { ytSong.asMediaItem.isLocal } }
                     val isDownloaded = !isLocal && isDownloadedSong( ytSong.key )
 
@@ -1152,14 +1149,17 @@ fun PlaylistSongList(
                         swipeRightActionParam = playlistSwipeRightAction
                     ) {
                         SongItem(
-                            song = ytSong.asSong,
+                            song = song,
                             isLiked = likeStatesMap[ytSong.key],
                             inPlaylist = playlistStatesMap[ytSong.key],
+                            itemSelector = itemSelector,
                             navController = navController,
                             modifier = Modifier,
 
                             onClick = {
-                                if ( ytSong.key !in dislikedSongs ) {
+                                if (itemSelector.isActive) {
+                                    if (!itemSelector.remove(song)) itemSelector.add(song)
+                                } else if ( ytSong.key !in dislikedSongs ) {
                                     searching = false
                                     filter = null
                                     filteredPageSongs

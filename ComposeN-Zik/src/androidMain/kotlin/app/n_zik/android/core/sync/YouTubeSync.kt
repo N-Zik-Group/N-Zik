@@ -1,6 +1,5 @@
 package app.n_zik.android.core.sync
 
-import app.n_zik.android.utils.showDislikedPlaylistKey
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.enums.DislikeMode
 
@@ -45,33 +44,9 @@ object YouTubeSync {
             "Cannot run YouTubeSync.rotateSongLikeState on main thread"
         }
 
-        // Get state BEFORE rotation to determine what the NEW state will be
-        val currentState = Database.songTable.likeState( mediaItem.mediaId ).first()
-        val showDisliked = appContext().preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
-
-        Database.insertIgnore( mediaItem )
-        if (showDisliked) {
-            Database.songTable.rotateLikeState( mediaItem.mediaId )
-        } else {
-            Database.songTable.toggleLike( mediaItem.mediaId )
-        }
-
-        // Determine new state based on rotation: neutral → liked → disliked → neutral
-        val likeState = if (showDisliked) {
-            when(currentState) {
-                null -> true    // neutral → liked
-                true -> false   // liked → disliked
-                false -> null   // disliked → neutral
-            }
-        } else {
-            when(currentState) {
-                null -> true    // neutral → liked
-                true -> null    // liked → neutral
-                false -> true   // disliked → liked
-            }
-        }
-
-        MyDownloadHelper.downloadOnLike( mediaItem, likeState, context )
+        val showDisliked = appContext().preferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
+            ?.let { runCatching { DislikeMode.valueOf(it) }.getOrNull() }?.isEnabled ?: true
+        val likeState = changeSongLikeState(context, mediaItem, rotate = showDisliked)
 
         // Check if we should push to YouTube
         val shouldPushToYt = likeState != false  // Disliked = local only
@@ -132,18 +107,7 @@ object YouTubeSync {
             "Cannot run YouTubeSync.toggleSongLikeState on main thread"
         }
 
-        val currentState = Database.songTable.likeState( mediaItem.mediaId ).first()
-
-        Database.insertIgnore( mediaItem )
-        Database.songTable.toggleLike( mediaItem.mediaId )
-
-        val likeState = when(currentState) {
-            null -> true    // neutral → liked
-            true -> null    // liked → neutral
-            false -> true   // disliked → liked
-        }
-
-        MyDownloadHelper.downloadOnLike( mediaItem, likeState, context )
+        val likeState = changeSongLikeState(context, mediaItem, rotate = false)
 
         val shouldPushToYt = isYouTubeSyncEnabled()
             && appContext().preferences.getBoolean(syncPushSongLikeKey, false)
@@ -182,6 +146,29 @@ object YouTubeSync {
                     Toaster.s( messageId )
             }
         }
+    }
+
+    private suspend fun changeSongLikeState(
+        context: Context,
+        mediaItem: MediaItem,
+        rotate: Boolean,
+    ): Boolean? = Database.awaitWriteBatch {
+        val id = mediaItem.mediaId
+        var previous: Boolean? = null
+        var current: Boolean? = null
+        transaction {
+            previous = songTable.likeState(id).first()
+            insertIgnore(mediaItem)
+            if (rotate) songTable.rotateLikeState(id)
+            else songTable.likeState(id, if (previous == true) null else true)
+            current = songTable.likeState(id).first()
+        }
+        if (previous != true && current == true) {
+            MyDownloadHelper.downloadNewlyLiked(context, mediaItem)
+        } else if (previous == true && current != true) {
+            MyDownloadHelper.removeNewlyUnliked(context, mediaItem)
+        }
+        current
     }
 }
 

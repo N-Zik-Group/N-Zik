@@ -237,9 +237,6 @@ object PlaylistWidgetManager {
         }
     }
 
-    internal suspend fun extractPalette(context: Context, bitmap: Bitmap?): ColorPalette =
-        widgetArtworkPalette(context, loadWidgetArtworkColors(context, null, bitmap))
-
     internal suspend fun createRemoteViews(
         context: Context,
         options: Bundle,

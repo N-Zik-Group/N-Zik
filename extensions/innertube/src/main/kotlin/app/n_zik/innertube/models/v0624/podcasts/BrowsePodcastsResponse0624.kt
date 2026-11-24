@@ -5,9 +5,8 @@ package app.n_zik.innertube.models.v0624.podcasts
 // val json                  = Json { allowStructuredMapKeys = true }
 // val browseExploreResponse = json.parse(BrowseExploreResponse.serializer(), jsonString)
 
-import kotlinx.serialization.*
-
-
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonNames
 
 @Serializable

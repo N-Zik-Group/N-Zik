@@ -12,7 +12,7 @@ import androidx.media3.common.FlagSet
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import app.n_zik.android.components.player.extractM3ECoverColors
+import app.n_zik.android.components.player.SharedArtworkColors
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -152,7 +152,7 @@ class GlassArtworkTest {
             if (index % 40 < 4) 0xFF00FF40.toInt() else 0xFF8899AA.toInt()
         }
         bitmap.setPixels(pixels, 0, 40, 0, 0, 40, 40)
-        val expected = requireNotNull(extractM3ECoverColors(bitmap, isDark = true))
+        val expected = requireNotNull(SharedArtworkColors.fromBitmap(bitmap)?.display(isDark = true, keepDark = false)?.colors)
         assertNotEquals(expected.vibrant, expected.dominant)
         assertEquals(expected.dominant, extractGlassArtworkColor(bitmap, isDark = true)?.toArgb())
         bitmap.recycle()

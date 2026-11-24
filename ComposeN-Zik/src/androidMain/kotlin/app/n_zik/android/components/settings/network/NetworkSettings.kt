@@ -147,6 +147,7 @@ internal fun NetworkSettingsContent(
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
     onCardPosition: (String, Float) -> Unit = { _, _ -> },
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
+    searchTarget: String = "",
 ) {
     var restartService by rememberSaveable { mutableStateOf(false) }
     val audioDialog = rememberSaveable { mutableStateOf(false) }
@@ -185,7 +186,9 @@ internal fun NetworkSettingsContent(
             SettingsCardSlot(R.string.bridge_server, modifier = { cardModifier(R.string.bridge_server) }) { NetworkServerCard(search.inputValue, navController, Modifier.onGloballyPositioned { onCardPosition("pcserver", it.positionInRoot().y) }) }
         }
         if (selectedCards == null || R.string.downloads_title in selectedCards) {
-            SettingsCardSlot(R.string.downloads_title, modifier = { cardModifier(R.string.downloads_title) }) { NetworkDownloadCard(search.inputValue) }
+            SettingsCardSlot(R.string.downloads_title, modifier = { cardModifier(R.string.downloads_title) }) {
+                NetworkDownloadCard(search.inputValue, searchTarget)
+            }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) { NetworkResetCard(search.inputValue) { restartService = true } }

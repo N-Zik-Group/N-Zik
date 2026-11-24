@@ -87,6 +87,8 @@ class MyDownloadService : DownloadService(
                 awaitLibraryReady()
             } catch (error: LibraryStartupException) {
                 Timber.tag("MyDownloadService").e(error, "Library is unavailable for downloads")
+                pendingStarts.forEach { releaseRejectedCommand(it.intent) }
+                pendingStarts.clear()
                 stopSelf()
                 return@launch
             }
@@ -112,12 +114,13 @@ class MyDownloadService : DownloadService(
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (legacyStorageProtected) {
+            releaseRejectedCommand(intent)
             stopSelfResult(startId)
             return START_NOT_STICKY
         }
         if (intent?.data == null && (intent?.action == ACTION_ADD_DOWNLOAD || intent?.action == ACTION_REMOVE_DOWNLOAD)) {
             // Unowned starts, including previously redelivered ones, cannot be attributed.
-            return rejectStart(startId)
+            return rejectStart(intent, startId)
         }
         if (!downloadManagerStarted) {
             if (!waitingForeground &&
@@ -145,9 +148,9 @@ class MyDownloadService : DownloadService(
             ACTION_ADD_DOWNLOAD, ACTION_REMOVE_DOWNLOAD, ACTION_SET_STOP_REASON, ACTION_SET_REQUIREMENTS -> {
                 val target = commands
                 if (target == null || !target.matches(intent) || target != ProfileDownloadCommands.capture(this)) {
-                    return rejectStart(startId)
+                    return rejectStart(intent, startId)
                 }
-                if (intent.intersectsCleanup()) return rejectStart(startId)
+                if (intent.intersectsCleanup()) return rejectStart(intent, startId)
                 when (intent.action) {
                     ACTION_CANCEL_ONGOING -> {
                         cancelOngoingDownloads()
@@ -162,9 +165,24 @@ class MyDownloadService : DownloadService(
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun rejectStart(startId: Int): Int {
+    private fun rejectStart(intent: Intent?, startId: Int): Int {
+        releaseRejectedCommand(intent)
         if (!dispatchedStart) stopSelfResult(startId)
         return START_NOT_STICKY
+    }
+
+    private fun releaseRejectedCommand(intent: Intent?) {
+        when (intent?.action) {
+            ACTION_ADD_DOWNLOAD -> {
+                @Suppress("DEPRECATION")
+                intent.getParcelableExtra<DownloadRequest>(KEY_DOWNLOAD_REQUEST)?.let(MyDownloadHelper::releaseDownloadAdd)
+            }
+            ACTION_REMOVE_DOWNLOAD -> {
+                val mediaId = intent.getStringExtra(KEY_CONTENT_ID) ?: return
+                val token = intent.getStringExtra(DOWNLOAD_REMOVE_TOKEN_EXTRA) ?: return
+                MyDownloadHelper.releaseDownloadRemoval(mediaId, token)
+            }
+        }
     }
 
     private fun Intent.intersectsCleanup(): Boolean {
@@ -200,6 +218,7 @@ class MyDownloadService : DownloadService(
 
     override fun onDestroy() {
         startupJob?.cancel()
+        pendingStarts.forEach { releaseRejectedCommand(it.intent) }
         pendingStarts.clear()
         // DownloadService dereferences its manager helper, which is only attached by its onCreate.
         if (downloadManagerStarted) super.onDestroy()

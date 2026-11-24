@@ -15,6 +15,8 @@ import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.click
@@ -37,6 +39,7 @@ import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
+import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
 import app.n_zik.android.components.settings.common.SettingsResetCard
 import app.n_zik.android.R
 import org.junit.After
@@ -419,6 +422,29 @@ class DialogPresenceTest {
         }
         advance()
         assertTrue(disposed)
+    }
+
+    @Test fun `typing replaces the selected playlist name suggestion`() {
+        lateinit var dialog: NewPlaylistDialog
+        content {
+            dialog = NewPlaylistDialog()
+            dialog.Render()
+        }
+        compose.runOnIdle { dialog.showDialog() }
+        advance()
+
+        val field = compose.onNode(hasSetTextAction()).assertIsFocused()
+        val expectedPrefix = context.getString(R.string.playlist_action_create)
+        compose.runOnIdle {
+            val proposed = dialog.value
+            assertTrue(Regex(Regex.escape(expectedPrefix) + " [0-9]{4}").matches(proposed.text))
+            assertEquals(0, proposed.selection.start)
+            assertEquals(proposed.text.length, proposed.selection.end)
+        }
+
+        field.performTextInput("Weekend")
+        advance(16)
+        field.assertTextEquals("Weekend")
     }
 
     @Test fun `retiring YouTube import ignores an IME action captured while open`() {

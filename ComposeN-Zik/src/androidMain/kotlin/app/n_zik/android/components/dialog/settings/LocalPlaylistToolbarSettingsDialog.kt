@@ -38,7 +38,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "item_selector" to R.string.common_action_select,
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
-        "add_to_favorite" to R.string.library_favorites_action_add,
+        "add_to_favorite" to R.string.library_favorites_title,
         "add_to_playlist" to R.string.playlist_action_add,
         "sync" to R.string.sync_action_sync,
         "refresh_on_open" to R.string.playlist_refresh_on_open,
@@ -55,10 +55,10 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
     val allButtonIds = listOf(
         "insertion_position",
-        "pin", "search", "position_lock", "match", "renumber",
+        "pin", "search", "add_to_favorite", "position_lock", "match", "renumber",
         "download_all", "delete_downloads",
         "item_selector",
-        "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
+        "play_next", "enqueue", "add_to_playlist",
         "sync", "refresh_on_open", "listen_on_yt",
         "import_menu", "rename", "delete", "export",
         "thumbnail_picker", "reset_thumbnail", "update"
@@ -121,7 +121,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         val itemSelectorLabel = stringResource(searchLabelResources.getValue("item_selector"))
         val playNextLabel = stringResource(searchLabelResources.getValue("play_next"))
         val enqueueLabel = stringResource(searchLabelResources.getValue("enqueue"))
-        val addToFavoriteLabel = stringResource(searchLabelResources.getValue("add_to_favorite"))
+        val favoritesLabel = stringResource(searchLabelResources.getValue("add_to_favorite"))
         val addToPlaylistLabel = stringResource(searchLabelResources.getValue("add_to_playlist"))
         val importMenuLabel = stringResource(searchLabelResources.getValue("import_menu"))
         val exportDialogLabel = stringResource(searchLabelResources.getValue("export"))
@@ -156,7 +156,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
-                "add_to_favorite" -> ToggleItem(uid, R.drawable.heart, addToFavoriteLabel, pk, true)
+                "add_to_favorite" -> ToggleItem(uid, R.drawable.heart_outline, favoritesLabel, pk, true)
                 "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
                 "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 "refresh_on_open" -> ToggleItem(uid, R.drawable.sync, refreshOnOpenLabel, pk, true)

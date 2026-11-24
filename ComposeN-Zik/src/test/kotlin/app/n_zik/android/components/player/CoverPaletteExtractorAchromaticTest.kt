@@ -5,9 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.palette.graphics.Palette
-import app.n_zik.android.ui.screens.player.computePlayerDynamicPalette
 import app.n_zik.android.ui.styling.ColorPalette
-import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -20,23 +18,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
-/**
- * Unit coverage for the achromatic neutralization guard (renegotiated `NEUTRAL_COVER` case,
- * 2026-09-19 — session `problem-solution-2026-09-19`, solution S3') and for the achromatic
- * ramp luminance cap (spec-achromatic-ramp-luminance-cap, 2026-09-28): nearly achromatic
- * covers must render a neutral gray following the cover's lightness on every cover-based
- * surface, and when that tone mismatches the theme the five ramp backgrounds must be capped
- * (light tone in a dark theme, lightest background = L 0.80) / floored (dark tone in a light
- * theme, darkest background = L 0.30) by a uniform shift keyed on the real max/min
- * lightness -- while colored/pastel covers must be extracted bit-identically to the
- * pre-guard behavior (strict M3E parity).
- *
- * Robolectric is required (not a plain JVM unit test) because `Bitmap`/`Palette` need real
- * pixel backing to generate a deterministic swatch -- the same technique
- * `CoverPaletteExtractorTest` uses. Fixture sizes are 32x32 to match the CIS probe's
- * measured values, and fixture channel spreads keep a comfortable margin below
- * [ACHROMATIC_CHANNEL_DELTA_THRESHOLD] so palette quantization cannot flip the guard.
- */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class CoverPaletteExtractorAchromaticTest {
@@ -66,11 +47,10 @@ class CoverPaletteExtractorAchromaticTest {
     private fun M3ECoverColors.swatches(): List<Int> =
         listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
 
-    /** The 7 swatches as extracted without the guard (independent reference, pre-guard parity) — on the same RiPlay-based extraction base as the extractor: capped 8 palette (`maximumColorCount(8)`), each role falling back to the dynamic palette's accent. */
+    /** Expected swatches before achromatic normalization. */
     private fun preGuardSwatches(bitmap: Bitmap, isDark: Boolean): M3ECoverColors? {
-        val palette = dynamicColorPaletteOf(bitmap, isDark) ?: return null
         val swatchPalette = Palette.from(bitmap).maximumColorCount(8).generate()
-        val fallback = palette.accent.toArgb()
+        val fallback = swatchFallbackAccent(swatchPalette, isDark) ?: return null
         return M3ECoverColors(
             dominant = swatchPalette.getDominantColor(fallback),
             vibrant = swatchPalette.getVibrantColor(fallback),
@@ -81,6 +61,16 @@ class CoverPaletteExtractorAchromaticTest {
             darkMuted = swatchPalette.getDarkMutedColor(fallback),
         )
     }
+
+    private fun swatchFallbackAccent(palette: Palette, isDark: Boolean): Int? {
+        val dominantHsl = palette.dominantSwatch?.hsl ?: return null
+        val saturatedHsl = palette.swatches.maxByOrNull { it.hsl[1] }?.hsl
+        val accentHsl = saturatedHsl?.takeIf { dominantHsl[1] < 0.08f && it[1] > 0f } ?: dominantHsl
+        return dynamicColorPaletteOf(accentHsl, isDark).accent.toArgb()
+    }
+
+    private suspend fun display(bitmap: Bitmap, isDark: Boolean): ArtworkDisplayColors =
+        requireNotNull(SharedArtworkColors.fromBitmap(bitmap)).display(isDark, keepDark = false)
 
     @Test
     fun `channelDelta is the normalized max-min channel spread and is lightness independent`() {
@@ -115,7 +105,7 @@ class CoverPaletteExtractorAchromaticTest {
         for ((name, color) in achromaticCases) {
             for (isDark in listOf(true, false)) {
                 val bitmap = solidBitmap(color)
-                val colors = extractM3ECoverColors(bitmap, isDark)
+                val colors = display(bitmap, isDark).colors
                 assertNotNull("expected swatches for $name (isDark=$isDark)", colors)
 
                 val dominantLuminance = hslOf(colors!!.dominant)[2]
@@ -131,7 +121,7 @@ class CoverPaletteExtractorAchromaticTest {
                 // Each swatch keeps its own lightness, except the ones that fell back to the
                 // legacy mid-tone accent, which take the dominant (cover) lightness instead.
                 val preGuard = preGuardSwatches(bitmap, isDark)!!
-                val fallback = dynamicColorPaletteOf(bitmap, isDark)!!.accent.toArgb()
+                val fallback = requireNotNull(swatchFallbackAccent(Palette.from(bitmap).maximumColorCount(8).generate(), isDark))
                 for ((after, before) in colors.swatches().zip(preGuard.swatches())) {
                     val expectedLightness = if (before == fallback) {
                         dominantLuminance
@@ -154,11 +144,11 @@ class CoverPaletteExtractorAchromaticTest {
         // Two achromatic regions far apart in lightness: the palette keeps both swatches, so the
         // guard must preserve each one's own lightness (and only remap the fallback swatches).
         val bitmap = twoRegionBitmap(android.graphics.Color.rgb(200, 200, 200), android.graphics.Color.rgb(60, 60, 60), 50)
-        val colors = extractM3ECoverColors(bitmap, false)
+        val colors = display(bitmap, false).colors
         assertNotNull("expected swatches for a two-region achromatic bitmap", colors)
 
         val preGuard = preGuardSwatches(bitmap, false)!!
-        val fallback = dynamicColorPaletteOf(bitmap, false)!!.accent.toArgb()
+        val fallback = requireNotNull(swatchFallbackAccent(Palette.from(bitmap).maximumColorCount(8).generate(), false))
         var checkedOwnLightness = 0
         for ((after, before) in colors!!.swatches().zip(preGuard.swatches())) {
             assertEquals(0f, hslOf(after)[1], 0.001f)
@@ -181,7 +171,7 @@ class CoverPaletteExtractorAchromaticTest {
         )
         for ((name, bitmap) in coloredCases) {
             for (isDark in listOf(true, false)) {
-                val colors = extractM3ECoverColors(bitmap, isDark)
+                val colors = display(bitmap, isDark).colors
                 val preGuard = preGuardSwatches(bitmap, isDark)
                 assertNotNull("expected swatches for $name (isDark=$isDark)", colors)
                 assertEquals(
@@ -218,37 +208,6 @@ class CoverPaletteExtractorAchromaticTest {
         )
     }
 
-    @Test
-    fun `computePlayerDynamicPalette applies the same achromatic guard as the shared extractor`() = runBlocking {
-        // Gray + warm-tinted-gray regions: both regions are achromatic (Δ < threshold) so the
-        // whole extraction must be neutralized on both the player's pipeline and the shared
-
-        // extractor -- pinning the two paths together (regression guard for the raw swatches fed
-        // to the morphing shapes, animated gradients and ColorPalette stripes).
-        val bitmap = twoRegionBitmap(android.graphics.Color.rgb(160, 160, 160), android.graphics.Color.rgb(172, 165, 156))
-        for (isDark in listOf(true, false)) {
-            val result = computePlayerDynamicPalette(bitmap, isDark, DefaultDarkColorPalette)
-            val shared = extractM3ECoverColors(bitmap, isDark)
-            assertNotNull("expected swatches for a two-region achromatic bitmap (isDark=$isDark)", shared)
-            assertEquals(
-                "player swatches must be identical to the shared extractor's (isDark=$isDark)",
-                shared,
-                M3ECoverColors(
-                    result.dominant,
-                    result.vibrant,
-                    result.lightVibrant,
-                    result.darkVibrant,
-                    result.muted,
-                    result.lightMuted,
-                    result.darkMuted,
-                )
-            )
-            for (rgb in shared!!.swatches()) {
-                assertEquals("player surface must render a neutral gray (isDark=$isDark)", 0f, hslOf(rgb)[1], 0.001f)
-            }
-        }
-    }
-
     private fun ColorPalette.backgroundLightnesses(): List<Float> =
         listOf(background0, background1, background2, background3, background4)
             .map { background -> hslOf(background.toArgb())[2] }
@@ -260,7 +219,7 @@ class CoverPaletteExtractorAchromaticTest {
 
         // Light theme + dark cover: the tone must flip to dark (previously the theme stayed
         // white), and the floor lifts the darkest background (bg0, L 0.10) to L 0.30.
-        val lightModeDarkCover = m3eDynamicColorPaletteOf(darkGray, false)
+        val lightModeDarkCover = display(darkGray, false).palette
         assertNotNull("expected a palette for a dark achromatic cover (light theme)", lightModeDarkCover)
         assertEquals("dark cover must yield a dark tone", true, lightModeDarkCover!!.isDark)
         assertEquals(
@@ -274,7 +233,7 @@ class CoverPaletteExtractorAchromaticTest {
         // five backgrounds so the lightest one lands exactly on the 0.80 ceiling -- the app
 
         // must never render near-white in dark mode.
-        val darkModeOffWhiteCover = m3eDynamicColorPaletteOf(offWhite, true)
+        val darkModeOffWhiteCover = display(offWhite, true).palette
         assertNotNull("expected a palette for an off-white achromatic cover (dark theme)", darkModeOffWhiteCover)
         assertEquals("off-white cover must yield a light tone", false, darkModeOffWhiteCover!!.isDark)
         assertEquals(
@@ -292,8 +251,8 @@ class CoverPaletteExtractorAchromaticTest {
         assertEquals(0.12f, hslOf(darkModeOffWhiteCover.text.toArgb())[2], 0.02f)
 
         // Matching tones are unchanged.
-        assertEquals(true, m3eDynamicColorPaletteOf(darkGray, true)!!.isDark)
-        assertEquals(false, m3eDynamicColorPaletteOf(offWhite, false)!!.isDark)
+        assertEquals(true, display(darkGray, true).palette?.isDark)
+        assertEquals(false, display(offWhite, false).palette?.isDark)
     }
 
     @Test
@@ -303,11 +262,11 @@ class CoverPaletteExtractorAchromaticTest {
 
         // lightest one lands exactly on the ceiling.
         val offWhite = solidBitmap(android.graphics.Color.rgb(235, 233, 228))
-        val colors = extractM3ECoverColors(offWhite, true)
+        val colors = display(offWhite, true).colors
         assertNotNull("expected swatches for the off-white fixture", colors)
 
         val preCap = dynamicColorPaletteOf(hslOf(colors!!.dominant), false)
-        val capped = requireNotNull(m3eDynamicColorPaletteOf(offWhite, true)) { "expected a capped palette" }
+        val capped = requireNotNull(display(offWhite, true).palette) { "expected a capped palette" }
 
         val delta = preCap.backgroundLightnesses().max() - ACHROMATIC_RAMP_LIGHT_TONE_MAX_LIGHTNESS
         assertTrue("the light tone in a dark theme must trigger a positive shift", delta > 0f)
@@ -331,10 +290,10 @@ class CoverPaletteExtractorAchromaticTest {
     fun `the cap and the floor leave text, textSecondary, textDisabled and accent untouched`() = runBlocking {
         // Cap direction (dark theme + light tone).
         val offWhite = solidBitmap(android.graphics.Color.rgb(235, 233, 228))
-        val whiteColors = extractM3ECoverColors(offWhite, true)
+        val whiteColors = display(offWhite, true).colors
         assertNotNull("expected swatches for the off-white fixture", whiteColors)
         val preCap = dynamicColorPaletteOf(hslOf(whiteColors!!.dominant), false)
-        val capped = requireNotNull(m3eDynamicColorPaletteOf(offWhite, true)) { "expected a capped palette" }
+        val capped = requireNotNull(display(offWhite, true).palette) { "expected a capped palette" }
         assertEquals("text must be untouched by the cap", preCap.text, capped.text)
         assertEquals("textSecondary must be untouched by the cap", preCap.textSecondary, capped.textSecondary)
         assertEquals("textDisabled must be untouched by the cap", preCap.textDisabled, capped.textDisabled)
@@ -342,10 +301,10 @@ class CoverPaletteExtractorAchromaticTest {
 
         // Floor direction (light theme + dark tone).
         val darkGray = solidBitmap(android.graphics.Color.rgb(58, 56, 54))
-        val grayColors = extractM3ECoverColors(darkGray, false)
+        val grayColors = display(darkGray, false).colors
         assertNotNull("expected swatches for the dark-gray fixture", grayColors)
         val preFloor = dynamicColorPaletteOf(hslOf(grayColors!!.dominant), true)
-        val floored = requireNotNull(m3eDynamicColorPaletteOf(darkGray, false)) { "expected a floored palette" }
+        val floored = requireNotNull(display(darkGray, false).palette) { "expected a floored palette" }
         assertEquals("text must be untouched by the floor", preFloor.text, floored.text)
         assertEquals("textSecondary must be untouched by the floor", preFloor.textSecondary, floored.textSecondary)
         assertEquals("textDisabled must be untouched by the floor", preFloor.textDisabled, floored.textDisabled)
@@ -356,22 +315,22 @@ class CoverPaletteExtractorAchromaticTest {
     fun `matching tones are bit-identical to the pre-cap ramp`() = runBlocking {
         // Dark tone in a dark theme: the cap must be a no-op.
         val darkGray = solidBitmap(android.graphics.Color.rgb(58, 56, 54))
-        val grayColors = extractM3ECoverColors(darkGray, true)
+        val grayColors = display(darkGray, true).colors
         assertNotNull("expected swatches for the dark-gray fixture", grayColors)
         assertEquals(
             "matching dark tones must be bit-identical to the uncapped ramp",
             dynamicColorPaletteOf(hslOf(grayColors!!.dominant), true),
-            m3eDynamicColorPaletteOf(darkGray, true)
+            display(darkGray, true).palette
         )
 
         // Light tone in a light theme: the cap must be a no-op.
         val offWhite = solidBitmap(android.graphics.Color.rgb(235, 233, 228))
-        val whiteColors = extractM3ECoverColors(offWhite, false)
+        val whiteColors = display(offWhite, false).colors
         assertNotNull("expected swatches for the off-white fixture", whiteColors)
         assertEquals(
             "matching light tones must be bit-identical to the uncapped ramp",
             dynamicColorPaletteOf(hslOf(whiteColors!!.dominant), false),
-            m3eDynamicColorPaletteOf(offWhite, false)
+            display(offWhite, false).palette
         )
     }
 
@@ -381,8 +340,8 @@ class CoverPaletteExtractorAchromaticTest {
         for (isDark in listOf(true, false)) {
             assertEquals(
                 "colored covers must be bit-identical to the legacy reference (isDark=$isDark)",
-                dynamicColorPaletteOf(blue, isDark),
-                m3eDynamicColorPaletteOf(blue, isDark)
+                dynamicColorPaletteOf(requireNotNull(Palette.from(blue).maximumColorCount(8).generate().dominantSwatch).hsl, isDark),
+                display(blue, isDark).palette
             )
         }
     }
@@ -487,8 +446,8 @@ class CoverPaletteExtractorAchromaticTest {
     @Test
     fun `the dynamic theme tone follows the requested mode for colored covers`() = runBlocking {
         val blue = solidBitmap(android.graphics.Color.rgb(30, 120, 200))
-        assertEquals("light mode must keep the light tone", false, m3eDynamicColorPaletteOf(blue, false)!!.isDark)
-        assertEquals("dark mode must keep the dark tone", true, m3eDynamicColorPaletteOf(blue, true)!!.isDark)
+        assertEquals("light mode must keep the light tone", false, display(blue, false).palette?.isDark)
+        assertEquals("dark mode must keep the dark tone", true, display(blue, true).palette?.isDark)
     }
 
     @Test
@@ -498,7 +457,7 @@ class CoverPaletteExtractorAchromaticTest {
             solidBitmap(android.graphics.Color.rgb(235, 233, 228)),
         )) {
             for (isDark in listOf(true, false)) {
-                val palette = m3eDynamicColorPaletteOf(bitmap, isDark)
+                val palette = display(bitmap, isDark).palette
                 assertNotNull("expected a palette (isDark=$isDark)", palette)
                 assertEquals(
                     "lyrics theme color must be the neutral accent (isDark=$isDark)",
@@ -513,7 +472,7 @@ class CoverPaletteExtractorAchromaticTest {
     @Test
     fun `the lyrics theme color is the theme accent, not the text, for colored themes`() = runBlocking {
         for (isDark in listOf(true, false)) {
-            val palette = m3eDynamicColorPaletteOf(solidBitmap(android.graphics.Color.rgb(30, 120, 200)), isDark)
+            val palette = display(solidBitmap(android.graphics.Color.rgb(30, 120, 200)), isDark).palette
             assertNotNull("expected a palette for a colored cover (isDark=$isDark)", palette)
             assertNotEquals("accent must differ from the text (isDark=$isDark)", palette!!.text, palette.accent)
             assertEquals("lyrics theme color must be the theme accent (isDark=$isDark)", palette.accent, lyricsThemeColor(palette))
@@ -523,7 +482,7 @@ class CoverPaletteExtractorAchromaticTest {
 
     @Test
     fun `the lyrics theme color is the theme text on an accent background`() = runBlocking {
-        val palette = m3eDynamicColorPaletteOf(solidBitmap(android.graphics.Color.rgb(30, 120, 200)), true)
+        val palette = display(solidBitmap(android.graphics.Color.rgb(30, 120, 200)), true).palette
         assertNotNull("expected a palette for a colored cover", palette)
         assertEquals("lyrics theme color must be the theme text", palette!!.text, lyricsThemeColor(palette, onAccentBackground = true))
     }

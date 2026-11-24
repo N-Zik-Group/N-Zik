@@ -119,11 +119,12 @@ import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.tab.ItemSelector
-import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
+import app.n_zik.android.components.ui.CollectionFavoritesKind
 import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.compose.persist.persistList
@@ -391,9 +392,12 @@ fun LocalPlaylistSongs(
                     Timber.tag("LocalPlaylistSongs").e(e, "Failed to toggle YTM bookmark")
                 }
             }
-            Database.playlistTable.update(
+            val updated = Database.playlistTable.update(
                 p.copy(isYoutubePlaylist = !wasBookmarked)
             )
+            if (!wasBookmarked && updated > 0) {
+                MyDownloadHelper.downloadBookmarkedPlaylist(context, p.browseId, p)
+            }
             withContext(NzikDispatchers.UI) {
                 isBookmarked = !wasBookmarked
             }
@@ -606,8 +610,6 @@ fun LocalPlaylistSongs(
             player.enqueue(mediaItems)
         }
     }
-    val addToFavorite = LikeComponent( ::getSongs )
-
     val addToPlaylist = PlaylistsMenu.init(
         navController,
         {
@@ -761,9 +763,37 @@ fun LocalPlaylistSongs(
         !isRewindPlaylist
 
     val songIds = remember(itemsOnDisplay) { itemsOnDisplay.map { it.id } }
-    val likeStatesMap by remember(songIds) {
-        LikeStateManager.getLikeStates(songIds)
+    val favoriteItems = remember(items, onDeviceOnly, parentalControlEnabled) {
+        projectLocalPlaylistSongs(
+            songs = items,
+            recommendations = emptyMap(),
+            query = "",
+            onDeviceOnly = onDeviceOnly,
+            parentalControlEnabled = parentalControlEnabled,
+        ).map(Song::asMediaItem)
+    }
+    val likeSongIds = remember(favoriteItems, songIds) {
+        (favoriteItems.map { it.mediaId } + songIds).distinct()
+    }
+    val likeStatesMap by remember(likeSongIds) {
+        LikeStateManager.getLikeStates(likeSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val selectedFavoriteIds = itemSelector.takeIf { it.isActive }?.mapTo(HashSet(), Song::id)
+    val favoriteMediaItems = remember(favoriteItems, selectedFavoriteIds) {
+        if (selectedFavoriteIds == null) favoriteItems
+        else favoriteItems.filter { it.mediaId in selectedFavoriteIds }
+    }
+    val collectionFavorites = rememberCollectionFavoritesButton(
+        mediaItems = favoriteMediaItems,
+        kind = if (playlistLinkKind(playlist?.browseId) == PlaylistLinkKind.YouTubePodcast) {
+            CollectionFavoritesKind.Podcast
+        } else {
+            CollectionFavoritesKind.Playlist
+        },
+        enabled = preview == null && loadedItems != null && playlist?.id == playlistId,
+        collectionKey = playlistId,
+        likeStates = likeStatesMap,
+    )
     val playlistStatesMap by remember(songIds) {
         PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -1003,7 +1033,7 @@ fun LocalPlaylistSongs(
                             "item_selector" -> add( itemSelector )
                             "play_next" -> add( playNext )
                             "enqueue" -> add( enqueue )
-                            "add_to_favorite" -> add( addToFavorite )
+                            "add_to_favorite" -> add(collectionFavorites)
                             "add_to_playlist" -> add( addToPlaylist )
                             "sync" -> if (!onDeviceOnly && !offlineMode && canRefreshPlaylist(playlist)) add( syncComponent )
                             "refresh_on_open" -> if (!onDeviceOnly && canRefreshPlaylist(playlist)) add(refreshOnOpen)

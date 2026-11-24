@@ -1,5 +1,12 @@
 package app.n_zik.android.core.database
 
+import io.mockk.every
+import io.mockk.mockk
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+
 import app.n_zik.android.models.Playlist
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -69,5 +76,27 @@ class PlaylistIdentityTest {
         val modifiedPodcast = podcast.copy(browseId = "modified:$podcastId")
         assertFalse(canBookmarkPlaylist(modifiedPodcast))
         assertFalse(canRefreshPlaylist(modifiedPodcast))
+    }
+
+    @Test fun `both music browse IDs resolve an existing bookmarked row`() {
+        val canonical = Playlist(id = 1L, name = "Linked", browseId = "VLPL123")
+        val bare = Playlist(id = 2L, name = "Favorite", browseId = "PL123", isYoutubePlaylist = true)
+        val table = mockk<PlaylistTable> {
+            every { findByBrowseId("VLPL123") } returns flowOf(canonical)
+            every { findByBrowseId("PL123") } returns flowOf(bare)
+        }
+
+        // JUnit 4 needs a synchronous entry point for the suspending flow reads.
+        runBlocking {
+            assertEquals(bare, table.findMusicBookmarkByBrowseId("VLPL123").first())
+            assertEquals(bare, table.findMusicBookmarkByBrowseId("PL123").first())
+        }
+    }
+
+    @Test fun `bookmark badges share the state of both music IDs`() {
+        val requested = listOf("VLPL123", "PL123", podcastId)
+        val rows = listOf(PlaylistBookmarkState("PL123", true), PlaylistBookmarkState(podcastId, false))
+        val badges = resolvePlaylistBookmarkBadges(requested.associateWith(::playlistBookmarkAliases), rows)
+        assertEquals(requested.associateWith { true }, badges)
     }
 }

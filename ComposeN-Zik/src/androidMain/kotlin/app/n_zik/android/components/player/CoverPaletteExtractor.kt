@@ -1,25 +1,14 @@
 package app.n_zik.android.components.player
 
-import android.graphics.Bitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils.colorToHSL
 import androidx.palette.graphics.Palette
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.withContext
 import timber.log.Timber
 
-/**
- * The 7 raw swatches of an album cover extracted from the capped [Palette]
- * (`maximumColorCount(8)`) — the same RiPlay-based extraction the legacy reference
- * `dynamicColorPaletteOf(bitmap, isDark)` uses. This extractor is the app's single source of
- * cover-color extraction (player, mini-player, app-wide dynamic theme, lyrics, visualizer,
- * home-widget fallbacks).
- *
- * All values are ARGB `Int`s.
- */
+/** The seven ARGB roles derived from the artwork swatches. */
 data class M3ECoverColors(
     val dominant: Int,
     val vibrant: Int,
@@ -63,22 +52,7 @@ internal fun channelDelta(rgb: Int): Float {
     return (maxOf(r, g, b) - minOf(r, g, b)) / 255f
 }
 
-/** Extracts neutralized cover swatches on MEDIA, or null when no dominant swatch exists. */
-suspend fun extractM3ECoverColors(bitmap: Bitmap, isDark: Boolean): M3ECoverColors? {
-    return extractCoverPalette(bitmap, isDark)?.colors
-}
-
 internal data class ExtractedCoverPalette(val colors: M3ECoverColors, val palette: ColorPalette)
-
-/** Quantizes once on MEDIA, sharing the swatches between the cover roles and dynamic theme. */
-internal suspend fun extractCoverPalette(
-    bitmap: Bitmap,
-    isDark: Boolean,
-    generatePalette: (Bitmap) -> Palette = { Palette.from(it).maximumColorCount(8).generate() },
-): ExtractedCoverPalette? = withContext(NzikDispatchers.MEDIA) {
-    val swatchPalette = generatePalette(bitmap)
-    coverPaletteFromSwatches(swatchPalette, isDark)
-}
 
 /** Derivation is cheap and never quantizes a bitmap. */
 internal fun coverPaletteFromSwatches(swatchPalette: Palette, isDark: Boolean): ExtractedCoverPalette? {
@@ -93,12 +67,12 @@ internal fun coverPaletteFromSwatches(swatchPalette: Palette, isDark: Boolean): 
         lightMuted = swatchPalette.getLightMutedColor(fallback),
         darkMuted = swatchPalette.getDarkMutedColor(fallback),
     ).m3eNeutralizeIfAchromatic(swatchPalette, fallback)
-    return ExtractedCoverPalette(colors, dominantDynamicPaletteOf(colors, isDark) { palette })
+    return ExtractedCoverPalette(colors, dominantDynamicPaletteOf(colors, isDark, palette))
 }
 
 private fun dynamicPaletteFromSwatches(palette: Palette, isDark: Boolean): ColorPalette? {
     val dominantHsl = palette.dominantSwatch?.hsl ?: return null
-    // Preserve the reference's S<0.08 rescue, including first-swatch tie ordering.
+    // A low-saturation dominant swatch borrows the most saturated swatch for the accent.
     val hsl = if (dominantHsl[1] < 0.08) {
         palette.swatches.map(Palette.Swatch::getHsl)
             .sortedByDescending { it[1] }
@@ -109,27 +83,7 @@ private fun dynamicPaletteFromSwatches(palette: Palette, isDark: Boolean): Color
     return dynamicColorPaletteOf(hsl, isDark)
 }
 
-/**
- * Neutralizes the extracted cover swatches when the cover is nearly achromatic
- * (renegotiated `NEUTRAL_COVER` case, 2026-09-19 — session `problem-solution-2026-09-19`,
- * solution S3').
- *
- * `androidx.palette` has no vibrant-role swatch for achromatic bitmaps, so every
- * `get*Color(fallback)` falls back to the legacy dynamic accent — a mid-tone carrying the
- * cover's faint hue, which [m3eSaturate]'s dark-theme boost then amplifies into the
- * artificial light brown/blue/pink tints reported on gray/white covers.
- *
- * Below [ACHROMATIC_CHANNEL_DELTA_THRESHOLD] every swatch becomes a neutral gray (saturation
- * zeroed, its own lightness kept — except swatches that fell back to [fallbackArgb], which
- * take the dominant's lightness, "neutral gray following the cover"); covers at or above the
- * threshold are unchanged (strict M3E parity). Applied inside [extractM3ECoverColors] so
- * every cover-based surface renders the same neutral result.
- *
- * @param swatchPalette the capped `Palette.from(bitmap).maximumColorCount(8).generate()`
- *  the swatches came from
- * @param fallbackArgb the dynamic accent ARGB used as each swatch's fallback
- * @return this instance neutralized when achromatic, unchanged otherwise
- */
+/** Neutralizes achromatic swatches, using the dominant lightness for missing roles. */
 internal fun M3ECoverColors.m3eNeutralizeIfAchromatic(
     swatchPalette: Palette,
     fallbackArgb: Int,
@@ -169,25 +123,10 @@ val M3ECoverColors.allAchromatic: Boolean
     get() = listOf(dominant, vibrant, lightVibrant, darkVibrant, muted, lightMuted, darkMuted)
         .all { channelDelta(it) < ACHROMATIC_CHANNEL_DELTA_THRESHOLD }
 
-/** Builds the reference dynamic palette on MEDIA, retaining neutral ramps and their tone caps. */
-suspend fun m3eDynamicColorPaletteOf(bitmap: Bitmap, isDark: Boolean): ColorPalette? =
-    extractCoverPalette(bitmap, isDark)?.palette
-
-/** Compatibility path for the player's already-extracted colors; callers dispatch to MEDIA. */
-internal fun m3eDominantDynamicPaletteOf(
-    colors: M3ECoverColors,
-    bitmap: Bitmap,
-    isDark: Boolean,
-): ColorPalette = dominantDynamicPaletteOf(colors, isDark) {
-    requireNotNull(dynamicColorPaletteOf(bitmap, isDark)) {
-        "dominant swatch disappeared between extraction and palette build"
-    }
-}
-
-private inline fun dominantDynamicPaletteOf(
+private fun dominantDynamicPaletteOf(
     colors: M3ECoverColors,
     isDark: Boolean,
-    coloredPalette: () -> ColorPalette,
+    coloredPalette: ColorPalette,
 ): ColorPalette {
     if (colors.allAchromatic) {
         val dominantHsl = FloatArray(3)
@@ -196,7 +135,7 @@ private inline fun dominantDynamicPaletteOf(
         return dynamicColorPaletteOf(dominantHsl, toneIsDark)
             .m3eCapAchromaticBackgrounds(themeIsDark = isDark, toneIsDark = toneIsDark)
     }
-    return coloredPalette()
+    return coloredPalette
 }
 
 /**
@@ -212,9 +151,7 @@ private inline fun dominantDynamicPaletteOf(
  * already in range return the same instance (bit-identical, no log); text colors and
  * [ColorPalette.accent] are untouched.
  *
- * Single choke point for dynamic palettes: applied on the achromatic branch of
- * [m3eDominantDynamicPaletteOf] and re-applied on restored palettes via
- * `m3eRecapRestoredDynamicPalette` (loopback 2, EC-1 — the Saver rebuilds the ramp uncapped).
+ * Applied to artwork and to restored palettes, since the Saver rebuilds the ramp uncapped.
  *
  * @param themeIsDark whether the ramp renders in a dark theme
  * @param toneIsDark the tone of this palette ([ColorPalette.isDark])
