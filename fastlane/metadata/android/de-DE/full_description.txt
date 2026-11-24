@@ -38,7 +38,6 @@ Danksagung: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdr
 - Last.fm-Scrobbling mit Now Playing und love/unlove
 - MusicBrainz-Künstler- und Album-Infos
 erweitertem Modus mit Live-Vorschau
-- Invidious-Integration für alternatives YouTube-Streaming
 - Playlist-Import/Export: RiPlay, Spotify, YouTube Music, N-Zik
 
 👥 <b>Gemeinsam hören</b>
