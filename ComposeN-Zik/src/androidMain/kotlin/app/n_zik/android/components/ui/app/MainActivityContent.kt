@@ -385,8 +385,8 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
 
     val artworkColorGeneration by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
     val observedArtwork = playerArtwork.state.value
-    val sourceRevision = ImageCacheFactory.rememberArtworkRevision(observedArtwork?.uri)
     val artworkProfile = ImageCacheFactory.rememberArtworkProfile()
+    val sourceRevision = ImageCacheFactory.rememberArtworkRevision(observedArtwork?.uri, artworkProfile)
     val colorRevision = rememberScopedArtworkColorRevision(observedArtwork?.uri, artworkProfile)
     val artworkRevisions = Triple(artworkColorGeneration, sourceRevision, colorRevision)
     var requestedArtworkRevisions by remember(playerArtwork, observedArtwork, artworkProfile) {

@@ -1,20 +1,12 @@
 package app.n_zik.android.core.coil
 
 import android.net.Uri
-import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import app.n_zik.android.cleanPrefix
-import app.n_zik.android.utils.getActiveProfile
-import app.n_zik.android.utils.activeProfileKey
-import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.appContext
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.playback.services.ArtworkContentProvider
+import app.n_zik.android.utils.getActiveProfile
 
 /** Phone renderers need original pixels, not a session provider's crop snapshot. */
 internal fun displayArtworkSource(url: String?, profile: String? = null): String? {
@@ -40,18 +32,8 @@ private fun remoteArtworkUri(url: String?): Uri? {
 
 /** Verifies the signed source once per URL/profile rather than on redraws. */
 @Composable
-internal fun rememberDisplayArtworkSource(url: String?): String? {
+internal fun rememberDisplayArtworkSource(url: String?, profile: String? = null): String? {
     if (remember(url) { remoteArtworkUri(url) } == null) return url
-    val context = LocalContext.current
-    val preferences = context.profilePreferences
-    var profile by remember(preferences) { mutableStateOf(getActiveProfile(context)) }
-    DisposableEffect(preferences) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == null || key == activeProfileKey) profile = getActiveProfile(context)
-        }
-        preferences.registerOnSharedPreferenceChangeListener(listener)
-        profile = getActiveProfile(context)
-        onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-    return remember(url, profile) { displayArtworkSource(url, profile) }
+    val observedProfile = profile ?: ImageCacheFactory.rememberArtworkProfile()
+    return remember(url, observedProfile) { displayArtworkSource(url, observedProfile) }
 }

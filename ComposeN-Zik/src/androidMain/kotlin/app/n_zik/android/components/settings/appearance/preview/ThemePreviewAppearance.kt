@@ -127,7 +127,7 @@ private fun rememberPreviewAppearance(
     val artworkColors = if (!useApplicationPreferences && paletteName == ColorPaletteName.Dynamic) {
         val atlasUri = remember(context) { ThemePreviewAssets.file(context, "atlas.jpg").toURI().toString() }
         val profile = ImageCacheFactory.rememberArtworkProfile()
-        val revision = ImageCacheFactory.rememberLocalArtworkRevision(atlasUri)
+        val revision = ImageCacheFactory.rememberLocalArtworkRevision(atlasUri, profile)
         val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
         val sourceRevision = rememberScopedArtworkColorRevision(atlasUri, profile)
         val colors by produceState<ArtworkColorSnapshot?>(null, context, atlasUri, profile, revision, generation, sourceRevision) {

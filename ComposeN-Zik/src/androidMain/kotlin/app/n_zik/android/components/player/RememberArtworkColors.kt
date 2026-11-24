@@ -68,7 +68,8 @@ internal fun rememberArtworkDisplayResult(
     }
     val generation by SharedArtworkColors.generation.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
     val sourceRevision = rememberScopedArtworkColorRevision(uri, profile)
-    val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(rememberDisplayArtworkSource(uri))
+    val displayedSource = rememberDisplayArtworkSource(uri, profile)
+    val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(displayedSource, profile)
     var raw by remember(profile) { mutableStateOf<ArtworkColorSnapshot?>(null) }
     val missingUri = uri.isNullOrBlank() || uri == "null"
     val request = remember(uri, profile, revision, generation, sourceRevision, localRevision, awaitArtworkMetadata) { Any() }

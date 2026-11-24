@@ -210,9 +210,9 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
             val themeTint = colorPalette().accent
 
             val selectedPainter = if (usesArtworkIcon) {
-                val displayedSource = rememberDisplayArtworkSource(currentArtworkUri)
-                val revision = ImageCacheFactory.rememberArtworkRevision(displayedSource)
                 val profile = ImageCacheFactory.rememberArtworkProfile()
+                val displayedSource = rememberDisplayArtworkSource(currentArtworkUri, profile)
+                val revision = ImageCacheFactory.rememberArtworkRevision(displayedSource, profile)
                 val sourceIdentity = remember(displayedSource, profile) {
                     ImageCacheFactory.artworkColorIdentity(displayedSource, profile)
                 }

@@ -64,6 +64,7 @@ import coil3.toBitmap
 import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.thumbnailShape
+import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.coilImageCacheDir
@@ -220,21 +221,21 @@ object ImageCacheFactory {
     }
 
     @Composable
-    internal fun rememberLocalArtworkRevision(source: String?): Long {
+    internal fun rememberLocalArtworkRevision(source: String?, profile: String? = null): Long {
         if (source == null || !isLocalArtworkSource(source)) return 0L
-        return rememberArtworkRevision(source)
+        return rememberArtworkRevision(source, profile)
     }
 
     @Composable
-    internal fun rememberArtworkRevision(source: String?): Long {
+    internal fun rememberArtworkRevision(source: String?, profile: String? = null): Long {
         if (source.isNullOrBlank() || source == "null") return 0L
-        val profile = rememberArtworkProfile()
-        val changes = remember(source, profile) {
-            ArtworkRevisions.changes.map { artworkSourceRevision(source, profile) }.distinctUntilChanged()
+        val observedProfile = profile ?: rememberArtworkProfile()
+        val changes = remember(source, observedProfile) {
+            ArtworkRevisions.changes.map { artworkSourceRevision(source, observedProfile) }.distinctUntilChanged()
         }
-        return key(source, profile) {
+        return key(source, observedProfile) {
             changes.collectAsStateWithLifecycle(
-                initialValue = artworkSourceRevision(source, profile),
+                initialValue = artworkSourceRevision(source, observedProfile),
                 context = NzikDispatchers.DATA,
             ).value
         }
@@ -299,8 +300,8 @@ object ImageCacheFactory {
         val preferences = context.profilePreferences
         var profile by remember(preferences) { mutableStateOf(getActiveProfile(context)) }
         DisposableEffect(preferences) {
-            val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-                profile = getActiveProfile(context)
+            val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                if (key == null || key == activeProfileKey) profile = getActiveProfile(context)
             }
             preferences.registerOnSharedPreferenceChangeListener(listener)
             profile = getActiveProfile(context)
@@ -527,14 +528,14 @@ object ImageCacheFactory {
         playerArtworkMediaId: String? = null,
         sharePlayerArtwork: Boolean = false,
     ): AsyncImagePainter {
-        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl)
+        val requestProfile = rememberArtworkProfile()
+        val sourceUrl = rememberDisplayArtworkSource(thumbnailUrl, requestProfile)
         val transformArtwork = rememberVideoArtworkPainterTransform(sourceUrl, contentScale)
         val cleanedUrl = sourceUrl?.let { cleanPrefix(it) }
         val validUrl = if (cleanedUrl.isNullOrBlank() || cleanedUrl == "null") null else cleanedUrl
         val decision = getDownloadDecision(validUrl)
         val version by storeVersion.collectAsStateWithLifecycle()
-        val requestProfile = rememberArtworkProfile()
-        val sourceRevision = rememberArtworkRevision(validUrl)
+        val sourceRevision = rememberArtworkRevision(validUrl, requestProfile)
         val colorSource = validUrl?.let { currentArtworkSource(it, requestProfile) }
         var currentUrl by remember(validUrl, requestProfile, version, sourceRevision, decision.sourceSize) {
             mutableStateOf(validUrl?.thumbnail(decision.sourceSize).also { modUrl ->

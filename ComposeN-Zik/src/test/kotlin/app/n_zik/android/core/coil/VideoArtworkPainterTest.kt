@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
@@ -37,6 +38,7 @@ import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAsse
 import app.n_zik.android.components.settings.appearance.preview.rememberThemePreviewAppearance
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.playback.services.ArtworkContentProvider
+import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import coil3.ImageLoader
 import coil3.asImage
@@ -296,6 +298,41 @@ class VideoArtworkPainterTest {
             setActiveProfile(previousProfile, context)
         }
         compose.runOnIdle { assertEquals(VIDEO_URL, resolved) }
+    }
+
+    @Test fun `mounted artwork source and revisions follow the held profile during an active profile switch`() {
+        val video = "https://i.ytimg.com/vi/held-profile/hqdefault.jpg"
+        val uri = requireNotNull(ArtworkContentProvider.uriForRemote(video, previousProfile, true, 0)).toString()
+        val localUri = ArtworkContentProvider.uriFor("held-profile-cover").toString()
+        val otherProfile = "artwork-held-other-profile"
+        val heldProfile = mutableStateOf(previousProfile)
+        ArtworkRevisions.invalidateSources(listOf(localUri), previousProfile)
+        val ownerRevision = ArtworkRevisions.current()
+        ArtworkRevisions.invalidateSources(listOf(localUri), otherProfile)
+        val otherRevision = ArtworkRevisions.current()
+
+        var observed: Triple<String?, Long, Long>? = null
+        compose.setContent {
+            val profile = heldProfile.value
+            val source = rememberDisplayArtworkSource(uri, profile)
+            val revision = ImageCacheFactory.rememberArtworkRevision(localUri, profile)
+            val localRevision = ImageCacheFactory.rememberLocalArtworkRevision(localUri, profile)
+            SideEffect { observed = Triple(source, revision, localRevision) }
+        }
+
+        compose.runOnIdle {
+            assertEquals(Triple(video, ownerRevision, ownerRevision), observed)
+            setActiveProfile(otherProfile, context)
+        }
+        compose.runOnIdle {
+            assertEquals(Triple(video, ownerRevision, ownerRevision), observed)
+            heldProfile.value = otherProfile
+        }
+        compose.runOnIdle {
+            assertEquals(Triple(uri, otherRevision, otherRevision), observed)
+            heldProfile.value = previousProfile
+        }
+        compose.runOnIdle { assertEquals(Triple(video, ownerRevision, ownerRevision), observed) }
     }
 
     private fun checkMountedPainter(
