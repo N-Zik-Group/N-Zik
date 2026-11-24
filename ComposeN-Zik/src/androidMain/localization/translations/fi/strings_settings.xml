@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Lataa kappaleet automaattisesti asetuksesi perusteella</string>
     <string name="settings_downloads_on_album_bookmark_description">Lataa kappaleet automaattisesti kun kirjoitat albumin</string>
     <string name="settings_downloads_on_like_description">Lataa kappaleet automaattisesti, kun pidät niistä</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Lataa kappaleet automaattisesti, kun kirjoitat musiikin soittolistan</string>
     <string name="settings_downloads_storage_limit_label">Kappaleiden tallennustilan suurin koko</string>
     <string name="settings_enable_autodownload_song">Ota kappaleen automaattinen lataus käyttöön</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Lataa kappale automaattisesti kun albumi on kirjattu</string>
     <string name="settings_enable_autodownload_song_when_liked">Lataa kappale automaattisesti, kun se lisätään suosikkeihin</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Lataa kappaleet automaattisesti kirjanmerkittyihin soittolistoihin</string>
     <string name="settings_enable_pip">Ota Kuva Käyttöön</string>
     <string name="settings_enable_pip_auto">Ota automaattinen Kuva käyttöön</string>
     <string name="settings_font_include_padding_description">Lisää tilaa tekstin ympärillä</string>
