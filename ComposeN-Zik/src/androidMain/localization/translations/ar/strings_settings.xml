@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">تحميل الأغاني تلقائياً بناءً على تفضيلاتك</string>
     <string name="settings_downloads_on_album_bookmark_description">تحميل الأغاني تلقائياً عند وضع علامة مرجعية على الألبوم</string>
     <string name="settings_downloads_on_like_description">تحميل الأغاني تلقائياً عندما تحبها</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">تحميل الأغاني تلقائياً عند وضع علامة مرجعية على قائمة تشغيل الموسيقى</string>
     <string name="settings_downloads_storage_limit_label">حجم تحميل الأغنية</string>
     <string name="settings_enable_autodownload_song">Enable auto download song</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="settings_enable_autodownload_song_when_liked">التنزيل التلقائي للأغنية عند الإعجاب</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">التنزيل التلقائي للأغاني في قوائم التشغيل المحفوظة</string>
     <string name="settings_enable_pip">Enable Picture in Picture</string>
     <string name="settings_enable_pip_auto">Enable Automatic Picture in Picture</string>
     <string name="settings_font_include_padding_description">إضافة مسافة حول النصوص</string>
