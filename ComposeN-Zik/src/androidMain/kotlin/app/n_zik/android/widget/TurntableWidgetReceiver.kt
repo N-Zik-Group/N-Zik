@@ -74,7 +74,7 @@ class TurntableWidgetReceiver : AppWidgetProvider() {
         when (intent.action) {
             ACTION_TURNTABLE_PLAY_PAUSE -> {
                 if (PlayerServiceModern.isRunning) {
-                    PlayerServiceModern.Action.pause.pendingIntent.send()
+                    PlayerServiceModern.Action.playPause.pendingIntent.send()
                 } else {
                     PlayerServiceModern.Action.play.pendingIntent.send()
                 }

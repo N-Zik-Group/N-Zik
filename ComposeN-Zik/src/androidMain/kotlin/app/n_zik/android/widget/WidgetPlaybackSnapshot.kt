@@ -37,13 +37,16 @@ internal fun RemoteViews.setWidgetPlaybackTiming(
     playback: WidgetPlaybackSnapshot,
     chronometerId: Int,
     progressImageId: Int? = null,
+    updateChronometer: Boolean = true,
 ) {
     val now = SystemClock.elapsedRealtime()
-    val position = playback.positionAt(now)
-    val base = playback.chronometerBaseAt(now)
-    setChronometer(chronometerId, base ?: now - position, null, base != null)
-    // The host chronometer only supports 1×. A stopped view needs an explicit elapsed value.
-    if (base == null) setTextViewText(chronometerId, DateUtils.formatElapsedTime(position / 1000))
+    if (updateChronometer) {
+        val position = playback.positionAt(now)
+        val base = playback.chronometerBaseAt(now)
+        setChronometer(chronometerId, base ?: now - position, null, base != null)
+        // The host chronometer can only advance at 1x.
+        if (base == null) setTextViewText(chronometerId, DateUtils.formatElapsedTime(position / 1000))
+    }
     if (progressImageId != null) {
         setInt(progressImageId, "setImageLevel", playback.progressLevelAt(now))
     }

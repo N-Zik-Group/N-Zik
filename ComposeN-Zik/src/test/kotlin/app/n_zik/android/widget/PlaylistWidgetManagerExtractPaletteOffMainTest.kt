@@ -75,7 +75,7 @@ class PlaylistWidgetManagerExtractPaletteOffMainTest {
             artist = "Artist",
             artworkBitmap = bitmap,
             isPlaying = false,
-            isLiked = false,
+            likeState = null,
         )
 
         val probeContext = ThreadProbingContext(context)

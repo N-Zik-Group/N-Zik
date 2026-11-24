@@ -5,6 +5,12 @@ import android.widget.RemoteViews
 import androidx.core.content.ContextCompat
 import app.n_zik.android.R
 
+internal fun widgetHeartIcon(likeState: Boolean?): Int = when (likeState) {
+    true -> R.drawable.ic_widget_heart_nav
+    false -> R.drawable.heart_dislike
+    null -> R.drawable.ic_widget_heart_outline_nav
+}
+
 internal fun RemoteViews.setPlaybackDescriptions(
     context: Context,
     artwork: Int,

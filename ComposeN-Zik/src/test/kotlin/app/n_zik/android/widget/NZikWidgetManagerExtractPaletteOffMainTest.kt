@@ -84,7 +84,7 @@ class NZikWidgetManagerExtractPaletteOffMainTest {
             artist = "Artist",
             artworkBitmap = solidBitmap(Color.BLUE),
             isPlaying = false,
-            isLiked = false,
+            likeState = null,
         )
         assertNull(probeContext.sharedPreferencesThreadName)
     }
@@ -105,7 +105,7 @@ class NZikWidgetManagerExtractPaletteOffMainTest {
                 artist = "Artist",
                 artworkBitmap = bitmap,
                 isPlaying = false,
-                isLiked = false,
+                likeState = null,
             )
         } finally {
             unmockkObject(WidgetAppearance)

@@ -15,8 +15,6 @@ import android.view.View
 import android.widget.RemoteViews
 import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.toArgb
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 
 import app.n_zik.android.cleanPrefix
@@ -41,7 +39,7 @@ object NZikWidgetManager {
             artist = ContextCompat.getString(context, R.string.widget_action_tap_to_play),
             artworkBitmap = null,
             isPlaying = false,
-            isLiked = false,
+            likeState = null,
             duration = 0,
             currentPosition = 0
         )
@@ -53,12 +51,13 @@ object NZikWidgetManager {
         artist: String,
         artworkBitmap: Bitmap?,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long = 0,
         currentPosition: Long = 0,
         artworkUri: String? = null,
         playback: WidgetPlaybackSnapshot =
             WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
+        timingUpdates: MutableList<WidgetTimingUpdate>? = null,
     ) {
         if (!withContext(NzikDispatchers.DATA) { WidgetAppearance.hasWidgets(context) }) return
         val (albumArt, snapshot) = withContext(NzikDispatchers.MEDIA) {
@@ -87,22 +86,20 @@ object NZikWidgetManager {
             if (widgetIds.isNotEmpty()) {
                 widgetIds.forEach { widgetId ->
                     val options = appWidgetManager.getAppWidgetOptions(widgetId)
-                    val views = WidgetAppearance.responsive(options) { sizedOptions -> createRemoteViewsForSize(
+                    appWidgetManager.publishPlaybackWidget(widgetId, options, timingUpdates) { sizedOptions -> createRemoteViewsForSize(
                         context,
                         sizedOptions,
                         title,
                         artist,
                         albumArt,
                         isPlaying,
-                        isLiked,
+                        likeState,
                         playback.durationMs,
                         playback.positionMs,
                         palette,
                         artworkUri,
                         playback,
                     ) }
-                    currentCoroutineContext().ensureActive()
-                    appWidgetManager.updateAppWidget(widgetId, views)
                 }
             }
 
@@ -112,12 +109,10 @@ object NZikWidgetManager {
             if (turntableWidgetIds.isNotEmpty()) {
                 turntableWidgetIds.forEach { widgetId ->
                     val options = appWidgetManager.getAppWidgetOptions(widgetId)
-                    val turntableViews = WidgetAppearance.responsive(options) { sizedOptions ->
+                    appWidgetManager.publishPlaybackWidget(widgetId, options, timingUpdates) { sizedOptions ->
                         createTurntableRemoteViewsForSize(context, sizedOptions, albumArt, isPlaying,
-                            isLiked, playback.durationMs, playback.positionMs, palette, artworkUri, playback)
+                            likeState, playback.durationMs, playback.positionMs, palette, artworkUri, playback)
                     }
-                    currentCoroutineContext().ensureActive()
-                    appWidgetManager.updateAppWidget(widgetId, turntableViews)
                 }
             }
 
@@ -130,11 +125,12 @@ object NZikWidgetManager {
             artist = if (artworkBitmap == null) ContextCompat.getString(context, R.string.widget_configuration_choose_item_hint) else artist,
             artworkBitmap = albumArt,
             isPlaying = isPlaying,
-            isLiked = isLiked,
+            likeState = likeState,
             artworkUri = artworkUri,
             artworkColors = snapshot,
             artworkColorsResolved = true,
             playback = playback,
+            timingUpdates = timingUpdates,
         )
     }
 
@@ -145,7 +141,7 @@ object NZikWidgetManager {
         artist: String,
         albumArt: Bitmap?,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long,
         currentPosition: Long,
         palette: ColorPalette,
@@ -160,13 +156,13 @@ object NZikWidgetManager {
 
         val views = when {
             minWidth < 180 && isShort -> {
-                createCompactSquareRemoteViews(context, isPlaying, palette)
+                createCompactSquareRemoteViews(context, isPlaying, likeState, palette)
             }
             minWidth >= 180 && isShort -> {
-                createCompactWideRemoteViews(context, title, artist, isPlaying, isLiked, palette, duration)
+                createCompactWideRemoteViews(context, title, artist, isPlaying, likeState, palette, duration)
             }
             else -> {
-                createRemoteViews(context, title, artist, isPlaying, isLiked, duration, palette)
+                createRemoteViews(context, title, artist, isPlaying, likeState, duration, palette)
             }
         }
 
@@ -247,7 +243,7 @@ object NZikWidgetManager {
         title: String,
         artist: String,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long = 0,
         palette: ColorPalette
     ): RemoteViews {
@@ -267,7 +263,7 @@ object NZikWidgetManager {
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_play_pause, playPauseIcon)
 
-        val likeIcon = if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav
+        val likeIcon = widgetHeartIcon(likeState)
         views.setImageViewResource(R.id.widget_like_button, likeIcon)
 
         if (duration > 0) {
@@ -297,6 +293,7 @@ object NZikWidgetManager {
     private fun createCompactSquareRemoteViews(
         context: Context,
         isPlaying: Boolean,
+        likeState: Boolean?,
         palette: ColorPalette
     ): RemoteViews {
         val views = RemoteViews(context.packageName, R.layout.widget_compact_square)
@@ -311,6 +308,7 @@ object NZikWidgetManager {
 
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_compact_play_pause, playPauseIcon)
+        views.setImageViewResource(R.id.widget_compact_like_button, widgetHeartIcon(likeState))
 
         views.setOnClickPendingIntent(R.id.widget_compact_album_art, getOpenAppIntent(context))
         views.setOnClickPendingIntent(R.id.widget_compact_play_container, getPlayPauseIntent(context))
@@ -328,7 +326,7 @@ object NZikWidgetManager {
         title: String,
         artist: String,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         palette: ColorPalette,
         duration: Long,
     ): RemoteViews {
@@ -350,7 +348,7 @@ object NZikWidgetManager {
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_low else R.drawable.ic_widget_play_low
         views.setImageViewResource(R.id.widget_wide_play_pause, playPauseIcon)
 
-        val likeIcon = if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav
+        val likeIcon = widgetHeartIcon(likeState)
         views.setImageViewResource(R.id.widget_wide_like_button, likeIcon)
 
         views.setOnClickPendingIntent(R.id.widget_wide_album_art, getOpenAppIntent(context))
@@ -369,7 +367,7 @@ object NZikWidgetManager {
         options: Bundle,
         albumArt: Bitmap?,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long,
         currentPosition: Long,
         palette: ColorPalette,
@@ -377,7 +375,7 @@ object NZikWidgetManager {
         playback: WidgetPlaybackSnapshot =
             WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
     ): RemoteViews {
-        val views = createTurntableRemoteViews(context, isPlaying, isLiked, duration, palette)
+        val views = createTurntableRemoteViews(context, isPlaying, likeState, duration, palette)
         val density = context.resources.displayMetrics.density
         val width = (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 110) * density).roundToInt()
         val height = (options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 110) * density).roundToInt()
@@ -398,7 +396,7 @@ object NZikWidgetManager {
     private fun createTurntableRemoteViews(
         context: Context,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long = 0,
         palette: ColorPalette
     ): RemoteViews {
@@ -415,7 +413,7 @@ object NZikWidgetManager {
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause_secondary else R.drawable.ic_widget_play_secondary
         views.setImageViewResource(R.id.widget_turntable_play_pause, playPauseIcon)
 
-        val likeIcon = if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav
+        val likeIcon = widgetHeartIcon(likeState)
         views.setImageViewResource(R.id.widget_turntable_like_button, likeIcon)
 
         if (duration > 0) {

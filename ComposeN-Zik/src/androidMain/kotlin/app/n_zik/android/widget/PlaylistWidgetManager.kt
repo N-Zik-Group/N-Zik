@@ -134,7 +134,7 @@ object PlaylistWidgetManager {
             artist = ContextCompat.getString(context, R.string.widget_configuration_choose_item_hint),
             artworkBitmap = null,
             isPlaying = false,
-            isLiked = false,
+            likeState = null,
             duration = 0,
             currentPosition = 0,
         )
@@ -163,7 +163,7 @@ object PlaylistWidgetManager {
                 artist = state.artist,
                 albumArt = albumArt,
                 isPlaying = state.playback.isPlaying,
-                isLiked = state.isLiked,
+                likeState = state.likeState,
                 duration = state.playback.durationMs,
                 currentPosition = state.playback.positionMs,
                 palette = palette,
@@ -181,7 +181,7 @@ object PlaylistWidgetManager {
         artist: String,
         artworkBitmap: Bitmap?,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long = 0,
         currentPosition: Long = 0,
         palette: ColorPalette? = null,
@@ -190,6 +190,7 @@ object PlaylistWidgetManager {
         artworkColorsResolved: Boolean = false,
         playback: WidgetPlaybackSnapshot =
             WidgetPlaybackSnapshot(duration, currentPosition, SystemClock.elapsedRealtime(), isPlaying),
+        timingUpdates: MutableList<WidgetTimingUpdate>? = null,
     ) {
         val (snapshot, profileId) = withContext(NzikDispatchers.MEDIA) {
             val profile = getActiveProfile(context)
@@ -201,7 +202,7 @@ object PlaylistWidgetManager {
             title = title,
             artist = artist,
             artworkBitmap = artworkBitmap,
-            isLiked = isLiked,
+            likeState = likeState,
             playback = playback,
             artworkColors = snapshot,
             artworkUri = artworkUri,
@@ -218,22 +219,20 @@ object PlaylistWidgetManager {
 
             widgetIds.forEach { widgetId ->
                 val options = appWidgetManager.getAppWidgetOptions(widgetId)
-                val views = WidgetAppearance.responsive(options) { sizedOptions -> createRemoteViews(
+                appWidgetManager.publishPlaybackWidget(widgetId, options, timingUpdates) { sizedOptions -> createRemoteViews(
                     context = context,
                     options = sizedOptions,
                     title = title,
                     artist = artist,
                     albumArt = artworkBitmap,
                     isPlaying = isPlaying,
-                    isLiked = isLiked,
+                    likeState = likeState,
                     duration = playback.durationMs,
                     currentPosition = playback.positionMs,
                     palette = resolvedPalette,
                     artworkUri = artworkUri,
                     playback = playback,
                 ) }
-                currentCoroutineContext().ensureActive()
-                appWidgetManager.updateAppWidget(widgetId, views)
             }
         }
     }
@@ -248,7 +247,7 @@ object PlaylistWidgetManager {
         artist: String,
         albumArt: Bitmap?,
         isPlaying: Boolean,
-        isLiked: Boolean,
+        likeState: Boolean?,
         duration: Long,
         currentPosition: Long,
         palette: ColorPalette,
@@ -273,7 +272,7 @@ object PlaylistWidgetManager {
         views.setImageViewResource(R.id.widget_playlist_play_pause, playPauseIcon)
         views.setImageViewResource(
             R.id.widget_playlist_like_button,
-            if (isLiked) R.drawable.ic_widget_heart_nav else R.drawable.ic_widget_heart_outline_nav,
+            widgetHeartIcon(likeState),
         )
 
         if (duration > 0) {
@@ -415,7 +414,7 @@ object PlaylistWidgetManager {
         val title: String,
         val artist: String,
         val artworkBitmap: Bitmap?,
-        val isLiked: Boolean,
+        val likeState: Boolean?,
         val playback: WidgetPlaybackSnapshot,
         val artworkColors: ArtworkColorSnapshot? = null,
         val artworkUri: String? = null,
