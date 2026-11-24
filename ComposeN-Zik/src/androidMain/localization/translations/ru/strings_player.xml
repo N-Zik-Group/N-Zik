@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">В очередь</string>
     <string name="player_action_hide_stats_for_nerds">Скрыть статистику для Nerds</string>
     <string name="player_action_like">Лайкнуть</string>
-    <string name="player_action_listen_on_invidious">Слушать в %1$s</string>
     <string name="player_action_listen_on_youtube">Слушать в YouTube</string>
     <string name="player_action_listen_on_youtube_music">Слушать в YouTube Music</string>
     <string name="player_action_locate_current_song">Показать текущую песню</string>
