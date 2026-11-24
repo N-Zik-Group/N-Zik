@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">Sıraya ekle</string>
     <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">Beğen</string>
-    <string name="player_action_listen_on_invidious">%1$s\'ta dinle</string>
     <string name="player_action_listen_on_youtube">YouTube\'da dinle</string>
     <string name="player_action_listen_on_youtube_music">YouTube Music\'te dinle</string>
     <string name="player_action_locate_current_song">Şu anda çalan şarkıyı göster</string>
