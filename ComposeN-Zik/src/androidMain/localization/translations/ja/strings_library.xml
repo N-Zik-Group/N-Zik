@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">お気に入りに追加</string>
     <string name="library_favorites_added">お気に入りに追加しました</string>
     <string name="library_favorites_removed">お気に入りから削除しました</string>
+    <string name="library_collection_favorites_action_remove">お気に入りから削除</string>
+    <string name="library_collection_favorites_update_failed">お気に入りを更新できませんでした。</string>
+    <string name="library_collection_favorites_sync_failed">YouTubeとお気に入りを同期できませんでした。</string>
     <!-- Library Sort -->
     <string name="library_sort_album">アルバム</string>
     <string name="library_sort_album_year">アルバムの年</string>
