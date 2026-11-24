@@ -3,6 +3,7 @@ package app.n_zik.android.ui.screens.player.components.controls
 
 import androidx.media3.common.Player
 import app.n_zik.android.components.player.PlayerInformationFavoriteAction
+import app.n_zik.android.components.player.playerFavoriteIcon
 import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -91,7 +92,6 @@ import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.effectRotationKey
-import app.n_zik.android.utils.getLikeState
 import app.n_zik.android.utils.getUnlikedIcon
 import app.n_zik.android.utils.jumpPreviousKey
 import app.n_zik.android.utils.playPrevious
@@ -286,10 +286,12 @@ fun InfoAlbumAndArtistEssential(
             }
 
             if (playerControlsType == PlayerControlsType.Modern) {
+                val favoritePalette = surfaceSourcePalette()
                 PlayerInformationFavoriteAction(
                     ownBackdrop = favoriteBackdrop,
-                    color = if (likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
-                    icon = getLikeState(mediaId),
+                    color = favoritePalette.favoritesIcon,
+                    dislikedColor = favoritePalette.red,
+                    icon = playerFavoriteIcon(likedAt),
                     onClick = {
                         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                             currentMediaItem?.let {
@@ -495,10 +497,12 @@ fun ControlsEssential(
     val nextInteraction = remember { MutableInteractionSource() }
 
     PlayerTransportSmallControl("like", interactionSource = likeInteraction) {
+        val favoritePalette = surfaceSourcePalette()
         PlayerTransportIconButton(
             interactionSource = likeInteraction,
-            color = if(likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
-            icon = getLikeState(mediaId),
+            color = favoritePalette.favoritesIcon,
+            dislikedColor = favoritePalette.red,
+            icon = playerFavoriteIcon(likedAt),
             onClick = {
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                     currentMediaItem?.let {

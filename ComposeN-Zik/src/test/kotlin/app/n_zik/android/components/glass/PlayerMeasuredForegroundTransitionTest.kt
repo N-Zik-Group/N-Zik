@@ -198,7 +198,7 @@ class PlayerMeasuredForegroundTransitionTest {
     }
 
     @Test
-    fun `same palette artwork advances the shared frame and late samples have no tail`() {
+    fun `same palette artwork advances the shared frame without a palette tail`() {
         compose.mainClock.autoAdvance = false
         val surface = mutableStateOf(Color.Black)
         val shape = RoundedCornerShape(16.dp)
@@ -260,6 +260,84 @@ class PlayerMeasuredForegroundTransitionTest {
             assertEquals(PlayerForegroundFrame(generation, 1f), frame)
             assertEquals(List(3) { Color.Black }, inks)
         }
+    }
+
+    @Test
+    fun `settled measurement corrects native and Glass glyphs on the same progress`() {
+        val correction = mutableStateOf(1f)
+        val surfaces = mutableStateOf(listOf(Color.Black, Color.White, Color.Black))
+        val shape = RoundedCornerShape(16.dp)
+        val ink = Color.White.copy(alpha = .85f)
+        val palette = DefaultDarkColorPalette.copy(iconButtonPlayer = ink)
+        val appearance = Appearance(palette, Typography.fallback, shape, shape, shape)
+        val film = Color.White.copy(alpha = .1f)
+        var shown = List(3) { emptyList<Color>() }
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalPlayerForegroundFrame provides PlayerForegroundFrame(2, 1f),
+                LocalPlayerGlyphCorrection provides correction,
+            ) {
+                surfaces.value.forEachIndexed { index, surface ->
+                    SurfaceForegroundContent(surface) {
+                        val glyphs = listOf(
+                            colorPalette().iconButtonPlayer,
+                            surfaceGlyphColor(ink, film),
+                            playerControlGlyphColor(ink, film, measuredBackdrop = surface),
+                        )
+                        SideEffect { shown = shown.toMutableList().also { it[index] = glyphs } }
+                    }
+                }
+            }
+        }
+        val lightInk = List(3) { ink }
+        val darkInk = List(3) { Color.Black.copy(alpha = ink.alpha) }
+        compose.runOnIdle {
+            assertEquals(listOf(lightInk, darkInk, lightInk), shown)
+            correction.value = 0f
+            surfaces.value = listOf(Color.White, Color.Black, Color.Black)
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(lightInk, darkInk, lightInk), shown)
+            correction.value = .5f
+        }
+        compose.runOnIdle {
+            assertTrue(shown.take(2).flatten().all { it.red in .01f.. .99f && it.alpha == ink.alpha })
+            assertEquals(lightInk, shown.last())
+            correction.value = 1f
+        }
+        compose.runOnIdle {
+            assertEquals(listOf(darkInk, lightInk, lightInk), shown)
+        }
+    }
+
+    @Test
+    fun `next fade starts at the glyph currently shown during sample correction`() {
+        val ink = PlayerMeasuredInkFrame()
+        val correction = mutableStateOf(1f)
+        val settled = PlayerForegroundFrame(2, 1f)
+        ink.resolveEndpoint(Color.White, Color.Black, settled, glyphCorrection = correction)
+        correction.value = 0f
+        ink.resolveEndpoint(Color.White, Color.White, settled, glyphCorrection = correction)
+        correction.value = .5f
+        val shown = ink.resolveEndpoint(Color.White, Color.White, settled, glyphCorrection = correction)
+        val next = ink.resolveEndpoint(Color.White, Color.White, PlayerForegroundFrame(3, 0f))
+        assertEquals(shown, next)
+    }
+
+    @Test
+    fun `sample correction preserves a tinted glyph and transparent ink`() {
+        val correction = mutableStateOf(1f)
+        val tint = Color.Red.copy(alpha = .7f)
+        val endpoint = Color(0xFF990000).copy(alpha = tint.alpha)
+        val tinted = PlayerMeasuredInkFrame()
+        val transparent = PlayerMeasuredInkFrame()
+        tinted.resolveEndpoint(tint, tint, null, glyphCorrection = correction)
+        transparent.resolveEndpoint(Color.Transparent, Color.Transparent, null, glyphCorrection = correction)
+        correction.value = 0f
+        assertEquals(endpoint, tinted.resolveEndpoint(tint, endpoint, null, glyphCorrection = correction))
+        assertEquals(Color.Transparent, transparent.resolveEndpoint(Color.Transparent, Color.Transparent, null,
+            glyphCorrection = correction))
     }
 
     @Test

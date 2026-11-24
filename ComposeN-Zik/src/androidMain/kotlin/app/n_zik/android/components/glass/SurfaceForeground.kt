@@ -34,6 +34,7 @@ private val LocalForegroundScrim = compositionLocalOf { Color.Transparent }
 internal val LocalGlassInkDarkness = compositionLocalOf<Float?> { null }
 internal val LocalPlayerForegroundFrame = compositionLocalOf<PlayerForegroundFrame?> { null }
 internal val LocalPlayerFollowsPaletteInk = compositionLocalOf { false }
+internal val LocalPlayerGlyphCorrection = compositionLocalOf<State<Float>?> { null }
 
 @Immutable
 internal data class PlayerForegroundFrame(val generation: Int, val progress: Float, val changesPolarity: Boolean = false)
@@ -183,6 +184,7 @@ internal fun SurfaceForegroundContent(
     val commonSurface = LocalNeutralForegroundSurface.current ?: surface
     val transition = LocalNeutralForegroundTransition.current?.value
     val playerFrame = LocalPlayerForegroundFrame.current
+    val glyphCorrection = LocalPlayerGlyphCorrection.current
     val followsPalette = followsPlayerPaletteInk(playerFrame)
     val textFrame = remember { PlayerMeasuredInkFrame() }
     val secondaryFrame = remember { PlayerMeasuredInkFrame() }
@@ -206,7 +208,8 @@ internal fun SurfaceForegroundContent(
         val target = if (native) original else endpoint(original, minimum, glyph)
         val contrast = if (glyph && original.isSpecified && isGentleGlyph(original, true))
             NeutralRetentionContrast else minimum
-        return frame.resolveEndpoint(original, target, playerFrame, surface ?: transition?.to?.surface, contrast, native)
+        return frame.resolveEndpoint(original, target, playerFrame, surface ?: transition?.to?.surface, contrast, native,
+            glyphCorrection.takeIf { glyph })
     }
     val palette = if (adapt) appearance.colorPalette.copy(
         text = ink(source.text, TextContrast, frame = textFrame),
@@ -273,6 +276,8 @@ internal class PlayerMeasuredInkFrame {
     private var lastCorrected = false
     private var startProgress = 0f
     private var blendFromCorrection = false
+    private var correctionOwner: State<Float>? = null
+    private var correctionOrigin = Color.Unspecified
 
     fun resolveEndpoint(
         original: Color,
@@ -281,9 +286,28 @@ internal class PlayerMeasuredInkFrame {
         surface: Color? = null,
         minimum: Float = IconContrast,
         followPaletteInk: Boolean = false,
+        glyphCorrection: State<Float>? = null,
     ): Color {
         val native = followPaletteInk && isNeutralForeground(original)
         val corrected = original != endpoint
+        val correctionProgress = glyphCorrection?.value ?: 1f
+        // The final background can only be sampled after the palette has settled.
+        if (!native && (frame == null || frame.progress >= 1f) && correctionProgress < 1f &&
+            (corrected || lastCorrected || correctionOwner === glyphCorrection) &&
+            displayed.isSpecified && isNeutralForeground(original) && isNeutralForeground(endpoint) && original.alpha > 0f) {
+            if (correctionOwner !== glyphCorrection) {
+                correctionOwner = glyphCorrection
+                correctionOrigin = displayed
+            }
+            val color = if (correctionProgress == 0f || correctionOrigin == endpoint) correctionOrigin
+                else lerp(correctionOrigin, endpoint, correctionProgress)
+            displayed = color.copy(alpha = endpoint.alpha)
+            displayedSurface = surface
+            lastEndpoint = endpoint
+            lastCorrected = original != displayed
+            return displayed
+        }
+        correctionOwner = null
         if (native || frame == null || frame.progress >= 1f || !displayed.isSpecified || !isNeutralForeground(original) ||
             !endpoint.isSpecified || original.alpha == 0f) {
             generation = null
@@ -401,7 +425,8 @@ internal fun playerControlGlyphColor(
         if (measuredBackdrop != null) measuredPlayGlyphForeground(color, visiblePlate, minimum)
         else measuredPlayerForeground(color, visiblePlate, minimum)
     } else color
-    return measuredFrame.resolveEndpoint(original, endpoint, frame, visiblePlate, minimum)
+    val correction = LocalPlayerGlyphCorrection.current.takeIf { enabled }
+    return measuredFrame.resolveEndpoint(original, endpoint, frame, visiblePlate, minimum, glyphCorrection = correction)
 }
 
 internal fun measuredPlayGlyphForeground(color: Color, plate: Color, minimum: Float): Color {
@@ -486,17 +511,20 @@ internal fun surfaceGlyphColor(original: Color, plate: Color? = null, minimum: F
         plate?.let { effectiveSurfaceColor(backdrop, it) } ?: backdrop
     }.takeIf { enabled }
     val endpoint = resolveSurfaceGlyphColor(original, plate, minimum, enabled)
-    return playerForegroundOnSharedFrame(original, endpoint, surface, minOf(minimum, NeutralRetentionContrast), enabled)
+    return playerForegroundOnSharedFrame(original, endpoint, surface, minOf(minimum, NeutralRetentionContrast),
+        allowPaletteInk = enabled, correctSampledGlyph = enabled && minimum <= IconContrast)
 }
 
 @Composable
 internal fun playerForegroundOnSharedFrame(original: Color, endpoint: Color, surface: Color? = null,
-    minimum: Float = IconContrast, allowPaletteInk: Boolean = true): Color {
-    val playerFrame = LocalPlayerForegroundFrame.current ?: return endpoint
+    minimum: Float = IconContrast, allowPaletteInk: Boolean = true, correctSampledGlyph: Boolean = false): Color {
+    val playerFrame = LocalPlayerForegroundFrame.current
+    val correction = LocalPlayerGlyphCorrection.current.takeIf { correctSampledGlyph }
+    if (playerFrame == null && correction == null) return endpoint
     val frame = remember { PlayerMeasuredInkFrame() }
     val native = allowPaletteInk && followsPlayerPaletteInk(playerFrame) && isNeutralForeground(original)
     val ink = if (native) unadjustedPlayerInk(original) else original
-    return frame.resolveEndpoint(ink, endpoint, playerFrame, surface, minimum, native)
+    return frame.resolveEndpoint(ink, endpoint, playerFrame, surface, minimum, native, correction)
 }
 
 @Composable

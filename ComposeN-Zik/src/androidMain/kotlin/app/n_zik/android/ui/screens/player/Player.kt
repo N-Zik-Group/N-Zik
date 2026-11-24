@@ -174,6 +174,7 @@ import app.n_zik.android.components.theme.PlayerSystemBarAppearance
 import app.n_zik.android.components.glass.LocalForegroundSourcePalette
 import app.n_zik.android.components.glass.LocalNeutralForegroundTransition
 import app.n_zik.android.components.glass.LocalPlayerFollowsPaletteInk
+import app.n_zik.android.components.glass.LocalPlayerGlyphCorrection
 import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.player.LocalPlayerArtworkUnderControls
 import app.n_zik.android.components.player.LocalPlayerBackdropSampling
@@ -1569,6 +1570,7 @@ fun Player(
         LocalGlassBackdrop provides artworkControlsSource,
         LocalSurfaceBackdropColor provides null,
         LocalPlayerBackdropSampling provides backgroundSampling,
+        LocalPlayerGlyphCorrection provides backgroundSampling.glyphCorrectionProgress,
         LocalPlayerArtworkUnderControls provides (expandedArtworkStack || waitForBlurredCover && blurAdjuster.strength <= 0f),
         LocalPlayerFollowsPaletteInk provides (usesAnimatedBackground && gradientSettled && !expandedArtworkStack &&
             (gradientType == AnimatedGradient.M3EMorphingTheme || gradientType == AnimatedGradient.M3EMorphingCover)),

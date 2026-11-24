@@ -156,8 +156,21 @@ fun PlayerTransportIconButton(
     interactionSource: androidx.compose.foundation.interaction.MutableInteractionSource,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    dislikedColor: Color? = null,
 ) {
-    val foreground = if (enabled) playerTransportGlyph(color, rememberGlassSettings(GlassScope.PlayerTransport)) else color
+    val foreground = if (enabled && dislikedColor == null)
+        playerTransportGlyph(color, rememberGlassSettings(GlassScope.PlayerTransport)) else color
+    val glyph: @Composable (Modifier) -> Unit = { glyphModifier ->
+        if (dislikedColor == null) {
+            androidx.compose.foundation.Image(
+                painter = androidx.compose.ui.res.painterResource(icon), contentDescription = null,
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(foreground),
+                modifier = glyphModifier,
+            )
+        } else {
+            PlayerFavoriteGlyph(icon, color, dislikedColor, glyphModifier)
+        }
+    }
     val canvasSize = LocalTransportCanvasSize.current
     if (canvasSize != null) {
         BoxWithConstraints(modifier, contentAlignment = androidx.compose.ui.Alignment.Center) {
@@ -175,27 +188,18 @@ fun PlayerTransportIconButton(
                     interactionSource = interactionSource,
                     indication = playerTransportIndication(nativeControlIndication()),
                     enabled = enabled, onClick = onClick), contentAlignment = androidx.compose.ui.Alignment.Center) {
-                androidx.compose.foundation.Image(
-                    painter = androidx.compose.ui.res.painterResource(icon), contentDescription = null,
-                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(foreground),
-                    modifier = Modifier.requiredSize(glyphWidth, glyphHeight)
-                        .testTag("player.transport.smallGlyph"))
+                glyph(Modifier.requiredSize(glyphWidth, glyphHeight).testTag("player.transport.smallGlyph"))
             }
         }
         return
     }
-    androidx.compose.foundation.Image(
-        painter = androidx.compose.ui.res.painterResource(icon),
-        contentDescription = null,
-        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(foreground),
-        modifier = modifier.playerTransportFeedback(interactionSource, enabled = enabled)
+    glyph(modifier.playerTransportFeedback(interactionSource, enabled = enabled)
             .clip(uiRoundnessShape()).combinedClickable(
             interactionSource = interactionSource,
             indication = playerTransportIndication(nativeControlIndication()),
             enabled = enabled,
             onClick = onClick,
-        ),
-    )
+        ))
 }
 
 /** Report the actionable overdraw to the transport fitter while retaining its native row slot. */

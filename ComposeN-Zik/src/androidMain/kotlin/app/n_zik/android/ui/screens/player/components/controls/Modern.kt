@@ -77,7 +77,6 @@ import app.n_zik.android.utils.bold
 import app.n_zik.android.utils.doubleShadowDrop
 import app.n_zik.android.utils.dropShadow
 import app.n_zik.android.utils.effectRotationKey
-import app.n_zik.android.utils.getLikeState
 import app.n_zik.android.utils.jumpPreviousKey
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playerControlsTypeKey
@@ -104,6 +103,7 @@ import app.n_zik.android.components.player.playerTransportIndication
 import app.n_zik.android.components.player.PlayerTransportControlMotion
 import app.n_zik.android.components.player.PlayerInfoIconButton
 import app.n_zik.android.components.player.PlayerInformationFavoriteAction
+import app.n_zik.android.components.player.playerFavoriteIcon
 import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
 import app.n_zik.android.components.player.PlayerInfoGlassRail
 import app.n_zik.android.utils.splitArtistNames
@@ -271,10 +271,12 @@ fun InfoAlbumAndArtistModern(
                 }
             }
             if (playerControlsType == PlayerControlsType.Modern) {
+                val favoritePalette = surfaceSourcePalette()
                 PlayerInformationFavoriteAction(
                     ownBackdrop = favoriteBackdrop,
-                    color = if (likedAt == -1L) colorPalette().red else colorPalette().favoritesIcon,
-                    icon = getLikeState(mediaId),
+                    color = favoritePalette.favoritesIcon,
+                    dislikedColor = favoritePalette.red,
+                    icon = playerFavoriteIcon(likedAt),
                     onClick = {
                         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                             currentMediaItem?.let {

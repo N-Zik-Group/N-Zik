@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
@@ -12,6 +11,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -36,6 +36,8 @@ import androidx.compose.ui.unit.IntSize
 import app.n_zik.android.components.glass.backdrop.Backdrop
 import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.effectiveSurfaceColor
+import app.n_zik.android.components.theme.LaunchedAppearanceAnimationEffect
+import app.n_zik.android.components.theme.animateAppearanceFraction
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -48,6 +50,7 @@ import kotlin.math.floor
 private val SampleSize = IntSize(32, 64)
 private const val SampleIntervalMs = 120L
 private const val MaxSampleAttempts = 8
+private const val GlyphCorrectionDurationMs = 120
 
 internal val LocalPlayerBackdropSampling = compositionLocalOf<PlayerBackdropSampling?> { null }
 internal val LocalPlayerArtworkUnderControls = compositionLocalOf { false }
@@ -65,6 +68,8 @@ internal class PlayerBackdropSampling(
         internal set
     var finished by mutableStateOf(false)
         internal set
+    private val glyphCorrection = mutableFloatStateOf(1f)
+    val glyphCorrectionProgress: State<Float> get() = glyphCorrection
     private var sample by mutableStateOf<BackdropSample?>(null)
     internal var measurementVersion by mutableIntStateOf(0)
         private set
@@ -106,9 +111,14 @@ internal class PlayerBackdropSampling(
             measurementVersion++
         }
         if (surface != null) {
+            glyphCorrection.floatValue = 0f
             commonSurface = surface
             finished = true
         }
+    }
+
+    internal fun setGlyphCorrectionProgress(progress: Float) {
+        glyphCorrection.floatValue = progress
     }
 
     internal fun regionalSample(color: Color?, film: Color? = null): PlayerBackdropRegionSample? =
@@ -284,8 +294,11 @@ internal fun rememberPlayerBackdropSampling(
         state.isActive = active
         sampledSurface?.let { lastSurface.color = it }
     }
-    LaunchedEffect(state, active, density, layoutDirection, renderedBackgroundReady) {
-        if (state.hasDecision || activeState !== state) return@LaunchedEffect
+    LaunchedAppearanceAnimationEffect(state, active, density, layoutDirection, renderedBackgroundReady) {
+        if (state.hasDecision || activeState !== state) {
+            state.setGlyphCorrectionProgress(1f)
+            return@LaunchedAppearanceAnimationEffect
+        }
         // A failed hidden prewarm may retry when the player becomes visible again.
         state.finished = false
         // Allow the scene to draw the new frame before reading its small backdrop.
@@ -336,12 +349,20 @@ internal fun rememberPlayerBackdropSampling(
                             }
                             if (activeState !== state || pixels == null) return@capture
                             Snapshot.withMutableSnapshot {
-                                state.publish(pixels, origin, size, capturedEstimate = capturedEstimate)
+                                state.publish(pixels, origin, size, capturedEstimate)
                             }
-                            if (state.hasDecision) Timber.tag("PlayerBackdropSampling").d(
-                                "Background sample ready: %dx%d, opaque=%d/%d", size.width, size.height,
-                                pixels.count { (it ushr 24) >= 250 }, pixels.size,
-                            )
+                            if (state.hasDecision) {
+                                Timber.tag("PlayerBackdropSampling").d(
+                                    "Background sample ready: %dx%d, opaque=%d/%d", size.width, size.height,
+                                    pixels.count { (it ushr 24) >= 250 }, pixels.size,
+                                )
+                                try {
+                                    animateAppearanceFraction(GlyphCorrectionDurationMs, state::setGlyphCorrectionProgress)
+                                } finally {
+                                    state.setGlyphCorrectionProgress(1f)
+                                }
+                                return@capture
+                            }
                             warned = false
                         } catch (cancelled: CancellationException) {
                             throw cancelled

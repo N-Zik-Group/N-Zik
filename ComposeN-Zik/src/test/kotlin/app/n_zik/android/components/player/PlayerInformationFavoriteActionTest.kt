@@ -45,14 +45,10 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.glass.GlassContextArea
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.LocalGlassPreviewSettings
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.playback.services.PlayerServiceModern
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
 import io.mockk.unmockkAll
-import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Before
 import org.junit.Assert.assertTrue
@@ -65,6 +61,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -86,6 +83,8 @@ import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.favoritesIcon
+import app.n_zik.android.ui.styling.lerpTo
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
@@ -94,6 +93,7 @@ import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
+import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.glass.glassSurfaceTint
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.drawPlainBackdrop
@@ -103,6 +103,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlin.math.abs
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
@@ -192,10 +193,6 @@ class PlayerInformationFavoriteActionTest {
         val player = mockk<Player>(relaxed = true)
         every { binder.player } returns player
         every { player.currentMediaItem } returns null
-        val songs = mockk<SongTable>()
-        every { songs.likeState(any()) } returns flowOf(null)
-        mockkObject(Database)
-        every { Database.songTable } returns songs
     }
 
     @After fun cleanup() {
@@ -285,6 +282,56 @@ class PlayerInformationFavoriteActionTest {
             }
         }
         assertEquals(12, clicks)
+    }
+
+    @Test fun `actual favorite keeps palette tint at endpoints and only crossfades changed drawables`() {
+        val likedAt = mutableStateOf<Long?>(null)
+        val fraction = mutableStateOf(0f)
+        val default = DefaultDarkColorPalette
+        val dynamic = default.copy(accent = Color.Cyan)
+        compose.setContent { AppearanceProvider {
+            val appearance = LocalAppearance.current
+            CompositionLocalProvider(
+                LocalAppearance provides appearance.copy(colorPalette = dynamic.lerpTo(default, fraction.value)),
+                LocalGlassPreviewSettings provides GlassSettings(enabled = false),
+            ) {
+                Column(Modifier.requiredWidth(300.dp).background(Color.Black)) {
+                    SurfaceForegroundContent(Color.Black) {
+                        ActualInformation(essential = false, likedAt = likedAt.value) { }
+                    }
+                }
+            }
+        } }
+        val glyph = compose.onNodeWithTag("player.informationFavorite.glyph", useUnmergedTree = true)
+        val outline = compose.onNodeWithTag("player.favoriteGlyph.${R.drawable.heart_outline}", useUnmergedTree = true)
+        val dislike = compose.onNodeWithTag("player.favoriteGlyph.${R.drawable.heart_dislike}", useUnmergedTree = true)
+        fun assertTint(expected: Color) {
+            val pixels = glyph.captureToImage().toPixelMap()
+            assertTrue((0 until pixels.width).any { x -> (0 until pixels.height).any { y ->
+                val actual = pixels[x, y]
+                abs(actual.red - expected.red) < .03f && abs(actual.green - expected.green) < .03f &&
+                    abs(actual.blue - expected.blue) < .03f
+            } })
+        }
+        for (progress in listOf(0f, .95f, 1f, .95f, 0f)) {
+            compose.runOnIdle { fraction.value = progress }
+            outline.assertExists()
+            dislike.assertDoesNotExist()
+            assertTint(dynamic.lerpTo(default, progress).favoritesIcon)
+        }
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle {
+            likedAt.value = -1L
+            Snapshot.sendApplyNotifications()
+        }
+        compose.mainClock.advanceTimeBy(160)
+        outline.assertExists()
+        dislike.assertExists()
+        compose.mainClock.advanceTimeBy(400)
+        outline.assertDoesNotExist()
+        dislike.assertExists()
+        assertTint(dynamic.red)
+        compose.mainClock.autoAdvance = true
     }
 
     @Test @Config(qualifiers = "w800dp-h1200dp")
@@ -599,12 +646,13 @@ class PlayerInformationFavoriteActionTest {
         }
     }
 
-    @Composable private fun ActualInformation(essential: Boolean, explicit: Boolean = false, scrolling: Boolean = false, onCollapse: () -> Unit) {
+    @Composable private fun ActualInformation(essential: Boolean, explicit: Boolean = false, scrolling: Boolean = false,
+        likedAt: Long? = null, onCollapse: () -> Unit) {
         val media = UiMedia("information-favorite", "Title", "Artist", 120_000L, true)
         if (essential) InfoAlbumAndArtistEssential(binder.player, nav, "album", media, media.id, media.title,
-            null, null, "Artist", explicit, onCollapse, disableScrollingText = !scrolling)
+            likedAt, null, "Artist", explicit, onCollapse, disableScrollingText = !scrolling)
         else InfoAlbumAndArtistModern(binder.player, nav, "album", media, media.id, media.title,
-            null, null, explicit, "Artist", onCollapse, disableScrollingText = !scrolling)
+            likedAt, null, explicit, "Artist", onCollapse, disableScrollingText = !scrolling)
     }
 
     @Composable private fun AppearanceProvider(content: @Composable () -> Unit) {

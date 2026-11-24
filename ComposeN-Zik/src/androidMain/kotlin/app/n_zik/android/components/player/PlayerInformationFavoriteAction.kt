@@ -1,10 +1,13 @@
 package app.n_zik.android.components.player
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -20,6 +23,8 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import app.n_zik.android.R
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -44,6 +49,33 @@ import app.n_zik.android.components.glass.retainGlassButtonGesture
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.getDislikedIcon
+import app.n_zik.android.utils.getLikedIcon
+import app.n_zik.android.utils.getUnlikedIcon
+
+@Composable
+internal fun playerFavoriteIcon(likedAt: Long?): Int = when {
+    likedAt == -1L -> getDislikedIcon()
+    likedAt != null && likedAt > 0L -> getLikedIcon()
+    else -> getUnlikedIcon()
+}
+
+/** The current palette supplies the tint of each drawable throughout its transition. */
+@Composable
+internal fun PlayerFavoriteGlyph(
+    @DrawableRes icon: Int,
+    favoriteColor: Color,
+    dislikedColor: Color,
+    modifier: Modifier,
+    description: String? = null,
+) {
+    val semantics = if (description == null) Modifier else Modifier.semantics { contentDescription = description }
+    Crossfade(icon, modifier.then(semantics), animationSpec = tween(400), label = "playerFavoriteGlyph") { glyph ->
+        val color = if (glyph == R.drawable.heart_dislike) dislikedColor else favoriteColor
+        Image(painterResource(glyph), null, colorFilter = ColorFilter.tint(color),
+            modifier = Modifier.fillMaxSize().testTag("player.favoriteGlyph.$glyph"))
+    }
+}
 
 /** Capture only the title sibling, so the favorite refracts text without recording itself. */
 @Composable
@@ -71,13 +103,14 @@ fun PlayerInformationFavoriteAction(
     onClick: () -> Unit,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerFavorite),
     ownBackdrop: Backdrop? = LocalGlassContainerBackdrop.current,
+    dislikedColor: Color? = null,
 ) {
     val scopedSettings = settings.inScope(GlassScope.PlayerFavorite)
     val material = scopedSettings.usesGlassMaterial(GlassArea.ActionButtons)
     val contour = scopedSettings.usesGlassContour(GlassArea.ActionButtons)
     val optical = material || contour
     val plate = if (material) glassFilmColor(scopedSettings.forArea(GlassArea.ActionButtons), null, menu = false) else null
-    val foreground = surfaceGlyphColor(color, plate)
+    val foreground = if (dislikedColor == null) surfaceGlyphColor(color, plate) else color
     val interaction = remember { MutableInteractionSource() }
     val shape = uiRoundnessShape()
     val backdrop = ownBackdrop
@@ -103,8 +136,14 @@ fun PlayerInformationFavoriteAction(
             .clickable(interactionSource = interaction,
                 indication = if (optical) null else ripple(),
                 role = Role.Button, onClick = onClick), contentAlignment = Alignment.Center) {
-            Image(painterResource(icon), stringResource(R.string.settings_player_favorite_button_style_label), colorFilter = ColorFilter.tint(foreground),
-                modifier = Modifier.size(24.dp).testTag("player.informationFavorite.glyph"))
+            val description = stringResource(R.string.settings_player_favorite_button_style_label)
+            val glyphModifier = Modifier.size(24.dp).testTag("player.informationFavorite.glyph")
+            if (dislikedColor == null) {
+                Image(painterResource(icon), description, colorFilter = ColorFilter.tint(foreground),
+                    modifier = glyphModifier)
+            } else {
+                PlayerFavoriteGlyph(icon, color, dislikedColor, glyphModifier, description)
+            }
         }
     }
 }

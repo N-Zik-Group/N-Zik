@@ -40,6 +40,7 @@ class PlayerBackdropSamplingTest {
                 estimate.value = gray(tone)
                 assertEquals(gray(tone - 16).toArgb(), incoming.displayedRegionSurface(null, retained)?.toArgb())
                 assertEquals(0, incoming.measurementVersion)
+                assertEquals(1f, incoming.glyphCorrectionProgress.value, 0f)
                 assertNull(incoming.colorAt(bounds))
             }
             val settled = gray(to - 8)
@@ -47,6 +48,7 @@ class PlayerBackdropSamplingTest {
             val measured = incoming.regionalSample(incoming.colorAt(bounds))
             assertEquals(settled, incoming.displayedRegionSurface(measured, retained))
             assertTrue(incoming.finished)
+            assertEquals(0f, incoming.glyphCorrectionProgress.value, 0f)
         }
     }
 
