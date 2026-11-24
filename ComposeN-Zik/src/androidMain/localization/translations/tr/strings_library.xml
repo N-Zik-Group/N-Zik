@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Favorilere ekle</string>
     <string name="library_favorites_added">Favorilere eklendi</string>
     <string name="library_favorites_removed">Favorilerden çıkarıldı</string>
+    <string name="library_collection_favorites_action_remove">Favorilerden kaldır</string>
+    <string name="library_collection_favorites_update_failed">Couldn’t update favorites.</string>
+    <string name="library_collection_favorites_sync_failed">Couldn’t sync some favorites with YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Albüm</string>
     <string name="library_sort_album_year">Albüm Yılı</string>
