@@ -29,6 +29,30 @@
         <item quantity="one">%1$d Titel</item>
         <item quantity="other">%1$d Lieder</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">%1$d Titel aus dieser Wiedergabeliste zu Favoriten hinzufügen?</item>
+        <item quantity="other">%1$d Titel aus dieser Wiedergabeliste zu Favoriten hinzufügen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">%1$d Titel in dieser Wiedergabeliste aus den Favoriten entfernen?</item>
+        <item quantity="other">%1$d Titel in dieser Wiedergabeliste aus den Favoriten entfernen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">%1$d Titel von diesem Album zu Favoriten hinzufügen?</item>
+        <item quantity="other">%1$d Titel dieses Albums zu Favoriten hinzufügen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">%1$d Titel in diesem Album aus den Favoriten entfernen?</item>
+        <item quantity="other">%1$d Titel in diesem Album aus den Favoriten entfernen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">%1$d Episode aus diesem Podcast zu Favoriten hinzufügen?</item>
+        <item quantity="other">%1$d Episoden aus diesem Podcast zu Favoriten hinzufügen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">%1$d Episode in diesem Podcast von den Favoriten entfernen?</item>
+        <item quantity="other">%1$d Episoden in diesem Podcast aus den Favoriten entfernen?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d Übersetzer</item>
         <item quantity="other">%1$d Übersetzer</item>
