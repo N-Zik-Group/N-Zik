@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">قائمة الإنتظار</string>
     <string name="player_action_hide_stats_for_nerds">إخفاء احصائيات للجراد</string>
     <string name="player_action_like">إعجاب</string>
-    <string name="player_action_listen_on_invidious">الاستماع على %1$s</string>
     <string name="player_action_listen_on_youtube">الاستماع على اليوتيوب</string>
     <string name="player_action_listen_on_youtube_music">الاستماع إلى موسيقى اليوتيوب</string>
     <string name="player_action_locate_current_song">Find the song that is playing</string>
