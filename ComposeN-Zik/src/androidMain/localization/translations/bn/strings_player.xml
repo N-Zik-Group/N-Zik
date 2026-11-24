@@ -157,7 +157,6 @@
     <string name="player_action_enqueue">কিউতে রাখুন</string>
     <string name="player_action_hide_stats_for_nerds">Hide Stats for Nerds</string>
     <string name="player_action_like">Like</string>
-    <string name="player_action_listen_on_invidious">%1$s-এ শুনুন</string>
     <string name="player_action_listen_on_youtube">ইউটিউবে শুনুন</string>
     <string name="player_action_listen_on_youtube_music">ইউটিউব মিউজিকে শুনুন</string>
     <string name="player_action_locate_current_song">যে গান বাজানো হচ্ছে সেটা বের করুন</string>
