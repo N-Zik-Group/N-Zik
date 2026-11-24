@@ -38,7 +38,6 @@ Android向けの多言語YouTubeミュージックフロントエンド。パフ
 - Last.fm scrobbling with Now Playing and love/unlove
 - MusicBrainzアーティストとアルバムの洞察力があります
 - ライブプレビューの高度なモードを含むDiscord Rich Presence。
-- 代わりのYouTubeストリーミングへの鮮明な統合
 - Playlist のインポート/エクスポート: RiPlay, Spotify, YouTube Music, N-Zik
 
 :busts_in_sシルエット: <b>一緒に聞く</b>
