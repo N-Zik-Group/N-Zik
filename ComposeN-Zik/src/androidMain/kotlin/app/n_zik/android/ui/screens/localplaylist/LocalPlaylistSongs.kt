@@ -29,9 +29,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -56,9 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
@@ -84,13 +80,11 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.components.dialog.common.RawUrlImportDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
 import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
-import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
@@ -143,10 +137,6 @@ import app.n_zik.android.core.database.canRefreshPlaylist
 import app.n_zik.android.core.database.editStoredPlaylistMembership
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.playlistLinkKind
-import app.n_zik.android.core.matching.SongMatch
-import app.n_zik.android.core.matching.SongMatchRequest
-import app.n_zik.android.core.matching.SongMatchStatus
-import app.n_zik.android.core.matching.loadSongMatchFailures
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
@@ -266,22 +256,15 @@ fun LocalPlaylistSongs(
     val disableScrollingText by rememberPreference( disableScrollingTextKey, false )
     // Full offline mode (spec-full-offline-mode): network toolbar actions removed,
     // the import dialog prunes its network choices; listen_on_yt is EXTERNAL and stays.
-    val offlineMode by OfflineMode.rememberEnabled()
+    val offlineModeState = OfflineMode.rememberEnabled()
+    val offlineMode by offlineModeState
     var onDeviceSelected by rememberSaveable(playlistId) { mutableStateOf(false) }
     val onDeviceOnly = forceOnDevice || onDeviceSelected
     var isRecommendationEnabled by remember { mutableStateOf(false) }
-    var hiddenMatchRequestId by remember(playlistId) { mutableStateOf<String?>(null) }
 
     // Non-vital
 
     val preview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current
-    val matchScopeKey = "local-playlist:$playlistId"
-    var matchCandidates by remember(matchScopeKey) { mutableStateOf<List<Song>?>(null) }
-    val currentSongMatch by SongMatch.state.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-    val matchResults by SongMatch.results.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
-    val songMatch = if (preview != null || onDeviceOnly) null else {
-        currentSongMatch?.takeIf { it.scopeKey == matchScopeKey } ?: matchResults[matchScopeKey]
-    }
     val thumbnailUrl = remember(playlistId, preview) {
         mutableStateOf(if (preview == null) "" else android.net.Uri.fromFile(ThemePreviewAssets.file(appContext(), "tide.jpg")).toString())
     }
@@ -297,7 +280,8 @@ fun LocalPlaylistSongs(
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
-    val membershipEditable by rememberUpdatedState(!forceOnDevice && playlist?.let(::canEditPlaylistMembership) == true)
+    val membershipEditableState = rememberUpdatedState(!forceOnDevice && playlist?.let(::canEditPlaylistMembership) == true)
+    val membershipEditable by membershipEditableState
     if (preview == null && !onDeviceOnly) RefreshPlaylistOnOpening(playlistId, playlist, offlineMode)
     val refreshOnOpen = playlistRefreshOnOpenAction(playlist)
 
@@ -371,23 +355,6 @@ fun LocalPlaylistSongs(
 
     fun getSongs() = localPlaylistActionSongs(itemsOnDisplay, itemSelector, onDeviceOnly)
 
-    val openMatch by rememberUpdatedState<() -> Unit> {
-        val running = SongMatch.state.value?.takeIf {
-            it.scopeKey == matchScopeKey && it.status == SongMatchStatus.Running
-        }
-        if (running != null) {
-            hiddenMatchRequestId = null
-        } else {
-            matchCandidates = getSongs().filter { it.isUnmatched }.distinctBy(Song::id)
-                .takeIf { it.isNotEmpty() }
-        }
-    }
-
-    fun startMatch(songs: List<Song>) {
-        val request = SongMatchRequest(matchScopeKey, songs, playlistId)
-        if (!SongMatch.start(context, request)) Toaster.e(R.string.song_matching_failed_message)
-    }
-
     fun getMediaItems() = getSongs().map( Song::asMediaItem )
 
     val search = Search(lazyListState)
@@ -434,96 +401,15 @@ fun LocalPlaylistSongs(
         }
     }
 
-    DialogPresence(target = matchCandidates) { candidates ->
-        ConfirmationDialog(
-            title = stringResource(R.string.song_matching_dialog_title),
-            confirmText = stringResource(R.string.song_matching_dialog_title),
-            text = stringResource(R.string.song_matching_all_confirmation, candidates.size),
-            onDismiss = { matchCandidates = null },
-            onConfirm = { startMatch(candidates) },
-        )
-    }
-
-    val runningMatch = songMatch?.takeIf { it.status == SongMatchStatus.Running }
-    val showMatchProgress = runningMatch != null && runningMatch.requestId != hiddenMatchRequestId
-    DialogPresence(visible = showMatchProgress) {
-        InProgressDialog(
-            total = songMatch?.total ?: 0,
-            done = songMatch?.processed ?: 0,
-            text = stringResource(R.string.song_matching_progress_title),
-            message = stringResource(R.string.song_matching_background_message),
-            onDismiss = { hiddenMatchRequestId = songMatch?.requestId },
-            onCancel = { songMatch?.let { SongMatch.cancel(it.requestId) } },
-        )
-    }
-
-    val matchResult = songMatch?.takeIf {
-        it.total > 0 && (
-            it.status == SongMatchStatus.Finished ||
-                it.status == SongMatchStatus.Cancelled ||
-                (it.status == SongMatchStatus.Failed && it.failedIds.isNotEmpty())
-            )
-    }
-    DialogPresence(target = matchResult) { result ->
-        key(result.requestId) {
-            val failedSongs by produceState(emptyList<Song>(), result.requestId) {
-                value = loadSongMatchFailures(result)
-            }
-            MatchResultsDialog(
-                matched = result.matched,
-                failed = result.failed,
-                merged = result.merged,
-                failedSongs = failedSongs,
-                cancelled = result.status == SongMatchStatus.Cancelled,
-                unprocessed = result.unprocessed,
-                onRetry = if (!offlineMode && membershipEditable && failedSongs.isNotEmpty()) {
-                    {
-                        if (!offlineMode && membershipEditable &&
-                            SongMatch.results.value[matchScopeKey]?.requestId == result.requestId
-                        ) {
-                            startMatch(failedSongs)
-                        }
-                    }
-                } else null,
-                onDismiss = { SongMatch.dismiss(result.requestId) },
-            )
-        }
-    }
-
-    val unshownMatch = songMatch?.takeIf {
-        (it.status == SongMatchStatus.Failed && it.failedIds.isEmpty()) ||
-            (it.total == 0 && (it.status == SongMatchStatus.Finished || it.status == SongMatchStatus.Cancelled))
-    }
-    LaunchedEffect(unshownMatch?.requestId) {
-        if (unshownMatch != null) {
-            if (unshownMatch.status == SongMatchStatus.Failed) {
-                Toaster.e(R.string.song_matching_failed_message)
-            }
-            SongMatch.dismiss(unshownMatch.requestId)
-        }
-    }
-
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    val matchRunning = currentSongMatch?.status == SongMatchStatus.Running ||
-        currentSongMatch?.status == SongMatchStatus.Cancelling
-    val canStartAutomaticMatch = preview == null && !onDeviceOnly && !offlineMode && membershipEditable &&
-        matchCandidates == null && !matchRunning && songMatch == null
-    val automaticMatchSongs = remember(canStartAutomaticMatch, items) {
-        if (!canStartAutomaticMatch) emptyList()
-        else items.filter { song ->
-            val importedId = (cleanPrefix(song.title) + song.artistsText.orEmpty()).filter { it.isLetterOrDigit() }
-            song.id == importedId
-        }
-    }
-    LaunchedEffect(lifecycle, automaticMatchSongs, matchScopeKey) {
-        if (automaticMatchSongs.isEmpty()) return@LaunchedEffect
-        lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            SongMatch.start(
-                context,
-                SongMatchRequest(matchScopeKey, automaticMatchSongs, playlistId, automatic = true),
-            )
-        }
-    }
+    val matchAction = localPlaylistSongMatching(
+        playlistId = playlistId,
+        inPreview = preview != null,
+        onDeviceOnly = onDeviceOnly,
+        offlineModeState = offlineModeState,
+        membershipEditableState = membershipEditableState,
+        items = items,
+        getSongs = ::getSongs,
+    )
 
     val shuffle = SongShuffler ( ::getSongs )
     val insertionDialog = PlaylistInsertionDialog { playlist }
@@ -601,15 +487,6 @@ fun LocalPlaylistSongs(
         onImportYoutubeLink = { showYouTubeLinkDialog = true },
         networkOptionsEnabled = { !offlineMode }
     ) }
-    val matchAlbumButton = remember {
-        object : MenuIcon, Descriptive {
-            override val iconId: Int = R.drawable.alert
-            override val messageId: Int = R.string.song_matching_action_open
-            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-            override fun onShortClick() { openMatch() }
-            override fun onLongClick() {}
-        }
-    }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val deleteDialog = remember {
         object : MenuIcon, Descriptive, Dialog {
@@ -1118,8 +995,8 @@ fun LocalPlaylistSongs(
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
                             "position_lock" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
                             "match" -> if (!onDeviceOnly &&
-                                (runningMatch != null || (membershipEditable && !offlineMode && hasUnmatchedSongs))
-                            ) add(matchAlbumButton)
+                                (matchAction.isRunning || (membershipEditable && !offlineMode && hasUnmatchedSongs))
+                            ) add(matchAction.button)
                             "renumber" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
                             "download_all" -> if (!onDeviceOnly && !offlineMode) add(downloadAllDialog)
                             "delete_downloads" -> if (!onDeviceOnly) add(deleteDownloadsDialog)

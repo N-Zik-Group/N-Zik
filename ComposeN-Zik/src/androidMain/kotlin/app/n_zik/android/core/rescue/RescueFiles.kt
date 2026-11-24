@@ -9,8 +9,6 @@ import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import android.content.Context
 import android.content.SharedPreferences
-import android.database.DatabaseErrorHandler
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.os.Build
@@ -147,16 +145,6 @@ object RescueFiles {
      */
     private const val SHARED_PREFS_DIR = "shared_prefs"
 
-    /** Suffixes of the files that make up one SQLite database, main file first. */
-    private val DB_FILE_SUFFIXES = listOf("", "-wal", "-shm", "-journal")
-
-    /**
-     * Error handler that leaves a corrupt database alone. The default one DELETES the file when
-     * SQLite reports corruption at open time, which is unacceptable in a tool whose job is to
-     * save the user's data.
-     */
-    private val keepCorruptDatabase by lazy { DatabaseErrorHandler { } }
-
     // Encrypted credential keys, built from the real constants so they cannot drift
     // (const vals are inlined: no app init needed). These lists are the single source of
 //
@@ -291,38 +279,12 @@ object RescueFiles {
     internal fun prepareDatabaseExport(context: Context): DatabaseBackup.Export =
         DatabaseBackup.prepareRescueExport(context, rescueTargetProfile())
 
-    /**
-     * Folds the WAL into [dbFile] through a raw SQLite connection, and throws when it cannot.
-     *
-     * The connection is read-write on purpose: a read-only one cannot checkpoint (it raises
-     * "disk I/O error" on a WAL database). It uses [keepCorruptDatabase] because the default
-     * error handler DELETES the database file when SQLite reports corruption at open time.
-     */
-    internal fun checkpointWal(dbFile: File) {
-        SQLiteDatabase.openDatabase(
-            dbFile.absolutePath,
-            null,
-            SQLiteDatabase.OPEN_READWRITE,
-            keepCorruptDatabase
-        ).use { db ->
-            db.rawQuery("PRAGMA wal_checkpoint(TRUNCATE)", null).use { cursor ->
-                if (cursor.moveToFirst()) {
-                    val busy = cursor.getInt(0)
-                    Timber.tag(TAG).d("WAL checkpoint busy flag: %d", busy)
-                    if (busy != 0) throw DatabaseBusyException()
-                }
-            }
-        }
-    }
+    internal fun checkpointWal(dbFile: File) = RescueDatabaseFiles.checkpointWal(dbFile)
 
     // Import database (with validation)
 
-    /** Validates the SQLite header of a stream. The first 16 bytes of a valid SQLite file are: "SQLite format 3\000" */
-    internal fun isValidSqliteHeader(headerBytes: ByteArray): Boolean {
-        val magic = "SQLite format 3\u0000".toByteArray(Charsets.US_ASCII)
-        if (headerBytes.size < magic.size) return false
-        return headerBytes.copyOfRange(0, magic.size).contentEquals(magic)
-    }
+    internal fun isValidSqliteHeader(headerBytes: ByteArray): Boolean =
+        RescueDatabaseFiles.isValidSqliteHeader(headerBytes)
 
     /** Restores a SQLite or ZIP database backup into the profile selected for rescue. */
     fun importDatabase(context: Context, uri: Uri): Result<Unit> = runCatching {
@@ -746,7 +708,7 @@ object RescueFiles {
     private fun profileResetPaths(context: Context, profileId: String): Map<String, File> = buildMap {
         val database = context.getDatabasePath(profileDatabaseName(profileId))
         val databaseDir = checkNotNull(database.parentFile).canonicalFile
-        DB_FILE_SUFFIXES.forEach { suffix ->
+        RescueDatabaseFiles.fileSuffixes.forEach { suffix ->
             val name = database.name + suffix
             put(name, databaseDir.resolve(name))
         }
@@ -969,18 +931,8 @@ object RescueFiles {
         deletedCount += safeDeleteDir(File(context.filesDir, own.waveformsDir))
         // The suffixed index is the profile's own database (a shared cache points at
         // the base one, never touched) — stale when the profile shares both caches now.
-        deletedCount += removeWithSideFiles(profileIndexDbFile(context, profileId))
+        deletedCount += RescueDatabaseFiles.deleteWithSideFiles(profileIndexDbFile(context, profileId))
         return deletedCount
-    }
-
-    /** Deletes [file] + its SQLite side files (the [DB_FILE_SUFFIXES] set), returning the number of files removed — the same side-file rule as the global downloads delete, so a stale journal cannot be replayed onto a fresh index. */
-    private fun removeWithSideFiles(file: File): Int {
-        val directory = checkNotNull(file.parentFile).canonicalFile
-        return DB_FILE_SUFFIXES.sumOf { suffix ->
-            val target = directory.resolve(file.name + suffix)
-            check(!target.exists() || target.isFile) { "Unexpected database side file" }
-            ProfileResetSnapshot.deleteVerifiedTree(target)
-        }
     }
 
     /** Both physical image cache roots of every registered non-base profile. */
@@ -1181,22 +1133,7 @@ object RescueFiles {
         Timber.tag(TAG).i("Database reset: backed up to %s", backupDir.absolutePath)
     }
 
-    /**
-     * Moves a SQLite database and its side files (`-wal`, `-shm`, `-journal`) from [from] to [to].
-     * Stale side files at [to] are removed first, so a previous backup at [to] is replaced.
-     * Files are renamed one after the other: an I/O failure part-way throws, but there is no
-     * rollback, so the set can be left half-moved.
-     */
-    internal fun moveDatabaseFiles(from: File, to: File) {
-        DB_FILE_SUFFIXES.forEach { suffix ->
-            val stale = File(to.path + suffix)
-            if (stale.exists()) check(stale.delete()) { "Cannot remove ${stale.name}" }
-        }
-        DB_FILE_SUFFIXES.forEach { suffix ->
-            val source = File(from.path + suffix)
-            if (source.exists()) moveRescueFileReplacing(source, File(to.path + suffix))
-        }
-    }
+    internal fun moveDatabaseFiles(from: File, to: File) = RescueDatabaseFiles.moveDatabaseFiles(from, to)
 
     /** Moves the directory tree [from] to [to], replacing any stale tree at [to] first (the same "the set can be left half-moved" contract as [moveDatabaseFiles]: a failure part-way throws without a rollback). */
     private fun moveDirReplacing(from: File, to: File) {
@@ -1224,21 +1161,12 @@ object RescueFiles {
         }
     }
 
-    /** Swaps the live suffixed profile index [live] with its backup (the ping-pong of [swapDatabaseFiles]): the live one is parked first under a per-backup swap name (the backup dir is per-profile, so the name is unique), then replaced. */
-    private fun swapProfileIndex(live: File, backupDb: File) {
-        val parkedDb = File(backupDb.parentFile, "${live.name}.swap")
-        try {
-            if (live.exists()) moveDatabaseFiles(live, parkedDb)
-            moveDatabaseFiles(backupDb, live)
-            if (parkedDb.exists()) moveDatabaseFiles(parkedDb, backupDb)
-        } catch (e: Exception) {
-            if (parkedDb.exists() && !live.exists()) {
-                runCatching { moveDatabaseFiles(parkedDb, live) }
-                    .onFailure { Timber.tag(TAG).e("Could not put the parked profile index back: %s", it.javaClass.simpleName) }
-            }
-            throw e
-        }
-    }
+    private fun swapProfileIndex(live: File, backupDb: File) = RescueDatabaseFiles.swapDatabaseFiles(
+        live = live,
+        backup = backupDb,
+        parked = File(backupDb.parentFile, "${live.name}.swap"),
+        rollbackFailureMessage = "Could not put the parked profile index back: %s",
+    )
 
     /**
      * Swaps the current database with the backup from [resetDatabase].
@@ -1254,27 +1182,12 @@ object RescueFiles {
         Timber.tag(TAG).i("Database restored from backup")
     }
 
-    /**
-     * Swaps the live database with the backup, side files included. The live one is parked first
-     * and only then replaced, so the normal path never removes the last good copy. On a failure the
-     * parked database is put back only while the live one is still absent: a failure part-way
-     * through bringing the backup in can leave the parked files under `data.db.swap`.
-     */
-    internal fun swapDatabaseFiles(dbFile: File, backupDb: File) {
-        val parkedDb = File(backupDb.parentFile, "$DB_FILE_NAME.swap")
-        try {
-            if (dbFile.exists()) moveDatabaseFiles(dbFile, parkedDb)
-            moveDatabaseFiles(backupDb, dbFile)
-            // The database that was live becomes the new backup.
-            if (parkedDb.exists()) moveDatabaseFiles(parkedDb, backupDb)
-        } catch (e: Exception) {
-            if (parkedDb.exists() && !dbFile.exists()) {
-                runCatching { moveDatabaseFiles(parkedDb, dbFile) }
-                    .onFailure { Timber.tag(TAG).e("Could not put the parked database back: %s", it.javaClass.simpleName) }
-            }
-            throw e
-        }
-    }
+    internal fun swapDatabaseFiles(dbFile: File, backupDb: File) = RescueDatabaseFiles.swapDatabaseFiles(
+        live = dbFile,
+        backup = backupDb,
+        parked = File(backupDb.parentFile, "$DB_FILE_NAME.swap"),
+        rollbackFailureMessage = "Could not put the parked database back: %s",
+    )
 
     /**
      * Returns true if a backup exists from a previous [resetDatabase].

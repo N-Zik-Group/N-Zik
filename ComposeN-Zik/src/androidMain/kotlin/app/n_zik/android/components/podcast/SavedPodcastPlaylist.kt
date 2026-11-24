@@ -6,10 +6,8 @@ import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isPodcastBrowseId
-import app.n_zik.android.core.database.canRefreshPlaylist
 import app.n_zik.android.components.playlist.refreshPlaylistSource
 import app.n_zik.android.components.playlist.loadCompletePodcastEpisodes
-import app.n_zik.android.R
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -70,26 +68,4 @@ internal suspend fun refreshPodcastPlaylist(
     val latest = Database.playlistTable.findById(playlistId).first()
         ?.takeIf { it.browseId == browseId && !it.isEditable } ?: return@withContext false
     refreshPlaylistSource(latest, loadEpisodes)
-}
-
-/** Routes podcast refresh to its browse endpoint and keeps failures visible in logs. */
-fun launchSavedPodcastRefresh(playlist: Playlist?, scope: CoroutineScope): Boolean {
-    val browseId = playlist?.browseId ?: return false
-    if (!isPodcastBrowseId(browseId)) return false
-    if (!canRefreshPlaylist(playlist)) return true
-    scope.launch(NzikDispatchers.DATA) {
-        try {
-            if (refreshPodcastPlaylist(playlist.id, browseId)) Toaster.done()
-            else {
-                Timber.tag("PodcastRefresh").w("Podcast snapshot refresh did not complete")
-                Toaster.e(R.string.common_error_title)
-            }
-        } catch (cancelled: CancellationException) {
-            throw cancelled
-        } catch (error: Exception) {
-            Timber.tag("PodcastRefresh").e(error, "Unable to refresh saved podcast episodes")
-            Toaster.e(R.string.common_error_title)
-        }
-    }
-    return true
 }
