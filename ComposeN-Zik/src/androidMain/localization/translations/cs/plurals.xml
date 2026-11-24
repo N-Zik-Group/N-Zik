@@ -43,6 +43,42 @@
         <item quantity="many">%1$d skladeb</item>
         <item quantity="other">%1$d skladeb</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Add %1$d track from this playlist to favorites?</item>
+        <item quantity="few">Add %1$d tracks from this playlist to favorites?</item>
+        <item quantity="many">Add %1$d tracks from this playlist to favorites?</item>
+        <item quantity="other">Add %1$d tracks from this playlist to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Remove %1$d track in this playlist from favorites?</item>
+        <item quantity="few">Remove %1$d tracks in this playlist from favorites?</item>
+        <item quantity="many">Remove %1$d tracks in this playlist from favorites?</item>
+        <item quantity="other">Remove %1$d tracks in this playlist from favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Add %1$d track from this album to favorites?</item>
+        <item quantity="few">Přidat %1$d skladeb z tohoto alba do oblíbených?</item>
+        <item quantity="many">Přidat %1$d skladeb z tohoto alba do oblíbených?</item>
+        <item quantity="other">Přidat %1$d skladeb z tohoto alba do oblíbených?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Remove %1$d track in this album from favorites?</item>
+        <item quantity="few">Remove %1$d tracks in this album from favorites?</item>
+        <item quantity="many">Remove %1$d tracks in this album from favorites?</item>
+        <item quantity="other">Remove %1$d tracks in this album from favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Přidat %1$d epizodu z tohoto kanálu do oblíbených?</item>
+        <item quantity="few">Přidat %1$d epizod z tohoto kanálu do oblíbených?</item>
+        <item quantity="many">Přidat %1$d epizod z tohoto kanálu do oblíbených?</item>
+        <item quantity="other">Přidat %1$d epizod z tohoto kanálu do oblíbených?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Odstranit %1$d epizodu v tomto kanálu z oblíbených?</item>
+        <item quantity="few">Odstranit %1$d epizod v tomto kanálu z oblíbených?</item>
+        <item quantity="many">Odstranit %1$d epizod v tomto kanálu z oblíbených?</item>
+        <item quantity="other">Odstranit %1$d epizod v tomto kanálu z oblíbených?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d překladatel</item>
         <item quantity="few">%1$d překladatelů</item>

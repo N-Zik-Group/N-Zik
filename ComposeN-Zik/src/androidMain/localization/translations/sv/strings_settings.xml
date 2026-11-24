@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Ladda ner låtar automatiskt baserat på dina preferenser</string>
     <string name="settings_downloads_on_album_bookmark_description">Ladda automatiskt ner låtar när du bokmärke ett album</string>
     <string name="settings_downloads_on_like_description">Ladda ner låtar automatiskt när du gillar dem</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Ladda automatiskt ner låtar när du bokmärke en musikspellista</string>
     <string name="settings_downloads_storage_limit_label">Låten ladda ner max storlek</string>
     <string name="settings_enable_autodownload_song">Aktivera automatisk hämtning av låtar</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Ladda ner låten automatiskt när albumet är bokmärkt</string>
     <string name="settings_enable_autodownload_song_when_liked">Ladda ner låten automatiskt när den gillas</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Ladda ner låtar automatiskt i bokmärkta spellistor</string>
     <string name="settings_enable_pip">Aktivera bild-i-bild</string>
     <string name="settings_enable_pip_auto">Aktivera automatisk bild-i-bild</string>
     <string name="settings_font_include_padding_description">Lägg till mellanrum runt texter</string>

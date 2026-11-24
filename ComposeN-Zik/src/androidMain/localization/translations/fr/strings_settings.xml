@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Télécharger automatiquement les chansons en fonction de vos préférences</string>
     <string name="settings_downloads_on_album_bookmark_description">Télécharger automatiquement les chansons lorsque vous signez un album</string>
     <string name="settings_downloads_on_like_description">Télécharger automatiquement les chansons quand vous les aimez</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Télécharger automatiquement des morceaux lorsque vous ajoutez une playlist à vos favoris</string>
     <string name="settings_downloads_storage_limit_label">Taille maximale du téléchargement des titres</string>
     <string name="settings_enable_autodownload_song">Activer le téléchargement automatique du titre</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Téléchargement automatique du titre lorsque l\'album est ajouté aux favoris</string>
     <string name="settings_enable_autodownload_song_when_liked">Téléchargement automatique du titre lorsqu\'il est apprécié</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Télécharger automatiquement les morceaux des playlists ajoutées aux favoris</string>
     <string name="settings_enable_pip">Activer Picture in Picture</string>
     <string name="settings_enable_pip_auto">Activer Picture in Picture automatiquement</string>
     <string name="settings_font_include_padding_description">Ajouter un espace autour des textes</string>

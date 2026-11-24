@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Tercihlerinize göre şarkıları otomatik olarak indirin</string>
     <string name="settings_downloads_on_album_bookmark_description">Bir albümü favorilere eklediğinizde şarkıları otomatik olarak indirin</string>
     <string name="settings_downloads_on_like_description">Beğendiğiniz şarkıları otomatik olarak indirin</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Automatically download songs when you bookmark a music playlist</string>
     <string name="settings_downloads_storage_limit_label">Şarkı indirme maksimum boyutu</string>
     <string name="settings_enable_autodownload_song">Otomatik şarkı indirmeyi etkinleştir</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Albüm yer imlerine eklendiğinde şarkıyı otomatik indir</string>
     <string name="settings_enable_autodownload_song_when_liked">Beğenildiğinde şarkıyı otomatik indir</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Auto-download songs in bookmarked playlists</string>
     <string name="settings_enable_pip">Resim İçinde Resim özelliğini etkinleştir</string>
     <string name="settings_enable_pip_auto">Otomatik Resim İçinde Resim (PiP) özelliğini etkinleştir</string>
     <string name="settings_font_include_padding_description">Metinlerin etrafına boşluk ekleyin</string>

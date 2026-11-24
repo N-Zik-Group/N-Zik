@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Добавить в Избранное</string>
     <string name="library_favorites_added">Добавлено в избранное</string>
     <string name="library_favorites_removed">Удалено из избранного</string>
+    <string name="library_collection_favorites_action_remove">Удалить из избранного</string>
+    <string name="library_collection_favorites_update_failed">Не удалось обновить избранное.</string>
+    <string name="library_collection_favorites_sync_failed">Не удалось синхронизировать некоторые избранные с YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Альбом</string>
     <string name="library_sort_album_year">По году</string>

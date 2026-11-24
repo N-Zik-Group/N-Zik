@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Legg til i favoritter</string>
     <string name="library_favorites_added">Lagt til i favoritter</string>
     <string name="library_favorites_removed">Fjernet fra favoritter</string>
+    <string name="library_collection_favorites_action_remove">Fjern fra favoritter</string>
+    <string name="library_collection_favorites_update_failed">Kunne ikke oppdatere favoritter.</string>
+    <string name="library_collection_favorites_sync_failed">Kunne ikke synkronisere noen favoritter med YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">album</string>
     <string name="library_sort_album_year">Album År</string>

@@ -43,6 +43,42 @@
         <item quantity="many">%1$d пісень</item>
         <item quantity="other">%1$d пісень</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Додати трек %1$d з цього списку відтворення до вибраного?</item>
+        <item quantity="few">Додати треки %1$d з цього списку відтворення до улюбленого?</item>
+        <item quantity="many">Додати треки %1$d з цього списку відтворення до улюбленого?</item>
+        <item quantity="other">Додати треки %1$d з цього списку відтворення до улюбленого?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Видалити треки %1$d в цьому списку відтворення з обраного?</item>
+        <item quantity="few">Видалити треки %1$d у цьому списку відтворення з обраного?</item>
+        <item quantity="many">Видалити треки %1$d у цьому списку відтворення з обраного?</item>
+        <item quantity="other">Видалити треки %1$d у цьому списку відтворення з обраного?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Додати трек %1$d з цього альбому до улюблених?</item>
+        <item quantity="few">Додати треки %1$d з цього альбому до улюблених?</item>
+        <item quantity="many">Додати треки %1$d з цього альбому до улюблених?</item>
+        <item quantity="other">Додати треки %1$d з цього альбому до улюблених?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Видалити треки %1$d в цьому альбомі з обраного?</item>
+        <item quantity="few">Видалити треки %1$d в цьому альбомі з обраного?</item>
+        <item quantity="many">Видалити треки %1$d в цьому альбомі з обраного?</item>
+        <item quantity="other">Видалити треки %1$d в цьому альбомі з обраного?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Додати епізоди %1$d з цього подкасту до вибраного?</item>
+        <item quantity="few">Додати епізодів %1$d з цього подкасту до вибраного?</item>
+        <item quantity="many">Додати епізодів %1$d з цього подкасту до вибраного?</item>
+        <item quantity="other">Додати епізодів %1$d з цього подкасту до вибраного?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Видалити епізод %1$d в цьому подкасті від вибраного?</item>
+        <item quantity="few">Видалити епізоди %1$d в цьому подкасті з обраного?</item>
+        <item quantity="many">Видалити епізоди %1$d в цьому подкасті з обраного?</item>
+        <item quantity="other">Видалити епізоди %1$d в цьому подкасті з обраного?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d translator</item>
         <item quantity="few">%1$d перекладачі</item>

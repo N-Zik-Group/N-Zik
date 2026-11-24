@@ -29,6 +29,30 @@
         <item quantity="one">%1$d låt</item>
         <item quantity="other">%1$d låtar</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Lägg till %1$d låt från den här spellistan till favoriter?</item>
+        <item quantity="other">Lägg till %1$d låtar från den här spellistan till favoriter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Ta bort %1$d spår i den här spellistan från favoriter?</item>
+        <item quantity="other">Ta bort %1$d låtar i den här spellistan från favoriter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Lägg till %1$d låt från detta album till favoriter?</item>
+        <item quantity="other">Lägg till %1$d låtar från detta album till favoriter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Ta bort %1$d spår i detta album från favoriter?</item>
+        <item quantity="other">Ta bort %1$d låtar i detta album från favoriter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Lägg till %1$d avsnitt från denna podcast till favoriter?</item>
+        <item quantity="other">Lägg till %1$d avsnitt från denna podcast till favoriter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Ta bort %1$d avsnitt i denna podcast från favoriter?</item>
+        <item quantity="other">Ta bort %1$d avsnitt i denna podcast från favoriter?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d översättare</item>
         <item quantity="other">%1$d översättare</item>

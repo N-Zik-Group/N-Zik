@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Lisää suosikkeihin</string>
     <string name="library_favorites_added">Lisätty suosikkeihin</string>
     <string name="library_favorites_removed">Poistettu suosikeista</string>
+    <string name="library_collection_favorites_action_remove">Poista suosikeista</string>
+    <string name="library_collection_favorites_update_failed">Suosikkejä ei voitu päivittää.</string>
+    <string name="library_collection_favorites_sync_failed">YouTuben kanssa ei voitu synkronoida joitain suosikkeja.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Albumi</string>
     <string name="library_sort_album_year">Albumin julkaisuvuosi</string>

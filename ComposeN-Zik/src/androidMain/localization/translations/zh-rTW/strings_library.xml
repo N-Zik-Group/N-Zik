@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">新增到最愛</string>
     <string name="library_favorites_added">已加到最愛</string>
     <string name="library_favorites_removed">從最愛中移除</string>
+    <string name="library_collection_favorites_action_remove">Remove from favorites</string>
+    <string name="library_collection_favorites_update_failed">Couldn’t update favorites.</string>
+    <string name="library_collection_favorites_sync_failed">Couldn’t sync some favorites with YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">專輯</string>
     <string name="library_sort_album_year">專輯年份</string>

@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Add to favorites</string>
     <string name="library_favorites_added">Dodato u omiljeno</string>
     <string name="library_favorites_removed">Uklonjeno iz omiljenog</string>
+    <string name="library_collection_favorites_action_remove">Remove from favorites</string>
+    <string name="library_collection_favorites_update_failed">Couldn’t update favorites.</string>
+    <string name="library_collection_favorites_sync_failed">Couldn’t sync some favorites with YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Godina Albuma</string>

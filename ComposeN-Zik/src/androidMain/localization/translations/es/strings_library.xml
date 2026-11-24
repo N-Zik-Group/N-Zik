@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Añadir a favoritos</string>
     <string name="library_favorites_added">Añadido a favoritos</string>
     <string name="library_favorites_removed">Eliminado de favoritos</string>
+    <string name="library_collection_favorites_action_remove">Eliminar de favoritos</string>
+    <string name="library_collection_favorites_update_failed">No se pudo actualizar favoritos.</string>
+    <string name="library_collection_favorites_sync_failed">No se pudo sincronizar algunos favoritos con YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Álbum</string>
     <string name="library_sort_album_year">Año del álbum</string>

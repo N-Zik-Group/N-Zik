@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Automaticky stahovat skladby na základě vašich preferencí</string>
     <string name="settings_downloads_on_album_bookmark_description">Automaticky stahovat skladby při přidání alba</string>
     <string name="settings_downloads_on_like_description">Automaticky stahovat skladby, když se vám je líbí</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Automaticky stahovat skladby při přidání hudebního playlistu</string>
     <string name="settings_downloads_storage_limit_label">Maximální velikost stahování skladeb</string>
     <string name="settings_enable_autodownload_song">Povolit automatické stahování skladby</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Automaticky stahovat skladbu, pokud je album označeno záložkou</string>
     <string name="settings_enable_autodownload_song_when_liked">Automaticky stahovat skladbu, pokud se líbí</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Automatické stahování skladeb v záložkách playlistů</string>
     <string name="settings_enable_pip">Povolení funkce obraz v obraze (PIP)</string>
     <string name="settings_enable_pip_auto">Povolení funkce automatický obraz v obraze (PIP)</string>
     <string name="settings_font_include_padding_description">Přidat mezery kolem textů</string>

@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Download automatisch nummers gebaseerd op je voorkeuren</string>
     <string name="settings_downloads_on_album_bookmark_description">Download nummers automatisch wanneer je een album aan je favorieten toevoegt</string>
     <string name="settings_downloads_on_like_description">Download automatisch nummers als je ze leuk vindt</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Download nummers automatisch wanneer je een afspeellijst met favorieten aan je favorieten toevoegt</string>
     <string name="settings_downloads_storage_limit_label">Nummerdownload max grootte</string>
     <string name="settings_enable_autodownload_song">Automatisch nummer downloaden inschakelen</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Automatisch het nummer downloaden wanneer het album is gemarkeerd</string>
     <string name="settings_enable_autodownload_song_when_liked">Automatisch downloaden van nummer wanneer leuk is</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Auto-download nummers in afspeellijsten met bladwijzers</string>
     <string name="settings_enable_pip">Beeld-in-beeld inschakelen</string>
     <string name="settings_enable_pip_auto">Automatisch Picture-in-beeld inschakelen</string>
     <string name="settings_font_include_padding_description">Ruimte rond teksten toevoegen</string>

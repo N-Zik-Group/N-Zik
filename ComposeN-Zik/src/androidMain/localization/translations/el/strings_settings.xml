@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Αυτόματη λήψη τραγουδιών με βάση τις προτιμήσεις σας</string>
     <string name="settings_downloads_on_album_bookmark_description">Αυτόματη λήψη τραγουδιών όταν κάνετε σελιδοδείκτη ενός άλμπουμ</string>
     <string name="settings_downloads_on_like_description">Αυτόματη λήψη τραγουδιών όταν σας αρέσουν</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Αυτόματη λήψη τραγουδιών όταν κάνετε σελιδοδείκτη μιας λίστας αναπαραγωγής μουσικής</string>
     <string name="settings_downloads_storage_limit_label">Μέγιστο μέγεθος λήψης τραγουδιού</string>
     <string name="settings_enable_autodownload_song">Enable auto download song</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Auto download song when album bookmarked</string>
     <string name="settings_enable_autodownload_song_when_liked">Αυτόματη λήψη τραγουδιού όταν αρέσει</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Αυτόματη λήψη τραγουδιών σε λίστες αναπαραγωγής σελιδοδεικτών</string>
     <string name="settings_enable_pip">Enable Picture in Picture</string>
     <string name="settings_enable_pip_auto">Enable Automatic Picture in Picture</string>
     <string name="settings_font_include_padding_description">Προσθήκη κενού γύρω από τα κείμενα</string>

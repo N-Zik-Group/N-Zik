@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Last ned sanger automatisk basert på dine innstillinger</string>
     <string name="settings_downloads_on_album_bookmark_description">Last ned sanger automatisk når du bokmerker et album</string>
     <string name="settings_downloads_on_like_description">Last ned sanger automatisk når du liker dem</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Last ned sanger automatisk når du bokmerker en musikkspilleliste</string>
     <string name="settings_downloads_storage_limit_label">Sang maks nedlastingsstørrelse</string>
     <string name="settings_enable_autodownload_song">Tillat automatisk sangnedlasting</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Automatisk nedlasting av sang når album er bokmerket</string>
     <string name="settings_enable_autodownload_song_when_liked">Automatisk nedlasting av sang når likt</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Auto-nedlasting av sanger i bokmerkelister</string>
     <string name="settings_enable_pip">Aktiver bilde</string>
     <string name="settings_enable_pip_auto">Aktiver automatisk bilde</string>
     <string name="settings_font_include_padding_description">Legg til mellomrom rundt tekst</string>

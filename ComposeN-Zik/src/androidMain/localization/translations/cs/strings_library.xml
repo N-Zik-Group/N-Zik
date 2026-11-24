@@ -98,6 +98,9 @@
     <string name="library_favorites_action_add">Přidat do oblíbených</string>
     <string name="library_favorites_added">Přidáno do oblíbených</string>
     <string name="library_favorites_removed">Odstraněno z oblíbených</string>
+    <string name="library_collection_favorites_action_remove">Odebrat z oblíbených</string>
+    <string name="library_collection_favorites_update_failed">Nelze aktualizovat oblíbené položky.</string>
+    <string name="library_collection_favorites_sync_failed">Nelze synchronizovat některé oblíbené s YouTube.</string>
     <!-- Library Sort -->
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Rok vydání alba</string>

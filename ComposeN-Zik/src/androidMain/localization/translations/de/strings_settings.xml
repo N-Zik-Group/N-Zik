@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Lade Songs basierend auf deinen Einstellungen automatisch herunter</string>
     <string name="settings_downloads_on_album_bookmark_description">Lade Titel automatisch herunter, wenn du ein Album Bookmark markiert hast</string>
     <string name="settings_downloads_on_like_description">Lade Songs automatisch herunter, wenn du sie magst</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Lade Titel automatisch herunter, wenn du eine Musik-Wiedergabeliste Lesezeichen markiert hast</string>
     <string name="settings_downloads_storage_limit_label">Maximale Größe der Song-Downloads</string>
     <string name="settings_enable_autodownload_song">Automatisches Herunterladen aktivieren</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Titel herunterladen, wenn Album in Lesezeichen</string>
     <string name="settings_enable_autodownload_song_when_liked">Titel herunterladen, wenn mit \"Gefällt mir\" markiert</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Titel in gespeicherten Wiedergabelisten automatisch herunterladen</string>
     <string name="settings_enable_pip">Bild im Bild aktivieren</string>
     <string name="settings_enable_pip_auto">Automatisches Bild im Bild aktivieren</string>
     <string name="settings_font_include_padding_description">Abstand um Text herum hinzufügen</string>

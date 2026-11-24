@@ -191,10 +191,12 @@
     <string name="settings_downloads_automatic_description">Descarcă melodiile automat în funcție de preferințele tale</string>
     <string name="settings_downloads_on_album_bookmark_description">Descarcă automat melodiile atunci când marci un album</string>
     <string name="settings_downloads_on_like_description">Descarcă automat melodiile când îți plac</string>
+    <string name="settings_downloads_on_playlist_bookmark_description">Descarcă automat melodiile atunci când se salvează o listă de redare</string>
     <string name="settings_downloads_storage_limit_label">Dimensiunea maximă a descărcărilor de melodii</string>
     <string name="settings_enable_autodownload_song">Activează descărcarea automată a melodiilor</string>
     <string name="settings_enable_autodownload_song_when_album_bookmarked">Descarcă automat melodia când albumul este marcat</string>
     <string name="settings_enable_autodownload_song_when_liked">Descarcă automat melodia când este apreciată</string>
+    <string name="settings_enable_autodownload_song_when_playlist_bookmarked">Descărcare automată melodii în liste de redare marcate cu carte</string>
     <string name="settings_enable_pip">Activează Picture-in-Picture</string>
     <string name="settings_enable_pip_auto">Activează automat Picture-in-Picture</string>
     <string name="settings_font_include_padding_description">Adaugă spațiu în jurul textelor</string>

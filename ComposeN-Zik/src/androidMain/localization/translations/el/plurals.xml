@@ -29,6 +29,30 @@
         <item quantity="one">%1$d τραγούδι</item>
         <item quantity="other">%1$d τραγούδια</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_playlist_tracks">
+        <item quantity="one">Προσθήκη %1$d κομματιού από αυτήν τη λίστα στα αγαπημένα?</item>
+        <item quantity="other">Προσθήκη %1$d κομματιών από αυτήν τη λίστα στα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_playlist_tracks">
+        <item quantity="one">Αφαίρεση %1$d κομματιού σε αυτή τη λίστα από τα αγαπημένα?</item>
+        <item quantity="other">Αφαίρεση %1$d κομματιών σε αυτή τη λίστα από τα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_album_tracks">
+        <item quantity="one">Προσθήκη %1$d κομματιού από αυτό το άλμπουμ στα αγαπημένα?</item>
+        <item quantity="other">Προσθήκη %1$d κομματιών από αυτό το άλμπουμ στα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_album_tracks">
+        <item quantity="one">Αφαίρεση %1$d κομματιού σε αυτό το άλμπουμ από τα αγαπημένα?</item>
+        <item quantity="other">Αφαίρεση %1$d κομματιών σε αυτό το άλμπουμ από τα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_add_episodes">
+        <item quantity="one">Προσθήκη %1$d επεισόδιο από αυτό το podcast στα αγαπημένα?</item>
+        <item quantity="other">Προσθέστε %1$d επεισόδια από αυτό το podcast στα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_episodes">
+        <item quantity="one">Αφαιρέστε %1$d επεισόδιο σε αυτό το podcast από τα αγαπημένα?</item>
+        <item quantity="other">Αφαιρέστε %1$d επεισόδια σε αυτό το podcast από τα αγαπημένα?</item>
+    </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d μεταφραστής</item>
         <item quantity="other">%1$d μεταφραστές</item>
