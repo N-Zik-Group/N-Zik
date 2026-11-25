@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Αρέθηκε %s</string>
     <string name="library_dislikes_removed">Αφαιρέθηκε %s από dislikes</string>
     <string name="library_favorites_action_add">Προσθήκη στα αγαπημένα</string>
+    <string name="library_collection_favorites_action_manage">Διαχείριση αγαπημένων</string>
     <string name="library_favorites_added">Προστέθηκε στα αγαπημένα</string>
     <string name="library_favorites_removed">Αφαιρέθηκε από τα αγαπημένα</string>
     <string name="library_collection_favorites_action_remove">Αφαίρεση από τα αγαπημένα</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Προσθήκη σε playlist</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
+    <string name="playlist_add_destination_unavailable">Αυτή η λίστα αναπαραγωγής δεν είναι πλέον διαθέσιμη για την προσθήκη τραγουδιών συσκευών. Επιλέξτε μια άλλη λίστα αναπαραγωγής.</string>
     <string name="playlist_action_create">Δημιουργία νέου playlist</string>
     <string name="playlist_action_delete_selected">Διαγραφή λιστών αναπαραγωγής</string>
     <string name="playlist_action_export">Εξαγωγή λίστας αναπαραγωγής</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Η Κορυφή Μου</string>
     <string name="recommendations_playlists_title">Playlists που μπορεί να σας αρέσουν</string>
     <string name="recommendations_reset_complete">Οι γρήγορες επιλογές καθαρίστηκαν</string>
-    <string name="recommendations_reset_description">Διαγραφή των εκδηλώσεων αναπαραγωγής που χρησιμοποιούνται για τη δημιουργία τοπικών συστάσεων Γρήγορων Επιλογών.</string>
+    <string name="recommendations_reset_content_description">Επαναφόρτωση Γρήγορων Επιλογών με νέες συστάσεις. Το ιστορικό ακρόασης σας διατηρείται.</string>
     <string name="recommendations_section_other_youtube_title">Άλλα τμήματα</string>
     <string name="recommendations_section_visibility_description">Απενεργοποίηση αν δεν θέλετε να δείτε</string>
     <string name="recommendations_show_section_label">Εμφάνιση</string>
