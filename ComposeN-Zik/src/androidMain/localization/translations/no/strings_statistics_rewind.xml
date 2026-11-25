@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Din %1$s spoler spilleliste klar</string>
     <string name="rewind_settings_enabled">Aktiver spole</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Tilbakespoling er deaktivert. Åpne personverninnstillinger for å skru den på igjen.</string>
     <string name="rewind_settings_global">Helt tilbaketasting</string>
     <string name="rewind_settings_global_description">Vis tilbaketrekningen av gangen fra Tilbakesendingshjemmet.</string>
     <string name="rewind_settings_monthly">Månedlig tilbakespoling</string>
