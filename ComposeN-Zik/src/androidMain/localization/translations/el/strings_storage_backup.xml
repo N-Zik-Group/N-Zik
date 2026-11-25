@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Η εισαγωγή απέτυχε</string>
     <string name="export_no_songs">Δεν εξήχθησαν τραγούδια</string>
     <string name="export_cached_songs_generic_error">Η εξαγωγή απέτυχε</string>
+    <string name="export_selection_lost">Η εξαγωγή ακυρώθηκε επειδή δεν ήταν δυνατή η επαναφορά της επιλογής. Επιλέξτε ξανά τα στοιχεία και προσπαθήστε ξανά.</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">Αδυναμία ολοκλήρωσης της επαναφοράς της βιβλιοθήκης σας.</string>
     <string name="storage_breakdown_themes">Θέματα</string>
