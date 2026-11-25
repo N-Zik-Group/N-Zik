@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Importeren mislukt</string>
     <string name="export_no_songs">Geen nummers geëxporteerd</string>
     <string name="export_cached_songs_generic_error">Exporteren mislukt</string>
+    <string name="export_selection_lost">Exporteren geannuleerd omdat de selectie niet hersteld kon worden. Selecteer de items opnieuw en probeer opnieuw.</string>
     <string name="backup_startup_preparing_library">Je bibliotheek voorbereiden…</string>
     <string name="backup_startup_recovery_failed">Kan het herstellen van je bibliotheek niet voltooien.</string>
     <string name="storage_breakdown_themes">Thema’s</string>
