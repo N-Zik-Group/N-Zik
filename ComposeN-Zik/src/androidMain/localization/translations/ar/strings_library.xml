@@ -352,6 +352,7 @@
     <string name="search_online">مُتّصل</string>
     <string name="search_queries">" البحث عن استعلامات"</string>
     <string name="search_results_for">نتائج البحث عن:</string>
+    <string name="search_history_clear_all_button">مسح الكل</string>
     <string name="search_saved_history_title">Saved searches</string>
     <string name="search_suggestions_empty_message">لا توجد اقتراحات</string>
     <string name="search_suggestions_title">اقتراحات</string>
