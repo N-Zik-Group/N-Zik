@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Nelíbí se mi %s</string>
     <string name="library_dislikes_removed">Odebráno %s z nelíbí se</string>
     <string name="library_favorites_action_add">Přidat do oblíbených</string>
+    <string name="library_collection_favorites_action_manage">Spravovat oblíbené</string>
     <string name="library_favorites_added">Přidáno do oblíbených</string>
     <string name="library_favorites_removed">Odstraněno z oblíbených</string>
     <string name="library_collection_favorites_action_remove">Odebrat z oblíbených</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Přidat do playlistu</string>
     <string name="playlist_action_add_hint">Přidat do playlistu</string>
+    <string name="playlist_add_destination_unavailable">Tento seznam skladeb již není k dispozici pro přidání skladeb zařízení. Vyberte jiný seznam skladeb.</string>
     <string name="playlist_action_create">Nový playlist</string>
     <string name="playlist_action_delete_selected">Odstranit playlisty</string>
     <string name="playlist_action_export">Exportovat playlist</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Můj vrchol</string>
     <string name="recommendations_playlists_title">Playlisty, které by se vám mohly líbit</string>
     <string name="recommendations_reset_complete">Rychlý výběr je vymazán</string>
-    <string name="recommendations_reset_description">Odstranit události přehrávání používané k vygenerování místních doporučení rychlého výběru.</string>
+    <string name="recommendations_reset_content_description">Znovu načtěte rychlý výběr s novými doporučeními. Vaše historie poslechu je zachována.</string>
     <string name="recommendations_section_other_youtube_title">S kruhovým příčným průřezem</string>
     <string name="recommendations_section_visibility_description">Zakázat, pokud nechcete vidět</string>
     <string name="recommendations_show_section_label">Zobrazit</string>
