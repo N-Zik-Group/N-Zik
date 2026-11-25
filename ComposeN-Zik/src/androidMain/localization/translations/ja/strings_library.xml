@@ -352,6 +352,7 @@
     <string name="search_online">オンライン</string>
     <string name="search_queries">" 個の検索クエリ"</string>
     <string name="search_results_for">検索結果:</string>
+    <string name="search_history_clear_all_button">すべてクリア</string>
     <string name="search_saved_history_title">履歴を検索</string>
     <string name="search_suggestions_empty_message">候補なし</string>
     <string name="search_suggestions_title">候補</string>
