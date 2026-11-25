@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">不喜欢的 %s</string>
     <string name="library_dislikes_removed">已从不喜欢的 %s 删除</string>
     <string name="library_favorites_action_add">添加至收藏夹</string>
+    <string name="library_collection_favorites_action_manage">管理收藏夹</string>
     <string name="library_favorites_added">已添加到收藏夹</string>
     <string name="library_favorites_removed">已从收藏夹移除</string>
     <string name="library_collection_favorites_action_remove">从收藏夹中删除</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">添加到播放列表</string>
     <string name="playlist_action_add_hint">添加到歌单</string>
+    <string name="playlist_add_destination_unavailable">此播放列表不再可用来添加设备歌曲。选择另一个播放列表。</string>
     <string name="playlist_action_create">新播放列表</string>
     <string name="playlist_action_delete_selected">删除播放列表</string>
     <string name="playlist_action_export">导出播放列表</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">我的顶部</string>
     <string name="recommendations_playlists_title">您可能喜欢的播放列表</string>
     <string name="recommendations_reset_complete">快速选择已清除</string>
-    <string name="recommendations_reset_description">删除用于生成本地快速选择建议的播放事件。</string>
+    <string name="recommendations_reset_content_description">重新加载快速选项，带有新的建议。您的侦听历史将被保存。</string>
     <string name="recommendations_section_other_youtube_title">其他部分</string>
     <string name="recommendations_section_visibility_description">如果你不想看到, 请禁用</string>
     <string name="recommendations_show_section_label">显示</string>
