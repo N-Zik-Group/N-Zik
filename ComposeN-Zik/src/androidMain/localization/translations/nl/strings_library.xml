@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Niet leuk %s</string>
     <string name="library_dislikes_removed">Verwijderd %s van niet-likes</string>
     <string name="library_favorites_action_add">Toevoegen aan favorieten</string>
+    <string name="library_collection_favorites_action_manage">Favorieten beheren</string>
     <string name="library_favorites_added">Toegevoegd aan favorieten</string>
     <string name="library_favorites_removed">Verwijderd uit favorieten</string>
     <string name="library_collection_favorites_action_remove">Verwijderen uit favorieten</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Toevoegen aan afspeellijst</string>
     <string name="playlist_action_add_hint">Toevoegen aan afspeellijst</string>
+    <string name="playlist_add_destination_unavailable">Deze afspeellijst is niet langer beschikbaar om nummers toe te voegen. Kies een andere afspeellijst.</string>
     <string name="playlist_action_create">Nieuwe afspeellijst</string>
     <string name="playlist_action_delete_selected">Afspeellijsten verwijderen</string>
     <string name="playlist_action_export">Afspeellijst exporteren</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Mijn top</string>
     <string name="recommendations_playlists_title">Afspeellijsten die je misschien leuk vindt</string>
     <string name="recommendations_reset_complete">Snelle keuzes zijn gereset</string>
-    <string name="recommendations_reset_description">Verwijder de afspeelgebeurtenissen die worden gebruikt voor het genereren van lokale Quick Picks aanbevelingen.</string>
+    <string name="recommendations_reset_content_description">Herlaad Quick Picks met nieuwe aanbevelingen. Je luistergeschiedenis wordt bewaard.</string>
     <string name="recommendations_section_other_youtube_title">Andere secties</string>
     <string name="recommendations_section_visibility_description">Uitschakelen als u dit niet wilt zien</string>
     <string name="recommendations_show_section_label">Weergeven</string>
