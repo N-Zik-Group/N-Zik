@@ -352,6 +352,7 @@
     <string name="search_online">在线</string>
     <string name="search_queries">" 搜索查询"</string>
     <string name="search_results_for">搜索结果：</string>
+    <string name="search_history_clear_all_button">全部清除</string>
     <string name="search_saved_history_title">已保存的搜索</string>
     <string name="search_suggestions_empty_message">无建议</string>
     <string name="search_suggestions_title">建议</string>
