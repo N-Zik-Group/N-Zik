@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Ваш плейлист %1$s готов</string>
     <string name="rewind_settings_enabled">Включить перемотку</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Отключено восстановление. Чтобы вернуться назад, откройте настройки конфиденциальности.</string>
     <string name="rewind_settings_global">Перемотка на все время</string>
     <string name="rewind_settings_global_description">Покажите всплывающее окно на перемотке домой.</string>
     <string name="rewind_settings_monthly">Перемотка на месяц</string>
