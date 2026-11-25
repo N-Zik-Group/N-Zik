@@ -352,6 +352,7 @@
     <string name="search_online">Online</string>
     <string name="search_queries">" query di ricerca"</string>
     <string name="search_results_for">Risultati della ricerca per:</string>
+    <string name="search_history_clear_all_button">Cancella tutto</string>
     <string name="search_saved_history_title">Cronologia ricerca</string>
     <string name="search_suggestions_empty_message">Nessun suggerimento</string>
     <string name="search_suggestions_title">Suggerimenti</string>
