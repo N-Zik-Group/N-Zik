@@ -352,6 +352,7 @@
     <string name="search_online">Online</string>
     <string name="search_queries">" zoekopdrachten"</string>
     <string name="search_results_for">Zoekresultaten voor:</string>
+    <string name="search_history_clear_all_button">Alles wissen</string>
     <string name="search_saved_history_title">Zoek geschiedenis</string>
     <string name="search_suggestions_empty_message">Geen suggesties</string>
     <string name="search_suggestions_title">Suggesties</string>
