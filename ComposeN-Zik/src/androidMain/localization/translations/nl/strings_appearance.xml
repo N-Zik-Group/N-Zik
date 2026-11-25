@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Gedownload</string>
     <string name="theme_store_following">Gevolgd</string>
     <string name="theme_store_creator">Schepper</string>
+    <string name="theme_store_group_publishing_access">Publiceer toegang</string>
+    <string name="theme_store_group_theme_publication">Thema publicatie</string>
     <string name="theme_store_creator_profile">Creator profiel</string>
     <string name="theme_store_creator_identity">Openbare informatie</string>
     <string name="theme_store_creator_images">Profiel afbeeldingen</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Profiel verzenden naar GitHub…</string>
     <string name="theme_store_creator_authorizing">Verbinden met GitHub om te publiceren…</string>
     <string name="theme_store_creator_submissions">Bijwerken volgen</string>
+    <string name="theme_store_group_review_status">Status controleren</string>
     <string name="theme_store_submissions_in_progress">In behandeling</string>
     <string name="theme_store_submissions_history">Geschiedenis</string>
     <string name="theme_store_creator_my_themes">Mijn gepubliceerde thema\'s</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Gebruik huidige weergave</string>
     <string name="theme_store_local_use_current_description">Vervang de instellingen van dit thema door uw huidige N-Zik weergave.</string>
     <string name="theme_store_local_themes">Lokale thema\'s</string>
+    <string name="theme_store_group_local_editing">On-apparaat bewerken</string>
     <string name="theme_store_create_local">Maak een lokaal thema aan</string>
     <string name="theme_store_create_local_description">Sla het huidige uiterlijk en previews op om te downloaden.</string>
     <string name="theme_backup_choose_zip">ZIP thema kiezen</string>
