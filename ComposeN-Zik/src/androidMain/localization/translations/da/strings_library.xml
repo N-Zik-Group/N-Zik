@@ -352,6 +352,7 @@
     <string name="search_online">Online</string>
     <string name="search_queries">" søgninger"</string>
     <string name="search_results_for">Søgeresultater for:</string>
+    <string name="search_history_clear_all_button">Ryd alle</string>
     <string name="search_saved_history_title">Gemte søgninger</string>
     <string name="search_suggestions_empty_message">Ingen forslag</string>
     <string name="search_suggestions_title">Forslag</string>
