@@ -352,6 +352,7 @@
     <string name="search_online">Online</string>
     <string name="search_queries">" sökfrågor"</string>
     <string name="search_results_for">Sökresultat för:</string>
+    <string name="search_history_clear_all_button">Rensa alla</string>
     <string name="search_saved_history_title">Sök historik</string>
     <string name="search_suggestions_empty_message">Inga förslag</string>
     <string name="search_suggestions_title">Förslag</string>
