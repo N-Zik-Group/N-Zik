@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Не удалось импортировать</string>
     <string name="export_no_songs">Нет экспортированных песен</string>
     <string name="export_cached_songs_generic_error">Не удалось экспортировать</string>
+    <string name="export_selection_lost">Экспорт отменен, потому что выделение не может быть восстановлено. Выберите элементы снова и повторите попытку.</string>
     <string name="backup_startup_preparing_library">Подготовка вашей библиотеки…</string>
     <string name="backup_startup_recovery_failed">Не удалось завершить восстановление вашей библиотеки.</string>
     <string name="storage_breakdown_themes">Темы</string>
