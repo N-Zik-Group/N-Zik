@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Sinun %1$s rewind-soittolistasi on valmis</string>
     <string name="rewind_settings_enabled">Ota Rewind Käyttöön</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind on poistettu käytöstä. Avaa yksityisyysasetukset kytkeäksesi sen takaisin päälle.</string>
     <string name="rewind_settings_global">Keskinkertainen uudelleenkelaus</string>
     <string name="rewind_settings_global_description">Näytä kaikkien aikojen kertaus Rewind kotiin.</string>
     <string name="rewind_settings_monthly">Kuukausittainen uudelleenkelaus</string>
