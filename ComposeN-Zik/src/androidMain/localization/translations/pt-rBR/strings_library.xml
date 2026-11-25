@@ -352,6 +352,7 @@
     <string name="search_online">Conectado</string>
     <string name="search_queries">" consultas de pesquisa"</string>
     <string name="search_results_for">Resultados de pesquisa para:</string>
+    <string name="search_history_clear_all_button">Limpar tudo</string>
     <string name="search_saved_history_title">Pesquisas salvas</string>
     <string name="search_suggestions_empty_message">Nenhuma sugestão</string>
     <string name="search_suggestions_title">Sugestões</string>
