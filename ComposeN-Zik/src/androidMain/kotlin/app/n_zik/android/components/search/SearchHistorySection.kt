@@ -11,16 +11,21 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.draw.paint
@@ -41,6 +46,7 @@ import app.n_zik.android.components.glass.GlassSectionAction
 import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.GlassTitleActionRow
 import app.n_zik.android.components.glass.NativeSectionIconAction
+import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.navigation.header.HeaderActionCanvasSize
 import app.n_zik.android.components.glass.glassOverflowFade
 import app.n_zik.android.components.glass.glassNativeActionContour
@@ -167,6 +173,24 @@ fun SearchHistorySection(
                                     onClick = { onQueryEdit(query) },
                                 )
                             }
+                        }
+                    }
+                }
+                if (displayedQueries.isNotEmpty()) {
+                    val canClear = visible && queries.isNotEmpty() && !shimmer
+                    val palette = colorPalette()
+                    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.Center) {
+                        PageButton(
+                            onClick = { if (canClear) onQueryDeleteAll() },
+                            enabled = canClear,
+                            colors = ButtonDefaults.buttonColors(containerColor = palette.accent, contentColor = palette.onAccent),
+                            settings = glassSettings,
+                            modifier = Modifier.testTag("search.history.clear.all"),
+                        ) {
+                            Text(
+                                stringResource(R.string.search_history_clear_all_button),
+                                style = typography().s.secondary,
+                            )
                         }
                     }
                 }

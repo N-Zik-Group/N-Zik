@@ -11,7 +11,10 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
@@ -26,6 +29,7 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
 import app.n_zik.android.components.glass.GlassStore
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,11 +87,17 @@ class SearchHistoryGlassActionsTest {
             else compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick))
         delete.performTouchInput { click() }
         delete.performTouchInput { longClick() }
+        val historyRow = compose.onNodeWithText("Saved query").fetchSemanticsNode().boundsInRoot
+        val clearAll = compose.onNodeWithTag("search.history.clear.all")
+        val clearButton = clearAll.fetchSemanticsNode().boundsInRoot
+        assertTrue(clearButton.center.y > historyRow.center.y)
+        assertEquals(compose.onRoot().fetchSemanticsNode().boundsInRoot.center.x, clearButton.center.x, 1f)
+        clearAll.performClick()
         compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performTouchInput { click() }
         compose.runOnIdle {
             assertEquals(listOf("Saved query"), deleted)
             assertEquals(listOf("Saved query"), edited)
-            assertEquals(1, cleared)
+            assertEquals(2, cleared)
             assertEquals(emptyList<String>(), recalled)
         }
         compose.onNodeWithText("Saved query").performTouchInput { click() }
