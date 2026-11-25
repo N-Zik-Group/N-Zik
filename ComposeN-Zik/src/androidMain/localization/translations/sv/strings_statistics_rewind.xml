@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Din %1$s spellista är klar</string>
     <string name="rewind_settings_enabled">Aktivera Rewind</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind är inaktiverad. Öppna sekretessinställningar för att aktivera den.</string>
     <string name="rewind_settings_global">Spola tillbaka alla tider</string>
     <string name="rewind_settings_global_description">Visa all-time recap på Rewind hem.</string>
     <string name="rewind_settings_monthly">Spola tillbaka varje månad</string>
