@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Загружено</string>
     <string name="theme_store_following">Подписан</string>
     <string name="theme_store_creator">Создатель</string>
+    <string name="theme_store_group_publishing_access">Публикационный доступ</string>
+    <string name="theme_store_group_theme_publication">Публикация темы</string>
     <string name="theme_store_creator_profile">Профиль создателя</string>
     <string name="theme_store_creator_identity">Общественная информация</string>
     <string name="theme_store_creator_images">Изображения профиля</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Отправка профиля на GitHub…</string>
     <string name="theme_store_creator_authorizing">Подключение к GitHub для публикации…</string>
     <string name="theme_store_creator_submissions">Отслеживание сданной работы</string>
+    <string name="theme_store_group_review_status">Статус проверки</string>
     <string name="theme_store_submissions_in_progress">В процессе</string>
     <string name="theme_store_submissions_history">История</string>
     <string name="theme_store_creator_my_themes">Мои опубликованные темы</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Использовать текущий вид</string>
     <string name="theme_store_local_use_current_description">Замените настройки этой темы вашим текущим N-Zik.</string>
     <string name="theme_store_local_themes">Локальные темы</string>
+    <string name="theme_store_group_local_editing">Редактирование на устройстве</string>
     <string name="theme_store_create_local">Создать локальную тему</string>
     <string name="theme_store_create_local_description">Сохраните текущий внешний вид и превью в Загруженном файле.</string>
     <string name="theme_backup_choose_zip">Выберите тему ZIP</string>
