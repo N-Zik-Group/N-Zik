@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Stažený</string>
     <string name="theme_store_following">Sledovaní</string>
     <string name="theme_store_creator">Tvůrce</string>
+    <string name="theme_store_group_publishing_access">Publikování přístupu</string>
+    <string name="theme_store_group_theme_publication">Publikace motivů</string>
     <string name="theme_store_creator_profile">Profil autora</string>
     <string name="theme_store_creator_identity">Veřejné informace</string>
     <string name="theme_store_creator_images">Profilové obrázky</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Odesílání profilu na GitHub…</string>
     <string name="theme_store_creator_authorizing">Připojování k GitHub pro publikování…</string>
     <string name="theme_store_creator_submissions">Sledování příspěvku</string>
+    <string name="theme_store_group_review_status">Stav recenze</string>
     <string name="theme_store_submissions_in_progress">Probíhá</string>
     <string name="theme_store_submissions_history">Historie</string>
     <string name="theme_store_creator_my_themes">Moje publikované motivy</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Použít aktuální vzhled</string>
     <string name="theme_store_local_use_current_description">Nahraďte nastavení tohoto motivu tvým aktuálním vzorem N-Zik.</string>
     <string name="theme_store_local_themes">Lokální motivy</string>
+    <string name="theme_store_group_local_editing">Editace zařízení</string>
     <string name="theme_store_create_local">Vytvořit místní šablonu</string>
     <string name="theme_store_create_local_description">Uložit aktuální vzhled a náhledy ke stažení.</string>
     <string name="theme_backup_choose_zip">Zvolte ZIP téma</string>
