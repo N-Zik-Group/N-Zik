@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Importare eșuată</string>
     <string name="export_no_songs">Nicio melodie exportată</string>
     <string name="export_cached_songs_generic_error">Exportul a eșuat</string>
+    <string name="export_selection_lost">Exportul a fost anulat deoarece selecția nu a putut fi restaurată. Selectați elementele din nou și încercați din nou.</string>
     <string name="backup_startup_preparing_library">Pregătește-ți biblioteca…</string>
     <string name="backup_startup_recovery_failed">Nu s-a putut finaliza restaurarea bibliotecii tale.</string>
     <string name="storage_breakdown_themes">Teme</string>
