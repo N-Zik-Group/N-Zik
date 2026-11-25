@@ -352,6 +352,7 @@
     <string name="search_online">En línea</string>
     <string name="search_queries">" entradas de búsqueda"</string>
     <string name="search_results_for">Resultados de búsqueda para:</string>
+    <string name="search_history_clear_all_button">Limpiar todo</string>
     <string name="search_saved_history_title">Búsquedas guardadas</string>
     <string name="search_suggestions_empty_message">No hay sugerencias</string>
     <string name="search_suggestions_title">Sugerencias</string>
