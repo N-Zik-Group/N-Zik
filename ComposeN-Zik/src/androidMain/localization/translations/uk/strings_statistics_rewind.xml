@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Ваш список відтворення в %1$s готовий</string>
     <string name="rewind_settings_enabled">Увімкнути перемотування</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Перемотування вимкнуто. Відкрийте налаштування конфіденційності, щоб знову увімкнути її.</string>
     <string name="rewind_settings_global">Всенічне перемотування</string>
     <string name="rewind_settings_global_description">Показувати рекорд на початку назад у домівці.</string>
     <string name="rewind_settings_monthly">Місячний перехід</string>
