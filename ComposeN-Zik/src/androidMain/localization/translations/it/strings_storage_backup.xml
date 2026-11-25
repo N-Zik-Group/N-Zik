@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Importazione fallita</string>
     <string name="export_no_songs">Nessun brano esportato</string>
     <string name="export_cached_songs_generic_error">Esportazione fallita</string>
+    <string name="export_selection_lost">Esportazione annullata perché la selezione non può essere ripristinata. Selezionare nuovamente gli elementi e riprovare.</string>
     <string name="backup_startup_preparing_library">Preparazione della libreria…</string>
     <string name="backup_startup_recovery_failed">Impossibile completare il ripristino della libreria.</string>
     <string name="storage_breakdown_themes">Temi</string>
