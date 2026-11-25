@@ -137,7 +137,11 @@ android {
         compose = true
     }
 
-    compileSdk = libs.versions.androidCompileSdk.get().toInt()
+    compileSdk {
+        version = release(libs.versions.androidCompileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.androidCompileSdkMinor.get().toInt()
+        }
+    }
     ndkVersion = libs.versions.androidNdk.get()
 
     externalNativeBuild {
