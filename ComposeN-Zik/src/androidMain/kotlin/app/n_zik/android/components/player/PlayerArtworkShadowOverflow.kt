@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
@@ -89,7 +90,7 @@ internal class ArtworkOverflowShadowCache {
                 is Outline.Rounded -> mask.addRoundRect(outline.roundRect)
                 is Outline.Generic -> mask.addPath(outline.path)
             }
-            paint.asFrameworkPaint().maskFilter = BlurMaskFilter(8f * density, BlurMaskFilter.Blur.NORMAL)
+            paint.nativePaint.maskFilter = BlurMaskFilter(8f * density, BlurMaskFilter.Blur.NORMAL)
         }
     }
 }

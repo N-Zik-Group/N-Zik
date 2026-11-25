@@ -6,6 +6,7 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.nativePaint
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
@@ -29,7 +30,7 @@ fun Modifier.dropShadow(
     val paint = Paint().apply {
         this.color = color
         if (blurPx > 0f) {
-            asFrameworkPaint().maskFilter = BlurMaskFilter(blurPx, BlurMaskFilter.Blur.NORMAL)
+            nativePaint.maskFilter = BlurMaskFilter(blurPx, BlurMaskFilter.Blur.NORMAL)
         }
     }
     onDrawBehind {
@@ -62,7 +63,7 @@ internal fun Modifier.animatedDoubleShadowDrop(
     onDrawBehind {
         val radius = blur().toPx()
         if (radius != previousRadius) {
-            paint.asFrameworkPaint().maskFilter =
+            paint.nativePaint.maskFilter =
                 if (radius > 0f) BlurMaskFilter(radius, BlurMaskFilter.Blur.NORMAL) else null
             previousRadius = radius
         }
