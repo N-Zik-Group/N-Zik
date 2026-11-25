@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">已下载</string>
     <string name="theme_store_following">已关注</string>
     <string name="theme_store_creator">创建者</string>
+    <string name="theme_store_group_publishing_access">发布访问权限</string>
+    <string name="theme_store_group_theme_publication">主题发布</string>
     <string name="theme_store_creator_profile">创建者资料</string>
     <string name="theme_store_creator_identity">新闻</string>
     <string name="theme_store_creator_images">个人资料图片</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">提交个人资料到 GitHub…</string>
     <string name="theme_store_creator_authorizing">正在连接到 GitHub 以发布…</string>
     <string name="theme_store_creator_submissions">跟踪提交</string>
+    <string name="theme_store_group_review_status">审查状态</string>
     <string name="theme_store_submissions_in_progress">进行中</string>
     <string name="theme_store_submissions_history">历史记录</string>
     <string name="theme_store_creator_my_themes">我已发布的主题</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">使用当前外观</string>
     <string name="theme_store_local_use_current_description">用您当前的 N-Zik 外观替换这个主题的设置。</string>
     <string name="theme_store_local_themes">本地主题</string>
+    <string name="theme_store_group_local_editing">设备编辑</string>
     <string name="theme_store_create_local">创建本地主题</string>
     <string name="theme_store_create_local_description">保存当前外观并预览下载。</string>
     <string name="theme_backup_choose_zip">选择主题 ZIP</string>
