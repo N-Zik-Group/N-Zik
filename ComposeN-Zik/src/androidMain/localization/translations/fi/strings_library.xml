@@ -352,6 +352,7 @@
     <string name="search_online">Paikalla</string>
     <string name="search_queries">" hakuja"</string>
     <string name="search_results_for">Hakutulokset haulle:</string>
+    <string name="search_history_clear_all_button">Tyhjennä kaikki</string>
     <string name="search_saved_history_title">Hae historia</string>
     <string name="search_suggestions_empty_message">Ei ehdotuksia</string>
     <string name="search_suggestions_title">Ehdotuksia</string>
