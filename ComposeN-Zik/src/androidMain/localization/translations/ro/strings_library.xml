@@ -352,6 +352,7 @@
     <string name="search_online">Online</string>
     <string name="search_queries">" căutări"</string>
     <string name="search_results_for">Rezultatele căutării pentru:</string>
+    <string name="search_history_clear_all_button">Șterge tot</string>
     <string name="search_saved_history_title">Istoricul căutărilor</string>
     <string name="search_suggestions_empty_message">Fără sugestii</string>
     <string name="search_suggestions_title">Sugestii</string>
