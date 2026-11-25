@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Din %1$s spole tilbage spilleliste er klar</string>
     <string name="rewind_settings_enabled">Aktiver Rewind</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind er deaktiveret. Åbn indstillinger for beskyttelse af personlige oplysninger for at tænde den igen.</string>
     <string name="rewind_settings_global">Altid spole tilbage</string>
     <string name="rewind_settings_global_description">Vis all-time rekap på Rewind hjem.</string>
     <string name="rewind_settings_monthly">Månedlig tilbagebetaling</string>
