@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Descărcate</string>
     <string name="theme_store_following">Urmărit</string>
     <string name="theme_store_creator">Creator</string>
+    <string name="theme_store_group_publishing_access">Acces la publicare</string>
+    <string name="theme_store_group_theme_publication">Publicare temă</string>
     <string name="theme_store_creator_profile">Profilul creatorului</string>
     <string name="theme_store_creator_identity">Informarea publicului</string>
     <string name="theme_store_creator_images">Imagini de profil</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Se trimite profilul către GitHub…</string>
     <string name="theme_store_creator_authorizing">Se conectează la GitHub pentru a publica…</string>
     <string name="theme_store_creator_submissions">Urmărirea trimiterilor</string>
+    <string name="theme_store_group_review_status">Revizuiește starea</string>
     <string name="theme_store_submissions_in_progress">În curs</string>
     <string name="theme_store_submissions_history">Istoric</string>
     <string name="theme_store_creator_my_themes">Temele mele publicate</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Folosește aspectul curent</string>
     <string name="theme_store_local_use_current_description">Înlocuiți setările acestei teme cu aspectul curent N-Zik.</string>
     <string name="theme_store_local_themes">Teme locale</string>
+    <string name="theme_store_group_local_editing">Editare pe dispozitiv</string>
     <string name="theme_store_create_local">Creează o temă locală</string>
     <string name="theme_store_create_local_description">Salvați aspectul curent și previzualizările în Descărcat.</string>
     <string name="theme_backup_choose_zip">Alege ZIP temă</string>
