@@ -9,6 +9,8 @@
 // Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/settings/integrations/ListenTogetherSettings.kt
 package app.n_zik.android.components.settings
 
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.annotation.DrawableRes
@@ -150,6 +152,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         icon = R.drawable.people,
         description = stringResource(R.string.listen_together_settings_description),
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_group_room_connection))
         // Optional deep link to the Listen Together screen (wired by the Accounts
         // tab, spec-customizable-burger-menu goal B); first row of the card.
         onOpenScreen?.let { onOpen ->
@@ -188,6 +191,8 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
                 }
             },
         )
+
+        SettingsCardSectionHeading(R.string.settings_group_room_controls)
 
         // Auto-approve join requests
         OtherSwitchSettingEntry(
@@ -248,19 +253,6 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             icon = R.drawable.history,
         )
 
-        // Connection logs
-        OtherSettingsEntry(
-            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_view_logs"),
-            title = stringResource(R.string.listen_together_view_logs),
-            text = stringResource(R.string.listen_together_view_logs_description),
-            icon = R.drawable.bugs,
-            onClick = {
-                menuState.display {
-                    ListenTogetherLogsMenu(logs = logs, onClear = { manager.clearLogs() })
-                }
-            },
-        )
-
         // Blocked users
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_blocked_users"),
@@ -278,6 +270,21 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
                         blockedUsernames = blockedUsernames,
                         onUnblock = { manager.unblockUser(it) },
                     )
+                }
+            },
+        )
+
+        SettingsCardSectionHeading(R.string.settings_group_connection_diagnostics)
+
+        // Connection logs
+        OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_view_logs"),
+            title = stringResource(R.string.listen_together_view_logs),
+            text = stringResource(R.string.listen_together_view_logs_description),
+            icon = R.drawable.bugs,
+            onClick = {
+                menuState.display {
+                    ListenTogetherLogsMenu(logs = logs, onClear = { manager.clearLogs() })
                 }
             },
         )

@@ -14,5 +14,7 @@ internal fun settingsSectionNavigationName(@StringRes titleRes: Int): String? = 
     R.string.settings_section_notification_player_title -> "notification_player"
     R.string.settings_section_backup_and_restore_title -> "title_backup_and_restore"
     R.string.settings_section_fullscreen_lyrics_title -> "full_screen_lyrics_components"
+    R.string.settings_section_quick_picks_visibility_title -> "tab_general"
+    R.string.settings_section_quick_picks_refresh_title -> "tab_data"
     else -> null
 }

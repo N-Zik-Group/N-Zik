@@ -30,13 +30,21 @@ import app.n_zik.android.components.glass.rememberGlassStore
 private val resetScopeNames = listOf("general", "ui", "appearance", "ai", "data", "accounts", "network", "other")
 private const val GLASS_RESET_SCOPE = -1
 private const val ALL_RESET_SCOPE = -2
+internal const val SettingsResetChooserTarget = "settings.reset.choose_scope"
+internal const val SettingsResetAllTarget = "settings.reset.all"
 
 private data class ResetDialogStep(val scope: Int?)
 
-internal fun resetScopeForTarget(target: String): Int? = if (target == "glass.settings_reset.settings_reset") GLASS_RESET_SCOPE
-else resetScopeNames.indices.firstOrNull { tab ->
-    target == "card.$tab.settings_reset" || target == "${resetScopeNames[tab]}.settings_reset.settings_reset"
+internal fun resetScopeForTarget(target: String): Int? = when (target) {
+    "glass.settings_reset.settings_reset" -> GLASS_RESET_SCOPE
+    SettingsResetAllTarget -> ALL_RESET_SCOPE
+    else -> resetScopeNames.indices.firstOrNull { tab ->
+        target == "card.$tab.settings_reset" || target == "${resetScopeNames[tab]}.settings_reset.settings_reset"
+    }
 }
+
+internal fun isSettingsResetDialogTarget(target: String): Boolean =
+    target == SettingsResetChooserTarget || resetScopeForTarget(target) != null
 
 private fun resetScopeLabel(scope: Int): Int = when (scope) {
     ALL_RESET_SCOPE -> R.string.settings_reset_all
@@ -55,10 +63,11 @@ internal fun SettingsResetCard(
     val context = LocalContext.current
     var restartService by remember { mutableStateOf(false) }
     val initialScope = resetScopeForTarget(target)
-    var open by remember(target) { mutableStateOf(initialScope != null) }
+    var open by remember(target) { mutableStateOf(isSettingsResetDialogTarget(target)) }
     var selectedScope by remember(target) { mutableStateOf(initialScope) }
     SettingsSectionCard(
         title = stringResource(R.string.settings_reset),
+        groupTitleRes = R.string.settings_group_restore_defaults,
         icon = R.drawable.refresh,
         modifier = Modifier.testTag("settings.reset.card"),
         content = {

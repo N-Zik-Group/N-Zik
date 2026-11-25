@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.appearance
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -68,22 +70,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                     title = stringResource(R.string.lyrics_title),
                     icon = R.drawable.song_lyrics,
                     content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_lyrics_thumbnail"),
-                        icon = R.drawable.image,
-                        title = stringResource(R.string.settings_lyrics_artwork_visible_label),
-                        text = stringResource(R.string.lyrics_artwork_overlay_description),
-                        isChecked = showlyricsthumbnail,
-                        onCheckedChange = { showlyricsthumbnail = it }
-                    )
-                }
-
+                        if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_lyrics_interaction))
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(
                     search.inputValue,
                     true
@@ -115,6 +102,73 @@ internal fun AppearanceLyricsCard(search: Search) {
                         onCheckedChange = { clickLyricsText = it }
                     )
                 }
+
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_remember_state_label).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || (stringResource(R.string.settings_lyrics_remember_state_description)).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.save_lyrics_state"),
+                        icon = R.drawable.bookmark,
+                        title = stringResource(R.string.settings_lyrics_remember_state_label),
+                        text = stringResource(R.string.settings_lyrics_remember_state_description),
+                        isChecked = showLyricsStateKey,
+                        onCheckedChange = { showLyricsStateKey = it }
+                    )
+                }
+
+            if (search.inputValue.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.player_enable_lyrics_popup_message"),
+                        icon = R.drawable.alert,
+                        title = stringResource(R.string.player_enable_lyrics_popup_message),
+                        text = stringResource(R.string.lyrics_popup_messages_description),
+                        isChecked = playerEnableLyricsPopupMessage,
+                        onCheckedChange = { playerEnableLyricsPopupMessage = it }
+                    )
+                }
+
+            if (search.inputValue.isBlank()) SettingsCardSectionHeading(R.string.settings_group_lyrics_appearance)
+
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_lyrics_thumbnail"),
+                        icon = R.drawable.image,
+                        title = stringResource(R.string.settings_lyrics_artwork_visible_label),
+                        text = stringResource(R.string.lyrics_artwork_overlay_description),
+                        isChecked = showlyricsthumbnail,
+                        onCheckedChange = { showlyricsthumbnail = it }
+                    )
+                }
+
+            if (showlyricsthumbnail)
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(
+                        search.inputValue,
+                        true
+                    )
+                )
+                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true)) {
+                        OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_background_in_lyrics"),
+                        icon = R.drawable.image,
+                            title = stringResource(R.string.settings_lyrics_match_player_background_label),
+                            text = stringResource(R.string.lyrics_background_enabled_description),
+                            isChecked = showBackgroundLyrics,
+                            onCheckedChange = { showBackgroundLyrics = it }
+                        )
+                    }
 
                 if (search.inputValue.isBlank() || stringResource(R.string.lyrics_color).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
@@ -155,55 +209,6 @@ internal fun AppearanceLyricsCard(search: Search) {
                             Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
                         }
                     }
-                }
-
-            if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_remember_state_label).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || (stringResource(R.string.settings_lyrics_remember_state_description)).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.save_lyrics_state"),
-                        icon = R.drawable.bookmark,
-                        title = stringResource(R.string.settings_lyrics_remember_state_label),
-                        text = stringResource(R.string.settings_lyrics_remember_state_description),
-                        isChecked = showLyricsStateKey,
-                        onCheckedChange = { showLyricsStateKey = it }
-                    )
-                }
-
-            if (showlyricsthumbnail)
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(
-                        search.inputValue,
-                        true
-                    )
-                )
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_background_in_lyrics"),
-                        icon = R.drawable.image,
-                            title = stringResource(R.string.settings_lyrics_match_player_background_label),
-                            text = stringResource(R.string.lyrics_background_enabled_description),
-                            isChecked = showBackgroundLyrics,
-                            onCheckedChange = { showBackgroundLyrics = it }
-                        )
-                    }
-
-            if (search.inputValue.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.player_enable_lyrics_popup_message"),
-                        icon = R.drawable.alert,
-                        title = stringResource(R.string.player_enable_lyrics_popup_message),
-                        text = stringResource(R.string.lyrics_popup_messages_description),
-                        isChecked = playerEnableLyricsPopupMessage,
-                        onCheckedChange = { playerEnableLyricsPopupMessage = it }
-                    )
                 }
                     }
                 )

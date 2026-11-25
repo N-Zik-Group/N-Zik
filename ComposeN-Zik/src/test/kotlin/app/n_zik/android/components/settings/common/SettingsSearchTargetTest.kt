@@ -24,6 +24,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerType
@@ -32,11 +33,13 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.autoDownloadSongKey
+import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.enablePictureInPictureKey
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.showvisthumbnailKey
@@ -126,8 +129,8 @@ class SettingsSearchTargetTest {
         val before = context.preferences.all.toMap()
         val target = "general.audio_effects.minimum_silence_length"
         val parent = "card.0.audio_effects"
-        show("audio", target, parent)
-        pumpUntil("hidden target must fall back to its card") { highlighted(parent, true) }
+        show("audio", target, parent = "")
+        pumpUntil("hidden target without a parent must fall back to its card") { highlighted(parent, true) }
         composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNodeWithTag("settings.target.unavailable").assertDoesNotExist()
         assertEquals(listOf(context.getString(app.n_zik.android.R.string.settings_target_unavailable)), messages)
@@ -155,6 +158,39 @@ class SettingsSearchTargetTest {
         }
         composeRule.onNodeWithTag("settings.target.${entry.id}", useUnmergedTree = true).assertIsDisplayed()
         assertTrue(messages.isEmpty())
+        assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun `search for a hidden custom palette color highlights the palette selector`() {
+        context.preferences.edit().putString(colorPaletteNameKey, ColorPaletteName.Dynamic.name).commit()
+
+        assertSearchHighlightsPrerequisite(
+            category = "interface",
+            target = "ui.theme.color_background_1.dark",
+            prerequisite = "ui.theme.theme",
+        )
+    }
+
+    @Test fun `search for a hidden queue preview count highlights the enable switch`() {
+        context.preferences.edit().putBoolean(showNextSongsInPlayerKey, false).commit()
+
+        assertSearchHighlightsPrerequisite(
+            category = "player",
+            target = "appearance.player_behavior_and_visuals.songs_number_to_show",
+            prerequisite = "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+        )
+    }
+
+    private fun assertSearchHighlightsPrerequisite(category: String, target: String, prerequisite: String) {
+        val before = context.preferences.all.toMap()
+        show(category, target, parent = "")
+        pumpUntil("The setting that reveals the hidden result must be highlighted") {
+            highlighted(prerequisite, true)
+        }
+        composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, prerequisite), useUnmergedTree = true)
+            .assertIsDisplayed()
+        composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertDoesNotExist()
+        assertEquals(listOf(context.getString(R.string.settings_target_unavailable)), messages)
         assertEquals(before, context.preferences.all)
     }
 

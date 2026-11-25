@@ -57,6 +57,8 @@ import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.R
@@ -237,14 +239,8 @@ internal fun UiThemeCard(search: Search) {
                 AnimatedVisibility(visible = colorPaletteName == ColorPaletteName.Customized, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     Column(modifier = Modifier.padding(start = 25.dp)) {
 
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_light_colors_reset_description).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) || stringResource(R.string.settings_theme_light_colors_reset_title).contains(search.inputValue, true)) {
-                            OtherSettingsEntry(
-                                modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_light_colors"),
-                                title = stringResource(R.string.settings_theme_light_colors_reset_title),
-                                text = stringResource(R.string.settings_theme_light_colors_reset_description),
-                                icon = R.drawable.trash,
-                                onClick = { resetCustomLightThemeDialog = true }
-                            )
+                        if (search.inputValue.isBlank()) {
+                            CardCategoryLabel(stringResource(R.string.settings_theme_light_mode_label))
                         }
 
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_light_mode_label).contains(search.inputValue, true) || stringResource(R.string.settings_theme_background_1_color_label).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true)) {
@@ -339,14 +335,19 @@ internal fun UiThemeCard(search: Search) {
                         }
 
 
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_dark_colors_reset_description).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) || stringResource(R.string.settings_theme_dark_colors_reset_title).contains(search.inputValue, true)) {
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_light_colors_reset_description).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) || stringResource(R.string.settings_theme_light_colors_reset_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
-                                modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_dark_colors"),
-                                title = stringResource(R.string.settings_theme_dark_colors_reset_title),
-                                text = stringResource(R.string.settings_theme_dark_colors_reset_description),
+                                modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_light_colors"),
+                                title = stringResource(R.string.settings_theme_light_colors_reset_title),
+                                text = stringResource(R.string.settings_theme_light_colors_reset_description),
                                 icon = R.drawable.trash,
-                                onClick = { resetCustomDarkThemeDialog = true }
+                                onClick = { resetCustomLightThemeDialog = true }
                             )
+                        }
+
+                        if (search.inputValue.isBlank()) {
+                            SettingsCardSectionDivider()
+                            CardCategoryLabel(stringResource(R.string.settings_theme_dark_mode_label))
                         }
 
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_background_1_color_label).contains(search.inputValue, true) || stringResource(R.string.settings_theme_dark_mode_label).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true)) {
@@ -437,6 +438,15 @@ internal fun UiThemeCard(search: Search) {
                                 text = stringResource(R.string.theme_dark_palette_accent_description),
                                 color = Color(customThemeDark_Accent),
                                 onColorSelected = { customThemeDark_Accent = it.hashCode() }
+                            )
+                        }
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_dark_colors_reset_description).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true) || stringResource(R.string.settings_theme_dark_colors_reset_title).contains(search.inputValue, true)) {
+                            OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.theme.title_reset_customized_dark_colors"),
+                                title = stringResource(R.string.settings_theme_dark_colors_reset_title),
+                                text = stringResource(R.string.settings_theme_dark_colors_reset_description),
+                                icon = R.drawable.trash,
+                                onClick = { resetCustomDarkThemeDialog = true }
                             )
                         }
 

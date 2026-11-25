@@ -1,10 +1,12 @@
 package app.n_zik.android.components.settings.common
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.onClick as semanticsOnClick
 import androidx.compose.ui.platform.testTag
@@ -26,8 +28,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
@@ -54,6 +58,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
+internal val LocalSettingsCardGroupTitle = staticCompositionLocalOf<Int?> { null }
+
 /**
  * Animated settings card with an icon header and a content block.
  * Hidden cards collapse to zero height so sibling cards slide instead of jumping.
@@ -74,8 +80,14 @@ fun SettingsSectionCard(
     horizontalPadding: androidx.compose.ui.unit.Dp = 16.dp,
     bottomSpacing: androidx.compose.ui.unit.Dp = 16.dp,
     shimmerHeader: Boolean = false,
+    @StringRes groupTitleRes: Int? = null,
 ) {
     val context = LocalContext.current
+    val groupTitle = groupTitleRes ?: LocalSettingsCardGroupTitle.current
+    val groupedContent: @Composable () -> Unit = {
+        groupTitle?.let { CardCategoryLabel(stringResource(it)) }
+        CompositionLocalProvider(LocalSettingsCardGroupTitle provides null, content = content)
+    }
     val highlighted = LocalSettingsTargets.current?.highlighted
     val highlightedCard = highlighted?.takeIf { it.startsWith("card.") }?.let { id ->
         SettingsCards.firstOrNull { settingsCardTargetId(context, it.tab, it.titleRes) == id }
@@ -187,13 +199,13 @@ fun SettingsSectionCard(
                         }
 
                         // Reuse the same native/Glass expansion policy as the settings cards.
-                        if (expanded == null) content() else AnimatedVisibility(
+                        if (expanded == null) groupedContent() else AnimatedVisibility(
                             visible = expanded,
                             enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
                             exit = if (overflow) settingsCardOverflowExit else settingsCardExit,
                         ) {
                             Column(Modifier.then(if (overflow) glassOverflowFade(400, 200) else Modifier)) {
-                                content()
+                                groupedContent()
                             }
                         }
                     }
@@ -328,8 +340,15 @@ internal fun CardCategoryLabel(label: String, modifier: Modifier = Modifier) {
         ),
         modifier = modifier
             .fillMaxWidth()
+            .semantics { heading() }
             .padding(vertical = 8.dp, horizontal = 4.dp),
     )
+}
+
+@Composable
+internal fun SettingsCardSectionHeading(@StringRes title: Int) {
+    SettingsCardSectionDivider()
+    CardCategoryLabel(stringResource(title))
 }
 
 @Composable

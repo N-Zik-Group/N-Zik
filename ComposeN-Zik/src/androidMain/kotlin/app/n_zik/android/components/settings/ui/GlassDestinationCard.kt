@@ -126,17 +126,27 @@ private val GlassPolicyRow.icon: Int
 /** Global search follows the same localized destinations and roles displayed on this page. */
 internal fun glassDestinationKeywordResources(): List<Int> = GlassDestinationGroup.entries.flatMap { group ->
     listOf(group.title, group.summary) + glassDestinationRows(group).flatMap { listOf(it.title, it.description) }
-}.plus(glassInteractionKeywordResources()).plus(listOf(
-    R.string.glass_effect_optimization_title, R.string.glass_effect_optimization_description)).distinct()
+}.plus(glassInteractionKeywordResources()).plus(GlassSectionGroupTitles.values).plus(listOf(
+    R.string.glass_effect_optimization_title,
+    R.string.glass_effect_optimization_description,
+    R.string.settings_group_glass_surface_modes,
+)).distinct()
 
 @Composable
-internal fun GlassDestinationCard(group: GlassDestinationGroup, config: GlassSettings, store: GlassStore, target: String = "") {
+internal fun GlassDestinationCard(
+    group: GlassDestinationGroup,
+    config: GlassSettings,
+    store: GlassStore,
+    target: String = "",
+    showGroupHeading: Boolean = false,
+) {
     var expanded by rememberSaveable(group) { mutableStateOf(glassDestinationRows(group).any { it.searchId == target }) }
     LaunchedEffect(target) {
         if (glassDestinationRows(group).any { it.searchId == target }) expanded = true
     }
     SettingsSectionCard(
         title = stringResource(group.title),
+        groupTitleRes = R.string.settings_group_glass_surface_modes.takeIf { showGroupHeading },
         icon = group.icon,
         description = stringResource(group.summary),
         modifier = Modifier.testTag("settings.glass.group.${group.name}"),

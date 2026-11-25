@@ -44,6 +44,7 @@ import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
@@ -106,6 +107,35 @@ class AppearanceSettingsWiringTest {
         composeRule.onNodeWithTag("appearance.card.notification", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("appearance.card.presets", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNodeWithTag("appearance.card.reset", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test fun actionBarKeepsQueuePreviewAndItsDependentRowsWithQueueGestures() {
+        val registry = SettingsTargetRegistry()
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalSettingsTargets provides registry,
+            ) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    AppearanceActionBarCard(Search(initialVisible = true))
+                }
+            }
+        }
+        val preview = composeRule.onNodeWithTag(
+            "settings.target.appearance.player_behavior_and_visuals.show_next_songs_in_player",
+        )
+        val count = composeRule.onNodeWithTag(
+            "settings.target.appearance.player_behavior_and_visuals.songs_number_to_show",
+        )
+        val artwork = composeRule.onNodeWithTag("settings.target.appearance.player_behavior_and_visuals.showalbumcover")
+        composeRule.onNodeWithTag("settings.target.appearance.player_action_bar.tapqueue").assertExists()
+        composeRule.onNodeWithTag("settings.target.ui.user_interface.remember_queue_scroll_position").assertExists()
+        count.assertDoesNotExist()
+        artwork.assertDoesNotExist()
+        preview.performScrollTo().performClick()
+        composeRule.runOnIdle { assertEquals(true, context.preferences.getBoolean(showNextSongsInPlayerKey, false)) }
+        count.assertExists()
+        artwork.assertExists()
     }
 
     @Test fun durationAndSkipControlsBelongToTimelineAndKeepTheirPreferences() {

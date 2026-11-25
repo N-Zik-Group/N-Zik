@@ -23,6 +23,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.Text
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -53,6 +54,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performScrollTo
@@ -73,9 +75,12 @@ import app.n_zik.android.utils.showMiniPlayerSkipBackKey
 import app.n_zik.android.utils.showMiniPlayerSkipForwardKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.settings.common.SettingsTargetId
 import app.n_zik.android.components.settings.common.SettingsTargetHighlighted
 import app.n_zik.android.components.settings.common.locationDescription
+import app.n_zik.android.components.settings.common.searchSettingsEntries
+import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.R
 import app.n_zik.android.components.onboarding.OnboardingGlassScreen
 import app.n_zik.android.components.navigation.LocalAppHeaderContentInset
@@ -110,6 +115,7 @@ import app.n_zik.android.components.glass.glassNavKey
 import app.n_zik.android.components.glass.glassProfileDefaults
 import app.n_zik.android.components.glass.mode
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.utils.pauseSearchHistoryKey
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.Assert.assertEquals
@@ -228,6 +234,19 @@ class GlassSettingsPageTest {
         }
     }
 
+    @Test fun `Glass group headings find their options and the Glass settings page`() {
+        val groupTitles = GlassSectionGroupTitles + GlassDestinationGroup.entries.associate {
+            it.title to R.string.settings_group_glass_surface_modes
+        }
+        groupTitles.values.distinct().forEach { heading ->
+            val query = context.getString(heading)
+            val expected = GlassSearchOptions.filter { groupTitles[it.sectionTitle] == heading }.map { it.target }
+            assertTrue("Missing indexed controls for $query", expected.isNotEmpty())
+            assertTrue(searchSettingsEntries(context, query).containsAll(expected))
+            assertTrue(heading in glassDestinationKeywordResources())
+        }
+    }
+
     @Test fun `search opens a collapsed scoped destination and highlights the exact row without writes`() {
         assertSearchRevealsMode("glass.destination.Onboarding.SettingsCards", "Onboarding.SettingsCards")
     }
@@ -272,6 +291,90 @@ class GlassSettingsPageTest {
         composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true).assertIsDisplayed()
         assertFalse(store.read().rippleEnabled)
         assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun `page search selects and highlights a Glass control while keeping the comparison pinned`() {
+        store.setBoolean(app.n_zik.android.components.glass.glassRippleEnabledKey, false)
+        val before = store.read()
+        showPage()
+        val preview = composeRule.onNodeWithTag("settings.glass.preview")
+        val initialBounds = preview.fetchSemanticsNode().boundsInRoot
+        val search = composeRule.onNodeWithTag("settings.glass.search")
+        search.performClick().performTextReplacement(context.getString(R.string.glass_effect_ripple_size))
+        val target = "glass.ripple.size"
+        val result = composeRule.onNodeWithTag("settings.glass.entry.$target")
+        result.assertIsDisplayed()
+        assertEquals(initialBounds, preview.fetchSemanticsNode().boundsInRoot)
+        composeRule.mainClock.autoAdvance = false
+        result.performClick()
+        pumpSearchUntil {
+            runCatching {
+                composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true)
+                    .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
+            }.isSuccess
+        }
+        assertEquals(initialBounds, preview.fetchSemanticsNode().boundsInRoot)
+        assertEquals(before, store.read())
+        result.assertDoesNotExist()
+        composeRule.mainClock.autoAdvance = true
+        composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("header")
+        search.assert(SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
+    }
+
+    @Test fun `page search gives empty feedback for a setting outside Glass`() {
+        val messages = mutableListOf<String>()
+        showPage(onSearchMessage = { messages.add(it) })
+        val search = composeRule.onNodeWithTag("settings.glass.search")
+        search.performClick().performTextReplacement(context.getString(R.string.settings_audio_crossfade_label))
+        composeRule.onNodeWithTag("settings.glass.entry.general.playback.crossfade").assertDoesNotExist()
+        pumpSearchUntil { messages.isNotEmpty() }
+        assertEquals(listOf(context.getString(R.string.search_no_results_message)), messages)
+        search.performTextReplacement("")
+        composeRule.onNodeWithTag("settings.glass.master").assertIsDisplayed()
+    }
+
+    @Test fun `page search highlights rendering quality when refraction is unavailable`() {
+        val messages = mutableListOf<String>()
+        store.setProfile(GlassQuality.Performance)
+        val before = store.read()
+        showPage(onSearchMessage = { messages.add(it) })
+        val query = context.getString(R.string.glass_effect_refraction_depth)
+        composeRule.onNodeWithTag("settings.glass.search").performClick().performTextReplacement(query)
+        val result = composeRule.onNodeWithTag("settings.glass.entry.glass.refractionDepth")
+        result.assertIsDisplayed()
+        composeRule.mainClock.autoAdvance = false
+        result.performClick()
+        pumpSearchUntil {
+            runCatching {
+                composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, "glass.quality"), useUnmergedTree = true)
+                    .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
+            }.isSuccess
+        }
+        assertEquals(listOf(context.getString(R.string.settings_target_unavailable)), messages)
+        assertEquals(before, store.read())
+        assertEquals(listOf(query), SearchHistoryStore.all(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GLASS))
+    }
+
+    @Test fun `page search history honors pause and global clearing`() {
+        val page = SearchHistoryStore.PAGE_SETTINGS_GLASS
+        val query = context.getString(R.string.glass_effect_ripple_enabled)
+        val pausedQuery = context.getString(R.string.glass_effect_jelly_enabled)
+        showPage()
+        val search = composeRule.onNodeWithTag("settings.glass.search")
+        search.performClick().performTextReplacement(query)
+        search.performImeAction()
+        composeRule.runOnIdle {
+            assertEquals(listOf(query), SearchHistoryStore.all(context.preferences, page))
+            assertEquals(1, SearchHistoryStore.countAll(context.preferences))
+            context.preferences.edit().putBoolean(pauseSearchHistoryKey, true).apply()
+        }
+        search.performClick().performTextReplacement(pausedQuery)
+        search.performImeAction()
+        composeRule.runOnIdle {
+            assertEquals(listOf(query), SearchHistoryStore.all(context.preferences, page))
+            SearchHistoryStore.clearAll(context.preferences)
+            assertEquals(0, SearchHistoryStore.countAll(context.preferences))
+        }
     }
 
     private fun pumpSearchUntil(condition: () -> Boolean) {
@@ -416,9 +519,21 @@ class GlassSettingsPageTest {
         assertEquals(GlassAreaMode.GlassAndContour, reloaded.contextMode(GlassScope.PlayerTransport, GlassArea.ActionButtons))
     }
 
-    private fun showPage(onboarding: Boolean = false, headerInset: Dp = 0.dp, target: String = "") {
+    private fun showPage(
+        onboarding: Boolean = false,
+        headerInset: Dp = 0.dp,
+        target: String = "",
+        onSearchMessage: ((String) -> Unit)? = null,
+    ) {
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance, LocalGlassArtworkColor provides Color.Magenta, LocalAppHeaderContentInset provides { headerInset }, LocalAppHeaderOverlayInset provides { headerInset }) {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalGlassArtworkColor provides Color.Magenta,
+                LocalAppHeaderContentInset provides { headerInset },
+                LocalAppHeaderOverlayInset provides { headerInset },
+                LocalSettingsSearchMessage provides (onSearchMessage ?: LocalSettingsSearchMessage.current),
+            ) {
                 if (onboarding) OnboardingGlassScreen(onComplete = {}) else GlassSettingsPage(target = target)
             }
         }
@@ -702,6 +817,7 @@ class GlassSettingsPageTest {
         assertEquals(initialBounds, preview.fetchSemanticsNode().boundsInRoot)
         controls.performScrollToKey("header")
         composeRule.onNodeWithTag("onboarding.glass.continue").assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.glass.search").assertDoesNotExist()
     }
 
     private fun assertCompleteGlassSurface(onboarding: Boolean) {

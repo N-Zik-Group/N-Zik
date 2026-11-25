@@ -13,6 +13,7 @@ fun isGlassSettingsLink(tab: Int, focus: String): Boolean =
 data class SettingsCategory(val id: String, val labelRes: Int, val iconRes: Int, val group: Int, val descriptionRes: Int)
 
 val OrganizedSettingsCategories = listOf(
+    SettingsCategory("profiles", R.string.profile_title, R.drawable.person, SETTINGS_GROUP_ABOUT_UPDATE, R.string.settings_page_profiles_description),
     SettingsCategory("about", R.string.about_title, R.drawable.information, 1, R.string.settings_page_about_description),
     SettingsCategory("playback", R.string.common_playback_section_title, R.drawable.play_forward, 2, R.string.settings_page_playback_description),
     SettingsCategory("audio", R.string.settings_category_audio, R.drawable.sound_effect, 2, R.string.settings_page_audio_description),
@@ -24,7 +25,6 @@ val OrganizedSettingsCategories = listOf(
     SettingsCategory("downloads", R.string.downloads_title, R.drawable.download, 4, R.string.settings_page_downloads_description),
     SettingsCategory("network", R.string.settings_network_title, R.drawable.network, 4, R.string.settings_page_network_description),
     SettingsCategory("youtube", R.string.settings_youtube_music_title, R.drawable.ytmusic, 5, R.string.settings_page_youtube_description),
-    SettingsCategory("profiles", R.string.profile_title, R.drawable.person, 5, R.string.settings_page_profiles_description),
     SettingsCategory("services", R.string.settings_category_services, R.drawable.people, 5, R.string.settings_page_services_description),
     SettingsCategory("ai", R.string.settings_category_ai, R.drawable.sparkles, 6, R.string.settings_page_ai_description),
     SettingsCategory("rewind", R.string.rewind_settings_title, R.drawable.sparkles, 6, R.string.settings_page_rewind_description),
@@ -62,7 +62,21 @@ fun SettingsCardRegistryEntry.categoryId(): String = when {
     else -> "about"
 }
 
-fun cardsForCategory(id: String): List<SettingsCardRegistryEntry> = SettingsCards.filter { it.categoryId() == id }
+fun cardsForCategory(id: String): List<SettingsCardRegistryEntry> {
+    val cards = SettingsCards.filter { it.categoryId() == id }
+    val sourceTabs = when (id) {
+        "player" -> listOf(2, 0)
+        "privacy" -> listOf(9, 4, 3)
+        "data" -> listOf(4, 7)
+        else -> cards.map { it.tab }.distinct()
+    }
+    return sourceTabs.flatMap { tab -> cards.filter { it.tab == tab } }
+        .sortedBy { it.titleRes == R.string.settings_reset }
+}
+
+internal val OrganizedSettingsCards by lazy {
+    OrganizedSettingsCategories.flatMap { cardsForCategory(it.id) }
+}
 
 fun SettingsCardRegistryEntry.displayTitle(context: android.content.Context): String =
     if (titleRes == R.string.settings_reset)

@@ -2,7 +2,9 @@ package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
+import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -70,7 +72,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.ui.screens.profiles.profileAvatarSource
 import app.n_zik.android.components.ui.screens.profiles.AccountLoginState
-import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
 import app.n_zik.android.components.ui.screens.profiles.profileFaceUpdateTrigger
 import app.n_zik.android.components.ui.screens.profiles.removeProfileAvatarFile
 import app.n_zik.android.components.ui.screens.profiles.saveProfileAvatarFromUri
@@ -210,14 +211,12 @@ fun ProfileFaceCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(start = 10.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ProfileAvatarFrame(size = 40.dp, area = GlassArea.SettingsCards) {
-                    ProfileFaceAvatar(avatar = shownFace.avatar, faceName = shownFace.name, size = 40.dp)
-                }
+                ProfileCardAvatar(shownFace, GlassArea.SettingsCards)
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(10.dp))
 
                 Column {
                     BasicText(
@@ -246,6 +245,7 @@ fun ProfileFaceCard(
                 )
             }
 
+            CardCategoryLabel(stringResource(R.string.settings_group_profile_name))
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_name_source"),
                 title = stringResource(R.string.profile_name_source),
@@ -256,21 +256,23 @@ fun ProfileFaceCard(
             )
 
             OtherSettingsEntry(
-                modifier = Modifier.settingsSearchTarget("embedded.profile.face_avatar_source"),
-                title = stringResource(R.string.profile_avatar_source),
-                text = stringResource(R.string.profile_avatar_source_description),
-                selectedValueText = faceSourceLabel(avatarSource),
-                icon = faceSourceIcon(avatarSource),
-                onClick = { showAvatarSourceDialog = true }
-            )
-
-            OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_profile_name"),
                 title = stringResource(R.string.profile_local_name),
                 text = stringResource(R.string.profile_local_name_description),
                 selectedValueText = profileName,
                 icon = R.drawable.pencil,
                 onClick = { showRenameDialog = true }
+            )
+
+            SettingsCardSectionHeading(R.string.settings_group_avatar)
+
+            OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("embedded.profile.face_avatar_source"),
+                title = stringResource(R.string.profile_avatar_source),
+                text = stringResource(R.string.profile_avatar_source_description),
+                selectedValueText = faceSourceLabel(avatarSource),
+                icon = faceSourceIcon(avatarSource),
+                onClick = { showAvatarSourceDialog = true }
             )
 
             OtherSettingsEntry(

@@ -41,6 +41,7 @@ import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.appearance.preview.prepareCreatorThemeStoreFork
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
@@ -71,6 +72,17 @@ private const val githubDevicePage = "https://github.com/login/device"
 private const val githubPersonalInstallationsPage = "https://github.com/settings/installations"
 private const val githubAppInstallationPage = "https://github.com/apps/n-zik-sign-in/installations/new"
 private const val githubAppInstallationTargetPage = "https://github.com/apps/n-zik-sign-in/installations/select_target"
+
+internal const val GITHUB_SETTINGS_SIGN_IN_TARGET = "embedded.github.account_login"
+internal const val GITHUB_SETTINGS_SIGN_OUT_TARGET = "embedded.github.account_logout"
+internal const val GITHUB_SETTINGS_APP_INSTALLATION_TARGET = "embedded.github.app_installation"
+
+internal fun githubSettingsSearchFallback(requestedTarget: String, targetAvailable: (String) -> Boolean): String? {
+    if (requestedTarget != GITHUB_SETTINGS_SIGN_OUT_TARGET && requestedTarget != GITHUB_SETTINGS_APP_INSTALLATION_TARGET) {
+        return null
+    }
+    return GITHUB_SETTINGS_SIGN_IN_TARGET.takeIf(targetAvailable)
+}
 
 internal fun confirmedGitHubInstallationAccount(url: String, notice: String): String? {
     val location = runCatching { URI(url) }.getOrNull() ?: return null
@@ -403,6 +415,9 @@ internal fun GitHubAccountCard(
     androidx.compose.runtime.LaunchedEffect(context) { GitHubAccount.read(context) }
     val content: @Composable () -> Unit = {
         OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget(
+                if (login == null) GITHUB_SETTINGS_SIGN_IN_TARGET else GITHUB_SETTINGS_SIGN_OUT_TARGET,
+            ),
             title = stringResource(if (login == null) R.string.github_account_login else R.string.github_account_logout),
             text = login?.let { "@$it" } ?: code?.let { stringResource(R.string.github_account_code, it) } ?: stringResource(
                 if (offline) R.string.github_account_offline else R.string.github_account_description
@@ -429,6 +444,7 @@ internal fun GitHubAccountCard(
         )
         val connectedLogin = login
         if (showAppInstallation && connectedLogin != null) OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget(GITHUB_SETTINGS_APP_INSTALLATION_TARGET),
             title = stringResource(R.string.github_app_installation),
             text = stringResource(R.string.github_app_installation_description),
             icon = R.drawable.github_icon,

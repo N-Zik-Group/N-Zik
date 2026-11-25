@@ -53,6 +53,8 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.utils.rememberEncryptedPreference
@@ -92,6 +94,7 @@ fun LastFmSettingsCard() {
         title = stringResource(R.string.settings_lastfm_title),
         icon = R.drawable.logo_lastfm,
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_group_service_connection))
             var isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
             var isLastfmNowPlayingEnabled by rememberEncryptedPreference(isLastfmNowPlayingEnabledKey, true)
             var isLastfmScrobbleEnabled by rememberEncryptedPreference(isLastfmScrobbleEnabledKey, true)
@@ -185,6 +188,8 @@ fun LastFmSettingsCard() {
                             }
                         }
                     )
+
+                    SettingsCardSectionHeading(R.string.settings_group_scrobbling)
 
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_now_playing"),

@@ -24,6 +24,8 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
@@ -48,6 +50,7 @@ fun GeneralQueueManagementCard(
         icon = R.drawable.playlist,
         visible = visible,
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_group_queue_restore))
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_behavior.persistent_queue"),
                 title = stringResource(R.string.settings_player_persistent_queue_label),
@@ -78,6 +81,8 @@ fun GeneralQueueManagementCard(
                 }
             }
 
+            SettingsCardSectionHeading(R.string.settings_group_queue_filling)
+
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.player_controls.player_auto_load_songs_in_queue"),
                 title = stringResource(R.string.player_auto_load_songs_in_queue),
@@ -89,6 +94,17 @@ fun GeneralQueueManagementCard(
                 },
                 icon = R.drawable.playlist
             )
+
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.queue_management.discover"),
+                title = stringResource(R.string.queue_discover_title),
+                text = stringResource(R.string.queue_discover_description),
+                isChecked = discoverIsEnabled,
+                onCheckedChange = { discoverIsEnabled = it },
+                icon = R.drawable.search
+            )
+
+            SettingsCardSectionHeading(R.string.settings_group_queue_limits)
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.queue_management.max_songs_in_queue"),
@@ -173,16 +189,6 @@ fun GeneralQueueManagementCard(
                     onDismiss = { showMaxSongsAndroidAutoDialog = false }
                 )
             }
-
-            OtherSwitchSettingEntry(
-                modifier = Modifier.settingsSearchTarget("general.queue_management.discover"),
-                title = stringResource(R.string.queue_discover_title),
-                text = stringResource(R.string.queue_discover_description),
-                isChecked = discoverIsEnabled,
-                onCheckedChange = { discoverIsEnabled = it },
-                icon = R.drawable.search
-            )
-
         }
     )
 }

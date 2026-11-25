@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.ui
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
@@ -113,26 +115,8 @@ internal fun UiInterfaceCard(search: Search) {
             title = stringResource(R.string.settings_interface_title),
             icon = R.drawable.ui,
             content = {
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.hide_status_bar"),
-                        title = stringResource(R.string.settings_interface_hide_status_bar_label),
-                        text = stringResource(R.string.interface_hide_status_bar_description),
-                        isChecked = hideStatusBar,
-                        onCheckedChange = { hideStatusBar = it },
-                        icon = R.drawable.eye_off
-                    )
-                }
-
-                if (layoutDirectionMatches) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.user_interface.right_to_left"),
-                        title = layoutDirectionTitle,
-                        text = layoutDirectionDescription,
-                        icon = R.drawable.reorder,
-                        isChecked = rightToLeft,
-                        onCheckedChange = { rightToLeft = it },
-                    )
+                if (search.inputValue.isBlank()) {
+                    CardCategoryLabel(stringResource(R.string.common_navigation_section_title))
                 }
 
                 var showNavPosDialog by remember { mutableStateOf(false) }
@@ -223,6 +207,44 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
+                var showTransDialog by remember { mutableStateOf(false) }
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_transition_effect_label).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.transition_effect"),
+                        title = stringResource(R.string.settings_navigation_transition_effect_label),
+                        text = stringResource(R.string.interface_transition_effect_description),
+                        selectedValueText = transitionEffect.text,
+                        icon = R.drawable.images_sharp,
+                        onClick = { showTransDialog = true }
+                    )
+                }
+                DialogPresence(visible = showTransDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.settings_navigation_transition_effect_label),
+                        selectedValue = transitionEffect,
+                        onValueSelected = { transitionEffect = it },
+                        valueText = { it.text },
+                        values = TransitionEffect.values().toList(),
+                        onDismiss = { showTransDialog = false }
+                    )
+                }
+
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_back_to_home_label).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.disable_navigation_back_stack"),
+                        title = stringResource(R.string.settings_navigation_back_to_home_label),
+                        text = stringResource(R.string.settings_navigation_back_to_home_description),
+                        icon = R.drawable.chevron_back,
+                        isChecked = disableBackStack,
+                        onCheckedChange = { disableBackStack = it }
+                    )
+                }
+
+                if (search.inputValue.isBlank()) {
+                    SettingsCardSectionDivider()
+                    CardCategoryLabel(stringResource(R.string.home_title))
+                }
+
                 var showDefPageDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_home_default_page_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
@@ -255,37 +277,36 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
-                var showTransDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_transition_effect_label).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.user_interface.transition_effect"),
-                        title = stringResource(R.string.settings_navigation_transition_effect_label),
-                        text = stringResource(R.string.interface_transition_effect_description),
-                        selectedValueText = transitionEffect.text,
-                        icon = R.drawable.images_sharp,
-                        onClick = { showTransDialog = true }
-                    )
+                if (search.inputValue.isBlank()) {
+                    SettingsCardSectionDivider()
+                    CardCategoryLabel(stringResource(R.string.settings_interface_group_display))
                 }
-                DialogPresence(visible = showTransDialog) {
-                    ValueSelectorDialog(
-                        title = stringResource(R.string.settings_navigation_transition_effect_label),
-                        selectedValue = transitionEffect,
-                        onValueSelected = { transitionEffect = it },
-                        valueText = { it.text },
-                        values = TransitionEffect.values().toList(),
-                        onDismiss = { showTransDialog = false }
+
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.hide_status_bar"),
+                        title = stringResource(R.string.settings_interface_hide_status_bar_label),
+                        text = stringResource(R.string.interface_hide_status_bar_description),
+                        isChecked = hideStatusBar,
+                        onCheckedChange = { hideStatusBar = it },
+                        icon = R.drawable.eye_off
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_navigation_back_to_home_label).contains(search.inputValue, true)) {
+                if (layoutDirectionMatches) {
                     OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.user_interface.disable_navigation_back_stack"),
-                        title = stringResource(R.string.settings_navigation_back_to_home_label),
-                        text = stringResource(R.string.settings_navigation_back_to_home_description),
-                        icon = R.drawable.chevron_back,
-                        isChecked = disableBackStack,
-                        onCheckedChange = { disableBackStack = it }
+                        modifier = Modifier.settingsSearchTarget("ui.user_interface.right_to_left"),
+                        title = layoutDirectionTitle,
+                        text = layoutDirectionDescription,
+                        icon = R.drawable.reorder,
+                        isChecked = rightToLeft,
+                        onCheckedChange = { rightToLeft = it },
                     )
+                }
+
+                if (search.inputValue.isBlank()) {
+                    SettingsCardSectionDivider()
+                    CardCategoryLabel(stringResource(R.string.search_title))
                 }
 
                 var showSearchOrderDialog by remember { mutableStateOf(false) }
@@ -323,6 +344,11 @@ internal fun UiInterfaceCard(search: Search) {
                         onCheckedChange = { showFloatingIcon = it },
                         icon = R.drawable.maximize
                     )
+                }
+
+                if (search.inputValue.isBlank()) {
+                    SettingsCardSectionDivider()
+                    CardCategoryLabel(stringResource(R.string.settings_interface_group_indicators))
                 }
 
                 if (playlistIndicatorMatches) {

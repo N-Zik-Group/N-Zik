@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
@@ -46,10 +48,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -95,19 +101,32 @@ import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.navigation.nav.GlassNavigationBarHeight
 import app.n_zik.android.components.navigation.nav.GlassNavigationPlayerGap
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
+import app.n_zik.android.components.search.SearchHeaderVisibility
+import app.n_zik.android.components.search.SearchHistorySection
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsEntryResultRow
+import app.n_zik.android.components.settings.common.SettingsSearchBarPadding
+import app.n_zik.android.components.settings.common.SettingsSearchEmptyFeedback
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.components.settings.common.rememberSettingsContentPadding
+import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
 
 // Effect controls adapted from Square GlassSettings (Convx Project, GPL-3.0); see NOTICE-square.txt.
 /** Dedicated native settings page with a live preview independent of the master switch. */
@@ -118,7 +137,7 @@ fun GlassSettingsPage(target: String = "") {
         host?.standaloneSettings = true
         onDispose { host?.standaloneSettings = false }
     }
-    GlassSettingsContent(pinPreview = true, target = target)
+    GlassSettingsContent(pinPreview = true, target = target, searchEnabled = true)
 }
 
 @Composable
@@ -127,23 +146,45 @@ internal fun GlassSettingsContent(
     onboardingFooter: (@Composable () -> Unit)? = null,
     pinPreview: Boolean = false,
     target: String = "",
+    searchEnabled: Boolean = false,
 ) {
+    val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    var searchInput by rememberSaveable(target, stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+    var searchFocused by remember { mutableStateOf(false) }
+    var requestedTarget by rememberSaveable(target) { mutableStateOf(target) }
+    val query = searchInput.text
+    val historyPage = SearchHistoryStore.PAGE_SETTINGS_GLASS
+    val history = if (searchEnabled) {
+        val historyPaused by rememberPreference(pauseSearchHistoryKey, false)
+        rememberSearchHistory(historyPage, historyPaused)
+    } else null
+    fun recordQuery() {
+        history?.value = SearchHistoryStore.record(context.preferences, historyPage, searchInput.text)
+    }
+    val searching = searchEnabled && query.isNotBlank()
+    val results = if (searching) {
+        searchSettingsEntries(context, query).filter { it.cardTitleRes == R.string.glass_effect_title }
+    } else emptyList()
+    if (searchEnabled) SettingsSearchEmptyFeedback(query, results.isEmpty())
+
     val registry = remember { SettingsTargetRegistry() }
     val scroll = rememberLazyListState()
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
-    val option = glassSearchOption(target)
-    LaunchedEffect(target) {
-        if (option == null) return@LaunchedEffect
-        val keys = listOf("header", "master", "interactions", "material", "colour", "readability", "edges") +
-            GlassDestinationGroup.entries.map { "destination.${it.name}" }
+    LaunchedEffect(requestedTarget) {
+        val option = glassSearchOption(requestedTarget)
+        if (option == null || searching) return@LaunchedEffect
+        val targetId = option.target.id
+        val keys = listOf("header") + GlassSearchOptions.map { it.section }.distinct()
         scroll.scrollToItem(0)
         scroll.animateScrollToItem(keys.indexOf(option.section))
         // Expanded cards animate into layout before registering their exact control.
         val found = withTimeoutOrNull(1500) {
-            snapshotFlow { registry.targets[target] }.first { it != null }
+            snapshotFlow { registry.targets[targetId] }.first { it != null }
         }
-        val resolved = if (found != null) target else {
+        val resolved = if (found != null) targetId else {
             showMessage(unavailableMessage)
             option.fallback ?: return@LaunchedEffect
         }
@@ -215,28 +256,64 @@ internal fun GlassSettingsContent(
                     state = scroll,
                 ) {
                     item("header", contentType = "header") {
-                        Column {
-                            HeaderWithIcon(
-                                title = stringResource(R.string.glass_effect_title),
-                                iconId = R.drawable.droplet,
-                                showBetaBadge = true,
-                                enabled = false,
-                                showIcon = true,
-                                modifier = Modifier,
-                                onClick = {},
-                            )
-                            SettingsDescription(
-                                text = stringResource(R.string.glass_effect_summary),
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                            )
-                            if (!pinPreview) GlassPreview(config)
+                        if (searchEnabled) {
+                            Column {
+                                SearchHeaderVisibility(!searchFocused) {
+                                    GlassSettingsHeading(config, pinPreview)
+                                }
+                                UnifiedSearchBar(
+                                    input = searchInput,
+                                    onInputChanged = {
+                                        searchInput = it
+                                        if (it.text.isNotBlank()) requestedTarget = ""
+                                    },
+                                    placeholderRes = R.string.settings_global_search_hint,
+                                    modifier = Modifier.padding(SettingsSearchBarPadding),
+                                    baseSurface = colorPalette().background1,
+                                    onClear = { searchInput = TextFieldValue("") },
+                                    onSearch = ::recordQuery,
+                                    onFocused = { searchFocused = it },
+                                    textFieldTestTag = "settings.glass.search",
+                                )
+                                history?.let { state ->
+                                    val matches = filterSearchHistory(state.value, query)
+                                    SearchHistorySection(
+                                        visible = searchFocused && matches.isNotEmpty(),
+                                        queries = matches,
+                                        onQueryClick = {
+                                            searchInput = TextFieldValue(it)
+                                            requestedTarget = ""
+                                            recordQuery()
+                                        },
+                                        onQueryDelete = { state.value = SearchHistoryStore.delete(context.preferences, historyPage, it) },
+                                        onQueryDeleteAll = { state.value = SearchHistoryStore.deleteAll(context.preferences, historyPage) },
+                                    )
+                                }
+                            }
+                        } else {
+                            GlassSettingsHeading(config, pinPreview)
                         }
                     }
-                    item("master", contentType = "group") { UiGlassCard() }
-                    item("interactions", contentType = "group") { GlassInteractionSettingsCard(config, store, target) }
+                    if (searching) {
+                        items(results, key = { "entry:${it.id}" }, contentType = { "entry" }) { result ->
+                            SettingsEntryResultRow(
+                                result = result,
+                                surfaceTag = "settings.glass.result.entry.${result.id}",
+                                rowTag = "settings.glass.entry.${result.id}",
+                                onClick = {
+                                    recordQuery()
+                                    keyboard?.hide()
+                                    focusManager.clearFocus(force = true)
+                                    searchInput = TextFieldValue("")
+                                    requestedTarget = result.id
+                                },
+                            )
+                        }
+                        return@LazyColumn
+                    }
+                    item("master", contentType = "group") { UiGlassCard(showGroupHeading = searchEnabled) }
                     item("material", contentType = "group") {
-                        GlassSection(R.string.glass_effect_group_material) {
+                        GlassSection(R.string.glass_effect_group_material, searchEnabled) {
                             OtherSwitchSettingEntry(
                                 title = stringResource(R.string.glass_effect_optimization_title),
                                 text = stringResource(R.string.glass_effect_optimization_description),
@@ -265,20 +342,14 @@ internal fun GlassSettingsContent(
                         }
                     }
                     item("colour", contentType = "group") {
-                        GlassSection(R.string.glass_effect_group_color) {
+                        GlassSection(R.string.glass_effect_group_color, searchEnabled) {
                             TintRow(config, onTint = store::setTint, onColor = store::setColor, onStrength = { store.setFloat(glassTintStrengthKey, it) })
                             GlassSlider("film", stringResource(R.string.glass_effect_film), config.film, 0f..1f, percentLabel((config.film * 100).roundToInt()), R.drawable.droplet) { store.setFloat(glassFilmKey, it) }
                             GlassSlider("indicator", stringResource(R.string.glass_effect_active_tab_indicator), config.indicatorOpacity, 0f..1f, percentLabel((config.indicatorOpacity * 100).roundToInt()), R.drawable.checkmark) { store.setFloat(glassIndicatorOpacityKey, it) }
                         }
                     }
-                    item("readability", contentType = "group") {
-                        GlassSection(R.string.glass_effect_group_readability) {
-                            GlassSlider("dialogDimming", stringResource(R.string.glass_effect_dialog_dimming), config.dialogDimming, 0f..1f, percentLabel((config.dialogDimming * 100).roundToInt()), R.drawable.eye_off) { store.setFloat(glassDialogDimmingKey, it) }
-                            GlassSlider("menuDimming", stringResource(R.string.glass_effect_menu_dimming), config.menuDimming, 0f..1f, percentLabel((config.menuDimming * 100).roundToInt()), R.drawable.menu) { store.setFloat(glassMenuDimmingKey, it) }
-                        }
-                    }
                     item("edges", contentType = "group") {
-                        GlassSection(R.string.glass_effect_group_edges) {
+                        GlassSection(R.string.glass_effect_group_edges, searchEnabled) {
                             GlassSlider("rim", stringResource(R.string.glass_effect_rim), config.rim, 0f..1f, percentLabel((config.rim * 100).roundToInt()), R.drawable.sparkles) { store.setFloat(glassRimKey, it) }
                             if (refractive) {
                                 GlassSlider("refractionDepth", stringResource(R.string.glass_effect_refraction_depth), config.depth, 0f..1f, "${(config.depth * 48).roundToInt()} dp", R.drawable.sound_effect) { store.setFloat(glassDepthKey, it) }
@@ -290,9 +361,16 @@ internal fun GlassSettingsContent(
                             }
                         }
                     }
+                    item("readability", contentType = "group") {
+                        GlassSection(R.string.glass_effect_group_readability, searchEnabled) {
+                            GlassSlider("dialogDimming", stringResource(R.string.glass_effect_dialog_dimming), config.dialogDimming, 0f..1f, percentLabel((config.dialogDimming * 100).roundToInt()), R.drawable.eye_off) { store.setFloat(glassDialogDimmingKey, it) }
+                            GlassSlider("menuDimming", stringResource(R.string.glass_effect_menu_dimming), config.menuDimming, 0f..1f, percentLabel((config.menuDimming * 100).roundToInt()), R.drawable.menu) { store.setFloat(glassMenuDimmingKey, it) }
+                        }
+                    }
+                    item("interactions", contentType = "group") { GlassInteractionSettingsCard(config, store, requestedTarget, showGroupHeading = searchEnabled) }
                     GlassDestinationGroup.entries.forEach { group ->
                         item("destination.${group.name}", contentType = "group") {
-                            GlassDestinationCard(group, config, store, target)
+                            GlassDestinationCard(group, config, store, requestedTarget, showGroupHeading = searchEnabled)
                         }
                     }
                     onboardingFooter?.let { footer ->
@@ -301,6 +379,27 @@ internal fun GlassSettingsContent(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun GlassSettingsHeading(config: GlassSettings, pinPreview: Boolean) {
+    Column {
+        HeaderWithIcon(
+            title = stringResource(R.string.glass_effect_title),
+            iconId = R.drawable.droplet,
+            showBetaBadge = true,
+            enabled = false,
+            showIcon = true,
+            modifier = Modifier,
+            onClick = {},
+        )
+        SettingsDescription(
+            text = stringResource(R.string.glass_effect_summary),
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+        )
+        if (!pinPreview) GlassPreview(config)
     }
 }
 
@@ -428,9 +527,10 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
 }
 
 @Composable
-private fun GlassSection(@StringRes title: Int, content: @Composable () -> Unit) {
+private fun GlassSection(@StringRes title: Int, showGroupHeading: Boolean, content: @Composable () -> Unit) {
     SettingsSectionCard(
         title = stringResource(title),
+        groupTitleRes = if (showGroupHeading) GlassSectionGroupTitles[title] else null,
         icon = when (title) {
             R.string.glass_effect_group_material -> R.drawable.settings
             R.string.glass_effect_group_edges -> R.drawable.resize

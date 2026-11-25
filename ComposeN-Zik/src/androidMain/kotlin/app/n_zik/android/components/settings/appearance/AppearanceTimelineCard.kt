@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -78,58 +81,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             title = stringResource(R.string.settings_player_timeline_controls_section_title),
             icon = R.drawable.horizontal_straight_line,
             content = {
-            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_size_label).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_size_label).contains(search.inputValue, true)) {
-                    OtherEnumValueSelectorSettingsEntry(
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_controls_timeline_size_description), playerTimelineSize.text),
-                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.timelinesize"),
-                        icon = R.drawable.resize,
-                        title = stringResource(R.string.settings_player_timeline_size_label),
-                        selectedValue = playerTimelineSize,
-                        onValueSelected = { playerTimelineSize = it },
-                        valueText = { it.text }
-                    )
-                }
-
-
-
-
-
-            if (search.inputValue.isBlank() || stringResource(R.string.player_mini_buttons_config).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.player_mini_buttons_config).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.miniplayer_buttons_config"),
-                        icon = R.drawable.ui,
-                        title = stringResource(R.string.player_mini_buttons_config),
-                        text = stringResource(R.string.player_mini_buttons_config_description),
-                        onClick = { MiniPlayerButtonsSettingsDialog.showDialog() }
-                    )
-                }
-
-            if (search.inputValue.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.player_swap_controls_with_timeline"),
-                        icon = R.drawable.sync,
-                        title = stringResource(R.string.player_swap_controls_with_timeline),
-                        text = stringResource(R.string.player_controls_timeline_position_swapped_description),
-                        isChecked = playerSwapControlsWithTimeline,
-                        onCheckedChange = { playerSwapControlsWithTimeline = it }
-                    )
-                }
-
+                if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_timeline))
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_label).contains(
                     search.inputValue,
                     true
@@ -150,6 +102,23 @@ internal fun AppearanceTimelineCard(search: Search) {
                     }
                 }
 
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_size_label).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_size_label).contains(search.inputValue, true)) {
+                    OtherEnumValueSelectorSettingsEntry(
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_controls_timeline_size_description), playerTimelineSize.text),
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.timelinesize"),
+                        icon = R.drawable.resize,
+                        title = stringResource(R.string.settings_player_timeline_size_label),
+                        selectedValue = playerTimelineSize,
+                        onValueSelected = { playerTimelineSize = it },
+                        valueText = { it.text }
+                    )
+                }
+
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_transparent_label).contains(
                     search.inputValue,
                     true
@@ -166,7 +135,58 @@ internal fun AppearanceTimelineCard(search: Search) {
                     )
                 }
 
+           if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_duration_visible_label).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_total_time_of_queue"),
+                        icon = R.drawable.time,
+                        title = stringResource(R.string.settings_player_queue_duration_visible_label),
+                        text = stringResource(R.string.player_queue_duration_visible_description),
+                        isChecked = showTotalTimeQueue,
+                        onCheckedChange = { showTotalTimeQueue = it }
+                    )
+                }
 
+            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_remaining_duration_visible_label).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_remaining_duration_visible_label).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_remaining_song_time"),
+                        icon = R.drawable.time,
+                        title = stringResource(R.string.settings_player_remaining_duration_visible_label),
+                        text = stringResource(R.string.player_remaining_time_visible_description),
+                        isChecked = showRemainingSongTime,
+                        onCheckedChange = { showRemainingSongTime = it }
+                    )
+                }
+
+            if (search.inputValue.isBlank()) {
+                SettingsCardSectionDivider()
+                CardCategoryLabel(stringResource(R.string.player_controls))
+            }
+
+            if (search.inputValue.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true)) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.player_swap_controls_with_timeline"),
+                        icon = R.drawable.sync,
+                        title = stringResource(R.string.player_swap_controls_with_timeline),
+                        text = stringResource(R.string.player_controls_timeline_position_swapped_description),
+                        isChecked = playerSwapControlsWithTimeline,
+                        onCheckedChange = { playerSwapControlsWithTimeline = it }
+                    )
+                }
 
             if (search.inputValue.isBlank() || stringResource(R.string.player_controls_colors).contains(
                     search.inputValue,
@@ -238,37 +258,6 @@ internal fun AppearanceTimelineCard(search: Search) {
                         valueText = { it.text },
                     )
                 }
-           if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_duration_visible_label).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_total_time_of_queue"),
-                        icon = R.drawable.time,
-                        title = stringResource(R.string.settings_player_queue_duration_visible_label),
-                        text = stringResource(R.string.player_queue_duration_visible_description),
-                        isChecked = showTotalTimeQueue,
-                        onCheckedChange = { showTotalTimeQueue = it }
-                    )
-                }
-
-            if (search.inputValue.isBlank() || stringResource(R.string.settings_player_remaining_duration_visible_label).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_remaining_duration_visible_label).contains(search.inputValue, true)) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.colors_and_background.show_remaining_song_time"),
-                        icon = R.drawable.time,
-                        title = stringResource(R.string.settings_player_remaining_duration_visible_label),
-                        text = stringResource(R.string.player_remaining_time_visible_description),
-                        isChecked = showRemainingSongTime,
-                        onCheckedChange = { showRemainingSongTime = it }
-                    )
-                }
 
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_seek_time_buttons_label).contains(
                     search.inputValue,
@@ -283,6 +272,23 @@ internal fun AppearanceTimelineCard(search: Search) {
                         isChecked = showSkipTimeButtons,
                         onCheckedChange = { showSkipTimeButtons = it },
                         icon = R.drawable.play_forward
+                    )
+                }
+
+            if (search.inputValue.isBlank()) SettingsCardSectionHeading(R.string.settings_group_miniplayer)
+
+            if (search.inputValue.isBlank() || stringResource(R.string.player_mini_buttons_config).contains(
+                    search.inputValue,
+                    true
+                )
+            )
+                if (search.inputValue.isBlank() || stringResource(R.string.player_mini_buttons_config).contains(search.inputValue, true)) {
+                    OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("appearance.timeline_and_controls.miniplayer_buttons_config"),
+                        icon = R.drawable.ui,
+                        title = stringResource(R.string.player_mini_buttons_config),
+                        text = stringResource(R.string.player_mini_buttons_config_description),
+                        onClick = { MiniPlayerButtonsSettingsDialog.showDialog() }
                     )
                 }
 

@@ -19,12 +19,16 @@ import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
 
 /** Card titles are navigation results; matching child options never expand the card. */
-internal fun searchSettingsCardResults(context: Context, query: String): List<SettingsCardRegistryEntry> =
-    if (query.isBlank()) emptyList() else
-        SettingsCards.filter { card ->
-            card.displayTitle(context).contains(query.trim(), true) ||
-                card.keywordRes.any { context.getString(it).contains(query.trim(), true) }
-        }
+internal fun searchSettingsCardResults(context: Context, query: String): List<SettingsCardRegistryEntry> {
+    val needle = normalizedSettingsText(query)
+    if (needle.isEmpty()) return emptyList()
+    return OrganizedSettingsCards.filter { it.matchesSearch(context, needle) }
+}
+
+internal fun SettingsCardRegistryEntry.matchesSearch(context: Context, normalizedQuery: String): Boolean =
+    normalizedSettingsText(displayTitle(context)).contains(normalizedQuery) ||
+        groupTitleRes?.let { normalizedSettingsText(context.getString(it)).contains(normalizedQuery) } == true ||
+        keywordRes.any { normalizedSettingsText(context.getString(it)).contains(normalizedQuery) }
 
 @Composable
 internal fun SettingsEntryResultRow(

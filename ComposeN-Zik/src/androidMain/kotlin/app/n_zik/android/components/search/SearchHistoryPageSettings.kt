@@ -60,6 +60,7 @@ fun SearchHistoryPagesDialog(onDismiss: () -> Unit) {
             SearchHistoryStore.PAGE_LOCAL -> stringResource(R.string.search_history_local)
             SearchHistoryStore.PAGE_ONLINE -> stringResource(R.string.search_history_online)
             SearchHistoryStore.PAGE_SETTINGS_GLOBAL -> stringResource(R.string.settings_global_title)
+            SearchHistoryStore.PAGE_SETTINGS_GLASS -> stringResource(R.string.glass_effect_title)
             else -> stringResource(
                 R.string.search_history_settings_page,
                 stringResource(labelRes),
@@ -70,6 +71,7 @@ fun SearchHistoryPagesDialog(onDismiss: () -> Unit) {
             SearchHistoryStore.PAGE_LOCAL -> R.drawable.search_circle
             SearchHistoryStore.PAGE_ONLINE -> R.drawable.network
             SearchHistoryStore.PAGE_SETTINGS_GLOBAL -> R.drawable.settings
+            SearchHistoryStore.PAGE_SETTINGS_GLASS -> R.drawable.droplet
             else -> iconRes
         }
         ToggleItem(page, icon, label, SearchHistoryStore.enabledKey(page), true)

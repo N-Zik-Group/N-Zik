@@ -204,7 +204,6 @@ fun SettingsScreen(
                     2 -> AppearanceSettings(navController = navController)
                     3 -> AIRecommendationSettings(
                         navController = navController,
-                        onSettingsNavigate = { route -> innerNavController.navigate(route) },
                         ytLoggedIn = ytLoggedIn,
                         focus = tabFocus,
                     )

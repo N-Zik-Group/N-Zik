@@ -2,7 +2,10 @@ package app.n_zik.android.components.settings
 
 import android.app.Application
 import android.content.Context
-import android.net.Uri
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -11,6 +14,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.styling.Appearance
@@ -18,11 +22,11 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
-import app.n_zik.android.components.settings.privacy.rewindMasterSettingsRoute
 import app.n_zik.android.utils.DataStoreUtils
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -70,14 +74,18 @@ class RewindSettingsCardLayoutTest {
     fun `clicking the yearly recap entry toggles its own preference`() {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                RewindSettingsCard(onOpenPrivacy = {})
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    RewindSettingsCard()
+                }
             }
         }
         composeRule.waitForIdle()
 
-        composeRule
-            .onNodeWithText(context.getString(R.string.rewind_settings_yearly))
-            .performClick()
+        val monthly = composeRule.onNodeWithText(context.getString(R.string.rewind_settings_monthly))
+        val yearly = composeRule.onNodeWithText(context.getString(R.string.rewind_settings_yearly))
+        yearly.performScrollTo().assertIsDisplayed()
+        assertTrue(monthly.fetchSemanticsNode().positionInRoot.y < yearly.fetchSemanticsNode().positionInRoot.y)
+        yearly.performClick()
         composeRule.waitForIdle()
 
         assertFalse(
@@ -95,7 +103,9 @@ class RewindSettingsCardLayoutTest {
         var opens = 0
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                RewindSettingsCard(onOpenPrivacy = {}, onOpenRewind = callback.value)
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    RewindSettingsCard(onOpenRewind = callback.value)
+                }
             }
         }
         composeRule.waitForIdle()
@@ -103,7 +113,7 @@ class RewindSettingsCardLayoutTest {
 
         callback.value = { opens++ }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(context.getString(R.string.rewind_open_desc)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_open_desc)).performScrollTo().assertIsDisplayed()
         composeRule
             .onNodeWithText(context.getString(R.string.modules_open))
             .performClick()
@@ -113,36 +123,44 @@ class RewindSettingsCardLayoutTest {
     }
 
     @Test
-    fun `disabled rewind offers the Privacy switch and hides recap settings`() {
-        // The state the master toggle leaves behind when flipped off: master off AND the
-        // two playlist creation gates auto-unchecked.
+    fun `disabled rewind can be enabled in place without overwriting playlist choices`() {
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, false)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
-        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
 
-        var destination: String? = null
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                RewindSettingsCard(
-                    onOpenPrivacy = { destination = rewindMasterSettingsRoute(context) },
-                    onOpenRewind = { error("The recap should not open while disabled") },
-                )
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    RewindSettingsCard(onOpenRewind = { error("The switch should not open Rewind") })
+                }
             }
         }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_disabled_message)).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_yearly)).assertDoesNotExist()
+        val toggle = composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled))
+        val yearly = composeRule.onNodeWithText(context.getString(R.string.rewind_settings_yearly))
+        toggle.assertIsDisplayed()
+        yearly.assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.rewind_settings_notifications)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.rewind_settings_playlists_title)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.modules_open)).assertDoesNotExist()
-        composeRule.onNodeWithText(context.getString(R.string.settings_category_privacy)).performClick()
 
+        toggle.performClick()
+        composeRule.waitForIdle()
+        yearly.performScrollTo().assertIsDisplayed()
         composeRule.runOnIdle {
-            val route = Uri.parse(checkNotNull(destination))
-            assertEquals("settingsCategory/privacy", route.path)
-            assertEquals("ai.tab_general.rw_settings_master", route.getQueryParameter("target"))
+            assertTrue(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, false))
+            assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true))
+            assertTrue(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false))
+        }
+
+        toggle.performScrollTo().performClick()
+        composeRule.waitForIdle()
+        yearly.assertDoesNotExist()
+        composeRule.runOnIdle {
             assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true))
+            assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true))
+            assertTrue(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false))
         }
     }
 }

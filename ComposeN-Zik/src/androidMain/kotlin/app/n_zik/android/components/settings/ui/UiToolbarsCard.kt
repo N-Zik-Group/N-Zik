@@ -53,8 +53,8 @@ private val toolbarSettingGroups = listOf(
             HomeLibraryToolbarSettingsDialog::showDialog),
     ),
     R.string.settings_toolbar_details_group to listOf(
-        ToolbarSettingsEntry(AlbumDetailsToolbarSettingsDialog),
         ToolbarSettingsEntry(ArtistDetailsToolbarSettingsDialog),
+        ToolbarSettingsEntry(AlbumDetailsToolbarSettingsDialog),
         ToolbarSettingsEntry("ui.toolbar.local_playlist_sort", R.string.settings_local_playlist_title, R.drawable.playlist,
             LocalPlaylistToolbarSettingsDialog::showDialog, searchAlias = R.string.library_playlists_title),
         ToolbarSettingsEntry(OnlinePlaylistToolbarSettingsDialog),

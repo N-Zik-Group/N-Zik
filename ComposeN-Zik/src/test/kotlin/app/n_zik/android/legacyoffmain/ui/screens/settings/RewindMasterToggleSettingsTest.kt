@@ -95,56 +95,55 @@ class RewindMasterToggleSettingsTest {
     private fun showScreen(focus: String = "") {
         composeRule.setContent {
             CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
-                AIRecommendationSettings(navController = navController, onSettingsNavigate = {}, focus = focus)
+                AIRecommendationSettings(navController = navController, focus = focus)
             }
         }
     }
 
     @Test
-    fun theMasterSwitchOffDisablesAllThreeRewindKeys() {
+    fun theMasterSwitchOffPreservesPlaylistChoices() {
         showScreen()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled)).performScrollTo().performClick()
         composeRule.waitForIdle()
 
         assertFalse(
             "the master off must persist the master key off",
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
         )
-        assertFalse(
-            "the master off must auto-uncheck the monthly playlist gate",
-            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+        assertTrue(
+            "disabling Rewind must preserve the monthly playlist preference",
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
         )
-        assertFalse(
-            "the master off must auto-uncheck the yearly playlist gate",
-            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+        assertTrue(
+            "disabling Rewind must preserve the yearly playlist preference",
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
         )
     }
 
     @Test
-    fun theMasterSwitchOnReenablesAllThreeRewindKeys() {
-        // The state the master leaves behind when flipped off: all three keys off.
+    fun theMasterSwitchOnPreservesPlaylistChoices() {
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, false)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
         showScreen()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_enabled)).performScrollTo().performClick()
         composeRule.waitForIdle()
 
         assertTrue(
             "the master on must re-enable the master key",
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, false)
         )
-        assertTrue(
-            "the master on must re-check the monthly playlist gate",
-            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
+        assertFalse(
+            "enabling Rewind must preserve the monthly playlist preference",
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
         )
-        assertTrue(
-            "the master on must re-check the yearly playlist gate",
-            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
+        assertFalse(
+            "enabling Rewind must preserve the yearly playlist preference",
+            DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
         )
     }
 

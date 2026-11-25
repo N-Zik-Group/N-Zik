@@ -50,6 +50,8 @@ import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -89,6 +91,7 @@ internal fun AccountsDiscordCard(search: Search) {
                 title = stringResource(R.string.settings_discord_title) + " " + stringResource(R.string.updates_build_beta_label),
                 icon = R.drawable.logo_discord,
                 content = {
+                    if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_service_connection))
                     // The encrypted preference implementation needs API 24 or later.
                     var isDiscordPresenceEnabled by rememberEncryptedPreference(isDiscordPresenceEnabledKey, false)
                     var loginDiscord by remember { mutableStateOf(false) }
@@ -145,109 +148,6 @@ internal fun AccountsDiscordCard(search: Search) {
 
                     AnimatedVisibility(visible = isDiscordPresenceEnabled) {
                         Column {
-                            val discordRpcError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
-                            AnimatedVisibility(discordRpcError != null) {
-                                discordRpcError?.let { error ->
-                                    DiscordRpcErrorBanner(error = error)
-                                }
-                            }
-
-                            var isDiscordAdvancedMode by rememberEncryptedPreference(isDiscordAdvancedModeKey, false)
-
-                            if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_mode).contains(search.inputValue, true)) {
-                                OtherSwitchSettingEntry(
-                                    modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_mode"),
-                                    title = stringResource(R.string.discord_advanced_mode),
-                                    text = stringResource(R.string.discord_advanced_mode_description),
-                                    isChecked = isDiscordAdvancedMode,
-                                    onCheckedChange = { isDiscordAdvancedMode = it },
-                                    icon = R.drawable.pencil
-                                )
-                            }
-
-                            AnimatedVisibility(visible = isDiscordAdvancedMode) {
-                                DiscordAdvancedSection(search = search)
-                            }
-
-                            val player = LocalPlayerServiceBinder.current?.player
-                            var previewPosition by remember { mutableStateOf(0L) }
-                            // Tick while idle or paused so the preview still reflects settings edits.
-
-                            var previewTick by remember { mutableIntStateOf(0) }
-                            // Use -1 to follow the player, and 0 or 1 pins the preview to playing or paused.
-
-                            var previewMode by remember { mutableIntStateOf(-1) }
-                            val realMode = when {
-                                player != null && player.currentMediaItem != null && player.isPlaying -> 0
-                                player != null && player.currentMediaItem != null -> 1
-                                else -> 2
-                            }
-                            LaunchedEffect(player) {
-                                while (isActive) {
-                                    delay(100)
-                                    runCatching {
-                                        // Freeze the paused preview even when the real player keeps playing.
-
-                                        val effectiveMode =
-                                            if (previewMode >= 0) previewMode
-                                            else when {
-                                                player != null && player.currentMediaItem != null && player.isPlaying -> 0
-                                                player != null && player.currentMediaItem != null -> 1
-                                                else -> 2
-                                            }
-                                        val frozen = effectiveMode == 1 && player?.isPlaying == true
-                                        if (player != null && !frozen) previewPosition = player.currentPosition
-                                        previewTick++
-                                    }
-                                }
-                            }
-
-                            Text(
-                                text = stringResource(R.string.discord_preview_title),
-                                color = colorPalette().text,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(start = 13.dp, top = 8.dp, bottom = 8.dp)
-                            )
-                            DiscordRpcPreviewCard(
-                                player = player,
-                                positionMs = previewPosition,
-                                tick = previewTick,
-                                settings = DiscordAdvancedSettings.read(context.encryptedPreferences),
-                                mode = if (previewMode >= 0) previewMode else realMode
-                            )
-
-                            val chipPalette = colorPalette()
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 6.dp, bottom = 10.dp),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
-                            ) {
-                                listOf(
-                                    R.string.discord_preview_state_actual,
-                                    R.string.discord_preview_state_playing,
-                                    R.string.discord_preview_state_paused,
-                                ).forEachIndexed { index, labelRes ->
-                                    val selected = when (index) {
-                                        0 -> previewMode == -1
-                                        1 -> previewMode == 0
-                                        else -> previewMode == 1
-                                    }
-                                    DiscordPreviewChip(
-                                        label = stringResource(labelRes),
-                                        color = if (selected) chipPalette.accent else chipPalette.accent.copy(alpha = 0.15f),
-                                        foreground = if (selected) chipPalette.onAccent else chipPalette.accent,
-                                        onClick = {
-                                            when (index) {
-                                                0 -> previewMode = -1
-                                                1 -> previewMode = if (previewMode == 0) -1 else 0
-                                                else -> previewMode = if (previewMode == 1) -1 else 1
-                                            }
-                                        },
-                                    )
-                                }
-                            }
-
                             AnimatedVisibility(visible = showTokenError) {
                                 Text(
                                     text = stringResource(R.string.discord_token_text_invalid),
@@ -342,6 +242,13 @@ internal fun AccountsDiscordCard(search: Search) {
                                 )
                             }
 
+                            val discordRpcError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
+                            AnimatedVisibility(discordRpcError != null) {
+                                discordRpcError?.let { error ->
+                                    DiscordRpcErrorBanner(error = error)
+                                }
+                            }
+
                             CustomModalBottomSheet(
                                 showSheet = loginDiscord,
                                 onDismissRequest = {
@@ -368,6 +275,100 @@ internal fun AccountsDiscordCard(search: Search) {
                                     }
                                 )
                             }
+
+                            if (search.inputValue.isBlank()) SettingsCardSectionHeading(R.string.settings_group_presence)
+
+                            var isDiscordAdvancedMode by rememberEncryptedPreference(isDiscordAdvancedModeKey, false)
+
+                            if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_mode).contains(search.inputValue, true)) {
+                                OtherSwitchSettingEntry(
+                                    modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_mode"),
+                                    title = stringResource(R.string.discord_advanced_mode),
+                                    text = stringResource(R.string.discord_advanced_mode_description),
+                                    isChecked = isDiscordAdvancedMode,
+                                    onCheckedChange = { isDiscordAdvancedMode = it },
+                                    icon = R.drawable.pencil
+                                )
+                            }
+
+                            AnimatedVisibility(visible = isDiscordAdvancedMode) {
+                                DiscordAdvancedSection(search = search)
+                            }
+
+                            val player = LocalPlayerServiceBinder.current?.player
+                            var previewPosition by remember { mutableStateOf(0L) }
+                            // Tick while idle or paused so the preview still reflects settings edits.
+
+                            var previewTick by remember { mutableIntStateOf(0) }
+                            // Use -1 to follow the player, and 0 or 1 pins the preview to playing or paused.
+
+                            var previewMode by remember { mutableIntStateOf(-1) }
+                            val realMode = when {
+                                player != null && player.currentMediaItem != null && player.isPlaying -> 0
+                                player != null && player.currentMediaItem != null -> 1
+                                else -> 2
+                            }
+                            LaunchedEffect(player) {
+                                while (isActive) {
+                                    delay(100)
+                                    runCatching {
+                                        // Freeze the paused preview even when the real player keeps playing.
+
+                                        val effectiveMode =
+                                            if (previewMode >= 0) previewMode
+                                            else when {
+                                                player != null && player.currentMediaItem != null && player.isPlaying -> 0
+                                                player != null && player.currentMediaItem != null -> 1
+                                                else -> 2
+                                            }
+                                        val frozen = effectiveMode == 1 && player?.isPlaying == true
+                                        if (player != null && !frozen) previewPosition = player.currentPosition
+                                        previewTick++
+                                    }
+                                }
+                            }
+
+                            SettingsCardSectionHeading(R.string.discord_preview_title)
+                            DiscordRpcPreviewCard(
+                                player = player,
+                                positionMs = previewPosition,
+                                tick = previewTick,
+                                settings = DiscordAdvancedSettings.read(context.encryptedPreferences),
+                                mode = if (previewMode >= 0) previewMode else realMode
+                            )
+
+                            val chipPalette = colorPalette()
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 6.dp, bottom = 10.dp),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
+                            ) {
+                                listOf(
+                                    R.string.discord_preview_state_actual,
+                                    R.string.discord_preview_state_playing,
+                                    R.string.discord_preview_state_paused,
+                                ).forEachIndexed { index, labelRes ->
+                                    val selected = when (index) {
+                                        0 -> previewMode == -1
+                                        1 -> previewMode == 0
+                                        else -> previewMode == 1
+                                    }
+                                    DiscordPreviewChip(
+                                        label = stringResource(labelRes),
+                                        color = if (selected) chipPalette.accent else chipPalette.accent.copy(alpha = 0.15f),
+                                        foreground = if (selected) chipPalette.onAccent else chipPalette.accent,
+                                        onClick = {
+                                            when (index) {
+                                                0 -> previewMode = -1
+                                                1 -> previewMode = if (previewMode == 0) -1 else 0
+                                                else -> previewMode = if (previewMode == 1) -1 else 1
+                                            }
+                                        },
+                                    )
+                                }
+                            }
+
                         }
                     }
                 }

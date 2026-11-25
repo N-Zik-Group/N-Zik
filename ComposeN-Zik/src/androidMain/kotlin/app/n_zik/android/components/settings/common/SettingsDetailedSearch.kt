@@ -13,14 +13,27 @@ import app.n_zik.android.components.settings.ui.GlassSearchParent
 import app.n_zik.android.components.settings.ui.glassSearchOption
 
 val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
-    SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets +
-        PrivacySettingsEntryTargets + GlassSearchOptions.map { it.target } + SettingsNestedEntryTargets
+    val entriesByCard = (SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets +
+        PrivacySettingsEntryTargets).groupBy { it.tab to it.cardTitleRes }
+    val nestedByOpener = SettingsNestedEntryTargets.groupBy { it.nestedDestination?.openerId }
+    val lastInterfaceCard = cardsForCategory("interface").last()
+    buildList {
+        OrganizedSettingsCards.forEach { card ->
+            entriesByCard[card.tab to card.titleRes].orEmpty().forEach { entry ->
+                add(entry)
+                addAll(nestedByOpener[entry.id].orEmpty())
+            }
+            if (card == lastInterfaceCard) {
+                addAll(GlassSearchOptions.map { it.target })
+            }
+        }
+    }
 }
 
 private val combiningMarks = Regex("\\p{M}+")
 private val settingsWhitespace = Regex("\\s+")
 
-private fun normalizedSettingsText(text: String): String = Normalizer.normalize(text, Normalizer.Form.NFD)
+internal fun normalizedSettingsText(text: String): String = Normalizer.normalize(text, Normalizer.Form.NFD)
     .replace(combiningMarks, "").lowercase(Locale.ROOT).trim().replace(settingsWhitespace, " ")
 
 /** Searches a configuration-specific index without resolving resources on each keystroke. */
@@ -40,6 +53,8 @@ internal class SettingsEntrySearchIndex(
         val label: String,
         val keywords: List<String>,
         val choices: List<String>,
+        val qualifiedLabels: List<String>,
+        val qualifiedTerms: Set<String>,
     )
 
     private val entries: List<IndexedEntry>
@@ -51,11 +66,15 @@ internal class SettingsEntrySearchIndex(
         fun normalizedResource(id: Int) = normalizedStrings.getOrPut(id) { normalizedSettingsText(resource(id)) }
         val choices = choiceLabels(::resource)
         this.entries = entries.map { entry ->
+            val label = normalizedResource(entry.labelRes)
+            val scope = entry.searchScopeTitleRes()?.let(::normalizedResource)
             IndexedEntry(
                 entry,
-                normalizedResource(entry.labelRes),
+                label,
                 (entry.keywordRes + listOfNotNull(descriptions[entry.id])).map(::normalizedResource),
                 choices[entry.id].orEmpty().map(::normalizedSettingsText).distinct(),
+                scope?.let { listOf("$it $label", "$label $it", "$it › $label") }.orEmpty(),
+                scope?.let { "$it $label".split(' ').toSet() }.orEmpty(),
             )
         }
     }
@@ -72,6 +91,8 @@ internal class SettingsEntrySearchIndex(
                 label == needle -> 0
                 label.startsWith(needle) -> 1
                 label.contains(needle) -> 2
+                entry.qualifiedLabels.any { it.contains(needle) } -> 3
+                tokens.size > 1 && entry.qualifiedTerms.containsAll(tokens) -> 3
                 entry.keywords.any { it.contains(needle) || "$label $it" == needle } -> 3
                 entry.choices.any { choice ->
                     choice.contains(needle) || tokens.all { label.contains(it) || choice.contains(it) }
@@ -120,6 +141,7 @@ fun SettingsEntryTarget.locationDescription(context: Context): String {
     val opener = nested?.let { destination -> AllSettingsEntryTargets.firstOrNull { it.id == destination.openerId } }
     return listOfNotNull(context.getString(R.string.settings_title), context.getString(category.labelRes).takeUnless { id.startsWith("glass.") }, card.displayTitle(context),
         glassSearchOption(id)?.let { context.getString(it.sectionTitle) },
+        paletteTitleRes?.let(context::getString),
         opener?.let { context.getString(it.labelRes) },
         nested?.sectionTitleRes?.let(context::getString))
         .distinct().joinToString(" › ")
@@ -133,8 +155,15 @@ fun SettingsEntryTarget.destinationRoute(context: Context): String {
     return "settingsCategory/${card.categoryId()}?target=${Uri.encode(id)}&parent=$parent"
 }
 
-/** Distinguishes appearance policies from functional options with the same destination label. */
+/** Qualifies labels shared by multiple search targets. */
 fun SettingsEntryTarget.searchResultTitle(context: Context): String {
     val label = context.getString(labelRes)
-    return if (id.startsWith("glass.")) "${context.getString(R.string.glass_effect_title)} › $label" else label
+    return searchScopeTitleRes()?.let { "${context.getString(it)} › $label" } ?: label
 }
+
+private fun SettingsEntryTarget.searchScopeTitleRes(): Int? =
+    when {
+        id.startsWith("glass.") -> R.string.glass_effect_title
+        labelRes == R.string.github_app_installation -> R.string.common_brand_github
+        else -> paletteTitleRes
+    }

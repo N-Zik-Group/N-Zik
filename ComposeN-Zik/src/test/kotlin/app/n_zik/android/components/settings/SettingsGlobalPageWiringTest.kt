@@ -174,7 +174,7 @@ class SettingsGlobalPageWiringTest {
         composeRule.onNodeWithTag("settings_global_category_system").fetchSemanticsNode()
     }.isSuccess
 
-    @Test fun activeProfileShortcutPrecedesTheGroupsAndOpensProfiles() {
+    @Test fun activeProfileSharesTheFirstCardWithAboutAndUpdateAndOpensProfiles() {
         val face = mutableStateOf(ProfileFace("First Listener", FaceAvatar.Initials("First Listener")))
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
@@ -191,8 +191,12 @@ class SettingsGlobalPageWiringTest {
         }
         composeRule.onNodeWithText("First Listener").assertIsDisplayed()
         val profile = composeRule.onNodeWithTag("settings_global_profile_open")
-        val firstGroup = composeRule.onNodeWithTag("settings_global_group_1")
-        assertTrue(profile.fetchSemanticsNode().boundsInRoot.top < firstGroup.fetchSemanticsNode().boundsInRoot.top)
+        val about = composeRule.onNodeWithTag("settings_global_category_about")
+        val update = composeRule.onNodeWithTag("settings_global_update")
+        val firstCard = hasAnyAncestor(hasTestTag("settings_global_group_1"))
+        listOf(profile, about, update).forEach { it.assert(firstCard) }
+        assertTrue(profile.fetchSemanticsNode().boundsInRoot.top < about.fetchSemanticsNode().boundsInRoot.top)
+        assertTrue(about.fetchSemanticsNode().boundsInRoot.top < update.fetchSemanticsNode().boundsInRoot.top)
         composeRule.runOnIdle { face.value = ProfileFace("Second Listener", FaceAvatar.Initials("Second Listener")) }
         settle()
         pumpUntil("updated profile name", 30_000) {
@@ -279,7 +283,7 @@ class SettingsGlobalPageWiringTest {
     fun thePageListsAboutThenUpdateAndEveryThematicDestination() {
         showGlobalPage()
         OrganizedSettingsCategories.forEach { category ->
-            composeRule.onNodeWithTag("settings_global_category_${category.id}").assertExists()
+            composeRule.onNodeWithTag(if (category.id == "profiles") "settings_global_profile_open" else "settings_global_category_${category.id}").assertExists()
         }
         val about = composeRule.onNodeWithTag("settings_global_category_about").fetchSemanticsNode().positionInRoot.y
         val update = composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode().positionInRoot.y
@@ -293,7 +297,7 @@ class SettingsGlobalPageWiringTest {
         showGlobalPage()
         (1..7).forEach { group -> composeRule.onNodeWithTag("settings_global_group_$group").assertExists() }
         OrganizedSettingsCategories.forEach { category ->
-            composeRule.onNodeWithTag("settings_global_category_${category.id}")
+            composeRule.onNodeWithTag(if (category.id == "profiles") "settings_global_profile_open" else "settings_global_category_${category.id}")
                 .assert(hasAnyAncestor(hasTestTag("settings_global_group_${category.group}")))
         }
         composeRule.onNodeWithTag("settings_global_update")

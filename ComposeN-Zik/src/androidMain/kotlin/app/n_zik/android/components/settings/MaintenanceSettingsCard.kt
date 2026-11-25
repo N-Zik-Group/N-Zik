@@ -119,6 +119,7 @@ fun MaintenanceSettingsCard(
         icon = R.drawable.shield_checkmark,
         modifier = modifier,
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_group_maintenance_tools))
             MaintenanceHealthRow(
                 title = stringResource(R.string.maintenance_live_subsystems),
                 status = healthText,

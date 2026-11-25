@@ -28,6 +28,7 @@ object SearchHistoryStore {
     const val PAGE_SETTINGS_GENERAL = "settings_general"
     const val PAGE_SETTINGS_APPEARANCE = "settings_appearance"
     const val PAGE_SETTINGS_UI = "settings_ui"
+    const val PAGE_SETTINGS_GLASS = "settings_glass"
     const val PAGE_SETTINGS_DATA = "settings_data"
     const val PAGE_SETTINGS_NETWORK = "settings_network"
     const val PAGE_SETTINGS_OTHER = "settings_other"
@@ -36,7 +37,7 @@ object SearchHistoryStore {
 
     val pages = listOf(
         PAGE_HISTORY, PAGE_LOCAL, PAGE_ONLINE, PAGE_SETTINGS_GLOBAL,
-        PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_UI, PAGE_SETTINGS_APPEARANCE,
+        PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_UI, PAGE_SETTINGS_GLASS, PAGE_SETTINGS_APPEARANCE,
         PAGE_SETTINGS_AI, PAGE_SETTINGS_DATA, PAGE_SETTINGS_ACCOUNTS,
         PAGE_SETTINGS_NETWORK, PAGE_SETTINGS_OTHER,
         "settings_category_about",

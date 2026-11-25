@@ -62,6 +62,7 @@ import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.about.AboutSettingsContent
 import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
+import app.n_zik.android.components.settings.accounts.githubSettingsSearchFallback
 import app.n_zik.android.components.settings.ai.AIRecommendationSettingsContent
 import app.n_zik.android.components.settings.appearance.AppearanceSettingsContent
 import app.n_zik.android.components.settings.data.DataSettingsContent
@@ -74,7 +75,6 @@ import app.n_zik.android.components.settings.general.GeneralSettingsContent
 import app.n_zik.android.components.settings.network.NetworkSettingsContent
 import app.n_zik.android.components.settings.other.OtherSettingsContent
 import app.n_zik.android.components.settings.privacy.PermissionUsageSettingsCard
-import app.n_zik.android.components.settings.privacy.PrivacyRewindCard
 import app.n_zik.android.components.settings.privacy.PrivacyScreenCaptureCard
 import app.n_zik.android.components.settings.ui.UiSettingsContent
 import app.n_zik.android.components.tab.Search
@@ -155,15 +155,8 @@ fun SettingsCategoryPage(
     val matches = searchSettingsCardResults(context, search.inputValue).filter { it.categoryId() == categoryId }
     val entryMatches = searchSettingsEntries(context, search.inputValue)
         .filter { it.parentCard().categoryId() == categoryId }
-    val sourceTabs = remember(categoryId) {
-        val preferred = when (categoryId) {
-            "player" -> listOf(2, 0)
-            "privacy" -> listOf(9, 4, 3)
-            "data" -> listOf(4, 7)
-            else -> cards.map { it.tab }.distinct()
-        }
-        preferred.filter { tab -> cards.any { it.tab == tab } }
-    }
+    val groupTitles = remember(cards) { cards.associate { it.titleRes to it.groupTitleRes } }
+    val sourceTabs = remember(cards) { cards.map { it.tab }.distinct() }
     val slots = remember(categoryId) { sourceTabs.associateWith { SettingsCardSlots() } }
     val rows = if (isSearching) emptyList() else sourceTabs.flatMap { tab ->
         val selected = cards.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes }.toSet()
@@ -179,6 +172,11 @@ fun SettingsCategoryPage(
     SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty())
     LaunchedEffect(target, parentTarget) {
         if (target.isBlank()) return@LaunchedEffect
+        if (categoryId == "privacy" && target in setOf(RewindMasterSettingsTarget, "card.9.rw_settings_master")) {
+            val rewindMaster = AllSettingsEntryTargets.first { it.id == RewindMasterSettingsTarget }
+            onSearchResultNavigate(rewindMaster.destinationRoute(context))
+            return@LaunchedEffect
+        }
         val storageRoute = target.split('|', limit = 3)
         val rawTarget = storageRoute.first()
         // Two layout frames include children and their initial conditional composition.
@@ -223,7 +221,7 @@ fun SettingsCategoryPage(
             title != SettingsSourceFooter && settingsCardTargetId(context, tab, title) == cardId
         }
         val item = when {
-            resetScopeForTarget(requestedTarget) != null || resetScopeForTarget(parentTarget) != null -> latestRows.size + 1
+            isSettingsResetDialogTarget(requestedTarget) || resetScopeForTarget(parentTarget) != null -> latestRows.size + 1
             row >= 0 -> row + 1
             else -> null
         }
@@ -235,6 +233,7 @@ fun SettingsCategoryPage(
             withFrameNanos { }
             withFrameNanos { }
         }
+        if (requestedTarget == SettingsResetChooserTarget || requestedTarget == SettingsResetAllTarget) return@LaunchedEffect
         val nested = entry?.nestedDestination
         if (storageEntry) {
             withTimeoutOrNull(1500) {
@@ -261,7 +260,17 @@ fun SettingsCategoryPage(
             }
             showMessage(unavailableMessage)
         }
-        val resolved = if (!unavailable) requestedTarget else parentTarget
+        val resolved = if (unavailable) {
+            val prerequisite = when {
+                entry?.paletteTitleRes != null -> "ui.theme.theme"
+                requestedTarget == "appearance.player_behavior_and_visuals.songs_number_to_show" ||
+                    requestedTarget == "appearance.player_behavior_and_visuals.showalbumcover" ->
+                    "appearance.player_behavior_and_visuals.show_next_songs_in_player"
+                requestedTarget.startsWith("embedded.rewind.") -> RewindMasterSettingsTarget
+                else -> githubSettingsSearchFallback(requestedTarget, registry.targets::containsKey)
+            }
+            prerequisite?.takeIf(registry.targets::containsKey) ?: cardId
+        } else requestedTarget
         withFrameNanos { }
         registry.targets[resolved]?.let {
             // A tall card is already positioned by the list. Bringing the full card into view
@@ -296,7 +305,6 @@ fun SettingsCategoryPage(
                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
                             normalizePreferences = target.isBlank(),
                             searchTarget = target,
-                            onSettingsNavigate = onSearchResultNavigate,
                         )
                     }
                 }
@@ -354,6 +362,7 @@ fun SettingsCategoryPage(
                     }
                     items(rows, key = { (tab, title) -> "$tab:$title" }, contentType = { "card" }) { (tab, title) ->
                         CompositionLocalProvider(
+                            LocalSettingsCardGroupTitle provides groupTitles[title],
                             LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
                         ) {
                             Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
@@ -374,7 +383,6 @@ fun SettingsCategoryPage(
                                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
                                             normalizePreferences = false,
                                             searchTarget = "",
-                                            onSettingsNavigate = onSearchResultNavigate,
                                         )
                                     }
                                 }
@@ -424,14 +432,13 @@ private fun SettingsSourceContent(
     decorate: @Composable (Int) -> Modifier,
     normalizePreferences: Boolean,
     searchTarget: String,
-    onSettingsNavigate: (String) -> Unit,
 ) {
     when (tab) {
         0 -> GeneralSettingsContent(search, selectedCards = selection, cardModifier = decorate)
         1 -> UiSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         2 -> AppearanceSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate, normalizePreferences = normalizePreferences)
         3 -> AIRecommendationSettingsContent(
-            search, navController, onSettingsNavigate, selectedCards = selection, cardModifier = decorate,
+            search, navController, selectedCards = selection, cardModifier = decorate,
         )
         4 -> DataSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         5 -> AccountsSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
@@ -443,7 +450,6 @@ private fun SettingsSourceContent(
         9 -> {
             if (R.string.privacy_screen_protection in selection) SettingsCardSlot(R.string.privacy_screen_protection, modifier = { decorate(R.string.privacy_screen_protection) }) { PrivacyScreenCaptureCard() }
             if (R.string.permissions_usage_journal in selection) SettingsCardSlot(R.string.permissions_usage_journal, modifier = { decorate(R.string.permissions_usage_journal) }) { PermissionUsageSettingsCard() }
-            if (R.string.rewind_settings_enabled in selection) SettingsCardSlot(R.string.rewind_settings_enabled, modifier = { decorate(R.string.rewind_settings_enabled) }) { PrivacyRewindCard() }
         }
     }
 }

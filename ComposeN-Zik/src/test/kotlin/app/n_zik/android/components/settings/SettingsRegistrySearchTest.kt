@@ -18,6 +18,7 @@ import app.n_zik.android.components.settings.common.SettingsUpdateItem
 import app.n_zik.android.components.settings.common.SettingsGlassItem
 import app.n_zik.android.components.settings.common.SettingsThemeStoreItem
 import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
+import app.n_zik.android.components.settings.common.SETTINGS_THEME_STORE_ROUTE
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
 import app.n_zik.android.components.settings.common.searchSettingsCards
 import app.n_zik.android.components.settings.common.searchSettingsEntries
@@ -59,14 +60,14 @@ class SettingsRegistrySearchTest {
     }
 
     @Test
-    fun theGlobalPageListsAboutThenUpdateAndThematicDestinations() {
+    fun theGlobalPageListsProfileAboutUpdateAndThematicDestinations() {
         assertEquals(20, SettingsPageItems.size)
-        assertEquals("about", SettingsPageItems.first().categoryId)
-        assertTrue(SettingsPageItems[1] === SettingsUpdateItem)
+        assertEquals(listOf("profiles", "about"), SettingsPageItems.take(2).map { it.categoryId })
+        assertTrue(SettingsPageItems[2] === SettingsUpdateItem)
         assertEquals(
             listOf("playback", "audio", "behavior", "interface", "player", "privacy", "data", "downloads", "network",
-                "youtube", "profiles", "services", "ai", "rewind", "maintenance", "system"),
-            SettingsPageItems.drop(2).filter { it != SettingsGlassItem && it != SettingsThemeStoreItem }.map { it.categoryId },
+                "youtube", "services", "ai", "rewind", "maintenance", "system"),
+            SettingsPageItems.drop(3).filter { it != SettingsGlassItem && it != SettingsThemeStoreItem }.map { it.categoryId },
         )
         assertEquals(NavRoutes.updater.name, SettingsUpdateItem.route)
         assertEquals(null, SettingsUpdateItem.tab)
@@ -121,10 +122,10 @@ class SettingsRegistrySearchTest {
     }
 
     @Test
-    fun thematicGroupsAreCompleteAndKeepAboutAndUpdateTogether() {
+    fun thematicGroupsAreCompleteAndKeepProfileAboutAndUpdateTogether() {
         assertEquals((1..7).toList(), SettingsPageGroups.map { it.group })
         assertEquals(SETTINGS_GROUP_ABOUT_UPDATE, SettingsUpdateItem.group)
-        assertEquals(listOf(R.string.about_title, R.string.common_action_update), SettingsPageItems.filter { it.group == 1 }.map { it.labelRes })
+        assertEquals(listOf(R.string.profile_title, R.string.about_title, R.string.common_action_update), SettingsPageItems.filter { it.group == 1 }.map { it.labelRes })
         assertTrue(SettingsPageGroups.all { group -> SettingsPageItems.any { it.group == group.group } })
         assertEquals(R.string.settings_global_update_description, SettingsUpdateItem.descriptionRes)
     }
@@ -138,19 +139,50 @@ class SettingsRegistrySearchTest {
         val resets = cards.filter { it.titleRes == R.string.settings_reset }
         assertEquals((0..7).toSet(), resets.map { it.tab }.toSet())
         assertTrue(resets.all { it.categoryId() == "system" })
+        val systemCards = cardsForCategory("system")
+        assertEquals(resets, systemCards.takeLast(resets.size))
+        assertEquals(R.string.settings_section_service_lifetime_title, systemCards.dropLast(resets.size).last().titleRes)
         assertTrue(cardsForCategory("profiles").all { it.titleRes == R.string.profile_face })
         assertTrue(cardsForCategory("player").any { it.tab == 0 })
         assertTrue(cardsForCategory("player").any { it.tab == 2 })
+    }
+
+    @Test fun theCardSearchFindsNamedSettingsGroups() {
+        val indicators = context.getString(R.string.settings_interface_group_indicators)
+        val queuePreview = context.getString(R.string.settings_group_queue_preview)
+        assertTrue(searchSettingsCards(context, indicators).any { it.titleRes == R.string.settings_interface_title })
+        assertTrue(searchSettingsCards(context, queuePreview).any { it.titleRes == R.string.settings_section_player_action_bar_title })
+        val restoreDefaults = context.getString(R.string.settings_group_restore_defaults)
+        assertTrue(searchSettingsCards(context, restoreDefaults).all { it.titleRes == R.string.settings_reset })
+        assertTrue(searchSettingsCards(context, restoreDefaults).any { it.titleRes == R.string.settings_reset })
+    }
+
+    @Test fun cardSearchIgnoresAccentsInLocalizedKeywords() {
+        val french = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.FRENCH) },
+        )
+        val label = french.getString(R.string.settings_section_service_lifetime_title)
+        val query = java.text.Normalizer.normalize(label, java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{M}+"), "")
+        assertTrue(label != query)
+        assertTrue(searchSettingsCards(french, query).any { it.titleRes == R.string.settings_section_service_lifetime_title })
     }
 
     @Test fun privacyContainsHistoryControlsAndCaptureProtection() {
         val cards = cardsForCategory("privacy")
         assertTrue(cards.any { it.tab == 4 && it.titleRes == R.string.library_history_title })
         assertTrue(cards.none { it.tab == 3 && it.titleRes == R.string.settings_data_title })
-        assertTrue(cardsForCategory("ai").any { it.tab == 3 && it.titleRes == R.string.settings_data_title })
+        assertTrue(cardsForCategory("ai").any { it.tab == 3 && it.titleRes == R.string.settings_section_quick_picks_refresh_title })
         assertTrue(cards.any { it.titleRes == R.string.permissions_usage_journal })
         assertTrue(cards.any { it.titleRes == R.string.privacy_screen_protection })
-        assertTrue(cards.any { it.titleRes == R.string.rewind_settings_enabled })
+        assertTrue(cardsForCategory("rewind").any { it.titleRes == R.string.rewind_settings_title })
+    }
+
+    @Test
+    fun themeStoreIsDiscoverableByItsVisibleTitle() {
+        val title = context.getString(R.string.theme_store_title)
+        assertEquals(SETTINGS_THEME_STORE_ROUTE, searchSettingsPageItems(context, title)
+            .single { it == SettingsThemeStoreItem }.route)
     }
 
     @Test

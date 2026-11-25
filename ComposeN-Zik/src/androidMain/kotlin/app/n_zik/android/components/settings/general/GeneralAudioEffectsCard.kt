@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.general
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -79,6 +81,16 @@ fun GeneralAudioEffectsCard(
         icon = R.drawable.sound_effect,
         visible = visible,
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_group_focus_and_silence))
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_focus"),
+                title = stringResource(R.string.settings_audio_focus),
+                text = stringResource(R.string.settings_audio_focus_info),
+                isChecked = audioFocusEnabled,
+                onCheckedChange = { audioFocusEnabled = it },
+                icon = R.drawable.focus_audio
+            )
+
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.skip_silence"),
                 title = stringResource(R.string.settings_audio_skip_silence_label),
@@ -116,6 +128,8 @@ fun GeneralAudioEffectsCard(
 
                 }
             }
+
+            SettingsCardSectionHeading(R.string.settings_group_audio_levels)
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.loudness_normalization"),
@@ -213,6 +227,16 @@ fun GeneralAudioEffectsCard(
                 }
             }
 
+            SettingsCardSectionHeading(R.string.settings_group_sound_effects)
+
+            OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.audio_effects.equalizer"),
+                title = stringResource(R.string.settings_audio_equalizer_label),
+                text = stringResource(R.string.settings_audio_equalizer_description),
+                onClick = launchEqualizer,
+                icon = R.drawable.equalizer
+            )
+
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_bass_boost"),
                 title = stringResource(R.string.settings_audio_bass_boost),
@@ -290,23 +314,6 @@ fun GeneralAudioEffectsCard(
                     onDismiss = { showAudioReverbDialog = false }
                 )
             }
-
-            OtherSwitchSettingEntry(
-                modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_focus"),
-                title = stringResource(R.string.settings_audio_focus),
-                text = stringResource(R.string.settings_audio_focus_info),
-                isChecked = audioFocusEnabled,
-                onCheckedChange = { audioFocusEnabled = it },
-                icon = R.drawable.focus_audio
-            )
-
-            OtherSettingsEntry(
-                modifier = Modifier.settingsSearchTarget("general.audio_effects.equalizer"),
-                title = stringResource(R.string.settings_audio_equalizer_label),
-                text = stringResource(R.string.settings_audio_equalizer_description),
-                onClick = launchEqualizer,
-                icon = R.drawable.equalizer
-            )
         }
     )
 }

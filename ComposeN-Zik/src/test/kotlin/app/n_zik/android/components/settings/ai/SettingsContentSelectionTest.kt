@@ -52,7 +52,7 @@ class SettingsContentSelectionTest {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 val search = Search(initialVisible = true)
                 Column {
-                    AIRecommendationSettingsContent(search, mockk(relaxed = true), {}, selected,
+                    AIRecommendationSettingsContent(search, mockk(relaxed = true), selected,
                         cardModifier = { title ->
                             rendered += "ai:$title"
                             Modifier.testTag("ai:$title")

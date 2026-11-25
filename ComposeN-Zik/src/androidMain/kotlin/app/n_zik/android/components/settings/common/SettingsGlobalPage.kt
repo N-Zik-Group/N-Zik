@@ -52,8 +52,7 @@ import app.n_zik.android.components.glass.glassFloatingActionContent
 import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.navigation.header.LocalHeaderProfileFace
 import app.n_zik.android.components.navigation.header.rememberHeaderProfileFace
-import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
-import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
+import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.utils.lastUpdateCheckKey
@@ -110,8 +109,10 @@ fun SettingsGlobalPage(
     }
     val entryResults = remember(context, configuration, query) { searchSettingsEntries(context, query) }
     val categoryResults = remember(context, configuration, query) {
-        if (query.isBlank()) emptyList() else OrganizedSettingsCategories.filter {
-            context.getString(it.labelRes).contains(query.trim(), true)
+        val needle = normalizedSettingsText(query)
+        if (needle.isEmpty()) emptyList() else OrganizedSettingsCategories.filter {
+            normalizedSettingsText(context.getString(it.labelRes)).contains(needle) ||
+                normalizedSettingsText(context.getString(it.descriptionRes)).contains(needle)
         }
     }
     val noResults = query.isNotBlank() && itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()
@@ -195,7 +196,6 @@ fun SettingsGlobalPage(
                 // Keep group state composed while releasing its height after the focus fade.
                 item(key = "groups", contentType = "groups") {
                     Column(modifier = Modifier.settingsSearchContentVisibility(contentAlpha)) {
-                        SettingsProfileShortcut(onItemSelected)
                         SettingsPageGroups.forEach { group ->
                             SettingsResultCard(
                                 testTag = "settings_global_group_${group.group}",
@@ -203,7 +203,11 @@ fun SettingsGlobalPage(
                                     SettingsPageItems
                                         .filter { it.group == group.group }
                                         .forEach { item ->
-                                            GlobalPageItemRow(item = item, onItemSelected = onItemSelected)
+                                            if (item.categoryId == "profiles") {
+                                                SettingsProfileShortcut(item, onItemSelected)
+                                            } else {
+                                                GlobalPageItemRow(item = item, onItemSelected = onItemSelected)
+                                            }
                                         }
                                 }
                             )
@@ -261,42 +265,40 @@ fun SettingsGlobalPage(
 }
 
 @Composable
-private fun SettingsProfileShortcut(onItemSelected: (SettingsPageItem) -> Unit) {
+private fun SettingsProfileShortcut(
+    profiles: SettingsPageItem,
+    onItemSelected: (SettingsPageItem) -> Unit,
+) {
     val face = LocalHeaderProfileFace.current ?: rememberHeaderProfileFace()
-    val profiles = SettingsPageItems.first { it.categoryId == "profiles" }
-    SettingsResultCard(testTag = "settings_global_profile", contentPadding = 0.dp) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(uiRoundnessShape())
-                .clickable(role = Role.Button) { onItemSelected(profiles) }
-                .testTag("settings_global_profile_open")
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ProfileAvatarFrame(48.dp, GlassArea.Images, Modifier.clearAndSetSemantics {}) {
-                ProfileFaceAvatar(avatar = face.avatar, faceName = face.name)
-            }
-            Column(Modifier.weight(1f)) {
-                BasicText(
-                    text = face.name,
-                    style = typography().s.semiBold.copy(color = colorPalette().text),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                BasicText(
-                    text = stringResource(profiles.labelRes),
-                    style = typography().xs.secondary,
-                )
-            }
-            Icon(
-                painter = painterResource(R.drawable.chevron_forward),
-                contentDescription = null,
-                tint = colorPalette().textSecondary,
-                modifier = Modifier.size(16.dp),
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(uiRoundnessShape())
+            .clickable(role = Role.Button) { onItemSelected(profiles) }
+            .testTag("settings_global_profile_open")
+            .padding(start = 10.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        ProfileCardAvatar(face, GlassArea.Images, Modifier.clearAndSetSemantics {})
+        Column(Modifier.weight(1f).padding(end = 2.dp)) {
+            BasicText(
+                text = face.name,
+                style = typography().s.semiBold.copy(color = colorPalette().text),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            BasicText(
+                text = stringResource(profiles.labelRes),
+                style = typography().xs.secondary,
             )
         }
+        Icon(
+            painter = painterResource(R.drawable.chevron_forward),
+            contentDescription = null,
+            tint = colorPalette().textSecondary,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 

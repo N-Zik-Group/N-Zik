@@ -19,13 +19,17 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 /** Master switch on the dedicated page; disabling it does not disable its preview. */
 @Composable
-internal fun UiGlassCard() {
+internal fun UiGlassCard(showGroupHeading: Boolean = false) {
     val store = rememberGlassStore()
     var enabled by rememberGlassEnabled(store)
     var showPerformanceWarning by rememberSaveable(store.profileId) { mutableStateOf(false) }
     val label = stringResource(R.string.glass_effect_title)
     val enabledLabel = stringResource(R.string.glass_effect_enabled_title)
-    SettingsSectionCard(title = label, icon = R.drawable.droplet, content = {
+    SettingsSectionCard(
+        title = label,
+        icon = R.drawable.droplet,
+        groupTitleRes = R.string.settings_group_glass_activation.takeIf { showGroupHeading },
+        content = {
         OtherSwitchSettingEntry(
             title = enabledLabel,
             modifier = Modifier.testTag("settings.glass.master").settingsSearchTarget("glass.master"),

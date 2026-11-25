@@ -1,19 +1,22 @@
 package app.n_zik.android.components.settings.common
 
-import app.n_zik.android.R
 import app.n_zik.android.BuildConfig
+import app.n_zik.android.R
+import app.n_zik.android.components.settings.accounts.GITHUB_SETTINGS_APP_INSTALLATION_TARGET
+import app.n_zik.android.components.settings.accounts.GITHUB_SETTINGS_SIGN_IN_TARGET
+import app.n_zik.android.components.settings.accounts.GITHUB_SETTINGS_SIGN_OUT_TARGET
 
 /** Exact destinations for settings cards shared with other screens. */
-val EmbeddedSettingsEntryTargets = listOf(
+val EmbeddedSettingsEntryTargets = listOfNotNull(
     SettingsEntryTarget("embedded.youtube.use_account_for_searches", 5, R.string.settings_youtube_music_title, R.string.settings_youtube_authenticated_search_label, listOf(R.string.settings_youtube_authenticated_search_description, R.string.settings_youtube_connection_required_description)),
     SettingsEntryTarget("embedded.network.download_quality_format", 6, R.string.settings_download_quality, R.string.downloads_quality_format),
     SettingsEntryTarget("embedded.network.update_downloads", 6, R.string.settings_download_quality, R.string.downloads_action_refresh_quality, listOf(R.string.downloads_refresh_quality_description)),
-    SettingsEntryTarget("embedded.profile.face_photo_remove", 5, R.string.profile_face, R.string.profile_photo_remove),
     SettingsEntryTarget("embedded.profile.module_open", 5, R.string.profile_face, R.string.modules_open, keywordRes = listOf(R.string.profile_open_desc)),
     SettingsEntryTarget("embedded.profile.face_name_source", 5, R.string.profile_face, R.string.profile_name_source),
-    SettingsEntryTarget("embedded.profile.face_avatar_source", 5, R.string.profile_face, R.string.profile_avatar_source),
     SettingsEntryTarget("embedded.profile.face_profile_name", 5, R.string.profile_face, R.string.profile_local_name),
+    SettingsEntryTarget("embedded.profile.face_avatar_source", 5, R.string.profile_face, R.string.profile_avatar_source),
     SettingsEntryTarget("embedded.profile.face_photo", 5, R.string.profile_face, R.string.profile_photo, keywordRes = listOf(R.string.profile_photo_set, R.string.profile_photo_not_set)),
+    SettingsEntryTarget("embedded.profile.face_photo_remove", 5, R.string.profile_face, R.string.profile_photo_remove),
     SettingsEntryTarget("embedded.lastfm.lastfm_enable_scrobbling", 5, R.string.settings_lastfm_title, R.string.lastfm_enable_scrobbling, keywordRes = listOf(R.string.settings_lastfm_scrobbling_description)),
     SettingsEntryTarget("embedded.lastfm.account_login", 5, R.string.settings_lastfm_title, R.string.account_action_login, keywordRes = listOf(R.string.account_action_logout, R.string.lastfm_connected, R.string.settings_lastfm_scrobbling_description)),
     SettingsEntryTarget("embedded.lastfm.lastfm_now_playing", 5, R.string.settings_lastfm_title, R.string.lastfm_now_playing, keywordRes = listOf(R.string.lastfm_now_playing_description)),
@@ -21,6 +24,9 @@ val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.lastfm.lastfm_min_track_duration", 5, R.string.settings_lastfm_title, R.string.lastfm_min_track_duration, keywordRes = listOf(R.string.lastfm_min_track_duration_description)),
     SettingsEntryTarget("embedded.lastfm.lastfm_scrobble_threshold", 5, R.string.settings_lastfm_title, R.string.lastfm_scrobble_threshold, keywordRes = listOf(R.string.lastfm_scrobble_threshold_description)),
     SettingsEntryTarget("embedded.lastfm.lastfm_max_scrobble_delay", 5, R.string.settings_lastfm_title, R.string.lastfm_max_scrobble_delay, keywordRes = listOf(R.string.lastfm_max_scrobble_delay_description)),
+    SettingsEntryTarget(GITHUB_SETTINGS_SIGN_IN_TARGET, 5, R.string.common_brand_github, R.string.github_account_login, keywordRes = listOf(R.string.github_account_description, R.string.github_account_offline)),
+    SettingsEntryTarget(GITHUB_SETTINGS_SIGN_OUT_TARGET, 5, R.string.common_brand_github, R.string.github_account_logout),
+    SettingsEntryTarget(GITHUB_SETTINGS_APP_INSTALLATION_TARGET, 5, R.string.common_brand_github, R.string.github_app_installation, keywordRes = listOf(R.string.github_app_installation_description)),
     SettingsEntryTarget("embedded.listen_together.module_open", 5, R.string.listen_together_title, R.string.modules_open, keywordRes = listOf(R.string.listen_together_open_description)),
     SettingsEntryTarget("embedded.listen_together.listen_together_server_url", 5, R.string.listen_together_title, R.string.listen_together_server_url),
     SettingsEntryTarget("embedded.listen_together.listen_together_username", 5, R.string.listen_together_title, R.string.listen_together_username, keywordRes = listOf(R.string.listen_together_not_set)),
@@ -28,20 +34,21 @@ val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.listen_together.listen_together_auto_approval_suggestions", 5, R.string.listen_together_title, R.string.listen_together_auto_approval_suggestions, keywordRes = listOf(R.string.listen_together_auto_approval_suggestions_description)),
     SettingsEntryTarget("embedded.listen_together.listen_together_sync_volume", 5, R.string.listen_together_title, R.string.listen_together_sync_volume, keywordRes = listOf(R.string.listen_together_sync_volume_description)),
     SettingsEntryTarget("embedded.listen_together.listen_together_history", 5, R.string.listen_together_title, R.string.listen_together_history, keywordRes = listOf(R.string.listen_together_history_description)),
-    SettingsEntryTarget("embedded.listen_together.listen_together_view_logs", 5, R.string.listen_together_title, R.string.listen_together_view_logs, keywordRes = listOf(R.string.listen_together_view_logs_description)),
     SettingsEntryTarget("embedded.listen_together.listen_together_blocked_users", 5, R.string.listen_together_title, R.string.listen_together_blocked_users, keywordRes = listOf(R.string.listen_together_blocked_users_count, R.string.listen_together_no_blocked_users)),
+    SettingsEntryTarget("embedded.listen_together.listen_together_view_logs", 5, R.string.listen_together_title, R.string.listen_together_view_logs, keywordRes = listOf(R.string.listen_together_view_logs_description)),
     SettingsEntryTarget("embedded.rewind.module_open", 3, R.string.rewind_settings_title, R.string.modules_open, keywordRes = listOf(R.string.rewind_open_desc)),
-    SettingsEntryTarget("embedded.rewind.rw_settings_yearly", 3, R.string.rewind_settings_title, R.string.rewind_settings_yearly, keywordRes = listOf(R.string.rewind_settings_yearly_description)),
     SettingsEntryTarget("embedded.rewind.rw_settings_monthly", 3, R.string.rewind_settings_title, R.string.rewind_settings_monthly, keywordRes = listOf(R.string.rewind_settings_monthly_description)),
+    SettingsEntryTarget("embedded.rewind.rw_settings_yearly", 3, R.string.rewind_settings_title, R.string.rewind_settings_yearly, keywordRes = listOf(R.string.rewind_settings_yearly_description)),
     SettingsEntryTarget("embedded.rewind.rw_settings_global", 3, R.string.rewind_settings_title, R.string.rewind_settings_global, keywordRes = listOf(R.string.rewind_settings_global_description)),
     SettingsEntryTarget("embedded.rewind.rw_bgmusic_settings", 3, R.string.rewind_settings_title, R.string.rewind_background_music_title, keywordRes = listOf(R.string.rewind_background_music_toggle_accessibility)),
-    SettingsEntryTarget("embedded.rewind.rw_settings_yearly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_yearly_notification, keywordRes = listOf(R.string.rewind_settings_yearly_notification_description)),
-    SettingsEntryTarget("embedded.rewind.rw_settings_monthly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_monthly_notification, keywordRes = listOf(R.string.rewind_settings_monthly_notification_description)),
-    SettingsEntryTarget("embedded.rewind.rw_settings_playlists_monthly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_playlists_monthly_notification, keywordRes = listOf(R.string.rewind_settings_playlists_monthly_notification_description)),
-    SettingsEntryTarget("embedded.rewind.rw_settings_playlists_yearly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_playlists_yearly_notification, keywordRes = listOf(R.string.rewind_settings_playlists_yearly_notification_description)),
     SettingsEntryTarget("embedded.rewind.rw_settings_playlists_monthly", 3, R.string.rewind_settings_title, R.string.rewind_settings_playlists_monthly, keywordRes = listOf(R.string.rewind_settings_playlists_monthly_description)),
     SettingsEntryTarget("embedded.rewind.rw_settings_playlists_yearly", 3, R.string.rewind_settings_title, R.string.rewind_settings_playlists_yearly, keywordRes = listOf(R.string.rewind_settings_playlists_yearly_description)),
+    SettingsEntryTarget("embedded.rewind.rw_settings_monthly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_monthly_notification, keywordRes = listOf(R.string.rewind_settings_monthly_notification_description)),
+    SettingsEntryTarget("embedded.rewind.rw_settings_playlists_monthly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_playlists_monthly_notification, keywordRes = listOf(R.string.rewind_settings_playlists_monthly_notification_description)),
+    SettingsEntryTarget("embedded.rewind.rw_settings_yearly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_yearly_notification, keywordRes = listOf(R.string.rewind_settings_yearly_notification_description)),
+    SettingsEntryTarget("embedded.rewind.rw_settings_playlists_yearly_notification", 3, R.string.rewind_settings_title, R.string.rewind_settings_playlists_yearly_notification, keywordRes = listOf(R.string.rewind_settings_playlists_yearly_notification_description)),
     SettingsEntryTarget("embedded.maintenance.maintenance_open", 7, R.string.maintenance_title, R.string.maintenance_open, keywordRes = listOf(R.string.maintenance_open_desc)),
+    if (BuildConfig.DEBUG) SettingsEntryTarget("embedded.maintenance.debug_updater_layout_access", 7, R.string.maintenance_title, R.string.settings_debug_updater_preview_label, keywordRes = listOf(R.string.settings_debug_updater_preview_description)) else null,
     SettingsEntryTarget("embedded.maintenance.enable_log_debug", 7, R.string.maintenance_title, R.string.maintenance_debug_logging_title, keywordRes = listOf(R.string.settings_logging_error_file_description)),
     SettingsEntryTarget("embedded.maintenance.export_logs", 7, R.string.maintenance_title, R.string.logs_action_export, keywordRes = listOf(R.string.logs_export_debug_description)),
     SettingsEntryTarget("embedded.extensions.module_open", 7, R.string.modules_title, R.string.modules_open, keywordRes = listOf(R.string.modules_open_desc)),
@@ -65,6 +72,4 @@ val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.auto_backup.auto_backup_schedule_day_of_week", 4, R.string.storage_breakdown_title, R.string.backup_auto_schedule_day_of_week),
     SettingsEntryTarget("embedded.auto_backup.auto_backup_schedule_day_of_month", 4, R.string.storage_breakdown_title, R.string.backup_auto_schedule_day_of_month),
     SettingsEntryTarget("embedded.auto_backup.auto_backup_on_change", 4, R.string.storage_breakdown_title, R.string.backup_auto_on_change, keywordRes = listOf(R.string.backup_auto_on_change_description)),
-) + if (BuildConfig.DEBUG) listOf(
-    SettingsEntryTarget("embedded.maintenance.debug_updater_layout_access", 7, R.string.maintenance_title, R.string.settings_debug_updater_preview_label, keywordRes = listOf(R.string.settings_debug_updater_preview_description)),
-) else emptyList()
+)

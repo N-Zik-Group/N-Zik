@@ -27,9 +27,15 @@ import kotlin.math.roundToInt
 
 /** Shared by onboarding and settings; optical presets leave these interaction choices intact. */
 @Composable
-internal fun GlassInteractionSettingsCard(config: GlassSettings, store: GlassStore, target: String = "") {
+internal fun GlassInteractionSettingsCard(
+    config: GlassSettings,
+    store: GlassStore,
+    target: String = "",
+    showGroupHeading: Boolean = false,
+) {
     SettingsSectionCard(
         title = stringResource(R.string.glass_effect_group_interactions),
+        groupTitleRes = R.string.settings_group_glass_feedback.takeIf { showGroupHeading },
         icon = R.drawable.sparkles,
         content = {
             OtherSwitchSettingEntry(

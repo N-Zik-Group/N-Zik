@@ -15,18 +15,23 @@ internal data class GlassSearchOption(
 
 internal val GlassSearchParent = SettingsCardRegistryEntry(1, R.string.glass_effect_title, R.drawable.droplet, "glass")
 
+internal val GlassSectionGroupTitles = mapOf(
+    R.string.glass_effect_title to R.string.settings_group_glass_activation,
+    R.string.glass_effect_group_material to R.string.settings_group_glass_rendering,
+    R.string.glass_effect_group_color to R.string.settings_group_glass_tint,
+    R.string.glass_effect_group_edges to R.string.settings_group_glass_refraction,
+    R.string.glass_effect_group_readability to R.string.settings_group_glass_dimming,
+    R.string.glass_effect_group_interactions to R.string.settings_group_glass_feedback,
+)
+
 internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     fun option(name: String, label: Int, section: String, sectionTitle: Int,
         description: Int? = null, fallback: String? = null, choices: List<Int> = emptyList()) {
         add(GlassSearchOption(SettingsEntryTarget("glass.$name", 1, R.string.glass_effect_title, label,
-            listOfNotNull(R.string.glass_effect_title, sectionTitle, description) + choices), section, sectionTitle, fallback))
+            listOfNotNull(R.string.glass_effect_title, sectionTitle, GlassSectionGroupTitles[sectionTitle], description) +
+                choices), section, sectionTitle, fallback))
     }
     option("master", R.string.glass_effect_enabled_title, "master", R.string.glass_effect_title, R.string.glass_effect_enabled_description)
-    option("ripple.enabled", R.string.glass_effect_ripple_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_description)
-    option("ripple.intensity", R.string.glass_effect_ripple_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_intensity_description)
-    option("ripple.size", R.string.glass_effect_ripple_size, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_size_description)
-    option("jelly.enabled", R.string.glass_effect_jelly_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_description)
-    option("jelly.intensity", R.string.glass_effect_jelly_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_intensity_description)
     option("optimization", R.string.glass_effect_optimization_title, "material", R.string.glass_effect_group_material, R.string.glass_effect_optimization_description)
     option("quality", R.string.glass_effect_rendering_quality, "material", R.string.glass_effect_group_material,
         choices = listOf(R.string.glass_effect_quality_fastest, R.string.glass_effect_quality_balanced, R.string.glass_effect_quality_high))
@@ -40,17 +45,23 @@ internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     option("tintStrength", R.string.glass_effect_tint_strength, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")
     option("film", R.string.glass_effect_film, "colour", R.string.glass_effect_group_color)
     option("indicator", R.string.glass_effect_active_tab_indicator, "colour", R.string.glass_effect_group_color)
-    option("dialogDimming", R.string.glass_effect_dialog_dimming, "readability", R.string.glass_effect_group_readability)
-    option("menuDimming", R.string.glass_effect_menu_dimming, "readability", R.string.glass_effect_group_readability)
     option("rim", R.string.glass_effect_rim, "edges", R.string.glass_effect_group_edges)
     option("refractionDepth", R.string.glass_effect_refraction_depth, "edges", R.string.glass_effect_group_edges, fallback = "glass.quality")
     option("refractionAmount", R.string.glass_effect_refraction_amount, "edges", R.string.glass_effect_group_edges, fallback = "glass.quality")
     option("dispersion", R.string.glass_effect_dispersion, "edges", R.string.glass_effect_group_edges, fallback = "glass.quality")
     option("depth", R.string.glass_effect_depth_enabled, "edges", R.string.glass_effect_group_edges, fallback = "glass.quality")
+    option("dialogDimming", R.string.glass_effect_dialog_dimming, "readability", R.string.glass_effect_group_readability)
+    option("menuDimming", R.string.glass_effect_menu_dimming, "readability", R.string.glass_effect_group_readability)
+    option("ripple.enabled", R.string.glass_effect_ripple_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_description)
+    option("ripple.intensity", R.string.glass_effect_ripple_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_intensity_description)
+    option("ripple.size", R.string.glass_effect_ripple_size, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_size_description)
+    option("jelly.enabled", R.string.glass_effect_jelly_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_description)
+    option("jelly.intensity", R.string.glass_effect_jelly_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_intensity_description)
     GlassDestinationGroup.entries.forEach { group ->
         glassDestinationRows(group).forEach { row ->
             add(GlassSearchOption(SettingsEntryTarget(row.searchId, 1, R.string.glass_effect_title,
                 row.title, listOf(R.string.glass_effect_title, group.title, group.summary, row.description,
+                    R.string.settings_group_glass_surface_modes,
                     R.string.glass_effect_mode_disabled, R.string.glass_effect_mode_contour_only) +
                     if (row.area == GlassArea.Images) emptyList() else
                         listOf(R.string.glass_effect_mode_glass_only, R.string.glass_effect_mode_glass_and_contour)),

@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -62,6 +64,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
         icon = R.drawable.history,
         modifier = modifier.testTag("data.card.history"),
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_history_group_listening))
             // The burger History item only reaches this partial card: the "Ouvrir"
             // row (spec-customizable-burger-menu goal B) opens the full History screen.
             OtherSettingsEntry(
@@ -71,19 +74,6 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 icon = R.drawable.chevron_forward,
                 onClick = { navController.navigate(NavRoutes.history.name) }
             )
-            OtherSwitchSettingEntry(
-                modifier = Modifier.settingsSearchTarget("data.history.pause_search_history"),
-                title = stringResource(R.string.search_history_pause_label),
-                text = stringResource(R.string.search_history_pause_description),
-                isChecked = pauseSearchHistory,
-                onCheckedChange = {
-                    pauseSearchHistory = it
-                },
-                icon = R.drawable.pause
-            )
-            SearchHistoryPageSettings(Modifier.settingsSearchTarget("data.history.search_history_per_page"))
-
-            val queriesCount by rememberSearchHistoryCount()
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("data.history.player_pause_listen_history"),
@@ -119,24 +109,6 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 Database.eventTable.countAll()
             }.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
 
-            if (search.inputValue.isBlank() || stringResource(R.string.search_history_action_clear).contains(search.inputValue, true)) {
-                OtherSettingsEntry(
-                    modifier = Modifier.settingsSearchTarget("data.history.clear_search_history"),
-                    title = stringResource(R.string.search_history_action_clear),
-                    text = stringResource(R.string.history_clear_search_history_description),
-                    selectedValueText = if (queriesCount > 0) {
-                        pluralStringResource(R.plurals.history_delete_search_query_count, queriesCount, queriesCount)
-                    } else {
-                        stringResource(R.string.search_history_empty_message)
-                    },
-                    icon = R.drawable.trash,
-                    onClick = {
-                        SearchHistoryStore.clearAll(context.preferences)
-                        Toaster.done()
-                    }
-                )
-            }
-
             if (search.inputValue.isBlank() || stringResource(R.string.settings_history_action_clear_listening).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("data.history.clear_listen_history"),
@@ -167,6 +139,41 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                             WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                             Toaster.done()
                         }
+                    }
+                )
+            }
+
+            SettingsCardSectionDivider()
+            CardCategoryLabel(stringResource(R.string.search_saved_history_title))
+
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("data.history.pause_search_history"),
+                title = stringResource(R.string.search_history_pause_label),
+                text = stringResource(R.string.search_history_pause_description),
+                isChecked = pauseSearchHistory,
+                onCheckedChange = {
+                    pauseSearchHistory = it
+                },
+                icon = R.drawable.pause
+            )
+            SearchHistoryPageSettings(Modifier.settingsSearchTarget("data.history.search_history_per_page"))
+
+            val queriesCount by rememberSearchHistoryCount()
+
+            if (search.inputValue.isBlank() || stringResource(R.string.search_history_action_clear).contains(search.inputValue, true)) {
+                OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("data.history.clear_search_history"),
+                    title = stringResource(R.string.search_history_action_clear),
+                    text = stringResource(R.string.history_clear_search_history_description),
+                    selectedValueText = if (queriesCount > 0) {
+                        pluralStringResource(R.plurals.history_delete_search_query_count, queriesCount, queriesCount)
+                    } else {
+                        stringResource(R.string.search_history_empty_message)
+                    },
+                    icon = R.drawable.trash,
+                    onClick = {
+                        SearchHistoryStore.clearAll(context.preferences)
+                        Toaster.done()
                     }
                 )
             }

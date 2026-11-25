@@ -127,14 +127,16 @@ class SettingsCategoryPageTest {
             }
         }
         val targetTag = "settings.target.card.0.app_behavior"
+        val groupTitle = context.getString(R.string.settings_group_app_navigation_behavior)
         pumpUntil("category card composed") {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertExists() }.isSuccess
         }
+        composeRule.onNodeWithText(groupTitle).assertExists()
         composeRule.onNode(hasSetTextAction()).performClick()
         pumpUntil("focused category card hidden after fade") {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsNotDisplayed() }.isSuccess
         }
-        composeRule.onNode(hasSetTextAction()).performTextInput(context.getString(R.string.settings_app_behavior_title))
+        composeRule.onNode(hasSetTextAction()).performTextInput(groupTitle)
         settleSearch()
         val resultTag = "settings.category.card.0.${R.string.settings_app_behavior_title}"
         composeRule.onNodeWithTag("settings.category.list.behavior").performScrollToKey("result:0:${R.string.settings_app_behavior_title}")

@@ -37,6 +37,8 @@ import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.core.database.Database
@@ -78,6 +80,7 @@ fun GeneralPlaybackCard(
         icon = R.drawable.play_forward,
         visible = visible,
         content = {
+            CardCategoryLabel(stringResource(R.string.settings_group_automatic_playback))
             if (isAtLeastAndroid6) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("general.app_behavior.resume_playback"),
@@ -122,6 +125,77 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.alert_circle
             )
 
+            SettingsCardSectionHeading(R.string.settings_group_track_transitions)
+
+            OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
+                title = stringResource(R.string.settings_playback_pause_between_songs_label),
+                text = stringResource(R.string.player_pause_between_songs_description),
+                selectedValueText = secondsLabel(pauseBetweenSongs.name.toInt()),
+                onClick = { showPauseBetweenSongsDialog = true },
+                icon = R.drawable.pause
+            )
+
+            DialogPresence(visible = showPauseBetweenSongsDialog) {
+                ValueSelectorDialog(
+                    title = stringResource(R.string.settings_playback_pause_between_songs_description),
+                    selectedValue = pauseBetweenSongs,
+                    onValueSelected = { pauseBetweenSongs = it },
+                    valueText = {
+                        secondsLabel(it.name.toInt())
+                    },
+                    values = PauseBetweenSongs.values().toList(),
+                    onDismiss = { showPauseBetweenSongsDialog = false }
+                )
+            }
+
+            OtherSwitchSettingEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.crossfade"),
+                title = stringResource(R.string.settings_audio_crossfade_label),
+                text = stringResource(R.string.settings_audio_crossfade_description),
+                isChecked = crossfadeEnabled,
+                onCheckedChange = { crossfadeEnabled = it },
+                icon = R.drawable.shuffle
+            )
+
+            AnimatedVisibility(visible = crossfadeEnabled) {
+                Column(
+                    modifier = Modifier.padding(start = 25.dp)
+                ) {
+                    var showCrossfadeDurationDialog by remember { mutableStateOf(false) }
+                    OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.playback.crossfade_duration"),
+                        title = stringResource(R.string.settings_audio_crossfade_duration_label),
+                        text = stringResource(R.string.player_crossfade_duration_description),
+                        selectedValueText = secondsLabel(crossfadeDuration / 1000),
+                        onClick = { showCrossfadeDurationDialog = true },
+                        icon = R.drawable.time
+                    )
+
+                    DialogPresence(visible = showCrossfadeDurationDialog) {
+                        ValueSelectorDialog(
+                            title = stringResource(R.string.settings_audio_crossfade_duration_label),
+                            selectedValue = crossfadeDuration,
+                            onValueSelected = { crossfadeDuration = it },
+                            valueText = { secondsLabel(it / 1000) },
+                            values = listOf(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 15000, 20000),
+                            onDismiss = { showCrossfadeDurationDialog = false }
+                        )
+                    }
+
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("general.playback.crossfade_gapless"),
+                        title = stringResource(R.string.settings_audio_crossfade_album_gapless_label),
+                        text = stringResource(R.string.settings_audio_crossfade_album_gapless_description),
+                        isChecked = crossfadeGapless,
+                        onCheckedChange = { crossfadeGapless = it },
+                        icon = R.drawable.album
+                    )
+                }
+            }
+
+            SettingsCardSectionHeading(R.string.settings_group_track_navigation)
+
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.jump_previous"),
                 title = stringResource(R.string.settings_playback_previous_restart_threshold_label),
@@ -147,6 +221,8 @@ fun GeneralPlaybackCard(
                 }
             }
 
+            SettingsCardSectionHeading(R.string.settings_group_playback_exclusions)
+
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_songs_with_duration_limit"),
                 title = stringResource(R.string.settings_playback_duration_limit_label),
@@ -167,7 +243,6 @@ fun GeneralPlaybackCard(
                 )
             }
 
-            // Dislike exclusion settings
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_disliked_songs"),
                 title = stringResource(R.string.settings_playback_exclude_disliked_songs_label),
@@ -247,73 +322,6 @@ fun GeneralPlaybackCard(
                     values = DislikeMode.values().toList(),
                     onDismiss = { showDislikeAlbumsDialog = false }
                 )
-            }
-
-            OtherSettingsEntry(
-                modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
-                title = stringResource(R.string.settings_playback_pause_between_songs_label),
-                text = stringResource(R.string.player_pause_between_songs_description),
-                selectedValueText = secondsLabel(pauseBetweenSongs.name.toInt()),
-                onClick = { showPauseBetweenSongsDialog = true },
-                icon = R.drawable.pause
-            )
-
-            DialogPresence(visible = showPauseBetweenSongsDialog) {
-                ValueSelectorDialog(
-                    title = stringResource(R.string.settings_playback_pause_between_songs_description),
-                    selectedValue = pauseBetweenSongs,
-                    onValueSelected = { pauseBetweenSongs = it },
-                    valueText = {
-                        secondsLabel(it.name.toInt())
-                    },
-                    values = PauseBetweenSongs.values().toList(),
-                    onDismiss = { showPauseBetweenSongsDialog = false }
-                )
-            }
-
-            OtherSwitchSettingEntry(
-                modifier = Modifier.settingsSearchTarget("general.playback.crossfade"),
-                title = stringResource(R.string.settings_audio_crossfade_label),
-                text = stringResource(R.string.settings_audio_crossfade_description),
-                isChecked = crossfadeEnabled,
-                onCheckedChange = { crossfadeEnabled = it },
-                icon = R.drawable.shuffle
-            )
-
-            AnimatedVisibility(visible = crossfadeEnabled) {
-                Column(
-                    modifier = Modifier.padding(start = 25.dp)
-                ) {
-                    var showCrossfadeDurationDialog by remember { mutableStateOf(false) }
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("general.playback.crossfade_duration"),
-                        title = stringResource(R.string.settings_audio_crossfade_duration_label),
-                        text = stringResource(R.string.player_crossfade_duration_description),
-                        selectedValueText = secondsLabel(crossfadeDuration / 1000),
-                        onClick = { showCrossfadeDurationDialog = true },
-                        icon = R.drawable.time
-                    )
-
-                    DialogPresence(visible = showCrossfadeDurationDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.settings_audio_crossfade_duration_label),
-                            selectedValue = crossfadeDuration,
-                            onValueSelected = { crossfadeDuration = it },
-                            valueText = { secondsLabel(it / 1000) },
-                            values = listOf(1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 12000, 15000, 20000),
-                            onDismiss = { showCrossfadeDurationDialog = false }
-                        )
-                    }
-
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("general.playback.crossfade_gapless"),
-                        title = stringResource(R.string.settings_audio_crossfade_album_gapless_label),
-                        text = stringResource(R.string.settings_audio_crossfade_album_gapless_description),
-                        isChecked = crossfadeGapless,
-                        onCheckedChange = { crossfadeGapless = it },
-                        icon = R.drawable.album
-                    )
-                }
             }
         }
     )

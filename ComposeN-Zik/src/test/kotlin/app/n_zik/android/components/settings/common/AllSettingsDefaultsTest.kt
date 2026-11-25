@@ -121,12 +121,12 @@ class AllSettingsDefaultsTest {
         } finally { file.delete(); database.delete() }
     }
 
-    private fun renderReset() {
+    private fun renderReset(target: String = "") {
         compose.setContent {
             CompositionLocalProvider(
                 LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, CircleShape, CircleShape, CircleShape),
-            ) { SettingsResetCard((0..7).toList(), "", resetContent = {}) }
+            ) { SettingsResetCard((0..7).toList(), target, resetContent = {}) }
         }
     }
 
@@ -147,6 +147,16 @@ class AllSettingsDefaultsTest {
         compose.waitForIdle()
         assertEquals(before, context.preferences.all)
         assertEquals(secureBefore, secure.all)
+    }
+
+    @Test fun `search for reset all opens confirmation without applying defaults`() {
+        val query = context.getString(R.string.settings_reset_all)
+        val target = searchSettingsEntries(context, query).single { it.id == SettingsResetAllTarget }
+        assertEquals("system", target.parentCard().categoryId())
+        val before = context.preferences.all.toMap()
+        renderReset(target.id)
+        compose.onNodeWithTag("settings.reset.all.confirmation").assertExists()
+        assertEquals(before, context.preferences.all)
     }
 
     @Test fun `confirming all applies defaults and preserves saved credentials`() {

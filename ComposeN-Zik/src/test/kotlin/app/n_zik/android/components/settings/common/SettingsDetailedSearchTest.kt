@@ -31,12 +31,93 @@ class SettingsDetailedSearchTest {
         Configuration(context.resources.configuration).apply { setLocale(locale) },
     )
 
-    @Test fun quickPicksResetIsIndexedUnderRecommendationsInsteadOfHistory() {
+    @Test fun quickPicksResetKeepsItsStableLinkUnderRecommendationRefresh() {
         val target = AllSettingsEntryTargets.single { it.id == "ai.tab_data.reset_quick_picks" }
         assertEquals("ai", target.parentCard().categoryId())
+        assertEquals(R.string.settings_section_quick_picks_refresh_title, target.cardTitleRes)
+        val title = context.getString(target.cardTitleRes)
         val description = context.getString(R.string.recommendations_reset_content_description)
         assertTrue(target in searchSettingsEntries(context, description))
         assertTrue(target.cardTitleRes in visibleCardTitleRes(context, target.tab, description))
+        assertTrue(target.cardTitleRes in visibleCardTitleRes(context, target.tab, title))
+        assertEquals("card.3.tab_data", Uri.parse(target.destinationRoute(context)).getQueryParameter("parent"))
+    }
+
+    @Test fun entriesFollowTheirVisibleCardsAndTiedMatchesFollowRowOrder() {
+        val english = localized(Locale.ENGLISH)
+        val results = searchSettingsEntries(english, english.getString(R.string.modules_open))
+        val openers = results.filter {
+            it.id in setOf("embedded.profile.module_open", "general.picture_in_picture.open", "embedded.rewind.module_open")
+        }
+        assertEquals(
+            listOf("embedded.profile.module_open", "general.picture_in_picture.open", "embedded.rewind.module_open"),
+            openers.map { it.id },
+        )
+        assertTrue(openers[0].destinationRoute(english).startsWith("settingsCategory/profiles?"))
+        assertTrue(openers[1].destinationRoute(english).startsWith("settingsCategory/player?"))
+        assertTrue(openers[2].destinationRoute(english).startsWith("settingsCategory/rewind?"))
+
+        val paletteMatches = searchSettingsEntries(english, english.getString(R.string.settings_theme_background_1_color_label))
+            .filter { it.id == "ui.theme.color_background_1" || it.id == "ui.theme.color_background_1.dark" }
+        assertEquals(listOf("ui.theme.color_background_1", "ui.theme.color_background_1.dark"), paletteMatches.map { it.id })
+        val paletteOrder = AllSettingsEntryTargets
+            .filter { it.cardTitleRes == R.string.common_color_source_theme }
+            .map { it.id }
+        assertTrue(paletteOrder.indexOf("ui.theme.color_accent") < paletteOrder.indexOf("ui.theme.title_reset_customized_light_colors"))
+        assertTrue(paletteOrder.indexOf("ui.theme.title_reset_customized_light_colors") < paletteOrder.indexOf("ui.theme.color_background_1.dark"))
+        assertEquals("ui.theme.title_reset_customized_dark_colors", paletteOrder.last())
+    }
+
+    @Test fun paletteResultsShowTheirLocalizedScopeAndMatchInEitherOrder() {
+        val lightId = "ui.theme.color_background_1"
+        val darkId = "ui.theme.color_background_1.dark"
+        val paletteIds = setOf(lightId, darkId)
+        listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
+            val localized = localized(locale)
+            val label = localized.getString(R.string.settings_theme_background_1_color_label)
+            val light = localized.getString(R.string.settings_theme_light_mode_label)
+            val dark = localized.getString(R.string.settings_theme_dark_mode_label)
+            fun matches(query: String) = searchSettingsEntries(localized, query).filter { it.id in paletteIds }
+
+            assertEquals(listOf(lightId, darkId), matches(label).map { it.id })
+            listOf(light to lightId, dark to darkId).forEach { (scope, id) ->
+                val target = matches("$scope $label").single()
+                assertEquals(id, target.id)
+                assertEquals(listOf(target), matches("$label $scope"))
+                assertEquals("$scope › $label", target.searchResultTitle(localized))
+                assertEquals(listOf(target), matches(target.searchResultTitle(localized)))
+                val expectedPath = listOf(
+                    localized.getString(R.string.settings_title),
+                    localized.getString(R.string.settings_category_interface),
+                    localized.getString(R.string.common_color_source_theme),
+                    scope,
+                ).joinToString(" › ")
+                assertEquals(expectedPath, target.locationDescription(localized))
+                assertEquals(id, Uri.parse(target.destinationRoute(localized)).getQueryParameter("target"))
+            }
+        }
+    }
+
+    @Test fun movedQueuePreviewRowsKeepTheirStableIdsAndFocusWithinTheActionBar() {
+        val ids = listOf(
+            "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+            "appearance.player_behavior_and_visuals.songs_number_to_show",
+            "appearance.player_behavior_and_visuals.showalbumcover",
+        )
+        val actionBar = cardsForCategory("player").single { it.titleRes == R.string.settings_section_player_action_bar_title }
+        val order = AllSettingsEntryTargets.filter { it.tab == 2 && it.cardTitleRes == actionBar.titleRes }.map { it.id }
+        val first = order.indexOf(ids.first())
+        assertEquals(ids + "appearance.player_action_bar.tapqueue", order.drop(first).take(4))
+        ids.forEach { id ->
+            val entry = AllSettingsEntryTargets.single { it.id == id }
+            val results = searchSettingsEntries(context, context.getString(entry.labelRes))
+            assertTrue(entry in results)
+            assertTrue(entry in results.filter { it.parentCard().categoryId() == "player" })
+            val route = Uri.parse(entry.destinationRoute(context))
+            assertEquals("settingsCategory/player", route.path)
+            assertEquals(id, route.getQueryParameter("target"))
+            assertEquals(settingsCardTargetId(context, actionBar.tab, actionBar.titleRes), route.getQueryParameter("parent"))
+        }
     }
 
     @Test fun openPipIsSearchableGloballyAndOnItsPage() {
@@ -71,6 +152,10 @@ class SettingsDetailedSearchTest {
         assertTrue(SettingsEntryTargets.isNotEmpty())
         assertTrue(EmbeddedSettingsEntryTargets.isNotEmpty())
         val entries = AllSettingsEntryTargets
+        val registered = SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets +
+            PrivacySettingsEntryTargets + app.n_zik.android.components.settings.ui.GlassSearchOptions.map { it.target } +
+            SettingsNestedEntryTargets
+        assertEquals(registered.toSet(), entries.toSet())
         assertEquals(entries.size, entries.map { it.id }.toSet().size)
         entries.forEach { entry ->
             assertTrue(entry.id.isNotBlank())
