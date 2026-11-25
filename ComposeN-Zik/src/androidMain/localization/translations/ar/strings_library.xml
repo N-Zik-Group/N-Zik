@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">%s غير معجوب</string>
     <string name="library_dislikes_removed">تمت إزالة %s من عدم الإعجاب</string>
     <string name="library_favorites_action_add">إضافة إلى المفضلة</string>
+    <string name="library_collection_favorites_action_manage">إدارة المفضلة</string>
     <string name="library_favorites_added">تمت الإضافة إلى المفضلة</string>
     <string name="library_favorites_removed">تمت إزالته من المفضلة</string>
     <string name="library_collection_favorites_action_remove">إزالة من المفضلة</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">إضافة إلى قائمة التشغيل</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
+    <string name="playlist_add_destination_unavailable">لم تعد قائمة التشغيل هذه متاحة لإضافة أغاني الجهاز. اختر قائمة تشغيل أخرى.</string>
     <string name="playlist_action_create">قائمة تشغيل جديدة</string>
     <string name="playlist_action_delete_selected">حذف قوائم التشغيل</string>
     <string name="playlist_action_export">تصدير قائمة التشغيل</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">أفضل ما لديّ</string>
     <string name="recommendations_playlists_title">قوائم تشغيل قد تعجبك</string>
     <string name="recommendations_reset_complete">تم حذف الإختيارات السريعة</string>
-    <string name="recommendations_reset_description">حذف أحداث التشغيل المستخدمة لإنشاء توصيات محلية للعبارات السريعة.</string>
+    <string name="recommendations_reset_content_description">إعادة تحميل الإشعارات السريعة مع توصيات جديدة. تم حفظ تاريخ الاستماع الخاص بك.</string>
     <string name="recommendations_section_other_youtube_title">أقسام أخرى</string>
     <string name="recommendations_section_visibility_description">تعطيل إذا كنت لا تريد أن ترى</string>
     <string name="recommendations_show_section_label">إظهار</string>
