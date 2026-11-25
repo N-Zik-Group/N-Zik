@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.export
 
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,20 +23,18 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import app.n_zik.android.core.utils.TimeDateUtils
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.utils.csv.SongCSV
 import java.io.OutputStream
+import timber.log.Timber
 
-/**
- * Create a custom CSV file with replicable information of provided songs (shareable
- * between users).
- *
- * Columns: `PlaylistBrowseId | PlaylistName | MediaId | Title | Artists | Duration | ThumbnailUrl`
- */
+/** Exports songs and their playlist metadata as a shareable CSV. */
 class ExportSongsToCSVDialog private constructor(
     valueState: MutableState<TextFieldValue>,
     activeState: MutableState<Boolean>,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
-    private val prepare: () -> Boolean
+    private val prepare: () -> Boolean,
+    private val hasExportPayload: () -> Boolean,
 ): ExportToFileDialog(valueState, activeState, launcher), MenuIcon, Descriptive {
 
     companion object {
@@ -60,14 +59,26 @@ class ExportSongsToCSVDialog private constructor(
         operator fun invoke(
             playlistName: String,
             songs: () -> List<Song>,
-            playlistBrowseId: String = ""
-        ) = rememberExport(playlistName, playlistBrowseId, { { songs() } })
+            playlistBrowseId: String = "",
+            selectionActive: () -> Boolean = { false },
+        ) = rememberExport(
+            playlistName,
+            playlistBrowseId,
+            capture = {
+                if (selectionActive()) {
+                    val selected = songs().toList()
+                    if (selected.isEmpty()) null else ({ selected })
+                } else ({ songs() })
+            },
+            selectionActive = selectionActive,
+        )
 
         @Composable
         internal fun deferred(
             playlistName: String,
             capture: () -> (suspend () -> List<Song>?)?,
-        ) = rememberExport(playlistName, "", capture, captureOnOpen = true)
+            selectionActive: () -> Boolean = { false },
+        ) = rememberExport(playlistName, "", capture, captureOnOpen = true, selectionActive = selectionActive)
 
         @Composable
         private fun rememberExport(
@@ -75,17 +86,29 @@ class ExportSongsToCSVDialog private constructor(
             playlistBrowseId: String,
             capture: () -> (suspend () -> List<Song>?)?,
             captureOnOpen: Boolean = false,
+            selectionActive: () -> Boolean,
         ): ExportSongsToCSVDialog {
             val latestCapture = rememberUpdatedState(capture)
             val pending = remember { mutableStateOf<(suspend () -> List<Song>?)?>(null) }
+            val selectionAtOpen = rememberSaveable { mutableStateOf(false) }
             val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
                 val captured = pending.value
+                val selectedExport = selectionAtOpen.value
                 pending.value = null
+                selectionAtOpen.value = false
                 if (uri == null) return@rememberLauncherForActivityResult
-                // Android may deliver the document result to a recreated screen.
-                val load = captured ?: latestCapture.value() ?: return@rememberLauncherForActivityResult
+                val load = resolveExportPayload(selectedExport, captured) { latestCapture.value() }
+                if (load == null && !selectedExport) return@rememberLauncherForActivityResult
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    val songsToWrite = load()?.map { SongCSV(it, playlistBrowseId, playlistName) } ?: return@launch
+                    val songs = load?.invoke()
+                    if (songs == null) {
+                        if (selectedExport) {
+                            Toaster.e(R.string.export_selection_lost)
+                            removeEmptyExport(uri)
+                        }
+                        return@launch
+                    }
+                    val songsToWrite = songs.map { SongCSV(it, playlistBrowseId, playlistName) }
                     appContext().contentResolver.openOutputStream(uri)?.use { output ->
                         writeToCsvFile(output, songsToWrite)
                     }
@@ -95,11 +118,24 @@ class ExportSongsToCSVDialog private constructor(
                 remember(playlistName) { mutableStateOf(TextFieldValue(playlistName)) },
                 rememberSaveable { mutableStateOf(false) },
                 launcher,
-            ) {
-                if (!captureOnOpen) true else {
-                    pending.value = latestCapture.value()
-                    pending.value != null
+                prepare = {
+                    selectionAtOpen.value = selectionActive()
+                    val captureNow = captureOnOpen || selectionAtOpen.value
+                    pending.value = if (captureNow) latestCapture.value() else null
+                    !captureNow || pending.value != null
+                },
+                hasExportPayload = { !selectionAtOpen.value || pending.value != null },
+            )
+        }
+
+        private fun removeEmptyExport(uri: Uri) {
+            val resolver = appContext().contentResolver
+            try {
+                if (resolver.openFileDescriptor(uri, "r")?.use { it.statSize } == 0L) {
+                    DocumentsContract.deleteDocument(resolver, uri)
                 }
+            } catch (error: Exception) {
+                Timber.tag("ExportSongsToCSVDialog").w(error, "Could not remove the empty export document")
             }
         }
     }
@@ -118,8 +154,21 @@ class ExportSongsToCSVDialog private constructor(
         if (prepare()) showDialog()
     }
 
+    override fun onSet(newValue: String) {
+        if (!hasExportPayload()) {
+            Toaster.e(R.string.export_selection_lost)
+            hideDialog()
+            return
+        }
+        super.onSet(newValue)
+    }
+
     override fun defaultFileName(): String =
         "${BuildConfig.APP_NAME}_playlist_${TimeDateUtils.localizedDateNoDelimiter()}_${TimeDateUtils.timeNoDelimiter()}"
 }
+
+/** A pending selection export can only use the payload captured before opening the picker. */
+internal fun <T : Any> resolveExportPayload(selected: Boolean, captured: T?, browsing: () -> T?): T? =
+    captured ?: if (selected) null else browsing()
 
 
