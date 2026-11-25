@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">İndirildi</string>
     <string name="theme_store_following">Takip ediliyor</string>
     <string name="theme_store_creator">Yaratıcı</string>
+    <string name="theme_store_group_publishing_access">Publishing access</string>
+    <string name="theme_store_group_theme_publication">Theme publication</string>
     <string name="theme_store_creator_profile">Yaratıcı profili</string>
     <string name="theme_store_creator_identity">Kamuoyunu bilgilendirme</string>
     <string name="theme_store_creator_images">Profil resimleri</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Profil GitHub’a gönderiliyor…</string>
     <string name="theme_store_creator_authorizing">Yayınlamak için GitHub’a bağlanılıyor…</string>
     <string name="theme_store_creator_submissions">Gönderim takibi</string>
+    <string name="theme_store_group_review_status">Review status</string>
     <string name="theme_store_submissions_in_progress">Devam ediyor</string>
     <string name="theme_store_submissions_history">Geçmiş</string>
     <string name="theme_store_creator_my_themes">Yayımladığım temalar</string>
@@ -466,6 +469,7 @@
     <string name="theme_store_local_use_current">Mevcut görünümü kullan</string>
     <string name="theme_store_local_use_current_description">Bu temanın ayarlarını mevcut N-Zik görünümünüzle değiştirin.</string>
     <string name="theme_store_local_themes">Yerel temalar</string>
+    <string name="theme_store_group_local_editing">On-device editing</string>
     <string name="theme_store_create_local">Yerel bir tema oluşturun</string>
     <string name="theme_store_create_local_description">Mevcut görünümü ve önizlemeleri İndirilenler klasörüne kaydedin.</string>
     <string name="theme_backup_choose_zip">Tema ZIP dosyasını seçin</string>
