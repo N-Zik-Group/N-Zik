@@ -27,6 +27,7 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.glassScopeForRoute
+import app.n_zik.android.core.navigation.LocalPageNavigationEntry
 
 /** Each animated destination retains its own inset policy until it leaves composition. */
 internal fun NavGraphBuilder.chromeComposable(
@@ -36,7 +37,10 @@ internal fun NavGraphBuilder.chromeComposable(
     content: @Composable AnimatedContentScope.(NavBackStackEntry) -> Unit,
 ) {
     composable(route = route, arguments = arguments, deepLinks = deepLinks) { entry ->
-        DestinationChrome(entry.destination.route) { content(entry) }
+        // The owner's locals can already point at the incoming entry during the exit animation.
+        CompositionLocalProvider(LocalPageNavigationEntry provides entry) {
+            DestinationChrome(entry.destination.route) { content(entry) }
+        }
     }
 }
 

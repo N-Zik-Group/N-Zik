@@ -36,17 +36,20 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.savedstate.compose.LocalSavedStateRegistryOwner
 import androidx.test.core.app.ApplicationProvider
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.navigation.chromeComposable
+import app.n_zik.android.core.navigation.currentPageNavigationEntry
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
@@ -164,7 +167,11 @@ class PersistentHorizontalNavigationTest {
             val dock = remember(state) {
                 FloatingDockEnvironment(state, null, true, mutableStateOf(0f), false)
             }
-            CompositionLocalProvider(LocalFloatingDock provides dock, LocalDensity provides Density(1f)) {
+            CompositionLocalProvider(
+                LocalFloatingDock provides dock,
+                LocalDensity provides Density(1f),
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+            ) {
                 Box(Modifier.size(300.dp, 600.dp)) {
                     NavHost(controller, "home",
                         enterTransition = { slideInHorizontally(tween(400)) { it } },
@@ -173,11 +180,14 @@ class PersistentHorizontalNavigationTest {
                         popExitTransition = { slideOutHorizontally(tween(400)) { it } },
                     ) {
                         for ((route, count) in listOf("home" to 5, "search" to 3, "settings" to 1)) {
-                            composable(route) { page ->
-                                RegisterDockNavigation(page.id, count, true) {
-                                    if (count >= 2) Box(Modifier.fillMaxWidth().height(61.dp).testTag("tabs-$route").clickable { tabClicks++ })
+                            chromeComposable(route) { page ->
+                                // The outgoing page can observe the incoming owner while still on screen.
+                                CompositionLocalProvider(LocalSavedStateRegistryOwner provides (entry ?: page)) {
+                                    RegisterDockNavigation(currentPageNavigationEntry()?.id, count, true) {
+                                        if (count >= 2) Box(Modifier.fillMaxWidth().height(61.dp).testTag("tabs-$route").clickable { tabClicks++ })
+                                    }
+                                    Box(Modifier.fillMaxSize().testTag("page-$route"))
                                 }
-                                Box(Modifier.fillMaxSize().testTag("page-$route"))
                             }
                         }
                     }
