@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Import se nezdařil</string>
     <string name="export_no_songs">Žádné skladby nebyly exportovány</string>
     <string name="export_cached_songs_generic_error">Export selhal</string>
+    <string name="export_selection_lost">Export byl zrušen, protože výběr nemohl být obnoven. Vyberte položky znovu a zkuste to znovu.</string>
     <string name="backup_startup_preparing_library">Příprava tvé knihovny…</string>
     <string name="backup_startup_recovery_failed">Nepodařilo se dokončit obnovení vaší knihovny.</string>
     <string name="storage_breakdown_themes">Motivy</string>
