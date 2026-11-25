@@ -29,6 +29,14 @@
         <item quantity="one">%1$d kappale</item>
         <item quantity="other">%1$d kappaletta</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Lisää %d valittu kappale jonossa suosikkeihin?</item>
+        <item quantity="other">Lisää %d valitut kappaleet jonossa suosikkeihin?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Poistetaanko %d valittu kappale jonossa suosikeista?</item>
+        <item quantity="other">Poistetaanko %d valittua kappaletta jonossa suosikeista?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Lisää %1$d kappale tästä soittolistasta suosikkeihin?</item>
         <item quantity="other">Lisää %1$d kappaletta tästä soittolistasta suosikkeihin?</item>

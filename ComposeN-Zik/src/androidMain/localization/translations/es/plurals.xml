@@ -29,6 +29,14 @@
         <item quantity="one">%1$d canción</item>
         <item quantity="other">%1$d canciones</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">¿Añadir canción seleccionada %d en la cola a favoritos?</item>
+        <item quantity="other">¿Añadir %d canciones seleccionadas en la cola a favoritos?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">¿Eliminar %d canción seleccionada de la cola de favoritos?</item>
+        <item quantity="other">¿Eliminar %d canciones seleccionadas en la cola de favoritos?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">¿Añadir pista %1$d de esta lista a favoritos?</item>
         <item quantity="other">¿Añadir pistas %1$d de esta lista a favoritos?</item>

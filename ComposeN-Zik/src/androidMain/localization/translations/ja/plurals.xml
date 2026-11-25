@@ -22,6 +22,12 @@
     <plurals name="library_song_count">
         <item quantity="other">%1$d 曲</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="other">お気に入りに %d 選択した曲を追加しますか？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="other">キューから %d 選択した曲をお気に入りから削除しますか？</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="other">このプレイリストからお気に入りに %1$d トラックを追加しますか？</item>
     </plurals>

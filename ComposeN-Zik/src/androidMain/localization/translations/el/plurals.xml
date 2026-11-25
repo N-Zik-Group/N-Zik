@@ -29,6 +29,14 @@
         <item quantity="one">%1$d τραγούδι</item>
         <item quantity="other">%1$d τραγούδια</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Προσθήκη %d επιλεγμένου τραγουδιού στην ουρά στα αγαπημένα?</item>
+        <item quantity="other">Προσθήκη %d επιλεγμένων τραγουδιών στην ουρά στα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Αφαίρεση %d επιλεγμένου τραγουδιού στην ουρά από τα αγαπημένα?</item>
+        <item quantity="other">Αφαίρεση %d επιλεγμένων τραγουδιών στην ουρά από τα αγαπημένα?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Προσθήκη %1$d κομματιού από αυτήν τη λίστα στα αγαπημένα?</item>
         <item quantity="other">Προσθήκη %1$d κομματιών από αυτήν τη λίστα στα αγαπημένα?</item>

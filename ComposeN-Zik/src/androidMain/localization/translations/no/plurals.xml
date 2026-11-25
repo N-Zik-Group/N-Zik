@@ -29,6 +29,14 @@
         <item quantity="one">%1$d sang</item>
         <item quantity="other">%1$d sanger</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Legge til %d valgt sang i køen til favoritter?</item>
+        <item quantity="other">Legge til %d valgte sanger i køen til favoritter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Fjerne %d valgt sang i køen fra favoritter?</item>
+        <item quantity="other">Fjern %d valgte sanger i køen fra favoritter?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Legge til %1$d spor fra denne spillelisten til favoritter?</item>
         <item quantity="other">Legge til %1$d spor fra denne spillelisten til favoritter?</item>
