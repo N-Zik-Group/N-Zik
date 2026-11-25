@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">ダウンロード済み</string>
     <string name="theme_store_following">フォロー中</string>
     <string name="theme_store_creator">作成者</string>
+    <string name="theme_store_group_publishing_access">アクセスの公開</string>
+    <string name="theme_store_group_theme_publication">テーマの公開</string>
     <string name="theme_store_creator_profile">作成者のプロフィール</string>
     <string name="theme_store_creator_identity">公開情報</string>
     <string name="theme_store_creator_images">プロフィール画像</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Submitting profile to GitHub…</string>
     <string name="theme_store_creator_authorizing">GitHub に接続して公開する…</string>
     <string name="theme_store_creator_submissions">提出物追跡</string>
+    <string name="theme_store_group_review_status">レビューの状態</string>
     <string name="theme_store_submissions_in_progress">進行中</string>
     <string name="theme_store_submissions_history">沿革</string>
     <string name="theme_store_creator_my_themes">公開されたテーマ</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">現在の外観を使用</string>
     <string name="theme_store_local_use_current_description">このテーマの設定を現在の N-Zik の外観に置き換えます。</string>
     <string name="theme_store_local_themes">ローカルテーマ</string>
+    <string name="theme_store_group_local_editing">オンデバイス編集</string>
     <string name="theme_store_create_local">ローカルのテーマを作成</string>
     <string name="theme_store_create_local_description">現在の外観とプレビューをダウンロードに保存します。</string>
     <string name="theme_backup_choose_zip">テーマのZIPを選択</string>
