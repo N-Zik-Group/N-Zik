@@ -1,4 +1,6 @@
 Added:
+- feat(search): add a clear-all button to saved search lists
+  - Use the shared accent button below the last query in native and Glass themes. Clear only the search history for that screen.
 - feat(settings): show the active profile on the settings home
   - Reuse the header avatar and display name in a shortcut that opens Profiles.
 - feat(player): configure top and bottom action placement
@@ -38,6 +40,10 @@ Added:
   - Preserve completed matches and import order when interrupted. Report unmatched and unprocessed tracks separately and exclude removed playlist members from retry.
 
 Improved:
+- refactor(settings): organize settings cards and search
+  - Group and name related controls, keep Profile, About and Update in one card, and apply group headings to the Creator tab.
+  - Index visible group labels, Theme Store and reset actions. Distinguish light and dark palette options and reveal the prerequisites of unavailable settings.
+  - Add search and scoped history to the Glass page. Keep About reachable through global search.
 - refactor(artwork): test the active palette facade
   - Move legacy palette assertions to SharedArtworkColors and the active player and widget entry points. Remove the unused palette functions and isImageCached.
   - Replace the audited wildcard imports and stale TODO comments. Keep the packaged YouTube HTML and Play Store and Android TV assets.
@@ -136,6 +142,10 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(rewind): preserve playlist choices when toggling Rewind
+  - Place the switch on the Rewind page. Hide Rewind playlists throughout the app, Android Auto and Bridge while the switch is off.
+- fix(profiles): align avatars and profile actions
+  - Share the settings-row avatar size and align the profile actions while retaining separate 48 dp touch targets.
 - fix(settings): restore access to disabled Rewind and isolate Quick Picks reset
   - Link disabled Rewind to its existing Privacy switch. Reset only the profile's Quick Picks recommendations and preserve listening history.
 - fix(search): filter all Artist and Album content sections
