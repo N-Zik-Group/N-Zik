@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Sua playlist de retrocesso %1$s está pronta</string>
     <string name="rewind_settings_enabled">Ativar retrocesso</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind está desativado. Abra as configurações de privacidade para reativá-lo.</string>
     <string name="rewind_settings_global">Rebobinar tudo</string>
     <string name="rewind_settings_global_description">Mostrar recapitulação do tempo no lar do vento.</string>
     <string name="rewind_settings_monthly">Revento mensal</string>
