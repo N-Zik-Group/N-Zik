@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Import fehlgeschlagen</string>
     <string name="export_no_songs">Keine Titel exportiert</string>
     <string name="export_cached_songs_generic_error">Export fehlgeschlagen</string>
+    <string name="export_selection_lost">Export abgebrochen, da die Auswahl nicht wiederhergestellt werden konnte. Wählen Sie die Elemente erneut und versuchen Sie es erneut.</string>
     <string name="backup_startup_preparing_library">Bibliothek wird vorbereitet…</string>
     <string name="backup_startup_recovery_failed">Wiederherstellung Ihrer Bibliothek konnte nicht abgeschlossen werden.</string>
     <string name="storage_breakdown_themes">Themes</string>
