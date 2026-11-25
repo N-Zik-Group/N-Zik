@@ -31,6 +31,7 @@ import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
 import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
+import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDialogs
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.pauseSearchHistoryKey
@@ -158,6 +159,7 @@ internal fun AppearanceSettingsContent(
     }
     }
     PlayerActionBarSettingsDialog.Render()
+    appearanceToolbarSettingsDialogs.forEach { it.Render() }
     MiniPlayerButtonsSettingsDialog.Render()
     cardsContainer {
         if (selectedCards == null || R.string.player_presets_and_layout in selectedCards) {

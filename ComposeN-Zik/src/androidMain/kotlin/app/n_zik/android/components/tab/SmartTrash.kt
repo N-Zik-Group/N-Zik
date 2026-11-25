@@ -35,7 +35,8 @@ class SmartTrash private constructor(
     private val binder: PlayerServiceModern.Binder?,
     private val builtInPlaylist: () -> BuiltInPlaylist,
     private val getSongs: () -> List<Song>,
-    private val itemsOnDisplay: () -> List<Song>
+    private val isSelectionActive: () -> Boolean,
+    private val selectionModeAtOpen: MutableState<Boolean>,
 ): MenuIcon, Descriptive, ConfirmDialog {
 
     companion object {
@@ -43,13 +44,14 @@ class SmartTrash private constructor(
         operator fun invoke(
             builtInPlaylist: () -> BuiltInPlaylist,
             getSongs: () -> List<Song>,
-            itemsOnDisplay: () -> List<Song>
+            isSelectionActive: () -> Boolean,
         ) = SmartTrash(
             remember { mutableStateOf(false) },
             LocalPlayerServiceBinder.current,
             builtInPlaylist,
             getSongs,
-            itemsOnDisplay
+            isSelectionActive,
+            remember { mutableStateOf(false) },
         )
     }
 
@@ -59,7 +61,7 @@ class SmartTrash private constructor(
         @Composable
         get() = stringResource( R.string.library_cleanup_title )
 
-    private val hasSelection get() = getSongs().size != itemsOnDisplay().size
+    private val hasSelection get() = selectionModeAtOpen.value
     private val songCount get() = getSongs().size
 
     override val confirmationTitle: String
@@ -125,13 +127,22 @@ class SmartTrash private constructor(
 
     override var isActive: Boolean by activeState
 
-    override fun onShortClick() = super.onShortClick()
+    override fun onShortClick() {
+        val selectionActive = isSelectionActive()
+        if (selectionActive && getSongs().isEmpty()) return
+        selectionModeAtOpen.value = selectionActive
+        super.onShortClick()
+    }
 
     override fun onConfirm() {
         val songs = getSongs()
+        if (hasSelection != isSelectionActive() || (hasSelection && songs.isEmpty())) {
+            onDismiss()
+            return
+        }
 
         when( builtInPlaylist() ) {
-            BuiltInPlaylist.All -> deleteFromDatabase( songs )
+            BuiltInPlaylist.All -> deleteFromDatabase(songs, cleanLibrary = !hasSelection)
             BuiltInPlaylist.Favorites -> removeFromFavorites( songs )
             BuiltInPlaylist.Offline -> clearCache( songs )
             BuiltInPlaylist.Downloaded -> deleteDownloads( songs )
@@ -143,7 +154,7 @@ class SmartTrash private constructor(
         Toaster.done()
     }
 
-    private fun deleteFromDatabase( songs: List<Song> ) {
+    private fun deleteFromDatabase(songs: List<Song>, cleanLibrary: Boolean) {
         Database.asyncTransaction {
             songs.forEach { song ->
                 binder?.cache?.removeResource( song.id )
@@ -155,7 +166,8 @@ class SmartTrash private constructor(
                 songTable.delete( song )
                 WaveformExtractor.deleteWaveform(appContext(), song.id)
             }
-            
+            if (!cleanLibrary) return@asyncTransaction
+
             // Clean up orphaned artists, albums and empty playlists
             val deletedArtists = artistTable.deleteOrphaned()
             val deletedAlbums = albumTable.deleteOrphaned()

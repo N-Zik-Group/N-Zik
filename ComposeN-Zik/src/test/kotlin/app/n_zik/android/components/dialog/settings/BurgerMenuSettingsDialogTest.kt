@@ -1,5 +1,6 @@
 package app.n_zik.android.components.dialog.settings
 
+import app.n_zik.android.components.settings.ui.ToolbarAction
 import app.n_zik.android.utils.DataStoreUtils
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -176,8 +177,22 @@ class BurgerMenuSettingsDialogTest {
     }
 
     @Test
-    fun `resolveVisibleIds treats a missing toggle as visible`() {
-        assertEquals(defaultOrder, BurgerMenuSettingsDialog.resolveVisibleIds(defaultOrder, emptyMap()))
+    fun `shortcuts are optional by default and forced entries retain their order`() {
+        val order = listOf("notifications", "profiles", "search", "settings")
+        val toggles = mapOf("notifications" to true, "search" to false)
+        val header = listOf(ToolbarAction.NOTIFICATIONS, ToolbarAction.SEARCH, ToolbarAction.PROFILE_MENU)
+        val defaultVisible = defaultOrder.filter(DataStoreUtils::burgerMenuDefaultVisibility)
+        assertEquals(defaultVisible, BurgerMenuSettingsDialog.resolveVisibleIds(defaultOrder, emptyMap()))
+        assertEquals(listOf("notifications", "profiles", "settings"),
+            BurgerMenuSettingsDialog.resolveVisibleIds(order, toggles, BurgerMenuSettingsDialog.forcedShortcuts(header)))
+        assertEquals(order, BurgerMenuSettingsDialog.resolveVisibleIds(
+            order, toggles, BurgerMenuSettingsDialog.forcedShortcuts(header.filterNot { it == ToolbarAction.SEARCH }),
+        ))
+        assertEquals(order, BurgerMenuSettingsDialog.resolveVisibleIds(
+            order, emptyMap(), BurgerMenuSettingsDialog.forcedShortcuts(listOf(ToolbarAction.PROFILE_MENU)),
+        ))
+        assertEquals(listOf("notifications", "profiles", "settings"),
+            BurgerMenuSettingsDialog.resolveVisibleIds(order, toggles, BurgerMenuSettingsDialog.forcedShortcuts(header)))
     }
 
     @Test

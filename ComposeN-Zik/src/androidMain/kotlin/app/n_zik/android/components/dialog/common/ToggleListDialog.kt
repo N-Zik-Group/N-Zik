@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -76,6 +77,7 @@ fun ToggleListDialog(
     maxChecked: Int = Int.MAX_VALUE,
     pinnedItemCount: Int = 0,
     lockedCheckedIds: Set<String> = emptySet(),
+    unavailableIds: Set<String> = emptySet(),
     checkedStatesOverride: List<Boolean>? = null,
     onCheckedChange: ((Int, Boolean) -> Unit)? = null,
     onRowAction: ((Int) -> Unit)? = null,
@@ -86,6 +88,8 @@ fun ToggleListDialog(
     onConfirm: (() -> Unit)? = null,
     frameTitle: String? = null,
     onDismiss: (() -> Unit)? = null,
+    tabContentAlpha: (() -> Float)? = null,
+    tabContent: (@Composable () -> Unit)? = null,
     bodyHeader: @Composable ColumnScope.() -> Unit = {}
 ) {
     val nestedTarget = LocalSettingsTargets.current?.nestedTarget
@@ -97,10 +101,11 @@ fun ToggleListDialog(
     }
     val effectiveCheckedStates = checkedStatesOverride?.let { override ->
         items.mapIndexed { index, item ->
-            if (item.id in lockedCheckedIds) true else override[index]
+            item.id !in unavailableIds && (item.id in lockedCheckedIds || override[index])
         }
     } ?: items.map { item ->
-        if (item.id in lockedCheckedIds) true
+        if (item.id in unavailableIds) false
+        else if (item.id in lockedCheckedIds) true
         else key(item.id) {
             val isChecked by rememberPreference(item.preferenceKey, item.defaultValue)
             isChecked
@@ -110,56 +115,30 @@ fun ToggleListDialog(
     val hasButtons =
         onReset != null || onCancel != null || onConfirm != null || extraFooterButton != null
 
-    val body: @Composable ColumnScope.() -> Unit = {
-        Column(
-            modifier = modifier
+    val list: @Composable (Modifier) -> Unit = { listModifier ->
+        LazyColumn(
+            modifier = listModifier
                 .fillMaxWidth()
-                .heightIn(max = contentHeight)
                 .clipToBounds()
-                .testTag("toggleListDialogContent")
+                .testTag("toggleListDialogList"),
+            contentPadding = PaddingValues(vertical = 12.dp),
+            state = lazyListState
         ) {
-            bodyHeader()
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f, fill = false)
-                    .clipToBounds()
-                    .testTag("toggleListDialogList"),
-                contentPadding = PaddingValues(vertical = 12.dp),
-                state = lazyListState
-            ) {
-                itemsIndexed(
-                    items = items,
-                    key = { _, item -> item.id }
-                ) { index, item ->
-                    val isLocked = item.id in lockedCheckedIds
-                    val isChecked = effectiveCheckedStates[index]
-                    val isLastChecked = enforceMinOneChecked && isChecked && checkedCount <= 1
-                    val isMaxReached = !isChecked && checkedCount >= maxChecked
-                    val enabled = !isLocked && !isLastChecked && !isMaxReached
+            itemsIndexed(
+                items = items,
+                key = { _, item -> item.id }
+            ) { index, item ->
+                val isLocked = item.id in lockedCheckedIds
+                val isAvailable = item.id !in unavailableIds
+                val isChecked = effectiveCheckedStates[index]
+                val isLastChecked = enforceMinOneChecked && isChecked && checkedCount <= 1
+                val isMaxReached = !isChecked && checkedCount >= maxChecked
+                val enabled = isAvailable && !isLocked && !isLastChecked && !isMaxReached
 
-                    val isPinned = index < pinnedItemCount
+                val isPinned = index < pinnedItemCount
 
-                    if (reorderableState != null && !isPinned) {
-                        ReorderableItem(reorderableState, key = item.id) { isDragging ->
-                            ToggleRow(
-                                modifier = Modifier.testTag("toggleListDialogItem.$index")
-                                    .then(if (item.id == nestedItemId && nestedTarget != null) Modifier.settingsSearchTarget(nestedTarget.id) else Modifier),
-                                icon = item.iconRes,
-                                label = item.label,
-                                isChecked = isChecked,
-                                preferenceKey = item.preferenceKey,
-                                showReorder = true,
-                                isDragging = isDragging,
-                                dragModifier = Modifier.draggableHandle(),
-                                description = item.description,
-                                enabled = enabled,
-                                useLocalState = checkedStatesOverride != null,
-                                onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
-                                onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
-                            )
-                        }
-                    } else {
+                if (reorderableState != null && !isPinned && isAvailable) {
+                    ReorderableItem(reorderableState, key = item.id) { isDragging ->
                         ToggleRow(
                             modifier = Modifier.testTag("toggleListDialogItem.$index")
                                 .then(if (item.id == nestedItemId && nestedTarget != null) Modifier.settingsSearchTarget(nestedTarget.id) else Modifier),
@@ -167,9 +146,9 @@ fun ToggleListDialog(
                             label = item.label,
                             isChecked = isChecked,
                             preferenceKey = item.preferenceKey,
-                            showReorder = false,
-                            isDragging = false,
-                            dragModifier = Modifier,
+                            showReorder = true,
+                            isDragging = isDragging,
+                            dragModifier = Modifier.draggableHandle(),
                             description = item.description,
                             enabled = enabled,
                             useLocalState = checkedStatesOverride != null,
@@ -177,11 +156,48 @@ fun ToggleListDialog(
                             onRowAction = if (onRowAction != null && !isLocked && isRowActionEnabled(index)) { { onRowAction(index) } } else null
                         )
                     }
+                } else {
+                    ToggleRow(
+                        modifier = Modifier.testTag("toggleListDialogItem.$index")
+                            .then(if (item.id == nestedItemId && nestedTarget != null) Modifier.settingsSearchTarget(nestedTarget.id) else Modifier),
+                        icon = item.iconRes,
+                        label = item.label,
+                        isChecked = isChecked,
+                        preferenceKey = item.preferenceKey,
+                        showReorder = false,
+                        isDragging = false,
+                        dragModifier = Modifier,
+                        description = item.description,
+                        enabled = enabled,
+                        useLocalState = checkedStatesOverride != null,
+                        onCheckedChange = if (onCheckedChange != null) { { onCheckedChange(index, it) } } else null,
+                        onRowAction = if (onRowAction != null && !isLocked && isAvailable && isRowActionEnabled(index)) { { onRowAction(index) } } else null
+                    )
                 }
             }
-
-
-
+        }
+    }
+    val body: @Composable ColumnScope.() -> Unit = {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .then(if (tabContentAlpha == null) Modifier.heightIn(max = contentHeight) else Modifier.height(contentHeight))
+                .clipToBounds()
+                .testTag("toggleListDialogContent")
+        ) {
+            bodyHeader()
+            if (tabContentAlpha == null) {
+                list(Modifier.weight(1f, fill = false))
+            } else {
+                Box(
+                    Modifier.fillMaxWidth().weight(1f)
+                        .clipToBounds()
+                        .graphicsLayer { alpha = tabContentAlpha() }
+                        .testTag("toggleListDialogTabContent"),
+                ) {
+                    if (tabContent != null) tabContent() else list(Modifier.matchParentSize())
+                }
+            }
         }
     }
     val footer: (@Composable ColumnScope.() -> Unit)? = if (hasButtons) ({

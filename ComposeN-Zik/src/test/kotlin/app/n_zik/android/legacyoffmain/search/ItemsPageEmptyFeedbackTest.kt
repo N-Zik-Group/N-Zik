@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Density
 
 import android.app.Application
+import app.n_zik.android.R
 import android.content.Context
 import android.content.ContextWrapper
 import android.net.ConnectivityManager
@@ -122,7 +123,7 @@ class ItemsPageEmptyFeedbackTest {
                     searchQuery = query,
                     headerContent = { header() },
                     contentPadding = contentPadding,
-                    itemContent = {},
+                    itemContent = { Box(Modifier.height(20.dp)) },
                     itemPlaceholderContent = { Box(Modifier.height(20.dp).testTag("pending-page")) },
                     emptyItemsText = "Collection is empty",
                     itemsPageProvider = provider,
@@ -170,16 +171,19 @@ class ItemsPageEmptyFeedbackTest {
             if (calls.incrementAndGet() == 1) Result.failure(IllegalStateException("Network unavailable"))
             else Result.success(null)
         }
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val retry = context.getString(R.string.common_action_retry)
         composeRule.setContent { content(grid = false, provider = provider) }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Retry").fetchSemanticsNodes().isNotEmpty()
+        composeRule.waitUntil("Continuation requested", timeoutMillis = 5_000) { calls.get() == 1 }
+        composeRule.waitUntil("Localized retry button", timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithText(retry).fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.runOnIdle {
             assertEquals(1, calls.get())
             assertEquals(listOf(item), page.value?.items)
         }
         composeRule.onAllNodesWithTag("pending-page").assertCountEquals(0)
-        composeRule.onNodeWithText("Retry").performClick()
+        composeRule.onNodeWithText(retry).performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) { page.value?.continuation == null }
         composeRule.runOnIdle {
             assertEquals(2, calls.get())

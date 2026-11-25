@@ -11,8 +11,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
-import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -50,8 +48,6 @@ internal fun AppearanceResetCard(search: Search, restartState: MutableState<Bool
                                 onClick = {
                                     applyAppearanceDefaults(context)
                                     restartService = true
-                                    MiniPlayerButtonsSettingsDialog.reset(context)
-                                    PlayerActionBarSettingsDialog.reset(context)
                                     Toaster.done()
                                 }
                             )

@@ -1,20 +1,27 @@
 package app.n_zik.android.components.ui.screens.player
 
 import android.annotation.SuppressLint
+import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
-import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.enums.QueueLoopType
 import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.ui.components.tab.toolbar.ConfirmDialog
@@ -22,10 +29,10 @@ import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
 import app.n_zik.android.ui.components.tab.toolbar.Icon
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.models.Song
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.ui.NzikCheckbox
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.utils.discoverKey
 import app.n_zik.android.utils.queueLoopTypeKey
@@ -47,23 +54,17 @@ fun Discover(
     override val menuIconTitle: String
         @Composable
         get() = stringResource( R.string.queue_discover_title )
-    // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON (the state
-    // change is the feedback), mapped from the same reactive state as the accent color.
     override val iconId: Int get() = discoverButtonIconRes(isFirstColor)
     override val messageId: Int = R.string.queue_discover_description
 
     // Active state of this button
     override var isFirstColor: Boolean by rememberPreference(discoverKey, false)
 
-    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): Discover is a
-    // host-owned stateful ON/OFF control — a locked guest sees it grayed (disabled) and the
-//
-    // toggle is blocked centrally in NZikRadio.toggleDiscover.
     private val guestLocked = rememberListenTogetherGuestLock()
     override val isEnabled: Boolean
         get() = !guestLocked
 
-    override val color: androidx.compose.ui.graphics.Color
+    override val color: Color
         @Composable
         get() = if (isDiscoverClickable) super<DynamicColor>.color else super<DynamicColor>.color.copy(alpha = 0.4f)
 
@@ -74,10 +75,6 @@ fun Discover(
 
 class Repeat private constructor(
     private val typeState: MutableState<QueueLoopType>,
-    // Listen Together guest lock (spec-listen-together-guest-lock-hardening): repeat is a
-    // playback control — host-only in a room. Read at composition so the button state
-//
-    // recomposes when the lock changes
     private val guestLocked: Boolean
 ): MenuIcon, Descriptive {
 
@@ -115,7 +112,7 @@ class Repeat private constructor(
             color,
             TabToolBar.TOOLBAR_ICON_SIZE,
             isEnabled,
-            androidx.compose.ui.Modifier,
+            Modifier,
             this::onShortClick
         )
     }
@@ -129,10 +126,9 @@ fun ShuffleQueue(
     player: Player,
     lazyListState: LazyListState,
     coroutineScope: CoroutineScope,
-    itemSelector: ItemSelector<Song>? = null
+    itemSelector: ItemSelector<Any>,
+    selectedWindowUids: () -> Set<Any> = { itemSelector.toSet() },
 ): MenuIcon = object: MenuIcon, Descriptive {
-    // Issue #866 (gh-866): app-wide shuffle confirmation flash — the icon follows the binder's
-    // flash state (shuffle_ok ~1 s), triggered on click below.
     private val serviceBinder = LocalPlayerServiceBinder.current
     override val iconId: Int get() = shuffleButtonIconRes( serviceBinder )
     override val messageId: Int = R.string.player_action_shuffle
@@ -140,48 +136,67 @@ fun ShuffleQueue(
         @Composable
         get() = stringResource( messageId )
 
-    // Shuffling the queue is a playback control: host-only in a Listen Together room
-    private val guestLocked = rememberListenTogetherGuestLock()
+    private val guestLocked by rememberUpdatedState(rememberListenTogetherGuestLock())
     override val isEnabled: Boolean
-        get() = !guestLocked
+        get() = !guestLocked && (!itemSelector.isActive || selectedWindowUids().size > 1)
 
     override fun onShortClick() {
-        if (guestLocked) return
-        serviceBinder?.triggerShuffleOkFlash()
-        coroutineScope.launch {
-            lazyListState.smoothScrollToTop()
-        }.invokeOnCompletion {
-            try {
-                if (itemSelector != null && itemSelector.isNotEmpty()) {
-                    val selectedIds = itemSelector.map { it.id }.toSet()
-                    val allItems = (0 until player.mediaItemCount).map { player.getMediaItemAt(it) }
-                    val selectedIndex = allItems.indices.filter { allItems[it].mediaId in selectedIds }
-                    
-                    if (selectedIndex.isNotEmpty()) {
-                        val selected = selectedIndex.map { allItems[it] }.shuffled()
-                        // Remove from end to avoid index shift
-                        selectedIndex.sortedDescending().forEach { player.removeMediaItem(it) }
-                        // Insert shuffled items at the first selected position
-                        val insertAt = selectedIndex.min()
-                        selected.forEachIndexed { i, item -> player.addMediaItem(insertAt + i, item) }
-                        Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(selectedIndex.size))
-                    }
-                } else {
-                    player.shuffleQueue()
-                }
-            } catch (e: Exception) {
-                Timber.tag("ShuffleQueue").e(e, "Failed to shuffle queue")
-                Toaster.e(R.string.player_no_song_found)
+        if (!isEnabled) return
+        try {
+            if (itemSelector.isActive) {
+                val selectedIndices = selectedQueueIndices(player.currentTimeline, selectedWindowUids())
+                if (selectedIndices.size < 2) return
+                val shuffled = selectedIndices.shuffled()
+                val desiredOrder = if (shuffled == selectedIndices) shuffled.drop(1) + shuffled.first() else shuffled
+                shuffleQueueSelection(selectedIndices, desiredOrder, player::moveMediaItem)
+                Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(selectedIndices.size))
+            } else if (!player.shuffleQueue()) {
+                return
             }
+        } catch (e: Exception) {
+            Timber.tag("ShuffleQueue").e(e, "Failed to shuffle queue")
+            Toaster.e(R.string.player_no_song_found)
+            return
+        }
+        serviceBinder?.triggerShuffleOkFlash()
+        coroutineScope.launch { lazyListState.smoothScrollToTop() }
+    }
+}
+
+@OptIn(UnstableApi::class)
+internal fun selectedQueueIndices(timeline: Timeline, selectedWindowUids: Set<Any>): List<Int> {
+    val window = Timeline.Window()
+    return (0 until timeline.windowCount).filter { index ->
+        timeline.getWindow(index, window).uid in selectedWindowUids
+    }
+}
+
+internal fun shuffleQueueSelection(
+    selectedIndices: List<Int>,
+    desiredOrder: List<Int>,
+    moveMediaItem: (Int, Int) -> Unit,
+) {
+    val currentOrder = selectedIndices.toMutableList()
+    desiredOrder.forEachIndexed { slot, item ->
+        val sourceSlot = currentOrder.indexOf(item)
+        if (slot != sourceSlot) {
+            val from = selectedIndices[sourceSlot]
+            val to = selectedIndices[slot]
+            moveMediaItem(from, to)
+            // The two moves swap selected slots while preserving intervening queue positions.
+            if (from > to + 1) moveMediaItem(to + 1, from)
+            currentOrder[sourceSlot] = currentOrder[slot]
+            currentOrder[slot] = item
         }
     }
 }
 
 @SuppressLint("ComposableNaming")
 @Composable
-fun DeleteFromQueue(
-    itemSelector: ItemSelector<Song>,
-    onDeleteConfirm: ConfirmDialog.() -> Unit
+internal fun DeleteFromQueue(
+    player: Player,
+    itemSelector: ItemSelector<Any>,
+    selectedWindowUids: () -> Set<Any>,
 ): MenuIcon = object: MenuIcon, Descriptive, ConfirmDialog {
     override val confirmationTitle: String
         @Composable get() = stringResource(R.string.player_queue_action_remove)
@@ -196,25 +211,63 @@ fun DeleteFromQueue(
     override val dialogTitle: String
         @Composable
         get() {
-            val count = itemSelector.size
-            return if( count > 0 )
-                stringResource( R.string.player_queue_remove_selected_confirmation_format, count )
+            val selected = pendingRemoval
+            return if (selected != null)
+                stringResource(R.string.player_queue_remove_selected_confirmation_format, selected.size)
             else
                 stringResource( R.string.player_queue_clear_confirmation )
         }
 
-    // Deleting from the queue is a playback control: host-only in a Listen Together room
     private val guestLocked = rememberListenTogetherGuestLock()
     override val isEnabled: Boolean
-        get() = !guestLocked
+        get() = !guestLocked && (!itemSelector.isActive || selectedWindowUids().isNotEmpty())
 
-    // Issue #881 (gh-881): tolerant saver — this slot is composed inside the Player screen's
-    // BoxWithConstraints sub-composition (the 15:23:55 CCE crash spot, spec M5).
-    override var isActive: Boolean by rememberSaveable(saver = TolerantBoolStateSaver("queue.deleteFromQueue.isActive")) { mutableStateOf(false) }
+    private var pendingRemoval by remember { mutableStateOf<Set<Any>?>(null) }
+    private var finishSelection by remember { mutableStateOf<(() -> Unit)?>(null) }
+    override var isActive: Boolean by remember { mutableStateOf(false) }
 
-    override fun onShortClick() { if (!guestLocked) isActive = !isActive }
+    override fun onShortClick() {
+        if (!isEnabled) return
+        pendingRemoval = if (itemSelector.isActive) {
+            selectedWindowUids().takeIf { it.isNotEmpty() } ?: return
+        } else null
+        finishSelection = itemSelector.captureSelectionCompletion()
+        isActive = true
+    }
 
-    override fun onConfirm() = onDeleteConfirm()
+    override fun onConfirm() {
+        if (!isActive || guestLocked) return
+        val selected = pendingRemoval
+        val complete = finishSelection
+        onDismiss()
+        try {
+            if (selected == null) {
+                player.stop()
+                player.clearMediaItems()
+                Toaster.s(R.string.common_delete_success)
+            } else {
+                val indices = selectedQueueIndices(player.currentTimeline, selected)
+                if (indices.isEmpty()) return
+                indices.asReversed().forEach(player::removeMediaItem)
+                Toaster.s(R.string.player_queue_deleted_item_format, formatArgs = *arrayOf(indices.size.toString()))
+                complete?.invoke()
+            }
+        } catch (e: Exception) {
+            Timber.tag("Queue").e(e, "Failed to delete from queue")
+        }
+    }
+}
+
+@Composable
+internal fun QueueSelectionCheckbox(windowUid: Any, itemSelector: ItemSelector<Any>) {
+    if (itemSelector.isActive) {
+        val label = stringResource(R.string.common_action_select)
+        NzikCheckbox(
+            checked = windowUid in itemSelector,
+            onCheckedChange = { if (itemSelector.isActive) itemSelector.toggle(windowUid) { it } },
+            modifier = Modifier.semantics { contentDescription = label },
+        )
+    }
 }
 
 @SuppressLint("ComposableNaming")

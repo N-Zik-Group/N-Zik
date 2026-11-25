@@ -232,7 +232,6 @@ fun RowScope.GlassQueueToolbarActions(
             modifier = Modifier.weight(1f).testTag("queue.toolbar.actions"),
             settings = settings,
             itemShape = uiRoundnessShape(),
-            disableAnimation = settings.usesGlassMaterial(GlassArea.ActionButtons),
         )
         if (arrow != null && arrow.isEnabled) {
             GlassToolbarRow(actionCount = 1, settings = settings, itemShape = uiRoundnessShape(),

@@ -45,6 +45,7 @@ import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.privacy.rewindMasterSettingsRoute
 import app.n_zik.android.components.tab.Search
 
 /** Coordinates AI cards, history and existing deep links. */
@@ -52,6 +53,7 @@ import app.n_zik.android.components.tab.Search
 @Composable
 fun AIRecommendationSettings(
     navController: NavController,
+    onSettingsNavigate: (String) -> Unit,
     ytLoggedIn: Boolean = false,
     focus: String = ""
 ) {
@@ -129,6 +131,7 @@ fun AIRecommendationSettings(
         AIRecommendationSettingsContent(
             search = search,
             navController = navController,
+            onSettingsNavigate = onSettingsNavigate,
             onCardPosition = { id, top ->
                 when (id) {
                     "rewind" -> rewindCardTopY = top
@@ -148,11 +151,13 @@ fun AIRecommendationSettings(
 internal fun AIRecommendationSettingsContent(
     search: Search,
     navController: NavController,
+    onSettingsNavigate: (String) -> Unit,
     selectedCards: Set<Int>? = null,
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
     onCardPosition: (String, Float) -> Unit = { _, _ -> },
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
+    val context = LocalContext.current
     QuickPicksContentSettingsDialog.Render()
     cardsContainer {
         if (selectedCards == null || R.string.settings_general_title in selectedCards) {
@@ -167,7 +172,10 @@ internal fun AIRecommendationSettingsContent(
         }
         if (selectedCards == null || R.string.rewind_settings_title in selectedCards) {
             SettingsCardSlot(R.string.rewind_settings_title, modifier = { cardModifier(R.string.rewind_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) } }) {
-                RewindSettingsCard(onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) })
+                RewindSettingsCard(
+                    onOpenPrivacy = { onSettingsNavigate(rewindMasterSettingsRoute(context)) },
+                    onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) },
+                )
             }
         }
         if (selectedCards == null || R.string.settings_section_smart_recommendations_title in selectedCards) {

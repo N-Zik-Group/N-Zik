@@ -1,16 +1,24 @@
 package app.n_zik.android.components.settings.privacy
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.AllSettingsEntryTargets
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.destinationRoute
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
+
+private const val RewindMasterTargetId = "ai.tab_general.rw_settings_master"
+
+internal fun rewindMasterSettingsRoute(context: Context): String =
+    AllSettingsEntryTargets.first { it.id == RewindMasterTargetId }.destinationRoute(context)
 
 @Composable
 fun PrivacyRewindCard() {
@@ -29,7 +37,7 @@ fun PrivacyRewindCard() {
                     DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, it)
                 },
                 icon = R.drawable.sparkles,
-                modifier = Modifier.settingsSearchTarget("ai.tab_general.rw_settings_master"),
+                modifier = Modifier.settingsSearchTarget(RewindMasterTargetId),
             )
         },
     )

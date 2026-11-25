@@ -29,7 +29,15 @@ private const val PreviewLimit = 4 * 1024 * 1024
 internal const val ThemeLegacyMaxVersionCode = ThemeAppearanceV2MinimumVersionCode - 1
 internal const val ThemeCatalogV1Path = "catalog/themes/index.json"
 internal const val ThemeCatalogV2Path = "catalog/themes/index-v2.json"
+internal const val ThemeCatalogV3Path = "catalog/themes/index-v3.json"
 private const val BundledCatalogPolicy = "theme-store-default/catalog-policy.json"
+
+internal fun themeCatalogIndexPath(schemaVersion: Int): String = when (schemaVersion) {
+    1 -> ThemeCatalogV1Path
+    ThemeAppearanceV2 -> ThemeCatalogV2Path
+    ThemeAppearanceV3 -> ThemeCatalogV3Path
+    else -> error("Unsupported theme catalog version $schemaVersion")
+}
 
 @Serializable
 private data class CatalogIndex(
@@ -38,7 +46,7 @@ private data class CatalogIndex(
 )
 
 @Serializable
-private data class CatalogV2Index(
+private data class ModernCatalogIndex(
     val schemaVersion: Int,
     val themes: List<CatalogEntry>,
     val previewLimit: Int,
@@ -220,23 +228,23 @@ private fun parseCatalogIndex(source: String): CatalogIndex =
         validateCatalogEntries(index.themes)
     }
 
-private fun parseCatalogV2Index(source: String): CatalogV2Index =
-    Json.decodeFromString<CatalogV2Index>(source).also { index ->
+private fun parseModernCatalogIndex(source: String): ModernCatalogIndex =
+    Json.decodeFromString<ModernCatalogIndex>(source).also { index ->
         require(index.schemaVersion == 1)
         require(index.previewLimit > 0)
         require(index.legacyMaxVersionCode == ThemeLegacyMaxVersionCode)
         validateCatalogEntries(index.themes)
     }
 
-private fun validateCatalog(snapshot: CatalogSnapshot, indexV2: Boolean): List<StoreTheme> {
-    val currentIndex = if (indexV2) parseCatalogV2Index(snapshot.index) else null
+private fun validateCatalog(snapshot: CatalogSnapshot, schemaVersion: Int): List<StoreTheme> {
+    val currentIndex = if (schemaVersion >= ThemeAppearanceV2) parseModernCatalogIndex(snapshot.index) else null
     val entries = currentIndex?.themes ?: parseCatalogIndex(snapshot.index).themes
     require(entries.size == snapshot.manifests.size)
     return entries.zip(snapshot.manifests) { entry, manifest ->
         require(manifest.encodeToByteArray().sha256() == entry.manifestSha256)
         parseStoreTheme(manifest, previewLimit = currentIndex?.previewLimit).also { theme ->
             require(theme.themeId == entry.themeId && theme.revision == entry.revision)
-            require(theme.schemaVersion == if (indexV2) 2 else 1)
+            require(theme.schemaVersion == schemaVersion)
         }
     }
 }
@@ -247,15 +255,15 @@ internal fun parseStoreTheme(
     previewLimit: Int? = null,
 ): StoreTheme =
     Json.decodeFromJsonElement(StoreTheme.serializer(), JsonObject(Json.parseToJsonElement(manifest).jsonObject - "license")).also { theme ->
-        require(theme.schemaVersion in 1..2 && uuid.matches(theme.themeId) && theme.revision > 0)
+        require(theme.schemaVersion in 1..ThemeAppearanceV3 && uuid.matches(theme.themeId) && theme.revision > 0)
         require(theme.title.themeTextLength in 1..100 && theme.description.themeTextLength in 1..1000)
         require(theme.localCreatorName == null || allowLocalAuthor && theme.localCreatorName.themeTextLength in 1..100)
         require((theme.author.githubId > 0 || allowLocalAuthor && theme.author == StoreAuthor(0, "local")) &&
             login.matches(theme.author.login))
         require(theme.tags.size <= 8 && theme.tags.distinct() == theme.tags && theme.tags.all { it.themeTextLength in 1..30 })
         require(theme.compatibility.minVersionCode?.let { it > 0 } != false)
-        if (theme.schemaVersion == 2) {
-            require((theme.compatibility.minVersionCode ?: 0) >= ThemeAppearanceV2MinimumVersionCode)
+        if (theme.schemaVersion >= ThemeAppearanceV2) {
+            require((theme.compatibility.minVersionCode ?: 0) >= themeSchemaMinimumVersionCode(theme.schemaVersion))
         }
         require(theme.appearance.path == "appearance.json" && hash.matches(theme.appearance.sha256))
         require(previewLimit == null || theme.previews.size <= previewLimit)
@@ -267,6 +275,29 @@ internal fun parseStoreTheme(
         })
     }.withMinimumCompatibility()
 
+internal fun List<StoreTheme>.latestCompatibleRevisions(appVersionCode: Int): List<StoreTheme> =
+    groupBy(StoreTheme::themeId).values.mapNotNull { revisions ->
+        revisions.filter { it.supportAt(appVersionCode) == StoreSupport.Supported }.maxByOrNull(StoreTheme::revision)
+            ?: revisions.maxByOrNull(StoreTheme::revision)
+    }
+
+internal fun parseCatalogThemeAppearance(
+    theme: StoreTheme,
+    document: String,
+    validateFeatureCompatibility: Boolean = true,
+): Map<ThemeCategory, ThemeSettings> {
+    val appearanceSchema = themeAppearanceSchema(Json.parseToJsonElement(document).jsonObject)
+    if (theme.schemaVersion == ThemeAppearanceV3 || appearanceSchema == ThemeAppearanceV3) {
+        require(theme.schemaVersion == appearanceSchema)
+    }
+    return parseThemeAppearance(
+        document,
+        allowEmptyCategories = false,
+        advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0,
+        validateFeatureCompatibility = validateFeatureCompatibility,
+    )
+}
+
 internal class ThemeStoreCatalog(
     private val directory: File,
     private val appVersionCode: Int = ThemeLegacyMaxVersionCode,
@@ -275,14 +306,28 @@ internal class ThemeStoreCatalog(
 ) {
     private val snapshotV1 = AtomicFile(File(directory, "catalog-v1.json"))
     private val snapshotV2 = AtomicFile(File(directory, "catalog-v2.json"))
+    private val snapshotV3 = AtomicFile(File(directory, "catalog-v3.json"))
     private val supportsV2 = appVersionCode >= ThemeAppearanceV2MinimumVersionCode
+    private val supportsV3 = appVersionCode >= ThemeAppearanceV3MinimumVersionCode
     internal val previewMetadata = android.util.LruCache<String, StoreCardPreview>(128)
 
     suspend fun cached(): List<StoreTheme>? = cachedState()?.themes
 
     suspend fun cachedState(): ThemeCatalogState? = withContext(NzikDispatchers.DATA) {
-        if (supportsV2) readCatalogState(snapshotV2, indexV2 = true)?.let { return@withContext it }
-        readCatalogState(snapshotV1, indexV2 = false)
+        if (supportsV3) {
+            val states = listOfNotNull(
+                readCatalogState(snapshotV3, ThemeAppearanceV3),
+                readCatalogState(snapshotV2, ThemeAppearanceV2),
+                readCatalogState(snapshotV1, 1),
+            )
+            if (states.isEmpty()) return@withContext null
+            return@withContext ThemeCatalogState(
+                states.flatMap(ThemeCatalogState::themes).latestCompatibleRevisions(appVersionCode),
+                states.mapNotNull(ThemeCatalogState::syncedAt).maxOrNull(),
+            )
+        }
+        if (supportsV2) readCatalogState(snapshotV2, ThemeAppearanceV2)?.let { return@withContext it }
+        readCatalogState(snapshotV1, 1)
     }
 
     private fun readSnapshot(snapshot: AtomicFile): CatalogSnapshot =
@@ -290,10 +335,10 @@ internal class ThemeStoreCatalog(
             snapshot.openRead().use { it.readThemeBytes(CatalogSnapshotLimit) }
         }.decodeToString().let { Json.decodeFromString<CatalogSnapshot>(it) }
 
-    private fun readCatalogState(snapshot: AtomicFile, indexV2: Boolean): ThemeCatalogState? =
+    private fun readCatalogState(snapshot: AtomicFile, schemaVersion: Int): ThemeCatalogState? =
         try {
             val stored = readSnapshot(snapshot)
-            ThemeCatalogState(validateCatalog(stored, indexV2), stored.syncedAt)
+            ThemeCatalogState(validateCatalog(stored, schemaVersion), stored.syncedAt)
         } catch (_: java.io.FileNotFoundException) {
             null
         } catch (error: Exception) {
@@ -303,23 +348,28 @@ internal class ThemeStoreCatalog(
 
     /** Only the official index defines the publishing limit. Older packages can still be read offline. */
     suspend fun submissionPreviewLimit(): Int = runInterruptible(NzikDispatchers.DATA) {
-        val remote = try {
-            fetch(ThemeCatalogV2Path, ThemeMetadataLimit)
-        } catch (_: java.io.IOException) {
-            null
+        val policies = if (supportsV3) listOf(ThemeCatalogV3Path to snapshotV3, ThemeCatalogV2Path to snapshotV2)
+            else listOf(ThemeCatalogV2Path to snapshotV2)
+        for ((path, snapshot) in policies) {
+            val remote = try {
+                fetch(path, ThemeMetadataLimit)
+            } catch (_: java.io.IOException) {
+                null
+            }
+            if (remote != null) {
+                return@runInterruptible parseModernCatalogIndex(remote.decodeToString(throwOnInvalidSequence = true)).previewLimit
+            }
+            val cached = try {
+                parseModernCatalogIndex(readSnapshot(snapshot).index)
+            } catch (_: java.io.FileNotFoundException) {
+                null
+            } catch (error: Exception) {
+                Timber.tag("ThemeStore").w(error, "Could not read the cached catalog policy")
+                null
+            }
+            if (cached != null) return@runInterruptible cached.previewLimit
         }
-        if (remote != null) {
-            return@runInterruptible parseCatalogV2Index(remote.decodeToString(throwOnInvalidSequence = true)).previewLimit
-        }
-        val cached = try {
-            parseCatalogV2Index(readSnapshot(snapshotV2).index)
-        } catch (_: java.io.FileNotFoundException) {
-            null
-        } catch (error: Exception) {
-            Timber.tag("ThemeStore").w(error, "Could not read the cached catalog policy")
-            null
-        }
-        cached?.previewLimit ?: parseCatalogV2Index(requireNotNull(bundledPolicy).invoke()
+        parseModernCatalogIndex(requireNotNull(bundledPolicy).invoke()
             .decodeToString(throwOnInvalidSequence = true)).previewLimit
     }
 
@@ -339,15 +389,45 @@ internal class ThemeStoreCatalog(
         }
 
     suspend fun refreshState(): ThemeCatalogState = runInterruptible(NzikDispatchers.DATA) {
-        val (indexBytes, indexV2) = if (supportsV2) {
-            try {
-                fetch(ThemeCatalogV2Path, ThemeMetadataLimit) to true
-            } catch (_: StoreFileNotFound) {
-                fetch(ThemeCatalogV1Path, ThemeMetadataLimit) to false
+        val now = System.currentTimeMillis()
+        val versions = if (supportsV3) listOf(ThemeAppearanceV3, ThemeAppearanceV2, 1)
+        else if (supportsV2) listOf(ThemeAppearanceV2, 1) else listOf(1)
+        val downloads = if (supportsV3) {
+            versions.mapNotNull { version -> fetchCatalogSnapshot(version, now)?.let { version to it } }
+                .ifEmpty { throw StoreFileNotFound() }
+        } else listOf(versions.firstNotNullOf { version -> fetchCatalogSnapshot(version, now)?.let { version to it } })
+        val themes = downloads.flatMap { (version, snapshot) -> validateCatalog(snapshot, version) }
+        val writeTargets = downloads.map { (version, snapshot) ->
+            version to Json.encodeToString(snapshot).encodeToByteArray().also { bytes ->
+                require(bytes.size <= CatalogSnapshotLimit) { "Catalog snapshot exceeded its byte limit" }
             }
-        } else fetch(ThemeCatalogV1Path, ThemeMetadataLimit) to false
+        }
+        synchronized(catalogSnapshotLock) {
+            check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
+            for ((version, bytes) in writeTargets) writeThemeFile(catalogSnapshotFile(version), bytes)
+            val requested = if (supportsV3) versions else versions.takeWhile { it >= downloads.single().first }
+            (requested - downloads.map { it.first }.toSet()).forEach { catalogSnapshotFile(it).delete() }
+        }
+        ThemeCatalogState(if (supportsV3) themes.latestCompatibleRevisions(appVersionCode) else themes, now)
+    }
+
+    private fun catalogSnapshotFile(schemaVersion: Int): AtomicFile = when (schemaVersion) {
+        1 -> snapshotV1
+        ThemeAppearanceV2 -> snapshotV2
+        ThemeAppearanceV3 -> snapshotV3
+        else -> error("Unsupported theme catalog version $schemaVersion")
+    }
+
+    private fun fetchCatalogSnapshot(schemaVersion: Int, syncedAt: Long): CatalogSnapshot? {
+        val indexBytes = try {
+            fetch(themeCatalogIndexPath(schemaVersion), ThemeMetadataLimit)
+        } catch (error: StoreFileNotFound) {
+            if (schemaVersion == 1 && !supportsV3) throw error
+            return null
+        }
         val index = indexBytes.decodeToString(throwOnInvalidSequence = true)
-        val entries = if (indexV2) parseCatalogV2Index(index).themes else parseCatalogIndex(index).themes
+        val entries = if (schemaVersion >= ThemeAppearanceV2) parseModernCatalogIndex(index).themes
+            else parseCatalogIndex(index).themes
         var remainingBytes = CatalogSnapshotLimit - indexBytes.size
         val manifests = entries.map { entry ->
             // Moderation can update a manifest's publication date within the same revision.
@@ -357,16 +437,7 @@ internal class ThemeStoreCatalog(
             remainingBytes -= bytes.size
             bytes.decodeToString(throwOnInvalidSequence = true)
         }
-        val downloaded = CatalogSnapshot(index, manifests)
-        val themes = validateCatalog(downloaded, indexV2)
-        val refreshed = downloaded.copy(syncedAt = System.currentTimeMillis())
-        val encoded = Json.encodeToString(refreshed).encodeToByteArray()
-        require(encoded.size <= CatalogSnapshotLimit) { "Catalog snapshot exceeded its byte limit" }
-        synchronized(catalogSnapshotLock) {
-            check(directory.isDirectory || directory.mkdirs() || directory.isDirectory)
-            writeThemeFile(if (indexV2) snapshotV2 else snapshotV1, encoded)
-        }
-        ThemeCatalogState(themes, refreshed.syncedAt)
+        return CatalogSnapshot(index, manifests, syncedAt)
     }
 
     suspend fun preview(theme: StoreTheme, glass: Boolean, dark: Boolean): File? {
@@ -488,8 +559,7 @@ internal class ThemeStoreCatalog(
 
     suspend fun download(theme: StoreTheme): String = runInterruptible(NzikDispatchers.DATA) {
         verifiedAppearance(theme).decodeToString(throwOnInvalidSequence = true).also {
-            parseThemeAppearance(it, allowEmptyCategories = false,
-                advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0)
+            parseCatalogThemeAppearance(theme, it)
         }
     }
 
@@ -500,9 +570,7 @@ internal class ThemeStoreCatalog(
             val localCopy = savedBytes != null && saved?.imported == true && saved.theme == theme
             val bytes = savedBytes ?: verifiedAppearance(theme)
             val document = bytes.decodeToString(throwOnInvalidSequence = true)
-            val settings = parseThemeAppearance(document, allowEmptyCategories = false,
-                advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0,
-                validateFeatureCompatibility = !localCopy)
+            val settings = parseCatalogThemeAppearance(theme, document, validateFeatureCompatibility = !localCopy)
             StoreAppearance(document, bytes.size, settings.toStoreGroups())
         }
 
@@ -537,6 +605,7 @@ private const val StoreReadTtlMs = 5 * 60 * 1000L
 internal fun expireThemeStoreIndex() {
     storeReads.remove(ThemeCatalogV1Path)
     storeReads.remove(ThemeCatalogV2Path)
+    storeReads.remove(ThemeCatalogV3Path)
 }
 
 internal fun expireThemeStoreReviews(theme: StoreTheme) {

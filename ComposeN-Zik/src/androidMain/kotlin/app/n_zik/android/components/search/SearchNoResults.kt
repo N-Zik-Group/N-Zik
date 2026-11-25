@@ -24,11 +24,9 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.utils.secondary
-import app.n_zik.android.R
 import app.n_zik.android.typography
 
 private val LocalSearchViewport = staticCompositionLocalOf<State<Rect>?> { null }
@@ -47,7 +45,7 @@ fun SearchResultsViewport(modifier: Modifier = Modifier, content: @Composable Bo
 fun SearchNoResults(
     modifier: Modifier = Modifier,
     fillRemainingViewport: Boolean = false,
-    text: String = stringResource(R.string.search_no_results_message),
+    text: String,
 ) {
     SearchEmptySpace(modifier, fillRemainingViewport) {
         BasicText(

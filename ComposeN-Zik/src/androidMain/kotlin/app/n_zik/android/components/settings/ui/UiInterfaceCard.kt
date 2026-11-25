@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.enums.MusicAnimationType
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.enums.PlayerPosition
@@ -24,16 +25,16 @@ import app.n_zik.android.utils.indexNavigationTabKey
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.navigationBarTypeKey
+import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.utils.playerPositionKey
+import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.rightToLeftInterfaceKey
 import app.n_zik.android.utils.searchDisplayOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
-import app.n_zik.android.components.search.SearchHistoryPageSettings
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.settingsCardEnter
@@ -64,11 +65,35 @@ internal fun UiInterfaceCard(search: Search) {
     var disableBackStack by rememberPreference(disableNavigationBackStackKey, false)
     var playerPosition by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
     var searchDisplayOrder by rememberPreference(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
+    var playlistIndicator by rememberPreference(playlistindicatorKey, false)
+    var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
+    var showNowPlayingIndicatorDialog by remember { mutableStateOf(false) }
+
+    val query = search.inputValue
+    val playlistIndicatorTitle = stringResource(R.string.settings_library_playlist_indicator_label)
+    val playlistIndicatorDescription = stringResource(R.string.settings_library_playlist_indicator_description)
+    val nowPlayingIndicatorTitle = stringResource(R.string.settings_library_now_playing_indicator_label)
+    val nowPlayingIndicatorDescription = stringResource(R.string.queue_now_playing_indicator_description)
+    val playlistIndicatorMatches = playlistIndicatorTitle.contains(query, true) ||
+        playlistIndicatorDescription.contains(query, true)
+    val nowPlayingIndicatorMatches = nowPlayingIndicatorTitle.contains(query, true) ||
+        nowPlayingIndicatorDescription.contains(query, true) ||
+        MusicAnimationType.entries.any { it.text.contains(query, ignoreCase = true) }
+
+    DialogPresence(visible = showNowPlayingIndicatorDialog) {
+        ValueSelectorDialog(
+            title = nowPlayingIndicatorTitle,
+            selectedValue = nowPlayingIndicator,
+            onValueSelected = { nowPlayingIndicator = it },
+            valueText = { it.text },
+            values = MusicAnimationType.entries,
+            onDismiss = { showNowPlayingIndicatorDialog = false },
+        )
+    }
 
     val navSearchContextMatch = layoutDirectionMatches ||
+        playlistIndicatorMatches || nowPlayingIndicatorMatches ||
         stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true) ||
-        stringResource(R.string.search_history_pages).contains(search.inputValue, true) ||
-        stringResource(R.string.search_history_pages_description).contains(search.inputValue, true) ||
         stringResource(R.string.search_display_order).contains(search.inputValue, true) ||
         stringResource(R.string.settings_navigation_position_label).contains(search.inputValue, true) ||
         stringResource(R.string.settings_navigation_style_label).contains(search.inputValue, true) ||
@@ -263,12 +288,6 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() ||
-                    stringResource(R.string.search_history_pages).contains(search.inputValue, true) ||
-                    stringResource(R.string.search_history_pages_description).contains(search.inputValue, true)
-                ) {
-                    SearchHistoryPageSettings()
-                }
                 var showSearchOrderDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.search_display_order).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
@@ -306,18 +325,26 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
-                var rememberQueueScrollPosition by rememberPreference(rememberQueueScrollPositionKey, true)
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_queue_remember_scroll_label).contains(search.inputValue, true)) {
+                if (playlistIndicatorMatches) {
                     OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.user_interface.remember_queue_scroll_position"),
-                        title = stringResource(R.string.settings_player_queue_remember_scroll_label),
-                        text = stringResource(R.string.settings_player_queue_remember_scroll_description),
-                        isChecked = rememberQueueScrollPosition,
-                        onCheckedChange = { rememberQueueScrollPosition = it },
-                        icon = R.drawable.reorder
+                        modifier = Modifier.settingsSearchTarget("general.queue_management.playlistindicator"),
+                        title = playlistIndicatorTitle,
+                        text = playlistIndicatorDescription,
+                        isChecked = playlistIndicator,
+                        onCheckedChange = { playlistIndicator = it },
+                        icon = R.drawable.playlist,
                     )
                 }
-
+                if (nowPlayingIndicatorMatches) {
+                    OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("general.queue_management.now_playing_indicator"),
+                        title = nowPlayingIndicatorTitle,
+                        text = nowPlayingIndicatorDescription,
+                        selectedValueText = nowPlayingIndicator.text,
+                        onClick = { showNowPlayingIndicatorDialog = true },
+                        icon = R.drawable.playing_indicator,
+                    )
+                }
             }
         )
     }

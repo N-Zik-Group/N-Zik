@@ -60,6 +60,8 @@ import app.n_zik.android.components.dialog.settings.SettingsDialogTabRow
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.UnifiedSearchBar
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -407,10 +409,12 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                     }
                     if (themes != null && matchingThemes.isEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            StoreEmptyMessage(
-                                if (authored.isEmpty()) R.string.theme_store_no_published_themes else R.string.theme_store_no_results,
-                                Modifier.heightIn(min = emptyContentHeight),
-                            )
+                            if (query.text.isNotBlank()) {
+                                SearchEmptyFeedback(query.text, empty = true, loading = loading || forceLoadingShimmerPreview())
+                                SearchEmptySpace(Modifier.heightIn(min = emptyContentHeight))
+                            } else {
+                                StoreEmptyMessage(R.string.theme_store_no_published_themes, Modifier.heightIn(min = emptyContentHeight))
+                            }
                         }
                     }
                     if (!loading && themes == null) {
@@ -530,9 +534,14 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                                 }
                             }
                         }
-                        filtered.isEmpty() && matchingCreators.isEmpty() -> item(span = { GridItemSpan(maxLineSpan) }) {
+                        filtered.isEmpty() && matchingCreators.isEmpty() -> item(key = "store-search-empty", span = { GridItemSpan(maxLineSpan) }) {
                             Box(tabContentModifier.fillMaxWidth()) {
-                                StoreEmptyMessage(R.string.theme_store_no_results, Modifier.heightIn(min = emptyContentHeight))
+                                if (query.text.isNotBlank()) {
+                                    SearchEmptyFeedback(query.text, empty = true, loading = loading || creatorsPending || forceLoadingShimmerPreview())
+                                    SearchEmptySpace(Modifier.heightIn(min = emptyContentHeight))
+                                } else {
+                                    StoreEmptyMessage(R.string.theme_store_no_results, Modifier.heightIn(min = emptyContentHeight))
+                                }
                             }
                         }
                         else -> {
@@ -626,9 +635,14 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                         it.downloaded && (section == null || section == it) && !downloadedGroups[it].isNullOrEmpty()
                     }
                     if (categories.isEmpty()) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
+                        item(key = "downloaded-search-empty", span = { GridItemSpan(maxLineSpan) }) {
                             Box(tabContentModifier.fillMaxWidth()) {
-                                StoreEmptyMessage(R.string.theme_store_no_results, Modifier.heightIn(min = emptyContentHeight))
+                                if (downloadQuery.text.isNotBlank()) {
+                                    SearchEmptyFeedback(downloadQuery.text, empty = true, loading = forceLoadingShimmerPreview())
+                                    SearchEmptySpace(Modifier.heightIn(min = emptyContentHeight))
+                                } else {
+                                    StoreEmptyMessage(R.string.theme_store_no_results, Modifier.heightIn(min = emptyContentHeight))
+                                }
                             }
                         }
                     }
@@ -674,9 +688,14 @@ private fun ThemeStoreLanding(title: String, padding: PaddingValues, section: Th
                         creatorDisplayNames[author.githubId] ?: author.login
                     })
                     if (matching.isEmpty()) {
-                        item(span = { GridItemSpan(maxLineSpan) }) {
+                        item(key = "following-search-empty", span = { GridItemSpan(maxLineSpan) }) {
                             Box(tabContentModifier.fillMaxWidth()) {
-                                StoreEmptyMessage(if (visibleFollows.isEmpty()) R.string.theme_store_no_follows else R.string.theme_store_no_results, Modifier.heightIn(min = emptyContentHeight))
+                                if (followingQuery.text.isNotBlank()) {
+                                    SearchEmptyFeedback(followingQuery.text, empty = true, loading = forceLoadingShimmerPreview())
+                                    SearchEmptySpace(Modifier.heightIn(min = emptyContentHeight))
+                                } else {
+                                    StoreEmptyMessage(R.string.theme_store_no_follows, Modifier.heightIn(min = emptyContentHeight))
+                                }
                             }
                         }
                     } else {

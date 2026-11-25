@@ -60,7 +60,7 @@ internal fun localThemeArchiveId(manifest: ByteArray): String =
 
 internal fun themeArchivePaths(theme: StoreTheme): Set<String> {
     val slots = theme.previews.map { it.path.substringAfterLast('/').substringBeforeLast('.') }
-    require(slots.distinct().size == slots.size && (slots.containsAll(requiredPreviews) || theme.schemaVersion == 2 &&
+    require(slots.distinct().size == slots.size && (slots.containsAll(requiredPreviews) || theme.schemaVersion >= ThemeAppearanceV2 &&
         slots.containsAll(previewSlotsForMode(requiredPreviews, followsSystem = true))))
     return theme.previews.map { it.path }.toSet() + setOf("manifest.json", "appearance.json", "reviews.json")
 }
@@ -73,9 +73,7 @@ internal fun validateThemeArchiveDocuments(
     val appearance = read(theme.appearance.path, ThemeDocumentLimit)
     require(appearance.sha256() == theme.appearance.sha256)
     val document = appearance.decodeToString(throwOnInvalidSequence = true)
-    parseThemeAppearance(document, allowEmptyCategories = false,
-        advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0,
-        validateFeatureCompatibility = validateFeatureCompatibility)
+    parseCatalogThemeAppearance(theme, document, validateFeatureCompatibility)
     parseStoreReviews(read("reviews.json", ThemeMetadataLimit).decodeToString(throwOnInvalidSequence = true))
     return document
 }

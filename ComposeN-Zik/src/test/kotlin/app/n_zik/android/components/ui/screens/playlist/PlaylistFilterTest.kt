@@ -1,7 +1,9 @@
 package app.n_zik.android.components.ui.screens.playlist
 
 import app.n_zik.android.ui.screens.playlist.applyFilter
+import app.n_zik.android.ui.screens.playlist.playlistSongPlayback
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asSong
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
 import org.junit.Assert.assertEquals
@@ -90,6 +92,17 @@ class PlaylistFilterTest {
     }
 
     @Test
+    fun `search matches the title and artist shown after editing metadata`() {
+        val original = fullList.first()
+        val edited = original.asSong.copy(title = "Renamed track", artistsText = "Edited artist")
+        val storedSongs = mapOf(edited.id to edited)
+
+        assertEquals(listOf(original), fullList.applyFilter("renamed", storedSongs))
+        assertEquals(listOf(original), fullList.applyFilter("edited artist", storedSongs))
+        assertTrue(fullList.applyFilter("alpha one", storedSongs).orEmpty().isEmpty())
+    }
+
+    @Test
     fun `album match is case-insensitive`() {
         val result = fullList.applyFilter("ALBUM Y")!!
 
@@ -121,5 +134,16 @@ class PlaylistFilterTest {
 
         // The source list is never mutated by either call.
         assertEquals(3, fullList.size)
+    }
+
+    @Test
+    fun `playlist search playback indexes the matching playable rows by track id`() {
+        val matches = fullList.applyFilter("beta").orEmpty()
+        val disliked = setOf("id_b1")
+        val (tracks, index) = checkNotNull(matches.playlistSongPlayback("id_ab2", disliked))
+        assertEquals(listOf("id_ab2"), tracks.map(Innertube.SongItem::key))
+        assertEquals(0, index)
+        assertNull(matches.playlistSongPlayback("id_a1", disliked))
+        assertNull(matches.playlistSongPlayback("id_b1", disliked))
     }
 }

@@ -113,7 +113,7 @@ fun LocalSongSearch(
         if (preview != null) kotlinx.coroutines.flow.flowOf(textFieldValue.text to ThemePreviewDemo.songs.filter {
             it.title.contains(textFieldValue.text, ignoreCase = true)
         }) else Database.songTable
-                .findAllTitleArtistContains( textFieldValue.text )
+                .findAllTitleArtistContainsLiteral(textFieldValue.text)
                 .distinctUntilChanged()
                 .map { textFieldValue.text to it }
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)

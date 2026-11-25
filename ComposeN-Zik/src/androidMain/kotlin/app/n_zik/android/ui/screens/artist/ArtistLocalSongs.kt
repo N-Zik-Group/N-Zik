@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -78,9 +79,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.playback.services.isLocal
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.ExperimentalTextApi
 import app.n_zik.android.cleanPrefix
@@ -91,8 +95,15 @@ import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.artist.artistStatisticsText
-import app.n_zik.android.components.ui.CollectionToolbar
-import app.n_zik.android.components.glass.GlassActionCellWidth
+import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.ordered
+
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.matchesCollectionSearch
+import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.tab.Search
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.components.SongItem
@@ -115,6 +126,44 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import androidx.compose.runtime.derivedStateOf
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.CompositionLocalProvider
+import app.n_zik.android.ui.components.tab.toolbar.Descriptive
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.utils.player.addNextOffMain
+import app.n_zik.android.utils.player.enqueueOffMain
+import timber.log.Timber
+
+@Composable
+internal fun artistLibraryToolbarAction(
+    action: ToolbarControl,
+    icon: Int = action.icon,
+    label: Int = action.label,
+    enabled: Boolean = true,
+    onClick: () -> Unit = {},
+): MenuIcon {
+    val menuState = LocalMenuState.current
+    return object : MenuIcon, Descriptive {
+        override val iconId = icon
+        override val messageId = label
+        override val isEnabled = enabled
+        override val color: Color
+            @Composable get() = if (isEnabled) colorPalette().text else colorPalette().textDisabled
+        override val menuIconTitle: String
+            @Composable get() = stringResource(messageId)
+
+        override fun onShortClick() {
+            if (isEnabled) {
+                menuState.hide()
+                onClick()
+            }
+        }
+    }
+}
+
+private data class ArtistDownloadRequest(
+    val songs: List<Song>,
+    val remove: Boolean,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @ExperimentalTextApi
@@ -137,16 +186,31 @@ fun ArtistLocalSongs(
     val context = LocalContext.current
     val forceShimmer = forceLoadingShimmerPreview()
     val binder = LocalPlayerServiceBinder.current
-    val menuState = LocalMenuState.current
     var songs by songsState
-    var downloadState by remember { mutableStateOf(Download.STATE_STOPPED) }
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-    var showConfirmDeleteDownloadDialog by remember { mutableStateOf(false) }
-    var showConfirmDownloadAllDialog by remember { mutableStateOf(false) }
-    val songThumbnailSizeDp = Dimensions.thumbnails.song
-    val songThumbnailSizePx = songThumbnailSizeDp.px
+    var pendingDownload by remember(browseId) { mutableStateOf<ArtistDownloadRequest?>(null) }
+    val search = key(browseId) { Search.detail() }
+    val query = search.filterQuery
+    val visibleSongs = remember(songs, query) {
+        if (query.isBlank()) songs.orEmpty() else songs.orEmpty().filter { it.matchesCollectionSearch(query) }
+    }
+    SearchEmptyFeedback(query, visibleSongs.isEmpty(), loading = songs == null || forceShimmer)
+    val itemSelector = key(browseId) { ItemSelector<Song>() }
+    fun actionSongs() = itemSelector.actionTargets(visibleSongs, Song::id, Song::id)
+    val offlineMode by OfflineMode.rememberEnabled()
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val snapshot = actionSongs().toList()
+            if (snapshot.isEmpty()) null else suspend { snapshot.map(Song::asMediaItem) }
+        },
+        onFailure = { error, preview ->
+            Timber.tag("ArtistLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
+        },
+        itemSelector = itemSelector,
+    )
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(browseId) {
         Database.artistSongs(browseId).collect { songs = it }
     }
 
@@ -186,6 +250,29 @@ fun ArtistLocalSongs(
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
+    DialogPresence(target = pendingDownload) { request ->
+        ConfirmationDialog(
+            title = stringResource(
+                if (request.remove) R.string.downloads_delete_dialog_title else R.string.downloads_action_download_all,
+            ),
+            confirmText = stringResource(
+                if (request.remove) R.string.common_action_delete else R.string.downloads_title,
+            ),
+            text = stringResource(
+                if (request.remove) R.string.downloads_delete_all_confirmation else R.string.downloads_download_all_confirmation,
+            ),
+            onDismiss = { if (pendingDownload == request) pendingDownload = null },
+            onConfirm = {
+                if (pendingDownload == request) {
+                    pendingDownload = null
+                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                        processArtistDownloadBatch(request.songs, binder?.cache, context, downloadState = request.remove)
+                    }
+                }
+            },
+        )
+    }
+
     CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
     LazyColumn(
         state = lazyListState,
@@ -200,109 +287,72 @@ fun ArtistLocalSongs(
             )
         }
         item("action_buttons") {
-            CollectionToolbar(
+            val targets = actionSongs()
+            val hasTargets = targets.isNotEmpty()
+            val remoteTargets = targets.filterNot { it.isLocal }
+            val downloadTargets = remoteTargets.filterNot { it.id in downloadsMapState }
+            val removeDownloadTargets = remoteTargets.filter { it.id in downloadsMapState }
+            val actions = mapOf(
+                ToolbarControl.SEARCH to search,
+                ToolbarControl.DOWNLOAD to artistLibraryToolbarAction(ToolbarControl.DOWNLOAD, enabled = downloadTargets.isNotEmpty()) {
+                    pendingDownload = ArtistDownloadRequest(downloadTargets, remove = false)
+                },
+                ToolbarControl.DELETE_DOWNLOADS to artistLibraryToolbarAction(ToolbarControl.DELETE_DOWNLOADS, enabled = removeDownloadTargets.isNotEmpty()) {
+                    pendingDownload = ArtistDownloadRequest(removeDownloadTargets, remove = true)
+                },
+                ToolbarControl.PLAY_NEXT to artistLibraryToolbarAction(ToolbarControl.PLAY_NEXT, enabled = hasTargets) {
+                    val player = binder?.player ?: return@artistLibraryToolbarAction
+                    val snapshot = actionSongs().toList().ifEmpty { return@artistLibraryToolbarAction }
+                    val completeSelection = itemSelector.captureSelectionCompletion()
+                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                        val items = withContext(NzikDispatchers.DATA) { snapshot.map(Song::asMediaItem) }
+                        player.addNextOffMain(items, context)
+                        completeSelection()
+                    }
+                },
+                ToolbarControl.ENQUEUE to artistLibraryToolbarAction(
+                    ToolbarControl.ENQUEUE,
+                    label = R.string.player_action_enqueue_songs,
+                    enabled = hasTargets,
+                ) {
+                    val player = binder?.player ?: return@artistLibraryToolbarAction
+                    val snapshot = actionSongs().toList().ifEmpty { return@artistLibraryToolbarAction }
+                    val completeSelection = itemSelector.captureSelectionCompletion()
+                    NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                        val items = withContext(NzikDispatchers.DATA) { snapshot.map(Song::asMediaItem) }
+                        player.enqueueOffMain(items, context)
+                        completeSelection()
+                    }
+                },
+                ToolbarControl.SHUFFLE to artistLibraryToolbarAction(
+                    ToolbarControl.SHUFFLE,
+                    icon = shuffleButtonIcon(),
+                    enabled = hasTargets,
+                ) {
+                    val snapshot = actionSongs().toList()
+                    if (snapshot.isNotEmpty() && binder != null) {
+                        binder.triggerShuffleOkFlash()
+                        Shuffler.play(binder, snapshot)
+                    }
+                },
+                ToolbarControl.SELECT to itemSelector,
+                ToolbarControl.ADD_TO_PLAYLIST to artistLibraryToolbarAction(
+                    ToolbarControl.ADD_TO_PLAYLIST,
+                    enabled = hasTargets,
+                    onClick = addToPlaylist::onShortClick,
+                ),
+            )
+            CollectionButtonToolbar(
                 bookmark = { FollowButton { localArtist }.ToolBarButton() },
                 bookmarkWidth = 100.dp,
-                actionCellWidth = GlassActionCellWidth,
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp),
-                actions = listOf({
-                    HeaderIconButton(
-                        icon = R.drawable.download,
-                        color = colorPalette().text,
-                        iconSize = 24.dp,
-                        modifier = Modifier.clip(uiRoundnessShape()),
-                        onClick = { showConfirmDownloadAllDialog = true },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.downloads_action_download_all)) }
-                    )
-                }, {
-                    HeaderIconButton(
-                        icon = R.drawable.downloaded,
-                        color = colorPalette().text,
-                        iconSize = 24.dp,
-                        modifier = Modifier.clip(uiRoundnessShape()),
-                        onClick = { showConfirmDeleteDownloadDialog = true },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.downloads_action_remove_all)) }
-                    )
-                }, {
-                    HeaderIconButton(
-                        icon = R.drawable.enqueue,
-                        enabled = !songs.isNullOrEmpty(),
-                        color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                        iconSize = 24.dp,
-                        modifier = Modifier.clip(uiRoundnessShape()),
-                        onClick = {
-                            val snapshot = songs?.toList().orEmpty()
-                            if (snapshot.isNotEmpty()) {
-                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                    val mediaItems = withContext(NzikDispatchers.DATA) {
-                                        val player = binder?.player ?: return@withContext emptyList()
-                                        player.excludeMediaItems(snapshot.map(Song::asMediaItem), context)
-                                    }
-                                    val player = binder?.player ?: return@launch
-                                    player.enqueue(mediaItems)
-                                }
-                            }
-                        },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.player_action_enqueue_songs)) }
-                    )
-                }, {
-                    HeaderIconButton(
-                        // Issue #866 (gh-866): app-wide shuffle confirmation flash.
-                        icon = shuffleButtonIcon(),
-                        enabled = !songs.isNullOrEmpty(),
-                        color = if (!songs.isNullOrEmpty()) colorPalette().text else colorPalette().textDisabled,
-                        iconSize = 24.dp,
-                        modifier = Modifier.clip(uiRoundnessShape()),
-                        onClick = {
-                            songs?.let { songs ->
-                                if (songs.isNotEmpty()) {
-                                    binder?.let {
-                                        it.triggerShuffleOkFlash()
-                                        Shuffler.play(it, songs)
-                                    }
-                                }
-                            }
-                        },
-                        onLongClick = { Toaster.i(context.resources.getString(R.string.player_action_shuffle_hint)) }
-                    )
-                }),
+                modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+                buttons = ToolbarSurface.ARTIST_LIBRARY.ordered(
+                    if (offlineMode) actions - ToolbarControl.DOWNLOAD else actions,
+                ),
             )
         }
-        item {
-            DialogPresence(visible = showConfirmDownloadAllDialog) {
-                ConfirmationDialog(
-                    title = stringResource(R.string.downloads_action_download_all),
-                    confirmText = stringResource(R.string.downloads_title),
-                    text = stringResource(R.string.downloads_download_all_confirmation),
-                    onDismiss = { showConfirmDownloadAllDialog = false },
-                    onConfirm = {
-                        showConfirmDownloadAllDialog = false
-                        downloadState = Download.STATE_DOWNLOADING
-                        val snapshot = songs?.toList()
-                        if (snapshot?.isNotEmpty() == true)
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                processArtistDownloadBatch(snapshot, binder?.cache, context, downloadState = false)
-                            }
-                    }
-                )
-            }
-            DialogPresence(visible = showConfirmDeleteDownloadDialog) {
-                ConfirmationDialog(
-                    title = stringResource(R.string.downloads_delete_dialog_title),
-                    confirmText = stringResource(R.string.common_action_delete),
-                    text = stringResource(R.string.downloads_delete_all_confirmation),
-                    onDismiss = { showConfirmDeleteDownloadDialog = false },
-                    onConfirm = {
-                        showConfirmDeleteDownloadDialog = false
-                        downloadState = Download.STATE_DOWNLOADING
-                        val snapshot = songs?.toList()
-                        if (snapshot?.isNotEmpty() == true)
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                processArtistDownloadBatch(snapshot, binder?.cache, context, downloadState = true)
-                            }
-                    }
-                )
-            }
+        item("detail-search") {
+            Column { search.SearchBar(this) }
         }
         item {
             if (songCount > 0) {
@@ -320,7 +370,7 @@ fun ArtistLocalSongs(
         }
         if (songs == null) {
             item(key = "loading") { SongItemPlaceholders(count = FullSongListPlaceholderCount) }
-        } else if (songs.isNullOrEmpty()) {
+        } else if (query.isBlank() && visibleSongs.isEmpty()) {
             item(key = "empty") {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -333,14 +383,13 @@ fun ArtistLocalSongs(
             }
         } else {
             itemsIndexed(
-                items = songs ?: emptyList(),
+                items = visibleSongs,
                 key = { _, song -> song.id }
             ) { index, song ->
                 if (forceShimmer) {
                     SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
                     return@itemsIndexed
                 }
-                val isDownloaded = isDownloadedSong(song.asMediaItem.mediaId)
                 Box(
                     Modifier
                         .fillMaxWidth()
@@ -363,14 +412,17 @@ fun ArtistLocalSongs(
                             isLiked = likeStatesMap[song.id],
                             inPlaylist = playlistStatesMap[song.id],
                             navController = navController,
-                            modifier = Modifier,
+                            modifier = Modifier.animateItem(),
+                            itemSelector = itemSelector,
 
                             onClick = {
-                                binder?.stopRadio()
-                                binder?.player?.forcePlayAtIndex(
-                                    (songs ?: emptyList()).map(Song::asMediaItem),
-                                    index
-                                )
+                                if (!itemSelector.isActive) {
+                                    binder?.stopRadio()
+                                    binder?.player?.forcePlayAtIndex(
+                                        visibleSongs.map(Song::asMediaItem),
+                                        index,
+                                    )
+                                }
                             }
                         )
                     }

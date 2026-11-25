@@ -10,7 +10,6 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 import app.n_zik.android.models.Song
@@ -24,18 +23,26 @@ import timber.log.Timber
 
 @UnstableApi
 class DeleteAllDownloadedSongsDialog(
-    activeState: MutableState<Boolean>,
+    pendingSongs: MutableState<List<Song>?>,
     getSongs: () -> List<Song>,
-    binder: PlayerServiceModern.Binder?
-) : MediaDownloadDialog(activeState, getSongs, binder), MenuIcon, Descriptive {
+    binder: PlayerServiceModern.Binder?,
+    private val removableSongIds: () -> Set<String> = ::downloadRequestIds,
+) : MediaDownloadDialog(pendingSongs, getSongs, binder), MenuIcon, Descriptive {
 
     companion object {
         @Composable
-        operator fun invoke( getSongs: () -> List<Song> ) =
+        operator fun invoke(getSongs: () -> List<Song>) = invoke(getSongs, ::downloadRequestIds)
+
+        @Composable
+        operator fun invoke(
+            getSongs: () -> List<Song>,
+            removableSongIds: () -> Set<String>,
+        ) =
             DeleteAllDownloadedSongsDialog(
-                remember { mutableStateOf(false) },
+                remember { mutableStateOf(null) },
                 getSongs,
-                LocalPlayerServiceBinder.current
+                LocalPlayerServiceBinder.current,
+                removableSongIds,
             )
     }
 
@@ -49,7 +56,8 @@ class DeleteAllDownloadedSongsDialog(
     override val dialogTitle: String
         @Composable
         get() {
-            val count = getSongs().count { song -> MyDownloadHelper.downloads.value.containsKey(song.id) }
+            val requestIds = removableSongIds()
+            val count = confirmationSongs.count { it.id in requestIds }
             return if( count > 0 )
                 stringResource( R.string.downloads_delete_all_count_confirmation, count )
             else
@@ -60,9 +68,10 @@ class DeleteAllDownloadedSongsDialog(
         get() = stringResource( messageId )
 
     override fun onShortClick() {
-        val count = getSongs().count { song -> MyDownloadHelper.downloads.value.containsKey(song.id) }
-        if (count > 0) {
-            super.onShortClick()
+        val songs = getSongs()
+        val requestIds = removableSongIds()
+        if (songs.any { it.id in requestIds }) {
+            openForSongs(songs)
         } else {
             app.n_zik.android.core.utils.Toaster.toast(
                 appTextResources().getString(R.string.downloads_nothing_to_delete),
@@ -72,10 +81,8 @@ class DeleteAllDownloadedSongsDialog(
     }
 
     override fun onConfirm() {
-        // Reverse filter: process both completed and ongoing downloads for deletion
-        val downloadedSongs = getSongs().filter { song ->
-            MyDownloadHelper.downloads.value.containsKey(song.id)
-        }
+        val requestIds = removableSongIds()
+        val downloadedSongs = confirmationSongs.filter { it.id in requestIds }
 
         if (downloadedSongs.isEmpty()) {
             Timber.tag("DeleteAllDownloadedSongsDialog").d("No downloaded songs to delete")
@@ -86,7 +93,7 @@ class DeleteAllDownloadedSongsDialog(
         onDismiss()
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             downloadedSongs.forEach {
-                MyDownloadHelper.removeDownload( appContext(), it.asMediaItem )
+                onAction(it)
             }
         }
     }
@@ -95,4 +102,5 @@ class DeleteAllDownloadedSongsDialog(
         MyDownloadHelper.removeDownload( appContext(), media.asMediaItem )
 }
 
-
+@UnstableApi
+private fun downloadRequestIds(): Set<String> = MyDownloadHelper.downloads.value.keys

@@ -28,7 +28,6 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.captureToImage
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertCountEquals
@@ -70,43 +69,38 @@ class GlassToolbarButtonsTest {
     @get:Rule val compose = createComposeRule()
     private val settings = GlassSettings(quality = GlassQuality.Performance)
 
-    @Test fun `touch exploration replaces toolbar content without an animated outgoing control`() {
-        val application = org.robolectric.RuntimeEnvironment.getApplication()
-        val manager = application.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as android.view.accessibility.AccessibilityManager
-        val shadow = org.robolectric.Shadows.shadowOf(manager)
-        shadow.setTouchExplorationEnabled(true)
-        try {
-            assertFalse(isGlassMotionAllowed(application))
-            val first = object : Button {
-                @Composable override fun ToolBarButton() { Box(Modifier.size(40.dp).testTag("motion.first")) }
+    @Test fun `native and Glass replace toolbar content without retaining outgoing controls`() {
+        val glass = mutableStateOf(false)
+        val first = object : Button {
+            @Composable override fun ToolBarButton() { Box(Modifier.size(40.dp).testTag("motion.first")) }
+        }
+        val second = object : Button {
+            @Composable override fun ToolBarButton() { Box(Modifier.size(40.dp).testTag("motion.second")) }
+        }
+        val buttons = mutableStateOf(listOf<Button>(first))
+        compose.setContent {
+            AppearanceProvider {
+                GlassToolbarButtons(buttons.value, modifier = Modifier.width(240.dp), settings = settings.copy(enabled = glass.value))
             }
-            val second = object : Button {
-                @Composable override fun ToolBarButton() { Box(Modifier.size(40.dp).testTag("motion.second")) }
-            }
-            val buttons = mutableStateOf(listOf<Button>(first))
-            compose.setContent {
-                AppearanceProvider {
-                    // Match the manager whose touch-exploration state this fixture controls.
-                    CompositionLocalProvider(LocalContext provides application) {
-                        GlassToolbarButtons(buttons.value, modifier = Modifier.width(240.dp), settings = settings)
-                    }
-                }
+        }
+
+        for (material in listOf(false, true)) {
+            compose.mainClock.autoAdvance = true
+            compose.runOnIdle {
+                glass.value = material
+                buttons.value = listOf(first)
             }
             compose.onNodeWithTag("motion.first").assertExists()
             compose.mainClock.autoAdvance = false
             compose.runOnIdle { buttons.value = listOf(second) }
-            compose.mainClock.advanceTimeByFrame()
-            compose.waitForIdle()
-            // Flush the composition invalidated at the preceding frame/Android layout boundary.
-            // Two frames remain below the 90ms delayed animated entrance.
-            compose.mainClock.advanceTimeByFrame()
-            compose.waitForIdle()
+            repeat(2) {
+                compose.mainClock.advanceTimeByFrame()
+                compose.waitForIdle()
+            }
             compose.onNodeWithTag("motion.second").assertExists()
             compose.onNodeWithTag("motion.first").assertDoesNotExist()
-        } finally {
-            shadow.setTouchExplorationEnabled(false)
-            compose.mainClock.autoAdvance = true
         }
+        compose.mainClock.autoAdvance = true
     }
 
     @Test fun `long icon overloads retain caller modifier on action container in native and Glass rows`() {
@@ -209,7 +203,7 @@ class GlassToolbarButtonsTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.width(300.dp)) {
-                    GlassToolbarButtons(listOf(custom), settings = settings, disableAnimation = true)
+                    GlassToolbarButtons(listOf(custom), settings = settings)
                 }
             }
         }
@@ -249,7 +243,7 @@ class GlassToolbarButtonsTest {
         compose.setContent {
             AppearanceProvider {
                 Box(Modifier.width(200.dp)) {
-                    GlassToolbarButtons(controls, settings = settings, disableAnimation = true)
+                    GlassToolbarButtons(controls, settings = settings)
                 }
             }
         }

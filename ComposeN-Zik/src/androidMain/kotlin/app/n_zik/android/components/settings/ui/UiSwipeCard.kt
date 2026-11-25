@@ -111,6 +111,28 @@ internal fun UiSwipeCard(search: Search) {
                             )
                         }
 
+                        var showQSRightDialog by remember { mutableStateOf(false) }
+                        if (search.inputValue.isBlank() || stringResource(R.string.settings_library_queue_playlist_swipe_right_label).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
+                            OtherSettingsEntry(
+                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_right_swipe"),
+                                title = stringResource(R.string.settings_library_queue_playlist_swipe_right_label),
+                                text = stringResource(R.string.gestures_queue_item_swipe_right_description),
+                                selectedValueText = queueSwipeRightAction.text,
+                                icon = R.drawable.arrow_right,
+                                onClick = { showQSRightDialog = true }
+                            )
+                        }
+                        DialogPresence(visible = showQSRightDialog) {
+                            ValueSelectorDialog(
+                                title = stringResource(R.string.settings_library_queue_playlist_swipe_right_label),
+                                selectedValue = queueSwipeRightAction,
+                                onValueSelected = { queueSwipeRightAction = it },
+                                valueText = { it.text },
+                                values = QueueSwipeAction.values().toList(),
+                                onDismiss = { showQSRightDialog = false }
+                            )
+                        }
+
                         var showPLLeftDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.playlist_left_swipe).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
                             OtherSettingsEntry(
@@ -196,28 +218,6 @@ internal fun UiSwipeCard(search: Search) {
                                 valueText = { it.text },
                                 values = AlbumSwipeAction.values().toList(),
                                 onDismiss = { showARightDialog = false }
-                            )
-                        }
-
-                        var showQSRightDialog by remember { mutableStateOf(false) }
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_library_queue_playlist_swipe_right_label).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {
-                            OtherSettingsEntry(
-                                modifier = Modifier.settingsSearchTarget("ui.swipe_to_action.queue_and_local_playlists_right_swipe"),
-                                title = stringResource(R.string.settings_library_queue_playlist_swipe_right_label),
-                                text = stringResource(R.string.gestures_queue_item_swipe_right_description),
-                                selectedValueText = queueSwipeRightAction.text,
-                                icon = R.drawable.arrow_right,
-                                onClick = { showQSRightDialog = true }
-                            )
-                        }
-                        DialogPresence(visible = showQSRightDialog) {
-                            ValueSelectorDialog(
-                                title = stringResource(R.string.settings_library_queue_playlist_swipe_right_label),
-                                selectedValue = queueSwipeRightAction,
-                                onValueSelected = { queueSwipeRightAction = it },
-                                valueText = { it.text },
-                                values = QueueSwipeAction.values().toList(),
-                                onDismiss = { showQSRightDialog = false }
                             )
                         }
                     }

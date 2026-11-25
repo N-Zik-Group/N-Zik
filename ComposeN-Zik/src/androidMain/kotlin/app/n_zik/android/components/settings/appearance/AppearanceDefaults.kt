@@ -3,6 +3,11 @@ package app.n_zik.android.components.settings.appearance
 import app.n_zik.android.utils.effectRotationDefault
 import app.n_zik.android.utils.showButtonPlayerVideoDefault
 import android.content.Context
+import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDialogs
+import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
+import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
+import app.n_zik.android.enums.PlayerOpeningMode
+import app.n_zik.android.utils.playerOpeningModeKey
 import androidx.core.content.edit
 import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.BackgroundProgress
@@ -137,6 +142,7 @@ import app.n_zik.android.utils.thumbnailpauseKey
 import app.n_zik.android.utils.timelineExpandedKey
 import app.n_zik.android.utils.titleExpandedKey
 import app.n_zik.android.utils.topPaddingKey
+import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.utils.transparentbarKey
 import app.n_zik.android.utils.uiRoundnessDpKey
@@ -255,6 +261,8 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(notificationPlayerFirstIconKey, NotificationButtons.Download)
         putEnum(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
         putBoolean(topPaddingKey, true)
+        putBoolean(rememberQueueScrollPositionKey, true)
+        putEnum(playerOpeningModeKey, PlayerOpeningMode.Audio)
         putEnum(animatedGradientKey, AnimatedGradient.M3EMorphingCover)
         putEnum(shakeSensitivityThemeKey, ShakeSensitivityTheme.Disabled)
         remove(m3eAlwaysShowShapesKey)
@@ -270,5 +278,12 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
         putBoolean(rotatingAlbumCoverKey, false)
         remove(currentVisualizerKey)
+        appearanceToolbarSettingsDialogs.forEach { dialog ->
+            dialog.surfaces.forEach { surface ->
+                surface.preferenceKeys.forEach { remove(it) }
+            }
+        }
     }
+    PlayerActionBarSettingsDialog.reset(context)
+    MiniPlayerButtonsSettingsDialog.reset(context)
 }

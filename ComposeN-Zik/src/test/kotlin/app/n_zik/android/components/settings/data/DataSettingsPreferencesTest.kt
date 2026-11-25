@@ -21,6 +21,7 @@ import app.n_zik.android.utils.exoPlayerCacheLocationKey
 import app.n_zik.android.utils.exoPlayerCustomCacheKey
 import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
 import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
 import app.n_zik.android.utils.pauseListenHistoryKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
@@ -43,6 +44,7 @@ class DataSettingsPreferencesTest {
         PROFILE_IMAGE_CACHE_CUSTOM_MB to 32,
         pauseSearchHistoryKey to false,
         pauseListenHistoryKey to false,
+        exoPlayerMinTimeForEventKey to "20s",
     )
 
     @Before fun setUp() {
@@ -54,7 +56,7 @@ class DataSettingsPreferencesTest {
 
     @After fun tearDown() { setActiveProfile("default", context) }
 
-    @Test fun `reset restores all eight baseline values without touching other profiles`() {
+    @Test fun `reset restores storage and history values without touching other profiles`() {
         context.preferences.edit().putString("sentinel", "keep").putInt(exoPlayerCustomCacheKey, 1000).putBoolean(pauseListenHistoryKey, true).commit()
         val base = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         base.edit().putBoolean(pauseSearchHistoryKey, true).commit()
@@ -83,7 +85,7 @@ class DataSettingsPreferencesTest {
     @Test fun `target inventory preserves card order and eight distinct preference keys`() {
         assertEquals(listOf("data.cache", "data.backup", "data.auto-backup", "data.history", "data.reset"), DataSettingTargets.cards)
         assertEquals(expected.keys, DataSettingTargets.preferenceKeys.toSet())
-        assertEquals(8, DataSettingTargets.preferenceKeys.size)
+        assertEquals(9, DataSettingTargets.preferenceKeys.size)
         assertEquals(DataSettingTargets.actions.size, DataSettingTargets.actions.toSet().size)
         assertEquals("history", DataSettingTargets.HISTORY_FOCUS)
     }

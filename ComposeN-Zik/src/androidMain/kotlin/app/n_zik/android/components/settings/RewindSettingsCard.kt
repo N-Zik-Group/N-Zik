@@ -1,21 +1,19 @@
 package app.n_zik.android.components.settings
 
-import app.n_zik.android.components.settings.common.settingsSearchTarget
-
-import androidx.compose.ui.Modifier
-
 import androidx.compose.animation.AnimatedVisibility
-import app.n_zik.android.components.settings.common.settingsEntryEnter
-import app.n_zik.android.components.settings.common.settingsEntryExit
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.settingsEntryEnter
+import app.n_zik.android.components.settings.common.settingsEntryExit
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import timber.log.Timber
@@ -23,12 +21,12 @@ import timber.log.Timber
 /**
  * Rewind settings cards of the AI tab, grouped like the Quick Picks sections (user
  * re-negotiation, 2026-09-24 passes 5-7): the master switch lives in the screen's
- * existing "General" card, then three grouped cards: "Rewind" (recap type toggles),
+ * Privacy category, then three grouped cards: "Rewind" (recap type toggles),
  * "Rewind notifications" (every notification toggle together) and "Rewind playlists"
  * (the two creation toggles).
  *
- * The master is the total switch (user decision, 2026-10-25): while it is off the whole
- * section is hidden, and the master toggle auto-unchecks the two playlist creation
+ * While the master is off, the settings page links back to the Privacy switch,
+ * and the master toggle auto-unchecks the two playlist creation
  * gates so no worker can keep running (the workers carry the same master gate).
  *
  * The cards are wrapped in their own Column: the host wraps this block in a Box for
@@ -39,13 +37,13 @@ import timber.log.Timber
  * expand/collapse + fade, so the other cards slide naturally); entry visibility inside
  * the notifications card uses the shared [settingsEntryEnter]/[settingsEntryExit] specs.
  *
- * Every key is read live from [DataStoreUtils]: the master is flipped from the General
- * card and the same keys gate the Rewind home entries, the hamburger menu item and the
+ * Every key is read live from [DataStoreUtils]: the master is flipped from Privacy
+ * and the same keys gate the Rewind home entries, the hamburger menu item and the
  * monthly and yearly reminder workers, so a flip takes effect without an app restart.
  * A notification entry hides while its parent type is off.
  */
 @Composable
-fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
+fun RewindSettingsCard(onOpenPrivacy: () -> Unit, onOpenRewind: (() -> Unit)? = null) {
     val context = LocalContext.current
     val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
     val yearlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
@@ -60,12 +58,19 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
     val bgmEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_BGM_ENABLED, true)
 
     Column {
-        // "Rewind" card: recap type toggles, only relevant while the feature is on
         SettingsSectionCard(
             title = stringResource(R.string.rewind_settings_title),
             icon = R.drawable.sparkles,
-            visible = rewindEnabled,
             content = {
+                if (!rewindEnabled) {
+                    OtherSettingsEntry(
+                        icon = R.drawable.sparkles,
+                        title = stringResource(R.string.settings_category_privacy),
+                        text = stringResource(R.string.rewind_settings_disabled_message),
+                        onClick = onOpenPrivacy,
+                    )
+                    return@SettingsSectionCard
+                }
                 // Optional deep link to the Rewind home screen (wired by the AI tab,
                 // spec-customizable-burger-menu goal B).
                 onOpenRewind?.let { onOpen ->

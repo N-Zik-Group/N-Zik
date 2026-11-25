@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Mine topp</string>
     <string name="recommendations_playlists_title">Spillelister du kanskje liker</string>
     <string name="recommendations_reset_complete">Hurtiganbefalinger er tømt</string>
-    <string name="recommendations_reset_description">Slett avspillingshendelsene brukt for å generere lokale Quick Picks anbefalinger.</string>
     <string name="recommendations_section_other_youtube_title">Andre seksjoner</string>
     <string name="recommendations_section_visibility_description">Deaktiver hvis du ikke ønsker å se</string>
     <string name="recommendations_show_section_label">Vis</string>

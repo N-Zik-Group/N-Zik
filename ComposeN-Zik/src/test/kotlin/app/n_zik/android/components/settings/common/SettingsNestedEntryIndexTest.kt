@@ -29,7 +29,8 @@ class SettingsNestedEntryIndexTest {
         val before = context.preferences.all.toMap()
         assertTrue(SettingsNestedEntryTargets.isNotEmpty())
         assertEquals(SettingsNestedEntryTargets.size, SettingsNestedEntryTargets.map { it.id }.toSet().size)
-        assertEquals(22, SettingsNestedEntryTargets.map { requireNotNull(it.nestedDestination).dialogId }.toSet().size)
+        assertEquals(28, SettingsNestedEntryTargets.map { requireNotNull(it.nestedDestination).dialogId }.toSet().size)
+        assertFalse(AllSettingsEntryTargets.any { it.id == "ui.toolbar.history" })
         SettingsNestedEntryTargets.forEach { entry ->
             val destination = requireNotNull(entry.nestedDestination)
             val opener = AllSettingsEntryTargets.single { it.id == destination.openerId }
@@ -58,6 +59,24 @@ class SettingsNestedEntryIndexTest {
         val dock = DockToolbarSettingsDialog.searchOptions().associate { it.labelRes to it.itemId }
         buildHomeTabDefs().values.forEach { definition ->
             assertEquals(context.resources.getResourceEntryName(definition.iconRes), dock.getValue(definition.labelRes))
+        }
+    }
+
+    @Test fun playerTabsAndQueueToolbarTargetsOpenFromTheAppearanceActionBarCard() {
+        listOf(
+            Triple("appearance.player_action_bar.player_action_bar_buttons", "top.action.audioVideo", 0),
+            Triple("appearance.player_action_bar.player_action_bar_buttons", "shuffle", 1),
+            Triple("ui.toolbar.queue", "queue.select", 0),
+        ).forEach { (openerId, itemId, tabIndex) ->
+            val opener = AllSettingsEntryTargets.single { it.id == openerId }
+            val option = SettingsNestedEntryTargets.single {
+                it.nestedDestination?.openerId == openerId && it.nestedDestination.itemId == itemId
+            }
+            assertEquals(2, opener.tab)
+            assertEquals(R.string.settings_section_player_action_bar_title, opener.cardTitleRes)
+            assertEquals(opener.parentCard(), option.parentCard())
+            assertEquals(tabIndex, option.nestedDestination?.tabIndex)
+            assertTrue(searchSettingsEntries(context, context.getString(option.labelRes)).contains(option))
         }
     }
 

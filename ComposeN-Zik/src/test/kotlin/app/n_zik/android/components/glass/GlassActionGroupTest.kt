@@ -815,6 +815,40 @@ class GlassActionGroupTest {
         }
     }
 
+    @Test fun `vertical profile transfer clears only its middle cell`() {
+        val trigger = GlassMenuTriggerState()
+        val owner = Any()
+        compose.setContent {
+            AppearanceProvider {
+                val middleOffset = with(androidx.compose.ui.platform.LocalDensity.current) { 40.dp.roundToPx() }
+                Box(Modifier.background(Color.Red).testTag("vertical.middle")) {
+                    GlassVerticalActionGroup(
+                        GlassSettings(enabled = true, quality = GlassQuality.Performance, film = 1f),
+                        GlassArea.Header, trailingTrigger = trigger, actionCount = 3, triggerOffsetPx = middleOffset,
+                    ) {
+                        GlassActionGroupItem({}) { }
+                        GlassActionGroupItem({}, menuTrigger = trigger) { }
+                        GlassActionGroupItem({}) { }
+                    }
+                }
+            }
+        }
+        val node = compose.onNodeWithTag("vertical.middle")
+        val rest = node.captureToImage().toPixelMap()
+        compose.runOnIdle {
+            trigger.claim(owner)
+            trigger.updateMenuBounds(owner, trigger.bounds)
+            Snapshot.sendApplyNotifications()
+        }
+        val open = node.captureToImage().toPixelMap()
+        val x = open.width / 2
+        assertEquals(Color.Red, open[x, open.height / 2])
+        for (y in listOf(open.height / 6, open.height * 5 / 6)) {
+            assertTrue("Adjacent profile actions retain their backgrounds", open[x, y] != Color.Red)
+            assertEquals(rest[x, y], open[x, y])
+        }
+    }
+
     /** Measures actual ink rather than layout coordinates, which draw-only springs preserve. */
     private fun blueGlyphBounds(image: ImageBitmap): Rect {
         val pixels = image.toPixelMap()

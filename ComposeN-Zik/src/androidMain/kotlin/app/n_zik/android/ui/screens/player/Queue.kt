@@ -18,7 +18,11 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSongRowSurface
 
+import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.search.SearchEmptyFeedback
+
+import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.components.search.SearchEmptySpace
 
 
@@ -38,7 +42,6 @@ import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
@@ -51,6 +54,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +69,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -90,6 +95,7 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.SwipeableQueueItem
 import app.n_zik.android.ui.components.tab.toolbar.Dialog
+import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
@@ -104,11 +110,11 @@ import app.n_zik.android.utils.currentMediaItemIdAsState
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.manageDownload
+import app.n_zik.android.utils.normalizedSongId
 import app.n_zik.android.utils.queueTypeKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.shouldBePlaying
-import app.n_zik.android.utils.showButtonPlayerDiscoverKey
 import app.n_zik.android.utils.windows
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.player.rememberPlayerQueueSnapshot
@@ -116,8 +122,14 @@ import app.n_zik.android.components.player.playerQueueBulkSongs
 import app.n_zik.android.components.player.findPlayerQueueWindowIndex
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
+import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.ordered
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Locator
+import app.n_zik.android.utils.currentWindow
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.QueueSwipeAction
@@ -125,11 +137,13 @@ import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
 import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.download.utils.completedDownloadRequestIds
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.ui.screens.player.DeleteFromQueue
 import app.n_zik.android.components.ui.screens.player.Discover
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.components.ui.screens.player.QueueArrow
+import app.n_zik.android.components.ui.screens.player.QueueSelectionCheckbox
 import app.n_zik.android.components.ui.screens.player.Repeat
 import app.n_zik.android.components.ui.screens.player.ShuffleQueue
 import app.n_zik.android.core.utils.Toaster
@@ -237,7 +251,7 @@ fun Queue(
 
         val positionLock = remember { PositionLock() }
 
-        val itemSelector = ItemSelector<Song>()
+        val itemSelector = ItemSelector<Any>()
         LaunchedEffect( itemSelector.isActive ) {
             // Setting this field to true means disable it
             if( itemSelector.isActive )
@@ -269,106 +283,131 @@ fun Queue(
         LaunchedEffect(search.isVisible) {
             if (search.isVisible) onSearchOpened()
         }
-        val queueSnapshot = rememberPlayerQueueSnapshot(windowsInQueue, search.inputValue)
+        val storedQueueSongIds = remember(windowsInQueue) {
+            windowsInQueue.map { it.mediaItem.normalizedSongId }.distinct()
+        }
+        val storedQueueSongs by rememberSongRowMetadata(storedQueueSongIds)
+        val queueSnapshot = rememberPlayerQueueSnapshot(windowsInQueue, search.filterQuery, storedSongs = storedQueueSongs)
         // Drag order must update synchronously; all metadata conversion/search stays on MEDIA.
-        val rowsOnDisplay = if ((isDragging || pendingDragOrder === windowsInQueue) && search.inputValue.isEmpty()) {
+        val rowsOnDisplay = if ((isDragging || pendingDragOrder === windowsInQueue) && search.filterQuery.isEmpty()) {
             remember(windowsInQueue, queueSnapshot) {
                 windowsInQueue.mapNotNull { queueSnapshot.rowsByUid[it.uid] }
             }
         } else queueSnapshot.rows
         val queueSearchPending = queueSnapshot.source !== windowsInQueue ||
-            queueSnapshot.input != search.inputValue
-        fun getSongs() = playerQueueBulkSongs(queueSnapshot, windowsInQueue, itemSelector.toList())
+            queueSnapshot.input != search.filterQuery
+        fun selectedQueueWindows(): List<Timeline.Window> {
+            val candidates = when {
+                !itemSelector.isActive || search.filterQuery.isBlank() -> windowsInQueue
+                queueSearchPending -> emptyList()
+                else -> rowsOnDisplay.map { it.window }
+            }
+            return itemSelector.actionTargets(candidates, { it }, { it.uid }, selectionOrder = true)
+        }
+        fun getSongs() = playerQueueBulkSongs(queueSnapshot, selectedQueueWindows(), emptyList())
+        fun hasCurrentSelection(): Boolean = selectedQueueWindows().isNotEmpty()
         fun currentQueueIndex(uid: Any): Int = findPlayerQueueWindowIndex(player.currentTimeline, uid)
 
         LaunchedEffect(queueSnapshot) {
             itemsOnDisplay = queueSnapshot.songs
         }
 
-        val plistName = remember { mutableStateOf("") }
         val exportDialog = ExportSongsToCSVDialog(
-            playlistName = plistName.value,
-            songs = ::getSongs
+            playlistName = "",
+            songs = ::getSongs,
+            selectionActive = { itemSelector.isActive },
         )
-        val shuffle = ShuffleQueue( player, lazyListState, coroutineScope, itemSelector )
+        val shuffle = ShuffleQueue(player, lazyListState, coroutineScope, itemSelector) {
+            selectedQueueWindows().mapTo(LinkedHashSet()) { it.uid }
+        }
         val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
         val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
         // Full offline mode (spec-full-offline-mode): network queue actions removed
         val offlineMode by OfflineMode.rememberEnabled()
         val repeat = Repeat.init()
-        val deleteDialog = DeleteFromQueue( itemSelector ) {
-            // Deleting from the queue (including "clear all") is host-only in a Listen
-            // Together room: a locked guest's confirmation is a no-op
-            if (!listenTogetherGuestLock) {
-                try {
-                    if( itemSelector.isEmpty() ) {
-                        player.stop()
-                        player.clearMediaItems()
-                        Toaster.s( R.string.common_delete_success )
-                    } else {
-                        val count = itemSelector.size
-                        val selectedIds = itemSelector.map { it.id }.toSet()
-                        // Remove from end to avoid index shift
-                        (player.mediaItemCount - 1 downTo 0)
-                            .filter { player.getMediaItemAt(it).mediaId in selectedIds }
-                            .forEach( player::removeMediaItem )
-                        Toaster.s( R.string.player_queue_deleted_item_format, formatArgs = *arrayOf( "$count" ) )
-                    }
-                } catch( e: Exception ) {
-                    Timber.tag( "Queue" ).e( e, "Failed to delete from queue" )
-                }
-            }
-
-            itemSelector.isActive = false
-
-            onDismiss()
+        val deleteDialog = DeleteFromQueue(player, itemSelector) {
+            selectedQueueWindows().mapTo(LinkedHashSet()) { it.uid }
         }
-        val addToPlaylist = PlaylistsMenu.init(
+        val addToPlaylist = PlaylistsMenu.deferred(
             navController = navController,
-            mediaItems = { getSongs().map( Song::asMediaItem ) },
+            captureMediaItems = {
+                val songs = getSongs()
+                if (itemSelector.isActive && songs.isEmpty()) null else suspend { songs.map(Song::asMediaItem) }
+            },
             onFailure = { throwable, preview ->
                 Timber.tag("Queue").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
-            finalAction = {
-                // Turn of selector clears the selected list
-                itemSelector.isActive = false
-            }
+            itemSelector = itemSelector,
         )
         val queueArrow = QueueArrow { onDismiss( repeat.type ) }
-        val locator = Locator( lazyListState, ::getSongs )
-
-        val downloadAllDialog = app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog(::getSongs)
-        val deleteAllDownloadedDialog = app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog(::getSongs)
-
-        // Dialog renders
-        exportDialog.Render()
-        (deleteDialog as Dialog).Render()
-        (downloadAllDialog as Dialog).Render()
-        (deleteAllDownloadedDialog as Dialog).Render()
-
-        val showDiscover = rememberPreference( showButtonPlayerDiscoverKey, false ).value
-        val buttonsList = buildList {
-            add( locator )
-            add( search )
-            if( showDiscover && !offlineMode )
-                add( discover )
-            if ( !offlineMode ) add( downloadAllDialog )
-            add( deleteAllDownloadedDialog )
-            add( positionLock )
-            add( repeat )
-            add( shuffle )
-            add( itemSelector )
-            add( deleteDialog )
-            add( addToPlaylist )
-            add( exportDialog )
+        val locator = Locator.forQueue(lazyListState) {
+            if (queueSearchPending) -1
+            else {
+                val currentUid = player.currentWindow?.uid
+                rowsOnDisplay.indexOfFirst { row -> row.window.uid == currentUid }
+            }
         }
 
-        QueueToolBarState.mediaItemCount = player.mediaItemCount
-        QueueToolBarState.buttons = buttonsList
-        QueueToolBarState.queueArrow = queueArrow
-        QueueToolBarState.onBarClick = { onDismiss( repeat.type ) }
-        QueueToolBarState.isVisible = if (search.isVisible) 1 else 0
+        fun downloadableSongs() = getSongs().filterNot { it.isLocal }.distinctBy(Song::id)
+        val downloadAllDialog = DownloadAllSongsDialog(::downloadableSongs)
+        val deleteAllDownloadedDialog = DeleteAllDownloadedSongsDialog(
+            getSongs = ::downloadableSongs,
+            removableSongIds = { MyDownloadHelper.downloads.value.completedDownloadRequestIds() },
+        )
+
+        exportDialog.Render()
+        (deleteDialog as Dialog).Render()
+        downloadAllDialog.Render()
+        deleteAllDownloadedDialog.Render()
+
+        val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(
+            initialValue = MyDownloadHelper.downloads.value,
+            context = NzikDispatchers.DATA,
+        )
+        val downloadedIds by remember {
+            derivedStateOf { downloadsMapState.completedDownloadRequestIds() }
+        }
+        val favorites = rememberCollectionFavoritesButton(
+            mediaItems = if (!itemSelector.isActive || queueSearchPending) emptyList()
+                else selectedQueueWindows().map { it.mediaItem },
+            kind = CollectionFavoritesKind.Queue,
+        )
+        val actions = buildMap<ToolbarAction, Button> {
+            put(ToolbarAction.LOCATE, locator)
+            put(ToolbarAction.SEARCH, search)
+            if (!offlineMode) {
+                put(ToolbarAction.DISCOVER, discover)
+                put(ToolbarAction.DOWNLOAD, itemSelector.guard(downloadAllDialog) {
+                    selectedQueueWindows().any {
+                        !it.mediaItem.isLocal && it.mediaItem.normalizedSongId !in downloadedIds
+                    }
+                })
+            }
+            put(ToolbarAction.DELETE_DOWNLOADS, itemSelector.guard(deleteAllDownloadedDialog) {
+                selectedQueueWindows().any {
+                    !it.mediaItem.isLocal && it.mediaItem.normalizedSongId in downloadedIds
+                }
+            })
+            put(ToolbarAction.POSITION_LOCK, positionLock)
+            put(ToolbarAction.REPEAT, repeat)
+            put(ToolbarAction.SHUFFLE, itemSelector.guard(shuffle) { selectedQueueWindows().size > 1 })
+            put(ToolbarAction.SELECT, itemSelector)
+            put(ToolbarAction.FAVORITES, favorites)
+            put(ToolbarAction.REMOVE, deleteDialog)
+            put(ToolbarAction.ADD_TO_PLAYLIST, itemSelector.guard(addToPlaylist, ::hasCurrentSelection))
+            put(ToolbarAction.EXPORT, itemSelector.guard(exportDialog, ::hasCurrentSelection))
+        }
+        val buttonsList = ToolbarSurface.QUEUE.ordered(actions)
+
+        val searchVisible = search.isVisible
+        SideEffect {
+            QueueToolBarState.mediaItemCount = player.mediaItemCount
+            QueueToolBarState.buttons = buttonsList
+            QueueToolBarState.queueArrow = queueArrow
+            QueueToolBarState.onBarClick = { onDismiss(repeat.type) }
+            QueueToolBarState.isVisible = if (searchVisible) 1 else 0
+        }
 
         DisposableEffect( Unit ) {
             onDispose { QueueToolBarState.reset() }
@@ -388,7 +427,7 @@ fun Queue(
             val currentMediaId = if (forceShimmer || placeholderCount > 0)
                 player.currentMediaItemIdAsState(player).value else null
             val hasReorderSlot = !positionLock.isLocked()
-            val showReorderHandle = hasReorderSlot && search.inputValue.isEmpty()
+            val showReorderHandle = hasReorderSlot && search.filterQuery.isEmpty()
 
             val queueSongIds = queueSnapshot.songIds
             val likeStatesMap by remember(queueSongIds) {
@@ -404,14 +443,6 @@ fun Queue(
             val queueSwipeLeftAction by rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
             val queueSwipeRightAction by rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
 
-            val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(initialValue = MyDownloadHelper.downloads.value, context = NzikDispatchers.DATA)
-            val downloadedIds by remember {
-                derivedStateOf {
-                    downloadsMapState.values
-                        .filter { it.state == Download.STATE_COMPLETED }
-                        .mapTo(HashSet()) { it.request.id }
-                }
-            }
             val downloadStatesMap by remember(queueSongs) {
                 derivedStateOf {
                     queueSongs.associate { song ->
@@ -420,7 +451,11 @@ fun Queue(
                 }
             }
 
-            SearchEmptyFeedback(search.inputValue, rowsOnDisplay.isEmpty(), loading = queueSearchPending)
+            SearchEmptyFeedback(
+                query = search.filterQuery,
+                empty = rowsOnDisplay.isEmpty(),
+                loading = forceShimmer || queueSearchPending,
+            )
             CompositionLocalProvider(
                 LocalDownloadStatesMap provides downloadStatesMap,
                 LocalQueueRowBackdrop provides rememberQueueRowGlassBackdrop(queueBackground, queueGlassSettings),
@@ -434,7 +469,7 @@ fun Queue(
                                    .glassQueueListBackground(queueBackground, queueGlassSettings)
 
             ) {
-                if (!forceShimmer && search.inputValue.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
+                if (!forceShimmer && search.filterQuery.isNotBlank() && !queueSearchPending && rowsOnDisplay.isEmpty()) {
                     item(key = "search_no_results") {
                         SearchEmptySpace(Modifier.fillParentMaxSize())
                     }
@@ -600,13 +635,14 @@ fun Queue(
                             ) {
                                 SongItem(
                                     song = song,
+                                    observeStoredMetadata = false,
                                     navController = navController,
-                                    itemSelector = itemSelector,
                                     isLiked = isLiked,
                                     inPlaylist = inPlaylist,
                                     backgroundColor = itemBackground,
                                     onLongClick = null, // null triggers SongItemMenu on long press
                                     trailingContent = {
+                                        QueueSelectionCheckbox(window.uid, itemSelector)
                                         if (hasReorderSlot)
                                         // Create a fake box to store drag anchor and checkbox
                                             Box( Modifier.width( 24.dp ) )
@@ -624,11 +660,6 @@ fun Queue(
                                             player.prepare()
                                             player.playWhenReady = true
                                         }
-
-                                        /*
-                                            Due to the small size of checkboxes,
-                                            we shouldn't disable [itemSelector]
-                                         */
 
                                         search.hideIfEmpty()
                                     }

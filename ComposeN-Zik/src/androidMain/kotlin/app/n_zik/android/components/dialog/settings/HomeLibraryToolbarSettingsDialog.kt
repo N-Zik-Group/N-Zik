@@ -58,11 +58,9 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
     )
 
     val allButtonIds = listOf(
-        "sort", "position_lock", "search", "sync", "shuffle", "item_selector",
-        "play_next", "enqueue", "add_to_playlist", "import_menu", "export_dialog", "delete_playlists", "item_size"
+        "sort", "position_lock", "search", "shuffle", "play_next", "enqueue", "item_selector",
+        "add_to_playlist", "sync", "import_menu", "export_dialog", "delete_playlists", "item_size"
     )
-
-    private val lockedIds = setOf("sort", "sync", "position_lock")
 
     internal val onDeviceButtonIds = allButtonIds.filterNot { it in setOf("sync", "export_dialog", "import_menu") }
 
@@ -79,21 +77,6 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_dialog_toolbar_title_format, stringResource(R.string.library_title))
     override var isActive: Boolean by mutableStateOf(false)
-
-    private fun parseOrder(s: String, allButtonIds: List<String>): List<String> {
-        if (s.isBlank()) return allButtonIds
-        return try {
-            val a = JSONArray(s)
-            val savedIds = mutableListOf<String>()
-            val seen = mutableSetOf<String>()
-            for (i in 0 until a.length()) {
-                val id = a.getString(i)
-                if (id in allButtonIds && seen.add(id)) savedIds.add(id)
-            }
-            val missingIds = allButtonIds.filter { it !in savedIds }
-            savedIds + missingIds
-        } catch (_: Exception) { allButtonIds }
-    }
 
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
@@ -113,27 +96,22 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
-        val prefs = remember { ctx.preferences }
+        val prefs = ctx.preferences
 
         val tabs = toolbarTabs
-
-        var selectedTabIndex by remember { mutableStateOf(0) }
-
-        var workingOrders by remember {
-            mutableStateOf(
-                tabs.associate { (tab, key) -> tab to parseOrder(prefs.getString(key, "") ?: "", availableButtonIds(tab)).toMutableList() }.toMutableMap()
-            )
+        val initial = remember(prefs) {
+            val lists = portableLists()
+            tabs.associate { (tab, _) -> tab to lists.getValue(getTabPrefix(tab)).readHomeToolbar(prefs) }
         }
 
-        var workingToggles by remember {
-            mutableStateOf(
-                tabs.associate { (tab, _) ->
-                    val tp = getTabPrefix(tab)
-                    tab to availableButtonIds(tab).associateWith { id ->
-                        prefs.getBoolean("${tp}_lib_$id", true)
-                    }.toMutableMap()
-                }.toMutableMap()
-            )
+        val tabTransition = rememberSettingsDialogTabTransition(tabs.size)
+        val selectedTabIndex = tabTransition.displayedIndex
+
+        var workingOrders by remember(prefs) {
+            mutableStateOf(initial.mapValues { (_, settings) -> settings.order.toMutableList() }.toMutableMap())
+        }
+        var workingToggles by remember(prefs) {
+            mutableStateOf(initial.mapValues { (_, settings) -> settings.visibility.toMutableMap() }.toMutableMap())
         }
 
         val currentTabKey = tabs[selectedTabIndex].first
@@ -161,7 +139,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         val deletePlaylistsLabel = stringResource(searchLabelResources.getValue("delete_playlists"))
         val itemSizeLabel = stringResource(searchLabelResources.getValue("item_size"))
 
-        val currentLockedIds = lockedIds.map { "${tabPrefix}_$it" }.toSet()
+        val currentLockedIds = homeToolbarLockedIds.map { "${tabPrefix}_$it" }.toSet()
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -199,11 +177,12 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         ToggleListDialog(
             frameTitle = dialogTitle,
             onDismiss = ::hideDialog,
+            tabContentAlpha = { tabTransition.alpha },
             bodyHeader = {
                 SettingsDialogTabRow(
                     labels = tabs.map { tab -> stringResource(when (tab.first) { "dev" -> R.string.library_on_device_title; "pin" -> R.string.playlist_pinned_title; "rw" -> R.string.rewind_title; "yt" -> R.string.library_youtube_playlists_label; else -> R.string.common_option_all }) },
-                    selectedTabIndex = selectedTabIndex,
-                    onTabSelected = { selectedTabIndex = it },
+                    selectedTabIndex = tabTransition.selectedIndex,
+                    onTabSelected = tabTransition::select,
                 )
                 Spacer(modifier = Modifier.fillMaxWidth().height(8.dp).testTag("toggleListDialogTabGap"))
             },
@@ -235,10 +214,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
                         edit.putBoolean("${tp}_lib_$id", isChecked)
                     }
 
-                    val finalOrder = order.filter { id ->
-                        toggles[id] == true || id in lockedIds
-                    }
-                    edit.putString(key, serializeOrder(finalOrder))
+                    edit.putString(key, serializeOrder(order))
                 }
                 edit.apply()
                 Toaster.s(R.string.settings_preference_saved_message); hideDialog()

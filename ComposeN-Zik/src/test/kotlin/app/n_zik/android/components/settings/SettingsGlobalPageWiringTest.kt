@@ -28,6 +28,7 @@ import app.n_zik.android.components.settings.common.OrganizedSettingsCategories
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
@@ -63,8 +64,11 @@ import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.n_zik.android.components.settings.common.DEBUG_UPDATER_ACCESS_KEY
+import app.n_zik.android.components.navigation.header.LocalHeaderProfileFace
 import app.n_zik.android.updater.models.GithubRelease
 import app.n_zik.android.updater.services.Updater
+import app.n_zik.android.utils.FaceAvatar
+import app.n_zik.android.utils.ProfileFace
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -169,6 +173,35 @@ class SettingsGlobalPageWiringTest {
         composeRule.onNodeWithTag("settings_global_update").fetchSemanticsNode()
         composeRule.onNodeWithTag("settings_global_category_system").fetchSemanticsNode()
     }.isSuccess
+
+    @Test fun activeProfileShortcutPrecedesTheGroupsAndOpensProfiles() {
+        val face = mutableStateOf(ProfileFace("First Listener", FaceAvatar.Initials("First Listener")))
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalHeaderProfileFace provides face.value,
+            ) {
+                SettingsGlobalPage(onItemSelected = { selectedItem = it }, onCardSelected = { _, _ -> })
+            }
+        }
+        pumpUntil("profile shortcut", 30_000) {
+            runCatching { composeRule.onNodeWithTag("settings_global_profile_open").fetchSemanticsNode() }.isSuccess
+        }
+        composeRule.onNodeWithText("First Listener").assertIsDisplayed()
+        val profile = composeRule.onNodeWithTag("settings_global_profile_open")
+        val firstGroup = composeRule.onNodeWithTag("settings_global_group_1")
+        assertTrue(profile.fetchSemanticsNode().boundsInRoot.top < firstGroup.fetchSemanticsNode().boundsInRoot.top)
+        composeRule.runOnIdle { face.value = ProfileFace("Second Listener", FaceAvatar.Initials("Second Listener")) }
+        settle()
+        pumpUntil("updated profile name", 30_000) {
+            runCatching { composeRule.onNodeWithText("Second Listener").assertIsDisplayed() }.isSuccess
+        }
+        profile.performClick()
+        settle()
+        assertEquals("profiles", selectedItem?.categoryId)
+    }
 
     @Test fun savedSearchesAppearOnlyWhileFocusedAndFilterWhileTyping() {
         SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GLOBAL, "Audio controls")

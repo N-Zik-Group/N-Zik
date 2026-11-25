@@ -42,6 +42,8 @@ import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.homeTabsOrderKey
 import app.n_zik.android.utils.homeSongsOrderKey
 import app.n_zik.android.utils.playerActionBarButtonOrderKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarBottomAudioVideoKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
 import app.n_zik.android.themed.n_zik.screen.player.resolvePlayerActionBarOrder
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailSizeLDpKey
@@ -298,6 +300,38 @@ class ThemePreviewFormatTest {
     }
 
     @Test
+    fun `default burger shortcuts keep legacy compatibility and configured shortcuts require code 101`() {
+        val orderKey = DataStoreUtils.KEY_BURGER_MENU_ORDER
+        val searchKey = DataStoreUtils.burgerMenuToggleKey("search")
+        val notificationsKey = DataStoreUtils.burgerMenuToggleKey("notifications")
+        val defaults = mapOf(
+            orderKey to DataStoreUtils.DEFAULT_BURGER_MENU_ORDER.joinToString(",", "[", "]") { "\"$it\"" },
+            searchKey to false,
+            notificationsKey to false,
+        )
+        val legacy = encodeThemeAppearance(defaults, emptyMap<String, Any>())
+        val legacySettings = parseThemeAppearance(legacy).getValue(ThemeCategory.NAVIGATION).plain
+        assertFalse(searchKey in legacySettings)
+        assertFalse(notificationsKey in legacySettings)
+        assertFalse((legacySettings.getValue(orderKey) as String).contains("notifications"))
+        val compatibleV2 = encodeThemeAppearance(defaults, emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV2)
+        assertEquals(ThemeAppearanceV2MinimumVersionCode, themeAppearancePublicationMinimumVersionCode(compatibleV2))
+
+        val customized = mapOf(
+            orderKey to """["notifications","history","separator","search","separator","settings"]""",
+            searchKey to true,
+            notificationsKey to false,
+        )
+        val portable = encodeThemeAppearance(customized, emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV2)
+        assertEquals(ThemeBurgerMenuShortcutsMinimumVersionCode, themeAppearancePublicationMinimumVersionCode(portable))
+        assertEquals(customized, parseThemeAppearance(portable).getValue(ThemeCategory.NAVIGATION).plain.filterKeys { it in customized })
+        assertThrows(IllegalArgumentException::class.java) {
+            parseThemeAppearance(portable, allowEmptyCategories = false, advertisedMinVersionCode = 100)
+        }
+        assertThrows(IllegalArgumentException::class.java) { encodeThemeAppearance(customized, emptyMap<String, Any>()) }
+    }
+
+    @Test
     fun `sparse previews fill from Stock without adding settings to import`() {
         val partial = """{"schemaVersion":1,"categories":{"colors":{"palette":"dynamic","mode":"light"}}}"""
         val imported = parseThemeAppearance(partial)
@@ -332,8 +366,42 @@ class ThemePreviewFormatTest {
         val preview = themePreviewPreferences(partial, glass = true)
         val serialized = preview.plain.getValue(playerActionBarButtonOrderKey) as String
 
-        assertEquals(resolvePlayerActionBarOrder(""), resolvePlayerActionBarOrder(serialized))
-        assertTrue("add_to_playlist" in resolvePlayerActionBarOrder(serialized))
-        assertEquals(listOf("lyrics", "shuffle"), resolvePlayerActionBarOrder("""["lyrics","shuffle"]"""))
+        val defaultOrder = listOf(
+            "discover", "shuffle", "start_radio", "loop", "download", "add_to_playlist",
+            "expanded_player", "lyrics", "visualizer", "sleep_timer", "equalizer", "audioVideo", "arrow", "menu",
+        )
+        assertEquals(defaultOrder, resolvePlayerActionBarOrder(""))
+        assertEquals(defaultOrder, resolvePlayerActionBarOrder(serialized))
+        val customPrefix = listOf("lyrics", "shuffle")
+        assertEquals(
+            (customPrefix + defaultOrder).distinct(),
+            resolvePlayerActionBarOrder("""["lyrics","shuffle","lyrics","retired"]"""),
+        )
+    }
+
+    @Test
+    fun v3RoundTripsExplicitPlayerActionPlacement() {
+        val top = """["none","add_to_playlist","none"]"""
+        val bottom = """["shuffle","audioVideo","add_to_playlist"]"""
+        val document = encodeThemeAppearance(
+            mapOf(
+                playerActionBarTopSlotsKey to top,
+                playerActionBarButtonOrderKey to bottom,
+                playerActionBarBottomAudioVideoKey to true,
+            ),
+            emptyMap<String, Any>(),
+            schemaVersion = ThemeAppearanceV3,
+        )
+        val imported = parseThemeAppearance(document).getValue(ThemeCategory.PLAYER_AND_QUEUE).plain
+        assertEquals(top, imported[playerActionBarTopSlotsKey])
+        assertEquals(bottom, imported[playerActionBarButtonOrderKey])
+        assertEquals(true, imported[playerActionBarBottomAudioVideoKey])
+        assertFalse("showTopActionsBar" in document)
+        assertFalse("actionBarOrder" in document)
+        assertTrue("bottomActionOrder" in document)
+        assertEquals(101, themeAppearancePublicationMinimumVersionCode(document))
+        assertThrows(IllegalArgumentException::class.java) {
+            parseThemeAppearance(document.replace("[\"none\",\"add-to-playlist\",\"none\"]", "[\"none\"]"))
+        }
     }
 }

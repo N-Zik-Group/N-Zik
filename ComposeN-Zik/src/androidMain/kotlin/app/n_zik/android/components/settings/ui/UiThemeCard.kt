@@ -177,6 +177,49 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
+                var showThemeModeDialog by remember { mutableStateOf(false) }
+                AnimatedVisibility(
+                    visible = themeModeEnabled && (search.inputValue.isBlank() ||
+                        stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true)),
+                    enter = settingsEntryEnter,
+                    exit = settingsEntryExit,
+                ) {
+                    OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget("ui.theme.theme_mode"),
+                        title = stringResource(R.string.settings_theme_mode_label),
+                        text = stringResource(R.string.theme_mode_description),
+                        selectedValueText = colorPaletteMode.text,
+                        icon = R.drawable.sparkles,
+                        onClick = { showThemeModeDialog = true }
+                    )
+                }
+
+                DialogPresence(visible = themeModeEnabled && showThemeModeDialog) {
+                    ValueSelectorDialog(
+                        title = stringResource(R.string.settings_theme_mode_label),
+                        selectedValue = colorPaletteMode,
+                        onValueSelected = { colorPaletteMode = it },
+                        valueText = { it.text },
+                        values = ColorPaletteMode.values().toList(),
+                        onDismiss = { showThemeModeDialog = false }
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = colorPaletteName == ColorPaletteName.Dynamic && brightnessSearchMatch,
+                    enter = settingsEntryEnter,
+                    exit = settingsEntryExit,
+                ) {
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.padding(start = 25.dp).settingsSearchTarget("ui.theme.respect_brightness"),
+                        title = brightnessTitle,
+                        text = brightnessDescription,
+                        isChecked = respectThemeBrightness,
+                        onCheckedChange = { respectThemeBrightness = it },
+                        icon = R.drawable.theme_brightness,
+                    )
+                }
+
                 AnimatedVisibility(visible = colorPaletteName == ColorPaletteName.CustomColor, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     Column {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_custom_colors_label).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true)) {
@@ -398,49 +441,6 @@ internal fun UiThemeCard(search: Search) {
                         }
 
                     }
-                }
-
-                AnimatedVisibility(
-                    visible = colorPaletteName == ColorPaletteName.Dynamic && brightnessSearchMatch,
-                    enter = settingsEntryEnter,
-                    exit = settingsEntryExit,
-                ) {
-                    OtherSwitchSettingEntry(
-                        modifier = Modifier.padding(start = 25.dp).settingsSearchTarget("ui.theme.respect_brightness"),
-                        title = brightnessTitle,
-                        text = brightnessDescription,
-                        isChecked = respectThemeBrightness,
-                        onCheckedChange = { respectThemeBrightness = it },
-                        icon = R.drawable.theme_brightness,
-                    )
-                }
-
-                var showThemeModeDialog by remember { mutableStateOf(false) }
-                AnimatedVisibility(
-                    visible = themeModeEnabled && (search.inputValue.isBlank() ||
-                        stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true)),
-                    enter = settingsEntryEnter,
-                    exit = settingsEntryExit,
-                ) {
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.theme.theme_mode"),
-                        title = stringResource(R.string.settings_theme_mode_label),
-                        text = stringResource(R.string.theme_mode_description),
-                        selectedValueText = colorPaletteMode.text,
-                        icon = R.drawable.sparkles,
-                        onClick = { showThemeModeDialog = true }
-                    )
-                }
-
-                DialogPresence(visible = themeModeEnabled && showThemeModeDialog) {
-                    ValueSelectorDialog(
-                        title = stringResource(R.string.settings_theme_mode_label),
-                        selectedValue = colorPaletteMode,
-                        onValueSelected = { colorPaletteMode = it },
-                        valueText = { it.text },
-                        values = ColorPaletteMode.values().toList(),
-                        onDismiss = { showThemeModeDialog = false }
-                    )
                 }
             }
         )

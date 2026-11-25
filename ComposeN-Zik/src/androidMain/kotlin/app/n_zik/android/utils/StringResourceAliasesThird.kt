@@ -354,7 +354,6 @@ private fun aliases12(): Map<String, String> = mapOf(
     "settings_player_action_bar_loop_visible_label" to "action_bar_show_loop_button",
     "settings_player_action_bar_menu_visible_label" to "action_bar_show_menu_button",
     "settings_player_action_bar_playlist_add_visible_label" to "action_bar_show_add_to_playlist_button",
-    "settings_player_action_bar_queue_arrow_visible_label" to "action_bar_show_arrow_button_to_open_queue",
     "settings_player_action_bar_radio_visible_label" to "action_bar_show_start_radio_button",
     "settings_player_action_bar_shuffle_visible_label" to "action_bar_show_shuffle_button",
     "settings_player_action_bar_sleep_timer_visible_label" to "action_bar_show_sleep_timer_button",

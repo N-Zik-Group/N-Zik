@@ -161,7 +161,6 @@ fun ArtistVideos(
                     }
                 }
             },
-            emptyItemsText = stringResource(R.string.search_no_results_message)
         )
     }
 }

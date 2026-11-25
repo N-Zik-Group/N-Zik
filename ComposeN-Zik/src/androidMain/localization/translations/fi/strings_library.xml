@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Minun Ylhäällä</string>
     <string name="recommendations_playlists_title">Soittolistat joista saatat pitää</string>
     <string name="recommendations_reset_complete">Pikavalinnat nollattu</string>
-    <string name="recommendations_reset_description">Poista toiston tapahtumat, joita käytetään paikallisten Quick Picks -suositusten laatimiseen.</string>
     <string name="recommendations_section_other_youtube_title">Muut osat</string>
     <string name="recommendations_section_visibility_description">Poista käytöstä, jos et halua nähdä</string>
     <string name="recommendations_show_section_label">Näytä</string>

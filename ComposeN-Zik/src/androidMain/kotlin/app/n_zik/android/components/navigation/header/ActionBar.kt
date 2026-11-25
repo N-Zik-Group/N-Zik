@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
@@ -37,12 +38,14 @@ import app.n_zik.android.uiRoundnessShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.android.core.navigation.currentSearchShortcutRoute
@@ -61,6 +64,10 @@ import app.n_zik.android.components.maintenance.MaintenanceSheet
 import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
 import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
 import app.n_zik.android.components.ui.screens.rescue.RescueActivity
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.visibleActions
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.network.OfflineMode
@@ -87,6 +94,7 @@ import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.shortcuts.ACTION_RESCUE
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
+import kotlin.math.roundToInt
 
 @Composable
 private fun HamburgerMenu(
@@ -95,6 +103,8 @@ private fun HamburgerMenu(
     onItemClick: (NavRoutes) -> Unit,
     onDismissRequest: () -> Unit,
     trigger: GlassMenuTriggerState?,
+    onSearchClick: (() -> Unit)?,
+    forcedShortcuts: Set<String>,
     onItemConsumed: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -139,14 +149,28 @@ private fun HamburgerMenu(
     }
     val burgerToggles = remember(expanded) {
         BurgerMenuSettingsDialog.allItemIds.associateWith { id ->
-            DataStoreUtils.getBoolean(context, DataStoreUtils.burgerMenuToggleKey(id), true)
+            DataStoreUtils.getBoolean(
+                context, DataStoreUtils.burgerMenuToggleKey(id), DataStoreUtils.burgerMenuDefaultVisibility(id),
+            )
         }
     }
     // Every legacy item is rendered through the shared BurgerMenuItem (short tap = the
     // feature, long press = deep link to the item's settings card); the three n_zik items
     // below keep their own composables.
-    BurgerMenuSettingsDialog.resolveVisibleIds(burgerOrder, burgerToggles).forEach { id ->
+    BurgerMenuSettingsDialog.resolveVisibleIds(burgerOrder, burgerToggles, forcedShortcuts).forEach { id ->
         when (id) {
+            "search" -> if (onSearchClick != null) {
+                menu.add(DropdownMenu.Item(
+                    iconId = R.drawable.search,
+                    textId = R.string.search_title,
+                    onClick = onSearchClick,
+                ))
+            }
+            "notifications" -> menu.add(DropdownMenu.Item(
+                iconId = R.drawable.notification2,
+                textId = R.string.notification_inbox_title,
+                onClick = { onItemClick(NavRoutes.notifications) },
+            ))
             // History button
             "history" -> menu.add {
                 BurgerMenuItem(
@@ -367,7 +391,6 @@ private fun HamburgerMenu(
     DebugLogDialog.Render()
 }
 
-// START
 @Composable
 fun ActionBar(
     navController: NavController,
@@ -379,17 +402,20 @@ fun ActionBar(
     val activeFace = LocalHeaderProfileFace.current ?: rememberHeaderProfileFace()
 
     val glass = rememberGlassSettings()
+    val useGlass = glass.usesGlassMaterial(GlassArea.Header)
+    val actions = ToolbarSurface.HEADER.visibleActions()
     val currentRoute = currentSearchShortcutRoute(navController)
     val showHeaderSearch = shouldShowSearchShortcut(currentRoute)
     val sideSearchProgress = LocalSideHeaderSearchProgress.current ?: headerSearchJoinProgress(showHeaderSearch)
-    val hasSearchCell = sideSearchProgress.value > 0f
-    val profileIndex = if (hasSearchCell) 2 else 1
+    val occupiedActions = actions.filter { it != ToolbarAction.SEARCH || sideSearchProgress.value > 0f }
+    val profileIndex = occupiedActions.indexOf(ToolbarAction.PROFILE_MENU)
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     var unread by remember { mutableStateOf(0) }
-    val isPreview = app.n_zik.android.components.settings.appearance.preview.LocalThemePreview.current != null
-    LaunchedEffect(context, lifecycle, isPreview) {
-        if (!isPreview) lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+    val isPreview = LocalThemePreview.current != null
+    val showNotifications = ToolbarAction.NOTIFICATIONS in actions
+    LaunchedEffect(context, lifecycle, isPreview, showNotifications) {
+        if (!isPreview && showNotifications) lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
             val manager = context.getSystemService(NotificationManager::class.java)
             val preferences = context.getSharedPreferences(InboxPreferences, 0)
             while (true) {
@@ -404,7 +430,7 @@ fun ActionBar(
     }
     val notificationIcon: @Composable () -> Unit = {
         val palette = colorPalette()
-        val iconSize = if (glass.usesGlassMaterial(GlassArea.Header)) GlassActionIconSize else HeaderNativeActionIconSize
+        val iconSize = if (useGlass) GlassActionIconSize else HeaderNativeActionIconSize
         Box(Modifier.size(HeaderActionCanvasSize), contentAlignment = Alignment.Center) {
             Icon(painterResource(R.drawable.notification2), stringResource(R.string.notification_inbox_title),
                 modifier = Modifier.size(iconSize))
@@ -419,14 +445,10 @@ fun ActionBar(
                         .background(palette.accent, CircleShape)
                         .padding(horizontal = 3.dp)
                         .semantics { contentDescription = label },
-                    style = typography().xxs.copy(color = palette.onAccent, textAlign = androidx.compose.ui.text.style.TextAlign.Center),
+                    style = typography().xxs.copy(color = palette.onAccent, textAlign = TextAlign.Center),
                 )
             }
         }
-    }
-    val notificationAction: @Composable () -> Unit = {
-        GlassActionGroupItem(onClick = openNotifications, groupIndex = 0,
-            nativeIndication = !glass.usesGlassMaterial(GlassArea.Header)) { notificationIcon() }
     }
     val profileContent: @Composable () -> Unit = {
         val face = activeFace
@@ -437,95 +459,127 @@ fun ActionBar(
             )
         }
     }
-    CompositionLocalProvider(LocalGlassActionCellSize provides HeaderActionCellSize) {
-    if (vertical) {
-        GlassVerticalActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
-            actionCount = profileIndex + 1) {
-            notificationAction()
-            VerticalHeaderSearchVisibility(sideSearchProgress, fade = !glass.usesGlassMaterial(GlassArea.Header)) {
-                GlassActionGroupItem(onClick = { navController.navigate(NavRoutes.search.name) },
-                    nativeIndication = !glass.usesGlassMaterial(GlassArea.Header)) {
-                    Icon(painterResource(R.drawable.search), stringResource(R.string.search_title), modifier = Modifier.size(GlassActionIconSize))
-                }
-            }
-            GlassActionGroupItem(
-                onClick = { expanded = !expanded },
-                menuTrigger = menuTrigger,
-                nativeIndication = !glass.usesGlassMaterial(GlassArea.Header),
-            ) { profileContent() }
+    val openSearch: () -> Unit = {
+        if (shouldShowSearchShortcut(navController.currentDestination?.route)) {
+            navController.navigate(NavRoutes.search.name) { launchSingleTop = true }
         }
-    } else if (glass.usesGlassMaterial(GlassArea.Header)) {
-        GlassActionGroup(
-            glass, GlassArea.Header, trailingTrigger = menuTrigger,
-            menuActionCount = profileIndex + 1,
-            menuTriggerIndex = profileIndex,
-            separatorBefore = setOf(profileIndex),
-            detachRemainingActionsOnMenu = true,
-            filmColor = surfaceColor(colorPalette().background1),
-        ) {
-            notificationAction()
-            HorizontalHeaderSearchVisibility(sideSearchProgress) {
-                GlassActionGroupItem(
-                    onClick = { navController.navigate(NavRoutes.search.name) },
-                    groupIndex = 1,
-                ) {
-                    Icon(painterResource(R.drawable.search), stringResource(R.string.search_title), modifier = Modifier.size(GlassActionIconSize))
+    }
+    val renderActions: @Composable () -> Unit = {
+        actions.forEach { action ->
+            key(action) {
+                val index = occupiedActions.indexOf(action)
+                when (action) {
+                    ToolbarAction.NOTIFICATIONS -> if (vertical || useGlass) {
+                        GlassActionGroupItem(
+                            onClick = openNotifications,
+                            groupIndex = index.takeUnless { vertical },
+                            nativeIndication = !useGlass,
+                        ) { notificationIcon() }
+                    } else {
+                        GlassActionGroupNativeItem(index) {
+                            GlassActionGroupItem(onClick = openNotifications, nativeIndication = true) { notificationIcon() }
+                        }
+                    }
+                    ToolbarAction.SEARCH -> {
+                        val searchContent: @Composable () -> Unit = {
+                            if (vertical || useGlass) {
+                                GlassActionGroupItem(
+                                    onClick = openSearch,
+                                    groupIndex = index.takeIf { !vertical && it >= 0 },
+                                    enabled = showHeaderSearch,
+                                    nativeIndication = !useGlass,
+                                ) {
+                                    Icon(
+                                        painterResource(R.drawable.search),
+                                        stringResource(R.string.search_title),
+                                        modifier = Modifier.size(GlassActionIconSize),
+                                    )
+                                }
+                            } else {
+                                GlassActionGroupNativeItem(index.coerceAtLeast(0)) {
+                                    HeaderIcon(R.drawable.search) { if (showHeaderSearch) openSearch() }
+                                }
+                            }
+                        }
+                        if (vertical) VerticalHeaderSearchVisibility(sideSearchProgress, fade = !useGlass, content = searchContent)
+                        else HorizontalHeaderSearchVisibility(sideSearchProgress, fade = !useGlass, content = searchContent)
+                    }
+                    ToolbarAction.PROFILE_MENU -> if (vertical || useGlass) {
+                        GlassActionGroupItem(
+                            onClick = { expanded = !expanded },
+                            menuTrigger = menuTrigger,
+                            groupIndex = index.takeUnless { vertical },
+                            nativeIndication = !useGlass,
+                        ) { profileContent() }
+                    } else {
+                        GlassActionGroupNativeItem(index) {
+                            val sourceShape = uiRoundnessShape()
+                            SideEffect {
+                                menuTrigger.content = profileContent
+                                menuTrigger.shape = sourceShape
+                            }
+                            Box(
+                                modifier = Modifier.size(HeaderActionCanvasSize).glassMenuTrigger(menuTrigger)
+                                    .clip(sourceShape)
+                                    .clickable { expanded = !expanded },
+                                contentAlignment = Alignment.Center,
+                            ) { profileContent() }
+                        }
+                    }
+                    else -> Unit
                 }
-            }
-            GlassActionGroupItem(onClick = { expanded = !expanded }, menuTrigger = menuTrigger, groupIndex = profileIndex) {
-                profileContent()
-            }
-        }
-    } else {
-        GlassActionGroup(glass, GlassArea.Header, trailingTrigger = menuTrigger,
-            menuActionCount = profileIndex + 1,
-            menuTriggerIndex = profileIndex,
-            drawSurface = glass.usesGlassContour(GlassArea.Header),
-            separatorBefore = setOf(profileIndex),
-            detachRemainingActionsOnMenu = true,
-        ) {
-            GlassActionGroupNativeItem(0) { notificationAction() }
-            HorizontalHeaderSearchVisibility(sideSearchProgress, fade = true) {
-                GlassActionGroupNativeItem(1) {
-                    HeaderIcon(R.drawable.search) { navController.navigate(NavRoutes.search.name) }
-                }
-            }
-            GlassActionGroupNativeItem(profileIndex) {
-                val sourceShape = uiRoundnessShape()
-                SideEffect {
-                    menuTrigger.content = profileContent
-                    menuTrigger.shape = sourceShape
-                }
-                Box(
-                    modifier = Modifier.size(HeaderActionCanvasSize).glassMenuTrigger(menuTrigger)
-                        .clip(uiRoundnessShape())
-                        .clickable { expanded = !expanded },
-                    contentAlignment = Alignment.Center,
-                ) { profileContent() }
             }
         }
     }
+    CompositionLocalProvider(LocalGlassActionCellSize provides HeaderActionCellSize) {
+        if (vertical) {
+            val cellHeight = with(LocalDensity.current) { HeaderActionCellSize.height.roundToPx() }
+            val profileTop = actions.takeWhile { it != ToolbarAction.PROFILE_MENU }.sumOf { action ->
+                if (action == ToolbarAction.SEARCH) (cellHeight * sideSearchProgress.value).roundToInt() else cellHeight
+            }
+            GlassVerticalActionGroup(
+                glass,
+                GlassArea.Header,
+                trailingTrigger = menuTrigger,
+                actionCount = occupiedActions.size,
+                triggerOffsetPx = profileTop,
+            ) { renderActions() }
+        } else {
+            GlassActionGroup(
+                glass,
+                GlassArea.Header,
+                trailingTrigger = menuTrigger,
+                menuActionCount = occupiedActions.size,
+                menuTriggerIndex = profileIndex,
+                drawSurface = useGlass || glass.usesGlassContour(GlassArea.Header),
+                separatorBefore = if (profileIndex > 0) setOf(profileIndex) else emptySet(),
+                detachRemainingActionsOnMenu = true,
+                filmColor = if (useGlass) surfaceColor(colorPalette().background1) else null,
+            ) { renderActions() }
+        }
     }
     Box(modifier = Modifier, contentAlignment = Alignment.Center) {
-        // Define actions for when item inside menu clicked,
-        // and when user clicks on places other than the menu (dismiss)
         val onItemClick: (NavRoutes) -> Unit = {
             expanded = false
             navController.navigate(it.name)
         }
         val onDismissRequest: () -> Unit = { expanded = false }
-    
-        // Hamburger menu
         HamburgerMenu(
             expanded = expanded,
             navController = navController,
             onItemClick = onItemClick,
             onDismissRequest = onDismissRequest,
             trigger = menuTrigger,
+            onSearchClick = if (showHeaderSearch) {
+                {
+                    onDismissRequest()
+                    openSearch()
+                }
+            } else null,
+            forcedShortcuts = BurgerMenuSettingsDialog.forcedShortcuts(actions),
             onItemConsumed = { expanded = false }
         )
     }
-// END
 }
 
 

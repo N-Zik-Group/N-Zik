@@ -3,6 +3,8 @@ package app.n_zik.android.components.settings.appearance
 import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.utils.m3eAlwaysShowShapesKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
@@ -128,6 +130,8 @@ class AppearanceSettingsPreferencesTest {
         "notificationPlayerFirstIcon" to "Download",
         "notificationPlayerSecondIcon" to "Favorites",
         "topPadding" to true,
+        "rememberQueueScrollPosition" to true,
+        "playerOpeningMode" to "Audio",
         "animatedGradient" to "M3EMorphingCover",
         "shakeSensitivityTheme" to "Disabled",
         "albumCoverRotation" to false,
@@ -159,7 +163,7 @@ class AppearanceSettingsPreferencesTest {
         val globalBefore = store("app_settings").all.toMap()
         applyAppearanceDefaults(context)
         baselineDefaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
-        assertEquals(109, baselineDefaults.size)
+        assertEquals(111, baselineDefaults.size)
         assertFalse(context.preferences.contains("thumbnailSizeLDpKey"))
         assertFalse(context.preferences.contains(m3eAlwaysShowShapesKey))
         assertEquals("keep", context.preferences.getString("unrelated", null))
@@ -172,10 +176,32 @@ class AppearanceSettingsPreferencesTest {
     }
 
     @Test fun targetsRetainCardOrderAndUniqueStableIds() {
-        assertEquals(listOf("presets", "cover", "timeline", "colors", "behavior", "lyrics", "actionBar", "fullscreenLyrics", "notification", "reset"),
+        assertEquals(listOf("presets", "cover", "colors", "timeline", "actionBar", "behavior", "lyrics", "fullscreenLyrics", "notification", "reset"),
             AppearanceSettingTargets.cards.map { it.id.removePrefix("appearance.card.") })
         assertEquals(AppearanceSettingTargets.ids.size, AppearanceSettingTargets.ids.distinct().size)
         assertTrue(AppearanceSettingTargets.ids.contains("appearance.card.cover.setting.cropVideoThumbnails"))
         assertTrue(AppearanceSettingTargets.ids.contains("appearance.card.reset.action.applyAppearanceDefaults"))
+    }
+
+    @Test fun appearanceResetRestoresPlayerToolbarDefaultsAndPreservesOtherToolbarPreferences() {
+        val top = ToolbarSurface.PLAYER_TOP
+        val queue = ToolbarSurface.QUEUE
+        val album = ToolbarSurface.ALBUM_ONLINE
+        val topMenuKey = top.visibilityKey(ToolbarAction.MENU)
+        val queueSelectKey = queue.visibilityKey(ToolbarAction.SELECT)
+        context.preferences.edit()
+            .putString(top.orderKey, """["menu"]""")
+            .putBoolean(topMenuKey, false)
+            .putString(queue.orderKey, """["shuffle"]""")
+            .putBoolean(queueSelectKey, false)
+            .putString(album.orderKey, """["shuffle"]""")
+            .commit()
+
+        applyAppearanceDefaults(context)
+
+        listOf(top.orderKey, topMenuKey, queue.orderKey, queueSelectKey).forEach { key ->
+            assertFalse(key, context.preferences.contains(key))
+        }
+        assertEquals("""["shuffle"]""", context.preferences.getString(album.orderKey, null))
     }
 }

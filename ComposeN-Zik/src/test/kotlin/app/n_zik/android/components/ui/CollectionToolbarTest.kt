@@ -2,10 +2,6 @@ package app.n_zik.android.components.ui
 
 import android.app.Application
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -19,19 +15,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.ui.screens.album.OnlineAlbumToolbar
 import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
-import app.n_zik.android.components.glass.GlassToolbarButtons
+import app.n_zik.android.ui.screens.artist.artistLibraryToolbarAction
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -40,9 +43,11 @@ import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassToolbarIcon
-import app.n_zik.android.components.glass.GlassToolbarRow
-import app.n_zik.android.components.glass.GlassActionCellWidth
+import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.setActiveProfile
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -65,55 +70,168 @@ class CollectionToolbarTest {
         verifyToolbar(400, 7)
     }
 
-    @Test fun `album visible action count matches the original toolbar in native and Glass`() {
-        verifyOriginalOverflow(40, 15, 12)
+    @Test fun `album shares the playlist width limit in native and Glass`() {
+        verifyAvailableWidth(40, 12)
     }
 
-    @Test fun `artist visible action count matches the original toolbar without a forced cap`() {
-        verifyOriginalOverflow(100, 10, 7)
+    @Test fun `artist fits Follow inside the playlist width limit`() {
+        verifyAvailableWidth(100, 7)
     }
 
-    private fun verifyOriginalOverflow(bookmarkWidth: Int, originalGap: Int, actionCount: Int) {
-        val width = mutableStateOf(320)
+    @Test fun `overflow keeps its seat but only opens once collection actions load`() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val label = application.getString(R.string.common_menu_label)
+        val menuState = MenuState()
         val glass = mutableStateOf(false)
-        val buttons = (0 until actionCount).map { object : Button {
-            @Composable override fun ToolBarButton() {
-                TabToolBar.Icon(painterResource(R.drawable.play), onClick = {})
-            }
-        } }
+        val loaded = mutableStateOf(false)
+        val actions = listOf(ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.SHUFFLE, ToolbarAction.ENQUEUE)
         compose.setContent {
             AppearanceProvider {
-                val settings = GlassSettings(enabled = glass.value, quality = GlassQuality.Performance)
-                val bookmark: @Composable () -> Unit = {
-                    if (bookmarkWidth == 40) TabToolBar.Icon(painterResource(R.drawable.bookmark), onClick = {})
-                    else Box(Modifier.width(bookmarkWidth.dp).height(40.dp))
-                }
-                Column {
-                    Row(Modifier.requiredWidth(width.value.dp).testTag("original")) {
-                        if (bookmarkWidth == 40) GlassToolbarRow(1, settings = settings) { bookmark() }
-                        else bookmark()
-                        Spacer(Modifier.width(originalGap.dp))
-                        GlassToolbarButtons(buttons, modifier = Modifier.fillMaxWidth(.8f),
-                            settings = settings, disableAnimation = true)
-                    }
+                CompositionLocalProvider(LocalMenuState provides menuState) {
                     CollectionButtonToolbar(
-                        bookmark = bookmark,
-                        buttons = buttons, bookmarkWidth = bookmarkWidth.dp,
-                        originalNativeBookmarkWidth = if (bookmarkWidth == 40) 48.dp else bookmarkWidth.dp,
-                        actionCellWidth = if (bookmarkWidth == 100) GlassActionCellWidth else CollectionActionCellWidth,
-                        originalBookmarkGap = originalGap.dp, settings = settings,
-                        modifier = Modifier.requiredWidth(width.value.dp).testTag("compact"))
+                        bookmark = { TabToolBar.Icon(R.drawable.bookmark, onClick = {}) },
+                        buttons = actions.map { artistLibraryToolbarAction(it) },
+                        modifier = Modifier.requiredWidth(210.dp),
+                        settings = GlassSettings(enabled = glass.value, quality = GlassQuality.Performance),
+                        bookmarkWidth = 100.dp,
+                        enabled = loaded.value,
+                    )
                 }
+            }
+        }
+
+        for (material in listOf(false, true)) {
+            compose.runOnIdle {
+                glass.value = material
+                loaded.value = false
+                menuState.hide()
+            }
+            val overflow = compose.onNodeWithContentDescription(label)
+            overflow.assertIsNotEnabled().performTouchInput { click() }
+            val loadingBounds = overflow.fetchSemanticsNode().boundsInRoot
+            compose.runOnIdle {
+                assertFalse(menuState.isDisplayed)
+                loaded.value = true
+            }
+            overflow.assertIsEnabled().performTouchInput { click() }
+            assertEquals(loadingBounds, overflow.fetchSemanticsNode().boundsInRoot)
+            compose.runOnIdle { assertTrue(menuState.isDisplayed) }
+        }
+    }
+
+    @Test fun `online album renders its own toolbar preferences and spreads remaining controls`() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        setActiveProfile("default", application)
+        val prefs = application.preferences
+        val online = ToolbarSurface.ALBUM_ONLINE
+        val device = ToolbarSurface.ALBUM_DEVICE
+        prefs.edit().putBoolean(glassEnabledKey, false)
+            .putString(online.orderKey, """["enqueue","download","shuffle"]""")
+            .putBoolean(online.visibilityKey(ToolbarAction.SHUFFLE), false)
+            .putBoolean(device.visibilityKey(ToolbarAction.ENQUEUE), false)
+            .commit()
+        compose.setContent {
+            AppearanceProvider {
+                val actions = listOf(ToolbarAction.ENQUEUE, ToolbarAction.DOWNLOAD, ToolbarAction.SHUFFLE).associateWith { action ->
+                    object : Button {
+                        @Composable override fun ToolBarButton() {
+                            GlassToolbarIcon(painterResource(action.icon), Color.White, 20.dp, true,
+                                contentDescription = action.id, onClick = {})
+                        }
+                    }
+                }
+                OnlineAlbumToolbar(
+                    bookmark = {
+                        GlassToolbarIcon(painterResource(R.drawable.bookmark), Color.White, 20.dp, true,
+                            contentDescription = "album-bookmark", onClick = {})
+                    },
+                    actions = actions,
+                    modifier = Modifier.requiredWidth(356.dp),
+                )
+            }
+        }
+
+        fun centerX(label: String) = compose.onNodeWithContentDescription(label, useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInRoot.center.x
+        val primary = centerX("album-bookmark")
+        val enqueue = centerX("enqueue")
+        val download = centerX("download")
+        assertTrue(primary < enqueue && enqueue < download)
+        compose.onNodeWithContentDescription("shuffle", useUnmergedTree = true).assertDoesNotExist()
+        compose.runOnIdle { prefs.edit().putBoolean(online.visibilityKey(ToolbarAction.SHUFFLE), true).apply() }
+        assertEquals(primary, centerX("album-bookmark"), 1f)
+        assertTrue(centerX("enqueue") < enqueue && centerX("download") < download)
+        assertTrue(centerX("download") < centerX("shuffle"))
+    }
+
+    @Test fun `hiding the bookmark centers the remaining actions in native and Glass`() {
+        val glass = mutableStateOf(false)
+        val actionCount = mutableStateOf(3)
+        compose.setContent {
+            AppearanceProvider {
+                Box(Modifier.requiredWidth(360.dp).testTag("available")) {
+                    CollectionToolbar(
+                        bookmark = {
+                            GlassToolbarIcon(painterResource(R.drawable.bookmark), Color.White, 32.dp, true,
+                                contentDescription = "bookmark", onClick = {})
+                        },
+                        actions = List(actionCount.value) { index ->
+                            @Composable {
+                                GlassToolbarIcon(painterResource(R.drawable.play), Color.White, 32.dp, true,
+                                    contentDescription = "action.$index", onClick = {})
+                            }
+                        },
+                        showBookmark = false,
+                        settings = GlassSettings(enabled = glass.value, quality = GlassQuality.Performance),
+                    )
+                }
+            }
+        }
+
+        for (material in listOf(false, true)) {
+            for (count in listOf(1, 3)) {
+                compose.runOnIdle {
+                    glass.value = material
+                    actionCount.value = count
+                }
+                compose.onNodeWithContentDescription("bookmark").assertDoesNotExist()
+                val row = compose.onNodeWithTag("available").fetchSemanticsNode().boundsInRoot
+                val controls = compose.onAllNodes(hasClickAction()).assertCountEquals(count)
+                    .fetchSemanticsNodes().map { it.boundsInRoot }
+                assertEquals(row.center.x, (controls.minOf { it.left } + controls.maxOf { it.right }) / 2, 1f)
+            }
+        }
+    }
+
+    private fun verifyAvailableWidth(bookmarkWidth: Int, actionCount: Int) {
+        val width = mutableStateOf(320)
+        val glass = mutableStateOf(false)
+        val buttons = List(actionCount) {
+            object : Button {
+                @Composable override fun ToolBarButton() {
+                    TabToolBar.Icon(painterResource(R.drawable.play), onClick = {})
+                }
+            }
+        }
+        compose.setContent {
+            AppearanceProvider {
+                CollectionButtonToolbar(
+                    bookmark = { TabToolBar.Icon(painterResource(R.drawable.bookmark), onClick = {}) },
+                    buttons = buttons,
+                    bookmarkWidth = bookmarkWidth.dp,
+                    settings = GlassSettings(enabled = glass.value, quality = GlassQuality.Performance),
+                    modifier = Modifier.requiredWidth(width.value.dp),
+                )
             }
         }
         for (available in listOf(240, 320, 352, 400, 600)) {
             for (material in listOf(false, true)) {
-                compose.runOnIdle { width.value = available; glass.value = material }
-                compose.waitForIdle()
-                val original = compose.onAllNodes(hasClickAction() and hasAnyAncestor(hasTestTag("original")))
-                    .fetchSemanticsNodes().size
-                compose.onAllNodes(hasClickAction() and hasAnyAncestor(hasTestTag("compact")))
-                    .assertCountEquals(original)
+                compose.runOnIdle {
+                    width.value = available
+                    glass.value = material
+                }
+                val capacity = ((minOf(available, 356) - bookmarkWidth - 8 + .5) / 38.5).toInt()
+                compose.onAllNodes(hasClickAction()).assertCountEquals(1 + minOf(capacity, actionCount))
             }
         }
     }

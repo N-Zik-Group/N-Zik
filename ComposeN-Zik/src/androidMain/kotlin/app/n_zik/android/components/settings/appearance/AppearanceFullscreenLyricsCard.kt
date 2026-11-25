@@ -24,6 +24,7 @@ import app.n_zik.android.utils.showButtonPlayerDiscoverKey
 import app.n_zik.android.utils.showButtonPlayerDownloadKey
 import app.n_zik.android.utils.showButtonPlayerLoopKey
 import app.n_zik.android.utils.showButtonPlayerLyricsKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
 import app.n_zik.android.utils.showButtonPlayerMenuKey
 import app.n_zik.android.utils.showButtonPlayerShuffleKey
 import app.n_zik.android.utils.showButtonPlayerSleepTimerKey
@@ -56,6 +57,7 @@ internal fun AppearanceFullscreenLyricsCard(search: Search) {
     var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
     var showButtonPlayerShuffle by rememberPreference(showButtonPlayerShuffleKey, true)
     var showButtonPlayerSleepTimer by rememberPreference(showButtonPlayerSleepTimerKey, false)
+    val playerActionBarTopSlots by rememberPreference(playerActionBarTopSlotsKey, "")
     var showButtonPlayerMenu by rememberPreference(showButtonPlayerMenuKey, false)
     var showButtonPlayerSystemEqualizer by rememberPreference(
         showButtonPlayerSystemEqualizerKey,
@@ -173,6 +175,7 @@ AnimatedVisibility(
                 }
 
                 if (
+                    playerActionBarTopSlots.isNotBlank() ||
                     showButtonPlayerDownload ||
                     showButtonPlayerAddToPlaylist ||
                     showButtonPlayerLoop ||

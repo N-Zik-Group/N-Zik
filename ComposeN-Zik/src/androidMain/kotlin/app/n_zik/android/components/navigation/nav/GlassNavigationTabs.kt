@@ -122,6 +122,7 @@ internal fun GlassNavigationTabs(
     externalSurfaceBackdrop: Backdrop? = null,
     containerShape: Shape? = null,
     dragSelectedTab: Boolean = true,
+    containerFilm: Color? = null,
     content: @Composable () -> Unit,
 ) {
     if (indices.isEmpty()) return
@@ -207,7 +208,7 @@ internal fun GlassNavigationTabs(
     val surfaceBackdrop = externalSurfaceBackdrop ?: ownSurfaceBackdrop
     val shape = uiRoundnessShape()
     val panelShape = containerShape ?: shape
-    val originalFilm = navigationSurfaceColor()
+    val originalFilm = containerFilm ?: navigationSurfaceColor()
     val wash = lerpColor(Color.White, Color.Black, paletteDarkness())
         .copy(alpha = settings.indicatorOpacity.coerceIn(0f, 1f))
     val foregroundSurface = effectiveSurfaceColor(surfaceBackdropColor(),

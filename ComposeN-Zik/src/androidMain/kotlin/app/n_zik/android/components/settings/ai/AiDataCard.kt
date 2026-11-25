@@ -8,10 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
@@ -19,27 +16,29 @@ import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.components.ui.screens.home.quickpicks.resetQuickPicks
+import app.n_zik.android.compose.persist.LocalPersistMap
 
-/** Preserves the original Data settings and actions. */
+/** Resets recommendations independently of listening history. */
 @UnstableApi
 @Composable
 internal fun AiDataCard(search: Search) {
-    val context = LocalContext.current
-    var clearEvents by remember { mutableStateOf(false) }
-    val searchCtx_7 = search.inputValue.isBlank() || stringResource(R.string.settings_data_title).contains(search.inputValue, true) || stringResource(R.string.recommendations_action_reset_quick_picks).contains(search.inputValue, true)
-    DialogPresence(visible = clearEvents) {
+    val quickPicksCache = LocalPersistMap.current
+    var confirmReset by remember { mutableStateOf(false) }
+    val resetTitle = stringResource(R.string.recommendations_action_reset_quick_picks)
+    val resetDescription = stringResource(R.string.recommendations_reset_content_description)
+    val showReset = search.inputValue.isBlank() || resetTitle.contains(search.inputValue, true) ||
+        resetDescription.contains(search.inputValue, true)
+    val showCard = showReset || stringResource(R.string.settings_data_title).contains(search.inputValue, true)
+    DialogPresence(visible = confirmReset) {
         ConfirmationDialog(
-            title = stringResource(R.string.statistics_delete_playback_events_dialog_title),
-            confirmText = stringResource(R.string.common_action_delete),
-            text = stringResource(R.string.statistics_delete_playback_events_confirmation),
-            onDismiss = { clearEvents = false },
+            title = resetTitle,
+            confirmText = stringResource(R.string.common_action_reset),
+            text = resetDescription,
+            onDismiss = { confirmReset = false },
             onConfirm = {
-                Database.asyncTransaction {
-                    eventTable.deleteAll()
-                    Toaster.done()
-                }
+                quickPicksCache?.let(::resetQuickPicks)
+                Toaster.s(R.string.recommendations_reset_complete)
             }
         )
     }
@@ -47,31 +46,15 @@ internal fun AiDataCard(search: Search) {
     SettingsSectionCard(
         title = stringResource(R.string.settings_data_title),
         icon = R.drawable.server,
-        visible = searchCtx_7,
+        visible = showCard,
         content = {
-            val eventsCount by remember {
-                Database.eventTable
-                        .countAll()
-            }.collectAsStateWithLifecycle(0L, context = NzikDispatchers.DATA)
-
-            if (search.inputValue.isBlank() || stringResource(R.string.recommendations_action_reset_quick_picks).contains(search.inputValue, true)) {
-                OtherSettingsEntry(
-                    modifier = Modifier.settingsSearchTarget("ai.tab_data.reset_quick_picks"),
-                    title = stringResource(R.string.recommendations_action_reset_quick_picks),
-                    text = stringResource(R.string.recommendations_reset_description),
-                    selectedValueText = if (eventsCount > 0) {
-                        pluralStringResource(
-                            R.plurals.history_delete_playback_event_count,
-                            eventsCount.coerceAtMost(Int.MAX_VALUE.toLong()).toInt(),
-                            eventsCount,
-                        )
-                    } else {
-                        stringResource(R.string.recommendations_reset_complete)
-                    },
-                    icon = R.drawable.trash,
-                    onClick = { clearEvents = true }
-                )
-            }
+            OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("ai.tab_data.reset_quick_picks"),
+                title = resetTitle,
+                text = resetDescription,
+                icon = R.drawable.trash,
+                onClick = { confirmReset = true }
+            )
         }
     )
 }

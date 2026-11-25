@@ -12,6 +12,9 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.SettingsNestedOption
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.visibleActions
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ToggleItem
@@ -50,6 +53,8 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         "maintenance" to R.string.maintenance_title,
         "rescue_center" to R.string.recovery_center,
         "separator" to R.string.settings_navigation_menu_separator_label,
+        "search" to R.string.search_title,
+        "notifications" to R.string.notification_inbox_title,
     )
 
 
@@ -99,9 +104,19 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         return array.toString()
     }
 
-    /** Stored order intersect the stored toggles: locked items always survive; the rest follow their toggle (default on). */
-    fun resolveVisibleIds(order: List<String>, toggles: Map<String, Boolean>): List<String> =
-        order.filter { id -> id in lockedIds || toggles[id] ?: true }
+    /** Resolves stored visibility using the item's default when a toggle is absent. */
+    fun resolveVisibleIds(
+        order: List<String>,
+        toggles: Map<String, Boolean>,
+        forcedShortcuts: Set<String> = emptySet(),
+    ): List<String> = order.filter { id ->
+        id in lockedIds || id in forcedShortcuts || (toggles[id] ?: DataStoreUtils.burgerMenuDefaultVisibility(id))
+    }
+
+    internal fun forcedShortcuts(headerActions: List<ToolbarAction>): Set<String> = buildSet {
+        if (ToolbarAction.SEARCH !in headerActions) add("search")
+        if (ToolbarAction.NOTIFICATIONS !in headerActions) add("notifications")
+    }
 
     override val dialogTitle: String @Composable get() = stringResource(R.string.settings_navigation_menu_title)
     override var isActive: Boolean by mutableStateOf(false)
@@ -110,6 +125,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
     override fun DialogBody() {
         val ctx = LocalContext.current
         val prefs = remember { DataStoreUtils.prefs(ctx) }
+        val requiredShortcuts = forcedShortcuts(ToolbarSurface.HEADER.visibleActions())
 
         var workingOrder by remember {
             mutableStateOf(
@@ -119,7 +135,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         var workingToggles by remember {
             mutableStateOf(
                 allItemIds.associateWith { id ->
-                    prefs.getBoolean(DataStoreUtils.burgerMenuToggleKey(id), true)
+                    prefs.getBoolean(DataStoreUtils.burgerMenuToggleKey(id), DataStoreUtils.burgerMenuDefaultVisibility(id))
                 }.toMutableMap()
             )
         }
@@ -159,7 +175,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
             lazyListState = lazyListState,
             reorderableState = reorderableState,
             enforceMinOneChecked = false,
-            lockedCheckedIds = lockedIds,
+            lockedCheckedIds = lockedIds + requiredShortcuts,
             extraFooterButton = DialogButton(
                 text = stringResource(R.string.settings_navigation_menu_action_add_separator),
                 enabled = separatorCount < DataStoreUtils.MAX_BURGER_MENU_SEPARATORS,
@@ -170,7 +186,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
             ),
             // Rows are built 1:1 with workingOrder (parseOrder only keeps known ids), so
             // the row index maps straight back to the logical id of the shared toggle.
-            checkedStatesOverride = workingOrder.map { id -> workingToggles[id] ?: true },
+            checkedStatesOverride = workingOrder.map { id -> workingToggles[id] ?: DataStoreUtils.burgerMenuDefaultVisibility(id) },
             onCheckedChange = { index, newValue ->
                 val id = workingOrder.getOrNull(index) ?: return@ToggleListDialog
                 val m = workingToggles.toMutableMap()
@@ -185,7 +201,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
                 workingOrder = o
             },
             onReset = {
-                workingToggles = allItemIds.associateWith { true }.toMutableMap()
+                workingToggles = allItemIds.associateWith(DataStoreUtils::burgerMenuDefaultVisibility).toMutableMap()
                 workingOrder = allItemIds.toMutableList()
             },
             onCancel = { hideDialog() },
@@ -235,15 +251,17 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         "debug_logs" -> ToggleItem(rowKey, R.drawable.bugs, stringResource(searchLabelResources.getValue("debug_logs")), DataStoreUtils.burgerMenuToggleKey(id), true)
         "maintenance" -> ToggleItem(rowKey, R.drawable.shield_checkmark, stringResource(searchLabelResources.getValue("maintenance")), DataStoreUtils.burgerMenuToggleKey(id), true)
         "rescue_center" -> ToggleItem(rowKey, R.drawable.shortcut_rescue, stringResource(searchLabelResources.getValue("rescue_center")), DataStoreUtils.burgerMenuToggleKey(id), true)
+        "search" -> ToggleItem(rowKey, R.drawable.search, stringResource(searchLabelResources.getValue(id)), DataStoreUtils.burgerMenuToggleKey(id), false)
+        "notifications" -> ToggleItem(rowKey, R.drawable.notification2, stringResource(searchLabelResources.getValue(id)), DataStoreUtils.burgerMenuToggleKey(id), false)
         else -> null
     }
 
-    /** Hook of the global settings reset (UI tab): default order + every toggle on. */
+    /** Restores the menu's default order and per-item visibility. */
     fun reset(context: Context) {
         val edit = DataStoreUtils.prefs(context).edit()
         edit.putString(DataStoreUtils.KEY_BURGER_MENU_ORDER, serializeOrder(allItemIds))
         allItemIds.forEach { id ->
-            edit.putBoolean(DataStoreUtils.burgerMenuToggleKey(id), true)
+            edit.putBoolean(DataStoreUtils.burgerMenuToggleKey(id), DataStoreUtils.burgerMenuDefaultVisibility(id))
         }
         edit.apply()
     }

@@ -4,6 +4,8 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.SearchResultContent
+import app.n_zik.android.components.search.rememberSearchResultOpacity
 import androidx.compose.runtime.key
 import androidx.compose.animation.ExperimentalAnimationApi
 import kotlinx.coroutines.flow.first
@@ -251,6 +253,7 @@ fun <T : Innertube.Item> ItemsPage(
                         }
                     }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList()
     }
+    val resultOpacity = rememberSearchResultOpacity(searchQuery == null || (itemsPage != null && !forceShimmer))
     SearchEmptyFeedback(
         query = searchQuery.orEmpty(),
         empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
@@ -304,7 +307,8 @@ fun <T : Innertube.Item> ItemsPage(
                 visibleItems,
                 key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
             ) { item ->
-                if (forceShimmer) itemPlaceholderContent(item) else itemContent(item)
+                if (forceShimmer) itemPlaceholderContent(item)
+                else SearchResultContent(resultOpacity) { itemContent(item) }
             }
 
             if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
@@ -405,6 +409,7 @@ fun <T : Innertube.Item> ItemsGridPage(
                         }
                     }?.distinctBy { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" } ?: emptyList()
     }
+    val resultOpacity = rememberSearchResultOpacity(searchQuery == null || (itemsPage != null && !forceShimmer))
     SearchEmptyFeedback(
         query = searchQuery.orEmpty(),
         empty = itemsPage != null && itemsPage?.continuation == null && visibleItems.isEmpty(),
@@ -461,7 +466,8 @@ fun <T : Innertube.Item> ItemsGridPage(
                 visibleItems,
                 key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
             ) { item ->
-                if (forceShimmer) itemPlaceholderContent(item) else itemContent(item)
+                if (forceShimmer) itemPlaceholderContent(item)
+                else SearchResultContent(resultOpacity) { itemContent(item) }
             }
 
             if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {

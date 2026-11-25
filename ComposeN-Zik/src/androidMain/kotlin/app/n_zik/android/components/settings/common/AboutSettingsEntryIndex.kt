@@ -12,4 +12,6 @@ val AboutSettingsEntryTargets: List<SettingsEntryTarget> = listOf(
         R.string.about_action_request_feature, listOf(R.string.about_github_link_description)),
     SettingsEntryTarget("about.contributors.translators", 8, R.string.settings_section_contributors_title, R.string.about_translators_title),
     SettingsEntryTarget("about.contributors.about_developers_designers", 8, R.string.settings_section_contributors_title, R.string.about_developers_designers_title),
+    SettingsEntryTarget("about.contributors.credits", 8, R.string.settings_section_contributors_title,
+        R.string.about_credits_title, listOf(R.string.about_credits_open)),
 )

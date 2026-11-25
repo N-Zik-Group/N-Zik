@@ -28,7 +28,7 @@ private val stockPreviewIndexLock = Mutex()
 internal fun defaultThemeAppearanceDocument(): String = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV2)
 
 internal fun bundledDefaultTheme(context: Context, previewMetadata: List<StorePreview>? = null): SavedTheme {
-    val document = defaultThemeAppearanceDocument()
+    val document = encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>(), schemaVersion = ThemeAppearanceV3)
     val previews = (previewMetadata ?: context.assets.open("theme-store-default/previews.json").bufferedReader().use {
         Json.decodeFromString<List<StorePreview>>(it.readText())
     }).sortedBy { preview ->
@@ -36,14 +36,14 @@ internal fun bundledDefaultTheme(context: Context, previewMetadata: List<StorePr
     }
     val name = context.getString(R.string.theme_store_default_title)
     val theme = StoreTheme(
-        schemaVersion = 2,
+        schemaVersion = ThemeAppearanceV3,
         themeId = BundledThemeId,
         revision = 2,
         title = name,
         description = context.getString(R.string.theme_store_default_description),
         author = StoreAuthor(292738521, "N-Zik-Group"),
         tags = listOf("stock", "built-in"),
-        compatibility = StoreCompatibility(ThemeAppearanceV2MinimumVersionCode),
+        compatibility = StoreCompatibility(ThemeAppearanceV3MinimumVersionCode),
         appearance = StoreFile("appearance.json", document.encodeToByteArray().sha256()),
         previews = previews,
         localCreatorName = "N-Zik Group",

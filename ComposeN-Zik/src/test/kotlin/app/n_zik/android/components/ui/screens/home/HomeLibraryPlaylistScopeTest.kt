@@ -28,14 +28,14 @@ class HomeLibraryPlaylistScopeTest {
     )
 
     @Test fun `unselected delete targets contain only visible podcast rows and leave hidden local rows out`() {
-        val targets = homeLibraryActionTargets(podcastScope.visible(catalog), emptyList())
+        val targets = homeLibraryActionTargets(podcastScope.visible(catalog), emptyList(), selectionActive = false)
         assertEquals(listOf(1L, 2L), targets.map { it.playlist.id })
         assertTrue(targets.none { it.playlist.id == local.playlist.id || it.playlist.id == remote.playlist.id })
     }
 
     @Test fun `playback and export load only visible current-search playlist targets`() = runBlocking {
         val visible = podcastScope.copy(query = "SCIENCE").visible(catalog)
-        val targets = homeLibraryActionTargets(visible, emptyList())
+        val targets = homeLibraryActionTargets(visible, emptyList(), selectionActive = false)
         val requestedIds = mutableListOf<Long>()
         val songs = loadHomeParentSongs(targets.map { it.playlist.id }, load = { ids ->
             requestedIds.addAll(ids)
@@ -47,9 +47,10 @@ class HomeLibraryPlaylistScopeTest {
 
     @Test fun `hidden explicit selections neither act on hidden rows nor fall back to all visible rows`() {
         val visible = podcastScope.visible(catalog)
-        assertTrue(homeLibraryActionTargets(visible, listOf(local)).isEmpty())
-        assertEquals(listOf(2L), homeLibraryActionTargets(visible, listOf(otherPodcast, local)).map { it.playlist.id })
-        assertEquals(listOf(1L), homeLibraryActionTargets(visible, listOf(podcast)).map { it.playlist.id })
+        assertTrue(homeLibraryActionTargets(visible, emptyList(), selectionActive = true).isEmpty())
+        assertTrue(homeLibraryActionTargets(visible, listOf(local), selectionActive = true).isEmpty())
+        assertEquals(listOf(2L), homeLibraryActionTargets(visible, listOf(otherPodcast, local), selectionActive = true).map { it.playlist.id })
+        assertEquals(listOf(1L), homeLibraryActionTargets(visible, listOf(podcast), selectionActive = true).map { it.playlist.id })
     }
 
     @Test fun `song loading deduplicates shared episodes while retaining visible order`() = runBlocking {
@@ -85,5 +86,18 @@ class HomeLibraryPlaylistScopeTest {
         assertEquals(listOf(local), scope.visible(listOf(remotePlaylist, local, pinned)))
         assertEquals(listOf(local, pinned), scope.copy(showPinned = true).visible(listOf(remotePlaylist, local, pinned)))
         assertTrue(scope.copy(query = "science").visible(listOf(remotePlaylist, local)).isEmpty())
+    }
+
+    @Test fun `localized playlist labels drive the search and the visible action targets`() {
+        val october = preview(5, RewindPlaylists.monthlyName(2026, 10))
+        val september = preview(6, RewindPlaylists.monthlyName(2026, 9))
+        val scope = podcastScope.copy(type = PlaylistsType.MonthlyPlaylist, query = " OCTOBRE 2026 ")
+        val localizedNames = mapOf(
+            october.playlist.name to "Rétrospective octobre 2026",
+            september.playlist.name to "Rétrospective septembre 2026",
+        )
+        val matches = listOf(october, september).filter { scope.matchesName(it.playlist.name, localizedNames::getValue) }
+        assertEquals(listOf(october), matches)
+        assertEquals(listOf(october), homeLibraryActionTargets(matches, listOf(october, september), selectionActive = true))
     }
 }

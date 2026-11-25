@@ -1,16 +1,30 @@
 package app.n_zik.android.components.dialog.settings
 
-import app.n_zik.android.utils.preferences
+import android.content.Context
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsNestedOption
+import app.n_zik.android.components.settings.common.settingsSearchTarget
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.utils.showButtonPlayerAddToPlaylistKey
 import app.n_zik.android.utils.showButtonPlayerArrowKey
 import app.n_zik.android.utils.showButtonPlayerDiscoverKey
@@ -26,20 +40,23 @@ import app.n_zik.android.utils.expandedplayertoggleKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.utils.playerActionBarButtonOrderKey
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
+import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.themed.n_zik.screen.player.defaultPlayerActionBarOrder
+import app.n_zik.android.themed.n_zik.screen.player.defaultPlayerActionBarTopSlots
+import app.n_zik.android.themed.n_zik.screen.player.emptyPlayerActionBarTopSlot
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarBottomAudioVideoKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
+import app.n_zik.android.themed.n_zik.screen.player.readPlayerActionBarTopSlots
+import app.n_zik.android.themed.n_zik.screen.player.resolvePlayerActionBarOrder
+import app.n_zik.android.utils.preferences
 import org.json.JSONArray
 import sh.calvin.reorderable.rememberReorderableLazyListState
-import android.content.Context
 
-private val defaultButtonOrder = listOf(
-    "start_radio", "discover", "download", "add_to_playlist",
-    "shuffle", "loop", "lyrics", "visualizer", "expanded_player",
-    "sleep_timer", "equalizer", "arrow", "menu"
-)
-
-internal fun playerActionBarThemeIds(): Set<String> = defaultButtonOrder.toSet()
+internal fun playerActionBarThemeIds(): Set<String> = defaultPlayerActionBarOrder.toSet()
 
 private data class ButtonDef(
     val id: String,
@@ -60,41 +77,46 @@ private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
     "expanded_player" to ButtonDef("expanded_player", expandedplayertoggleKey, R.drawable.maximize, R.string.settings_player_expanded_label, false),
     "sleep_timer" to ButtonDef("sleep_timer", showButtonPlayerSleepTimerKey, R.drawable.sleep, R.string.settings_player_action_bar_sleep_timer_visible_label, false),
     "equalizer" to ButtonDef("equalizer", showButtonPlayerSystemEqualizerKey, R.drawable.equalizer, R.string.settings_player_action_bar_equalizer_visible_label, false),
-    "arrow" to ButtonDef("arrow", showButtonPlayerArrowKey, R.drawable.chevron_up, R.string.settings_player_action_bar_queue_arrow_visible_label, true),
+    "arrow" to ButtonDef("arrow", showButtonPlayerArrowKey, R.drawable.chevron_up, R.string.settings_player_action_bar_open_queue_label, true),
     "start_radio" to ButtonDef("start_radio", showButtonPlayerStartRadioKey, R.drawable.radio, R.string.settings_player_action_bar_radio_visible_label, false),
-    "menu" to ButtonDef("menu", showButtonPlayerMenuKey, R.drawable.ellipsis_vertical, R.string.settings_player_action_bar_menu_visible_label, false)
+    "menu" to ButtonDef("menu", showButtonPlayerMenuKey, R.drawable.ellipsis_vertical, R.string.settings_player_action_bar_menu_visible_label, false),
+    "audioVideo" to ButtonDef("audioVideo", playerActionBarBottomAudioVideoKey, R.drawable.video, R.string.settings_toolbar_audio_video, false),
 )
+
+private val slotLabels = listOf(
+    R.string.settings_toolbar_player_left_slot,
+    R.string.settings_toolbar_player_center_slot,
+    R.string.settings_toolbar_player_right_slot,
+)
+
+private val topActions = listOf(ToolbarAction.COLLAPSE_PLAYER, ToolbarAction.AUDIO_VIDEO, ToolbarAction.MENU)
+
+internal fun canAssignPlayerTopSlot(slots: List<String>, index: Int, action: String): Boolean =
+    action == emptyPlayerActionBarTopSlot || slots[index] == action || action !in slots
+
+internal fun assignPlayerTopSlot(slots: List<String>, index: Int, action: String): List<String> {
+    if (!canAssignPlayerTopSlot(slots, index, action)) return slots
+    return slots.toMutableList().apply { this[index] = action }
+}
 
 object PlayerActionBarSettingsDialog : ContentFramedDialog {
 
     /** Exact searchable options from the same definitions used by this dialog. */
-    internal fun searchOptions(): List<SettingsNestedOption> = buildButtonDefs().values.map { SettingsNestedOption(it.id, it.labelRes) }
+    internal fun searchOptions(): List<SettingsNestedOption> =
+        slotLabels.mapIndexed { index, label ->
+            SettingsNestedOption("top.slot.$index", label, 0, R.string.player_position_top_label)
+        } + topActions.map { action ->
+            SettingsNestedOption("top.action.${action.id}", action.label, 0, R.string.player_position_top_label)
+        } + buildButtonDefs().values.map {
+            SettingsNestedOption(it.id, it.labelRes, 1, R.string.player_position_bottom_label)
+        }
 
 
     override val dialogTitle: String
         @Composable
-        get() = stringResource(R.string.player_action_bar_buttons)
+        get() = stringResource(R.string.settings_section_player_action_bar_title)
 
     override var isActive: Boolean by mutableStateOf(false)
-
-    private fun parseOrder(serialized: String): List<String> {
-        if (serialized.isBlank()) return defaultButtonOrder
-        return try {
-            val arr = JSONArray(serialized)
-            val list = mutableListOf<String>()
-            for (i in 0 until arr.length()) {
-                list.add(arr.getString(i))
-            }
-            val validIds = defaultButtonOrder.filter { it in buildButtonDefs().keys }
-            val result = list.filter { it in validIds }.toMutableList()
-            for (id in validIds) {
-                if (id !in result) result.add(id)
-            }
-            result
-        } catch (_: Exception) {
-            defaultButtonOrder
-        }
-    }
 
     private fun serializeOrder(order: List<String>): String {
         val arr = JSONArray()
@@ -107,10 +129,22 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
         val context = LocalContext.current
         val prefs = remember { context.preferences }
         val buttonDefs = remember { buildButtonDefs() }
+        val tabTransition = rememberSettingsDialogTabTransition(tabCount = 2, scopeKey = prefs)
+        val tabIndex = tabTransition.displayedIndex
+        var workingSlots by remember(prefs) { mutableStateOf(readPlayerActionBarTopSlots(prefs)) }
+        var topEdited by remember(prefs) { mutableStateOf(false) }
+        var openSlot by remember(prefs) { mutableStateOf<Int?>(null) }
+        val topLabels = topActions.associate { it.id to it.label } +
+            buttonDefs.mapValues { it.value.labelRes }.filterKeys { key -> topActions.none { it.id == key } } +
+            (emptyPlayerActionBarTopSlot to R.string.common_option_none)
+        val nestedTarget = LocalSettingsTargets.current?.nestedTarget
+        val nestedItemId = nestedTarget?.nestedDestination?.itemId
+        val targetAction = nestedItemId?.takeIf { it.startsWith("top.action.") }?.removePrefix("top.action.")
+        val targetSlot = targetAction?.let { action -> workingSlots.indexOf(action).takeIf { it >= 0 } ?: 0 }
 
         val initial = remember {
             val orderSerialized = prefs.getString(playerActionBarButtonOrderKey, "") ?: ""
-            val order = parseOrder(orderSerialized).toMutableList()
+            val order = resolvePlayerActionBarOrder(orderSerialized).toMutableList()
             val toggles = order.map { id ->
                 val def = buttonDefs[id]
                 if (def != null) prefs.getBoolean(def.preferenceKey, def.defaultValue) else false
@@ -120,8 +154,10 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
 
         var workingOrder by remember { mutableStateOf(initial.first) }
         var workingToggles by remember { mutableStateOf(initial.second) }
+        val bottomMenuRequired = ToolbarAction.MENU.id !in workingSlots
 
         val lazyListState = rememberLazyListState()
+        val slotScrollState = rememberScrollState()
 
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
             val order = workingOrder.toMutableList()
@@ -138,7 +174,7 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
             }
         }
 
-        val items = workingOrder.mapNotNull { buttonId ->
+        val items = if (tabIndex == 0) emptyList() else workingOrder.mapNotNull { buttonId ->
             val def = buttonDefs[buttonId] ?: return@mapNotNull null
             ToggleItem(
                 id = def.id,
@@ -155,23 +191,31 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
             items = items,
             lazyListState = lazyListState,
             reorderableState = reorderableState,
-            checkedStatesOverride = workingToggles.toList(),
+            lockedCheckedIds = if (bottomMenuRequired) setOf(ToolbarAction.MENU.id) else emptySet(),
+            unavailableIds = workingSlots.filterTo(mutableSetOf()) { it in buttonDefs },
+            checkedStatesOverride = if (tabIndex == 0) emptyList() else workingToggles.toList(),
             onCheckedChange = { index, newValue ->
                 val newToggles = workingToggles.toMutableList()
                 newToggles[index] = newValue
                 workingToggles = newToggles
             },
             onReset = {
-                workingOrder = defaultButtonOrder.toMutableList()
-                workingToggles = defaultButtonOrder.map { id ->
-                    buttonDefs[id]?.defaultValue ?: false
-                }.toMutableList()
+                if (tabIndex == 0) {
+                    workingSlots = defaultPlayerActionBarTopSlots
+                    topEdited = true
+                } else {
+                    workingOrder = defaultPlayerActionBarOrder.toMutableList()
+                    workingToggles = defaultPlayerActionBarOrder.map { id ->
+                        buttonDefs[id]?.defaultValue ?: false
+                    }.toMutableList()
+                }
             },
             onCancel = {
                 hideDialog()
             },
             onConfirm = {
                 val editor = prefs.edit()
+                if (topEdited) editor.putString(playerActionBarTopSlotsKey, serializeOrder(workingSlots))
                 editor.putString(playerActionBarButtonOrderKey, serializeOrder(workingOrder))
                 workingOrder.forEachIndexed { index, id ->
                     val def = buttonDefs[id] ?: return@forEachIndexed
@@ -180,14 +224,67 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
                 editor.apply()
                 Toaster.s(R.string.settings_preference_saved_message)
                 hideDialog()
-            }
+            },
+            tabContentAlpha = { tabTransition.alpha },
+            tabContent = if (tabIndex == 0) ({
+                Column(Modifier.fillMaxWidth().verticalScroll(slotScrollState)) {
+                    workingSlots.forEachIndexed { index, action ->
+                        val icon = topActions.firstOrNull { it.id == action }?.icon
+                            ?: buttonDefs[action]?.iconRes ?: R.drawable.unchecked_outline
+                        val highlighted = nestedItemId == "top.slot.$index" || targetSlot == index
+                        OtherSettingsEntry(
+                            title = stringResource(slotLabels[index]),
+                            text = "",
+                            icon = icon,
+                            selectedValueText = stringResource(topLabels.getValue(action)),
+                            modifier = Modifier.wrapContentHeight(unbounded = true).then(
+                                if (highlighted && nestedTarget != null) Modifier.settingsSearchTarget(nestedTarget.id)
+                                else Modifier,
+                            ),
+                            onClick = { openSlot = index },
+                        )
+                    }
+                }
+            }) else null,
+            bodyHeader = {
+                SettingsDialogTabRow(
+                    labels = listOf(
+                        stringResource(R.string.player_position_top_label),
+                        stringResource(R.string.player_position_bottom_label),
+                    ),
+                    selectedTabIndex = tabTransition.selectedIndex,
+                    onTabSelected = tabTransition::select,
+                )
+                Spacer(Modifier.height(8.dp))
+            },
         )
+        DialogPresence(target = openSlot) { index ->
+            val options = listOf(emptyPlayerActionBarTopSlot) + topActions.map(ToolbarAction::id) +
+                defaultPlayerActionBarOrder.filterNot { id -> topActions.any { it.id == id } }
+            ValueSelectorDialog(
+                onDismiss = { openSlot = null },
+                title = stringResource(slotLabels[index]),
+                selectedValue = workingSlots[index],
+                values = options.filter { canAssignPlayerTopSlot(workingSlots, index, it) },
+                valueText = { stringResource(topLabels.getValue(it)) },
+                onValueSelected = { action ->
+                    val updated = assignPlayerTopSlot(workingSlots, index, action)
+                    if (updated != workingSlots) {
+                        workingSlots = updated
+                        topEdited = true
+                    }
+                },
+            )
+        }
     }
 
     fun reset(context: Context) {
         val prefs = context.preferences
         val editor = prefs.edit()
-        editor.putString(playerActionBarButtonOrderKey, serializeOrder(defaultButtonOrder))
+        editor.remove(playerActionBarTopSlotsKey)
+        editor.remove(ToolbarSurface.PLAYER_TOP.orderKey)
+        topActions.forEach { editor.remove(ToolbarSurface.PLAYER_TOP.visibilityKey(it)) }
+        editor.putString(playerActionBarButtonOrderKey, serializeOrder(defaultPlayerActionBarOrder))
         buildButtonDefs().forEach { (_, def) ->
             editor.putBoolean(def.preferenceKey, def.defaultValue)
         }

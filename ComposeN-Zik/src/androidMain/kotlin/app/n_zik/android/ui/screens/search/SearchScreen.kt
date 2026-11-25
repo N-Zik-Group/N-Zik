@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -67,9 +68,10 @@ fun SearchScreen(
     val preview = LocalThemePreview.current
     val saveableStateHolder = rememberSaveableStateHolder()
 
-    val (tabIndex, onTabChanged) = rememberSaveable {
+    val selectedTab = rememberSaveable {
         mutableStateOf(if (preview == null) 0 else 1)
     }
+    val (tabIndex, onTabChanged) = selectedTab
 
     val (textFieldValue, onTextFieldValueChanged) = rememberSaveable(
         initialTextInput,
@@ -84,6 +86,7 @@ fun SearchScreen(
     }
 
     val (isListening, setIsListening) = rememberSaveable { mutableStateOf(false) }
+    var voiceStartedOnline by rememberSaveable { mutableStateOf(false) }
     var isSpeaking by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isCancelling by remember { mutableStateOf(false) }
@@ -99,6 +102,9 @@ fun SearchScreen(
         if (offlineMode && tabIndex != 1) onTabChanged(1)
     }
 
+    val submitVoiceResult by rememberUpdatedState<(String) -> Unit> { result ->
+        if (!offlineMode && voiceStartedOnline && selectedTab.value == 0 && !isCancelling) onSearch(result)
+    }
     val voiceSearchUtils = remember {
         VoiceSearchUtils(
             context = context,
@@ -109,7 +115,7 @@ fun SearchScreen(
                         selection = TextRange(result.length)
                     )
                 )
-                onSearch(result)
+                submitVoiceResult(result)
             },
             onPartialResult = { partial ->
                 onTextFieldValueChanged(
@@ -165,7 +171,7 @@ fun SearchScreen(
             // bubble is online-only as well: it opens the audio search overlay,
             // which is useless against the local library (the mic stays in both
             // tabs).
-            val micBubble = SearchBarBubble(
+            fun micBubble(online: Boolean) = SearchBarBubble(
                 iconRes = R.drawable.microphone,
                 contentDescriptionRes = R.string.search_voice_action_start,
                 active = isListening,
@@ -173,6 +179,7 @@ fun SearchScreen(
                     if (isListening) {
                         voiceSearchUtils.stopListening()
                     } else {
+                        voiceStartedOnline = online
                         isCancelling = false
                         errorMessage = null
                         keyboardController?.hide()
@@ -197,8 +204,8 @@ fun SearchScreen(
                     isFindActive = true
                 },
             )
-            val onlineActionBubbles = if (offlineMode) emptyList() else listOf(micBubble, musicSearchBubble)
-            val localActionBubbles = if (offlineMode) emptyList() else listOf(micBubble)
+            val onlineActionBubbles = if (offlineMode) emptyList() else listOf(micBubble(online = true), musicSearchBubble)
+            val localActionBubbles = if (offlineMode) emptyList() else listOf(micBubble(online = false))
 
             val topContentInset = rememberTopContentInsetProvider(hasNavBar = !offlineMode && !app.n_zik.android.utils.hideBarsInLandscapeMobile())
 

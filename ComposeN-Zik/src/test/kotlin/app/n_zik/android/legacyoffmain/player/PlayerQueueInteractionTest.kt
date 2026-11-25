@@ -15,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
@@ -46,13 +47,17 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.MainApplication
+import app.n_zik.android.R
+import app.n_zik.android.ui.components.tab.toolbar.ConfirmDialog
 import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.every
 import io.mockk.just
@@ -69,6 +74,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -109,6 +115,7 @@ class PlayerQueueInteractionTest {
         val songs = mockk<SongTable>()
         every { songs.likeState(any()) } returns flowOf(null)
         every { songs.findById(any()) } returns flowOf(null)
+        every { songs.findByIds(any()) } returns flowOf(emptyList())
         mockkObject(Database, LikeStateManager, PlaylistStateManager, Toaster)
         every { Toaster.s(any<String>(), any()) } just Runs
         every { Database.songTable } returns songs
@@ -161,6 +168,52 @@ class PlayerQueueInteractionTest {
         row().performTouchInput { swipeLeft() }
         compose.waitForIdle()
         verify(exactly = 1) { player.removeMediaItem(any()) }
+    }
+
+    @Test fun `manage favorites requires a checked queue row`() {
+        renderQueue()
+        val context: Context = ApplicationProvider.getApplicationContext()
+        fun favorites() = QueueToolBarState.buttons.filterIsInstance<MenuIcon>().single {
+            it.iconId == R.drawable.heart_outline
+        }
+        compose.runOnIdle {
+            assertFalse(favorites().isEnabled)
+            QueueToolBarState.buttons.filterIsInstance<ItemSelector<*>>().single().onShortClick()
+        }
+        compose.runOnIdle { assertFalse(favorites().isEnabled) }
+        val checkboxes = compose.onAllNodesWithContentDescription(context.getString(R.string.common_action_select))
+        val titleY = row().fetchSemanticsNode().boundsInRoot.center.y
+        val checkbox = checkboxes.fetchSemanticsNodes().indices.minBy { index ->
+            kotlin.math.abs(checkboxes[index].fetchSemanticsNode().boundsInRoot.center.y - titleY)
+        }
+        checkboxes[checkbox].performClick()
+        compose.runOnIdle {
+            val selector = QueueToolBarState.buttons.filterIsInstance<ItemSelector<*>>().single()
+            assertEquals(1, selector.size)
+        }
+        compose.waitUntil(timeoutMillis = 5_000) { favorites().isEnabled }
+    }
+
+    @Test fun `checked duplicate is the only occurrence removed after a queue reorder`() {
+        every { Toaster.s(R.string.player_queue_deleted_item_format, formatArgs = *arrayOf("1")) } just Runs
+        renderQueue()
+        compose.runOnIdle { QueueToolBarState.buttons.filterIsInstance<ItemSelector<*>>().single().onShortClick() }
+        val context: Context = ApplicationProvider.getApplicationContext()
+        val checkboxes = compose.onAllNodesWithContentDescription(context.getString(R.string.common_action_select))
+        val titleY = row().fetchSemanticsNode().boundsInRoot.center.y
+        val secondCheckbox = checkboxes.fetchSemanticsNodes().indices.minBy { index ->
+            kotlin.math.abs(checkboxes[index].fetchSemanticsNode().boundsInRoot.center.y - titleY)
+        }
+        checkboxes[secondCheckbox].performClick()
+        retainVisualRowsWithLiveOrder(listOf(first, third, fourth, second))
+        compose.runOnIdle {
+            val remove = QueueToolBarState.buttons.filterIsInstance<MenuIcon>().single { it.iconId == R.drawable.trash }
+            remove.onShortClick()
+            (remove as ConfirmDialog).onConfirm()
+        }
+        verify(exactly = 1) { player.removeMediaItem(3) }
+        verify(exactly = 1) { player.removeMediaItem(any()) }
+        verify(exactly = 0) { player.clearMediaItems() }
     }
 
     @Test fun `retained duplicate row play next uses its live uid and vanished row does nothing`() {

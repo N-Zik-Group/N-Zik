@@ -332,7 +332,6 @@
     <string name="settings_player_action_bar_loop_visible_label">Zobrazit tlačítko Smyčky</string>
     <string name="settings_player_action_bar_menu_visible_label">Zobrazit tlačítko menu</string>
     <string name="settings_player_action_bar_playlist_add_visible_label">Zobrazit tlačítko Přidat do playlistu</string>
-    <string name="settings_player_action_bar_queue_arrow_visible_label">Zobrazit tlačítko Šipky</string>
     <string name="settings_player_action_bar_radio_visible_label">Spustit tlačítko rádia</string>
     <string name="settings_player_action_bar_shuffle_visible_label">Zobrazit tlačítko Náhodně</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">Zobrazit tlačítko časovače spánku</string>

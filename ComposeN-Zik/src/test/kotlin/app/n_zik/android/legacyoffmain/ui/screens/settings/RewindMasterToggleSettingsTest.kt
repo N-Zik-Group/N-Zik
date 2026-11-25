@@ -95,7 +95,7 @@ class RewindMasterToggleSettingsTest {
     private fun showScreen(focus: String = "") {
         composeRule.setContent {
             CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
-                AIRecommendationSettings(navController = navController, focus = focus)
+                AIRecommendationSettings(navController = navController, onSettingsNavigate = {}, focus = focus)
             }
         }
     }

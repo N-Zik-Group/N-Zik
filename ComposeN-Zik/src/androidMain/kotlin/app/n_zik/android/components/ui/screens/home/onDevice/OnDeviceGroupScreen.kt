@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -40,18 +42,22 @@ import app.n_zik.android.components.SongItem
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.items.SongItemPlaceholder
-import app.n_zik.android.components.glass.GlassActionCellWidth
 import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.glass.PageButton
 import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.visibleActions
 import app.n_zik.android.components.musicbrainz.InfoAndCommunity
 import app.n_zik.android.components.ui.screens.album.AlbumBookmark
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.Enqueue
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -62,7 +68,10 @@ import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.components.ui.screens.CollectionArtworkHeader
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
+import app.n_zik.android.components.search.SearchEmptyFeedback
+
 import app.n_zik.android.components.search.SearchNoResults
+import app.n_zik.android.components.search.matchesCollectionSearch
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
@@ -90,6 +99,7 @@ import app.n_zik.android.utils.rememberPreference
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 
 @UnstableApi
 @Composable
@@ -249,6 +259,12 @@ private fun OnDeviceGroupScreen(
     val visibleTracks = remember(tracks, eligibleIds, parentalControl) {
         tracks.orEmpty().filter { it.id in eligibleIds && (!parentalControl || !it.title.hasExplicitPrefix()) }
     }
+    val lazyListState = rememberLazyListState()
+    val search = Search.detail()
+    val query = search.filterQuery
+    val matchingTracks = remember(visibleTracks, query) {
+        if (query.isBlank()) visibleTracks else visibleTracks.filter { it.matchesCollectionSearch(query) }
+    }
     val duration = remember(visibleTracks) { visibleTracks.sumOf { durationTextToMillis(it.durationText.orEmpty()) } }
     val artwork = (sequenceOf(thumbnailUrl) + visibleTracks.asSequence().map(Song::thumbnailUrl))
         .filterNotNull()
@@ -270,14 +286,11 @@ private fun OnDeviceGroupScreen(
     }
 
     val itemSelector = ItemSelector<Song>()
-    fun actionTracks(): List<Song> {
-        if (itemSelector.isEmpty()) return visibleTracks
-        val selectedIds = itemSelector.mapTo(HashSet()) { it.id }
-        return visibleTracks.filter { it.id in selectedIds }
-    }
+    fun actionTracks() = itemSelector.actionTargets(matchingTracks, Song::id, Song::id)
+    fun hasSelection() = actionTracks().isNotEmpty()
     val shuffle = SongShuffler(::actionTracks)
     val playNext = PlayNext {
-        val songs = actionTracks()
+        val songs = actionTracks().ifEmpty { return@PlayNext }
         itemSelector.isActive = false
         scope.launch {
             val items = withContext(NzikDispatchers.DATA) { songs.map(Song::asMediaItem) }
@@ -285,7 +298,7 @@ private fun OnDeviceGroupScreen(
         }
     }
     val enqueue = Enqueue {
-        val songs = actionTracks()
+        val songs = actionTracks().ifEmpty { return@Enqueue }
         itemSelector.isActive = false
         scope.launch {
             val items = withContext(NzikDispatchers.DATA) { songs.map(Song::asMediaItem) }
@@ -295,9 +308,22 @@ private fun OnDeviceGroupScreen(
 
     val artworkPainter = ImageCacheFactory.Painter(artwork)
     val isArtist = placeholder == R.drawable.artist
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val snapshot = actionTracks().toList()
+            if (snapshot.isEmpty()) null else suspend { snapshot.map(Song::asMediaItem) }
+        },
+        onFailure = { error, preview ->
+            Timber.tag("OnDeviceGroupScreen").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
+        },
+        itemSelector = itemSelector,
+        localDestinationsOnly = true,
+    )
     val forceShimmer = forceLoadingShimmerPreview()
     val isLoading = tracks == null || deviceLibrary == null
     val showShimmer = isLoading || forceShimmer
+    SearchEmptyFeedback(query, matchingTracks.isEmpty(), loading = showShimmer)
     Box(Modifier.fillMaxSize().background(palette.background0)) {
         DynamicOrientationLayout(
             artworkPainter,
@@ -306,6 +332,7 @@ private fun OnDeviceGroupScreen(
             isLoading = showShimmer,
         ) {
         LazyColumn(
+            state = lazyListState,
             contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = Dimensions.bottomSpacer)),
             modifier = Modifier.fillMaxSize(),
         ) {
@@ -340,8 +367,17 @@ private fun OnDeviceGroupScreen(
                 }
             }
             if (isLoading || visibleTracks.isNotEmpty()) item(key = "action_buttons") {
-                val actions = if (isArtist) listOf(shuffle, playNext, enqueue, itemSelector)
-                    else listOf(shuffle, itemSelector, playNext, enqueue)
+                val actions = mapOf(
+                    ToolbarControl.SEARCH to search,
+                    ToolbarControl.SHUFFLE to itemSelector.guard(shuffle, ::hasSelection),
+                    ToolbarControl.PLAY_NEXT to itemSelector.guard(playNext, ::hasSelection),
+                    ToolbarControl.ENQUEUE to itemSelector.guard(enqueue, ::hasSelection),
+                    ToolbarControl.SELECT to itemSelector,
+                    ToolbarControl.ADD_TO_PLAYLIST to itemSelector.guard(addToPlaylist, ::hasSelection),
+                )
+                val surface = if (isArtist) ToolbarSurface.ARTIST_DEVICE else ToolbarSurface.ALBUM_DEVICE
+                val visible = surface.visibleActions()
+                val buttons = visible.mapNotNull(actions::get)
                 CollectionButtonToolbar(
                     bookmark = {
                         when {
@@ -358,17 +394,18 @@ private fun OnDeviceGroupScreen(
                             else -> bookmark?.ToolBarButton()
                         }
                     },
-                    buttons = if (isLoading) actions.map { it.disabledWhileLoading() } else actions,
+                    buttons = if (isLoading) buttons.map { it.disabledWhileLoading() } else buttons,
+                    showBookmark = bookmark != null || (isLoading && isArtist),
                     bookmarkWidth = if (isArtist) 100.dp else GlassStandaloneActionSize,
-                    originalNativeBookmarkWidth = if (isArtist) 100.dp else 48.dp,
-                    originalBookmarkGap = if (isArtist) 10.dp else 15.dp,
-                    actionCellWidth = if (isArtist) GlassActionCellWidth else 44.dp,
-                    modifier = if (isArtist) Modifier.padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp)
+                    modifier = if (isArtist) Modifier.padding(top = 12.dp, bottom = 8.dp)
                         else Modifier.padding(top = 8.dp),
                 )
             }
+            item(key = "detail-search") {
+                Column { search.SearchBar(this) }
+            }
             if (!isLoading) item(key = "info_and_community") { info() }
-            if (!isLoading && visibleTracks.isEmpty()) {
+            if (!isLoading && query.isBlank() && visibleTracks.isEmpty()) {
                 item(key = "empty") { SearchNoResults(text = stringResource(R.string.common_empty_items)) }
             }
             if (isLoading || visibleTracks.isNotEmpty()) item(key = "songsTitle") {
@@ -380,16 +417,17 @@ private fun OnDeviceGroupScreen(
             }
             if (showShimmer) {
                 items(
-                    count = if (isLoading) 4 else visibleTracks.size,
-                    key = { index -> visibleTracks.getOrNull(index)?.id ?: "device-song-loading-$index" },
+                    count = if (isLoading) 4 else matchingTracks.size,
+                    key = { index -> matchingTracks.getOrNull(index)?.id ?: "device-song-loading-$index" },
                 ) { index ->
-                    val song = visibleTracks.getOrNull(index)
+                    val song = matchingTracks.getOrNull(index)
                     SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText(), onDevice = true)
                 }
             } else {
-                items(visibleTracks, key = { it.id }) { song ->
+                items(matchingTracks, key = { it.id }) { song ->
                     SongItem(song, navController = navController, itemSelector = itemSelector,
-                        onClick = { if (!itemSelector.isActive) play(visibleTracks, song.id) })
+                        modifier = Modifier.animateItem(),
+                        onClick = { if (!itemSelector.isActive) play(matchingTracks, song.id) })
                 }
             }
         }

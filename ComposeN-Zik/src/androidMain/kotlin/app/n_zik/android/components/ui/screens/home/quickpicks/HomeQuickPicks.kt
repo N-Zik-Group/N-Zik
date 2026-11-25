@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import app.n_zik.android.compose.persist.LocalPersistMap
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -174,106 +175,110 @@ fun HomeQuickPicks(
     onSettingsClick: () -> Unit,
     topContentInsetProvider: () -> Dp = { 0.dp },
 ) {
-    val preview = LocalThemePreview.current
-    val windowInsets = LocalPlayerAwareWindowInsets.current
-    val context = LocalContext.current
-    val isOnline = if (preview != null) true else NetworkQualityHelper.isNetworkAvailableComposable(context).value
+    val resetRevision = LocalPersistMap.current?.let { quickPicksResetRevision(it).intValue } ?: 0
+    key(resetRevision) {
+        val preview = LocalThemePreview.current
+        val windowInsets = LocalPlayerAwareWindowInsets.current
+        val context = LocalContext.current
+        val isOnline = if (preview != null) true else NetworkQualityHelper.isNetworkAvailableComposable(context).value
 
-    var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
-    var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
-    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-    val localRecommandationsNumber by rememberPreference(
-        key = "LocalRecommandationsNumber",
-        defaultValue = LocalRecommandationsNumber.SixQ
-    )
-    val localCount = localRecommandationsNumber.value
+        var playEventType by rememberPreference(playEventsTypeKey, PlayEventsType.MostPlayed)
+        var selectedCountryCode by rememberPreference(selectedCountryCodeKey, Countries.ZZ)
+        val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+        val localRecommandationsNumber by rememberPreference(
+            key = "LocalRecommandationsNumber",
+            defaultValue = LocalRecommandationsNumber.SixQ
+        )
+        val localCount = localRecommandationsNumber.value
 
-    val state = rememberHomeQuickPicksState(
-        playEventType = playEventType,
-        selectedCountryCode = selectedCountryCode,
-        parentalControlEnabled = parentalControlEnabled,
-        localCount = localCount
-    )
-
-    var lastPlayEventType by rememberSaveable { mutableStateOf(playEventType) }
-    var lastSelectedCountry by rememberSaveable { mutableStateOf(selectedCountryCode) }
-    var currentYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
-
-    if (preview == null) QuickPicksInitialLoadEffect(
-        stateKey = state,
-        resolveLoggedIn = { withContext(NzikDispatchers.DATA) { isYouTubeLoggedIn() } },
-        onLoggedInResolved = { currentYouTubeLoggedIn = it },
-        load = {
-            val invalidate = playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry
-            lastPlayEventType = playEventType
-            lastSelectedCountry = selectedCountryCode
-            state.load(invalidate = invalidate)
-        },
-    )
-
-    val fetchedHome = state.homePageResult.value?.getOrNull()
-    LaunchedEffect(state, state.loadedData.value, fetchedHome) {
-        val page = state.homePageInit.value ?: return@LaunchedEffect
-        if (!state.loadedData.value || !state.isCurrentAccount()) return@LaunchedEffect
-        val itemsToFetch = page.sections.flatMap { it.items }
-            .filterIsInstance<Innertube.VideoItem>()
-            .filter { it.durationText == null }
-            .map { it.key }
-            .distinct()
-        if (itemsToFetch.isEmpty()) return@LaunchedEffect
-
-        val durations = withContext(NzikDispatchers.DATA) {
-            Innertube.queue(videoIds = itemsToFetch)?.getOrNull()
-                ?.associate { it.key to it.durationText }.orEmpty()
-        }
-        if (durations.isNotEmpty() && state.homePageInit.value === page && state.isCurrentAccount()) {
-            state.homePageInit.value = page.copy(sections = page.sections.map { section ->
-                section.copy(items = section.items.map { item ->
-                    when (item) {
-                        is Innertube.VideoItem -> durations[item.key]?.let { item.copy(durationText = it) } ?: item
-                        is Innertube.SongItem -> durations[item.key]?.let { item.copy(durationText = it) } ?: item
-                        else -> item
-                    }
-                })
-            })
-        }
-    }
-
-    val scrollState = rememberLazyListState()
-
-    LaunchedEffect(state.refreshKey.value) {
-        if (state.refreshKey.value > 0) {
-            scrollState.animateScrollToItem(0)
-        }
-    }
-
-    OfflineGatedPullRefresh(
-        isOnline = isOnline,
-        isRefreshing = state.refreshing.value,
-        onRefresh = { if (preview == null) state.refresh() }
-    ) {
-        HomeQuickPicksContent(
-            state = state,
-            scrollState = scrollState,
-            isOnline = isOnline,
-            refresh = { if (preview == null) state.refresh(manual = false) },
-            navController = navController,
-            onAlbumClick = onAlbumClick,
-            onArtistClick = onArtistClick,
-            onPlaylistClick = onPlaylistClick,
-            onSearchClick = onSearchClick,
-            onMoodClick = onMoodClick,
-            onChipClick = onChipClick,
-            onSettingsClick = onSettingsClick,
-            onPlayEventTypeChange = { playEventType = it },
-            onSelectedCountryCodeChange = { selectedCountryCode = it },
-            currentYouTubeLoggedIn = currentYouTubeLoggedIn,
+        val state = rememberHomeQuickPicksState(
             playEventType = playEventType,
             selectedCountryCode = selectedCountryCode,
             parentalControlEnabled = parentalControlEnabled,
-            windowInsets = windowInsets,
-            topContentInsetProvider = topContentInsetProvider,
+            localCount = localCount,
+            resetRevision = resetRevision,
         )
+
+        var lastPlayEventType by rememberSaveable { mutableStateOf(playEventType) }
+        var lastSelectedCountry by rememberSaveable { mutableStateOf(selectedCountryCode) }
+        var currentYouTubeLoggedIn by rememberSaveable { mutableStateOf(false) }
+
+        if (preview == null) QuickPicksInitialLoadEffect(
+            stateKey = state,
+            resolveLoggedIn = { withContext(NzikDispatchers.DATA) { isYouTubeLoggedIn() } },
+            onLoggedInResolved = { currentYouTubeLoggedIn = it },
+            load = {
+                val invalidate = playEventType != lastPlayEventType || selectedCountryCode != lastSelectedCountry
+                lastPlayEventType = playEventType
+                lastSelectedCountry = selectedCountryCode
+                state.load(invalidate = invalidate)
+            },
+        )
+
+        val fetchedHome = state.homePageResult.value?.getOrNull()
+        LaunchedEffect(state, state.loadedData.value, fetchedHome) {
+            val page = state.homePageInit.value ?: return@LaunchedEffect
+            if (!state.loadedData.value || !state.isCurrentAccount()) return@LaunchedEffect
+            val itemsToFetch = page.sections.flatMap { it.items }
+                .filterIsInstance<Innertube.VideoItem>()
+                .filter { it.durationText == null }
+                .map { it.key }
+                .distinct()
+            if (itemsToFetch.isEmpty()) return@LaunchedEffect
+
+            val durations = withContext(NzikDispatchers.DATA) {
+                Innertube.queue(videoIds = itemsToFetch)?.getOrNull()
+                    ?.associate { it.key to it.durationText }.orEmpty()
+            }
+            if (durations.isNotEmpty() && state.homePageInit.value === page && state.isCurrentAccount()) {
+                state.homePageInit.value = page.copy(sections = page.sections.map { section ->
+                    section.copy(items = section.items.map { item ->
+                        when (item) {
+                            is Innertube.VideoItem -> durations[item.key]?.let { item.copy(durationText = it) } ?: item
+                            is Innertube.SongItem -> durations[item.key]?.let { item.copy(durationText = it) } ?: item
+                            else -> item
+                        }
+                    })
+                })
+            }
+        }
+
+        val scrollState = rememberLazyListState()
+
+        LaunchedEffect(state.refreshKey.value) {
+            if (state.refreshKey.value > 0) {
+                scrollState.animateScrollToItem(0)
+            }
+        }
+
+        OfflineGatedPullRefresh(
+            isOnline = isOnline,
+            isRefreshing = state.refreshing.value,
+            onRefresh = { if (preview == null) state.refresh() }
+        ) {
+            HomeQuickPicksContent(
+                state = state,
+                scrollState = scrollState,
+                isOnline = isOnline,
+                refresh = { if (preview == null) state.refresh(manual = false) },
+                navController = navController,
+                onAlbumClick = onAlbumClick,
+                onArtistClick = onArtistClick,
+                onPlaylistClick = onPlaylistClick,
+                onSearchClick = onSearchClick,
+                onMoodClick = onMoodClick,
+                onChipClick = onChipClick,
+                onSettingsClick = onSettingsClick,
+                onPlayEventTypeChange = { playEventType = it },
+                onSelectedCountryCodeChange = { selectedCountryCode = it },
+                currentYouTubeLoggedIn = currentYouTubeLoggedIn,
+                playEventType = playEventType,
+                selectedCountryCode = selectedCountryCode,
+                parentalControlEnabled = parentalControlEnabled,
+                windowInsets = windowInsets,
+                topContentInsetProvider = topContentInsetProvider,
+            )
+        }
     }
 }
 

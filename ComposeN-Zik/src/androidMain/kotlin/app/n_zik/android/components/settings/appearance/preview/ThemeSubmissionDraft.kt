@@ -4,7 +4,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
 private val submissionDraftShapes by lazy {
-    (1..ThemeAppearanceV2).associateWith { version ->
+    (1..ThemeAppearanceV3).associateWith { version ->
         Json.parseToJsonElement(
             encodeThemeAppearance(emptyMap<String, Any>(), emptyMap<String, Any>(), schemaVersion = version)
         ) as JsonObject

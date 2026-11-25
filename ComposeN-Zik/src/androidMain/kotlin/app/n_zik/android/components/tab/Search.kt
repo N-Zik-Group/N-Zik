@@ -36,7 +36,11 @@ import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.isGlassMotionAllowed
+import app.n_zik.android.components.search.SearchHeaderVisibility
+import app.n_zik.android.components.search.SearchMotionDurationMillis
 import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.ui.components.LocalMenuState
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.first
@@ -48,6 +52,7 @@ class Search private constructor(
     private val lazyListState: LazyListState?,
     private val lazyGridState: LazyGridState?,
     private val persistent: Boolean = false,
+    private val onOpen: () -> Unit = {},
 ): MenuIcon, Descriptive{
 
     companion object {
@@ -87,6 +92,19 @@ class Search private constructor(
             null,
         )
 
+        @Composable
+        internal fun detail(): Search {
+            val menu = LocalMenuState.current
+            return Search(
+                rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) },
+                rememberSaveable { mutableStateOf(false) },
+                remember { mutableStateOf(false) },
+                null,
+                null,
+                onOpen = menu::hide,
+            )
+        }
+
         /** Hosts may retain input across nested destinations without restoring keyboard focus. */
         @Composable
         operator fun invoke(
@@ -124,11 +142,21 @@ class Search private constructor(
     /** Keeps the cursor position when the query changes. */
     var input: TextFieldValue by inputState
     var isVisible: Boolean by visibleState
+
+    val filterQuery: String
+        get() = if (isVisible) inputValue.trim() else ""
     var isFocused: Boolean by focusState
 
     override fun onShortClick() {
         isVisible = !isVisible
         isFocused = isVisible
+        if (isVisible) onOpen()
+    }
+
+    internal fun clearAndClose() {
+        isFocused = false
+        isVisible = false
+        input = TextFieldValue("")
     }
 
     /** Hides an empty bar or removes focus from a populated one. */
@@ -138,6 +166,11 @@ class Search private constructor(
                 isVisible = false
             else
                 isFocused = false
+    }
+
+    @Composable
+    internal fun HeaderContent(content: @Composable () -> Unit) {
+        SearchHeaderVisibility(!isFocused, content)
     }
 
     @Composable
@@ -151,6 +184,9 @@ class Search private constructor(
         val focusManager = LocalFocusManager.current
         val keyboardController = LocalSoftwareKeyboardController.current
         val visibility = remember { MutableTransitionState(isVisible) }
+        val motion = isGlassMotionAllowed()
+        val duration = if (motion) SearchMotionDurationMillis else 0
+        val collapseDelay = if (motion) SearchMotionDurationMillis else 0
         visibility.targetState = isVisible
         val isFirstRun = remember { mutableStateOf(true) }
         LaunchedEffect( input ) {
@@ -172,15 +208,15 @@ class Search private constructor(
                 AnimatedVisibility(
                     visibleState = visibility,
                     enter = expandVertically(
-                        tween(200, easing = FastOutSlowInEasing),
+                        tween(duration, easing = FastOutSlowInEasing),
                         expandFrom = Alignment.Top,
                         clip = false
-                    ) + fadeIn(tween(200)),
+                    ) + fadeIn(tween(duration)),
                     exit = shrinkVertically(
-                        tween(200, delayMillis = 250, easing = FastOutSlowInEasing),
+                        tween(duration, delayMillis = collapseDelay, easing = FastOutSlowInEasing),
                         shrinkTowards = Alignment.Top,
                         clip = false
-                    ) + fadeOut(tween(200, delayMillis = 250)),
+                    ) + fadeOut(tween(duration, delayMillis = collapseDelay)),
                 ) {
                     var fieldFocused by remember { mutableStateOf(false) }
                     // Request only after AnimatedVisibility has attached the field. Its initial

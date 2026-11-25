@@ -48,6 +48,8 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.showMiniPlayerAudioOutputKey
 import app.n_zik.android.utils.showMiniPlayerLikeKey
+import app.n_zik.android.utils.showMiniPlayerQueueKey
+import app.n_zik.android.utils.showMiniPlayerShuffleKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
@@ -195,18 +197,37 @@ class GlassMiniPlayerPreviewTest {
         val before = context.preferences.all.toMap()
         showPreview()
 
-        val labels = listOf(R.string.player_action_like, R.string.player_action_next,
-            R.string.player_action_play, R.string.player_action_previous).map(context::getString)
-        val controls = composeRule.onAllNodes(SemanticsMatcher("mini-player control") { node ->
-            node.config.getOrNull(SemanticsProperties.ContentDescription)?.any { it in labels } == true
-        }).fetchSemanticsNodes().sortedBy { it.positionInRoot.x }
-        assertEquals(labels, controls.map { it.config[SemanticsProperties.ContentDescription].single() })
+        assertControlOrder(
+            R.string.player_action_like, R.string.player_action_next,
+            R.string.player_action_play, R.string.player_action_previous,
+        )
         composeRule.onNodeWithContentDescription(context.getString(R.string.audio_output_title)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_title)).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_artist)).assertIsDisplayed()
         composeRule.onNodeWithContentDescription(context.getString(R.string.player_action_play)).performClick()
         composeRule.onNodeWithContentDescription(context.getString(R.string.player_notification_pause)).assertIsDisplayed()
         assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun `optional controls use the default order after the transport and audio output controls`() {
+        context.preferences.edit()
+            .putBoolean(showMiniPlayerQueueKey, true)
+            .putBoolean(showMiniPlayerShuffleKey, true)
+            .commit()
+        showPreview()
+
+        assertControlOrder(
+            R.string.player_action_previous, R.string.player_action_play, R.string.player_action_next,
+            R.string.audio_output_title, R.string.player_mini_button_queue, R.string.player_mini_action_shuffle,
+        )
+    }
+
+    private fun assertControlOrder(vararg labelResources: Int) {
+        val labels = labelResources.map(context::getString)
+        val controls = composeRule.onAllNodes(SemanticsMatcher("mini-player control") { node ->
+            node.config.getOrNull(SemanticsProperties.ContentDescription)?.any { it in labels } == true
+        }).fetchSemanticsNodes().sortedBy { it.positionInRoot.x }
+        assertEquals(labels, controls.map { it.config[SemanticsProperties.ContentDescription].single() })
     }
 
     @Test fun `metadata follows player replacement while preview playback stays local`() {

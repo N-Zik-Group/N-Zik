@@ -1,6 +1,8 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.PINNED_PREFIX
+import app.n_zik.android.cleanPrefix
+import app.n_zik.android.components.tab.selectionActionTargets
 import app.n_zik.android.enums.PlaylistsType
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.core.database.isYouTubePlaylistSource
@@ -16,9 +18,12 @@ internal data class HomeLibraryPlaylistScope(
     val yearlyEnabled: Boolean,
     val rewindFilter: RewindPlaylists.Filter,
 ) {
+    fun matchesName(name: String, displayName: (String) -> String = ::cleanPrefix): Boolean =
+        query.isBlank() || displayName(name).contains(query.trim(), ignoreCase = true)
+
     fun visible(candidates: List<PlaylistPreview>): List<PlaylistPreview> = candidates.filter { preview ->
         val playlist = preview.playlist
-        playlist.name.contains(query, ignoreCase = true) && when (type) {
+        matchesName(playlist.name) && when (type) {
             PlaylistsType.YTPlaylist -> matchesYouTubeLibraryFilter(playlist, youtubeFilter)
             PlaylistsType.Playlist, PlaylistsType.OnDevice ->
                 (type != PlaylistsType.OnDevice || !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)) &&
@@ -36,8 +41,6 @@ internal data class HomeLibraryPlaylistScope(
 internal fun homeLibraryActionTargets(
     visible: List<PlaylistPreview>,
     selected: List<PlaylistPreview>,
-): List<PlaylistPreview> {
-    if (selected.isEmpty()) return visible
-    val selectedIds = selected.mapTo(HashSet()) { it.playlist.id }
-    return visible.filter { it.playlist.id in selectedIds }
-}
+    selectionActive: Boolean,
+): List<PlaylistPreview> =
+    selectionActionTargets(selectionActive, selected, visible, { it.playlist.id }, { it.playlist.id })

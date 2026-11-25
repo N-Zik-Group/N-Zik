@@ -248,7 +248,7 @@ class SearchBackConsumptionTest {
     }
 
     @Test
-    fun `controlled direct expandable consumes unfocused sessions adopted by playlist and podcast`() {
+    fun `controlled direct expandable consumes unfocused sessions`() {
         val searching = mutableStateOf(false)
         var parentBacks = 0
         content {
@@ -278,14 +278,18 @@ class SearchBackConsumptionTest {
         composeRule.runOnIdle { dispatcher.onBackPressed() }
         assertEquals(1, parentBacks)
 
+    }
+
+    @Test
+    fun `playlist and podcast use the same expandable search host`() {
         listOf("playlist/PlaylistSongList.kt", "podcast/Podcast.kt").forEach { relativePath ->
             val sourcePath = "src/androidMain/kotlin/app/n_zik/android/ui/screens/$relativePath"
             val source = generateSequence(File(System.getProperty("user.dir"))) { it.parentFile }
                 .flatMap { directory -> sequenceOf(File(directory, sourcePath), File(directory, "ComposeN-Zik/$sourcePath")) }
                 .first { it.isFile }.readText()
-            val searchCall = source.substringAfter("UnifiedSearchBar(").take(1500)
-            assertTrue(relativePath, Regex("backSessionActive\\s*=\\s*searching").containsMatchIn(searchCall))
-            assertTrue(relativePath, Regex("onBackDismiss\\s*=\\s*\\{\\s*searching\\s*=\\s*false\\s*}").containsMatchIn(searchCall))
+            assertTrue(relativePath, source.contains("Search.detail()"))
+            assertTrue(relativePath, source.contains("search.SearchBar("))
+            assertTrue(relativePath, source.contains("onClick = search::onShortClick"))
         }
     }
 

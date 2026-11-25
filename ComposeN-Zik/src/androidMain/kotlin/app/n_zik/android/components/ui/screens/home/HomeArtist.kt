@@ -65,6 +65,7 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.unit.Dp
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.MutableFloatState
@@ -153,10 +154,6 @@ import app.n_zik.android.utils.excludeDislikedArtistsKey
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.utils.homeArtistsOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
-import app.n_zik.android.utils.homeArtistsLibraryToolbarOrderKey
-import app.n_zik.android.utils.homeArtistsOnDeviceToolbarOrderKey
-import app.n_zik.android.utils.homeArtistsFavoritesToolbarOrderKey
-import app.n_zik.android.utils.homeArtistsDislikedToolbarOrderKey
 import app.n_zik.android.utils.homeArtistsFavoritesSortMenuOrderKey
 import app.n_zik.android.utils.homeArtistsLibrarySortMenuOrderKey
 import app.n_zik.android.utils.homeArtistsOnDeviceSortMenuOrderKey
@@ -176,6 +173,7 @@ import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
+import app.n_zik.android.components.dialog.settings.visibleHomeToolbarIds
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
@@ -231,11 +229,11 @@ fun HomeArtists(
 
     val itemSize = ItemSize.init( HOME_ARTIST_ITEM_SIZE )
 
+    fun actionTargets() = itemSelector.actionTargets(itemsOnDisplay, Artist::id, Artist::id, selectionOrder = true)
     val randomizer = object: Randomizer<Artist> {
-        override fun getItems(): List<Artist> = itemSelector.ifEmpty { itemsOnDisplay }
+        override fun getItems(): List<Artist> = actionTargets()
         override fun onClick(index: Int) {
-            val items = itemSelector.ifEmpty { itemsOnDisplay }
-            onArtistClick( items[index] )
+            getItems().getOrNull(index)?.let(onArtistClick)
         }
     }
 
@@ -346,27 +344,22 @@ fun HomeArtists(
         baseReady = true
     }
     var completedSearchQuery by remember(baseReady, items) { mutableStateOf<String?>(null) }
-    LaunchedEffect(baseReady, items, search.inputValue) {
+    LaunchedEffect(baseReady, items, search.filterQuery) {
         if (!baseReady) return@LaunchedEffect
-        val query = search.inputValue
+        val query = search.filterQuery
         val candidates = items
         itemsOnDisplay = withContext(NzikDispatchers.DATA) {
             candidates.filter { it.name?.contains(query, true) == true }.distinctBy(Artist::id)
         }
         completedSearchQuery = query
     }
-    val gridReady = baseReady && completedSearchQuery == search.inputValue
+    val gridReady = baseReady && completedSearchQuery == search.filterQuery
     val displayedGrid = rememberHomeFilteredGrid("artists", lazyGridState, gridReady, itemsOnDisplay) { it.id }
     val action = rememberHomeSongAction("HomeArtist") {
         if (!gridReady || preview != null) return@rememberHomeSongAction null
         val deviceOnly = artistType == ArtistsType.OnDevice
-        val visibleIds = itemsOnDisplay.map { it.id }
-        val selected = itemSelector.toList()
-        val ids = if (selected.isEmpty()) visibleIds else {
-            val visible = visibleIds.toHashSet()
-            selected.map { it.id }.filter { it in visible }
-        }
-        val eligibleIds = ids.filter { isDeviceArtistId(it) == deviceOnly }
+        val eligibleIds = actionTargets().map { it.id }.filter { isDeviceArtistId(it) == deviceOnly }
+        if (itemSelector.isActive && eligibleIds.isEmpty()) return@rememberHomeSongAction null
         val load: suspend () -> List<Song> = {
             val groups = if (deviceOnly) context.scanDeviceLibrary().artistSongIds else emptyMap()
             loadHomeParentSongs(eligibleIds, Database.songArtistMapTable::songsForHomeArtists) { id, song ->
@@ -400,12 +393,23 @@ fun HomeArtists(
         onFailure = { error, preview ->
             Timber.tag("HomeArtist").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        finalAction = { itemSelector.isActive = false },
+        itemSelector = itemSelector,
     )
-    val exportDialog = ExportSongsToCSVDialog.deferred("Artists", action::snapshot)
+    val exportDialog = ExportSongsToCSVDialog.deferred(
+        "Artists",
+        action::snapshot,
+        selectionActive = { itemSelector.isActive },
+    )
+    val eligibleSelection by remember(gridReady, artistType) {
+        derivedStateOf {
+            gridReady && itemSelector.isNotEmpty() &&
+                actionTargets().any { isDeviceArtistId(it.id) == (artistType == ArtistsType.OnDevice) }
+        }
+    }
+    val hasEligibleSelection = { eligibleSelection }
 
     SearchEmptyFeedback(
-        query = search.inputValue,
+        query = search.filterQuery,
         empty = itemsOnDisplay.isEmpty(),
         loading = !gridReady
     )
@@ -446,45 +450,28 @@ fun HomeArtists(
 
             Column( Modifier.fillMaxSize() ) {
 
-                val homeArtistsToolbarOrderPrefLibrary by rememberPreference(homeArtistsLibraryToolbarOrderKey, "")
-                val homeArtistsToolbarOrderPrefFavorites by rememberPreference(homeArtistsFavoritesToolbarOrderKey, "")
-                val homeArtistsToolbarOrderPrefDisliked by rememberPreference(homeArtistsDislikedToolbarOrderKey, "")
-
-                val onDeviceToolbarOrder by rememberPreference(homeArtistsOnDeviceToolbarOrderKey, "")
-
-                val currentToolbarOrderPref = when (artistType) {
-                    ArtistsType.OnDevice -> onDeviceToolbarOrder
-                    ArtistsType.Favorites -> homeArtistsToolbarOrderPrefFavorites
-                    ArtistsType.Disliked -> homeArtistsToolbarOrderPrefDisliked
-                    else -> homeArtistsToolbarOrderPrefLibrary
+                val toolbarTab = when (artistType) {
+                    ArtistsType.OnDevice -> "dev"
+                    ArtistsType.Favorites -> "favs"
+                    ArtistsType.Disliked -> "disliked"
+                    else -> "all"
                 }
+                val toolbarOrder = HomeArtistsToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
 
                 val toolbarButtons = buildList<Button> {
-                    val defaultToolbarOrder = if (artistType == ArtistsType.OnDevice) {
-                        HomeArtistsToolbarSettingsDialog.onDeviceButtonIds
-                    } else {
-                        HomeArtistsToolbarSettingsDialog.allButtonIds
-                    }
-                    val order = try {
-                        if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
-                            val arr = JSONArray(currentToolbarOrderPref)
-                            (0 until arr.length()).map { arr.getString(it) }.distinct()
-                        }
-                    } catch (_: Exception) { defaultToolbarOrder }
-
-                    order.filter { it in defaultToolbarOrder }.ifEmpty { defaultToolbarOrder }.forEach { id ->
+                    toolbarOrder.forEach { id ->
                         when(id) {
                             "sort" -> add(sort)
                             "position_lock" -> { if (sort.sortBy == ArtistSortBy.Custom) add(positionLock) }
                             "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) add(sync) }
                             "search" -> add(search)
                             "randomizer" -> add(randomizer)
-                            "shuffle" -> add(shuffle)
+                            "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
                             "item_selector" -> add(itemSelector)
-                            "play_next" -> add(playNext)
-                            "enqueue" -> add(enqueue)
-                            "add_to_playlist" -> add(addToPlaylist)
-                            "export_dialog" -> add(exportDialog)
+                            "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
+                            "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
+                            "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
+                            "export_dialog" -> add(itemSelector.guard(exportDialog, hasEligibleSelection))
                             "item_size" -> add(itemSize)
                         }
                     }
@@ -510,13 +497,15 @@ fun HomeArtists(
                 val header: @Composable (MutableFloatState, MutableIntState) -> Unit = { titleOffsetState, titleHeightState ->
                     Column {
                         Column {
-                            CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                                TabHeader( R.string.library_artists_title ) {
-                                    HeaderInfo(items.size.toString(), R.drawable.people)
+                            search.HeaderContent {
+                                CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
+                                    TabHeader( R.string.library_artists_title ) {
+                                        HeaderInfo(items.size.toString(), R.drawable.people)
+                                    }
                                 }
                             }
                     exportDialog.Render()
-                        GlassToolbarButtons( toolbarButtons, disableAnimation = true )
+                        GlassToolbarButtons( toolbarButtons )
                     search.SearchBar( this@Column )
                 }
 
@@ -692,8 +681,7 @@ fun HomeArtists(
                                         enabled = gridReady,
                                         onClick = {
                                             if( itemSelector.isActive ) {
-                                                if( artist in itemSelector ) itemSelector.remove( artist )
-                                                else itemSelector.add( artist )
+                                                itemSelector.toggle(artist, Artist::id)
                                             } else {
                                                 search.hideIfEmpty()
                                                 onArtistClick( artist )
@@ -708,10 +696,11 @@ fun HomeArtists(
                                     thumbnailOverlay = {
                                         if( itemSelector.isActive ) {
                                             key(itemSelector.size) {
+                                                val checked = itemSelector.isSelected(artist, Artist::id)
                                                 Icon(
-                                                    painter = painterResource(if (artist in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                                    painter = painterResource(if (checked) R.drawable.checked_filled else R.drawable.unchecked_outline),
                                                     contentDescription = null,
-                                                    tint = if (artist in itemSelector) colorPalette().accent else colorPalette().text,
+                                                    tint = if (checked) colorPalette().accent else colorPalette().text,
                                                     modifier = Modifier
                                                         .padding(4.dp)
                                                         .size(24.dp)
@@ -764,7 +753,7 @@ fun HomeArtists(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
+                        if (search.filterQuery.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
                     }
                 }
                     }

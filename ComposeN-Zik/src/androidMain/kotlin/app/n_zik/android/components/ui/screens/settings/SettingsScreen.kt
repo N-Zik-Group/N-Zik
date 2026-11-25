@@ -202,7 +202,12 @@ fun SettingsScreen(
                     0 -> GeneralSettings(focus = tabFocus)
                     1 -> UiSettings(navController = navController, focus = tabFocus)
                     2 -> AppearanceSettings(navController = navController)
-                    3 -> AIRecommendationSettings(navController = navController, ytLoggedIn = ytLoggedIn, focus = tabFocus)
+                    3 -> AIRecommendationSettings(
+                        navController = navController,
+                        onSettingsNavigate = { route -> innerNavController.navigate(route) },
+                        ytLoggedIn = ytLoggedIn,
+                        focus = tabFocus,
+                    )
                     4 -> DataSettings(navController = navController, focus = tabFocus)
                     5 -> AccountsSettings(navController = navController, focus = tabFocus)
                     6 -> NetworkSettings(navController = navController, focus = tabFocus)

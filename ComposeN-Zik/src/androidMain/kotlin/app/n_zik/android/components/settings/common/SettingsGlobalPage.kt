@@ -11,16 +11,21 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberOverscrollEffect
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,17 +33,27 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
 import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
+import app.n_zik.android.components.navigation.header.LocalHeaderProfileFace
+import app.n_zik.android.components.navigation.header.rememberHeaderProfileFace
+import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
+import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.utils.lastUpdateCheckKey
@@ -46,6 +61,7 @@ import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.secondary
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -179,6 +195,7 @@ fun SettingsGlobalPage(
                 // Keep group state composed while releasing its height after the focus fade.
                 item(key = "groups", contentType = "groups") {
                     Column(modifier = Modifier.settingsSearchContentVisibility(contentAlpha)) {
+                        SettingsProfileShortcut(onItemSelected)
                         SettingsPageGroups.forEach { group ->
                             SettingsResultCard(
                                 testTag = "settings_global_group_${group.group}",
@@ -238,6 +255,46 @@ fun SettingsGlobalPage(
             SettingsScrollToTop(
                 lazyListState = scrollState,
                 modifier = Modifier.testTag("settings.global.scrollToTop"),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsProfileShortcut(onItemSelected: (SettingsPageItem) -> Unit) {
+    val face = LocalHeaderProfileFace.current ?: rememberHeaderProfileFace()
+    val profiles = SettingsPageItems.first { it.categoryId == "profiles" }
+    SettingsResultCard(testTag = "settings_global_profile", contentPadding = 0.dp) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(uiRoundnessShape())
+                .clickable(role = Role.Button) { onItemSelected(profiles) }
+                .testTag("settings_global_profile_open")
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            ProfileAvatarFrame(48.dp, GlassArea.Images, Modifier.clearAndSetSemantics {}) {
+                ProfileFaceAvatar(avatar = face.avatar, faceName = face.name)
+            }
+            Column(Modifier.weight(1f)) {
+                BasicText(
+                    text = face.name,
+                    style = typography().s.semiBold.copy(color = colorPalette().text),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                BasicText(
+                    text = stringResource(profiles.labelRes),
+                    style = typography().xs.secondary,
+                )
+            }
+            Icon(
+                painter = painterResource(R.drawable.chevron_forward),
+                contentDescription = null,
+                tint = colorPalette().textSecondary,
+                modifier = Modifier.size(16.dp),
             )
         }
     }

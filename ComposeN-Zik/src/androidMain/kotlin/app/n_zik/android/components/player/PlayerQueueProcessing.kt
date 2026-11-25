@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.SessionDurationMetadata
@@ -140,6 +141,7 @@ internal fun rememberPlayerQueueSnapshot(
     normalizeQueue: suspend (List<Timeline.Window>, NormalizedPlayerQueue?) -> NormalizedPlayerQueue =
         { source, previous -> normalizePlayerQueue(source, previous) },
     filterQueue: suspend (NormalizedPlayerQueue, String) -> PlayerQueueSnapshot = ::filterPlayerQueue,
+    storedSongs: Map<String, Song> = emptyMap(),
 ): PlayerQueueSnapshot {
     var normalized by remember { mutableStateOf<NormalizedPlayerQueue?>(null, referentialEqualityPolicy()) }
     var result by remember { mutableStateOf(PlayerQueueSnapshot.Empty, referentialEqualityPolicy()) }
@@ -147,10 +149,17 @@ internal fun rememberPlayerQueueSnapshot(
     LaunchedEffect(sourceKey) {
         normalized = normalizeQueue(windows, normalized)
     }
-    LaunchedEffect(sourceKey, QueueSnapshotIdentityKey(normalized), input) {
+    LaunchedEffect(sourceKey, QueueSnapshotIdentityKey(normalized), input, storedSongs) {
         val current = normalized
         if (current != null && current.source === windows) {
-            result = filterQueue(current, input)
+            val displayQueue = if (storedSongs.isEmpty()) current else withContext(NzikDispatchers.MEDIA) {
+                val rows = current.rows.map { row ->
+                    val song = resolveSongDisplayMetadata(row.song, storedSongs[row.song.id])
+                    if (song === row.song) row else row.copy(song = song, title = song.cleanTitle(), artists = song.cleanArtistsText())
+                }
+                NormalizedPlayerQueue(current.source, rows, rows.map { it.song })
+            }
+            result = filterQueue(displayQueue, input)
         }
     }
     return result

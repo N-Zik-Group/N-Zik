@@ -444,30 +444,22 @@ fun SongItem(
             }
         }
 
-        if( itemSelector != null ) {
-            // It must watch for [selectedItems.size] for changes
-            // Otherwise, state will stay the same
-            val checkedState = remember( itemSelector.size ) {
-                mutableStateOf( song in itemSelector )
-            }
-
-            if( itemSelector.isActive )
-                Icon(
-                    painter = painterResource(if (checkedState.value) R.drawable.checked_filled else R.drawable.unchecked_outline),
-                    contentDescription = null,
-                    tint = if (checkedState.value) colorPalette().accent else colorPalette().text,
-                    modifier = Modifier
-                        .scale( 0.8f )
-                        .clickable(
-                            indication = glassGlobalIndication(null),
-                            interactionSource = remember { MutableInteractionSource() }
-                        ) {
-                            val newValue = !checkedState.value
-                            checkedState.value = newValue
-                            if (newValue) itemSelector.add(song) else itemSelector.remove(song)
-                        }
-                        .padding(8.dp)
-                )
+        if (itemSelector?.isActive == true) {
+            val checked = itemSelector.isSelected(song, Song::id)
+            Icon(
+                painter = painterResource(if (checked) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                contentDescription = null,
+                tint = if (checked) colorPalette().accent else colorPalette().text,
+                modifier = Modifier
+                    .scale(0.8f)
+                    .clickable(
+                        indication = glassGlobalIndication(null),
+                        interactionSource = remember { MutableInteractionSource() },
+                    ) {
+                        if (itemSelector.isActive) itemSelector.toggle(song, Song::id)
+                    }
+                    .padding(8.dp),
+            )
         }
 
         trailingContent?.invoke( this )

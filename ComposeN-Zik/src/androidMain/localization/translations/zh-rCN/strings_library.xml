@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">我的顶部</string>
     <string name="recommendations_playlists_title">您可能喜欢的播放列表</string>
     <string name="recommendations_reset_complete">快速选择已清除</string>
-    <string name="recommendations_reset_description">删除用于生成本地快速选择建议的播放事件。</string>
     <string name="recommendations_section_other_youtube_title">其他部分</string>
     <string name="recommendations_section_visibility_description">如果你不想看到, 请禁用</string>
     <string name="recommendations_show_section_label">显示</string>

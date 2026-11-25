@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings.common
 import android.app.Application
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -10,13 +11,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsNotDisplayed
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.click
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.tab.Search
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -54,5 +58,43 @@ class SettingsSearchVisibilityTest {
         composeRule.mainClock.advanceTimeBy(500)
         composeRule.onNodeWithTag("action").performClick()
         composeRule.runOnIdle { assertEquals(2, clicks) }
+    }
+
+    @Test fun toolbarSearchKeepsContentVisibleUntilFilteringStarts() {
+        lateinit var search: Search
+        var clicks = 0
+        composeRule.setContent {
+            search = Search()
+            Column {
+                Box(Modifier.testTag("titleSpace")) {
+                    search.HeaderContent {
+                        Box(Modifier.size(48.dp))
+                    }
+                }
+                Box(Modifier.testTag("resultSpace")) {
+                    Box(
+                        Modifier.size(80.dp)
+                            .testTag("result").clickable { clicks++ }
+                    )
+                }
+            }
+        }
+        composeRule.onNodeWithTag("titleSpace").assertHeightIsEqualTo(48.dp)
+        composeRule.onNodeWithTag("resultSpace").assertHeightIsEqualTo(80.dp)
+
+        composeRule.runOnIdle { search.onShortClick() }
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.onNodeWithTag("titleSpace").assertHeightIsEqualTo(0.dp)
+        val retainedBounds = composeRule.onNodeWithTag("resultSpace").fetchSemanticsNode().boundsInRoot
+        composeRule.onNodeWithTag("resultSpace").assertHeightIsEqualTo(80.dp)
+        composeRule.onNodeWithTag("result").assertIsDisplayed().performClick()
+        composeRule.runOnIdle {
+            assertEquals(1, clicks)
+            search.input = TextFieldValue("result")
+        }
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.onNodeWithTag("result").performClick()
+        composeRule.runOnIdle { assertEquals(2, clicks) }
+        assertEquals(retainedBounds, composeRule.onNodeWithTag("resultSpace").fetchSemanticsNode().boundsInRoot)
     }
 }

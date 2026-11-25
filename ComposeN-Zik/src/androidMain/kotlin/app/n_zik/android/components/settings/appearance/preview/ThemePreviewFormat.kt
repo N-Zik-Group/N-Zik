@@ -296,6 +296,14 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNull
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.themed.n_zik.screen.player.defaultPlayerActionBarTopSlots
+import app.n_zik.android.themed.n_zik.screen.player.emptyPlayerActionBarTopSlot
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarBottomAudioVideoKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
+import app.n_zik.android.themed.n_zik.screen.player.resolveLegacyPlayerActionBarTopSlots
+import app.n_zik.android.themed.n_zik.screen.player.resolvePlayerActionBarTopSlots
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
@@ -307,9 +315,13 @@ internal data object UseThemeDefault
 internal data class ThemeSettings(val plain: Map<String, Any>, val glass: Map<String, Any> = emptyMap())
 
 internal const val ThemeAppearanceV2 = 2
+internal const val ThemeAppearanceV3 = 3
+internal const val ThemeAppearanceV3MinimumVersionCode = 101
 internal const val ThemeAppearanceV2MinimumVersionCode = 99
 internal const val ThemePureBlackMinimumVersionCode = 101
 internal const val ThemeM3eAlwaysShowShapesMinimumVersionCode = 101
+internal const val ThemeCustomToolbarsMinimumVersionCode = 101
+internal const val ThemeBurgerMenuShortcutsMinimumVersionCode = 101
 
 /** Feature compatibility is independent of the portable document schema. */
 internal fun themeAppearanceFeatureMinimumVersionCode(settings: Map<ThemeCategory, ThemeSettings>): Int {
@@ -317,17 +329,34 @@ internal fun themeAppearanceFeatureMinimumVersionCode(settings: Map<ThemeCategor
         ThemePureBlackMinimumVersionCode else 0
     val alwaysShowShapes = if (settings[ThemeCategory.PLAYER_AND_QUEUE]?.plain?.containsKey(m3eAlwaysShowShapesKey) == true)
         ThemeM3eAlwaysShowShapesMinimumVersionCode else 0
-    return maxOf(pureBlack, alwaysShowShapes)
+    val customToolbars = if (settings[ThemeCategory.NAVIGATION]?.plain?.keys?.hasCustomToolbarSettings() == true)
+        ThemeCustomToolbarsMinimumVersionCode else 0
+    val burgerShortcuts = if (settings[ThemeCategory.NAVIGATION]?.plain?.hasBurgerMenuShortcuts() == true)
+        ThemeBurgerMenuShortcutsMinimumVersionCode else 0
+    return maxOf(pureBlack, alwaysShowShapes, customToolbars, burgerShortcuts)
 }
 
 internal fun themeAppearancePublicationMinimumVersionCode(source: String): Int {
     val schema = requireNotNull(themeAppearanceSchema(Json.parseToJsonElement(source) as JsonObject))
-    val schemaMinimum = if (schema == ThemeAppearanceV2) ThemeAppearanceV2MinimumVersionCode else FirstThemeStoreVersionCode
+    val schemaMinimum = themeSchemaMinimumVersionCode(schema)
     return maxOf(schemaMinimum, themeAppearanceFeatureMinimumVersionCode(parseThemeAppearance(source, allowEmptyCategories = true)))
 }
 
-internal fun themeAppearanceSchemaFor(versionCode: Int): Int =
-    if (versionCode >= ThemeAppearanceV2MinimumVersionCode) ThemeAppearanceV2 else 1
+internal fun themeAppearanceSchemaFor(
+    versionCode: Int,
+    preferences: Map<String, *> = emptyMap<String, Any>(),
+): Int = when {
+    versionCode >= ThemeAppearanceV3MinimumVersionCode || playerActionBarTopSlotsKey in preferences ||
+        preferences[playerActionBarBottomAudioVideoKey] == true -> ThemeAppearanceV3
+    versionCode >= ThemeAppearanceV2MinimumVersionCode -> ThemeAppearanceV2
+    else -> 1
+}
+
+internal fun themeSchemaMinimumVersionCode(schema: Int): Int = when (schema) {
+    ThemeAppearanceV3 -> ThemeAppearanceV3MinimumVersionCode
+    ThemeAppearanceV2 -> ThemeAppearanceV2MinimumVersionCode
+    else -> FirstThemeStoreVersionCode
+}
 
 internal fun parseThemeAppearance(source: String): Map<ThemeCategory, ThemeSettings> =
     parseThemeAppearance(source, allowEmptyCategories = false)
@@ -336,7 +365,7 @@ internal fun themeAppearanceSchema(root: JsonObject): Int? {
     val version = root["schemaVersion"] as? JsonPrimitive
     val numericVersion = version?.takeUnless { it.isString }?.content
         ?.takeIf(jsonNumber::matches)?.toBigDecimalOrNull()
-    return (1..ThemeAppearanceV2).firstOrNull { numericVersion?.compareTo(it.toBigDecimal()) == 0 }
+    return (1..ThemeAppearanceV3).firstOrNull { numericVersion?.compareTo(it.toBigDecimal()) == 0 }
 }
 
 internal fun parseThemeAppearance(
@@ -350,9 +379,9 @@ internal fun parseThemeAppearance(
     require(root.keys == setOf("schemaVersion", "categories") && schemaVersion != null) {
         "Unsupported theme schema"
     }
-    require(schemaVersion != ThemeAppearanceV2 || advertisedMinVersionCode == null ||
-        advertisedMinVersionCode >= ThemeAppearanceV2MinimumVersionCode) {
-        "Theme appearance V2 requires Android version code 99"
+    val schemaMinimum = themeSchemaMinimumVersionCode(schemaVersion)
+    require(schemaVersion == 1 || advertisedMinVersionCode == null || advertisedMinVersionCode >= schemaMinimum) {
+        "Theme appearance V$schemaVersion requires Android version code $schemaMinimum"
     }
     val categories = root["categories"] as? JsonObject ?: error("Invalid theme categories")
     require(allowEmptyCategories || categories.isNotEmpty()) { "The theme contains no categories" }
@@ -363,13 +392,17 @@ internal fun parseThemeAppearance(
         category to fields.readCategory(category, schemaVersion)
     }.toMap()
     val featureMinimum = themeAppearanceFeatureMinimumVersionCode(settings)
-    require(featureMinimum == 0 || schemaVersion == ThemeAppearanceV2) {
+    require(featureMinimum == 0 || schemaVersion >= ThemeAppearanceV2) {
         "Pure Black mode requires theme appearance V2"
     }
     if (validateFeatureCompatibility && advertisedMinVersionCode != null && featureMinimum > 0) {
         require(advertisedMinVersionCode >= featureMinimum) {
-            val feature = if (settings[ThemeCategory.PLAYER_AND_QUEUE]?.plain?.containsKey(m3eAlwaysShowShapesKey) == true)
-                "Always Show M3E Shapes" else "Pure Black mode"
+            val feature = when {
+                settings[ThemeCategory.NAVIGATION]?.plain?.keys?.hasCustomToolbarSettings() == true -> "Custom toolbars"
+                settings[ThemeCategory.NAVIGATION]?.plain?.hasBurgerMenuShortcuts() == true -> "Burger menu shortcuts"
+                settings[ThemeCategory.PLAYER_AND_QUEUE]?.plain?.containsKey(m3eAlwaysShowShapesKey) == true -> "Always Show M3E Shapes"
+                else -> "Pure Black mode"
+            }
             "$feature requires Android version code $featureMinimum"
         }
     }
@@ -383,12 +416,24 @@ internal fun encodeThemeAppearance(
     schemaVersion: Int = 1,
 ): String =
     buildJsonObject {
-        require(schemaVersion in 1..ThemeAppearanceV2)
-        require(schemaVersion == ThemeAppearanceV2 || plain[colorPaletteModeKey] != ColorPaletteMode.PureBlack.name) {
+        require(schemaVersion in 1..ThemeAppearanceV3)
+        require(schemaVersion == ThemeAppearanceV3 ||
+            (playerActionBarTopSlotsKey !in plain && plain[playerActionBarBottomAudioVideoKey] != true)
+        ) {
+            "Player top action slots require theme appearance V3"
+        }
+        val navigationPreferences = plain.withoutDefaultBurgerMenuShortcuts()
+        require(schemaVersion >= ThemeAppearanceV2 || plain[colorPaletteModeKey] != ColorPaletteMode.PureBlack.name) {
             "Pure Black mode requires theme appearance V2"
         }
-        require(schemaVersion == ThemeAppearanceV2 || m3eAlwaysShowShapesKey !in plain) {
+        require(schemaVersion >= ThemeAppearanceV2 || m3eAlwaysShowShapesKey !in plain) {
             "Always Show M3E Shapes requires theme appearance V2"
+        }
+        require(schemaVersion >= ThemeAppearanceV2 || !plain.keys.hasCustomToolbarSettings()) {
+            "Custom toolbars require theme appearance V2"
+        }
+        require(schemaVersion >= ThemeAppearanceV2 || !navigationPreferences.hasBurgerMenuShortcuts()) {
+            "Burger menu shortcuts require theme appearance V2"
         }
         put("schemaVersion", schemaVersion)
         put("categories", buildJsonObject {
@@ -400,13 +445,40 @@ internal fun encodeThemeAppearance(
                         if (palette?.isAlwaysDark == true) plain + (colorPaletteModeKey to ColorPaletteMode.Dark.name)
                         else plain
                     }
-                    else -> plain
+                    ThemeCategory.NAVIGATION -> navigationPreferences
+                    ThemeCategory.PLAYER_AND_QUEUE -> if (schemaVersion >= ThemeAppearanceV3) {
+                        buildMap {
+                            putAll(plain)
+                            put(playerActionBarTopSlotsKey, portablePlayerTopSlots(plain))
+                            if (playerActionBarBottomAudioVideoKey !in plain &&
+                                playerActionBarTopSlotsKey !in plain && plain[showTopActionsBarKey] == false
+                            ) {
+                                val surface = ToolbarSurface.PLAYER_TOP
+                                val videoEnabled = plain[surface.visibilityKey(ToolbarAction.AUDIO_VIDEO)] != false
+                                put(playerActionBarBottomAudioVideoKey, videoEnabled)
+                            }
+                        }
+                    } else plain
                 })
                 fields.fields(category, schemaVersion)
                 put(category.wireKey, JsonObject(fields.values))
             }
         })
     }.toString()
+
+private fun portablePlayerTopSlots(preferences: Map<String, *>): String {
+    val configured = preferences[playerActionBarTopSlotsKey] as? String
+    val surface = ToolbarSurface.PLAYER_TOP
+    val slots = if (configured.isNullOrBlank()) {
+        resolveLegacyPlayerActionBarTopSlots(
+            order = (preferences[surface.orderKey] as? String).orEmpty(),
+            showTopBar = preferences[showTopActionsBarKey] != false,
+            showAudioVideo = preferences[surface.visibilityKey(ToolbarAction.AUDIO_VIDEO)] != false,
+            showBottomMenu = preferences[showButtonPlayerMenuKey] == true,
+        )
+    } else resolvePlayerActionBarTopSlots(configured)
+    return JsonArray(slots.map(::JsonPrimitive)).toString()
+}
 
 private fun portableGlassPreferences(
     preferences: Map<String, *>,
@@ -495,6 +567,9 @@ private class ExportThemeFields(private val preferences: Map<String, *>) : Theme
     }
 }
 
+internal fun ThemeFields.acceptsPortableKey(key: String): Boolean =
+    this !is ExportThemeFields || hasPreference(key)
+
 internal fun selectThemeAppearanceCategories(source: String, included: Set<ThemeCategory>): String {
     val root = Json.parseToJsonElement(source) as JsonObject
     val categories = root.getValue("categories") as JsonObject
@@ -560,8 +635,8 @@ private fun ThemeFields.fields(category: ThemeCategory, schemaVersion: Int) {
             optional("albumSwipeLeft") { option<AlbumSwipeAction>("albumSwipeLeft", albumSwipeLeftActionKey, AlbumSwipeAction.PlayNext) }
             optional("albumSwipeRight") { option<AlbumSwipeAction>("albumSwipeRight", albumSwipeRightActionKey, AlbumSwipeAction.Bookmark) }
             homeLayouts()
-            toolbars()
-            portableBurgerMenu()
+            toolbars(schemaVersion)
+            portableBurgerMenu(schemaVersion)
             optional("homeTabs") {
                 group("homeTabs") {
                     order("order", homeTabsOrderKey, homeTabIds)
@@ -765,7 +840,7 @@ private fun ThemeFields.player(schemaVersion: Int) {
     flag("showNextSongs", showNextSongsInPlayerKey, false)
     flag("showRemainingSongTime", showRemainingSongTimeKey, true)
     number("coverRoundnessDp", thumbnailRoundnessDpKey, 0.0..48.0, 12f)
-    flag("showTopActionsBar", showTopActionsBarKey, true)
+    if (schemaVersion < ThemeAppearanceV3) flag("showTopActionsBar", showTopActionsBarKey, true)
     flag("transparentActionBar", transparentBackgroundPlayerActionBarKey, true)
     flag("actionButtonsSpacedEvenly", actionspacedevenlyKey, true)
     flag("noBlur", noblurKey, true)
@@ -779,8 +854,22 @@ private fun ThemeFields.player(schemaVersion: Int) {
     number("coverFade", thumbnailFadeKey, 0.0..100.0, 5f)
     number("coverSpacing", thumbnailSpacingKey, -100.0..100.0, 0f)
     flag("showHeaderIcons", playerInfoShowIconsKey, true)
-    optional("actionBarOrder") { order("actionBarOrder", playerActionBarButtonOrderKey, playerActionBarThemeIds()) }
+    val actionOrderField = if (schemaVersion >= ThemeAppearanceV3) "bottomActionOrder" else "actionBarOrder"
+    val legacyActionIds = playerActionBarThemeIds() - ToolbarAction.AUDIO_VIDEO.id
+    val actionIds = if (schemaVersion >= ThemeAppearanceV3) legacyActionIds + ToolbarAction.AUDIO_VIDEO.id else legacyActionIds
+    optional(actionOrderField) { order(actionOrderField, playerActionBarButtonOrderKey, actionIds) }
+    if (schemaVersion >= ThemeAppearanceV3) {
+        order(
+            "topActionSlots",
+            playerActionBarTopSlotsKey,
+            playerActionBarThemeIds() + defaultPlayerActionBarTopSlots + emptyPlayerActionBarTopSlot,
+            repeats = mapOf(emptyPlayerActionBarTopSlot to defaultPlayerActionBarTopSlots.size),
+        )
+    }
     group("actionButtons") {
+        if (schemaVersion >= ThemeAppearanceV3 && acceptsPortableKey(playerActionBarBottomAudioVideoKey)) {
+            optional("audioVideo") { flag("audioVideo", playerActionBarBottomAudioVideoKey, false) }
+        }
         flag("addToPlaylist", showButtonPlayerAddToPlaylistKey, true)
         flag("arrow", showButtonPlayerArrowKey, true)
         flag("download", showButtonPlayerDownloadKey, true)
@@ -901,7 +990,7 @@ internal val themeSettingNames: Map<String, String> by lazy {
             }
         }
     }
-    for (schema in 1..ThemeAppearanceV2) {
+    for (schema in 1..ThemeAppearanceV3) {
         ThemeCategory.entries.forEach { collector.fields(it, schema) }
     }
     names
@@ -921,6 +1010,10 @@ internal class ImportThemeFields(content: JsonElement, private val schemaVersion
     private val values = mutableMapOf<String, Any>()
 
     fun has(field: String): Boolean = field in remaining
+
+    fun requireNonEmptyGroup() {
+        require(remaining.isNotEmpty()) { "Expected at least one theme setting" }
+    }
 
     fun result(): Map<String, Any> {
         require(remaining.isEmpty()) { "Unrecognized theme fields" }
@@ -968,6 +1061,9 @@ internal class ImportThemeFields(content: JsonElement, private val schemaVersion
         val order = if (schemaVersion == 1 && key in setOf(miniPlayerButtonOrderKey, playerActionBarButtonOrderKey)) {
             importedOrder.filterNot { it == JsonPrimitive("video") }
         } else importedOrder
+        if (key == playerActionBarTopSlotsKey) {
+            require(order.size == defaultPlayerActionBarTopSlots.size) { "Invalid seat count in $field" }
+        }
         require(order.size <= (allowedIds?.size ?: maxDockOrderEntries) + repeats.values.sum() - repeats.size) { "Too many buttons in $field" }
         val names = order.map { element ->
             val value = element as? JsonPrimitive ?: error("Invalid button in $field")

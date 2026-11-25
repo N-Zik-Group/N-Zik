@@ -114,15 +114,17 @@ object DataStoreUtils {
     /** Stored burger menu order: a JSON array string of item ids, validated defensively on read (blank/corrupt -> default). */
     const val KEY_BURGER_MENU_ORDER = "burger_menu_order"
 
-    /** Prefix of the per-item burger menu visibility toggles; each defaults to `true` on read. */
+    /** Prefix of the per-item burger menu visibility toggles. */
     const val KEY_BURGER_MENU_TOGGLE_PREFIX = "burger_menu_toggle_"
 
-    /** Default burger menu order (the pre-customization layout, the separator included). */
+    internal val OPTIONAL_BURGER_MENU_SHORTCUTS = listOf("search", "notifications")
+
+    /** Default burger menu order, including entries hidden by default. */
     val DEFAULT_BURGER_MENU_ORDER = listOf(
         "history", "statistics", "rewind", "offline_mode", "listen_together",
         "bridge_server", "profiles", "pip", "separator", "settings",
         "extensions", "debug_logs", "maintenance", "rescue_center"
-    )
+    ) + OPTIONAL_BURGER_MENU_SHORTCUTS
 
     /** The burger items that can never be hidden (G3, renegotiated: only Settings, G5); every other item is maskable. */
     val LOCKED_BURGER_MENU_ITEMS = setOf("settings")
@@ -132,6 +134,8 @@ object DataStoreUtils {
 
     /** The visibility toggle key of one burger item. */
     fun burgerMenuToggleKey(id: String): String = KEY_BURGER_MENU_TOGGLE_PREFIX + id
+
+    internal fun burgerMenuDefaultVisibility(id: String): Boolean = id !in OPTIONAL_BURGER_MENU_SHORTCUTS
 
     private const val PREFS_NAME = "app_settings"
 

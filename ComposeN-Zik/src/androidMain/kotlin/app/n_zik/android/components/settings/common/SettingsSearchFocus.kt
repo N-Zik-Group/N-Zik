@@ -1,13 +1,5 @@
 package app.n_zik.android.components.settings.common
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,6 +13,8 @@ import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.search.SearchHeaderVisibility
+import app.n_zik.android.components.search.rememberSearchResultOpacity
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 
 // Online Search uses 16dp around the bar before its full-width result list.
@@ -50,11 +44,7 @@ fun rememberSettingsSearchFocus(
     isSearchFocused: Boolean,
     contentIsBlank: Boolean = false,
 ): SettingsSearchFocus {
-    val contentAlpha = animateFloatAsState(
-        targetValue = if (isSearchFocused && contentIsBlank) 0f else 1f,
-        animationSpec = tween(250),
-        label = "settingsSearchFocusContentAlpha"
-    )
+    val contentAlpha = rememberSearchResultOpacity(!isSearchFocused || !contentIsBlank)
     return remember(isSearchFocused, contentAlpha) {
         SettingsSearchFocus(!isSearchFocused, contentAlpha)
     }
@@ -65,18 +55,13 @@ fun rememberSettingsSearchFocus(
  * is focused, so the bar rises to the title's level (same [HeaderWithIcon]
  * parameters as the plain settings page headers).
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ColumnScope.settingsSearchTitle(
     focus: SettingsSearchFocus,
     titleRes: Int,
     iconRes: Int,
 ) {
-    AnimatedVisibility(
-        visible = focus.titleVisible,
-        enter = expandVertically(tween(250)) + fadeIn(tween(250)),
-        exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
-    ) {
+    SearchHeaderVisibility(focus.titleVisible) {
         HeaderWithIcon(
             title = stringResource(titleRes),
             iconId = iconRes,
@@ -125,17 +110,12 @@ fun settingsSearchContent(
  * bar can rise to the very top. The cards below keep [settingsSearchContent]
  * (plain fade, no layout movement).
  */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun settingsSearchDescription(
     focus: SettingsSearchFocus,
     content: @Composable () -> Unit,
 ) {
-    AnimatedVisibility(
-        visible = focus.titleVisible,
-        enter = expandVertically(tween(250)) + fadeIn(tween(250)),
-        exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
-    ) {
+    SearchHeaderVisibility(focus.titleVisible) {
         Column(modifier = Modifier.graphicsLayer { alpha = focus.contentAlpha }) {
             content()
         }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,14 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
-import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassRippleProvider
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.menu.MenuSheetDragHandle
@@ -42,6 +39,7 @@ import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.ui.items.VideoItem
 import app.n_zik.android.ui.items.VideoItemPlaceholder
+import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -86,7 +84,6 @@ private fun ManualVideoSearch(
     val videoSession = LocalPlayerMusicVideo.current
     val guestLocked = rememberListenTogetherGuestLock()
     val focusManager = LocalFocusManager.current
-    val palette = colorPalette()
     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
     var input by rememberSaveable(initialQuery, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(initialQuery, selection = TextRange(initialQuery.length)))
@@ -128,6 +125,7 @@ private fun ManualVideoSearch(
 
     val glass = rememberGlassSettings()
     val forceShimmer = forceLoadingShimmerPreview()
+    SearchEmptyFeedback(query, results.isEmpty(), loading = loading || continuation != null || forceShimmer)
     val navigationPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
     GlassRippleProvider(glass) {
@@ -179,14 +177,6 @@ private fun ManualVideoSearch(
                 if (loading) {
                     items(if (results.isEmpty()) 8 else 3) {
                         VideoItemPlaceholder(thumbnailHeightDp = 72.dp, thumbnailWidthDp = 128.dp)
-                    }
-                } else if (results.isEmpty() && query.isNotBlank()) {
-                    item {
-                        Text(
-                            stringResource(R.string.search_no_results_message),
-                            modifier = Modifier.padding(16.dp),
-                            color = palette.text,
-                        )
                     }
                 } else {
                     val nextPage = continuation

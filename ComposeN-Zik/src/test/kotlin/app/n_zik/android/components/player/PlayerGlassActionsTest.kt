@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -69,7 +70,10 @@ import app.n_zik.android.components.glass.WeightedNeutralDecision
 import app.n_zik.android.components.glass.SurfaceForegroundContent
 import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.glass.backdrop.Backdrop
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -88,6 +92,44 @@ class PlayerGlassActionsTest {
     @get:Rule val compose = createComposeRule()
     private val settings = GlassSettings(film = 0f, rim = 0f, blur = 0f,
         vibrancy = 0f, depth = 0f, amount = 0f)
+
+    @Test fun `only a selector on a rendered toolbar receives the toolbar glass plate`() {
+        val showCompanion = mutableStateOf(true)
+        val useGlass = mutableStateOf(true)
+        var selectorBackdrop: Backdrop? = null
+        var siblingBackdrop: Backdrop? = null
+        compose.setContent {
+            AppearanceProvider(RoundedCornerShape(12.dp)) {
+                PlayerActionToolbar(
+                    actions = buildList {
+                        add(PlayerActionSlot("audioVideo", spansTwoCells = true) {
+                            val backdrop = LocalPlayerActionToolbarBackdrop.current
+                            SideEffect { selectorBackdrop = backdrop }
+                            Box(Modifier.size(96.dp, 44.dp))
+                        })
+                        if (showCompanion.value) add(PlayerActionSlot("menu") {
+                            val backdrop = LocalPlayerActionToolbarBackdrop.current
+                            SideEffect { siblingBackdrop = backdrop }
+                            Box(Modifier.size(24.dp))
+                        })
+                    },
+                    spaceEvenly = true,
+                    settings = settings.copy(enabled = useGlass.value),
+                )
+            }
+        }
+        compose.runOnIdle {
+            assertNotNull(selectorBackdrop)
+            assertNull(siblingBackdrop)
+            showCompanion.value = false
+        }
+        compose.runOnIdle {
+            assertNull(selectorBackdrop)
+            showCompanion.value = true
+            useGlass.value = false
+        }
+        compose.runOnIdle { assertNull(selectorBackdrop) }
+    }
 
     @Test fun `actual player action glyphs use their own film during a bright cover transition`() {
         val film = mutableStateOf(1f)

@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ClipOp
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalDensity
@@ -21,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.surfaceColor
+import kotlin.math.roundToInt
 
 /** Connected vertical action cells, sharing one themed surface in both rendering modes. */
 @Composable
@@ -31,6 +34,7 @@ fun GlassVerticalActionGroup(
     trailingTrigger: GlassMenuTriggerState? = null,
     actionCount: Int = 2,
     leadingActionJoinProgress: Float? = null,
+    triggerOffsetPx: Int? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val cellSize = LocalGlassActionCellSize.current
@@ -59,11 +63,27 @@ fun GlassVerticalActionGroup(
         modifier = modifier,
     ) {
         val surface = Modifier.matchParentSize().layout { measurable, constraints ->
-            val removed = if (transferred) cellSize.height.roundToPx() else 0
+            val cell = cellSize.height.roundToPx()
+            val triggerTop = triggerOffsetPx ?: constraints.maxHeight - cell
+            val removeLeading = transferred && triggerTop <= 0
+            val removeTrailing = transferred && triggerTop + cell >= constraints.maxHeight
+            val removed = if (removeLeading || removeTrailing) cell.coerceAtMost(constraints.maxHeight) else 0
             val height = (constraints.maxHeight - removed).coerceAtLeast(0)
             val pane = measurable.measure(Constraints.fixed(constraints.maxWidth, height))
-            layout(constraints.maxWidth, constraints.maxHeight) { pane.place(0, 0) }
-        }.graphicsLayer { alpha = if (actionCount == 1 && transferred) 0f else 1f }.clip(if (transferred || actionCount < 2) shape else fusion)
+            layout(constraints.maxWidth, constraints.maxHeight) {
+                pane.place(0, if (removeLeading) removed else 0)
+            }
+        }.drawWithContent surfaceContent@{
+            val triggerTop = triggerOffsetPx?.toFloat()
+            val triggerBottom = triggerTop?.plus(cellHeight.roundToInt())
+            if (transferred && triggerTop != null && triggerBottom != null &&
+                triggerTop > 0f && triggerBottom < size.height) {
+                clipRect(top = triggerTop, bottom = triggerBottom, clipOp = ClipOp.Difference) {
+                    this@surfaceContent.drawContent()
+                }
+            } else drawContent()
+        }.graphicsLayer { alpha = if (actionCount == 1 && transferred) 0f else 1f }
+            .clip(if (transferred || actionCount < 2) shape else fusion)
         val joining = !transferred && actionCount > 1 && progress < 1f
         Box(if (settings.usesGlassMaterial(area)) surface.glassMaterial(
             settings.forArea(area), shape, filmColor = film,

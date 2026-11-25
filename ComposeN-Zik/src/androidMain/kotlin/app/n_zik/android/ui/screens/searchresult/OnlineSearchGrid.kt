@@ -86,7 +86,6 @@ fun OnlineSearchGrid(
     navController: NavController,
     disableScrollingText: Boolean,
     headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit,
-    emptyItemsText: String
 ) {
     val thumbnailSizeDp = when (tabIndex) {
         1 -> Dimensions.thumbnails.album + 8.dp
@@ -288,7 +287,6 @@ fun OnlineSearchGrid(
                 )
             }
         },
-        emptyItemsText = emptyItemsText,
         headerContent = headerContent,
         itemContent = { itemContent(it) },
         itemPlaceholderContent = { item ->

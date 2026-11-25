@@ -105,6 +105,10 @@ import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.ordered
+import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.components.ui.CollectionFavoritesKind
 import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.ui.components.themed.ItemsList
@@ -164,6 +168,10 @@ import app.n_zik.android.components.musicbrainz.InfoAndCommunity
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Radio
+import app.n_zik.android.components.tab.Search
+
+import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.search.matchesCollectionSearch
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.components.ui.screens.DynamicOrientationLayout
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -201,6 +209,22 @@ import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import timber.log.Timber
 
 private const val ALBUM_INSIGHTS_ROUTE = "albumInsights"
+private const val ALBUM_SONGS_HEADER_ITEMS = 6
+
+@Composable
+internal fun OnlineAlbumToolbar(
+    bookmark: @Composable () -> Unit,
+    actions: Map<ToolbarControl, Button>,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+) {
+    CollectionButtonToolbar(
+        bookmark = bookmark,
+        buttons = ToolbarSurface.ALBUM_ONLINE.ordered(actions),
+        modifier = modifier,
+        enabled = enabled,
+    )
+}
 
 @Composable
 internal fun AlbumSongsPageStatus(loadedSongsCount: Int, loading: Boolean, loadFailed: Boolean) {
@@ -531,8 +555,23 @@ fun AlbumDetails(
     val initialSongsLoading = songsLoading && items.isEmpty()
 
     val itemSelector = ItemSelector<Song>()
+    val search = Search.detail()
+    val query = search.filterQuery
+    val visibleTracks = remember(items, query) {
+        items.withIndex().filter { (_, song) -> query.isBlank() || song.matchesCollectionSearch(query) }
+    }
+    val visibleSongs = remember(visibleTracks) { visibleTracks.map { it.value } }
+    val visibleAlternatives = remember(alternatives, query) {
+        if (query.isBlank()) alternatives else alternatives.filter { it.matchesCollectionSearch(query) }
+    }
+    SearchEmptyFeedback(
+        query = query,
+        empty = visibleTracks.isEmpty() && visibleAlternatives.isEmpty(),
+        loading = songsLoading || forceSongPlaceholders,
+    )
 
-    fun getSongs() = itemSelector.ifEmpty { items }
+    fun getSongs() = itemSelector.actionTargets(visibleSongs, Song::id, Song::id, selectionOrder = true)
+    fun hasSelection() = getSongs().isNotEmpty()
     fun getMediaItems() = getSongs().map(Song::asMediaItem)
 
     val bookmark = AlbumBookmark(browseId)
@@ -540,12 +579,7 @@ fun AlbumDetails(
     val likeStatesMap by remember(albumSongIds, preview) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(albumSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-    val collectionMediaItems = remember(items) { items.map(Song::asMediaItem) }
-    val selectedFavoriteIds = itemSelector.takeIf { it.isActive }?.mapTo(HashSet(), Song::id)
-    val favoriteMediaItems = remember(collectionMediaItems, selectedFavoriteIds) {
-        if (selectedFavoriteIds == null) collectionMediaItems
-        else collectionMediaItems.filter { it.mediaId in selectedFavoriteIds }
-    }
+    val favoriteMediaItems = itemSelector.actionTargets(visibleSongs, Song::id, Song::id).map(Song::asMediaItem)
     val favorites = rememberCollectionFavoritesButton(
         mediaItems = favoriteMediaItems,
         kind = CollectionFavoritesKind.Album,
@@ -560,9 +594,9 @@ fun AlbumDetails(
         getMediaItems().map(MediaItem::asSong)
     }
     val radio = Radio(::getSongs)
-    val locator = Locator(lazyListState, ::getSongs)
+    val locator = Locator(lazyListState, listItemOffset = ALBUM_SONGS_HEADER_ITEMS) { visibleSongs }
     val playNext = PlayNext {
-        val songsToAdd = getSongs().toList()
+        val songsToAdd = getSongs().ifEmpty { return@PlayNext }
         itemSelector.isActive = false
         coroutineScope.launch {
             val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(Song::asMediaItem) }
@@ -570,22 +604,23 @@ fun AlbumDetails(
         }
     }
     val enqueue = Enqueue {
-        val songsToAdd = getSongs().toList()
+        val songsToAdd = getSongs().ifEmpty { return@Enqueue }
         itemSelector.isActive = false
         coroutineScope.launch {
             val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(Song::asMediaItem) }
             binder?.player?.enqueueOffMain(mediaItems, appContext())
         }
     }
-    val addToPlaylist = PlaylistsMenu.init(
-        navController,
-        { getMediaItems() },
-        { throwable, preview ->
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val songs = getSongs()
+            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(Song::asMediaItem) })
+        },
+        onFailure = { throwable, preview ->
             Timber.tag("AlbumDetails").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        {
-            itemSelector.isActive = false
-        }
+        itemSelector = itemSelector,
     )
     val changeTitle = AlbumModifier(
         iconId = R.drawable.title_edit,
@@ -729,7 +764,23 @@ fun AlbumDetails(
                         }
 
                         item("action_buttons") {
-                            CollectionButtonToolbar(
+                            val actions = mapOf(
+                                ToolbarControl.SEARCH to search,
+                                ToolbarControl.DOWNLOAD to itemSelector.guard(downloadALlDialog, ::hasSelection),
+                                ToolbarControl.DELETE_DOWNLOADS to itemSelector.guard(deleteAllDownloadsDialog, ::hasSelection),
+                                ToolbarControl.SHUFFLE to itemSelector.guard(shuffle, ::hasSelection),
+                                ToolbarControl.RADIO to itemSelector.guard(radio) { radio.active || hasSelection() },
+                                ToolbarControl.LOCATE to locator,
+                                ToolbarControl.SELECT to itemSelector,
+                                ToolbarControl.CHANGE_TITLE to changeTitle,
+                                ToolbarControl.CHANGE_ARTISTS to changeAuthors,
+                                ToolbarControl.CHANGE_COVER to changeCover,
+                                ToolbarControl.PLAY_NEXT to itemSelector.guard(playNext, ::hasSelection),
+                                ToolbarControl.ENQUEUE to itemSelector.guard(enqueue, ::hasSelection),
+                                ToolbarControl.ADD_TO_PLAYLIST to itemSelector.guard(addToPlaylist, ::hasSelection),
+                                ToolbarControl.FAVORITES to favorites,
+                            )
+                            OnlineAlbumToolbar(
                                 modifier = Modifier.padding(top = 8.dp),
                                 bookmark = {
                                     if (initialSongsLoading && album == null) TabToolBar.Icon(
@@ -740,28 +791,18 @@ fun AlbumDetails(
                                     )
                                     else bookmark.ToolBarButton()
                                 },
-                                originalNativeBookmarkWidth = 48.dp,
-                                buttons = listOf(
-                                    downloadALlDialog,
-                                    deleteAllDownloadsDialog,
-                                    shuffle,
-                                    radio,
-                                    locator,
-                                    itemSelector,
-                                    changeTitle,
-                                    changeAuthors,
-                                    changeCover,
-                                    playNext,
-                                    enqueue,
-                                    addToPlaylist,
-                                    favorites,
-                                ),
+                                actions = actions,
                                 enabled = !initialSongsLoading,
                             )
                         }
 
-                        if (!initialSongsLoading) item("info_and_community") {
+                        item("search") {
+                            Column { search.SearchBar(this, barPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) }
+                        }
+
+                        if (!initialSongsLoading && query.isBlank()) item("info_and_community") {
                             InfoAndCommunity(
+                                modifier = Modifier.animateItem(),
                                 rating = album?.rating,
                                 ratingVotes = album?.ratingVotes,
                                 year = album?.year,
@@ -803,20 +844,20 @@ fun AlbumDetails(
                             )
                         }
 
-                        item("songsTitle") {
+                        if (query.isBlank() || visibleTracks.isNotEmpty() || initialSongsLoading) item("songsTitle") {
                             BasicText(
                                 text = stringResource(R.string.library_songs_title),
                                 style = typography().m.semiBold.align(TextAlign.Start),
-                                modifier = sectionTextModifier.fillMaxWidth()
+                                modifier = sectionTextModifier.fillMaxWidth().animateItem()
                             )
                         }
 
                         if (initialSongsLoading) item("album-songs-preview") {
                             SongItemPlaceholders(count = 4, showThumbnail = false)
                         } else itemsIndexed(
-                            items = items,
-                            key = { _, song -> song.id }
-                        ) { index, song ->
+                            items = visibleTracks,
+                            key = { _, track -> track.value.id }
+                        ) { visibleIndex, (index, song) ->
                             if (forceSongPlaceholders) {
                                 SongItemPlaceholder(
                                     trackNumber = index + 1,
@@ -843,7 +884,7 @@ fun AlbumDetails(
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     showThumbnail = false,
-                                    modifier = Modifier,
+                                    modifier = Modifier.animateItem(),
 
                                     thumbnailOverlay = {
                                         BasicText(
@@ -864,35 +905,36 @@ fun AlbumDetails(
                                     onClick = {
                                         binder?.stopRadio()
                                         binder?.player?.forcePlayAtIndex(
-                                            getMediaItems(),
-                                            index
+                                            visibleSongs.map(Song::asMediaItem),
+                                            visibleIndex,
                                         )
                                     }
                                 )
                             }
                         }
 
-                        if (alternatives.isNotEmpty())
+                        if (visibleAlternatives.isNotEmpty())
                             item("alternatives") {
                                 BasicText(
                                     text = stringResource(R.string.album_alternative_versions),
                                     style = typography().m.semiBold,
                                     maxLines = 1,
-                                    modifier = Modifier.padding(all = 16.dp)
+                                    modifier = Modifier.animateItem().padding(all = 16.dp)
                                 )
 
-                                val altAlbumKeys = remember(alternatives) { alternatives.map { it.key } }
+                                val altAlbumKeys = remember(visibleAlternatives) { visibleAlternatives.map { it.key } }
                                 val altBookmarkStatesMap by remember(altAlbumKeys) {
                                     BookmarkStateManager.getAlbumBookmarkStates(altAlbumKeys)
                                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
                                 ItemsList(
                                     tag = "album/$browseId/alternatives_list",
+                                    modifier = Modifier.animateItem(),
                                     headerContent = {},
-                                    initialPlaceholderCount = alternatives.size,
+                                    initialPlaceholderCount = visibleAlternatives.size,
                                     continuationPlaceholderCount = 1,
                                     emptyItemsText = stringResource(R.string.album_no_alternative_version),
-                                    knownItems = alternatives,
+                                    knownItems = visibleAlternatives,
                                     itemContent = { album ->
                                         AlbumItem(
                                             alternative = true,
@@ -902,6 +944,7 @@ fun AlbumDetails(
                                             bookmarkState = altBookmarkStatesMap[album.key],
                                             observeBookmarkState = false,
                                             modifier = Modifier
+                                                .animateItem()
                                                 .clip(uiRoundnessShape()).combinedClickable(
                                                     onClick = {
                                                         navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
@@ -920,7 +963,7 @@ fun AlbumDetails(
                                         )
                                     },
                                     itemPlaceholderContent = { index ->
-                                        val alternative = alternatives.getOrNull(index)
+                                        val alternative = visibleAlternatives.getOrNull(index)
                                         AlbumItemPlaceholder(
                                             thumbnailSizeDp = thumbnailAlbumSizeDp,
                                             alternative = true,
@@ -940,8 +983,9 @@ fun AlbumDetails(
                         MultiFloatingActionsContainer(
                             // Issue #866 (gh-866): app-wide shuffle confirmation flash (the click
                             // goes through SongShuffler, which triggers the flash).
-                            iconId = shuffleButtonIcon(),
-                            onClick = shuffle::onShortClick,
+                            useAsActionsMenu = !hasSelection(),
+                            iconId = if (hasSelection()) shuffleButtonIcon() else R.drawable.ellipsis_horizontal,
+                            onClick = { if (hasSelection()) shuffle.onShortClick() },
                             onClickSettings = onSettingsClick,
                             onClickSearch = onSearchClick
                         )

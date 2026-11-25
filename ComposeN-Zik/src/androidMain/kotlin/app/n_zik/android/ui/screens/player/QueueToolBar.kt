@@ -4,38 +4,31 @@ import android.annotation.SuppressLint
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
@@ -44,7 +37,6 @@ import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Icon as ToolbarIcon
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.isLandscape
-import app.n_zik.android.topUiRoundnessShape
 import app.n_zik.android.components.glass.GlassQueueToolbarActions
 import app.n_zik.android.components.glass.queueToolbarBottomInset
 import app.n_zik.android.components.glass.GlassQueueToolbar
@@ -52,7 +44,7 @@ import app.n_zik.android.components.glass.QueueEmbeddedMini
 
 object QueueToolBarState {
     var mediaItemCount by mutableIntStateOf(0)
-    var buttons: List<Button> = emptyList()
+    var buttons: List<Button> by mutableStateOf(emptyList())
     var queueArrow: ToolbarIcon? = null
     var onBarClick: () -> Unit = {}
     var isVisible by mutableIntStateOf(0)
@@ -100,17 +92,6 @@ fun QueueToolBar(
         }
 
         val queueArrow = QueueToolBarState.queueArrow
-
-        if (queueArrow != null && !queueArrow.isEnabled)
-            Image(
-                painter = painterResource(R.drawable.horizontal_bold_line_rounded),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(colorPalette().text),
-                modifier = Modifier
-                    .absoluteOffset(0.dp, (-10).dp)
-                    .align(Alignment.TopCenter)
-                    .size(30.dp)
-            )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,

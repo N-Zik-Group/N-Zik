@@ -499,10 +499,16 @@ fun HomeSongs(
     var completedSearchQuery by remember { mutableStateOf<String?>(null) }
     var hasCompletedSongProjection by persist("home/streamed-songs/loaded", false)
     val filterScrollAnchor = persist("home/streamed-songs/filter-scroll", HomeFilterScrollAnchor()).value
+    val recommendationIds = remember(relatedSongs) { relatedSongs.map(Song::id) }
+    val recommendationIdSet = remember(recommendationIds) { recommendationIds.toHashSet() }
+    val storedRecommendations by rememberSongRowMetadata(recommendationIds)
+    val displayRecommendations = remember(relatedSongsPositions, storedRecommendations) {
+        relatedSongsPositions.mapKeys { (song, _) -> resolveSongDisplayMetadata(song, storedRecommendations[song.id]) }
+    }
     val baseInput = HomeSongsBaseInput(
         items = items,
         recommendationsEnabled = isRecommendationEnabled,
-        recommendations = relatedSongsPositions,
+        recommendations = displayRecommendations,
         parentalControlEnabled = parentalControlEnabled,
     )
     var baseSongs by remember { mutableStateOf(emptyList<Song>()) }
@@ -512,7 +518,7 @@ fun HomeSongs(
         baseSongs = projectHomeSongsBase(baseInput)
         baseReady = true
     }
-    val query = search.inputValue
+    val query = search.filterQuery
     LaunchedEffect(baseReady, baseSongs, query) {
         if (!baseReady) return@LaunchedEffect
         val candidates = baseSongs
@@ -578,24 +584,21 @@ fun HomeSongs(
 
     val showNoItems by remember {
         derivedStateOf {
-            !isLoading && itemsOnDisplay.isEmpty() && (items.isEmpty() || search.inputValue.isNotEmpty())
+            !isLoading && itemsOnDisplay.isEmpty() && (items.isEmpty() || search.filterQuery.isNotEmpty())
         }
     }
 
     val forceShimmer = forceLoadingShimmerPreview()
-    val resultsPending = !baseReady || completedSearchQuery != search.inputValue
+    val resultsPending = !baseReady || completedSearchQuery != search.filterQuery
     val showInitialSongPlaceholders = !hasCompletedSongProjection && itemsOnDisplay.isEmpty()
     SearchEmptyFeedback(
-        query = search.inputValue,
+        query = search.filterQuery,
         empty = showNoItems,
-        loading = resultsPending,
+        loading = resultsPending || forceShimmer,
     )
 
     val songIds = remember(baseSongs) { baseSongs.map(Song::id) }
     val cachedSongIds by rememberSongRowCache(songIds)
-    val recommendationIds = remember(relatedSongs) { relatedSongs.map(Song::id) }
-    val recommendationIdSet = remember(recommendationIds) { recommendationIds.toHashSet() }
-    val storedRecommendations by rememberSongRowMetadata(recommendationIds)
     val showPlaylistIndicator by rememberPreference(playlistindicatorKey, false)
     val playlistStatesMap by remember(songIds, preview, showPlaylistIndicator) {
         if (preview != null || !showPlaylistIndicator) flowOf(emptyMap())
@@ -672,12 +675,9 @@ fun HomeSongs(
                                 swipeRightActionParam = playlistSwipeRightAction
                             ) {
                                 val isRecommended = song.id in recommendationIdSet
-                                val displaySong = if (isRecommended) {
-                                    resolveSongDisplayMetadata(song, storedRecommendations[song.id])
-                                } else song
                                 SongItem(
-                                    song = displaySong,
-                                    isLiked = displaySong.rowLikeState(),
+                                    song = song,
+                                    isLiked = song.rowLikeState(),
                                     observeLikeState = false,
                                     observeStoredMetadata = false,
                                     inPlaylist = playlistStatesMap[song.id] == true,
@@ -737,7 +737,10 @@ fun HomeSongs(
                                         } else {
                                             val playerBinder = binder
                                             if (playerBinder != null) {
-                                                val targets = itemSelector.toList().ifEmpty { itemsOnDisplay.toList() }
+                                                val targets = itemSelector.actionTargets(
+                                                    itemsOnDisplay.toList(), Song::id, Song::id, selectionOrder = true,
+                                                )
+                                                if (itemSelector.isActive && targets.none { it.id == song.id }) return@SongItem
                                                 playbackJob?.cancel()
                                                 playbackJob = playbackScope.launch {
                                                     val mediaItems = withContext(NzikDispatchers.MEDIA) {
@@ -790,7 +793,7 @@ fun HomeSongs(
                 modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = topContentInsetProvider, base = PaddingValues(top = visibleHeaderPadding(), bottom = Dimensions.bottomSpacer))),
                 contentAlignment = Alignment.Center
             ) {
-                if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
+                if (search.filterQuery.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
             }
         }
     }

@@ -95,6 +95,7 @@ fun SearchResultScreen(
     val editQuery: () -> Unit = {
         navController.navigate("${NavRoutes.search.name}?text=${Uri.encode(query)}")
     }
+    val showContentTypeFilter = tabIndex == 0 || tabIndex == 3
     val showLayoutToggle = tabIndex in listOf(1, 4, 5, 6)
 
     val headerContent: @Composable (textButton: (@Composable () -> Unit)?) -> Unit = {
@@ -113,7 +114,7 @@ fun SearchResultScreen(
                     showLayoutToggle = showLayoutToggle,
                     onEditQuery = editQuery,
                 ) {
-                    Box {
+                    if (showContentTypeFilter) Box {
                         SearchResultHeaderIcon(
                             icon = R.drawable.discover,
                             contentDescription = stringResource(R.string.accessibility_filter),
@@ -153,7 +154,7 @@ fun SearchResultScreen(
                 }
             }
         )
-        Row(
+        if (showContentTypeFilter) Row(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -172,7 +173,6 @@ fun SearchResultScreen(
         Spacer(modifier = Modifier.height(24.dp))
     }
 
-    val emptyItemsText = stringResource(R.string.search_no_results_message)
 
     val topContentInset = rememberTopContentInsetProvider(hasNavBar = !app.n_zik.android.utils.hideBarsInLandscapeMobile())
 
@@ -200,11 +200,10 @@ fun SearchResultScreen(
                         topContentInsetProvider = topContentInset,
                         query = query,
                         tabIndex = currentTabIndex,
-                        filterContentType = filterContentType,
+                        filterContentType = if (showContentTypeFilter) filterContentType else ContentType.All,
                         navController = navController,
                         disableScrollingText = disableScrollingText,
                         headerContent = headerContent,
-                        emptyItemsText = emptyItemsText
                     )
                 }
 
@@ -214,22 +213,20 @@ fun SearchResultScreen(
                             topContentInsetProvider = topContentInset,
                             query = query,
                             tabIndex = currentTabIndex,
-                            filterContentType = filterContentType,
+                            filterContentType = if (showContentTypeFilter) filterContentType else ContentType.All,
                             navController = navController,
                             disableScrollingText = disableScrollingText,
                             headerContent = headerContent,
-                            emptyItemsText = emptyItemsText
                         )
                     } else {
                         OnlineSearchList(
                             topContentInsetProvider = topContentInset,
                             query = query,
                             tabIndex = currentTabIndex,
-                            filterContentType = filterContentType,
+                            filterContentType = if (showContentTypeFilter) filterContentType else ContentType.All,
                             navController = navController,
                             disableScrollingText = disableScrollingText,
                             headerContent = headerContent,
-                            emptyItemsText = emptyItemsText
                         )
                     }
                 }

@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings
 
 import android.app.Application
 import android.content.Context
+import android.net.Uri
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +18,7 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.privacy.rewindMasterSettingsRoute
 import app.n_zik.android.utils.DataStoreUtils
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -68,7 +70,7 @@ class RewindSettingsCardLayoutTest {
     fun `clicking the yearly recap entry toggles its own preference`() {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                RewindSettingsCard()
+                RewindSettingsCard(onOpenPrivacy = {})
             }
         }
         composeRule.waitForIdle()
@@ -93,7 +95,7 @@ class RewindSettingsCardLayoutTest {
         var opens = 0
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                RewindSettingsCard(onOpenRewind = callback.value)
+                RewindSettingsCard(onOpenPrivacy = {}, onOpenRewind = callback.value)
             }
         }
         composeRule.waitForIdle()
@@ -111,22 +113,36 @@ class RewindSettingsCardLayoutTest {
     }
 
     @Test
-    fun `the whole rewind section is hidden while the master is off`() {
+    fun `disabled rewind offers the Privacy switch and hides recap settings`() {
         // The state the master toggle leaves behind when flipped off: master off AND the
         // two playlist creation gates auto-unchecked.
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, false)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
 
+        var destination: String? = null
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                RewindSettingsCard()
+                RewindSettingsCard(
+                    onOpenPrivacy = { destination = rewindMasterSettingsRoute(context) },
+                    onOpenRewind = { error("The recap should not open while disabled") },
+                )
             }
         }
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_disabled_message)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_yearly)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.rewind_settings_notifications)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.rewind_settings_playlists_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.modules_open)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.settings_category_privacy)).performClick()
+
+        composeRule.runOnIdle {
+            val route = Uri.parse(checkNotNull(destination))
+            assertEquals("settingsCategory/privacy", route.path)
+            assertEquals("ai.tab_general.rw_settings_master", route.getQueryParameter("target"))
+            assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true))
+        }
     }
 }

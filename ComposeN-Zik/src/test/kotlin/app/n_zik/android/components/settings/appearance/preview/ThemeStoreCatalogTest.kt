@@ -160,6 +160,24 @@ class ThemeStoreCatalogTest {
         assertEquals(StoreSupport.Supported, olderV2Publication.copy(schemaVersion = 2).supportAt(99))
     }
 
+    @Test
+    fun v3RequiresMatchingManifestAppearanceAndMinimumCode() {
+        val v3 = blur.copy(schemaVersion = 3, revision = 3, compatibility = StoreCompatibility(101))
+        val v3Appearance = encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>(), schemaVersion = 3)
+        val v2Appearance = encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>(), schemaVersion = 2)
+        assertEquals(v3, parseStoreTheme(Json.encodeToString(v3)))
+        assertEquals(ThemeCategory.entries.toSet(), parseCatalogThemeAppearance(v3, v3Appearance).keys)
+        assertThrows(IllegalArgumentException::class.java) {
+            parseStoreTheme(Json.encodeToString(v3.copy(compatibility = StoreCompatibility(100))))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            parseCatalogThemeAppearance(v3, v2Appearance)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            parseCatalogThemeAppearance(v3.copy(schemaVersion = 2), v3Appearance)
+        }
+    }
+
     private fun theme(title: String, author: String, tag: String) = StoreTheme(
         schemaVersion = 1,
         themeId = "99edc843-6a9b-5753-8e76-cc11fe9b3295",

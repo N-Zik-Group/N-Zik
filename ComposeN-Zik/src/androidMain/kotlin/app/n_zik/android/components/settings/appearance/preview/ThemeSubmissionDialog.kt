@@ -56,6 +56,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import org.json.JSONObject
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
@@ -218,10 +219,12 @@ internal fun ThemeSubmissionPage(navController: NavController, miniPlayer: @Comp
         } else if (creatingLocal || themeId == "new" || existing != null) {
             ThemeSubmissionForm(existing, loaded, padding, localOnly, localTheme, publishedCreator?.getOrNull() == true,
                 initialAppearance = localTheme?.document ?: initial?.getOrNull(), currentAppearance = {
+                val preferences = context.preferences.all +
+                    app.n_zik.android.utils.DataStoreUtils.prefs(context).all.filterKeys { it in portableBurgerKeys }
                 encodeThemeAppearance(
-                    context.preferences.all + app.n_zik.android.utils.DataStoreUtils.prefs(context).all.filterKeys { it in portableBurgerKeys },
+                    preferences,
                     GlassProfilePreferences.preferences(context, profileId).all,
-                    schemaVersion = themeAppearanceSchemaFor(BuildConfig.VERSION_CODE),
+                    schemaVersion = themeAppearanceSchemaFor(BuildConfig.VERSION_CODE, preferences = preferences),
                     defaultGlassQuality = app.n_zik.android.components.glass.defaultGlassQuality(
                         android.os.Build.VERSION.SDK_INT,
                         context.getSystemService(android.app.ActivityManager::class.java)?.isLowRamDevice == true,
@@ -344,10 +347,14 @@ private fun ThemeSubmissionForm(
     val included = availableCategories.filter { selection and (1 shl it.ordinal) != 0 }
     val appearance = remember(fullAppearance, selection) { selectThemeAppearanceCategories(fullAppearance, included.toSet()) }
     val previousMinimum = existing?.compatibility?.minVersionCode
+    val appearanceSchema = remember(appearance) {
+        requireNotNull(themeAppearanceSchema(Json.parseToJsonElement(appearance).jsonObject))
+    }
+    val manifestSchema = maxOf(ThemeAppearanceV2, appearanceSchema)
+    val archiveMinimum = themeSchemaMinimumVersionCode(manifestSchema)
     val schemaMinimum = if (localOnly) {
-        if (themeAppearanceSchemaFor(BuildConfig.VERSION_CODE) == ThemeAppearanceV2)
-            ThemeAppearanceV2MinimumVersionCode else FirstThemeStoreVersionCode
-    } else themeAppearancePublicationMinimumVersionCode(appearance)
+        archiveMinimum
+    } else maxOf(archiveMinimum, themeAppearancePublicationMinimumVersionCode(appearance))
     val currentVersionCode = BuildConfig.VERSION_CODE
     var minimumVersionManualInput by rememberSaveable(key) {
         mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
@@ -359,7 +366,8 @@ private fun ThemeSubmissionForm(
     val minimumVersionInput = submissionMinimumVersionInput(
         minimumVersionManualInput, minimumVersionAutomatic, schemaMinimum, previousMinimum,
     )
-    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum, schemaMinimum)
+    val compatibilityCeiling = if (localOnly) maxOf(currentVersionCode, schemaMinimum) else currentVersionCode
+    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, compatibilityCeiling, previousMinimum, schemaMinimum)
     val minimumVersionLabel = when (minimumVersionCode) {
         currentVersionCode -> stringResource(R.string.theme_store_submission_version_with_code,
             BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode)
@@ -574,7 +582,7 @@ private fun ThemeSubmissionForm(
             StorePreview(path, if (scene in listOf("player", "queue", "navigation")) scene else "other", bytes.sha256(), caption)
         }
         require(gallery.size <= checkNotNull(previewLimit))
-        val theme = StoreTheme(2, themeId, revision, title.trim(), description.trim(),
+        val theme = StoreTheme(manifestSchema, themeId, revision, title.trim(), description.trim(),
             if (login == "local") StoreAuthor(0, login) else StoreAuthor(id, login), submissionTags,
             compatibility, StoreFile("appearance.json", appearanceBytes.sha256()), gallery,
             localCreatorName = localCreator)

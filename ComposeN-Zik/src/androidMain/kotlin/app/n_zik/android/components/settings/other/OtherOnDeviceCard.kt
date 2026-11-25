@@ -203,6 +203,7 @@ private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity, page
     }
     if (activeProfile && (summaryTitle.contains(search.inputValue, true) || summaryDescription.contains(search.inputValue, true))) {
         OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget("other.on_device.summary"),
             title = summaryTitle,
             text = summaryDescription,
             icon = R.drawable.folder,

@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Мои Топ</string>
     <string name="recommendations_playlists_title">Плейлисты, которые вам могут понравиться</string>
     <string name="recommendations_reset_complete">Данные Обзора очищены</string>
-    <string name="recommendations_reset_description">Удалить события воспроизведения, используемые для генерации рекомендаций в быстрых выборах.</string>
     <string name="recommendations_section_other_youtube_title">Другие разделы</string>
     <string name="recommendations_section_visibility_description">Отключите, если не хотите видеть</string>
     <string name="recommendations_show_section_label">Показать</string>

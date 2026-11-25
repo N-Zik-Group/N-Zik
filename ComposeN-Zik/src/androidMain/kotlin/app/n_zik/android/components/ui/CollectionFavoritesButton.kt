@@ -41,7 +41,7 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 internal enum class CollectionFavoritesKind {
-    Playlist, Album, Podcast,
+    Playlist, Album, Podcast, Queue,
 }
 
 /** Builds an inline or overflow toolbar action from complete collection membership. */
@@ -146,7 +146,7 @@ private class CollectionFavoritesButton(
         @Composable get() = if (isEnabled) colorPalette().text else colorPalette().textDisabled
 
     override val menuIconTitle: String
-        @Composable get() = stringResource(collectionFavoritesAction(like = !filled))
+        @Composable get() = stringResource(R.string.library_collection_favorites_action_manage)
 
     override fun onShortClick() = onOpen()
 
@@ -188,6 +188,9 @@ private fun CollectionFavoritesDialog(
         CollectionFavoritesKind.Album ->
             if (change.like) R.plurals.library_collection_favorites_add_album_tracks
             else R.plurals.library_collection_favorites_remove_album_tracks
+        CollectionFavoritesKind.Queue ->
+            if (change.like) R.plurals.library_collection_favorites_add_queue_tracks
+            else R.plurals.library_collection_favorites_remove_queue_tracks
         CollectionFavoritesKind.Podcast ->
             if (change.like) R.plurals.library_collection_favorites_add_episodes
             else R.plurals.library_collection_favorites_remove_episodes

@@ -50,6 +50,7 @@ import app.n_zik.android.utils.color
 import app.n_zik.android.utils.semiBold
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.MutableFloatState
@@ -140,11 +141,6 @@ import app.n_zik.android.utils.showYtPlaylistsKey
 import app.n_zik.android.utils.showOnDevicePlaylistsKey
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.utils.homePlaylistsOrderKey
-import app.n_zik.android.utils.homeLibraryToolbarOrderKey
-import app.n_zik.android.utils.homeLibraryOnDeviceToolbarOrderKey
-import app.n_zik.android.utils.homeLibraryYTPlaylistToolbarOrderKey
-import app.n_zik.android.utils.homeLibraryPinnedPlaylistToolbarOrderKey
-import app.n_zik.android.utils.homeLibraryMonthlyPlaylistToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
@@ -188,6 +184,7 @@ import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.typography
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
+import app.n_zik.android.components.dialog.settings.visibleHomeToolbarIds
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
@@ -252,6 +249,7 @@ fun HomeLibrary(
 
     var itemsOnDisplay by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/on_display") }
 
+    val context = LocalContext.current
     val previewSession = LocalThemePreview.current
     val search = Search.forHome()
     val itemSelector = ItemSelector<PlaylistPreview>()
@@ -264,7 +262,7 @@ fun HomeLibrary(
     val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
     var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
     val libraryScope = HomeLibraryPlaylistScope(
-        playlistType, youtubeLibraryFilter, search.inputValue, showRewind, showPinnedPlaylists,
+        playlistType, youtubeLibraryFilter, search.filterQuery, showRewind, showPinnedPlaylists,
         rewindMonthlyPlaylistEnabled, rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
     )
     val devicePlaylistIds by remember(previewSession) {
@@ -350,16 +348,6 @@ fun HomeLibrary(
     }
 
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    val deletePlaylistsButton = remember {
-        object : MenuIcon, Descriptive {
-            override val iconId: Int = R.drawable.trash
-            override val messageId: Int = R.string.playlist_action_delete_selected
-            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-            override fun onShortClick() { showDeleteConfirmDialog = true }
-            override fun onLongClick() {}
-        }
-    }
-
     var searchDataReady by remember(playlistType, sort.sortBy, sort.sortOrder) { mutableStateOf(false) }
     var completedSearchQuery by remember(playlistType, sort.sortBy, sort.sortOrder, items) { mutableStateOf<String?>(null) }
     val forceShimmer = forceLoadingShimmerPreview()
@@ -383,17 +371,20 @@ fun HomeLibrary(
                     searchDataReady = true
                 }
     }
-    LaunchedEffect(searchDataReady, items, search.inputValue) {
+    fun playlistDisplayName(name: String) = context.rewindDisplayName(cleanPrefix(name))
+
+    LaunchedEffect(searchDataReady, items, libraryScope.query, context) {
         if (!searchDataReady) return@LaunchedEffect
-        val query = search.inputValue
+        val query = libraryScope.query
         val candidates = items
         itemsOnDisplay = withContext(NzikDispatchers.DATA) {
-            if (query.isEmpty()) candidates else candidates.filter { it.playlist.name.contains(query, true) }
+            if (query.isBlank()) candidates
+            else candidates.filter { libraryScope.matchesName(it.playlist.name, ::playlistDisplayName) }
         }
         completedSearchQuery = query
     }
 
-    val searchReady = searchDataReady && completedSearchQuery == search.inputValue
+    val searchReady = searchDataReady && completedSearchQuery == search.filterQuery
     var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds, showOnDevice) {
         mutableStateOf(false)
     }
@@ -413,13 +404,28 @@ fun HomeLibrary(
     }
     val gridReady = searchReady && projectionReady
     val displayedGrid = rememberHomeFilteredGrid("playlists", lazyGridState, gridReady, filteredItems) { it.playlist.id }
-    val actionTargets = if (gridReady) remember(filteredItems, itemSelector.toList()) {
-        homeLibraryActionTargets(filteredItems, itemSelector.toList())
+    fun actionTargets() = if (gridReady) {
+        homeLibraryActionTargets(filteredItems, itemSelector, itemSelector.isActive)
     } else emptyList()
-    val context = LocalContext.current
+    val eligibleSelection by remember(gridReady, playlistType) {
+        derivedStateOf { itemSelector.isNotEmpty() && actionTargets().isNotEmpty() }
+    }
+    val hasEligibleSelection = { eligibleSelection }
+    var deleteSelectionMode by remember { mutableStateOf(false) }
+    val deletePlaylistsButton = object : MenuIcon, Descriptive {
+        override val iconId: Int = R.drawable.trash
+        override val messageId: Int = R.string.playlist_action_delete_selected
+        @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+        override fun onShortClick() {
+            deleteSelectionMode = itemSelector.isActive
+            showDeleteConfirmDialog = true
+        }
+        override fun onLongClick() {}
+    }
     val action = rememberHomeSongAction("HomeLibrary") {
         if (!gridReady || previewSession != null) return@rememberHomeSongAction null
-        val ids = homeLibraryActionTargets(filteredItems, itemSelector.toList()).map { it.playlist.id }
+        val ids = actionTargets().map { it.playlist.id }
+        if (itemSelector.isActive && ids.isEmpty()) return@rememberHomeSongAction null
         val deviceOnly = playlistType == PlaylistsType.OnDevice
         val load: suspend () -> List<Song> = {
             val eligible = if (deviceOnly) context.scanDeviceLibrary().songIds else emptySet()
@@ -454,9 +460,13 @@ fun HomeLibrary(
         onFailure = { error, preview ->
             Timber.tag("HomeLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        finalAction = { itemSelector.isActive = false },
+        itemSelector = itemSelector,
     )
-    val exportDialog = ExportSongsToCSVDialog.deferred("Library", action::snapshot)
+    val exportDialog = ExportSongsToCSVDialog.deferred(
+        "Library",
+        action::snapshot,
+        selectionActive = { itemSelector.isActive },
+    )
     val observeListening = previewSession == null &&
         (sort.sortBy == PlaylistSortBy.PlayCount || sort.sortBy == PlaylistSortBy.ListeningTime)
     val listeningTotals by remember(observeListening) {
@@ -548,7 +558,7 @@ fun HomeLibrary(
             Toaster.e(appTextResources().getString(R.string.library_sync_already_running_message))
             return
         }
-        val targetPlaylists = actionTargets
+        val targetPlaylists = actionTargets()
         if (targetPlaylists.isEmpty()) return
         refreshing = true
         coroutineScope.launch {
@@ -581,47 +591,29 @@ fun HomeLibrary(
 
             Column( Modifier.fillMaxSize() ) {
 
-                val homeLibraryToolbarOrderPrefLibrary by rememberPreference(homeLibraryToolbarOrderKey, "")
-                val homeLibraryToolbarOrderPrefYT by rememberPreference(homeLibraryYTPlaylistToolbarOrderKey, "")
-                val homeLibraryToolbarOrderPrefPinned by rememberPreference(homeLibraryPinnedPlaylistToolbarOrderKey, "")
-                val homeLibraryToolbarOrderPrefMonthly by rememberPreference(homeLibraryMonthlyPlaylistToolbarOrderKey, "")
-
-                val onDeviceToolbarOrder by rememberPreference(homeLibraryOnDeviceToolbarOrderKey, "")
-
-                val currentToolbarOrderPref = when (playlistType) {
-                    PlaylistsType.OnDevice -> onDeviceToolbarOrder
-                    PlaylistsType.YTPlaylist -> homeLibraryToolbarOrderPrefYT
-                    PlaylistsType.PinnedPlaylist -> homeLibraryToolbarOrderPrefPinned
-                    PlaylistsType.MonthlyPlaylist -> homeLibraryToolbarOrderPrefMonthly
-                    else -> homeLibraryToolbarOrderPrefLibrary
+                val toolbarTab = when (playlistType) {
+                    PlaylistsType.OnDevice -> "dev"
+                    PlaylistsType.YTPlaylist -> "yt"
+                    PlaylistsType.PinnedPlaylist -> "pin"
+                    PlaylistsType.MonthlyPlaylist -> "rw"
+                    else -> "all"
                 }
+                val toolbarOrder = HomeLibraryToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
 
                 val toolbarButtons = buildList<Button> {
-                    val defaultToolbarOrder = if (playlistType == PlaylistsType.OnDevice) {
-                        HomeLibraryToolbarSettingsDialog.onDeviceButtonIds
-                    } else {
-                        HomeLibraryToolbarSettingsDialog.allButtonIds
-                    }
-                    val order = try {
-                        if (currentToolbarOrderPref.isBlank()) defaultToolbarOrder else {
-                            val arr = JSONArray(currentToolbarOrderPref)
-                            (0 until arr.length()).map { arr.getString(it) }.distinct()
-                        }
-                    } catch (_: Exception) { defaultToolbarOrder }
-
-                    order.filter { it in defaultToolbarOrder }.ifEmpty { defaultToolbarOrder }.forEach { id ->
+                    toolbarOrder.forEach { id ->
                         when(id) {
                             "sort" -> add(sort)
                             "position_lock" -> { if (sort.sortBy == PlaylistSortBy.Custom) add(positionLock) }
                             "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) add(sync) }
                             "search" -> add(search)
-                            "shuffle" -> add(shuffle)
+                            "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
                             "item_selector" -> add(itemSelector)
-                            "play_next" -> add(playNext)
-                            "enqueue" -> add(enqueue)
-                            "add_to_playlist" -> add(addToPlaylist)
-                            "export_dialog" -> add(exportDialog)
-                            "delete_playlists" -> add(deletePlaylistsButton)
+                            "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
+                            "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
+                            "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
+                            "export_dialog" -> add(itemSelector.guard(exportDialog, hasEligibleSelection))
+                            "delete_playlists" -> add(itemSelector.guard(deletePlaylistsButton, hasEligibleSelection))
                             "import_menu" -> add(importMenu)
                             "item_size" -> add(itemSize)
                         }
@@ -630,7 +622,7 @@ fun HomeLibrary(
 
 
                 SearchEmptyFeedback(
-                    query = search.inputValue,
+                    query = search.filterQuery,
                     empty = filteredItems.isEmpty(),
                     loading = !gridReady
                 )
@@ -653,17 +645,18 @@ fun HomeLibrary(
                 val header: @Composable (MutableFloatState, MutableIntState) -> Unit = { titleOffsetState, titleHeightState ->
                     Column {
                         Column {
-                            CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                                TabHeader( R.string.library_playlists_title ) {
-                                    HeaderInfo( items.size.toString(), R.drawable.playlist )
+                            search.HeaderContent {
+                                CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
+                                    TabHeader( R.string.library_playlists_title ) {
+                                        HeaderInfo( items.size.toString(), R.drawable.playlist )
+                                    }
                                 }
                             }
                     exportDialog.Render()
                     
                     DialogPresence(visible = showDeleteConfirmDialog) {
-                        val selected = actionTargets
-                        val hasSelection = itemSelector.isNotEmpty()
-                        val itemsToDelete = selected.toList()
+                        val itemsToDelete = actionTargets()
+                        val hasSelection = deleteSelectionMode
                         val text = if (hasSelection) {
                             pluralStringResource(R.plurals.playlist_delete_selected_confirmation_count, itemsToDelete.size, itemsToDelete.size)
                         } else {
@@ -676,9 +669,12 @@ fun HomeLibrary(
                             onDismiss = { showDeleteConfirmDialog = false },
                             onConfirm = {
                                 showDeleteConfirmDialog = false
+                                if (itemSelector.isActive != hasSelection) return@ConfirmationDialog
+                                val currentTargets = actionTargets()
+                                if (hasSelection && currentTargets.isEmpty()) return@ConfirmationDialog
                                 coroutineScope.launch(NzikDispatchers.DATA) {
                                     Database.asyncTransaction {
-                                        itemsToDelete.forEach { preview ->
+                                        currentTargets.forEach { preview ->
                                             playlistTable.delete(preview.playlist)
                                         }
                                     }
@@ -688,7 +684,7 @@ fun HomeLibrary(
                         )
                     }
                     
-                    GlassToolbarButtons( toolbarButtons, disableAnimation = true )
+                    GlassToolbarButtons( toolbarButtons )
                     search.SearchBar( this@Column )
                 }
 
@@ -771,7 +767,7 @@ fun HomeLibrary(
                         if (forceShimmer) {
                             PlaylistItemPlaceholder(
                                 itemSize.size.dp, alternative = true, showChannel = false,
-                                title = context.rewindDisplayName(cleanPrefix(preview.playlist.name)),
+                                title = playlistDisplayName(preview.playlist.name),
                             )
                             return@items
                         }
@@ -825,8 +821,7 @@ fun HomeLibrary(
                                             enabled = gridReady,
                                             onClick = {
                                                 if( itemSelector.isActive ) {
-                                                    if( preview in itemSelector ) itemSelector.remove( preview )
-                                                    else itemSelector.add( preview )
+                                                itemSelector.toggle(preview) { it.playlist.id }
                                                 } else {
                                                     search.hideIfEmpty()
                                                     if (playlistType == PlaylistsType.OnDevice) {
@@ -857,10 +852,11 @@ fun HomeLibrary(
                                         }
                                         if( itemSelector.isActive ) {
                                             key(itemSelector.size) {
+                                                val checked = itemSelector.isSelected(preview) { it.playlist.id }
                                                 Icon(
-                                                    painter = painterResource(if (preview in itemSelector) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                                    painter = painterResource(if (checked) R.drawable.checked_filled else R.drawable.unchecked_outline),
                                                     contentDescription = null,
-                                                    tint = if (preview in itemSelector) colorPalette().accent else colorPalette().text,
+                                                    tint = if (checked) colorPalette().accent else colorPalette().text,
                                                     modifier = Modifier
                                                         .padding(4.dp)
                                                         .size(24.dp)
@@ -928,7 +924,7 @@ fun HomeLibrary(
                         modifier = Modifier.fillMaxSize().padding(rememberPageChromeContentPadding(topInsetProvider = scrollContentInsetProvider, base = PaddingValues(top = with(androidx.compose.ui.platform.LocalDensity.current) { (headerHeight + headerOffset).coerceAtLeast(0f).toDp() }, bottom = Dimensions.bottomSpacer))),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (search.inputValue.isBlank()) {
+                        if (search.filterQuery.isBlank()) {
                             val message = if (playlistType == PlaylistsType.OnDevice)
                                 R.string.library_on_device_no_local_playlists else R.string.common_empty_items
                             SearchNoResults(text = stringResource(message))

@@ -117,7 +117,6 @@ import app.n_zik.android.components.navigation.nav.LocalGlassTabReplica
 import app.n_zik.android.components.navigation.nav.LocalGlassTabScale
 import app.n_zik.android.components.player.PlayerTopAction
 import app.n_zik.android.components.player.LocalPlayerBackdropSampling
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.compose.persist.findActivityNullable
 import app.n_zik.android.extensions.pip.isPipSupported
 import app.n_zik.android.core.database.Database
@@ -131,7 +130,7 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.GetControls
 import app.n_zik.android.utils.GetSeekBar
 import app.n_zik.android.utils.playbackPositionClock
-import app.n_zik.android.components.player.playerInformationControlBackdrop
+import app.n_zik.android.components.player.LocalPlayerActionToolbarBackdrop
 import app.n_zik.android.utils.playerSwapControlsWithTimelineKey
 import app.n_zik.android.utils.playerTimelineSizeKey
 import app.n_zik.android.enums.PlayerOpeningMode
@@ -357,7 +356,7 @@ internal fun PlayerAudioVideoToggle(
     // The header can have a different background than the title/transport union. Do not register
     // this region in that union: sample its retained background without changing the shared decision.
     val header = toggleBounds?.let { sampling?.colorAt(it) }
-    val plate = if (useGlass) glassFilmColor(navbarGlass, surfaceColor(palette.background1), menu = false)
+    val plate = if (useGlass) glassFilmColor(navbarGlass, role = null, menu = false)
         else palette.background2
     val toggleSurface = header?.let { effectiveSurfaceColor(it, plate) }
         ?: plate.takeIf { it.alpha == 1f }
@@ -411,42 +410,42 @@ internal fun PlayerAudioVideoToggle(
         }
     }
     SurfaceForegroundContent(toggleSurface) {
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        val toggleModifier = Modifier.height(GlassActionCellHeight).width(96.dp).selectableGroup()
-            .onGloballyPositioned { toggleBounds = it.boundsInWindow() }
-        if (useGlass) {
-            GlassRippleProvider(navbarGlass) {
-                // Start the indicator at the resolved opening mode. Only in-player changes animate.
-                key(session.openingSelection) {
-                    CompositionLocalProvider(
-                        LocalGlassBackdrop provides (playerInformationControlBackdrop() ?: LocalGlassBackdrop.current),
-                    ) {
-                    GlassNavigationTabs(
-                        selectedIndex = if (session.selected) 1 else 0,
-                        indices = listOf(0, 1),
-                        onTabChanged = { session.chooseMode(it == 1) },
-                        settings = navbarGlass,
-                        vertical = false,
-                        modifier = toggleModifier,
-                        containerShape = shape,
-                        dragSelectedTab = false,
-                    ) {
-                        modeButton(false, Modifier.fillMaxSize())
-                        modeButton(true, Modifier.fillMaxSize())
-                    }
+        Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+            val toggleModifier = Modifier.height(GlassActionCellHeight).width(96.dp).selectableGroup()
+                .onGloballyPositioned { toggleBounds = it.boundsInWindow() }
+            if (useGlass) {
+                GlassRippleProvider(navbarGlass) {
+                    // Start the indicator at the resolved opening mode. Only in-player changes animate.
+                    key(session.openingSelection) {
+                        val backdrop = LocalPlayerActionToolbarBackdrop.current ?: LocalGlassBackdrop.current
+                        CompositionLocalProvider(LocalGlassBackdrop provides backdrop) {
+                            GlassNavigationTabs(
+                                selectedIndex = if (session.selected) 1 else 0,
+                                indices = listOf(0, 1),
+                                onTabChanged = { session.chooseMode(it == 1) },
+                                settings = navbarGlass,
+                                vertical = false,
+                                modifier = toggleModifier,
+                                containerShape = shape,
+                                dragSelectedTab = false,
+                                containerFilm = Color.Transparent,
+                            ) {
+                                modeButton(false, Modifier.fillMaxSize())
+                                modeButton(true, Modifier.fillMaxSize())
+                            }
+                        }
                     }
                 }
-            }
-        } else {
-            Row(
-                toggleModifier.glassAreaContour(glass, GlassArea.ActionButtons, shape)
-                    .clip(shape).background(palette.background2).padding(2.dp),
-            ) {
-                modeButton(false, Modifier.weight(1f).fillMaxSize())
-                modeButton(true, Modifier.weight(1f).fillMaxSize())
+            } else {
+                Row(
+                    toggleModifier.glassAreaContour(glass, GlassArea.ActionButtons, shape)
+                        .clip(shape).background(palette.background2).padding(2.dp),
+                ) {
+                    modeButton(false, Modifier.weight(1f).fillMaxSize())
+                    modeButton(true, Modifier.weight(1f).fillMaxSize())
+                }
             }
         }
-    }
     }
 }
 

@@ -12,6 +12,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
 import app.n_zik.android.models.Song
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.download.utils.completedDownloadRequestIds
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -21,17 +22,17 @@ import app.n_zik.android.components.dialog.media.MediaDownloadDialog
 
 @UnstableApi
 class DownloadAllSongsDialog(
-    activeState: MutableState<Boolean>,
+    pendingSongs: MutableState<List<Song>?>,
     getSongs: () -> List<Song>,
     binder: PlayerServiceModern.Binder?
-) : MediaDownloadDialog(activeState, getSongs, binder), MenuIcon, Descriptive {
+) : MediaDownloadDialog(pendingSongs, getSongs, binder), MenuIcon, Descriptive {
 
     companion object {
         @Composable
         operator fun invoke(
             getSongs: () -> List<Song>
         ) = DownloadAllSongsDialog(
-            remember { mutableStateOf(false) },
+            remember { mutableStateOf(null) },
             getSongs,
             LocalPlayerServiceBinder.current
         )
@@ -47,7 +48,8 @@ class DownloadAllSongsDialog(
     override val dialogTitle: String
         @Composable
         get() {
-            val count = getSongs().count { song -> !MyDownloadHelper.downloads.value.containsKey(song.id) }
+            val downloadedIds = MyDownloadHelper.downloads.value.completedDownloadRequestIds()
+            val count = confirmationSongs.count { it.id !in downloadedIds }
             return if( count > 0 )
                 stringResource( R.string.downloads_download_all_count_confirmation, count )
             else
@@ -58,9 +60,10 @@ class DownloadAllSongsDialog(
         get() = stringResource( R.string.downloads_title )
 
     override fun onShortClick() {
-        val count = getSongs().count { song -> !MyDownloadHelper.downloads.value.containsKey(song.id) }
-        if (count > 0) {
-            super.onShortClick()
+        val songs = getSongs()
+        val downloadedIds = MyDownloadHelper.downloads.value.completedDownloadRequestIds()
+        if (songs.any { it.id !in downloadedIds }) {
+            openForSongs(songs)
         } else {
             app.n_zik.android.core.utils.Toaster.toast(
                 appTextResources().getString(R.string.downloads_empty_message),

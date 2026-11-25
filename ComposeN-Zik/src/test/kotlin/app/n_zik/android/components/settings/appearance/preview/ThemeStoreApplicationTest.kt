@@ -86,8 +86,13 @@ class ThemeStoreApplicationTest {
     fun customizeCanLabelEveryPortableSettingIncludingGlass() {
         val v1 = appearance.groups.values.flatMap { it.plain.keys + it.glass.keys }
         val v2 = parseThemeAppearance(defaultThemeAppearanceDocument()).values.flatMap { it.plain.keys + it.glass.keys }
-        val keys = (v1 + v2 + m3eAlwaysShowShapesKey).toSet()
-        assertEquals(keys, themeSettingNames.keys)
+        val keys = (v1 + v2 + m3eAlwaysShowShapesKey + "playerActionBarTopSlots" + "playerActionBarBottomAudioVideo").toSet()
+        // Default documents omit optional controls. Customized V2 imports still need labels.
+        assertEquals(keys, themeSettingNames.keys.filterNot {
+            it.startsWith("customToolbar.") || it == "burger_menu_toggle_search" || it == "burger_menu_toggle_notifications"
+        }.toSet())
+        assertEquals(true, themeSettingNames.containsKey("customToolbar.albumOnline.visible.search"))
+        assertEquals(true, themeSettingNames.containsKey("burger_menu_toggle_search"))
         assertEquals("enabled", themeSettingNames[glassEnabledKey])
         assertEquals("lyrics", themeSettingNames[showButtonPlayerLyricsKey])
     }
@@ -105,13 +110,15 @@ class ThemeStoreApplicationTest {
     }
 
     @Test
-    fun bundledStockDeclaresTheVersionTwoMinimum() {
+    fun bundledStockDeclaresTheVersionThreeMinimum() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val stock = requireNotNull(bundledDefaultTheme(context).theme)
         assertEquals(2, stock.revision)
-        assertEquals(99, stock.compatibility.minVersionCode)
-        assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(98))
-        assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(99))
+        assertEquals(ThemeAppearanceV3, stock.schemaVersion)
+        assertEquals(ThemeAppearanceV3MinimumVersionCode, stock.compatibility.minVersionCode)
+        assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(100))
+        assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(101))
+        assertEquals(StoreSupport.Supported, stock.supportAt(100))
     }
 
     @Test

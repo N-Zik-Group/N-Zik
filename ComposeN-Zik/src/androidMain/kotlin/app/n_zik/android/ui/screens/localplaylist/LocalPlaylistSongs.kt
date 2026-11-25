@@ -110,7 +110,10 @@ import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
 import app.n_zik.android.components.playlist.playlistMembershipSwipeAction
 import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
 import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
+import app.n_zik.android.components.rememberSongRowMetadata
+
 import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
@@ -119,6 +122,7 @@ import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.tab.selectionActionTargets
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
@@ -354,11 +358,13 @@ fun LocalPlaylistSongs(
 
     val itemSelector = ItemSelector<Song>()
 
-    fun getSongs() = localPlaylistActionSongs(itemsOnDisplay, itemSelector, onDeviceOnly)
+    fun getSongs() = localPlaylistActionSongs(itemsOnDisplay, itemSelector, onDeviceOnly, itemSelector.isActive)
+    val eligibleSelection by remember(playlistId, forceOnDevice, onDeviceOnly) {
+        derivedStateOf { itemSelector.isNotEmpty() && getSongs().isNotEmpty() }
+    }
+    val hasEligibleSelection = { eligibleSelection }
 
-    fun getMediaItems() = getSongs().map( Song::asMediaItem )
-
-    val search = Search(lazyListState)
+    val search = Search.detail()
 
     val isSpecialPlaylist = playlist?.browseId?.removePrefix("VL") in listOf("LM", "SE")
     
@@ -415,14 +421,15 @@ fun LocalPlaylistSongs(
         getSongs = ::getSongs,
     )
 
-    val shuffle = SongShuffler ( ::getSongs )
+    val shuffle = itemSelector.guard(SongShuffler(::getSongs), hasEligibleSelection)
     val insertionDialog = PlaylistInsertionDialog { playlist }
     insertionDialog.Render()
     val renameDialog = RenamePlaylistDialog { playlist }
     val exportDialog = ExportSongsToCSVDialog(
         playlistBrowseId = playlist?.browseId.orEmpty(),
         playlistName = playlist?.name ?: "",
-        songs = ::getSongs
+        songs = ::getSongs,
+        selectionActive = { itemSelector.isActive },
     )
     val importNzikDialog = ImportSongsFromCSV(targetPlaylistId = playlistId, onImportComplete = {
         appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
@@ -492,16 +499,19 @@ fun LocalPlaylistSongs(
         networkOptionsEnabled = { !offlineMode }
     ) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-    val deleteDialog = remember {
+    var deleteSelectionMode by remember { mutableStateOf(false) }
+    val deleteDialog =
         object : MenuIcon, Descriptive, Dialog {
             override val iconId: Int = R.drawable.trash
             override val messageId: Int = R.string.common_action_delete
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             @get:Composable override val dialogTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
-                if (canOfferPlaylistDeleteAction(playlist, itemSelector.isActive && itemSelector.isNotEmpty())) {
-                    showDeleteConfirmDialog = true
-                }
+                val selectionActive = itemSelector.isActive
+                if (!canOfferPlaylistDeleteAction(playlist, selectionActive)) return
+                if (selectionActive && getSongs().isEmpty()) return
+                deleteSelectionMode = selectionActive
+                showDeleteConfirmDialog = true
             }
             override fun onLongClick() {}
             override var isActive: Boolean
@@ -510,12 +520,10 @@ fun LocalPlaylistSongs(
 
             @Composable
             override fun Render() {
-                DialogPresence(visible = showDeleteConfirmDialog &&
-                    canOfferPlaylistDeleteAction(playlist, itemSelector.isActive && itemSelector.isNotEmpty())) {
-                    val selectedSongs = itemSelector.toList()
-                    val hasSelection = itemSelector.isActive && selectedSongs.isNotEmpty()
+                DialogPresence(visible = showDeleteConfirmDialog) {
+                    val hasSelection = deleteSelectionMode
                     val text = if (hasSelection) {
-                        stringResource(R.string.playlist_remove_songs_confirmation, selectedSongs.size)
+                        stringResource(R.string.playlist_remove_songs_confirmation, getSongs().size)
                     } else {
                         stringResource(R.string.playlist_delete_confirmation)
                     }
@@ -526,8 +534,11 @@ fun LocalPlaylistSongs(
                         onDismiss = { showDeleteConfirmDialog = false },
                         onConfirm = {
                             showDeleteConfirmDialog = false
+                            if (itemSelector.isActive != hasSelection) return@ConfirmationDialog
                             if (hasSelection) {
                                 if (!membershipEditable) return@ConfirmationDialog
+                                val selectedSongs = getSongs()
+                                if (selectedSongs.isEmpty()) return@ConfirmationDialog
                                 coroutineScope.launch(NzikDispatchers.DATA) {
                                     val removed = editStoredPlaylistMembership(playlistId) {
                                         selectedSongs.forEach { song ->
@@ -561,7 +572,6 @@ fun LocalPlaylistSongs(
                 }
             }
         }
-    }
     val renumberDialog = Reposition(playlistId)
     val downloadAllDialog = DownloadAllSongsDialog ( ::getSongs )
     val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog ( ::getSongs )
@@ -584,6 +594,7 @@ fun LocalPlaylistSongs(
 
     val playNext = PlayNext {
         val songs = getSongs().toList()
+        if (itemSelector.isActive && songs.isEmpty()) return@PlayNext
 
         // Turn of selector clears the selected list
         itemSelector.isActive = false
@@ -598,6 +609,7 @@ fun LocalPlaylistSongs(
     }
     val enqueue = Enqueue {
         val songs = getSongs().toList()
+        if (itemSelector.isActive && songs.isEmpty()) return@Enqueue
 
         // Turn of selector clears the selected list
         itemSelector.isActive = false
@@ -610,20 +622,17 @@ fun LocalPlaylistSongs(
             player.enqueue(mediaItems)
         }
     }
-    val addToPlaylist = PlaylistsMenu.init(
-        navController,
-        {
-
-
-            getMediaItems()
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val songs = getSongs().toList()
+            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(Song::asMediaItem) })
         },
-        { throwable, preview ->
+        onFailure = { throwable, preview ->
             Timber.tag("LocalPlaylistSongs").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        {
-            // Turn of selector clears the selected list
-            itemSelector.isActive = false
-        }
+        itemSelector = itemSelector,
+        localDestinationsOnly = onDeviceOnly,
     )
 
     fun sync() {
@@ -660,7 +669,9 @@ fun LocalPlaylistSongs(
     }
     val resetThumbnail = ResetThumbnail { resetThumbnail() }
 
-    val locator = Locator( lazyListState, ::getSongs )
+    val locator = Locator(lazyListState) {
+        if (onDeviceOnly) itemsOnDisplay.filter(Song::isLocal) else itemsOnDisplay
+    }
 
     //<editor-fold defaultstate="collapsed" desc="Smart recommendation">
     val recommendationsNumber by rememberPreference( recommendationsNumberKey, RecommendationsNumber.Adaptive )
@@ -689,11 +700,16 @@ fun LocalPlaylistSongs(
         positionLock.isFirstIcon = true
     }
     //</editor-fold>
-    LaunchedEffect(items, relatedSongs, search.inputValue, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
-        val query = search.inputValue
+    val query = search.filterQuery
+    val recommendationIds = remember(relatedSongs) { relatedSongs.keys.map(Song::id) }
+    val storedRecommendations by rememberSongRowMetadata(recommendationIds)
+    val displayRecommendations = remember(relatedSongs, storedRecommendations) {
+        relatedSongs.mapKeys { (song, _) -> resolveSongDisplayMetadata(song, storedRecommendations[song.id]) }
+    }
+    LaunchedEffect(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
         itemsOnDisplay = projectLocalPlaylistSongs(
             songs = items,
-            recommendations = if (isRecommendationEnabled) relatedSongs else emptyMap(),
+            recommendations = if (isRecommendationEnabled) displayRecommendations else emptyMap(),
             query = query,
             onDeviceOnly = onDeviceOnly,
             parentalControlEnabled = parentalControlEnabled,
@@ -701,9 +717,9 @@ fun LocalPlaylistSongs(
         filteredQuery = query
     }
     SearchEmptyFeedback(
-        query = search.inputValue,
+        query = query,
         empty = itemsOnDisplay.isEmpty(),
-        loading = loadedItems == null || filteredQuery != search.inputValue
+        loading = forceShimmer || loadedItems == null || (onDeviceOnly && scan == null) || filteredQuery != query
     )
     LaunchedEffect( playlistId, playlist?.name ) {
         if (preview != null) return@LaunchedEffect
@@ -721,7 +737,7 @@ fun LocalPlaylistSongs(
     val reorderingState = rememberReorderableLazyListState(
         lazyListState = lazyListState
     ) { from, to ->
-        if (onDeviceOnly) return@rememberReorderableLazyListState
+        if (onDeviceOnly || query.isNotBlank()) return@rememberReorderableLazyListState
         val mutableItems = itemsOnDisplay.toMutableList()
         val fromIndex = mutableItems.indexOfFirst { it.id == from.key }
         val toIndex = mutableItems.indexOfFirst { it.id == to.key }
@@ -778,11 +794,10 @@ fun LocalPlaylistSongs(
     val likeStatesMap by remember(likeSongIds) {
         LikeStateManager.getLikeStates(likeSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-    val selectedFavoriteIds = itemSelector.takeIf { it.isActive }?.mapTo(HashSet(), Song::id)
-    val favoriteMediaItems = remember(favoriteItems, selectedFavoriteIds) {
-        if (selectedFavoriteIds == null) favoriteItems
-        else favoriteItems.filter { it.mediaId in selectedFavoriteIds }
-    }
+    val favoriteMediaItems = if (itemSelector.isActive) {
+        val favoriteTargets = getSongs().mapTo(HashSet(), Song::id)
+        favoriteItems.filter { it.mediaId in favoriteTargets }
+    } else favoriteItems
     val collectionFavorites = rememberCollectionFavoritesButton(
         mediaItems = favoriteMediaItems,
         kind = if (playlistLinkKind(playlist?.browseId) == PlaylistLinkKind.YouTubePodcast) {
@@ -833,13 +848,11 @@ fun LocalPlaylistSongs(
                 ) {
 
                     HeaderWithIcon(
-                        // Spec 2: localized display name for generated rewind-* playlists
-                        title = context.rewindDisplayName( cleanPrefix( playlist?.name ?: "" ) ),
+                        title = context.rewindDisplayName(cleanPrefix(playlist?.name ?: "")),
                         iconId = R.drawable.playlist,
                         enabled = true,
                         showIcon = false,
-                        modifier = Modifier
-                            .padding(bottom = 8.dp),
+                        modifier = Modifier.padding(bottom = 8.dp),
                         onClick = {}
                     )
 
@@ -1015,7 +1028,8 @@ fun LocalPlaylistSongs(
                     order.forEach { id ->
                         // Check toggle state - if disabled, skip this button
                         val toggleKey = "pl_ts_$id"
-                        val isEnabled = toolbarPreferences.getBoolean(toggleKey, true)
+                        val isEnabled = id in LocalPlaylistToolbarSettingsDialog.lockedActionIds ||
+                            toolbarPreferences.getBoolean(toggleKey, true)
                         if (!isEnabled) return@forEach
 
                         when (id) {
@@ -1026,26 +1040,28 @@ fun LocalPlaylistSongs(
                             "position_lock" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
                             "match" -> if (!onDeviceOnly &&
                                 (matchAction.isRunning || (membershipEditable && !offlineMode && hasUnmatchedSongs))
-                            ) add(matchAction.button)
+                            ) add(itemSelector.guard(matchAction.button) { matchAction.isRunning || getSongs().any(Song::isUnmatched) })
                             "renumber" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
-                            "download_all" -> if (!onDeviceOnly && !offlineMode) add(downloadAllDialog)
-                            "delete_downloads" -> if (!onDeviceOnly) add(deleteDownloadsDialog)
+                            "download_all" -> if (!onDeviceOnly && !offlineMode) add(itemSelector.guard(downloadAllDialog, hasEligibleSelection))
+                            "delete_downloads" -> if (!onDeviceOnly) add(itemSelector.guard(deleteDownloadsDialog, hasEligibleSelection))
                             "item_selector" -> add( itemSelector )
-                            "play_next" -> add( playNext )
-                            "enqueue" -> add( enqueue )
+                            "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
+                            "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
                             "add_to_favorite" -> add(collectionFavorites)
-                            "add_to_playlist" -> add( addToPlaylist )
+                            "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
                             "sync" -> if (!onDeviceOnly && !offlineMode && canRefreshPlaylist(playlist)) add( syncComponent )
                             "refresh_on_open" -> if (!onDeviceOnly && canRefreshPlaylist(playlist)) add(refreshOnOpen)
                             "listen_on_yt" -> if (!onDeviceOnly && playlistLinkKind(playlist?.browseId) != PlaylistLinkKind.Local) add( listenOnYT )
                             "import_menu" -> if (!onDeviceOnly && membershipEditable) add( importMenu )
                             // Spec 2: rewind-* keep their language-neutral name â€” no rename
                             "rename" -> if (!forceOnDevice && !isRewindPlaylist) add( renameDialog )
-                            "delete" -> if (!forceOnDevice && canOfferPlaylistDeleteAction(playlist, itemSelector.isActive && itemSelector.isNotEmpty())) add(deleteDialog)
-                            "export" -> add( exportDialog )
+                            "delete" -> if (!forceOnDevice) add(itemSelector.guard(deleteDialog) {
+                                canOfferPlaylistDeleteAction(playlist, true) && hasEligibleSelection()
+                            })
+                            "export" -> add(itemSelector.guard(exportDialog, hasEligibleSelection))
                             "thumbnail_picker" -> if (!forceOnDevice) add(thumbnailPicker)
                             "reset_thumbnail" -> if (!forceOnDevice) add(resetThumbnail)
-                            "update" -> if (!onDeviceOnly && !offlineMode) add( updateSongsDialog )
+                            "update" -> if (!onDeviceOnly && !offlineMode) add(itemSelector.guard(updateSongsDialog, hasEligibleSelection))
                         }
                     }
                 }
@@ -1107,8 +1123,8 @@ fun LocalPlaylistSongs(
                 Column { search.SearchBar( this ) }
                 }
             }
-                if (search.inputValue.isNotBlank() && loadedItems != null &&
-                    filteredQuery == search.inputValue && itemsOnDisplay.isEmpty()
+                if (query.isNotBlank() && loadedItems != null &&
+                    filteredQuery == query && itemsOnDisplay.isEmpty()
                 ) {
                     item(key = "search_no_results") {
                         SearchEmptySpace(fillRemainingViewport = true)
@@ -1135,6 +1151,7 @@ fun LocalPlaylistSongs(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .animateItem()
                                 .zIndex(2f)
                                 .then(if (preview != null && index == 0) {
                                     Modifier.onGloballyPositioned { preview.previewRowsPlaced.value = it.size.height > 0 }
@@ -1143,7 +1160,7 @@ fun LocalPlaylistSongs(
                             val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
 
                             // Drag anchor
-                            if ( !onDeviceOnly && !positionLock.isLocked() && sort.sortBy == PlaylistSongSortBy.Custom && sort.sortOrder == SortOrder.Ascending ) {
+                            if ( !onDeviceOnly && query.isBlank() && !positionLock.isLocked() && sort.sortBy == PlaylistSongSortBy.Custom && sort.sortOrder == SortOrder.Ascending ) {
                                 Box(
                                     modifier = Modifier.padding( end = 16.dp ) // Accommodate horizontal padding of SongItem
                                                        .size( 24.dp )
@@ -1212,6 +1229,7 @@ fun LocalPlaylistSongs(
                     ) {
                         SongItem(
                             song = song,
+                            observeStoredMetadata = false,
                             isLiked = likeStatesMap[song.id],
                             inPlaylist = playlistStatesMap[song.id],
                             itemSelector = itemSelector,
@@ -1228,7 +1246,7 @@ fun LocalPlaylistSongs(
                                         modifier = Modifier.padding(start = 8.dp).size(18.dp)
                                     )
                                 }
-                                if( !onDeviceOnly && !positionLock.isLocked() && sort.sortBy == PlaylistSongSortBy.Custom && sort.sortOrder == SortOrder.Ascending )
+                                if( !onDeviceOnly && query.isBlank() && !positionLock.isLocked() && sort.sortBy == PlaylistSongSortBy.Custom && sort.sortOrder == SortOrder.Ascending )
                                     // Create a fake box to store drag anchor and checkbox
                                     Box( Modifier.width( 24.dp ) )
                             },
@@ -1294,8 +1312,10 @@ fun LocalPlaylistSongs(
                 // Issue #866 (gh-866): app-wide shuffle confirmation flash.
                 iconId = shuffleButtonIcon(),
                 visible = !reorderingState.isAnyItemDragging,
+                actionEnabled = !itemSelector.isActive || eligibleSelection,
                 onClick = {
                     getSongs().let { songs ->
+                        if (itemSelector.isActive && songs.isEmpty()) return@FloatingActionsContainerWithScrollToTop
                         val playableSongs = songs.filter { !it.isUnmatched }
                         if (playableSongs.isNotEmpty()) {
                             binder?.let {
@@ -1325,10 +1345,8 @@ internal fun localPlaylistActionSongs(
     visibleSongs: List<Song>,
     selectedSongs: List<Song>,
     onDeviceOnly: Boolean,
+    selectionActive: Boolean,
 ): List<Song> {
-    if (!onDeviceOnly) return selectedSongs.ifEmpty { visibleSongs }
-    val localSongs = visibleSongs.filter { it.isLocal }
-    if (selectedSongs.isEmpty()) return localSongs
-    val selectedIds = selectedSongs.mapTo(HashSet()) { it.id }
-    return localSongs.filter { it.id in selectedIds }
+    val eligibleSongs = if (onDeviceOnly) visibleSongs.filter(Song::isLocal) else visibleSongs
+    return selectionActionTargets(selectionActive, selectedSongs, eligibleSongs, Song::id, Song::id, selectionOrder = !onDeviceOnly)
 }

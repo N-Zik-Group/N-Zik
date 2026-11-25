@@ -31,6 +31,14 @@ class SettingsDetailedSearchTest {
         Configuration(context.resources.configuration).apply { setLocale(locale) },
     )
 
+    @Test fun quickPicksResetIsIndexedUnderRecommendationsInsteadOfHistory() {
+        val target = AllSettingsEntryTargets.single { it.id == "ai.tab_data.reset_quick_picks" }
+        assertEquals("ai", target.parentCard().categoryId())
+        val description = context.getString(R.string.recommendations_reset_content_description)
+        assertTrue(target in searchSettingsEntries(context, description))
+        assertTrue(target.cardTitleRes in visibleCardTitleRes(context, target.tab, description))
+    }
+
     @Test fun openPipIsSearchableGloballyAndOnItsPage() {
         val target = AllSettingsEntryTargets.single { it.id == "general.picture_in_picture.open" }
         listOf(Locale.ENGLISH to "open pip", Locale.FRENCH to "ouvrir pip").forEach { (locale, query) ->
@@ -92,7 +100,8 @@ class SettingsDetailedSearchTest {
         val entries = AllSettingsEntryTargets.filter {
             it.id.startsWith("embedded.auto_backup.") || it.id.startsWith("other.on_device.")
         }
-        assertEquals(24, entries.size)
+        assertEquals(25, entries.size)
+        assertTrue(entries.any { it.id == "other.on_device.summary" })
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
             for (entry in entries) {

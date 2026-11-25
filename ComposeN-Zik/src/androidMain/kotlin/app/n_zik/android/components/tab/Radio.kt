@@ -25,7 +25,11 @@ class Radio private constructor(
     readActive = { binder?.isRadioActive == true },
     readIcon = { radioButtonIconRes(binder) },
     readTitle = { binder?.radioActionTextRes ?: R.string.radio_action_start },
-    performAction = { binder?.startRadio(songs().random(), false, null, true) },
+    performAction = {
+        if (binder?.stopActiveRadio() != true) {
+            songs().randomOrNull()?.let { binder?.startRadio(it, isExplicit = true) }
+        }
+    },
     closeMenuAfterAction = true,
 ) {
 
@@ -46,5 +50,15 @@ class Radio private constructor(
     // (MiniPlayer, ActionBar, PlaylistSongList).
     override val modifier: Modifier
         get() = Modifier.alpha(guestLockedAlpha(listenTogetherGuestLock.value))
+}
+
+/** Handles a stop without asking a toolbar for a playable seed. */
+@UnstableApi
+internal fun PlayerServiceModern.Binder.stopActiveRadio(): Boolean {
+    if (!isRadioActive) return false
+    val current = player.currentMediaItem
+    if (current == null) stopRadio()
+    else startRadio(current, isExplicit = true)
+    return true
 }
 

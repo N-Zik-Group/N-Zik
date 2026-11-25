@@ -12,9 +12,11 @@ class LocalPlaylistActionSongsTest {
         val hiddenLocal = Song.makePlaceholder("local:2")
         val visible = listOf(remote, local)
 
-        assertEquals(listOf(local), localPlaylistActionSongs(visible, emptyList(), true))
-        assertEquals(listOf(local), localPlaylistActionSongs(visible, listOf(remote, local), true))
-        assertEquals(emptyList<Song>(), localPlaylistActionSongs(visible, listOf(remote, hiddenLocal), true))
-        assertEquals(listOf(remote), localPlaylistActionSongs(visible, listOf(remote), false))
+        assertEquals(listOf(local), localPlaylistActionSongs(visible, emptyList(), onDeviceOnly = true, selectionActive = false))
+        assertEquals(emptyList<Song>(), localPlaylistActionSongs(visible, emptyList(), onDeviceOnly = true, selectionActive = true))
+        assertEquals(listOf(local), localPlaylistActionSongs(visible, listOf(remote, local), onDeviceOnly = true, selectionActive = true))
+        assertEquals(emptyList<Song>(), localPlaylistActionSongs(visible, listOf(remote, hiddenLocal), onDeviceOnly = true, selectionActive = true))
+        assertEquals(listOf(remote), localPlaylistActionSongs(visible, listOf(remote), onDeviceOnly = false, selectionActive = true))
+        assertEquals(emptyList<Song>(), localPlaylistActionSongs(visible, listOf(hiddenLocal), onDeviceOnly = false, selectionActive = true))
     }
 }

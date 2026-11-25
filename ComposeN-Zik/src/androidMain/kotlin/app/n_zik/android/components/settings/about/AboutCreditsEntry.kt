@@ -25,6 +25,7 @@ import app.n_zik.android.colorPalette
 import androidx.compose.ui.text.TextStyle
 import app.n_zik.android.components.settings.common.ModernSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -38,6 +39,7 @@ import timber.log.Timber
 internal fun AboutCreditsEntry() {
     var expanded by rememberSaveable { mutableStateOf(false) }
     ModernSettingsEntry(
+        modifier = Modifier.settingsSearchTarget("about.contributors.credits"),
         title = stringResource(R.string.about_credits_title),
         text = stringResource(R.string.about_credits_open),
         icon = R.drawable.star_brilliant,

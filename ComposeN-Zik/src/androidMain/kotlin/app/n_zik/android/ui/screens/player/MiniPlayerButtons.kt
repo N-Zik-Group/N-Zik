@@ -23,36 +23,28 @@ import app.n_zik.android.utils.showMiniPlayerSkipForwardKey
 import app.n_zik.android.utils.showMiniPlayerSleepTimerKey
 import app.n_zik.android.utils.showMiniPlayerVisualizerKey
 import org.json.JSONArray
+import org.json.JSONException
+
+internal val defaultMiniPlayerButtonOrder = listOf(
+    "skip_back", "play_pause", "skip_forward", "audio_output",
+    "queue", "shuffle", "repeat", "radio", "sleep_timer",
+    "like", "add_to_playlist", "download", "share", "discover", "lyrics", "visualizer",
+)
+
+internal fun parseMiniPlayerOrder(serialized: String): List<String> {
+    if (serialized.isBlank()) return defaultMiniPlayerButtonOrder
+    return try {
+        val array = JSONArray(serialized)
+        val savedIds = List(array.length()) { array.getString(it) }
+            .filter { it in defaultMiniPlayerButtonOrder }
+        savedIds + defaultMiniPlayerButtonOrder.filterNot { it in savedIds }
+    } catch (_: JSONException) {
+        defaultMiniPlayerButtonOrder
+    }
+}
 
 @Composable
 internal fun rememberMiniPlayerButtons(): List<MiniPlayerButton> {
-    // New toggle-based system: read button order + individual toggles
-    val defaultMiniPlayerButtonOrder = listOf(
-        "skip_back", "play_pause", "skip_forward",
-        "shuffle", "repeat", "queue", "audio_output", "sleep_timer",
-        "like", "add_to_playlist", "download", "share",
-        "radio", "discover", "lyrics", "visualizer"
-    )
-
-    fun parseMiniPlayerOrder(serialized: String): List<String> {
-        if (serialized.isBlank()) return defaultMiniPlayerButtonOrder
-        return try {
-            val arr = JSONArray(serialized)
-            val list = mutableListOf<String>()
-            for (i in 0 until arr.length()) {
-                list.add(arr.getString(i))
-            }
-            val validIds = defaultMiniPlayerButtonOrder
-            val result = list.filter { it in validIds }.toMutableList()
-            for (id in validIds) {
-                if (id !in result) result.add(id)
-            }
-            result
-        } catch (_: Exception) {
-            defaultMiniPlayerButtonOrder
-        }
-    }
-
     val miniPlayerButtonIdToButton = mapOf(
         "play_pause" to MiniPlayerButton.PlayPause,
         "skip_back" to MiniPlayerButton.SkipBack,

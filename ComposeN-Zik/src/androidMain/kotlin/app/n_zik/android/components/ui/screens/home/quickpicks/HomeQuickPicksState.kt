@@ -66,6 +66,7 @@ internal class HomeQuickPicksState(
     var refreshKey: MutableState<Int>,
     private val account: QuickPicksAccountIdentity = currentQuickPicksAccountIdentity(),
     val manualRefreshRevision: MutableState<Int> = mutableIntStateOf(0),
+    private val resetRevision: Int = 0,
 ) {
     companion object {
         // Navigation must not cancel a shared network load.
@@ -83,9 +84,10 @@ internal class HomeQuickPicksState(
         val playEventType: PlayEventsType,
         val country: Countries,
         val account: QuickPicksAccountIdentity,
+        val resetRevision: Int,
     )
 
-    private fun loadIdentity() = LoadIdentity(playEventType, selectedCountryCode, account)
+    private fun loadIdentity() = LoadIdentity(playEventType, selectedCountryCode, account, resetRevision)
 
     internal fun isCurrentAccount(): Boolean = account == currentQuickPicksAccountIdentity()
 
@@ -451,7 +453,8 @@ internal fun rememberHomeQuickPicksState(
     playEventType: PlayEventsType,
     selectedCountryCode: Countries,
     parentalControlEnabled: Boolean,
-    localCount: Int
+    localCount: Int,
+    resetRevision: Int = 0,
 ): HomeQuickPicksState {
     val preview = LocalThemePreview.current
     val trendingList = if (preview == null) persistList<Song>("home/quickpicks/trending_list")
@@ -507,6 +510,7 @@ internal fun rememberHomeQuickPicksState(
             refreshKey = refreshKey,
             account = account,
             manualRefreshRevision = accountData.manualRefreshRevision,
+            resetRevision = resetRevision,
         )
     }
     return state

@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Η Κορυφή Μου</string>
     <string name="recommendations_playlists_title">Playlists που μπορεί να σας αρέσουν</string>
     <string name="recommendations_reset_complete">Οι γρήγορες επιλογές καθαρίστηκαν</string>
-    <string name="recommendations_reset_description">Διαγραφή των εκδηλώσεων αναπαραγωγής που χρησιμοποιούνται για τη δημιουργία τοπικών συστάσεων Γρήγορων Επιλογών.</string>
     <string name="recommendations_section_other_youtube_title">Άλλα τμήματα</string>
     <string name="recommendations_section_visibility_description">Απενεργοποίηση αν δεν θέλετε να δείτε</string>
     <string name="recommendations_show_section_label">Εμφάνιση</string>

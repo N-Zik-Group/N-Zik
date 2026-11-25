@@ -14,6 +14,7 @@ import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.IconLikeType
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.MiniPlayerType
+import app.n_zik.android.enums.MusicAnimationType
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.enums.PlayerBackgroundColors
@@ -32,7 +33,6 @@ import app.n_zik.android.enums.ThumbnailType
 import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.DefaultLightColorPalette
-import app.n_zik.android.utils.actionspacedevenlyKey
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
@@ -70,10 +70,11 @@ import app.n_zik.android.utils.disableNavigationBackStackKey
 import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.effectRotationKey
-import app.n_zik.android.utils.expandedplayertoggleKey
 import app.n_zik.android.utils.fadingedgeKey
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.hideStatusBarKey
+import app.n_zik.android.utils.nowPlayingIndicatorKey
+import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.rightToLeftInterfaceKey
 import app.n_zik.android.utils.iconLikeTypeKey
 import app.n_zik.android.utils.indexNavigationTabKey
@@ -104,18 +105,7 @@ import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
 import app.n_zik.android.utils.queueTypeKey
-import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.searchDisplayOrderKey
-import app.n_zik.android.utils.showButtonPlayerAddToPlaylistKey
-import app.n_zik.android.utils.showButtonPlayerArrowKey
-import app.n_zik.android.utils.showButtonPlayerDiscoverKey
-import app.n_zik.android.utils.showButtonPlayerDownloadKey
-import app.n_zik.android.utils.showButtonPlayerLoopKey
-import app.n_zik.android.utils.showButtonPlayerLyricsKey
-import app.n_zik.android.utils.showButtonPlayerMenuKey
-import app.n_zik.android.utils.showButtonPlayerShuffleKey
-import app.n_zik.android.utils.showButtonPlayerSleepTimerKey
-import app.n_zik.android.utils.showButtonPlayerSystemEqualizerKey
 import app.n_zik.android.utils.showCachedPlaylistKey
 import app.n_zik.android.utils.showDownloadedPlaylistKey
 import app.n_zik.android.utils.showFavoritesPlaylistKey
@@ -129,8 +119,6 @@ import app.n_zik.android.utils.showStatsInNavbarKey
 import app.n_zik.android.utils.showTopActionsBarKey
 import app.n_zik.android.utils.showTotalTimeQueueKey
 import app.n_zik.android.utils.showthumbnailKey
-import app.n_zik.android.utils.swipeUpQueueKey
-import app.n_zik.android.utils.tapqueueKey
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.thumbnailTapEnabledKey
@@ -139,7 +127,6 @@ import app.n_zik.android.utils.holdToSpeedUpKey
 import app.n_zik.android.utils.holdToSpeedUpRateKey
 import app.n_zik.android.utils.thumbnailTypeKey
 import app.n_zik.android.utils.transitionEffectKey
-import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
@@ -159,8 +146,7 @@ import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDial
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
-import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
-import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
+import app.n_zik.android.components.dialog.settings.resetInterfaceToolbarSettings
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
 import app.n_zik.android.components.settings.common.resetInterfaceReaderDefaults
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
@@ -251,35 +237,21 @@ internal fun applyUiDefaults(context: Context) {
         putFloat(holdToSpeedUpRateKey, DEFAULT_HOLD_TO_SPEED_UP_RATE)
         putBoolean(clickOnLyricsTextKey, true)
         putEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)
-        putBoolean(transparentBackgroundPlayerActionBarKey, true)
-        putBoolean(actionspacedevenlyKey, true)
-        putBoolean(tapqueueKey, true)
-        putBoolean(swipeUpQueueKey, true)
-        putBoolean(showButtonPlayerAddToPlaylistKey, true)
-        putBoolean(showButtonPlayerArrowKey, true)
-        putBoolean(showButtonPlayerDownloadKey, true)
-        putBoolean(showButtonPlayerLoopKey, false)
-        putBoolean(showButtonPlayerLyricsKey, true)
-        putBoolean(expandedplayertoggleKey, false)
-        putBoolean(showButtonPlayerShuffleKey, true)
-        putBoolean(showButtonPlayerSleepTimerKey, false)
-        putBoolean(showButtonPlayerMenuKey, false)
-        putBoolean(showButtonPlayerSystemEqualizerKey, false)
         putEnum(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
         putEnum(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
         putEnum(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
         putEnum(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
         putEnum(albumSwipeLeftActionKey, AlbumSwipeAction.PlayNext)
         putEnum(albumSwipeRightActionKey, AlbumSwipeAction.Bookmark)
-        putBoolean(showButtonPlayerDiscoverKey, false)
         putBoolean(playerEnableLyricsPopupMessageKey, true)
         putBoolean(visualizerEnabledKey, false)
         putBoolean(showthumbnailKey, true)
         putEnum(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
+        putBoolean(playlistindicatorKey, false)
+        putEnum(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
         putInt(customColorKey, Color.Green.hashCode())
         putBoolean(disableNavigationBackStackKey, false)
         putBoolean(showCachedPlaylistKey, true)
-        putBoolean(rememberQueueScrollPositionKey, true)
     }
     HomeTabsSettingsDialog.reset(context)
     HomeSongsSettingsDialog.reset(context)
@@ -292,9 +264,8 @@ internal fun applyUiDefaults(context: Context) {
     HomeAlbumsToolbarSettingsDialog.reset(context)
     HomeLibraryToolbarSettingsDialog.reset(context)
     LocalPlaylistToolbarSettingsDialog.reset(context)
+    resetInterfaceToolbarSettings(context)
     BurgerMenuSettingsDialog.reset(context)
-    PlayerActionBarSettingsDialog.reset(context)
-    MiniPlayerButtonsSettingsDialog.reset(context)
     HomeSongsSortSettingsDialog.reset(context)
     HomeAlbumsSortSettingsDialog.reset(context)
     HomeArtistsSortSettingsDialog.reset(context)

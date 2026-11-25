@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
@@ -24,10 +23,11 @@ interface MenuIcon: Icon {
     private fun SettingIcon() {
         val useOriginalColors = color == Color.Unspecified
         
-        val iconColor = if (this is DynamicColor) {
-            if (isFirstColor) colorPalette().accent else colorPalette().textDisabled
-        } else {
-            if (useOriginalColors) Color.Unspecified else colorPalette().accent
+        val iconColor = when {
+            !isEnabled && !useOriginalColors -> colorPalette().textDisabled
+            this is DynamicColor -> if (isFirstColor) colorPalette().accent else colorPalette().textDisabled
+            useOriginalColors -> Color.Unspecified
+            else -> colorPalette().accent
         }
         
         Box(

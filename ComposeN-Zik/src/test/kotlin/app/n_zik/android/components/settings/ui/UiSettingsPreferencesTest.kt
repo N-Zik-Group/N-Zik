@@ -12,6 +12,9 @@ import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.settings.common.SettingsEntryTargets
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
+import app.n_zik.android.enums.MusicAnimationType
+import app.n_zik.android.utils.nowPlayingIndicatorKey
+import app.n_zik.android.utils.playlistindicatorKey
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -76,6 +79,8 @@ class UiSettingsPreferencesTest {
         "showDownloadedPlaylist" to true,
         "showOnDevicePlaylist" to true,
         "showFloatingIcon" to false,
+        playlistindicatorKey to false,
+        nowPlayingIndicatorKey to MusicAnimationType.Bubbles.name,
         "menuStyle" to "List",
         "transitionEffect" to "Fade",
         "showPinnedPlaylists" to true,
@@ -130,27 +135,12 @@ class UiSettingsPreferencesTest {
         "holdToSpeedUpRate" to 2f,
         "clickOnLyricsText" to true,
         "backgroundProgress" to "MiniPlayer",
-        "transparentBackgroundPlayerActionBar" to true,
-        "actionspacedevenly" to true,
-        "tapqueue" to true,
-        "swipeUpQueue" to true,
-        "showButtonPlayerAddToPlaylist" to true,
-        "showButtonPlayerArrow" to true,
-        "showButtonPlayerDownload" to true,
-        "showButtonPlayerLoop" to false,
-        "showButtonPlayerLyrics" to true,
-        "expandedplayertoggle" to false,
-        "showButtonPlayerShuffle" to true,
-        "showButtonPlayerSleepTimer" to false,
-        "showButtonPlayerMenu" to false,
-        "showButtonPlayerSystemEqualizer" to false,
         "queueSwipeLeftAction" to "RemoveFromQueue",
         "queueSwipeRightAction" to "PlayNext",
         "playlistSwipeLeftAction" to "Favourite",
         "playlistSwipeRightAction" to "PlayNext",
         "albumSwipeLeftAction" to "PlayNext",
         "albumSwipeRightAction" to "Bookmark",
-        "showButtonPlayerDiscover" to false,
         "playerEnableLyricsPopupMessage" to true,
         "visualizerEnabled" to false,
         "showthumbnail" to true,
@@ -158,7 +148,6 @@ class UiSettingsPreferencesTest {
         "customColor" to Color.Green.hashCode(),
         "disableNavigationBackStack" to false,
         "showCachedPlaylist" to true,
-        "rememberQueueScrollPosition" to true,
         "showMonthlyPlaylists" to true,
         "showOnDevicePlaylists" to true,
         "homeArtistsOrder" to """["all","favorites","disliked","on_device"]""",
@@ -177,6 +166,8 @@ class UiSettingsPreferencesTest {
     @Test fun `full reset restores baseline profile values and store boundaries`() {
         seedOpposite(context.preferences, fullReset)
         context.preferences.edit().putString("unrelated", "keep").putString("playerSwipeSensitivity", "High").commit()
+        context.preferences.edit().putBoolean("showButtonPlayerDiscover", true)
+            .putBoolean("rememberQueueScrollPosition", false).commit()
         context.preferences.edit().putString("historySortMenuOrder", "profile-history-sentinel")
             .putBoolean("hist_sort_DATE_visible", false).putBoolean("hometab_songs_enabled", false)
             .putString("homeTabsOrder", "profile-tabs-sentinel").commit()
@@ -190,6 +181,8 @@ class UiSettingsPreferencesTest {
         // Reader defaults and toolbar dialogs also reset their own preferences, covered by their contract tests.
         val expected = fullReset + mapOf("unrelated" to "keep", "playerSwipeSensitivity" to "High")
         assertEquals(expected, context.preferences.all.filterKeys(expected::containsKey))
+        assertTrue(context.preferences.getBoolean("showButtonPlayerDiscover", false))
+        assertFalse(context.preferences.getBoolean("rememberQueueScrollPosition", true))
         assertEquals(mapOf("UiType" to "ViMusic"), store("preferences_untouched").all)
         assertEquals(mapOf("unrelated" to "global", "historySortMenuOrder" to "history-sentinel",
             "hist_sort_DATE_visible" to false, "hometab_songs_enabled" to false), store("preferences").all)
@@ -201,7 +194,9 @@ class UiSettingsPreferencesTest {
         assertEquals("[\"quickpicks\",\"songs\",\"artists\",\"albums\",\"playlists\"]", context.preferences.getString("homeTabsOrder", null))
         assertEquals("app", store("app_settings").getString("unrelated", null))
         assertTrue(store("app_settings").getBoolean("burger_menu_toggle_history", false))
-        assertEquals("[\"history\",\"statistics\",\"rewind\",\"offline_mode\",\"listen_together\",\"bridge_server\",\"profiles\",\"pip\",\"separator\",\"settings\",\"extensions\",\"debug_logs\",\"maintenance\",\"rescue_center\"]", store("app_settings").getString("burger_menu_order", null))
+        assertEquals("[\"history\",\"statistics\",\"rewind\",\"offline_mode\",\"listen_together\",\"bridge_server\",\"profiles\",\"pip\",\"separator\",\"settings\",\"extensions\",\"debug_logs\",\"maintenance\",\"rescue_center\",\"search\",\"notifications\"]", store("app_settings").getString("burger_menu_order", null))
+        assertFalse(store("app_settings").getBoolean("burger_menu_toggle_search", true))
+        assertFalse(store("app_settings").getBoolean("burger_menu_toggle_notifications", true))
         assertFalse(store("preferences").contains("homeTabsOrder"))
         assertFalse(context.preferences.contains("burger_menu_order"))
     }
@@ -244,9 +239,9 @@ class UiSettingsPreferencesTest {
     }
 
     @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
-        assertEquals(listOf("theme", "interface", "font", "swipe", "home-tabs", "sort-menus", "floating-dock", "toolbars", "burger", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(24, 11, 4, 7, 0, 0, 1, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
-        assertEquals(listOf(2, 2, 0, 0, 5, 6, 1, 5, 1, 1), UiSettingTargets.cards.map { it.actions.size })
+        assertEquals(listOf("interface", "floating-dock", "theme", "font", "swipe", "home-tabs", "burger", "toolbars", "sort-menus", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
+        assertEquals(listOf(13, 1, 24, 3, 7, 0, 0, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(1, 1, 2, 0, 0, 5, 1, 10, 6, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })
         assertEquals(UiSettingTargets.ids.toSet(), UiSettingTargets.cards.reversed().flatMap { card ->

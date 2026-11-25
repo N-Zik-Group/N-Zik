@@ -23,6 +23,8 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
+    internal val lockedActionIds = setOf("pin", "position_lock", "match")
+
     /** Exact searchable options from the same definitions used by this dialog. */
     internal fun searchOptions(): List<SettingsNestedOption> = allButtonIds.map { SettingsNestedOption("pl_$it", searchLabelResources.getValue(it)) }
 
@@ -38,7 +40,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "item_selector" to R.string.common_action_select,
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
-        "add_to_favorite" to R.string.library_favorites_title,
+        "add_to_favorite" to R.string.library_collection_favorites_action_manage,
         "add_to_playlist" to R.string.playlist_action_add,
         "sync" to R.string.sync_action_sync,
         "refresh_on_open" to R.string.playlist_refresh_on_open,
@@ -54,14 +56,11 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
 
     val allButtonIds = listOf(
-        "insertion_position",
-        "pin", "search", "add_to_favorite", "position_lock", "match", "renumber",
-        "download_all", "delete_downloads",
-        "item_selector",
-        "play_next", "enqueue", "add_to_playlist",
+        "insertion_position", "pin", "search", "position_lock",
+        "play_next", "enqueue", "item_selector", "add_to_favorite", "add_to_playlist",
+        "download_all", "delete_downloads", "match", "renumber",
         "sync", "refresh_on_open", "listen_on_yt",
-        "import_menu", "rename", "delete", "export",
-        "thumbnail_picker", "reset_thumbnail", "update"
+        "import_menu", "export", "rename", "thumbnail_picker", "reset_thumbnail", "update", "delete"
     )
 
     internal fun portableList(): PortableControlList =
@@ -139,7 +138,6 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         val renumberLabel = stringResource(searchLabelResources.getValue("renumber"))
         val insertionPositionLabel = stringResource(searchLabelResources.getValue("insertion_position"))
 
-        val lockedIds = setOf("pl_pin", "pl_position_lock", "pl_match")
 
         val items = workingOrder.distinct().map { id ->
             val pk = "pl_ts_$id"
@@ -151,8 +149,8 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 "position_lock" -> ToggleItem(uid, R.drawable.locked, positionLockLabel, pk, true)
                 "match" -> ToggleItem(uid, R.drawable.alert, matchLabel, pk, true)
                 "renumber" -> ToggleItem(uid, R.drawable.position, renumberLabel, pk, true)
-                "download_all" -> ToggleItem(uid, R.drawable.downloaded, downloadAllLabel, pk, true)
-                "delete_downloads" -> ToggleItem(uid, R.drawable.download, deleteDownloadsLabel, pk, true)
+                "download_all" -> ToggleItem(uid, R.drawable.download, downloadAllLabel, pk, true)
+                "delete_downloads" -> ToggleItem(uid, R.drawable.downloaded, deleteDownloadsLabel, pk, true)
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
@@ -177,7 +175,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
             onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState,
             enforceMinOneChecked = false,
-            lockedCheckedIds = lockedIds,
+            lockedCheckedIds = lockedActionIds.mapTo(mutableSetOf()) { "pl_$it" },
             checkedStatesOverride = items.map { workingToggles[it.id.removePrefix("pl_")] ?: true },
             onCheckedChange = { index, newValue ->
                 val id = items[index].id.removePrefix("pl_")

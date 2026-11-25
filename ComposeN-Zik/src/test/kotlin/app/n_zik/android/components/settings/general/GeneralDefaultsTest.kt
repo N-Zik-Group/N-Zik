@@ -8,6 +8,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.enums.MusicAnimationType
+import app.n_zik.android.utils.nowPlayingIndicatorKey
+import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import org.junit.After
@@ -51,6 +54,8 @@ class GeneralDefaultsTest {
                 .putString("excludeDislikedSongs", "Disabled")
                 .putString("excludeDislikedArtists", "Disabled")
                 .putString("excludeDislikedAlbums", "Disabled")
+                .putBoolean(playlistindicatorKey, true)
+                .putString(nowPlayingIndicatorKey, MusicAnimationType.Bars.name)
                 .putString("unrelated", "keep")
                 .commit()
         }
@@ -63,6 +68,8 @@ class GeneralDefaultsTest {
         repeat(2) { iteration ->
             composeRule.waitForIdle()
             expected.forEach { (name, value) -> assertEquals(name, value, context.preferences.all[name]) }
+            assertEquals(true, context.preferences.all[playlistindicatorKey])
+            assertEquals(MusicAnimationType.Bars.name, context.preferences.all[nowPlayingIndicatorKey])
             assertEquals("keep", context.preferences.getString("unrelated", null))
             assertEquals(
                 mapOf("pauseOnHeadphoneDisconnect" to false),

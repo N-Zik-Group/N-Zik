@@ -1,5 +1,7 @@
 package app.n_zik.android.ui.screens.search
 
+import app.n_zik.android.components.search.searchResultOpacity
+import app.n_zik.android.components.search.rememberSearchResultOpacity
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
@@ -184,6 +186,7 @@ fun OnlineSearch(
 
     val forceShimmer = forceLoadingShimmerPreview()
     val suggestionsPending = suggestionsResult == null && textFieldValue.text.isNotBlank()
+    val resultOpacity = rememberSearchResultOpacity(!forceShimmer && !suggestionsPending)
     SearchEmptyFeedback(
         query = textFieldValue.text,
         empty = suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty(),
@@ -201,7 +204,7 @@ fun OnlineSearch(
             queries = historyMatches,
             onQueryClick = { query ->
                 recordOnlineQuery(query)
-                onSearch(query.replace("/", "", true))
+                onSearch(query)
             },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_ONLINE, it)
@@ -366,7 +369,7 @@ fun OnlineSearch(
                 suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
                     item(key = "search_suggestions_title", contentType = "section_title") {
                         TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
-                            modifier = Modifier.padding(start = 24.dp)
+                            modifier = Modifier.searchResultOpacity(resultOpacity).padding(start = 24.dp)
                         )
                     }
 
@@ -376,7 +379,7 @@ fun OnlineSearch(
                                 SongItem(
                                     song = mediaItem.asSong,
                                     navController = navController,
-                                    modifier = Modifier
+                                    modifier = Modifier.searchResultOpacity(resultOpacity)
                                         .clip(uiRoundnessShape()),
                                     onClick = {
                                         recordOnlineQuery()
@@ -393,7 +396,7 @@ fun OnlineSearch(
                                 album = album,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
-                                modifier = Modifier
+                                modifier = Modifier.searchResultOpacity(resultOpacity)
                                     .clip(uiRoundnessShape()).combinedClickable(
                                         onLongClick = {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -419,7 +422,7 @@ fun OnlineSearch(
                                 artist = artist,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
-                                modifier = Modifier
+                                modifier = Modifier.searchResultOpacity(resultOpacity)
                                     .clip(uiRoundnessShape()).combinedClickable(
                                         onLongClick = {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -445,7 +448,7 @@ fun OnlineSearch(
                                 playlist = playlist,
                                 thumbnailSizePx = songThumbnailSizePx,
                                 thumbnailSizeDp = songThumbnailSizeDp,
-                                modifier = Modifier
+                                modifier = Modifier.searchResultOpacity(resultOpacity)
                                     .clip(uiRoundnessShape()).combinedClickable(
                                         onLongClick = {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -471,7 +474,7 @@ fun OnlineSearch(
                                 video = video,
                                 thumbnailHeightDp = songThumbnailSizeDp,
                                 thumbnailWidthDp = songThumbnailSizeDp,
-                                modifier = Modifier
+                                modifier = Modifier.searchResultOpacity(resultOpacity)
                                     .clip(uiRoundnessShape()).combinedClickable(
                                         onLongClick = {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -510,11 +513,11 @@ fun OnlineSearch(
                         }
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
+                            modifier = Modifier.searchResultOpacity(resultOpacity)
                                 .clip(uiRoundnessShape()).clickable (
                                     onClick = {
                                         recordOnlineQuery(query)
-                                        onSearch(query.replace("/", "", true))
+                                        onSearch(query)
                                     }
                                 )
                                 .fillMaxWidth()

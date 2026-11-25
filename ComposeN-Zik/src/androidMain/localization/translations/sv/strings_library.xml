@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Min topp</string>
     <string name="recommendations_playlists_title">Spellistor du kanske gillar</string>
     <string name="recommendations_reset_complete">Snabbval rensas</string>
-    <string name="recommendations_reset_description">Ta bort uppspelningshändelser som används för att generera lokala snabbvalsrekommendationer.</string>
     <string name="recommendations_section_other_youtube_title">Andra sektioner</string>
     <string name="recommendations_section_visibility_description">Inaktivera om du inte vill se</string>
     <string name="recommendations_show_section_label">Visa</string>

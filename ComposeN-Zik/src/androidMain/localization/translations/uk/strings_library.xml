@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Моя вершина</string>
     <string name="recommendations_playlists_title">Плейлисти які можуть вам сподобатися</string>
     <string name="recommendations_reset_complete">Швидкий вибір очищено</string>
-    <string name="recommendations_reset_description">Видаліть події відтворення для створення рекомендацій для швидких налаштувань.</string>
     <string name="recommendations_section_other_youtube_title">Інші розділи</string>
     <string name="recommendations_section_visibility_description">Вимкніть, якщо ви не хочете бачити</string>
     <string name="recommendations_show_section_label">Показати</string>

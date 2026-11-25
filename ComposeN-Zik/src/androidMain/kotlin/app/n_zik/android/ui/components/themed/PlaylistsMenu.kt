@@ -2,14 +2,15 @@ package app.n_zik.android.ui.components.themed
 
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 
 import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.editStoredPlaylistMembership
+import app.n_zik.android.core.database.isYouTubePlaylistSource
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -27,8 +28,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
@@ -57,6 +59,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
+import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.graphics.Color
@@ -65,7 +68,10 @@ import androidx.compose.ui.graphics.compositeOver
 
 import app.n_zik.android.components.menu.ListMenu
 import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
+
+internal fun isPlaylistPickerTarget(playlist: Playlist, localDestinationsOnly: Boolean): Boolean =
+    canEditPlaylistMembership(playlist) &&
+        (!localDestinationsOnly || !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist))
 
 @Composable
 internal fun rememberSongPlaylistIds(songId: String): List<Long> = key(songId) {
@@ -89,12 +95,17 @@ class PlaylistsMenu private constructor(
     private val navController: NavController,
     private val songId: String?,
     private val loadBeforeTransaction: Boolean,
-    private val captureMediaItems: (PlaylistPreview) -> (suspend () -> List<MediaItem>?)?,
+    private val captureRequest: () -> AddRequest?,
     private val onFailure: (Throwable, PlaylistPreview) -> Unit,
-    private val finalAction: (PlaylistPreview) -> Unit,
     override val menuState: MenuState,
-    styleState: MutableState<MenuStyle>
+    styleState: MutableState<MenuStyle>,
+    private val localDestinationsOnly: Boolean = false,
 ): MenuIcon, Descriptive, Menu {
+
+    private class AddRequest(
+        val load: (PlaylistPreview) -> suspend () -> List<MediaItem>?,
+        val onComplete: suspend (PlaylistPreview) -> Unit,
+    )
 
     companion object {
         @JvmStatic
@@ -109,9 +120,8 @@ class PlaylistsMenu private constructor(
             navController,
             songId,
             false,
-            { preview -> { mediaItems(preview) } },
+            { AddRequest(load = { preview -> { mediaItems(preview) } }, onComplete = { finalAction(it) }) },
             onFailure,
-            finalAction,
             LocalMenuState.current,
             rememberPreference( menuStyleKey, MenuStyle.List )
         )
@@ -121,16 +131,22 @@ class PlaylistsMenu private constructor(
             navController: NavController,
             captureMediaItems: () -> (suspend () -> List<MediaItem>?)?,
             onFailure: (Throwable, PlaylistPreview) -> Unit,
-            finalAction: (PlaylistPreview) -> Unit,
+            itemSelector: ItemSelector<*>,
+            localDestinationsOnly: Boolean = false,
         ) = PlaylistsMenu(
             navController,
             null,
             true,
-            { captureMediaItems() },
+            {
+                captureMediaItems()?.let { load ->
+                    val completeSelection = itemSelector.captureSelectionCompletion()
+                    AddRequest(load = { load }, onComplete = { withContext(NzikDispatchers.UI) { completeSelection() } })
+                }
+            },
             onFailure,
-            finalAction,
             LocalMenuState.current,
             rememberPreference(menuStyleKey, MenuStyle.List),
+            localDestinationsOnly = localDestinationsOnly,
         )
     }
 
@@ -142,37 +158,44 @@ class PlaylistsMenu private constructor(
 
     override var menuStyle: MenuStyle by styleState
 
-    private fun onAdd(preview: PlaylistPreview) {
-        val load = captureMediaItems(preview) ?: return
-        Database.asyncTransaction { addToPlaylist(preview, load) }
-    }
-
-    private suspend fun Database.addToPlaylist(
-        preview: PlaylistPreview,
-        load: suspend () -> List<MediaItem>?,
-    ) {
+    private suspend fun Database.addToPlaylist(preview: PlaylistPreview, request: AddRequest) {
+        var completeRequest = !localDestinationsOnly
         try {
+            val load = request.load(preview)
             val preparedItems = if (loadBeforeTransaction) load() ?: return else null
             var alreadyPresent = false
             var added = false
+            var targetAvailable = false
             val editable = editStoredPlaylistMembership(preview.playlist.id) {
+                val target = if (localDestinationsOnly) {
+                    playlistTable.findById(preview.playlist.id).first()
+                        ?.takeIf { isPlaylistPickerTarget(it, localDestinationsOnly = true) }
+                        ?: return@editStoredPlaylistMembership
+                } else preview.playlist
+                targetAvailable = true
                 alreadyPresent = songId != null &&
-                    songPlaylistMapTable.findById(songId, preview.playlist.id).first() != null
+                    songPlaylistMapTable.findById(songId, target.id).first() != null
                 if (!alreadyPresent) {
                     val items = preparedItems ?: load() ?: return@editStoredPlaylistMembership
-                    mapIgnore(preview.playlist, *items.toTypedArray())
+                    mapIgnore(target, *items.toTypedArray())
                     added = true
                 }
             }
             when {
+                localDestinationsOnly && (!editable || !targetAvailable) -> withContext(NzikDispatchers.UI) {
+                    Toaster.w(R.string.playlist_add_destination_unavailable)
+                }
                 alreadyPresent -> Toaster.i(R.string.playlist_contains_song)
-                editable && added -> Toaster.done()
+                editable && added -> {
+                    completeRequest = true
+                    Toaster.done()
+                }
                 else -> Unit
             }
         } catch (e: Throwable) {
             onFailure(e, preview)
         } finally {
-            finalAction(preview)
+            if (completeRequest) request.onComplete(preview)
         }
     }
 
@@ -197,7 +220,7 @@ class PlaylistsMenu private constructor(
     }
 
     @Composable
-    private fun PlaylistCard(playlistPreview: PlaylistPreview, containsSong: Boolean) {
+    private fun PlaylistCard(playlistPreview: PlaylistPreview, containsSong: Boolean, onAdd: () -> Unit) {
         val playlist = playlistPreview.playlist
 
         ListMenu.Entry(
@@ -208,7 +231,7 @@ class PlaylistsMenu private constructor(
                 if (containsSong) {
                     Toaster.i(R.string.playlist_contains_song)
                 } else {
-                    onAdd(playlistPreview)
+                    onAdd()
                 }
             },
             trailingContent = {
@@ -241,6 +264,11 @@ class PlaylistsMenu private constructor(
         openMenu()
     }
 
+    override fun openMenu() {
+        val request = captureRequest() ?: return
+        menuState.display { PlaylistPicker(request) }
+    }
+
     @Composable
     override fun ListMenu() { /* Does nothing */ }
 
@@ -249,7 +277,11 @@ class PlaylistsMenu private constructor(
 
     @Composable
     override fun MenuComponent() {
+        remember { captureRequest() }?.let { PlaylistPicker(it) }
+    }
 
+    @Composable
+    private fun PlaylistPicker(request: AddRequest) {
         var playlistsLoaded by remember { mutableStateOf(false) }
 
         val playlistPreviews by remember {
@@ -258,7 +290,7 @@ class PlaylistsMenu private constructor(
 
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
 
-        val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
+        val editablePreviews = playlistPreviews.filter { isPlaylistPickerTarget(it.playlist, localDestinationsOnly) }
         val pinnedPlaylists = editablePreviews.filter {
             it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
         }
@@ -319,7 +351,11 @@ class PlaylistsMenu private constructor(
                         .padding(vertical = 12.dp, horizontal = 4.dp)
                 )
 
-                filteredPinnedPlaylists.forEach { PlaylistCard(it, it.playlist.id in songPlaylistIds) }
+                filteredPinnedPlaylists.forEach { preview ->
+                    PlaylistCard(preview, preview.playlist.id in songPlaylistIds) {
+                        Database.asyncTransaction { addToPlaylist(preview, request) }
+                    }
+                }
             }
 
             if (filteredUnpinnedPlaylists.isNotEmpty()) {
@@ -333,7 +369,11 @@ class PlaylistsMenu private constructor(
                         .padding(vertical = 12.dp, horizontal = 4.dp)
                 )
 
-                filteredUnpinnedPlaylists.forEach { PlaylistCard(it, it.playlist.id in songPlaylistIds) }
+                filteredUnpinnedPlaylists.forEach { preview ->
+                    PlaylistCard(preview, preview.playlist.id in songPlaylistIds) {
+                        Database.asyncTransaction { addToPlaylist(preview, request) }
+                    }
+                }
             }
         }
     }

@@ -3,6 +3,7 @@ package app.n_zik.android.components.ui.screens.home.quickpicks
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.requests.HomePage
+import app.n_zik.android.compose.persist.PersistMap
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertNull
@@ -12,6 +13,27 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class QuickPicksLoadGuardTest {
+    @Test
+    fun `reset discards only the Quick Picks cache and increments its revision`() {
+        val activeCache = PersistMap().apply {
+            put("home/quickpicks/account-cache", Any())
+            put("home/quickpicks/local/artists", Any())
+            put("home/songs", Any())
+            put("history", Any())
+        }
+        val otherProfileCache = PersistMap().apply {
+            put("home/quickpicks/account-cache", Any())
+        }
+        val revision = quickPicksResetRevision(activeCache)
+        val unrelated = activeCache.filterKeys { it == "home/songs" || it == "history" }
+        resetQuickPicks(activeCache)
+        assertEquals(unrelated + ("home/quickpicks/reset-revision" to revision), activeCache)
+        assertEquals(1, revision.intValue)
+        resetQuickPicks(activeCache)
+        assertEquals(2, revision.intValue)
+        assertEquals(1, otherProfileCache.size)
+    }
+
     @Test
     fun `account changes detach cached home data and late results`() {
         val first = quickPicksAccountIdentity("SAPISID=test-account-a", true)

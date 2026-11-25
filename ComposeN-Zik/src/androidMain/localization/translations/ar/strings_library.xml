@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">أفضل ما لديّ</string>
     <string name="recommendations_playlists_title">قوائم تشغيل قد تعجبك</string>
     <string name="recommendations_reset_complete">تم حذف الإختيارات السريعة</string>
-    <string name="recommendations_reset_description">حذف أحداث التشغيل المستخدمة لإنشاء توصيات محلية للعبارات السريعة.</string>
     <string name="recommendations_section_other_youtube_title">أقسام أخرى</string>
     <string name="recommendations_section_visibility_description">تعطيل إذا كنت لا تريد أن ترى</string>
     <string name="recommendations_show_section_label">إظهار</string>

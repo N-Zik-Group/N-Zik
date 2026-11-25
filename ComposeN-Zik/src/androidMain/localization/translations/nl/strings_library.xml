@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Mijn top</string>
     <string name="recommendations_playlists_title">Afspeellijsten die je misschien leuk vindt</string>
     <string name="recommendations_reset_complete">Snelle keuzes zijn gereset</string>
-    <string name="recommendations_reset_description">Verwijder de afspeelgebeurtenissen die worden gebruikt voor het genereren van lokale Quick Picks aanbevelingen.</string>
     <string name="recommendations_section_other_youtube_title">Andere secties</string>
     <string name="recommendations_section_visibility_description">Uitschakelen als u dit niet wilt zien</string>
     <string name="recommendations_show_section_label">Weergeven</string>

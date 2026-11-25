@@ -34,7 +34,7 @@ val OrganizedSettingsCategories = listOf(
 
 fun SettingsCardRegistryEntry.categoryId(): String = when {
     titleRes == R.string.settings_reset -> "system"
-    tab == 9 || (tab == 4 && titleRes == R.string.library_history_title) || (tab == 3 && titleRes == R.string.settings_data_title) -> "privacy"
+    tab == 9 || (tab == 4 && titleRes == R.string.library_history_title) -> "privacy"
     tab == 0 -> when (titleRes) {
         R.string.settings_languages_title, R.string.settings_launcher_shortcuts_title -> "system"
         R.string.common_playback_section_title, R.string.settings_queue_management_title -> "playback"

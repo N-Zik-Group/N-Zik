@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import app.n_zik.android.components.dialog.settings.interfaceToolbarSettingsDialogs
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
@@ -35,12 +36,13 @@ import app.n_zik.android.utils.isSwipeToActionEnabledKey
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.navigationBarTypeKey
+import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.utils.playerPositionKey
+import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
 import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
-import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.searchDisplayOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.transitionEffectKey
@@ -50,9 +52,36 @@ import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 /** Local inventory only; it does not activate global search or change navigation. */
 internal object UiSettingTargets {
     val cards: List<UiCardTargets> = listOf(
+        UiCardTargets("ui.card.interface",
+            preferenceKeys = listOf(
+                hideStatusBarKey,
+                rightToLeftInterfaceKey,
+                navigationBarPositionKey,
+                navigationBarTypeKey,
+                playerPositionKey,
+                menuStyleKey,
+                indexNavigationTabKey,
+                transitionEffectKey,
+                disableNavigationBackStackKey,
+                searchDisplayOrderKey,
+                showFloatingIconKey,
+                playlistindicatorKey,
+                nowPlayingIndicatorKey,
+            ),
+            actions = listOf(
+                "HomeTabsSettingsDialog",
+            ),
+        ),
+        UiCardTargets("ui.card.floating-dock",
+            preferenceKeys = listOf(
+                app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey,
+            ),
+            actions = listOf("DockToolbarSettingsDialog"),
+        ),
         UiCardTargets("ui.card.theme",
             preferenceKeys = listOf(
                 colorPaletteNameKey,
+                colorPaletteModeKey,
                 dynamicThemeRespectBrightnessKey,
                 customColorKey,
                 customThemeLight_Background0Key,
@@ -75,30 +104,10 @@ internal object UiSettingTargets {
                 customThemeDark_textDisabledKey,
                 customThemeDark_iconButtonPlayerKey,
                 customThemeDark_accentKey,
-                colorPaletteModeKey,
             ),
             actions = listOf(
                 "resetLightPalette",
                 "resetDarkPalette",
-            ),
-        ),
-        UiCardTargets("ui.card.interface",
-            preferenceKeys = listOf(
-                rightToLeftInterfaceKey,
-                navigationBarPositionKey,
-                navigationBarTypeKey,
-                playerPositionKey,
-                menuStyleKey,
-                indexNavigationTabKey,
-                transitionEffectKey,
-                disableNavigationBackStackKey,
-                searchDisplayOrderKey,
-                showFloatingIconKey,
-                rememberQueueScrollPositionKey,
-            ),
-            actions = listOf(
-                "HomeTabsSettingsDialog",
-                "searchHistoryPages",
             ),
         ),
         UiCardTargets("ui.card.font",
@@ -106,18 +115,17 @@ internal object UiSettingTargets {
                 fontTypeKey,
                 useSystemFontKey,
                 applyFontPaddingKey,
-                hideStatusBarKey,
             ),
         ),
         UiCardTargets("ui.card.swipe",
             preferenceKeys = listOf(
                 isSwipeToActionEnabledKey,
                 queueSwipeLeftActionKey,
+                queueSwipeRightActionKey,
                 playlistSwipeLeftActionKey,
                 playlistSwipeRightActionKey,
                 albumSwipeLeftActionKey,
                 albumSwipeRightActionKey,
-                queueSwipeRightActionKey,
             ),
         ),
         UiCardTargets("ui.card.home-tabs",
@@ -129,21 +137,10 @@ internal object UiSettingTargets {
                 "HomePlaylistsSettingsDialog",
             ),
         ),
-        UiCardTargets("ui.card.sort-menus",
+        UiCardTargets("ui.card.burger",
             actions = listOf(
-                "HomeSongsSortSettingsDialog",
-                "HomeArtistsSortSettingsDialog",
-                "HomeAlbumsSortSettingsDialog",
-                "HomeLibrarySortSettingsDialog",
-                "LocalPlaylistSortSettingsDialog",
-                "HistorySortSettingsDialog",
+                "BurgerMenuSettingsDialog",
             ),
-        ),
-        UiCardTargets("ui.card.floating-dock",
-            preferenceKeys = listOf(
-                app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey,
-            ),
-            actions = listOf("DockToolbarSettingsDialog"),
         ),
         UiCardTargets("ui.card.toolbars",
             actions = listOf(
@@ -152,11 +149,16 @@ internal object UiSettingTargets {
                 "HomeAlbumsToolbarSettingsDialog",
                 "HomeLibraryToolbarSettingsDialog",
                 "LocalPlaylistToolbarSettingsDialog",
-            ),
+            ) + interfaceToolbarSettingsDialogs.map { it.dialogId },
         ),
-        UiCardTargets("ui.card.burger",
+        UiCardTargets("ui.card.sort-menus",
             actions = listOf(
-                "BurgerMenuSettingsDialog",
+                "HomeSongsSortSettingsDialog",
+                "HomeArtistsSortSettingsDialog",
+                "HomeAlbumsSortSettingsDialog",
+                "HomeLibrarySortSettingsDialog",
+                "LocalPlaylistSortSettingsDialog",
+                "HistorySortSettingsDialog",
             ),
         ),
         UiCardTargets("ui.card.reset",

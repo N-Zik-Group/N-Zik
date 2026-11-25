@@ -980,6 +980,11 @@ internal fun isFavoriteAutoDownloadEnabled(preferences: SharedPreferences, categ
 internal fun canAutoDownloadInState(state: Int?): Boolean =
     state == null || state == Download.STATE_FAILED
 
+@UnstableApi
+internal fun Map<String, Download>.completedDownloadRequestIds(): Set<String> = values.asSequence()
+    .filter { it.state == Download.STATE_COMPLETED }
+    .mapTo(HashSet()) { it.request.id }
+
 internal fun chooseBookmarkedPlaylistTracks(
     remote: List<MediaItem>?,
     saved: List<MediaItem>,

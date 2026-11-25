@@ -146,7 +146,8 @@ class SettingsRegistrySearchTest {
     @Test fun privacyContainsHistoryControlsAndCaptureProtection() {
         val cards = cardsForCategory("privacy")
         assertTrue(cards.any { it.tab == 4 && it.titleRes == R.string.library_history_title })
-        assertTrue(cards.any { it.tab == 3 && it.titleRes == R.string.settings_data_title })
+        assertTrue(cards.none { it.tab == 3 && it.titleRes == R.string.settings_data_title })
+        assertTrue(cardsForCategory("ai").any { it.tab == 3 && it.titleRes == R.string.settings_data_title })
         assertTrue(cards.any { it.titleRes == R.string.permissions_usage_journal })
         assertTrue(cards.any { it.titleRes == R.string.privacy_screen_protection })
         assertTrue(cards.any { it.titleRes == R.string.rewind_settings_enabled })

@@ -12,14 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.MaxSongs
-import app.n_zik.android.enums.MusicAnimationType
 import app.n_zik.android.utils.autoLoadSongsInQueueKey
 import app.n_zik.android.utils.discoverKey
 import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
 import app.n_zik.android.utils.maxSongsInQueueKey
-import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.utils.persistentQueueKey
-import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.resumePlaybackOnStartKey
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -30,7 +27,7 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
-/** Queue Management card: queue persistence, loading, size caps and indicators. */
+/** Queue persistence, loading, size limits, and discovery. */
 @Composable
 fun GeneralQueueManagementCard(
     visible: Boolean,
@@ -42,12 +39,9 @@ fun GeneralQueueManagementCard(
     var maxSongsInQueue by rememberPreference(maxSongsInQueueKey, MaxSongs.Unlimited)
     var maxSongsInQueueAndroidAuto by rememberPreference(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited)
     var discoverIsEnabled by rememberPreference(discoverKey, false)
-    var playlistindicator by rememberPreference(playlistindicatorKey, false)
-    var nowPlayingIndicator by rememberPreference(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
 
     var showMaxSongsDialog by remember { mutableStateOf(false) }
     var showMaxSongsAndroidAutoDialog by remember { mutableStateOf(false) }
-    var showNowPlayingIndicatorDialog by remember { mutableStateOf(false) }
 
     SettingsSectionCard(
         title = stringResource(R.string.settings_queue_management_title),
@@ -189,34 +183,6 @@ fun GeneralQueueManagementCard(
                 icon = R.drawable.search
             )
 
-            OtherSwitchSettingEntry(
-                modifier = Modifier.settingsSearchTarget("general.queue_management.playlistindicator"),
-                title = stringResource(R.string.settings_library_playlist_indicator_label),
-                text = stringResource(R.string.settings_library_playlist_indicator_description),
-                isChecked = playlistindicator,
-                onCheckedChange = { playlistindicator = it },
-                icon = R.drawable.playlist
-            )
-
-            OtherSettingsEntry(
-                modifier = Modifier.settingsSearchTarget("general.queue_management.now_playing_indicator"),
-                title = stringResource(R.string.settings_library_now_playing_indicator_label),
-                text = stringResource(R.string.queue_now_playing_indicator_description),
-                selectedValueText = nowPlayingIndicator.text,
-                onClick = { showNowPlayingIndicatorDialog = true },
-                icon = R.drawable.playing_indicator
-            )
-
-            DialogPresence(visible = showNowPlayingIndicatorDialog) {
-                ValueSelectorDialog(
-                    title = stringResource(R.string.settings_library_now_playing_indicator_label),
-                    selectedValue = nowPlayingIndicator,
-                    onValueSelected = { nowPlayingIndicator = it },
-                    valueText = { it.text },
-                    values = MusicAnimationType.values().toList(),
-                    onDismiss = { showNowPlayingIndicatorDialog = false }
-                )
-            }
         }
     )
 }

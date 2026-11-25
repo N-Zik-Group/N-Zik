@@ -78,14 +78,14 @@ class LocalPlaylistToolbarSettingsDialogTest {
         assertTrue(dialog.searchOptions().any { it.itemId == "pl_refresh_on_open" })
     }
 
-    @Test fun `favorites retains existing custom placement and is visible near search by default`() {
+    @Test fun `favorites retains existing custom placement and follows selection by default`() {
         val dialog = LocalPlaylistToolbarSettingsDialog
         val savedOrder = dialog.parseOrder("[\"export\",\"add_to_favorite\",\"search\"]")
 
         assertEquals(listOf("insertion_position", "export", "add_to_favorite", "search"), savedOrder.take(4))
         assertEquals(1, savedOrder.count { it == "add_to_favorite" })
-        assertTrue(("search" to "add_to_favorite") in dialog.parseOrder("").zipWithNext())
-        assertEquals(R.string.library_favorites_title, dialog.searchOptions().single { it.itemId == "pl_add_to_favorite" }.labelRes)
+        assertTrue(("item_selector" to "add_to_favorite") in dialog.parseOrder("").zipWithNext())
+        assertEquals(R.string.library_collection_favorites_action_manage, dialog.searchOptions().single { it.itemId == "pl_add_to_favorite" }.labelRes)
     }
 
     @Test fun `insertion action setting uses its own key and local playlist title`() {

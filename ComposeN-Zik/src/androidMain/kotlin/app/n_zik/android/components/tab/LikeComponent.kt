@@ -33,8 +33,9 @@ class LikeComponent private constructor(
         get() = stringResource( messageId )
 
     override fun onShortClick() {
+        val songs = getSongs().toList()
         Database.asyncTransaction {
-            getSongs().forEach { song ->
+            songs.forEach { song ->
                 if (!songTable.isLikedDirect(song.id) && songTable.likeState(song.id, true) > 0) {
                     MyDownloadHelper.downloadNewlyLiked(appContext(), song.asMediaItem)
                 }

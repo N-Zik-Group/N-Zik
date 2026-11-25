@@ -183,7 +183,7 @@ fun OnDeviceSong(
 
     val odSort = Sort( HOME_ON_DEVICE_SONGS_SORT_BY, HOME_ON_DEVICE_SONGS_SORT_ORDER, homeSongsOnDeviceSortMenuOrderKey, "dev")
 
-    val query = search.inputValue
+    val query = search.filterQuery
     val projectionScope = OnDeviceSongsProjectionScope(
         profile, odSort.sortBy, odSort.sortOrder, showFolder4LocalSongs, startFolder, parentalControlEnabled,
     )
@@ -287,7 +287,7 @@ fun OnDeviceSong(
         val visibleSongs = searchHomeSongs(candidates, query)
         currentCoroutineContext().ensureActive()
         if (!isPermissionGranted || scan !== songsOnDevice || revision != scanRevision ||
-            currentPath != selectedFolder.orEmpty() || query != search.inputValue
+            currentPath != selectedFolder.orEmpty() || query != search.filterQuery
         ) return@LaunchedEffect
         val projection = OnDeviceSongsProjection(
             scope = projectionScope,
@@ -296,6 +296,7 @@ fun OnDeviceSong(
             path = currentPath,
             hasDeviceSongs = scan.isNotEmpty(),
             folders = if (showFolder4LocalSongs) PathUtils.getAvailablePaths(scan.values, currentPath)
+                .filter { folder -> folder.contains(query.trim(), ignoreCase = true) }
             else emptyList(),
             songs = visibleSongs,
         )
@@ -452,7 +453,7 @@ fun OnDeviceSong(
                     modifier = Modifier.fillParentMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (search.inputValue.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
+                    if (search.filterQuery.isBlank()) SearchNoResults(text = stringResource(R.string.common_empty_items))
                 }
             }
         }
@@ -491,7 +492,10 @@ fun OnDeviceSong(
                             search.hideIfEmpty()
                             val playerBinder = binder
                             if (playerBinder != null) {
-                                val targets = itemSelector.toList().ifEmpty { displayedSongs }
+                                val targets = itemSelector.actionTargets(
+                                    displayedSongs, Song::id, Song::id, selectionOrder = true,
+                                )
+                                if (itemSelector.isActive && targets.none { it.id == song.id }) return@SongItem
                                 playbackJob?.cancel()
                                 playbackJob = playbackScope.launch {
                                     val mediaItems = withContext(NzikDispatchers.MEDIA) {

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.settings
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +18,11 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +33,67 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.dialog.common.dialogInputEnabled
+import app.n_zik.android.components.glass.isGlassMotionAllowed
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
+
+/** Fade through one body so its lazy list and drag state are never attached to two pages at once. */
+@Stable
+internal class SettingsDialogTabTransition(initialIndex: Int) {
+    private val opacity = Animatable(1f)
+    private var resetOnReopen = false
+    val alpha: Float get() = opacity.value
+
+    var selectedIndex by mutableIntStateOf(initialIndex)
+        private set
+    var displayedIndex by mutableIntStateOf(initialIndex)
+        private set
+
+    fun select(index: Int) {
+        selectedIndex = index
+    }
+
+    suspend fun show(index: Int, motionAllowed: Boolean, dialogActive: Boolean, openingIndex: Int) {
+        if (!dialogActive) {
+            resetOnReopen = true
+            return
+        }
+        if (resetOnReopen) {
+            resetOnReopen = false
+            displayedIndex = openingIndex
+            selectedIndex = openingIndex
+            opacity.snapTo(1f)
+            return
+        }
+        if (!motionAllowed) {
+            displayedIndex = index
+            opacity.snapTo(1f)
+            return
+        }
+        if (displayedIndex != index) {
+            opacity.animateTo(0f, tween(80))
+            displayedIndex = index
+        }
+        if (opacity.value < 1f) opacity.animateTo(1f, tween(100))
+    }
+}
+
+@Composable
+internal fun rememberSettingsDialogTabTransition(
+    tabCount: Int,
+    scopeKey: Any? = null,
+): SettingsDialogTabTransition {
+    val nestedTab = LocalSettingsTargets.current?.nestedTarget?.nestedDestination?.tabIndex
+    val openingIndex = nestedTab?.takeIf { it in 0 until tabCount } ?: 0
+    val transition = remember(scopeKey) { SettingsDialogTabTransition(openingIndex) }
+    val selectedIndex = transition.selectedIndex
+    val motionAllowed = isGlassMotionAllowed()
+    val dialogActive = dialogInputEnabled
+    LaunchedEffect(transition, selectedIndex, motionAllowed, dialogActive) {
+        transition.show(selectedIndex, motionAllowed, dialogActive, openingIndex)
+    }
+    return transition
+}
 
 /** Centers fitting category tabs while retaining Material scrolling for wider labels. */
 @Composable

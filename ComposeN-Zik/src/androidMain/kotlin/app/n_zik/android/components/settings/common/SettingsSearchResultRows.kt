@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
@@ -67,6 +68,7 @@ internal fun SettingsCardResultRow(
 @Composable
 internal fun SettingsResultCard(
     testTag: String,
+    contentPadding: Dp = 16.dp,
     content: @Composable () -> Unit,
 ) {
     val containerColor = surfaceColor(colorPalette().background1)
@@ -82,7 +84,7 @@ internal fun SettingsResultCard(
             shadowColor = colorPalette().accent.copy(alpha = 0.2f),
             shadowElevation = 4.dp
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(contentPadding)) {
                 content()
             }
         }

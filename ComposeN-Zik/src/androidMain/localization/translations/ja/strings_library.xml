@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">トップ</string>
     <string name="recommendations_playlists_title">気に入るかもしれないプレイリスト</string>
     <string name="recommendations_reset_complete">おすすめを消去しました</string>
-    <string name="recommendations_reset_description">ローカルクイックピックのおすすめを生成するために使用する再生イベントを削除します。</string>
     <string name="recommendations_section_other_youtube_title">その他のセクション</string>
     <string name="recommendations_section_visibility_description">無効なら非表示:</string>
     <string name="recommendations_show_section_label">表示</string>

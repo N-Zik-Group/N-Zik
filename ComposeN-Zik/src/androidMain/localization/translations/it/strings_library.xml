@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">La Mia Top</string>
     <string name="recommendations_playlists_title">Playlist che potrebbero piacerti</string>
     <string name="recommendations_reset_complete">Scelte rapide cancellate</string>
-    <string name="recommendations_reset_description">Elimina gli eventi di riproduzione usati per generare le raccomandazioni locali di Quick Picks.</string>
     <string name="recommendations_section_other_youtube_title">Altre sezioni</string>
     <string name="recommendations_section_visibility_description">Disattiva se non vuoi vedere</string>
     <string name="recommendations_show_section_label">Mostra</string>

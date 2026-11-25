@@ -53,6 +53,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -137,6 +138,7 @@ import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.dialog.export.CachedLyricsExport
 import app.n_zik.android.components.dialog.export.CachedLyricsExportDialog
+import app.n_zik.android.components.dialog.export.resolveExportPayload
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.matching.SongMatch
 import app.n_zik.android.core.matching.SongMatchRequest
@@ -232,8 +234,12 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val itemsOnDisplayState = remember { mutableStateListOf<Song>() }
 
     val itemSelector = ItemSelector<Song>()
-    fun getSongs() = itemSelector.ifEmpty { itemsOnDisplayState }
-        .filter { it.isLocal == (builtInPlaylist == BuiltInPlaylist.OnDevice) }
+    fun visibleSongs() = itemsOnDisplayState.filter { it.isLocal == (builtInPlaylist == BuiltInPlaylist.OnDevice) }
+    fun getSongs() = itemSelector.actionTargets(visibleSongs(), Song::id, Song::id, selectionOrder = true)
+    val eligibleSelection by remember(builtInPlaylist) {
+        derivedStateOf { itemSelector.isNotEmpty() && getSongs().isNotEmpty() }
+    }
+    val hasEligibleSelection = { eligibleSelection }
 
     val openMatch by rememberUpdatedState<() -> Unit> {
         val running = SongMatch.state.value?.takeIf {
@@ -253,10 +259,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     }
 
-    fun getMediaItems() = getSongs().map( Song::asMediaItem )
-
     val search = Search.forHome()
-    val locator = Locator( lazyListState, ::getSongs )
+    val locator = Locator( lazyListState, ::visibleSongs )
     val import = ImportSongsFromCSV(sourceSuffix = "HOMESONGS", likeImported = builtInPlaylist == BuiltInPlaylist.Favorites, onImportComplete = {
         val prefs = appContext().preferences
         val key = if (builtInPlaylist == BuiltInPlaylist.Favorites) Preference.HOME_SONGS_FAVORITES_SORT_BY.key else Preference.HOME_SONGS_SORT_BY.key
@@ -275,12 +279,15 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val exportDialog = ExportSongsToCSVDialog(
         playlistBrowseId = "",
         playlistName = builtInPlaylist.name,
-        songs = ::getSongs
+        songs = ::getSongs,
+        selectionActive = { itemSelector.isActive },
     )
 
     var showExportCacheConfirmDialog by remember { mutableStateOf(false) }
     var showExportCacheLyricsDialog by remember { mutableStateOf(false) }
-    var exportCacheLyricsChoice by remember { mutableStateOf(CachedLyricsExport.None) }
+    var selectedCacheExport by rememberSaveable { mutableStateOf(false) }
+    var selectedCacheTargets by remember { mutableStateOf<List<Song>?>(null) }
+    var exportCacheLyricsChoice by rememberSaveable { mutableStateOf(CachedLyricsExport.None) }
     val ffmpegPreparation = remember { FfmpegPreparation() }
     DisposableEffect(ffmpegPreparation) {
         onDispose { ffmpegPreparation.dispose() }
@@ -292,10 +299,20 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val exportCacheFolderLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { folderUri: Uri? ->
+        val selected = selectedCacheExport
+        val captured = selectedCacheTargets
+        val lyricsChoice = exportCacheLyricsChoice
+        selectedCacheExport = false
+        selectedCacheTargets = null
+        exportCacheLyricsChoice = CachedLyricsExport.None
         folderUri ?: return@rememberLauncherForActivityResult
-        val currentBinder = binder ?: return@rememberLauncherForActivityResult
-        val songs = getSongs()
+        val songs = resolveExportPayload(selected, captured, ::visibleSongs)
+        if (songs == null) {
+            Toaster.e(R.string.export_selection_lost)
+            return@rememberLauncherForActivityResult
+        }
         if (songs.isEmpty()) return@rememberLauncherForActivityResult
+        val currentBinder = binder ?: return@rememberLauncherForActivityResult
 
         try {
             val takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
@@ -312,7 +329,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             folderUri = folderUri,
             songs = songs,
             binder = currentBinder,
-            lyricsChoice = exportCacheLyricsChoice,
+            lyricsChoice = lyricsChoice,
             prepareFfmpeg = {
                 withContext(NzikDispatchers.UI) {
                     ffmpegPreparation.awaitReady().also { state ->
@@ -464,6 +481,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     )
     val playNext = PlayNext {
         val songsToAdd = getSongs().toList()
+        if (itemSelector.isActive && songsToAdd.isEmpty()) return@PlayNext
         itemSelector.isActive = false
         coroutineScope.launch {
             val mediaItems = withContext( NzikDispatchers.DATA ) { songsToAdd.map( Song::asMediaItem ) }
@@ -472,6 +490,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     }
     val enqueue = Enqueue {
         val songsToAdd = getSongs().toList()
+        if (itemSelector.isActive && songsToAdd.isEmpty()) return@Enqueue
         itemSelector.isActive = false
         coroutineScope.launch {
             val mediaItems = withContext( NzikDispatchers.DATA ) { songsToAdd.map( Song::asMediaItem ) }
@@ -479,18 +498,21 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     }
     val addToFavorite = LikeComponent(::getSongs)
-    val addToPlaylist = PlaylistsMenu.init(
+    val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
-        mediaItems = { _ -> getMediaItems() },
+        captureMediaItems = {
+            val songs = getSongs()
+            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(Song::asMediaItem) })
+        },
         onFailure = { throwable, preview ->
             Timber.tag("HomeSongsScreen").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
-        finalAction = { itemSelector.isActive = false }
+        itemSelector = itemSelector,
     )
     val smartTrash = SmartTrash(
         builtInPlaylist = { builtInPlaylist },
         getSongs = ::getSongs,
-        itemsOnDisplay = { itemsOnDisplayState }
+        isSelectionActive = { itemSelector.isActive }
     )
 
     val songSort = when( builtInPlaylist ) {
@@ -579,7 +601,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 BuiltInPlaylist.Disliked -> "disliked"
                 else -> "x"
             }}_ts_$id"
-            val isEnabled = context.preferences.getBoolean(toggleKey, true)
+            val isEnabled = id in HomeSongsToolbarSettingsDialog.lockedIds ||
+                context.preferences.getBoolean(toggleKey, true)
             if (!isEnabled) return@forEach
 
             when (id) {
@@ -587,89 +610,95 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) add( positionLock )
                 "search" -> add( search )
                 "locator" -> add( locator )
-                "download_all" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add( downloadAllDialog )
-                "delete_downloads" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( deleteDownloadsDialog )
-                "update" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add( updateSongsDialog )
-                "shuffle" -> add( shuffle )
+                "download_all" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(downloadAllDialog, hasEligibleSelection))
+                "delete_downloads" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(deleteDownloadsDialog, hasEligibleSelection))
+                "update" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(updateSongsDialog, hasEligibleSelection))
+                "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
                 "smart_shuffle" -> if (!offlineMode) add( smartShuffle )
                 "item_selector" -> add( itemSelector )
-                "play_next" -> add( playNext )
-                "enqueue" -> add( enqueue )
-                "add_to_favorite" -> add( addToFavorite )
-                "add_to_playlist" -> add( addToPlaylist )
+                "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
+                "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
+                "add_to_favorite" -> add(itemSelector.guard(addToFavorite, hasEligibleSelection))
+                "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
                 "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
                 "sync_ytm_likes" -> if (!offlineMode && builtInPlaylist == BuiltInPlaylist.Favorites && isYouTubeSyncEnabled()) add( sync )
-                "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( exportDialog )
+                "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(exportDialog, hasEligibleSelection))
                 // The FFmpeg gate is gone (spec-ffmpeg-extension-module): the module is
                 // downloaded on first use, so the export is always offered (Offline/Downloaded)
                 "export_cache" -> if (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded) add(
-                    object : MenuIcon, Descriptive {
+                    itemSelector.guard(object : MenuIcon, Descriptive {
                         override val iconId: Int = R.drawable.export_outline
                         override val messageId: Int = R.string.export_cached_songs_action
                         @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                         override fun onShortClick() {
-                            val count = getSongs().size
-                            if (count > 0) showExportCacheConfirmDialog = true
+                            val targets = getSongs()
+                            if (targets.isEmpty()) return
+                            selectedCacheExport = itemSelector.isActive
+                            selectedCacheTargets = targets.takeIf { selectedCacheExport }
+                            showExportCacheConfirmDialog = true
                         }
                         override fun onLongClick() {}
-                    }
+                    }, hasEligibleSelection)
                 )
-                "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add( smartTrash )
+                "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(smartTrash, hasEligibleSelection))
                 "match" -> if (!isThemePreview && builtInPlaylist != BuiltInPlaylist.OnDevice &&
                     (runningMatch != null || (!offlineMode && hasUnmatchedSongs))
-                ) add(localMatchButton)
+                ) add(itemSelector.guard(localMatchButton) { runningMatch != null || getSongs().any(Song::isUnmatched) })
             }
         }
     }
 
     val header: @Composable (MutableFloatState, MutableIntState) -> Unit = { titleOffsetState, titleHeightState ->
         Column {
-            CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
-                TabHeader( R.string.library_songs_title ) {
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
-                            }
-                            if (isRecommendationEnabled) {
+            search.HeaderContent {
+                CollapsibleTitleRow( titleOffsetState, titleHeightState ) {
+                    TabHeader( R.string.library_songs_title ) {
+                            Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.smart_shuffle),
-                                        contentDescription = null,
-                                        tint = colorPalette().textSecondary,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                    if (isRecommendationsLoading) {
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        InlineCircularLoader(
-                                            modifier = Modifier.size(12.dp),
-                                            color = colorPalette().textSecondary
+                                    HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
+                                }
+                                if (isRecommendationEnabled) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.smart_shuffle),
+                                            contentDescription = null,
+                                            tint = colorPalette().textSecondary,
+                                            modifier = Modifier.size(12.dp)
                                         )
-                                    } else if (recommendationCount > 0) {
-                                        BasicText(
-                                            text = recommendationCount.toString(),
-                                            style = TextStyle(
-                                                color = colorPalette().textSecondary,
-                                                fontStyle = typography().xxxs.semiBold.fontStyle,
-                                                fontWeight = typography().xxxs.semiBold.fontWeight,
-                                                fontSize = typography().xxxs.semiBold.fontSize
-                                            ),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis,
-                                            modifier = Modifier.padding( start = 4.dp )
-                                        )
+                                        if (isRecommendationsLoading) {
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            InlineCircularLoader(
+                                                modifier = Modifier.size(12.dp),
+                                                color = colorPalette().textSecondary
+                                            )
+                                        } else if (recommendationCount > 0) {
+                                            BasicText(
+                                                text = recommendationCount.toString(),
+                                                style = TextStyle(
+                                                    color = colorPalette().textSecondary,
+                                                    fontStyle = typography().xxxs.semiBold.fontStyle,
+                                                    fontWeight = typography().xxxs.semiBold.fontWeight,
+                                                    fontSize = typography().xxxs.semiBold.fontSize
+                                                ),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.padding( start = 4.dp )
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(5.dp))
                                     }
-                                    Spacer(modifier = Modifier.width(5.dp))
                                 }
                             }
                         }
                     }
-                }
+            }
 
                     importMenu.Render()
                     exportDialog.Render()
 
                     DialogPresence(visible = showExportCacheConfirmDialog) {
-                        val count = getSongs().size
+                        val count = resolveExportPayload(selectedCacheExport, selectedCacheTargets, ::visibleSongs)
+                            .orEmpty().size
                         ConfirmationDialog(
                             title = stringResource(R.string.export_cached_songs_action),
                             confirmText = stringResource(R.string.export_cached_songs_action),
@@ -705,7 +734,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                     updateSongsDialog.Render()
                     smartTrash.Render()
 
-                    GlassToolbarButtons( buttons, disableAnimation = true )
+                    GlassToolbarButtons( buttons )
 
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,

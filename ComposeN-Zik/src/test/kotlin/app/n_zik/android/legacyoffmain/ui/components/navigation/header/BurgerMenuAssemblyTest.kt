@@ -1,36 +1,27 @@
 package app.n_zik.android.legacyoffmain.ui.components.navigation.header
 
+import java.time.Duration
+
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Looper
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ApplicationProvider
-import app.n_zik.android.enums.FontType
-import app.n_zik.android.components.navigation.header.ActionBar
-import app.n_zik.android.ui.styling.Appearance
-import app.n_zik.android.ui.styling.DefaultDarkColorPalette
-import app.n_zik.android.ui.styling.LocalAppearance
-import app.n_zik.android.ui.styling.typographyOf
-import app.n_zik.android.utils.enablePictureInPictureKey
-import app.n_zik.android.utils.preferences
-import app.n_zik.android.Dependencies
-import app.n_zik.android.MainApplication
-import app.n_zik.android.R
-import app.n_zik.android.core.network.fullOfflineModeKey
-import app.n_zik.android.utils.DataStoreUtils
 import androidx.navigation.NavController
+import androidx.test.core.app.ApplicationProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import org.junit.After
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -39,7 +30,23 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
-import java.time.Duration
+
+import app.n_zik.android.Dependencies
+import app.n_zik.android.MainApplication
+import app.n_zik.android.R
+import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
+import app.n_zik.android.components.navigation.header.ActionBar
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.core.network.fullOfflineModeKey
+import app.n_zik.android.enums.FontType
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.enablePictureInPictureKey
+import app.n_zik.android.utils.preferences
 
 /**
  * Assembly test for the customizable burger menu (spec-customizable-burger-menu, goal C):
@@ -105,6 +112,8 @@ class BurgerMenuAssemblyTest {
         app.preferences.edit()
             .remove(enablePictureInPictureKey)
             .remove(fullOfflineModeKey)
+            .remove(ToolbarSurface.HEADER.visibilityKey(ToolbarAction.SEARCH))
+            .remove(ToolbarSurface.HEADER.visibilityKey(ToolbarAction.NOTIFICATIONS))
             .commit()
     }
 
@@ -172,6 +181,8 @@ class BurgerMenuAssemblyTest {
         labels.forEach { label ->
             composeRule.onNodeWithText(label).assertExists()
         }
+        composeRule.onNodeWithText(app.getString(R.string.search_title)).assertDoesNotExist()
+        composeRule.onNodeWithText(app.getString(R.string.notification_inbox_title)).assertDoesNotExist()
 
         // The merged row nodes carry the full 48dp row bounds: their y-tops must follow
         // the stored default order.
@@ -201,6 +212,39 @@ class BurgerMenuAssemblyTest {
             "the default separator must sit between the PIP and Settings rows (pip bottom $pipBottom, settings top $settingsTop)",
             settingsTop > pipBottom
         )
+    }
+
+    @Test
+    fun `shortcuts hidden in the header render in the profile menu at their configured positions`() {
+        val searchToggle = DataStoreUtils.burgerMenuToggleKey("search")
+        val notificationsToggle = DataStoreUtils.burgerMenuToggleKey("notifications")
+        dataStore.edit()
+            .putBoolean(searchToggle, false)
+            .putBoolean(notificationsToggle, false)
+            .putString(
+                DataStoreUtils.KEY_BURGER_MENU_ORDER,
+                BurgerMenuSettingsDialog.serializeOrder(listOf("notifications", "history", "search", "statistics")),
+            )
+            .commit()
+        app.preferences.edit()
+            .putBoolean(ToolbarSurface.HEADER.visibilityKey(ToolbarAction.SEARCH), false)
+            .putBoolean(ToolbarSurface.HEADER.visibilityKey(ToolbarAction.NOTIFICATIONS), false)
+            .commit()
+
+        openMenu()
+
+        val labels = listOf(
+            R.string.notification_inbox_title,
+            R.string.library_history_title,
+            R.string.search_title,
+            R.string.statistics_title,
+        ).map(app::getString)
+        val tops = labels.map { label ->
+            composeRule.onNodeWithText(label).assertHasClickAction().fetchSemanticsNode().boundsInRoot.top
+        }
+        assertTrue("Expected menu order $labels, got row positions $tops", tops.zipWithNext().all { (a, b) -> a < b })
+        assertFalse(dataStore.getBoolean(searchToggle, true))
+        assertFalse(dataStore.getBoolean(notificationsToggle, true))
     }
 
     @Test

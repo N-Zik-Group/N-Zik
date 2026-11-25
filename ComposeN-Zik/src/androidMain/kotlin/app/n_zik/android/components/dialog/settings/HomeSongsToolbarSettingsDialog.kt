@@ -69,15 +69,17 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
 
     val allButtonIds = listOf(
-        "sort", "position_lock", "match", "search", "sync_ytm_likes", "locator",
-        "download_all", "delete_downloads",
-        "shuffle", "smart_shuffle", "item_selector",
-        "play_next", "enqueue", "add_to_favorite", "add_to_playlist",
+        "sort", "position_lock", "search", "locator",
+        "shuffle", "smart_shuffle", "play_next", "enqueue", "item_selector",
+        "add_to_favorite", "add_to_playlist", "download_all", "delete_downloads",
+        "match", "sync_ytm_likes",
         "import_menu", "export_dialog", "export_cache", "update", "smart_trash"
     )
 
+    private val portableAllButtonIds = allButtonIds.filterNot { it == "export_cache" }
+
     val tabAvailableIds = mapOf(
-        BuiltInPlaylist.All to allButtonIds.filter { it != "export_cache" },
+        BuiltInPlaylist.All to portableAllButtonIds.filterNot { it == "sync_ytm_likes" },
         BuiltInPlaylist.Favorites to allButtonIds.filter { it != "export_cache" },
         BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
         BuiltInPlaylist.Downloaded to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
@@ -133,7 +135,9 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
     internal fun portableLists(): Map<String, PortableControlList> = toolbarTabs.associate { (tab, key) ->
         val prefix = getTabPrefix(tab)
-        prefix to PortableControlList(key, tabAvailableIds.getValue(tab), "${prefix}_ts_", "")
+        // Published themes include this legacy All-tab ID even though it only renders in Favorites.
+        val portableIds = if (tab == BuiltInPlaylist.All) portableAllButtonIds else tabAvailableIds.getValue(tab)
+        prefix to PortableControlList(key, portableIds, "${prefix}_ts_", "")
     }
 
     @Composable
@@ -143,7 +147,8 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
         val tabs = toolbarTabs
 
-        var selectedTabIndex by remember { mutableStateOf(0) }
+        val tabTransition = rememberSettingsDialogTabTransition(tabs.size)
+        val selectedTabIndex = tabTransition.displayedIndex
 
         var workingOrders by remember {
             mutableStateOf(
@@ -243,11 +248,12 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         ToggleListDialog(
             frameTitle = dialogTitle,
             onDismiss = ::hideDialog,
+            tabContentAlpha = { tabTransition.alpha },
             bodyHeader = {
                 SettingsDialogTabRow(
                     labels = tabs.map { stringResource(it.first.textId) },
-                    selectedTabIndex = selectedTabIndex,
-                    onTabSelected = { selectedTabIndex = it },
+                    selectedTabIndex = tabTransition.selectedIndex,
+                    onTabSelected = tabTransition::select,
                 )
                 Spacer(modifier = Modifier.fillMaxWidth().height(8.dp).testTag("toggleListDialogTabGap"))
             },

@@ -29,6 +29,9 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
 import app.n_zik.android.components.glass.usesQueueToolbarGlass
+import app.n_zik.android.components.settings.ui.ToolbarAction
+import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.visibleActions
 import app.n_zik.android.components.glass.GlassOverlayHost
 import app.n_zik.android.components.glass.rememberOverlayTransition
 import app.n_zik.android.components.glass.hasOverlayContent
@@ -199,7 +202,6 @@ import app.n_zik.android.components.glass.LocalGlassArtworkTint
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalConfiguration
@@ -218,6 +220,11 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.themed.n_zik.screen.player.ActionBar
+import app.n_zik.android.themed.n_zik.screen.player.emptyPlayerActionBarTopSlot
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarActions
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarBottomAudioVideoKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
+import app.n_zik.android.themed.n_zik.screen.player.resolvePlayerActionBarTopSlots
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPendingMiniPlayerAction
@@ -405,7 +412,24 @@ fun Player(
     val animatedGradient by rememberPreference( animatedGradientKey, AnimatedGradient.M3EMorphingCover )
     val m3eAlwaysShowShapes by rememberPreference(m3eAlwaysShowShapesKey, false)
     val thumbnailTapEnabled by rememberPreference( thumbnailTapEnabledKey, true )
-    val showTopActionsBar by rememberPreference( showTopActionsBarKey, true )
+    val legacyShowTopActionsBar by rememberPreference(showTopActionsBarKey, true)
+    val legacyTopActions = ToolbarSurface.PLAYER_TOP.visibleActions()
+    val topSlotsPreference by rememberPreference(playerActionBarTopSlotsKey, "")
+    val hasExplicitTopSlots = topSlotsPreference.isNotBlank()
+    val topSlots = if (hasExplicitTopSlots) resolvePlayerActionBarTopSlots(topSlotsPreference)
+        else legacyTopActions.map(ToolbarAction::id)
+    val showTopActionsBar = if (hasExplicitTopSlots) {
+        topSlots.any { it != emptyPlayerActionBarTopSlot }
+    } else legacyShowTopActionsBar
+    val activeTopSlots = showTopActionsBar && (hasExplicitTopSlots || !isLandscape)
+    val movedActionIds = if (activeTopSlots && hasExplicitTopSlots) topSlots.toSet() else emptySet()
+    val showMenuInTopSlots = activeTopSlots && ToolbarAction.MENU.id in topSlots &&
+        (hasExplicitTopSlots || !showButtonPlayerMenu)
+    val bottomAudioVideoEnabled by rememberPreference(playerActionBarBottomAudioVideoKey, false)
+    val showBottomAudioVideo = bottomAudioVideoEnabled &&
+        (!activeTopSlots || ToolbarAction.AUDIO_VIDEO.id !in topSlots)
+    val showLegacyVideoFallback =
+        !hasExplicitTopSlots && !showBottomAudioVideo && ToolbarAction.AUDIO_VIDEO in legacyTopActions
     val blackgradient by rememberPreference( blackgradientKey, false )
     val bottomgradient by rememberPreference( bottomgradientKey, false )
     val disableScrollingText by rememberPreference( disableScrollingTextKey, false )
@@ -1595,23 +1619,83 @@ fun Player(
             .glassPlayerSceneSource(playerVisibleBackdrop, active = capturePlayerScene,
                 fullyCovering = playerSheetState.isExpanded)
     ) {
+        val playerActions = playerActionBarActions(
+            navController = navController,
+            mediaItem = mediaItem,
+            showQueueState = showQueueState,
+            rotateState = rotateState,
+            showVisualizerState = showVisualizerState,
+            showSleepTimerState = showSleepTimerState,
+            showLyricsState = showLyricsState,
+            discoverState = discoverState,
+            queueLoopState = queueLoopState,
+            expandPlayerState = expandPlayerState,
+            onDismiss = onDismiss,
+            statsMenuControl = statsMenuControl,
+            topActionIds = movedActionIds,
+            showBottomMenu = !showMenuInTopSlots,
+            bottomAudioVideo = if (showBottomAudioVideo && showVideoMode && toggleSession != null) {
+                {
+                    PlayerAudioVideoToggle(
+                        toggleSession,
+                        onSearchManually = openManualVideoSearch,
+                        interactive = preview == null,
+                    )
+                }
+            } else null,
+        )
+        val topActionsById = playerActions.associateBy { it.id }
+
+        @Composable
+        fun TopActions(useTopPadding: Boolean) {
+            PlayerPortraitHeader(
+                showTopActionsBar = activeTopSlots,
+                actions = topSlots,
+                placedActions = topActionsById,
+                fixedSlots = hasExplicitTopSlots,
+                topPadding = useTopPadding,
+                showMenu = showMenuInTopSlots,
+                windowInsets = if (isLandscape) WindowInsets(0, 0, 0, 0) else windowInsets,
+                glassSettings = glassSettings,
+                rotationAngle = rotationAngle,
+                showVideoMode = showVideoMode,
+                toggleSession = toggleSession,
+                videoInteractive = preview == null,
+                openManualVideoSearch = openManualVideoSearch,
+                onDismiss = onDismiss,
+                onOpenMenu = {
+                    menuState.display {
+                        PlayerMenu(
+                            navController = navController,
+                            onDismiss = menuState::hide,
+                            mediaItem = mediaItem,
+                            binder = binder ?: return@display,
+                            onClosePlayer = onDismiss,
+                            onShowSleepTimer = {
+                                isShowingSleepTimerDialog = true
+                                menuState.hide()
+                            },
+                            disableScrollingText = disableScrollingText,
+                            statsMenuControl = statsMenuControl,
+                        )
+                    }
+                },
+            )
+        }
+
         @Composable
         fun ActionsBar() {
-            if (isShowingStandaloneLyrics && !showActionsInFullscreenLyrics) return
+            val bottomActions = playerActions.filterNot { it.id in movedActionIds }
+            val visibleActions = if (isShowingStandaloneLyrics && !showActionsInFullscreenLyrics) {
+                bottomActions.filter { it.id == ToolbarAction.MENU.id }
+            } else bottomActions
+            if (visibleActions.isEmpty()) return
             val bar: @Composable BoxScope.() -> Unit = {
                 ActionBar(
-                    navController,
-                    mediaItems,
-                    showQueueState,
-                    rotateState,
-                    showVisualizerState,
-                    showSleepTimerState,
-                    showLyricsState,
-                    discoverState,
-                    queueLoopState,
-                    expandPlayerState,
-                    onDismiss,
-                    statsMenuControl = statsMenuControl,
+                    mediaItems = mediaItems,
+                    showQueueState = showQueueState,
+                    showLyricsState = showLyricsState,
+                    playerActions = visibleActions,
                 )
             }
             var region by remember { mutableStateOf<Rect?>(null) }
@@ -1964,7 +2048,9 @@ fun Player(
                     }
                     }
                 }, controls = {
-                    if (showVideoMode && toggleSession != null) {
+                    if (activeTopSlots) {
+                        TopActions(useTopPadding = false)
+                    } else if (showLegacyVideoFallback && showVideoMode && toggleSession != null) {
                         Box(Modifier.fillMaxWidth().padding(vertical = 4.dp), contentAlignment = Alignment.Center) {
                             PlayerAudioVideoToggle(
                                 toggleSession,
@@ -2213,38 +2299,7 @@ fun Player(
 
 
                 header = {
-                    PlayerPortraitHeader(
-                        showTopActionsBar = showTopActionsBar,
-                        topPadding = topPadding,
-                        showMenu = !showButtonPlayerMenu,
-                        windowInsets = windowInsets,
-                        glassSettings = glassSettings,
-                        rotationAngle = rotationAngle,
-                        showVideoMode = showVideoMode,
-                        toggleSession = toggleSession,
-                        videoInteractive = preview == null,
-                        openManualVideoSearch = openManualVideoSearch,
-                        onDismiss = onDismiss,
-                        onOpenMenu = {
-                            menuState.display {
-                                PlayerMenu(
-                                    navController = navController,
-                                    onDismiss = menuState::hide,
-                                    mediaItem = mediaItem,
-                                    binder = binder ?: return@display,
-                                    onClosePlayer = {
-                                        onDismiss()
-                                    },
-                                    onShowSleepTimer = {
-                                        isShowingSleepTimerDialog = true
-                                        menuState.hide()
-                                    },
-                                    disableScrollingText = disableScrollingText,
-                                    statsMenuControl = statsMenuControl,
-                                )
-                            }
-                        },
-                    )
+                    TopActions(useTopPadding = topPadding)
                 },
                 artwork = {
                 BoxWithConstraints(
@@ -2446,7 +2501,7 @@ fun Player(
               }
                 }
             )
-            if (!showTopActionsBar && showVideoMode && toggleSession != null) {
+            if (!showTopActionsBar && showLegacyVideoFallback && showVideoMode && toggleSession != null) {
                 Box(
                     Modifier.align(Alignment.TopCenter)
                         .padding(windowInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal).asPaddingValues())

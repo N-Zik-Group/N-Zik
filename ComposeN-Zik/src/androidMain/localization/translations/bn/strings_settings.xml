@@ -332,7 +332,6 @@
     <string name="settings_player_action_bar_loop_visible_label">লুপ বাটন দেখান</string>
     <string name="settings_player_action_bar_menu_visible_label">মেনু বাটন দেখান</string>
     <string name="settings_player_action_bar_playlist_add_visible_label">এড টু প্লে-লিস্ট বাটন দেখান</string>
-    <string name="settings_player_action_bar_queue_arrow_visible_label">এরো বাটন দেখান</string>
     <string name="settings_player_action_bar_radio_visible_label">Start radio button</string>
     <string name="settings_player_action_bar_shuffle_visible_label">শাফল বাটন দেখান</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">স্লিপ টাইমার বাটন দেখান</string>

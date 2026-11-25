@@ -19,6 +19,9 @@ import app.n_zik.android.utils.homeArtistsOrderKey
 import app.n_zik.android.utils.homePlaylistsOrderKey
 import app.n_zik.android.utils.homeSongsOrderKey
 import app.n_zik.android.utils.quickPicksSectionOrderKey
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 
 internal fun ThemeFields.homeLayouts() {
     optional("homeSections") {
@@ -58,17 +61,46 @@ internal val portableBurgerKeys: Set<String> get() =
     DataStoreUtils.DEFAULT_BURGER_MENU_ORDER.map(DataStoreUtils::burgerMenuToggleKey).toSet() +
         DataStoreUtils.KEY_BURGER_MENU_ORDER
 
-internal fun ThemeFields.portableBurgerMenu() {
+private val burgerShortcutIds = DataStoreUtils.OPTIONAL_BURGER_MENU_SHORTCUTS
+private val burgerShortcutKeys = burgerShortcutIds.map(DataStoreUtils::burgerMenuToggleKey)
+private val legacyBurgerIds = DataStoreUtils.DEFAULT_BURGER_MENU_ORDER - burgerShortcutIds.toSet()
+
+private fun Map<String, *>.burgerMenuOrder(): List<String> {
+    val stored = this[DataStoreUtils.KEY_BURGER_MENU_ORDER] as? String ?: return emptyList()
+    val order = runCatching { Json.parseToJsonElement(stored) as? JsonArray }.getOrNull()
+    return order.orEmpty().mapNotNull { (it as? JsonPrimitive)?.content }
+}
+
+internal fun Map<String, *>.hasBurgerMenuShortcuts(): Boolean =
+    burgerShortcutKeys.any(::containsKey) || burgerMenuOrder().any { it in burgerShortcutIds }
+
+/** Drops default shortcut values so opening or resetting the editor preserves legacy theme compatibility. */
+internal fun Map<String, *>.withoutDefaultBurgerMenuShortcuts(): Map<String, *> {
+    if (!hasBurgerMenuShortcuts() || burgerShortcutKeys.any { this[it] == true }) return this
+    val order = burgerMenuOrder()
+    val defaultSuffix = order.takeLast(burgerShortcutIds.size) == burgerShortcutIds &&
+        order.dropLast(burgerShortcutIds.size).containsAll(legacyBurgerIds)
+    if (!defaultSuffix && order.any { it in burgerShortcutIds }) return this
+    val legacyPreferences = minus(burgerShortcutKeys.toSet())
+    if (!defaultSuffix) return legacyPreferences
+    val legacyOrder = JsonArray(order.dropLast(burgerShortcutIds.size).map(::JsonPrimitive))
+    return legacyPreferences + (DataStoreUtils.KEY_BURGER_MENU_ORDER to legacyOrder.toString())
+}
+
+internal fun ThemeFields.portableBurgerMenu(schemaVersion: Int) {
     optional("burgerMenu") {
         group("burgerMenu") {
-            val ids = DataStoreUtils.DEFAULT_BURGER_MENU_ORDER.toSet()
+            val ids = (if (schemaVersion >= ThemeAppearanceV2) DataStoreUtils.DEFAULT_BURGER_MENU_ORDER else legacyBurgerIds).toSet()
             optional("order") {
                 order("order", DataStoreUtils.KEY_BURGER_MENU_ORDER, ids,
                     mapOf("separator" to DataStoreUtils.MAX_BURGER_MENU_SEPARATORS))
             }
             (ids - DataStoreUtils.LOCKED_BURGER_MENU_ITEMS).forEach { id ->
                 val name = id.replace('_', '-')
-                optional(name) { flag(name, DataStoreUtils.burgerMenuToggleKey(id), true) }
+                val toggleKey = DataStoreUtils.burgerMenuToggleKey(id)
+                if (id !in burgerShortcutIds || acceptsPortableKey(toggleKey)) {
+                    optional(name) { flag(name, toggleKey, DataStoreUtils.burgerMenuDefaultVisibility(id)) }
+                }
             }
         }
     }

@@ -18,6 +18,8 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
+import app.n_zik.android.ui.screens.player.defaultMiniPlayerButtonOrder
+import app.n_zik.android.ui.screens.player.parseMiniPlayerOrder
 import app.n_zik.android.utils.miniPlayerButtonOrderKey
 import app.n_zik.android.utils.showMiniPlayerPlayPauseKey
 import app.n_zik.android.utils.showMiniPlayerSkipBackKey
@@ -42,29 +44,6 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.ui.platform.LocalContext
 import android.content.Context
 import android.content.SharedPreferences
-
-private val defaultButtonOrder = listOf(
-    "skip_back",
-    "play_pause",
-    "skip_forward",
-
-    "shuffle",
-    "repeat",
-    "queue",
-    "audio_output",
-    "sleep_timer",
-
-    "like",
-    "add_to_playlist",
-    "download",
-    "share",
-
-    "radio",
-    "discover",
-
-    "lyrics",
-    "visualizer",
-)
 
 private data class MiniPlayerButtonDef(
     val id: String,
@@ -98,31 +77,15 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
     /** Exact searchable options from the same definitions used by this dialog. */
     internal fun searchOptions(): List<SettingsNestedOption> = buildButtonDefs().values.map { SettingsNestedOption(it.id, it.labelRes) }
 
+    internal fun preferenceKeys(): List<String> =
+        listOf(miniPlayerButtonOrderKey) + buildButtonDefs().values.map { it.preferenceKey }
+
 
     override val dialogTitle: String
         @Composable
         get() = stringResource(R.string.player_mini_buttons_config)
 
     override var isActive: Boolean by mutableStateOf(false)
-
-    private fun parseOrder(serialized: String): List<String> {
-        if (serialized.isBlank()) return defaultButtonOrder
-        return try {
-            val arr = JSONArray(serialized)
-            val list = mutableListOf<String>()
-            for (i in 0 until arr.length()) {
-                list.add(arr.getString(i))
-            }
-            val validIds = defaultButtonOrder.filter { it in buildButtonDefs().keys }
-            val result = list.filter { it in validIds }.toMutableList()
-            for (id in validIds) {
-                if (id !in result) result.add(id)
-            }
-            result
-        } catch (_: Exception) {
-            defaultButtonOrder
-        }
-    }
 
     private fun serializeOrder(order: List<String>): String {
         val arr = JSONArray()
@@ -132,7 +95,7 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
 
     private fun loadPrefs(prefs: SharedPreferences): Pair<MutableList<String>, MutableList<Boolean>> {
         val orderSerialized = prefs.getString(miniPlayerButtonOrderKey, "") ?: ""
-        val order = parseOrder(orderSerialized).toMutableList()
+        val order = parseMiniPlayerOrder(orderSerialized).toMutableList()
         val toggles = order.map { id ->
             val def = buildButtonDefs()[id]
             if (def != null) prefs.getBoolean(def.preferenceKey, def.defaultValue) else false
@@ -210,8 +173,8 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
                 checkedCount = workingToggles.count { it }
             },
             onReset = {
-                workingOrder = defaultButtonOrder.toMutableList()
-                workingToggles = defaultButtonOrder.map { id ->
+                workingOrder = defaultMiniPlayerButtonOrder.toMutableList()
+                workingToggles = defaultMiniPlayerButtonOrder.map { id ->
                     buttonDefs[id]?.defaultValue ?: false
                 }.toMutableList()
                 checkedCount = workingToggles.count { it }
@@ -233,6 +196,6 @@ object MiniPlayerButtonsSettingsDialog : ContentFramedDialog {
     fun reset(context: Context) {
         val prefs = context.preferences
         val defaultToggles = buildButtonDefs().mapValues { it.value.defaultValue }
-        savePrefs(prefs, defaultButtonOrder, defaultToggles)
+        savePrefs(prefs, defaultMiniPlayerButtonOrder, defaultToggles)
     }
 }

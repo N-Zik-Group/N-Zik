@@ -140,24 +140,24 @@ object Shuffler {
         play(binder, songs.map(Song::asMediaItem), onComplete)
     }
 
-    fun queue(player: Player) {
-        try {
+    fun queue(player: Player): Boolean {
+        return try {
             val current = player.currentMediaItemIndex
             val total = player.mediaItemCount
-            if (total <= 1) return
+            if (total <= 1) return false
 
             val items = player.mediaItems.toMutableList().apply {
                 removeAt(current)
             }
             val count = items.size
-            if (count > 0) {
-                if (current > 0) player.removeMediaItems(0, current)
-                if (current < player.mediaItemCount - 1) player.removeMediaItems(1, player.mediaItemCount)
-                player.addMediaItems(items.shuffled())
-                Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(count))
-            }
+            if (current > 0) player.removeMediaItems(0, current)
+            if (total - current > 1) player.removeMediaItems(1, total - current)
+            player.addMediaItems(items.shuffled())
+            Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(count))
+            true
         } catch (e: Exception) {
             Toaster.e(R.string.player_no_song_found)
+            false
         }
     }
 

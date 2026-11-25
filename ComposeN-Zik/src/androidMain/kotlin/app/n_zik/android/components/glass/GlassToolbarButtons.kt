@@ -1,16 +1,5 @@
 package app.n_zik.android.components.glass
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -31,12 +20,7 @@ import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.InlineCircularLoader
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,9 +30,7 @@ import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.components.navigation.header.TabToolBar
@@ -65,7 +47,9 @@ internal fun toolbarItemShape(override: Shape? = null): Shape = override ?: uiRo
 
 private data class ToolbarStyle(val count: Int, val settings: GlassSettings,
     val cellWidth: Dp = GlassActionCellWidth, val wide: Boolean = false, val itemShape: Shape? = null,
-    val compact: Boolean = false, val grouped: Boolean = false)
+    val compact: Boolean = false, val grouped: Boolean = false) {
+    val actionWidth get() = if (count == 1 && !(compact && wide)) GlassStandaloneActionSize else cellWidth
+}
 private val LocalToolbarStyle = staticCompositionLocalOf<ToolbarStyle?> { null }
 
 /** Retains the original toolbar controls and overflow; only their icon presentation changes. */
@@ -75,7 +59,6 @@ fun GlassToolbarButtons(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     modifier: Modifier = Modifier,
-    disableAnimation: Boolean = false,
     settings: GlassSettings = rememberGlassSettings(),
     showTrailingSeparator: Boolean = true,
     itemShape: Shape? = null,
@@ -83,67 +66,31 @@ fun GlassToolbarButtons(
     val material = settings.usesGlassMaterial(GlassArea.ActionButtons)
     if (!material) {
         TabToolBar.Buttons(buttons, horizontalArrangement, verticalAlignment,
-            modifier.glassAreaContour(settings, GlassArea.ActionButtons, uiRoundnessShape()), disableAnimation)
+            modifier.glassAreaContour(settings, GlassArea.ActionButtons, uiRoundnessShape()))
         return
     }
     // Match the original TabToolBar measurement exactly, including its caller's
     // width fraction. Glass must not reveal additional actions or change overflow.
     BoxWithConstraints(modifier.fillMaxWidth().padding(TabToolBar.HORIZONTAL_PADDING, TabToolBar.VERTICAL_PADDING)) {
         val canDisplay = ((maxWidth - TabToolBar.HORIZONTAL_PADDING * 2) / (TabToolBar.TOOLBAR_ICON_SIZE + 15.dp)).toInt().coerceAtLeast(0)
-        val content: @Composable (List<Button>) -> Unit = { targetButtons ->
-            if (canDisplay == 0) {
-                Spacer(Modifier.fillMaxWidth())
-            } else {
-                val clustered = targetButtons.size > canDisplay
-                val ellipsis = EllipsisMenuComponent.init {
-                    targetButtons.takeLast((targetButtons.size - canDisplay + 1).coerceAtLeast(0))
+        if (canDisplay == 0) {
+            Spacer(Modifier.fillMaxWidth())
+        } else {
+            val clustered = buttons.size > canDisplay
+            val visible = buttons.take(if (clustered) canDisplay - 1 else buttons.size)
+            val ellipsis = EllipsisMenuComponent.init { buttons.drop(visible.size) }
+            Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment) {
+                GlassToolbarRow(
+                    visible.size + if (clustered) 1 else 0,
+                    modifier = Modifier.fillMaxWidth(),
+                    settings = settings,
+                    expandToWidth = true,
+                    itemShape = itemShape,
+                    trailingSeparator = clustered && showTrailingSeparator,
+                ) {
+                    visible.forEach { it.ToolBarButton() }
+                    if (clustered) ellipsis.ToolBarButton()
                 }
-                val visible = targetButtons.take(if (clustered) canDisplay - 1 else targetButtons.size)
-                Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment) {
-                    val controls: @Composable RowScope.() -> Unit = {
-                        visible.forEach { it.ToolBarButton() }
-                        if (clustered) ellipsis.ToolBarButton()
-                    }
-                    if (material) {
-                        GlassToolbarRow(visible.size + if (clustered) 1 else 0,
-                            modifier = Modifier.fillMaxWidth(),
-                            settings = settings, expandToWidth = true, itemShape = itemShape,
-                            trailingSeparator = clustered && showTrailingSeparator, content = controls)
-                    } else CompositionLocalProvider(LocalToolbarStyle provides null) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement, verticalAlignment, content = controls)
-                    }
-                }
-            }
-        }
-        val motion = !disableAnimation && isGlassMotionAllowed()
-        var appeared by rememberSaveable { mutableStateOf(false) }
-        val appearance = remember { Animatable(if (appeared) 1f else 0f) }
-        val ready = canDisplay > 0 && buttons.isNotEmpty()
-        LaunchedEffect(ready, motion) {
-            if (ready && !appeared) {
-                if (motion) appearance.animateTo(1f, tween(220, easing = FastOutSlowInEasing))
-                else appearance.snapTo(1f)
-                appeared = true
-            }
-        }
-        Box(Modifier.fillMaxWidth()) {
-            // Enter once when the width is known, including Home bars that disable
-            // list-change animations. Fresh Button instances are not a new toolbar.
-            Box(Modifier.graphicsLayer {
-                val progress = if (disableAnimation || appeared) 1f else appearance.value
-                alpha = progress
-                scaleX = .96f + .04f * progress
-                scaleY = scaleX
-            }) {
-                if (disableAnimation || !motion) content(buttons)
-                else AnimatedContent(buttons, contentKey = { target -> target.map { it.javaClass.name } },
-                    transitionSpec = {
-                        // Preserve Compose's default entrance while allowing the pressed pane to overdraw.
-                        ((fadeIn(tween(220, delayMillis = 90)) +
-                            scaleIn(tween(220, delayMillis = 90), initialScale = .92f)) togetherWith fadeOut(tween(90)))
-                            .using(SizeTransform(clip = false))
-                    },
-                    label = "GlassToolbarButtonsAnimation") { content(it) }
             }
         }
     }
@@ -155,11 +102,10 @@ fun GlassToolbarButtons(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
     modifier: Modifier = Modifier,
-    disableAnimation: Boolean = false,
     settings: GlassSettings = rememberGlassSettings(),
     showTrailingSeparator: Boolean = true,
     itemShape: Shape? = null,
-) = GlassToolbarButtons(buttons.toList(), horizontalArrangement, verticalAlignment, modifier, disableAnimation, settings, showTrailingSeparator, itemShape)
+) = GlassToolbarButtons(buttons.toList(), horizontalArrangement, verticalAlignment, modifier, settings, showTrailingSeparator, itemShape)
 
 /** Inline toolbars opt into the same scoped presentation without replacing their controls. */
 @Composable
@@ -182,7 +128,7 @@ fun GlassToolbarRow(
         return
     }
     BoxWithConstraints(modifier) {
-        val cellWidth = if (constraints.hasBoundedWidth && actionCount > 1)
+        val cellWidth = if (constraints.hasBoundedWidth && (actionCount > 1 || compact && expandToWidth))
             (maxWidth / actionCount).let { if (expandToWidth) it else it.coerceAtMost(GlassActionCellWidth) }
             else GlassActionCellWidth
         CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, cellWidth, expandToWidth, itemShape, compact)) {
@@ -228,7 +174,7 @@ fun GlassToolbarColumn(
 @Composable
 fun GlassToolbarLoading(): Boolean {
     val style = LocalToolbarStyle.current ?: return false
-    Box(Modifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth, GlassActionCellHeight),
+    Box(Modifier.size(style.actionWidth, GlassActionCellHeight),
         contentAlignment = Alignment.Center) {
         InlineCircularLoader(Modifier.size(GlassActionIconSize), color = toolbarForeground(style, colorPalette().text))
     }
@@ -261,7 +207,7 @@ fun GlassToolbarIcon(
     // enlarge a cell after the row has divided its available width.
     val containerModifier = if (modifierOnContainer && !style.compact) modifier else Modifier
     if (style.compact && !style.settings.usesGlassMaterial(GlassArea.ActionButtons)) {
-        Box(containerModifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth,
+        Box(containerModifier.size(style.actionWidth,
             GlassActionCellHeight).clip(itemShape)
             .glassAreaContour(style.settings, GlassArea.ActionButtons, itemShape)
             .combinedClickable(remember { MutableInteractionSource() },
@@ -271,13 +217,12 @@ fun GlassToolbarIcon(
         return true
     }
     if (style.count == 1 && enabled) {
-        LiquidButton(onClick, backdrop, containerModifier.size(GlassStandaloneActionSize),
+        LiquidButton(onClick, backdrop, containerModifier.size(style.actionWidth, GlassActionCellHeight),
             onLongClick = onLongClick, settings = style.settings.forArea(GlassArea.ActionButtons),
             filmColor = glassActionFilmColor(),
             contentHeight = GlassStandaloneActionSize, contentPadding = 0.dp, shape = itemShape, content = { glyph() })
     } else {
-        val dimensions = containerModifier.size(if (style.count == 1) GlassStandaloneActionSize else style.cellWidth,
-            GlassActionCellHeight)
+        val dimensions = containerModifier.size(style.actionWidth, GlassActionCellHeight)
         val surface = if (style.count == 1) dimensions.glassMaterial(
             style.settings.forArea(GlassArea.ActionButtons), itemShape,
             ownBackdrop = backdrop,

@@ -384,8 +384,8 @@ internal suspend fun submitCreatorProfile(
 
         val contributionFiles = if (withdrawal != null) {
             val changes = buildMap {
-                for (path in listOf(ThemeCatalogV1Path, ThemeCatalogV2Path)) {
-                    val index = readIndex(path, optional = path == ThemeCatalogV2Path) ?: continue
+                for (path in listOf(ThemeCatalogV1Path, ThemeCatalogV2Path, ThemeCatalogV3Path)) {
+                    val index = readIndex(path, optional = path != ThemeCatalogV1Path) ?: continue
                     val entry = index.themeEntry(withdrawal.themeId) ?: continue
                     verifyPublishedTheme(entry, withdrawal.themeId)
                     index.put("themes", index.themesWithout(withdrawal.themeId))
@@ -410,14 +410,13 @@ internal suspend fun submitCreatorProfile(
             parseStoreReviews(source)
             mapOf(path to (source + "\n").encodeToByteArray())
         } else if (theme != null) {
-            val isV2 = theme.schemaVersion == 2
-            val path = if (isV2) ThemeCatalogV2Path else ThemeCatalogV1Path
-            val index = checkNotNull(readIndex(path))
-            val previous = index.themeEntry(theme.themeId) ?: if (isV2) {
-                checkNotNull(readIndex(ThemeCatalogV1Path)).themeEntry(theme.themeId)
-            } else {
-                null
+            val path = themeCatalogIndexPath(theme.schemaVersion)
+            val indexes = listOf(ThemeCatalogV1Path, ThemeCatalogV2Path, ThemeCatalogV3Path).associateWith { indexPath ->
+                readIndex(indexPath, optional = indexPath != ThemeCatalogV1Path && indexPath != path)
             }
+            val index = checkNotNull(indexes[path])
+            val previous = indexes.values.mapNotNull { it?.themeEntry(theme.themeId) }
+                .maxByOrNull { it.getInt("revision") }
             check(theme.revision == (previous?.getInt("revision") ?: 0) + 1)
             previous?.let { verifyPublishedTheme(it, theme.themeId) }
             val updatedEntry = JSONObject().put("themeId", theme.themeId).put("revision", theme.revision)

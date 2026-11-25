@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Moja góra</string>
     <string name="recommendations_playlists_title">Playlisty, które mogą ci się spodobać</string>
     <string name="recommendations_reset_complete">Sugestie zostały zresetowane</string>
-    <string name="recommendations_reset_description">Usuń wydarzenia odtwarzania używane do generowania lokalnych rekomendacji Szybkiego Odbicia.</string>
     <string name="recommendations_section_other_youtube_title">Pozostałe, z żeliwa lub stali</string>
     <string name="recommendations_section_visibility_description">Wyłącz, jeżeli nie chcesz widzieć</string>
     <string name="recommendations_show_section_label">Pokaż</string>

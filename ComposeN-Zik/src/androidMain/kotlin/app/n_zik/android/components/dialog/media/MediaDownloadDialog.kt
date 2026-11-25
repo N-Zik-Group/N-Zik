@@ -5,11 +5,10 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
 
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.download.utils.completedDownloadRequestIds
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.ui.components.tab.toolbar.ConfirmDialog
@@ -17,21 +16,37 @@ import timber.log.Timber
 
 @UnstableApi
 abstract class MediaDownloadDialog(
-    activeState: MutableState<Boolean>,
-    val getSongs: () -> List<Song>,
+    private val pendingSongs: MutableState<List<Song>?>,
+    protected val getSongs: () -> List<Song>,
     private val binder: PlayerServiceModern.Binder?,
 ): ConfirmDialog {
 
-    override var isActive: Boolean by activeState
+    override var isActive: Boolean
+        get() = pendingSongs.value != null
+        set(value) {
+            if (value) {
+                if (!isActive) openForSongs(getSongs())
+            } else {
+                pendingSongs.value = null
+            }
+        }
+
+    protected val confirmationSongs: List<Song>
+        get() = pendingSongs.value.orEmpty()
+
+    protected fun openForSongs(songs: List<Song>) {
+        pendingSongs.value = songs.toList()
+    }
 
     abstract fun onAction( media: Song )
 
     open fun onBatchStart( count: Int ) {}
 
     override fun onConfirm() {
-        val allSongs = getSongs()
+        val allSongs = confirmationSongs
+        val downloadedIds = MyDownloadHelper.downloads.value.completedDownloadRequestIds()
         val songsToDownload = allSongs.filter { song ->
-            val isDownloaded = MyDownloadHelper.isSongDownloaded(song.id)
+            val isDownloaded = song.id in downloadedIds
             if (isDownloaded) {
                 Timber.tag("MediaDownloadDialog").d("Skipping already downloaded: ${song.id}")
             }

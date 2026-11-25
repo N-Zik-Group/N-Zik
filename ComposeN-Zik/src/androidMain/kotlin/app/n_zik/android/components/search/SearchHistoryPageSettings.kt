@@ -20,11 +20,13 @@ import app.n_zik.android.components.dialog.common.ToggleListDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OrganizedSettingsCategories
 import app.n_zik.android.components.settings.common.SettingsCategories
-/** Opens the per-page history choices beside the existing search display-order setting. */
+
+/** Opens the per-page history choices. */
 @Composable
-fun SearchHistoryPageSettings() {
+fun SearchHistoryPageSettings(modifier: Modifier = Modifier) {
     var open by remember { mutableStateOf(false) }
     OtherSettingsEntry(
+        modifier = modifier,
         title = stringResource(R.string.search_history_pages),
         text = stringResource(R.string.search_history_pages_description),
         icon = R.drawable.history,

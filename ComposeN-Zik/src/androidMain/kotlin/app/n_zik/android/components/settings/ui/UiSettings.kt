@@ -49,6 +49,7 @@ import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDial
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
+import app.n_zik.android.components.dialog.settings.interfaceToolbarSettingsDialogs
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
 import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
@@ -172,6 +173,7 @@ internal fun UiSettingsContent(
     HomeArtistsToolbarSettingsDialog.Render()
     HomeAlbumsToolbarSettingsDialog.Render()
     HomeLibraryToolbarSettingsDialog.Render()
+    interfaceToolbarSettingsDialogs.forEach { it.Render() }
     HomeSongsSortSettingsDialog.Render()
     HomeAlbumsSortSettingsDialog.Render()
     HomeArtistsSortSettingsDialog.Render()

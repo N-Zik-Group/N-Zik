@@ -5,6 +5,7 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -18,6 +19,8 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
+import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.pauseListenHistoryKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
@@ -25,6 +28,9 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.ValueSelectorDialog
+import app.n_zik.android.components.search.SearchHistoryPageSettings
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.rememberSearchHistoryCount
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -49,6 +55,8 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
     var restartService by restartState
     var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
     var pauseListenHistory by rememberPreference(pauseListenHistoryKey, false)
+    var minimumListeningTime by rememberPreference(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
+    var showMinimumListeningTimeDialog by remember { mutableStateOf(false) }
     SettingsSectionCard(
         title = stringResource(R.string.library_history_title),
         icon = R.drawable.history,
@@ -73,6 +81,7 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 },
                 icon = R.drawable.pause
             )
+            SearchHistoryPageSettings(Modifier.settingsSearchTarget("data.history.search_history_per_page"))
 
             val queriesCount by rememberSearchHistoryCount()
 
@@ -87,6 +96,24 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                 },
                 icon = R.drawable.pause
             )
+            OtherSettingsEntry(
+                modifier = Modifier.settingsSearchTarget("general.playback.min_listening_time"),
+                title = stringResource(R.string.recommendations_minimum_playback_duration_label),
+                text = stringResource(R.string.player_minimum_listening_time_description),
+                selectedValueText = minimumListeningTime.text,
+                onClick = { showMinimumListeningTimeDialog = true },
+                icon = R.drawable.time,
+            )
+            DialogPresence(visible = showMinimumListeningTimeDialog) {
+                ValueSelectorDialog(
+                    title = stringResource(R.string.recommendations_minimum_playback_duration_label),
+                    selectedValue = minimumListeningTime,
+                    onValueSelected = { minimumListeningTime = it },
+                    valueText = { it.text },
+                    values = ExoPlayerMinTimeForEvent.entries,
+                    onDismiss = { showMinimumListeningTimeDialog = false },
+                )
+            }
 
             val eventsCount by remember {
                 Database.eventTable.countAll()

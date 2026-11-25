@@ -22,12 +22,12 @@ internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
             listOfNotNull(R.string.glass_effect_title, sectionTitle, description) + choices), section, sectionTitle, fallback))
     }
     option("master", R.string.glass_effect_enabled_title, "master", R.string.glass_effect_title, R.string.glass_effect_enabled_description)
-    option("optimization", R.string.glass_effect_optimization_title, "material", R.string.glass_effect_group_material, R.string.glass_effect_optimization_description)
     option("ripple.enabled", R.string.glass_effect_ripple_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_description)
     option("ripple.intensity", R.string.glass_effect_ripple_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_intensity_description)
     option("ripple.size", R.string.glass_effect_ripple_size, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_ripple_size_description)
     option("jelly.enabled", R.string.glass_effect_jelly_enabled, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_description)
     option("jelly.intensity", R.string.glass_effect_jelly_intensity, "interactions", R.string.glass_effect_group_interactions, R.string.glass_effect_jelly_intensity_description)
+    option("optimization", R.string.glass_effect_optimization_title, "material", R.string.glass_effect_group_material, R.string.glass_effect_optimization_description)
     option("quality", R.string.glass_effect_rendering_quality, "material", R.string.glass_effect_group_material,
         choices = listOf(R.string.glass_effect_quality_fastest, R.string.glass_effect_quality_balanced, R.string.glass_effect_quality_high))
     option("vibrancy", R.string.glass_effect_color_vibrancy, "material", R.string.glass_effect_group_material, fallback = "glass.quality")

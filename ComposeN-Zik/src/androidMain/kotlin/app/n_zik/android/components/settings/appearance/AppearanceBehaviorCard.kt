@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.enums.BackgroundProgress
-import app.n_zik.android.enums.PlayerOpeningMode
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.SongsNumber
 import app.n_zik.android.utils.backgroundProgressKey
@@ -33,18 +32,15 @@ import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.isLandscape
-import app.n_zik.android.utils.playerOpeningModeKey
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.showNextSongsInPlayerKey
-import app.n_zik.android.utils.showTopActionsBarKey
 import app.n_zik.android.utils.showVisualizerStateKey
 import app.n_zik.android.utils.showalbumcoverKey
 import app.n_zik.android.utils.showsongsKey
 import app.n_zik.android.utils.showvisthumbnailKey
 import app.n_zik.android.utils.showVisualizerButtonsKey
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
-import app.n_zik.android.utils.topPaddingKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
@@ -66,16 +62,6 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @UnstableApi
 @Composable
 internal fun AppearanceBehaviorCard(search: Search) {
-    var openingMode by rememberPreference(playerOpeningModeKey, PlayerOpeningMode.Audio)
-    val openingModeTitle = stringResource(R.string.settings_player_opening_mode_label)
-    val openingModeDescription = stringResource(R.string.settings_player_opening_mode_description)
-    val openingModeLabels = mapOf(
-        PlayerOpeningMode.Audio to stringResource(R.string.player_audio_mode),
-        PlayerOpeningMode.Video to stringResource(R.string.player_video_mode),
-        PlayerOpeningMode.RememberLast to stringResource(R.string.settings_player_opening_mode_remember_last),
-    )
-    val matchesOpeningMode = (openingModeLabels.values + openingModeTitle + openingModeDescription)
-        .any { it.contains(search.inputValue, ignoreCase = true) }
     var disablePlayerHorizontalSwipe by rememberPreference(disablePlayerHorizontalSwipeKey, false)
     var playerSwipeSensitivity by rememberPreference(playerSwipeSensitivityKey, PlayerSwipeSensitivity.Medium)
     var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
@@ -98,7 +84,6 @@ internal fun AppearanceBehaviorCard(search: Search) {
         BackgroundProgress.MiniPlayer
     )
     var showNextSongsInPlayer by rememberPreference(showNextSongsInPlayerKey, false)
-    var showTopActionsBar by rememberPreference(showTopActionsBarKey, true)
     var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
     var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
     var showVisualizerButtons by rememberPreference(showVisualizerButtonsKey, true)
@@ -106,10 +91,9 @@ internal fun AppearanceBehaviorCard(search: Search) {
     var showalbumcover by rememberPreference(showalbumcoverKey, true)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     var showVisualizerStateKey by rememberPreference(showVisualizerStateKey, false)
-    var topPadding by rememberPreference(topPaddingKey, true)
-    val searchCtx_0_5 = search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.settings_player_top_action_bar_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_top_spacing_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_next_queue_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_visible_count_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_album_cover_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_description).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true) || stringResource(R.string.visualizer_title).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.visualizer_microphone_permission_message).contains(search.inputValue, true)
+    val searchCtx_0_5 = search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.settings_player_next_queue_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_visible_count_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_album_cover_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_description).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true) || stringResource(R.string.visualizer_title).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.visualizer_microphone_permission_message).contains(search.inputValue, true)
     AnimatedVisibility(
-                visible = searchCtx_0_5 || matchesOpeningMode,
+                visible = searchCtx_0_5,
                 enter = settingsCardEnter,
                 exit = settingsCardExit
             ) {
@@ -118,57 +102,6 @@ internal fun AppearanceBehaviorCard(search: Search) {
             title = stringResource(R.string.player_behavior_and_visuals),
             icon = R.drawable.equalizer,
             content = {
-            if (matchesOpeningMode) {
-                OtherEnumValueSelectorSettingsEntry(
-                    modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.opening_mode"),
-                    icon = R.drawable.video,
-                    title = openingModeTitle,
-                    text = stringResource(
-                        R.string.settings_description_with_value,
-                        openingModeDescription,
-                        openingModeLabels.getValue(openingMode),
-                    ),
-                    selectedValue = openingMode,
-                    onValueSelected = { openingMode = it },
-                    valueText = { openingModeLabels.getValue(it) },
-                )
-            }
-            if (!isLandscape) {
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_player_top_action_bar_visible_label).contains(
-                        search.inputValue,
-                        true
-                    )
-                )
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_player_top_action_bar_visible_label).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.show_player_top_actions_bar"),
-                        icon = R.drawable.enqueue,
-                            title = stringResource(R.string.settings_player_top_action_bar_visible_label),
-                            text = stringResource(R.string.player_show_player_top_actions_bar_description),
-                            isChecked = showTopActionsBar,
-                            onCheckedChange = { showTopActionsBar = it }
-                        )
-                    }
-
-                if (!showTopActionsBar) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_top_spacing_label).contains(
-                            search.inputValue,
-                            true
-                        )
-                    )
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_top_spacing_label).contains(search.inputValue, true)) {
-                            OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.blankspace"),
-                        icon = R.drawable.space,
-                                title = stringResource(R.string.settings_lyrics_top_spacing_label),
-                                text = stringResource(R.string.player_top_spacing_description),
-                                isChecked = topPadding,
-                                onCheckedChange = { topPadding = it }
-                            )
-                        }
-                }
-            }
-
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_next_queue_visible_label).contains(
                     search.inputValue,
                     true

@@ -151,6 +151,7 @@ class CreatorGitHubPublisherTest {
         )
         val updated = theme.copy(revision = 2)
         val upgraded = updated.copy(schemaVersion = 2, compatibility = StoreCompatibility(99))
+        val current = upgraded.copy(schemaVersion = 3, revision = 3, compatibility = StoreCompatibility(101))
         val scenarios = listOf(
             Submission("nzik/creator-profile-123", files = mapOf(
                 "catalog/creators/123/profile.json" to """{"githubId":123,"displayName":"Creator","bio":""}""".encodeToByteArray(),
@@ -164,13 +165,17 @@ class CreatorGitHubPublisherTest {
             Submission("nzik/theme-$themeId", theme = upgraded, hasV2Index = true, files = mapOf(
                 upgraded.directory + "manifest.json" to """{"author":{"githubId":123,"login":"creator"}}""".encodeToByteArray(),
             )),
+            Submission("nzik/theme-$themeId", theme = current, hasV2Index = true, v2Revision = 2, hasV3Index = true,
+                files = mapOf(current.directory + "manifest.json" to """{"author":{"githubId":123,"login":"creator"}}""".encodeToByteArray())),
             Submission("nzik/withdraw-$themeId", withdrawal = upgraded, hasV2Index = true, v2Revision = 2),
+            Submission("nzik/withdraw-$themeId", withdrawal = current, hasV2Index = true, v2Revision = 2, hasV3Index = true, v3Revision = 3),
             Submission("nzik/review-$themeId-1-123", review = ThemeReviewSubmission(theme, 5, "Test")),
             Submission("nzik/withdraw-$themeId", withdrawal = theme),
         )
         for (scenario in scenarios) {
             val fork = OutdatedFork(
                 scenario.alreadyPublished, hasV2Index = scenario.hasV2Index, v2Revision = scenario.v2Revision,
+                hasV3Index = scenario.hasV3Index, v3Revision = scenario.v3Revision,
             )
             val actual = submitCreatorProfile(
                 "test-token", author.githubId, scenario.files, scenario.theme, scenario.review, scenario.withdrawal,
@@ -186,18 +191,24 @@ class CreatorGitHubPublisherTest {
             assertFalse(fork.calls.any { it.contains("merge-upstream") || it.contains("/git/refs/heads/main") })
             val entries = checkNotNull(fork.tree).getJSONArray("tree")
             val paths = (0 until entries.length()).map { entries.getJSONObject(it).getString("path") }.toSet()
-            if (scenario.theme?.schemaVersion == 2) {
-                assertEquals(setOf(upgraded.directory + "manifest.json", ThemeCatalogV2Path), paths)
+            val published = scenario.theme
+            if (published != null && published.schemaVersion >= ThemeAppearanceV2) {
+                val indexPath = themeCatalogIndexPath(published.schemaVersion)
+                assertEquals(setOf(published.directory + "manifest.json", indexPath), paths)
                 val blob = (0 until entries.length()).map(entries::getJSONObject)
-                    .single { it.getString("path") == ThemeCatalogV2Path }.getString("sha")
+                    .single { it.getString("path") == indexPath }.getString("sha")
                 val index = JSONObject(fork.blobs.getValue(blob).decodeToString())
                 assertEquals(80, index.getInt("previewLimit"))
                 assertEquals(98, index.getInt("legacyMaxVersionCode"))
-                assertEquals(2, index.getJSONArray("themes").getJSONObject(0).getInt("revision"))
+                assertEquals(published.revision, index.getJSONArray("themes").getJSONObject(0).getInt("revision"))
             }
             if (scenario.withdrawal != null) {
                 assertEquals(
-                    if (scenario.hasV2Index) setOf(ThemeCatalogV1Path, ThemeCatalogV2Path) else setOf(ThemeCatalogV1Path),
+                    buildSet {
+                        add(ThemeCatalogV1Path)
+                        if (scenario.v2Revision != null) add(ThemeCatalogV2Path)
+                        if (scenario.v3Revision != null) add(ThemeCatalogV3Path)
+                    },
                     paths,
                 )
                 assertTrue(checkNotNull(fork.pull).getString("title").startsWith("Withdraw theme:"))
@@ -338,6 +349,8 @@ class CreatorGitHubPublisherTest {
         val alreadyPublished: Boolean = true,
         val hasV2Index: Boolean = false,
         val v2Revision: Int? = null,
+        val hasV3Index: Boolean = false,
+        val v3Revision: Int? = null,
     )
 
     private class OutdatedFork(
@@ -349,6 +362,8 @@ class CreatorGitHubPublisherTest {
         private val publishedProfile: String? = null,
         private val hasV2Index: Boolean = false,
         private val v2Revision: Int? = null,
+        private val hasV3Index: Boolean = false,
+        private val v3Revision: Int? = null,
     ) {
         val calls = mutableListOf<String>()
         var ref: JSONObject? = null
@@ -383,6 +398,12 @@ class CreatorGitHubPublisherTest {
                 )
                 path.endsWith("/themes/index-v2.json") -> if (hasV2Index) {
                     val entry = v2Revision?.let(::publishedEntry).orEmpty()
+                    200 to contents("""{"schemaVersion":1,"legacyMaxVersionCode":98,"previewLimit":80,"themes":[$entry]}""")
+                } else {
+                    404 to "{}"
+                }
+                path.endsWith("/themes/index-v3.json") -> if (hasV3Index) {
+                    val entry = v3Revision?.let(::publishedEntry).orEmpty()
                     200 to contents("""{"schemaVersion":1,"legacyMaxVersionCode":98,"previewLimit":80,"themes":[$entry]}""")
                 } else {
                     404 to "{}"

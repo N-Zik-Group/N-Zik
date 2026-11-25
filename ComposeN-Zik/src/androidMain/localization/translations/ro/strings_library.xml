@@ -313,7 +313,6 @@
     <string name="recommendations_personal_top_title">Topul meu</string>
     <string name="recommendations_playlists_title">Playlisturi sugerate</string>
     <string name="recommendations_reset_complete">Selecțiile rapide au fost șterse</string>
-    <string name="recommendations_reset_description">Ștergeți evenimentele de redare utilizate pentru a genera recomandări locale pentru Listele rapide.</string>
     <string name="recommendations_section_other_youtube_title">Alte secțiuni</string>
     <string name="recommendations_section_visibility_description">Dezactivează dacă nu dorești să vezi</string>
     <string name="recommendations_show_section_label">Arată</string>

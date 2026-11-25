@@ -29,8 +29,9 @@ class Locator private constructor(
     firstColorState: MutableState<Boolean>,
     private val binder: PlayerServiceModern.Binder?,
     private val scrollableState: ScrollableState,
-    private val getSongs: () -> List<Song>,
-    private val coroutineScope: CoroutineScope
+    private val findIndex: (String?) -> Int,
+    private val coroutineScope: CoroutineScope,
+    private val listItemOffset: Int,
 ): MenuIcon, DynamicColor, Descriptive {
 
     companion object {
@@ -38,6 +39,26 @@ class Locator private constructor(
         operator fun invoke(
             scrollableState: ScrollableState,
             getSongs: () -> List<Song>
+        ): Locator = invoke(scrollableState, listItemOffset = 0, getSongs = getSongs)
+
+        @Composable
+        operator fun invoke(
+            scrollableState: ScrollableState,
+            listItemOffset: Int,
+            getSongs: () -> List<Song>,
+        ): Locator = create(scrollableState, listItemOffset) { mediaId ->
+            getSongs().indexOfFirst { it.id == mediaId }
+        }
+
+        @Composable
+        internal fun forQueue(scrollableState: LazyListState, findVisibleIndex: () -> Int): Locator =
+            create(scrollableState, 0) { findVisibleIndex() }
+
+        @Composable
+        private fun create(
+            scrollableState: ScrollableState,
+            listItemOffset: Int,
+            findIndex: (String?) -> Int,
         ): Locator {
             val binder = LocalPlayerServiceBinder.current
             val mediaItem = binder?.player?.currentMediaItem
@@ -49,14 +70,15 @@ class Locator private constructor(
                 },
                 binder = binder,
                 scrollableState = scrollableState,
-                getSongs = getSongs,
-                coroutineScope = coroutineScope
+                findIndex = findIndex,
+                coroutineScope = coroutineScope,
+                listItemOffset = listItemOffset,
             )
         }
     }
 
     val position: Int
-        get() = getSongs().map( Song::id ).indexOf( binder?.player?.currentMediaItem?.mediaId )
+        get() = findIndex(binder?.player?.currentMediaItem?.mediaId)
 
     override val iconId: Int = R.drawable.locate
     override val messageId: Int = R.string.player_action_locate_current_song
@@ -68,20 +90,16 @@ class Locator private constructor(
 
     override fun onShortClick() {
         if( isFirstColor ) {
-            val mediaItem = binder?.player?.currentMediaItem
-            // Capture songs here to prevent unwanted outcome
-            // when a list is captured multiple times
-            val songs = getSongs()
+            val songIndex = position
+            Timber.tag("locator").d("Visible item index: $songIndex")
 
-            Timber.tag("locator").d("LocateComponent.onShortClick songs ${songs.size} -> mediaItem ${mediaItem?.mediaId}")
-
-            if( position == -1 )      // Playing song isn't inside [songs()]
+            if( songIndex == -1 )
                 Toaster.i( R.string.player_current_song_not_in_list )
             else
                 coroutineScope.launch {
                     when( scrollableState ) {
-                        is LazyListState -> scrollableState.scrollToItem( position )
-                        is LazyGridState -> scrollableState.scrollToItem( position )
+                        is LazyListState -> scrollableState.scrollToItem(songIndex + listItemOffset)
+                        is LazyGridState -> scrollableState.scrollToItem(songIndex)
                     }
                 }
         } else

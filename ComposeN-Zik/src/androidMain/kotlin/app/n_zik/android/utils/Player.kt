@@ -81,9 +81,7 @@ fun Player.seamlessPlay(mediaItem: MediaItem) {
 }
 
 
-fun Player.shuffleQueue() {
-    Shuffler.queue(this)
-}
+fun Player.shuffleQueue(): Boolean = Shuffler.queue(this)
 
 @SuppressLint("Range")
 @UnstableApi

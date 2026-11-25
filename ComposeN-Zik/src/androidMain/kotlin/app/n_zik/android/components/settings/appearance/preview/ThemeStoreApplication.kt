@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.appearance.preview
 
 import android.content.SharedPreferences
+import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
+import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.utils.queueDurationExpandedKey
 import app.n_zik.android.utils.titleExpandedKey
 import app.n_zik.android.utils.timelineExpandedKey
@@ -21,6 +23,9 @@ import app.n_zik.android.utils.showFoldersOnDeviceKey
 import app.n_zik.android.utils.showStatsListeningTimeKey
 import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.m3eAlwaysShowShapesKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarBottomAudioVideoKey
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
+import app.n_zik.android.utils.playerActionBarButtonOrderKey
 import app.n_zik.android.utils.applyFontPaddingKey
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.uiRoundnessDpKey
@@ -71,7 +76,11 @@ internal fun Map<ThemeCategory, ThemeSettings>.toStoreGroups(): Map<StoreGroup, 
     val groups = mutableMapOf<StoreGroup, ThemeSettings>()
     for ((category, settings) in this) {
         for ((group, fields) in settings.plain.entries.groupBy { storeGroup(category, it.key) }) {
-            groups[group] = ThemeSettings(fields.associate { it.key to it.value }, settings.glass)
+            val previous = groups[group]
+            groups[group] = ThemeSettings(
+                previous?.plain.orEmpty() + fields.associate { it.key to it.value },
+                previous?.glass.orEmpty() + settings.glass,
+            )
         }
     }
     return groups
@@ -91,6 +100,7 @@ private fun storeGroup(category: ThemeCategory, key: String): StoreGroup = when 
     ThemeCategory.COLORS -> StoreGroup.Colors
     ThemeCategory.GLASS -> StoreGroup.Glass
     ThemeCategory.NAVIGATION -> when (key) {
+        in ToolbarSurface.PLAYER_TOP.preferenceKeys, in ToolbarSurface.QUEUE.preferenceKeys -> StoreGroup.PlayerAndQueue
         fontTypeKey, useSystemFontKey, applyFontPaddingKey -> StoreGroup.Font
         hideStatusBarKey, showFloatingIconKey, uiRoundnessDpKey, artistThumbnailRoundnessDpKey,
         Preference.HOME_ARTIST_ITEM_SIZE.key, Preference.HOME_ALBUM_ITEM_SIZE.key, Preference.HOME_LIBRARY_ITEM_SIZE.key,
@@ -122,11 +132,29 @@ internal fun StoreAppearance.selectedSettings(
 ): ThemeSettings? {
     if (theme.supportAt(versionCode) != StoreSupport.Supported) return null
     val selected = selectedGroups(selection) ?: return null
-    if (theme.themeId == BundledThemeId && StoreGroup.Animations in selection) {
-        // Stock resets local defaults without requiring a new field in its portable document.
-        return selected.copy(plain = selected.plain + (m3eAlwaysShowShapesKey to UseThemeDefault))
+    if (theme.themeId != BundledThemeId) {
+        if (StoreGroup.PlayerAndQueue !in selection) return selected
+        val defaults = listOf(playerActionBarTopSlotsKey, playerActionBarBottomAudioVideoKey)
+            .filterNot(selected.plain::containsKey)
+        return selected.copy(plain = selected.plain + defaults.associateWith { UseThemeDefault })
     }
-    return selected
+
+    // Stock resets local defaults without requiring optional fields in its portable document.
+    val defaults = buildList {
+        if (StoreGroup.Animations in selection) add(m3eAlwaysShowShapesKey)
+        if (StoreGroup.Navigation in selection) addAll(stockLibraryToolbarKeys())
+        if (StoreGroup.PlayerAndQueue in selection) {
+            addAll(MiniPlayerButtonsSettingsDialog.preferenceKeys())
+            add(playerActionBarButtonOrderKey)
+            add(playerActionBarBottomAudioVideoKey)
+        }
+        ToolbarSurface.entries.forEach { surface ->
+            if (storeGroup(ThemeCategory.NAVIGATION, surface.orderKey) in selection) {
+                addAll(surface.preferenceKeys)
+            }
+        }
+    }
+    return selected.copy(plain = selected.plain + defaults.associateWith { UseThemeDefault })
 }
 
 private fun StoreAppearance.selectedGroups(selection: Set<StoreGroup>): ThemeSettings? {

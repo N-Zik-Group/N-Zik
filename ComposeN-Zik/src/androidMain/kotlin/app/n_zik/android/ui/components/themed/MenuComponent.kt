@@ -14,8 +14,10 @@ import app.n_zik.android.core.utils.Toaster
 @SuppressLint("ComposableNaming")
 @Composable
 fun PlayNext(
-    onClick: () -> Unit
+    enabled: Boolean = true,
+    onClick: () -> Unit,
 ): MenuIcon = object: MenuIcon, Descriptive {
+    override val isEnabled = enabled
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = R.drawable.play_skip_forward
@@ -25,6 +27,7 @@ fun PlayNext(
         get() = stringResource( messageId )
 
     override fun onShortClick() {
+        if (!isEnabled) return
         onClick()
         menuState.hide()
     }

@@ -298,9 +298,12 @@ val Innertube.VideoItem.asSong: Song
         thumbnailUrl = thumbnail?.url
     )
 
+internal val MediaItem.normalizedSongId: String
+    get() = mediaId.substringAfterLast('/')
+
 val MediaItem.asSong: Song
     get() = Song (
-        id = mediaId.split("/").lastOrNull() ?: mediaId,
+        id = normalizedSongId,
         title = (if (mediaMetadata.extras?.getBoolean("isTitleModified") == true) MODIFIED_PREFIX else "") + (if (isExplicit) EXPLICIT_PREFIX else "") + (mediaMetadata.title?.toString()?.let { if (it == "null") "" else it } ?: ""),
         artistsText = (if (mediaMetadata.extras?.getBoolean("isArtistModified") == true) MODIFIED_PREFIX else "") + (mediaMetadata.artist?.toString()?.let { if (it == "null") "" else it }?.stripExplicitEmoji() ?: ""),
         durationText = mediaMetadata.extras?.getString("durationText"),

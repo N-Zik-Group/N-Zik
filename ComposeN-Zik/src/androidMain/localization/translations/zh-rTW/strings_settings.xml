@@ -332,7 +332,6 @@
     <string name="settings_player_action_bar_loop_visible_label">顯示 \"重複播放\" 按鈕</string>
     <string name="settings_player_action_bar_menu_visible_label">顯示清單按鈕</string>
     <string name="settings_player_action_bar_playlist_add_visible_label">顯示 \"新增到播放清單\" 按鈕</string>
-    <string name="settings_player_action_bar_queue_arrow_visible_label">顯示 \"箭頭\" 按鈕</string>
     <string name="settings_player_action_bar_radio_visible_label">Start radio button</string>
     <string name="settings_player_action_bar_shuffle_visible_label">顯示 \"隨機播放\" 按鈕</string>
     <string name="settings_player_action_bar_sleep_timer_visible_label">顯示 \"睡眠計時器\" 按鈕</string>

@@ -296,6 +296,7 @@ fun SettingsCategoryPage(
                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
                             normalizePreferences = target.isBlank(),
                             searchTarget = target,
+                            onSettingsNavigate = onSearchResultNavigate,
                         )
                     }
                 }
@@ -373,6 +374,7 @@ fun SettingsCategoryPage(
                                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
                                             normalizePreferences = false,
                                             searchTarget = "",
+                                            onSettingsNavigate = onSearchResultNavigate,
                                         )
                                     }
                                 }
@@ -422,12 +424,15 @@ private fun SettingsSourceContent(
     decorate: @Composable (Int) -> Modifier,
     normalizePreferences: Boolean,
     searchTarget: String,
+    onSettingsNavigate: (String) -> Unit,
 ) {
     when (tab) {
         0 -> GeneralSettingsContent(search, selectedCards = selection, cardModifier = decorate)
         1 -> UiSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         2 -> AppearanceSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate, normalizePreferences = normalizePreferences)
-        3 -> AIRecommendationSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
+        3 -> AIRecommendationSettingsContent(
+            search, navController, onSettingsNavigate, selectedCards = selection, cardModifier = decorate,
+        )
         4 -> DataSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         5 -> AccountsSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         6 -> NetworkSettingsContent(

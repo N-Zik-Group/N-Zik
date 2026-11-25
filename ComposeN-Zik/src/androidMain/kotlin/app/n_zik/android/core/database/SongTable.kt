@@ -148,6 +148,14 @@ interface SongTable {
     """)
     fun findAllTitleArtistContains( searchTerm: String ): Flow<List<Song>>
 
+    /** Literal title or artist filtering for the in-app local search field. */
+    @Query("""
+        SELECT DISTINCT * FROM Song
+        WHERE instr(lower(title), lower(:searchTerm)) > 0
+        OR instr(lower(artistsText), lower(:searchTerm)) > 0
+    """)
+    fun findAllTitleArtistContainsLiteral(searchTerm: String): Flow<List<Song>>
+
     /** Case-insensitive match of [artistName] against [Song.artistsText], with [MODIFIED_PREFIX] stripped before comparison. */
     @Query("""
         SELECT DISTINCT * 

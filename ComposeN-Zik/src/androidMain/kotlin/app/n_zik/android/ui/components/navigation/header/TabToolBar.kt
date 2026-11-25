@@ -38,7 +38,6 @@ import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ripple
-import androidx.compose.animation.AnimatedContent
 import app.n_zik.android.components.glass.GlassToolbarIcon
 
 object TabToolBar {
@@ -53,47 +52,23 @@ object TabToolBar {
         horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
         verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
         modifier: Modifier = Modifier,
-        disableAnimation: Boolean = false
     ) {
         BoxWithConstraints(modifier.fillMaxWidth().padding(HORIZONTAL_PADDING, VERTICAL_PADDING)) {
             val canDisplay = ((maxWidth - HORIZONTAL_PADDING * 2) / (TOOLBAR_ICON_SIZE + 15.dp)).toInt().coerceAtLeast(0)
-            val content = @Composable { targetButtons: List<Button> ->
-                if( canDisplay == 0 ) {
-                    Spacer(modifier = Modifier.fillMaxWidth())
-                } else {
-                    val isClustered = targetButtons.size > canDisplay
-                    val ellipsisMenu = EllipsisMenuComponent.init {
-                        targetButtons.takeLast(
-                            (targetButtons.size - canDisplay + 1).coerceAtLeast( 0 )
-                        )
-                    }
-
-                    Row(
-                        horizontalArrangement = horizontalArrangement,
-                        verticalAlignment = verticalAlignment,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        targetButtons.take(
-                            if( isClustered ) canDisplay - 1 else targetButtons.size
-                        ).forEach { it.ToolBarButton() }
-
-                        if( isClustered ) ellipsisMenu.ToolBarButton()
-                    }
-                }
-            }
-
-            if (disableAnimation) {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    content(buttons)
-                }
+            if (canDisplay == 0) {
+                Spacer(Modifier.fillMaxWidth())
             } else {
-                AnimatedContent(
-                    targetState = buttons,
-                    contentKey = { target -> target.map { it.javaClass.name } },
-                    label = "ToolbarButtonsAnimation",
-                    modifier = Modifier.fillMaxWidth()
-                ) { targetButtons ->
-                    content(targetButtons)
+                val clustered = buttons.size > canDisplay
+                val visible = buttons.take(if (clustered) canDisplay - 1 else buttons.size)
+                val ellipsis = EllipsisMenuComponent.init { buttons.drop(visible.size) }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = horizontalArrangement,
+                    verticalAlignment = verticalAlignment,
+                ) {
+                    visible.forEach { it.ToolBarButton() }
+                    if (clustered) ellipsis.ToolBarButton()
                 }
             }
         }
@@ -105,8 +80,7 @@ object TabToolBar {
         horizontalArrangement: Arrangement.Horizontal = Arrangement.SpaceEvenly,
         verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
         modifier: Modifier = Modifier,
-        disableAnimation: Boolean = false
-    ) = Buttons( listOf( *buttons ), horizontalArrangement, verticalAlignment, modifier, disableAnimation )
+    ) = Buttons( listOf( *buttons ), horizontalArrangement, verticalAlignment, modifier )
 
     @Composable
     fun Icon(

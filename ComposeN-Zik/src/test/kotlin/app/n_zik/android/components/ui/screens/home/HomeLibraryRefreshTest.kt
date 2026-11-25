@@ -24,7 +24,7 @@ class HomeLibraryRefreshTest {
     @Test fun `podcast-only pull refresh loads visible exact IDs and ignores ordinary playlists`() = runBlocking {
         val visible = scope.copy(query = "Playlist 1").visible(listOf(podcast, otherPodcast, playlist, local))
         val refreshed = mutableListOf<String?>()
-        val result = refreshHomeLibraryPodcasts(homeLibraryActionTargets(visible, emptyList()),
+        val result = refreshHomeLibraryPodcasts(homeLibraryActionTargets(visible, emptyList(), selectionActive = false),
             refreshPodcast = { row -> refreshed.add(row.browseId); true })
         assertEquals(listOf(podcast.playlist.browseId), refreshed)
         assertEquals(HomeLibraryRefreshResult(1, 0), result)

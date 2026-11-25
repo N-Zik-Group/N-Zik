@@ -104,7 +104,10 @@ import kotlinx.coroutines.flow.map
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.search.SearchEmptyFeedback
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
+import app.n_zik.android.components.search.matchesCollectionSearch
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
@@ -290,25 +293,36 @@ fun HistoryList(
         }
     }
 
-    val filteredEvents = remember(events, search.inputValue) {
+    val query = search.filterQuery
+    val filteredEvents = remember(events, query) {
         events.mapValues { (_, details) ->
             details.fastDistinctBy { it.song.id }.filter { event ->
-                event.song.title.contains(search.inputValue, ignoreCase = true) ||
-                    event.song.artistsText.orEmpty().contains(search.inputValue, ignoreCase = true)
+                event.song.matchesCollectionSearch(query)
             }
         }.filterValues { it.isNotEmpty() }
     }
-    val filteredHistorySections = remember(historyPage, search.inputValue, parentalControlEnabled) {
+    val onlineHistorySections = remember(historyPage, parentalControlEnabled) {
         historyPage?.sections.orEmpty().map { section ->
             section.title to section.songs.map { it.asMediaItem }.filter { mediaItem ->
                 mediaItem.mediaId.isNotEmpty() &&
-                    (!parentalControlEnabled || mediaItem.mediaMetadata.title?.startsWith(EXPLICIT_PREFIX, true) != true) &&
-                    ((mediaItem.mediaMetadata.title ?: "").contains(search.inputValue, ignoreCase = true) ||
-                        (mediaItem.mediaMetadata.artist ?: "").contains(search.inputValue, ignoreCase = true))
+                    (!parentalControlEnabled || mediaItem.mediaMetadata.title?.startsWith(EXPLICIT_PREFIX, true) != true)
+            }
+        }
+    }
+    val onlineHistoryIds = remember(onlineHistorySections) {
+        onlineHistorySections.flatMap { (_, songs) -> songs.map { it.mediaId } }.distinct()
+    }
+    val storedOnlineHistorySongs by rememberSongRowMetadata(onlineHistoryIds)
+    val filteredHistorySections = remember(onlineHistorySections, storedOnlineHistorySongs, query) {
+        onlineHistorySections.map { (title, songs) ->
+            title to songs.filter { mediaItem ->
+                query.isBlank() || resolveSongDisplayMetadata(
+                    mediaItem.asSong, storedOnlineHistorySongs[mediaItem.mediaId],
+                ).matchesCollectionSearch(query)
             }
         }.filter { (_, songs) -> songs.isNotEmpty() }
     }
-    val noSearchResults = search.inputValue.isNotBlank() && when (historyType) {
+    val noSearchResults = query.isNotBlank() && when (historyType) {
         HistoryType.History -> filteredEvents.isEmpty()
         HistoryType.YTMHistory -> filteredHistorySections.isEmpty()
     }
@@ -358,7 +372,7 @@ fun HistoryList(
                     )
                     Row(
                         modifier = Modifier.padding(end = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         GlassToolbarRow(actionCount = 1) {
                             sort.ToolBarButton()
@@ -420,7 +434,7 @@ fun HistoryList(
         }
 
         SearchEmptyFeedback(
-            query = search.inputValue,
+            query = query,
             empty = noSearchResults,
             loading = isLoading || loadFailed
         )
@@ -642,7 +656,10 @@ fun HistoryList(
                                         swipeRightActionParam = playlistSwipeRightAction
                                     ) {
                                         SongItem(
-                                            song = mediaItem.asSong,
+                                            song = resolveSongDisplayMetadata(
+                                                mediaItem.asSong, storedOnlineHistorySongs[mediaItem.mediaId],
+                                            ),
+                                            observeStoredMetadata = false,
                                             isLiked = likeStatesMap[mediaItem.asSong.id],
                                             inPlaylist = playlistStatesMap[mediaItem.asSong.id],
                                             navController = navController,

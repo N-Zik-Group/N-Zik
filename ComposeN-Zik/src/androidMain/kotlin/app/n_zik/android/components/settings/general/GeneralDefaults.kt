@@ -3,10 +3,8 @@ package app.n_zik.android.components.settings.general
 import android.content.Context
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.DurationInMinutes
-import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.enums.MaxSongs
-import app.n_zik.android.enums.MusicAnimationType
 import app.n_zik.android.enums.PauseBetweenSongs
 import app.n_zik.android.enums.PipModule
 import app.n_zik.android.enums.PresetsReverb
@@ -27,7 +25,6 @@ import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.utils.excludeDislikedArtistsKey
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.utils.excludeSongsWithDurationLimitKey
-import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
 import app.n_zik.android.utils.handleAudioFocusEnabledKey
 import app.n_zik.android.utils.isPauseOnVolumeZeroEnabledKey
 import app.n_zik.android.utils.jumpPreviousKey
@@ -37,12 +34,10 @@ import app.n_zik.android.utils.loudnessBaseGainKey
 import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
 import app.n_zik.android.utils.maxSongsInQueueKey
 import app.n_zik.android.utils.minimumSilenceDurationKey
-import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.utils.pauseBetweenSongsKey
 import app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey
 import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.pipModuleKey
-import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.resumePlaybackOnStartKey
 import app.n_zik.android.utils.resumePlaybackWhenDeviceConnectedKey
 import app.n_zik.android.utils.skipMediaOnErrorKey
@@ -65,7 +60,6 @@ import app.n_zik.android.utils.putEnum
 internal fun applyGeneralDefaults(context: Context) {
     context.preferences.edit {
         putEnum(languageAppKey, Languages.System)
-        putEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
         putBoolean(persistentQueueKey, false)
         putBoolean(resumePlaybackOnStartKey, false)
         putBoolean(closebackgroundPlayerKey, false)
@@ -85,8 +79,6 @@ internal fun applyGeneralDefaults(context: Context) {
         putBoolean(crossfadeGaplessKey, false)
         putBoolean(useVolumeKeysToChangeSongKey, false)
         putEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
-        putBoolean(playlistindicatorKey, false)
-        putEnum(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)
         putBoolean(discoverKey, false)
         putBoolean(isPauseOnVolumeZeroEnabledKey, false)
         putBoolean(pauseOnHeadphoneDisconnectKey, true)

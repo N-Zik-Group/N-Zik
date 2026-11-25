@@ -15,7 +15,6 @@ import app.n_zik.android.utils.secondsLabel
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.DurationInMinutes
-import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.enums.PauseBetweenSongs
 import app.n_zik.android.utils.crossfadeDurationKey
 import app.n_zik.android.utils.crossfadeEnabledKey
@@ -24,7 +23,6 @@ import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.utils.excludeDislikedArtistsKey
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.utils.excludeSongsWithDurationLimitKey
-import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
 import app.n_zik.android.utils.isAtLeastAndroid6
 import app.n_zik.android.utils.isPauseOnVolumeZeroEnabledKey
 import app.n_zik.android.utils.jumpPreviousKey
@@ -58,10 +56,6 @@ fun GeneralPlaybackCard(
     var isPauseOnVolumeZeroEnabled by rememberPreference(isPauseOnVolumeZeroEnabledKey, false)
     var pauseOnHeadphoneDisconnect by rememberPreference(pauseOnHeadphoneDisconnectKey, true)
     var skipMediaOnError by rememberPreference(skipMediaOnErrorKey, false)
-    var exoPlayerMinTimeForEvent by rememberPreference(
-        exoPlayerMinTimeForEventKey,
-        ExoPlayerMinTimeForEvent.`20s`
-    )
     var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
     var excludeSongWithDurationLimit by rememberPreference(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
     var excludeDislikedSongs by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
@@ -73,7 +67,6 @@ fun GeneralPlaybackCard(
     var crossfadeGapless by rememberPreference(crossfadeGaplessKey, false)
 
     var showJumpPreviousDialog by remember { mutableStateOf(false) }
-    var showMinListeningTimeDialog by remember { mutableStateOf(false) }
     var showExcludeSongsDialog by remember { mutableStateOf(false) }
     var showDislikeSongsDialog by remember { mutableStateOf(false) }
     var showDislikeArtistsDialog by remember { mutableStateOf(false) }
@@ -152,26 +145,6 @@ fun GeneralPlaybackCard(
                     showDialog()
                     Render()
                 }
-            }
-
-            OtherSettingsEntry(
-                modifier = Modifier.settingsSearchTarget("general.playback.min_listening_time"),
-                title = stringResource(R.string.recommendations_minimum_playback_duration_label),
-                text = stringResource(R.string.player_minimum_listening_time_description),
-                selectedValueText = exoPlayerMinTimeForEvent.text,
-                onClick = { showMinListeningTimeDialog = true },
-                icon = R.drawable.time
-            )
-
-            DialogPresence(visible = showMinListeningTimeDialog) {
-                ValueSelectorDialog(
-                    title = stringResource(R.string.recommendations_minimum_listening_time_description),
-                    selectedValue = exoPlayerMinTimeForEvent,
-                    onValueSelected = { exoPlayerMinTimeForEvent = it },
-                    valueText = { it.text },
-                    values = ExoPlayerMinTimeForEvent.values().toList(),
-                    onDismiss = { showMinListeningTimeDialog = false }
-                )
             }
 
             OtherSettingsEntry(

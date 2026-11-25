@@ -142,6 +142,48 @@ class ThemeStoreCacheTest {
     }
 
     @Test
+    fun v3MergesCompatibleRevisionsAndFallsBackWhenItsIndexDisappears() = runTest {
+        val legacy = StoreTheme(
+            1, "99edc843-6a9b-5753-8e76-cc11fe9b3295", 1, "Legacy", "Theme", StoreAuthor(1, "Creator"),
+            emptyList(), StoreCompatibility(98), StoreFile("appearance.json", "a".repeat(64)), emptyList(),
+        )
+        val v2 = legacy.copy(schemaVersion = 2, revision = 2, compatibility = StoreCompatibility(99))
+        val future = v2.copy(schemaVersion = 3, revision = 3, compatibility = StoreCompatibility(102))
+        val v3 = future.copy(
+            themeId = "99999999-6a9b-5753-8e76-cc11fe9b3295",
+            revision = 1,
+            compatibility = StoreCompatibility(101),
+        )
+        val manifests = (listOf(legacy, v2, future, v3)).associateWith { Json.encodeToString(it).encodeToByteArray() }
+        fun index(themes: List<StoreTheme>, modern: Boolean): ByteArray {
+            val entries = themes.joinToString(",") { theme ->
+                """{"themeId":"${theme.themeId}","revision":${theme.revision},"manifestSha256":"${manifests.getValue(theme).sha256()}"}"""
+            }
+            val policy = if (modern) ""","previewLimit":80,"legacyMaxVersionCode":98""" else ""
+            return """{"schemaVersion":1,"themes":[$entries]$policy}""".encodeToByteArray()
+        }
+        var legacyAvailable = true
+        var v3Available = true
+        val catalog = ThemeStoreCatalog(folder.root, appVersionCode = 101) { path, _ ->
+            when (val canonical = path.substringBefore('?')) {
+                ThemeCatalogV1Path -> if (legacyAvailable) index(listOf(legacy), modern = false) else throw StoreFileNotFound()
+                ThemeCatalogV2Path -> index(listOf(v2), modern = true)
+                ThemeCatalogV3Path -> if (v3Available) index(listOf(future, v3), modern = true) else throw StoreFileNotFound()
+                else -> manifests.getValue(manifests.keys.single { "${it.directory}manifest.json" == canonical })
+            }
+        }
+
+        assertEquals(listOf(v2, v3), catalog.refresh())
+        assertEquals(listOf(v2, v3), catalog.cached())
+        legacyAvailable = false
+        assertEquals(listOf(v2, v3), catalog.refresh())
+        assertEquals(listOf(v2, v3), catalog.cached())
+        v3Available = false
+        assertEquals(listOf(v2), catalog.refresh())
+        assertEquals(listOf(v2), catalog.cached())
+    }
+
+    @Test
     fun newProfileHasNoDownloadsOrFollows() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val library = ThemeStoreLibrary(context.getSharedPreferences("emptyStore", Context.MODE_PRIVATE))

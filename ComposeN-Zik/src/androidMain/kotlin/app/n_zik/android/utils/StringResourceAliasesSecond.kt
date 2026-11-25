@@ -578,7 +578,6 @@ private fun aliases8(): Map<String, String> = mapOf(
     "recommendations_playlists_title" to "playlists_you_might_like",
     "recommendations_quick_picks_count" to "quick_selection",
     "recommendations_reset_complete" to "quick_picks_are_cleared",
-    "recommendations_reset_description" to "settings_desc_ai_tab_data_reset_quick_picks",
     "recommendations_section_other_youtube_title" to "generic_ytm_sections",
     "recommendations_section_personal_top_title" to "my_top",
     "recommendations_section_visibility_description" to "disable_if_you_do_not_want_to_see",
