@@ -1,8 +1,5 @@
 name: Automatic Cache Builder
 
-env:
-  TZ: Europe/Paris
-
 on:
   # These files are dependencies of this project.
   # Therefore, when 1 of them changes, everything needs

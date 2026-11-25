@@ -122,19 +122,35 @@ class PolicyTests(unittest.TestCase):
                 self.assertEqual(guard.eligible("mobile", "schedule", "scheduler", "owner/repo", revision, NOW), expected)
                 self.assertEqual(inspect.call_args_list, [unittest.mock.call("a" * 40, "mobile")] if expected else [])
 
+    def test_daily_release_limit_uses_utc_at_date_boundaries(self):
+        for now, utc_day, local_day in (
+            (datetime.datetime(2026, 11, 24, 0, 30, tzinfo=datetime.timezone(datetime.timedelta(hours=1))), "20261123", "20261124"),
+            (datetime.datetime(2026, 11, 23, 23, 30, tzinfo=datetime.timezone(datetime.timedelta(hours=-8))), "20261124", "20261123"),
+        ):
+            for profile in ("mobile", "desktop"):
+                for day, expected in ((utc_day, False), (local_day, True)):
+                    with self.subTest(now=now, profile=profile, day=day), patch.object(guard, "api_pages", return_value=iter([{"tag_name": f"v8.7-dev-{day}"}])):
+                        self.assertEqual(guard.eligible(profile, "workflow_dispatch", guard.MAINTAINER, "owner/repo", "a" * 40, now), expected)
+
+    def test_nightly_cutoff_normalizes_offset_to_utc(self):
+        now = datetime.datetime(2026, 11, 24, 0, 30, tzinfo=datetime.timezone(datetime.timedelta(hours=1)))
+        with patch.object(guard, "api_pages", side_effect=[iter([]), iter([])]) as request:
+            self.assertFalse(guard.eligible("mobile", "schedule", "scheduler", "owner/repo", "a" * 40, now))
+        self.assertEqual(request.call_args.args[1]["since"], "2026-11-22T23:30:00Z")
+
     def test_daily_limit_still_applies_to_manual(self):
-        today = NOW.astimezone().strftime("%Y%m%d")
+        today = NOW.astimezone(datetime.timezone.utc).strftime("%Y%m%d")
         with patch.object(guard, "api_pages", return_value=iter([{"tag_name": f"v8.7-dev-{today}"}])):
             self.assertFalse(guard.eligible("mobile", "workflow_dispatch", guard.MAINTAINER, "owner/repo", "a" * 40, NOW))
 
     def test_daily_limit_ignores_near_matching_tag_suffixes(self):
-        today = NOW.astimezone().strftime("%Y%m%d")
+        today = NOW.astimezone(datetime.timezone.utc).strftime("%Y%m%d")
         for tag in (f"v8.7-dev-{today}-retry", f"v8.7-dev-{today}0", f"v8.7-dev-{today}beta"):
             with self.subTest(tag=tag), patch.object(guard, "api_pages", return_value=iter([{"tag_name": tag}])):
                 self.assertTrue(guard.eligible("mobile", "workflow_dispatch", guard.MAINTAINER, "owner/repo", "a" * 40, NOW))
 
     def test_daily_release_on_second_page_blocks_build(self):
-        today = NOW.astimezone().strftime("%Y%m%d")
+        today = NOW.astimezone(datetime.timezone.utc).strftime("%Y%m%d")
         pages = [json.dumps([{"tag_name": "v1.0-stable"}] * 100).encode(),
                  json.dumps([{"tag_name": f"v8.7-dev-{today}"}]).encode()]
         with patch.object(guard, "command", side_effect=pages) as request:

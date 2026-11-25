@@ -131,8 +131,8 @@ def eligible(profile, event, actor, repository, revision, now=None):
     if not event_allowed(event, actor):
         print("Skip: unsupported event or manual dispatch by another account")
         return False
-    now = now or datetime.datetime.now(datetime.timezone.utc)
-    today = now.astimezone().strftime("%Y%m%d")
+    now = (now or datetime.datetime.now(datetime.timezone.utc)).astimezone(datetime.timezone.utc)
+    today = now.strftime("%Y%m%d")
     for release in api_pages(f"repos/{repository}/releases"):
         if release["tag_name"].endswith(f"-dev-{today}"):
             print("Skip: a dev release already exists today")

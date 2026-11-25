@@ -1,8 +1,5 @@
 name: Update Android Lockdown Countdown
 
-env:
-  TZ: Europe/Paris
-
 on:
   schedule:
     - cron: '0 0 * * *'

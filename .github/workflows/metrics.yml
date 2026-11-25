@@ -1,8 +1,5 @@
 name: Update Project Stats and Chart
 
-env:
-  TZ: Europe/Paris
-
 on:
   release:
     types: [published]
@@ -91,7 +88,7 @@ jobs:
 
           # Save a new data point ONLY if the number changed since last time
           if [ "$LAST_SAVED" != "$TOTAL_DOWNLOADS" ]; then
-            TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
+            TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:00+00:00")
             jq --arg time "$TIMESTAMP" --argjson dl "$TOTAL_DOWNLOADS" '. += [{"time": $time, "downloads": $dl}]' assets/stats/history.json > tmp.json && mv tmp.json assets/stats/history.json
           fi
 
@@ -176,7 +173,6 @@ jobs:
           import json
           import os
           from datetime import datetime, timedelta, timezone
-          from zoneinfo import ZoneInfo
           from pathlib import Path
           from urllib.request import Request, urlopen
 
@@ -347,9 +343,8 @@ jobs:
               Path('assets/stats', filename).write_text(svg, encoding='utf-8')
 
           downloads = json.loads(Path("assets/stats/history.json").read_text(encoding="utf-8"))
-          history_zone = ZoneInfo("Europe/Paris")
           render_chart(
-              [(datetime.strptime(point["time"], "%Y-%m-%d %H:%M").replace(tzinfo=history_zone).timestamp(),
+              [(datetime.fromisoformat(point["time"]).timestamp(),
                 point["downloads"]) for point in downloads],
               "📈 Download Growth", "download-growth.svg", "Downloads",
           )

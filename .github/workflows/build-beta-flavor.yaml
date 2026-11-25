@@ -1,8 +1,5 @@
 name: Build Beta
 
-env:
-  TZ: Europe/Paris
-
 on:
   workflow_dispatch:
 
@@ -19,7 +16,7 @@ jobs:
     steps:
       - name: Get date
         id: date
-        run: echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+        run: echo "date=$(date -u +'%Y%m%d')" >> $GITHUB_OUTPUT
 
   versioning:
     name: Extract version

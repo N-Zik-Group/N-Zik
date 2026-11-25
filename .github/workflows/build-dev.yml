@@ -1,8 +1,5 @@
 name: Build Dev
 
-env:
-  TZ: Europe/Paris
-
 on:
   workflow_dispatch:
   schedule:
@@ -58,8 +55,8 @@ jobs:
       - name: Get date
         id: date
         run: |
-          echo "date=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-          echo "timestamp=$(date +'%H:%M Europe/Paris')" >> $GITHUB_OUTPUT
+          echo "date=$(date -u +'%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -u +'%H:%M UTC')" >> $GITHUB_OUTPUT
 
   versioning:
     name: Extract version

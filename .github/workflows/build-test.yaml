@@ -1,8 +1,5 @@
 name: Build & Sign Release64 Flavor Only (TEST)
 
-env:
-  TZ: Europe/Paris
-
 on:
   workflow_dispatch:
 

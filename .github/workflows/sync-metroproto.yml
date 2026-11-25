@@ -1,8 +1,5 @@
 name: Sync Listen Together proto from metroproto
 
-env:
-  TZ: Europe/Paris
-
 on:
   schedule:
     - cron: '0 4 * * 1'  # Every Monday at 4 AM

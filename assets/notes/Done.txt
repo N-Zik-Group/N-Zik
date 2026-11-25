@@ -371,3 +371,9 @@ Artwork cache isolation:
   - Bind local provider URIs and Coil keys to the requesting profile and its storage generation. Keep older queue entries readable and publish scoped artwork through Media3 and Android Auto.
   - Reject stale artwork during decoding and publication, including session fallback and widget bitmaps.
   - Pass 125 focused tests and verify the installed Debug on the Pixel across two profiles and back.
+
+Other:
+- chore(ci): use UTC workflow dates while preserving scheduled hours
+  - Remove runner timezone overrides without changing cron expressions; normalize dev release-day checks to UTC.
+  - Migrate metric timestamps using the verified 735-record original UTC prefix and legacy local records, preserving download values.
+  - Add an explicit-policy migration utility and production-reader regression coverage; 27 targeted CI tests pass.

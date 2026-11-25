@@ -1,8 +1,5 @@
 name: Fetch, create, and update repo's translators
 
-env:
-  TZ: Europe/Paris
-
 on:
   schedule:
     - cron: '0 23 * * 6'  # Every Saturday at 23 PM
