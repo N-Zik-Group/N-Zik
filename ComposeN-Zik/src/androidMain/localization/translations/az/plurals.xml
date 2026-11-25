@@ -29,6 +29,14 @@
         <item quantity="one">%1$d song</item>
         <item quantity="other">%1$d songs</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Add %d selected song in the queue to favorites?</item>
+        <item quantity="other">Add %d selected songs in the queue to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Remove %d selected song in the queue from favorites?</item>
+        <item quantity="other">Remove %d selected songs in the queue from favorites?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Add %1$d track from this playlist to favorites?</item>
         <item quantity="other">Add %1$d tracks from this playlist to favorites?</item>
