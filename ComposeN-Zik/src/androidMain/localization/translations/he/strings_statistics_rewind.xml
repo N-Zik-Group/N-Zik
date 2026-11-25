@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Your %1$s rewind playlist is ready</string>
     <string name="rewind_settings_enabled">Enable Rewind</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind is disabled. Open Privacy settings to turn it back on.</string>
     <string name="rewind_settings_global">All-time rewind</string>
     <string name="rewind_settings_global_description">Show the all-time recap on the Rewind home.</string>
     <string name="rewind_settings_monthly">Monthly rewind</string>
