@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Twoja lista rewind %1$s jest gotowa</string>
     <string name="rewind_settings_enabled">Włącz Przewijanie</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind jest wyłączony. Otwórz ustawienia prywatności, aby włączyć go ponownie.</string>
     <string name="rewind_settings_global">Cały czas przewijania</string>
     <string name="rewind_settings_global_description">Pokaż całodzienne odbicie w domu Rewind</string>
     <string name="rewind_settings_monthly">Miesięczne przewijanie</string>
