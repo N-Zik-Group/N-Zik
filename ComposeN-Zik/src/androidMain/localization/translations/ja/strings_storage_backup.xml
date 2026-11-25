@@ -255,6 +255,7 @@
     <string name="backup_import_failed">インポートに失敗しました</string>
     <string name="export_no_songs">曲がエクスポートされていません</string>
     <string name="export_cached_songs_generic_error">エクスポートに失敗しました</string>
+    <string name="export_selection_lost">選択を復元できなかったため、エクスポートはキャンセルされました。もう一度アイテムを選択して再試行してください。</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">ライブラリの復元を完了できませんでした。</string>
     <string name="storage_breakdown_themes">テーマ</string>
