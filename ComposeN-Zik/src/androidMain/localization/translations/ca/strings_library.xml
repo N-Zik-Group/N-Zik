@@ -352,6 +352,7 @@
     <string name="search_online">En línia</string>
     <string name="search_queries">" consultes de cerca"</string>
     <string name="search_results_for">Resultats de la cerca per a:</string>
+    <string name="search_history_clear_all_button">Clear all</string>
     <string name="search_saved_history_title">Cerques desades</string>
     <string name="search_suggestions_empty_message">Sense suggeriments</string>
     <string name="search_suggestions_title">Suggeriments</string>
