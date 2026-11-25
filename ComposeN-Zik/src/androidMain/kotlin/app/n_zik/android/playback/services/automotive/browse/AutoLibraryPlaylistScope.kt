@@ -15,7 +15,6 @@ import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
-import app.n_zik.android.utils.DataStoreUtils
 import kotlinx.coroutines.flow.first
 
 /** The same saved-source membership is used for counters, browse rows and aggregate playback. */
@@ -32,6 +31,7 @@ internal fun autoLibraryPlaylistScope(context: Context, parentId: String): HomeL
         AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR -> PlaylistsType.MonthlyPlaylist
         else -> PlaylistsType.Playlist
     }
+    val rewind = RewindPlaylists.visibility(context)
     return HomeLibraryPlaylistScope(
         type = type,
         youtubeFilter = when (parentId) {
@@ -40,10 +40,10 @@ internal fun autoLibraryPlaylistScope(context: Context, parentId: String): HomeL
             else -> YouTubeLibraryFilter.All
         },
         query = "",
-        showRewind = context.preferences.getBoolean(showMonthlyPlaylistsKey, true),
+        showRewind = rewind.enabled && context.preferences.getBoolean(showMonthlyPlaylistsKey, true),
         showPinned = context.preferences.getBoolean(showPinnedPlaylistsKey, true),
-        monthlyEnabled = DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
-        yearlyEnabled = DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
+        monthlyEnabled = rewind.monthlyEnabled,
+        yearlyEnabled = rewind.yearlyEnabled,
         rewindFilter = RewindPlaylists.Filter.All,
     )
 }

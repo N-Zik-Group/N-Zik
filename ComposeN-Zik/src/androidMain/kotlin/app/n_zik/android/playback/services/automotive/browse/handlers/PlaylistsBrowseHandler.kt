@@ -8,6 +8,7 @@ import app.n_zik.android.models.Playlist
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.homePlaylistsOrderKey
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.utils.showYtPlaylistsKey
@@ -29,6 +30,13 @@ import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import kotlinx.coroutines.flow.first
 
+private val rewindFolders = setOf(
+    AutoSessionConstants.ID_PLAYLISTS_REWIND,
+    AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL,
+    AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH,
+    AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR,
+)
+
 class PlaylistsBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == PlayerServiceModern.PLAYLIST ||
         parentId.startsWith("PLAYLISTS_") || parentId.startsWith("ID_PLAYLISTS_")
@@ -39,46 +47,49 @@ class PlaylistsBrowseHandler : BrowseHandler {
         database: Database,
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?,
-    ): List<MediaItem> = when (parentId) {
-        PlayerServiceModern.PLAYLIST -> libraryRoot(context, database)
-        AutoSessionConstants.ID_PLAYLISTS_YT -> {
-            val selected = context.preferences.getEnum(YOUTUBE_LIBRARY_FILTER_KEY, YouTubeLibraryFilter.All)
-            val previews = database.playlistTable.allAsPreview().first()
-            (listOf(selected) + YouTubeLibraryFilter.entries.filter { it != selected }).map { filter ->
-                val id = youtubeGroupId(filter)
-                folder(context, id, filter.labelRes, filter.iconRes,
-                    visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews).size)
+    ): List<MediaItem> {
+        if (parentId in rewindFolders && !isRewindEnabled(context)) return emptyList()
+        return when (parentId) {
+            PlayerServiceModern.PLAYLIST -> libraryRoot(context, database)
+            AutoSessionConstants.ID_PLAYLISTS_YT -> {
+                val selected = context.preferences.getEnum(YOUTUBE_LIBRARY_FILTER_KEY, YouTubeLibraryFilter.All)
+                val previews = database.playlistTable.allAsPreview().first()
+                (listOf(selected) + YouTubeLibraryFilter.entries.filter { it != selected }).map { filter ->
+                    val id = youtubeGroupId(filter)
+                    folder(context, id, filter.labelRes, filter.iconRes,
+                        visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews).size)
+                }
             }
-        }
-        AutoSessionConstants.ID_PLAYLISTS_REWIND -> {
-            val selected = context.preferences.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
-            val previews = database.playlistTable.allAsPreview().first()
-            (listOf(selected) + RewindPlaylists.Filter.entries.filter { it != selected }).map { filter ->
-                val id = rewindGroupId(filter)
-                folder(context, id, rewindGroupLabel(filter), rewindGroupIcon(filter),
-                    visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews).size)
+            AutoSessionConstants.ID_PLAYLISTS_REWIND -> {
+                val selected = context.preferences.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
+                val previews = database.playlistTable.allAsPreview().first()
+                (listOf(selected) + RewindPlaylists.Filter.entries.filter { it != selected }).map { filter ->
+                    val id = rewindGroupId(filter)
+                    folder(context, id, rewindGroupLabel(filter), rewindGroupIcon(filter),
+                        visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews).size)
+                }
             }
-        }
-        AutoSessionConstants.ID_PLAYLISTS_LOCAL,
-        AutoSessionConstants.ID_PLAYLISTS_PINNED,
-        AutoSessionConstants.ID_PLAYLISTS_YT_ALL,
-        AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
-        AutoSessionConstants.ID_PLAYLISTS_YT_PODCASTS,
-        AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL,
-        AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH,
-        AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR -> {
-            val playlists = loadAutoLibraryPlaylists(context, database, parentId).map { preview ->
-                browsableMediaItem(
-                    "${PlayerServiceModern.PLAYLIST}/${preview.playlist.id}",
-                    context.rewindDisplayName(preview.playlist.name),
-                    preview.songCount.toString(),
-                    drawableUri(context, localPlaylistIcon(preview.playlist)),
-                    MediaMetadata.MEDIA_TYPE_PLAYLIST,
-                )
+            AutoSessionConstants.ID_PLAYLISTS_LOCAL,
+            AutoSessionConstants.ID_PLAYLISTS_PINNED,
+            AutoSessionConstants.ID_PLAYLISTS_YT_ALL,
+            AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
+            AutoSessionConstants.ID_PLAYLISTS_YT_PODCASTS,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR -> {
+                val playlists = loadAutoLibraryPlaylists(context, database, parentId).map { preview ->
+                    browsableMediaItem(
+                        "${PlayerServiceModern.PLAYLIST}/${preview.playlist.id}",
+                        context.rewindDisplayName(preview.playlist.name),
+                        preview.songCount.toString(),
+                        drawableUri(context, localPlaylistIcon(preview.playlist)),
+                        MediaMetadata.MEDIA_TYPE_PLAYLIST,
+                    )
+                }
+                listOf(AutoSessionConstants.shuffleItem(context, "${parentId}_SHUFFLE")) + playlists
             }
-            listOf(AutoSessionConstants.shuffleItem(context, "${parentId}_SHUFFLE")) + playlists
+            else -> emptyList()
         }
-        else -> emptyList()
     }
 
     private suspend fun libraryRoot(context: Context, database: Database): List<MediaItem> {
@@ -98,13 +109,16 @@ class PlaylistsBrowseHandler : BrowseHandler {
             .mapNotNull { id ->
                 val visible = when (id) {
                     "pinned_playlists" -> context.preferences.getBoolean(showPinnedPlaylistsKey, true)
-                    "rewind" -> context.preferences.getBoolean(showMonthlyPlaylistsKey, true)
+                    "rewind" -> isRewindEnabled(context) && context.preferences.getBoolean(showMonthlyPlaylistsKey, true)
                     "yt_playlists" -> context.preferences.getBoolean(showYtPlaylistsKey, true)
                     else -> true
                 }
                 categories[id].takeIf { visible }
             }
     }
+
+    private fun isRewindEnabled(context: Context): Boolean =
+        DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
 
     private fun folder(context: Context, id: String, label: Int, icon: Int, count: Int): MediaItem =
         browsableMediaItem(id, context.getString(label), count.toString(), drawableUri(context, icon),

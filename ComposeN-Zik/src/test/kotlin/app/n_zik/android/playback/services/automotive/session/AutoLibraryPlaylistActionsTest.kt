@@ -26,6 +26,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -53,6 +54,7 @@ class AutoLibraryPlaylistActionsTest {
     private lateinit var callback: AutoSessionCallback
     private lateinit var originalDownloads: MutableStateFlow<Map<String, Download>>
     private var online = true
+    private var rewindEnabled = true
     private var monthlyEnabled = true
     private var yearlyEnabled = true
 
@@ -65,6 +67,7 @@ class AutoLibraryPlaylistActionsTest {
         mockkObject(NetworkQualityHelper)
         every { NetworkQualityHelper.isNetworkConnected(any()) } answers { online }
         mockkObject(DataStoreUtils)
+        every { DataStoreUtils.getBoolean(any(), DataStoreUtils.KEY_REWIND_ENABLED, true) } answers { rewindEnabled }
         every { DataStoreUtils.getBoolean(any(), DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true) } answers { monthlyEnabled }
         every { DataStoreUtils.getBoolean(any(), DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true) } answers { yearlyEnabled }
         originalDownloads = MyDownloadHelper.downloads
@@ -224,6 +227,34 @@ class AutoLibraryPlaylistActionsTest {
         assertEquals(listOf("year"), action("PLAYLISTS_REWIND_ALL_PLAY_ALL"))
         context.preferences.edit().putBoolean(showMonthlyPlaylistsKey, false).putBoolean(showPinnedPlaylistsKey, false).commit()
         assertEquals(listOf("plain"), action("PLAYLISTS_LOCAL_PLAY_ALL"))
+    }
+
+    @Test fun `disabled Rewind hides its library folders and aggregate queue without changing playlist choices`() {
+        seed(Playlist(1, "rewind-monthly:202601"), "month")
+        seed(Playlist(2, "rewind-yearly:2026"), "year")
+        seed(Playlist(3, "Plain"), "plain")
+        yearlyEnabled = false
+
+        val rewindFolder = AutoSessionConstants.ID_PLAYLISTS_REWIND
+        val rewindAll = AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL
+        val playlistsRoot = PlayerServiceModern.PLAYLIST
+        fun children(parent: String): List<String> = callback.onGetChildren(
+            mockk<MediaLibrarySession>(), mockk<MediaSession.ControllerInfo>(),
+            parent, 0, 200, null,
+        ).get(15, TimeUnit.SECONDS).value.orEmpty().map { it.mediaId }
+
+        assertTrue(rewindFolder in children(playlistsRoot))
+        assertEquals(listOf("month"), action("PLAYLISTS_REWIND_ALL_PLAY_ALL"))
+        rewindEnabled = false
+        assertTrue(rewindFolder !in children(playlistsRoot))
+        assertTrue(children(rewindFolder).isEmpty())
+        assertTrue(children(rewindAll).isEmpty())
+        assertTrue(action("PLAYLISTS_REWIND_ALL_PLAY_ALL").isEmpty())
+        assertEquals(listOf("plain"), action("PLAYLISTS_LOCAL_PLAY_ALL"))
+
+        rewindEnabled = true
+        assertTrue(rewindFolder in children(playlistsRoot))
+        assertEquals(listOf("month"), action("PLAYLISTS_REWIND_ALL_PLAY_ALL"))
     }
 
     @Test fun `podcast aggregate keeps the configured queue cap`() {

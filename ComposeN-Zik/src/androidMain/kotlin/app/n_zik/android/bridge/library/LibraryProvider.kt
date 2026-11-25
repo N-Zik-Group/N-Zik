@@ -28,7 +28,6 @@ import androidx.media3.datasource.cache.Cache
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.enums.AlbumSortBy
 import app.n_zik.android.enums.ArtistSortBy
@@ -118,7 +117,7 @@ internal interface LibraryProvider {
     /** Contract §10 (since 1.7.1): the phone's disk caches, used space vs configured cap (its Songs-tab bar). */
     suspend fun cacheSpace(): LibraryCacheDto
 
-    /** Contract §10 (since 1.7.2): the phone's rewind creation toggles and its current Month/Year/All filter. */
+    /** Contract §10 (since 1.7.2): effective Rewind playlist availability and the current Month/Year/All filter. */
     suspend fun rewindState(): RewindStateDto
 
     /** Contract §10 (since 1.7.2): the phone's `DislikeMode` (`Enabled`?) per collection. */
@@ -267,7 +266,8 @@ internal class DatabaseLibraryProvider(
         val previews = Database.playlistTable.sortPreviews(sort.playlistSortBy(), reverse.sortOrder()).first()
         val prefs = appContext.preferences
         val showPinned = prefs.getBoolean(showPinnedPlaylistsKey, true)
-        val showRewind = prefs.getBoolean(showMonthlyPlaylistsKey, true)
+        val rewind = RewindPlaylists.visibility(appContext)
+        val showRewind = rewind.enabled && prefs.getBoolean(showMonthlyPlaylistsKey, true)
         val rewindFilterToApply = rewindFilter ?: prefs.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
         // A present wire filter is persisted exactly like the phone's own chip tap
         if (rewindFilter != null) prefs.edit { putEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, rewindFilter) }
@@ -282,8 +282,8 @@ internal class DatabaseLibraryProvider(
             PlaylistsFilter.REWIND -> previews.filter {
                 RewindPlaylists.isShown(
                     it.playlist.name,
-                    DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
-                    DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
+                    rewind.monthlyEnabled,
+                    rewind.yearlyEnabled,
                     rewindFilterToApply,
                 )
             }
@@ -413,11 +413,12 @@ internal class DatabaseLibraryProvider(
         )
     }
 
-    /** Contract §10 (since 1.7.2): the phone's rewind creation toggles and its current Month/Year/All filter. */
+    /** Contract §10 (since 1.7.2): effective Rewind playlist availability and the current Month/Year/All filter. */
     override suspend fun rewindState(): RewindStateDto = withContext(NzikDispatchers.DATA) {
+        val rewind = RewindPlaylists.visibility(appContext)
         RewindStateDto(
-            monthlyEnabled = DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
-            yearlyEnabled = DataStoreUtils.prefs(appContext).getBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
+            monthlyEnabled = rewind.monthlyEnabled,
+            yearlyEnabled = rewind.yearlyEnabled,
             filter = appContext.preferences
                 .getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All).wire,
         )

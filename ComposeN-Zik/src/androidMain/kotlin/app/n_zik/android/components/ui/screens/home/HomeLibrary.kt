@@ -254,7 +254,9 @@ fun HomeLibrary(
     val search = Search.forHome()
     val itemSelector = ItemSelector<PlaylistPreview>()
     val showPinnedPlaylists by rememberPreference(showPinnedPlaylistsKey, true)
-    val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
+    val showRewindPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
+    val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+    val showRewind = rewindEnabled && showRewindPlaylists
     val showOnDeviceTab by rememberPreference(showOnDevicePlaylistsKey, true)
     val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
     val showYtPlaylists by rememberPreference(showYtPlaylistsKey, true)
@@ -263,7 +265,7 @@ fun HomeLibrary(
     var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
     val libraryScope = HomeLibraryPlaylistScope(
         playlistType, youtubeLibraryFilter, search.filterQuery, showRewind, showPinnedPlaylists,
-        rewindMonthlyPlaylistEnabled, rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
+        rewindEnabled && rewindMonthlyPlaylistEnabled, rewindEnabled && rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
     )
     val devicePlaylistIds by remember(previewSession) {
         if (previewSession != null) kotlinx.coroutines.flow.flowOf(emptyList())
@@ -708,7 +710,7 @@ fun HomeLibrary(
                     }
                     val subfilterKind = when {
                         playlistType == PlaylistsType.YTPlaylist -> HomeLibrarySubfilter.YouTube
-                        playlistType == PlaylistsType.MonthlyPlaylist &&
+                        showRewind && playlistType == PlaylistsType.MonthlyPlaylist &&
                             RewindPlaylists.rowVisible(rewindMonthlyPlaylistEnabled, rewindYearlyPlaylistEnabled) ->
                             HomeLibrarySubfilter.Rewind
                         else -> null

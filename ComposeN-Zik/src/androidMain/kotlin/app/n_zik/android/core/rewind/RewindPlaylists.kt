@@ -2,6 +2,7 @@ package app.n_zik.android.core.rewind
 
 import android.content.Context
 import app.n_zik.android.R
+import app.n_zik.android.utils.DataStoreUtils
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Locale
@@ -19,6 +20,22 @@ import java.util.Locale
  * "Rewind All-time") is formatted at render time (spec 2).
  */
 object RewindPlaylists {
+
+    internal data class Visibility(
+        val enabled: Boolean,
+        val monthlyEnabled: Boolean,
+        val yearlyEnabled: Boolean,
+    )
+
+    /** Effective visibility leaves the saved playlist choices intact while Rewind is disabled. */
+    internal fun visibility(context: Context): Visibility {
+        val enabled = DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        return Visibility(
+            enabled = enabled,
+            monthlyEnabled = enabled && DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true),
+            yearlyEnabled = enabled && DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true),
+        )
+    }
 
     /** Prefix of the generated monthly rewind playlists: `rewind-monthly:YYYYMM`. */
     const val MONTHLY_PREFIX = "rewind-monthly:"

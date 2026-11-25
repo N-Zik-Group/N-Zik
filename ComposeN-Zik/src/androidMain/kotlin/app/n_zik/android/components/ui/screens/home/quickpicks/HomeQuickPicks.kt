@@ -106,6 +106,8 @@ import app.n_zik.android.utils.showFromTheCommunityKey
 import app.n_zik.android.utils.showGenericYtmSectionsKey
 import app.n_zik.android.utils.showLivePerformancesKey
 import app.n_zik.android.utils.showMixedForYouKey
+import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.utils.showMoodsAndGenresKey
 import app.n_zik.android.utils.showMoodsKey
@@ -441,7 +443,9 @@ fun HomeQuickPicksContent(
             val myTopSongsResult = collectQuickPicksLocalShelf("myTopSongs", manualRevision, myTopSongsState, myTopSongsFlow)
             val myTopSongs = myTopSongsResult.orEmpty()
 
-            val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
+            val showRewindPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
+            val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+            val showRewind = rewindEnabled && showRewindPlaylists
             val rewindState = persist<List<PlaylistPreview>?>("home/quickpicks/local/rewind")
             val rewindFlow = remember(preview) {
                 if (preview != null) kotlinx.coroutines.flow.flowOf(emptyList())
