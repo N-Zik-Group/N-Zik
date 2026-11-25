@@ -352,6 +352,7 @@
     <string name="search_online">Dostępny</string>
     <string name="search_queries">" zapytania"</string>
     <string name="search_results_for">Wyszukaj dla:</string>
+    <string name="search_history_clear_all_button">Wyczyść wszystko</string>
     <string name="search_saved_history_title">Historia wyszukiwania</string>
     <string name="search_suggestions_empty_message">Brak sugestii</string>
     <string name="search_suggestions_title">Sugestie</string>
