@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Je %1$s terugspoellijst is klaar</string>
     <string name="rewind_settings_enabled">Terugspoelen inschakelen</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Terugspoelen is uitgeschakeld. Open de privacy-instellingen om hem weer aan te zetten.</string>
     <string name="rewind_settings_global">All-time terugspoelen</string>
     <string name="rewind_settings_global_description">Laat de hele tijd terugspoelen woning zien.</string>
     <string name="rewind_settings_monthly">Maandelijkse terugspoeling</string>
