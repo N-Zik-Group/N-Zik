@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
     <string name="library_favorites_action_add">Afegeix als preferits</string>
+    <string name="library_collection_favorites_action_manage">Manage favorites</string>
     <string name="library_favorites_added">S\'ha afegit a preferits</string>
     <string name="library_favorites_removed">Eliminat dels preferits</string>
     <string name="library_collection_favorites_action_remove">Remove from favorites</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Afegeix a la llista de reproducció</string>
     <string name="playlist_action_add_hint">Afegeix a la llista de reproducció</string>
+    <string name="playlist_add_destination_unavailable">This playlist is no longer available for adding device songs. Choose another playlist.</string>
     <string name="playlist_action_create">Nova llista de reproducció</string>
     <string name="playlist_action_delete_selected">Delete playlists</string>
     <string name="playlist_action_export">Exporta la llista de reproducció</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">My Top</string>
     <string name="recommendations_playlists_title">Llistes que et podrien agradar</string>
     <string name="recommendations_reset_complete">Les eleccions ràpides s\'han esborrat</string>
-    <string name="recommendations_reset_description">Delete the playback events used to generate local Quick Picks recommendations.</string>
+    <string name="recommendations_reset_content_description">Reload Quick Picks with fresh recommendations. Your listening history is kept.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
     <string name="recommendations_section_visibility_description">Desactiva si no vols veure-ho</string>
     <string name="recommendations_show_section_label">Mostra</string>
