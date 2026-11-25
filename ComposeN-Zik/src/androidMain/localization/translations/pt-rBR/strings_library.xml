@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">%s não curtiu</string>
     <string name="library_dislikes_removed">%s foi removido dos não curtidos</string>
     <string name="library_favorites_action_add">Adicionar aos favoritos</string>
+    <string name="library_collection_favorites_action_manage">Gerenciar favoritos</string>
     <string name="library_favorites_added">Adicionado aos favoritos</string>
     <string name="library_favorites_removed">Removido dos favoritos</string>
     <string name="library_collection_favorites_action_remove">Remover dos favoritos</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Adicionar à lista de reprodução</string>
     <string name="playlist_action_add_hint">Adicionar à playlist</string>
+    <string name="playlist_add_destination_unavailable">Esta playlist não está mais disponível para adicionar músicas do dispositivo. Escolha outra playlist.</string>
     <string name="playlist_action_create">Nova lista de reprodução</string>
     <string name="playlist_action_delete_selected">Excluir playlists</string>
     <string name="playlist_action_export">Exportar playlist</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Meu Topo</string>
     <string name="recommendations_playlists_title">Listas de reprodução que você pode gostar</string>
     <string name="recommendations_reset_complete">Escolhas rápidas foram limpas</string>
-    <string name="recommendations_reset_description">Excluir os eventos de reprodução usados para gerar recomendações locais de Picks Rápidos.</string>
+    <string name="recommendations_reset_content_description">Recarregue as Escolhas Rápidas com novas recomendações. Seu histórico de escuta foi mantido.</string>
     <string name="recommendations_section_other_youtube_title">Outras seções</string>
     <string name="recommendations_section_visibility_description">Desabilite se você não quer ver</string>
     <string name="recommendations_show_section_label">Exibir</string>
