@@ -63,6 +63,7 @@ import app.n_zik.android.components.settings.accounts.GitHubAccount
 import app.n_zik.android.components.settings.accounts.rememberGitHubPublicationAuthorization
 import app.n_zik.android.components.settings.accounts.githubContributionBlock
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -109,20 +110,26 @@ internal fun CreatorProfileSettingsEntry(
     themeEntries: @Composable () -> Unit,
 ) {
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
-    SettingsSectionCard(stringResource(R.string.theme_store_creator_profile), R.drawable.person, horizontalPadding = 0.dp, content = {
-        OtherSettingsEntry(
-            title = stringResource(R.string.theme_store_edit_creator),
-            text = stringResource(if (login == null) R.string.theme_store_creator_sign_in else R.string.theme_store_creator_draft),
-            icon = R.drawable.person,
-            isEnabled = login != null,
-            shimmer = shimmer,
-            onClick = onClick,
-        )
-        if (login != null) {
-            app.n_zik.android.components.settings.common.SettingsCardSectionDivider()
-            themeEntries()
-        }
-    })
+    SettingsSectionCard(
+        title = stringResource(R.string.theme_store_creator_profile),
+        icon = R.drawable.person,
+        horizontalPadding = 0.dp,
+        groupTitleRes = R.string.theme_store_creator_identity,
+        content = {
+            OtherSettingsEntry(
+                title = stringResource(R.string.theme_store_edit_creator),
+                text = stringResource(if (login == null) R.string.theme_store_creator_sign_in else R.string.theme_store_creator_draft),
+                icon = R.drawable.person,
+                isEnabled = login != null,
+                shimmer = shimmer,
+                onClick = onClick,
+            )
+            if (login != null) {
+                SettingsCardSectionHeading(R.string.theme_store_group_theme_publication)
+                themeEntries()
+            }
+        },
+    )
 }
 
 @Composable

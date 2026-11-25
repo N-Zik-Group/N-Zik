@@ -78,15 +78,20 @@ internal fun CreatorSubmissionsCard(refreshVersion: Int) {
     @Composable
     fun latestStatus(submission: CreatorSubmission?, fallback: Int): String =
         submission?.let { "${it.title} · ${stringResource(submissionStatus(it))}" } ?: stringResource(fallback)
-    SettingsSectionCard(title = stringResource(R.string.theme_store_creator_submissions), icon = R.drawable.github_icon,
-        horizontalPadding = 0.dp, content = {
+    SettingsSectionCard(
+        title = stringResource(R.string.theme_store_creator_submissions),
+        icon = R.drawable.github_icon,
+        horizontalPadding = 0.dp,
+        groupTitleRes = R.string.theme_store_group_review_status,
+        content = {
             OtherSettingsEntry(stringResource(R.string.theme_store_submissions_in_progress),
                 latestStatus(latestOpen, R.string.theme_store_submissions_in_progress_description), R.drawable.github_icon,
                 onClick = { showHistory = false })
             OtherSettingsEntry(stringResource(R.string.theme_store_submissions_history),
                 latestStatus(latestDecision, R.string.theme_store_submissions_history_description), R.drawable.github_icon,
                 onClick = { showHistory = true })
-        })
+        },
+    )
     showHistory?.let { history ->
         val dismiss = { showHistory = null }
         DefaultDialog(

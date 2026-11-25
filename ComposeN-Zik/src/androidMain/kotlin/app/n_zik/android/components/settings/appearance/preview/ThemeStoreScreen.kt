@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -63,6 +64,8 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.components.settings.accounts.GitHubAccountCard
+import app.n_zik.android.components.settings.common.LocalSettingsCardGroupTitle
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -862,7 +865,9 @@ private fun ThemeStoreCreator(
     var editPicker by rememberSaveable { mutableStateOf(false) }
     var editLocalPicker by rememberSaveable { mutableStateOf(false) }
     Column {
-        app.n_zik.android.components.settings.accounts.GitHubAccountCard(horizontalPadding = 0.dp, showAppInstallation = true)
+        CompositionLocalProvider(LocalSettingsCardGroupTitle provides R.string.theme_store_group_publishing_access) {
+            GitHubAccountCard(horizontalPadding = 0.dp, showAppInstallation = true)
+        }
         CreatorProfileSettingsEntry(onEditCreator) {
             if (ownId != null) {
                 OtherSettingsEntry(
@@ -897,21 +902,27 @@ private fun ThemeStoreCreator(
             }
         }
         CreatorSubmissionsCard(refreshVersion)
-        SettingsSectionCard(title = stringResource(R.string.theme_store_local_themes), icon = R.drawable.folder, horizontalPadding = 0.dp, content = {
-            OtherSettingsEntry(
-                title = stringResource(R.string.theme_store_create_local),
-                text = stringResource(R.string.theme_store_create_local_description),
-                icon = R.drawable.ui,
-                onClick = { onSubmitTheme("local-new") },
-            )
-            OtherSettingsEntry(
-                title = stringResource(R.string.theme_store_edit_local),
-                text = stringResource(R.string.theme_store_edit_local_description),
-                icon = R.drawable.ui,
-                isEnabled = localThemes.isNotEmpty(),
-                onClick = { editLocalPicker = true },
-            )
-        })
+        SettingsSectionCard(
+            title = stringResource(R.string.theme_store_local_themes),
+            icon = R.drawable.folder,
+            horizontalPadding = 0.dp,
+            groupTitleRes = R.string.theme_store_group_local_editing,
+            content = {
+                OtherSettingsEntry(
+                    title = stringResource(R.string.theme_store_create_local),
+                    text = stringResource(R.string.theme_store_create_local_description),
+                    icon = R.drawable.ui,
+                    onClick = { onSubmitTheme("local-new") },
+                )
+                OtherSettingsEntry(
+                    title = stringResource(R.string.theme_store_edit_local),
+                    text = stringResource(R.string.theme_store_edit_local_description),
+                    icon = R.drawable.ui,
+                    isEnabled = localThemes.isNotEmpty(),
+                    onClick = { editLocalPicker = true },
+                )
+            },
+        )
     }
     if (editLocalPicker) DefaultDialog(
         title = stringResource(R.string.theme_store_edit_local),
