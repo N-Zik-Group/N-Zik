@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">قائمة إعادة الإرجاع %1$s الخاصة بك جاهزة</string>
     <string name="rewind_settings_enabled">تمكين إعادة الإرجاع</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">إعادة الإرجاع معطلة. افتح إعدادات الخصوصية لتشغيلها مرة أخرى.</string>
     <string name="rewind_settings_global">الريح لمرة واحدة</string>
     <string name="rewind_settings_global_description">إظهار موجز الكل على منزل Rewind</string>
     <string name="rewind_settings_monthly">الريح الشهرية</string>
