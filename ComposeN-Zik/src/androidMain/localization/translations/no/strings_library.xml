@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Misliker %s</string>
     <string name="library_dislikes_removed">Fjernet %s fra misliker</string>
     <string name="library_favorites_action_add">Legg til i favoritter</string>
+    <string name="library_collection_favorites_action_manage">Administrere favoritter</string>
     <string name="library_favorites_added">Lagt til i favoritter</string>
     <string name="library_favorites_removed">Fjernet fra favoritter</string>
     <string name="library_collection_favorites_action_remove">Fjern fra favoritter</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Legg til spilleliste</string>
     <string name="playlist_action_add_hint">Legg til spilleliste</string>
+    <string name="playlist_add_destination_unavailable">Denne spillelisten er ikke lenger tilgjengelig for å legge til sanger på enheten. Velg en annen spilleliste.</string>
     <string name="playlist_action_create">Ny spilleliste</string>
     <string name="playlist_action_delete_selected">Slett spillelister</string>
     <string name="playlist_action_export">Eksporter spilleliste</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Mine topp</string>
     <string name="recommendations_playlists_title">Spillelister du kanskje liker</string>
     <string name="recommendations_reset_complete">Hurtiganbefalinger er tømt</string>
-    <string name="recommendations_reset_description">Slett avspillingshendelsene brukt for å generere lokale Quick Picks anbefalinger.</string>
+    <string name="recommendations_reset_content_description">Last hurtigvalg på nytt med ferske anbefalinger. Hørehistorikken din er holdt.</string>
     <string name="recommendations_section_other_youtube_title">Andre seksjoner</string>
     <string name="recommendations_section_visibility_description">Deaktiver hvis du ikke ønsker å se</string>
     <string name="recommendations_show_section_label">Vis</string>
