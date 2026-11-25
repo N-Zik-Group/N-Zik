@@ -43,6 +43,18 @@
         <item quantity="many">%1$d utworów</item>
         <item quantity="other">%1$d utworów</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Dodać %d wybrany utwór w kolejce do ulubionych?</item>
+        <item quantity="few">Dodać %d wybrane utwory w kolejce do ulubionych?</item>
+        <item quantity="many">Dodać %d wybrane utwory w kolejce do ulubionych?</item>
+        <item quantity="other">Dodać %d wybrane utwory w kolejce do ulubionych?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Usunąć %d wybrany utwór w kolejce z ulubionych?</item>
+        <item quantity="few">Usunąć %d wybrane utwory w kolejce z ulubionych?</item>
+        <item quantity="many">Usunąć %d wybrane utwory w kolejce z ulubionych?</item>
+        <item quantity="other">Usunąć %d wybrane utwory w kolejce z ulubionych?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Dodać utwór %1$d z tej playlisty do ulubionych?</item>
         <item quantity="few">Dodać utwory %1$d z tej playlisty do ulubionych?</item>
