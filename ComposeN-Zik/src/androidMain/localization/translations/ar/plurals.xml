@@ -57,6 +57,22 @@
         <item quantity="many">%1$d songs</item>
         <item quantity="other">%1$d songs</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="zero">إضافة %d أغاني مختارة في قائمة الانتظار إلى المفضلة؟</item>
+        <item quantity="one">إضافة %d أغنية مختارة في قائمة الانتظار إلى المفضلة؟</item>
+        <item quantity="two">إضافة %d أغاني مختارة في قائمة الانتظار إلى المفضلة؟</item>
+        <item quantity="few">إضافة %d أغاني مختارة في قائمة الانتظار إلى المفضلة؟</item>
+        <item quantity="many">إضافة %d أغاني مختارة في قائمة الانتظار إلى المفضلة؟</item>
+        <item quantity="other">إضافة %d أغاني مختارة في قائمة الانتظار إلى المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="zero">إزالة %d من الأغاني المحددة في قائمة الانتظار من المفضلة؟</item>
+        <item quantity="one">إزالة %d أغنية مختارة في قائمة الانتظار من المفضلة؟</item>
+        <item quantity="two">إزالة %d من الأغاني المحددة في قائمة الانتظار من المفضلة؟</item>
+        <item quantity="few">إزالة %d من الأغاني المحددة في قائمة الانتظار من المفضلة؟</item>
+        <item quantity="many">إزالة %d من الأغاني المحددة في قائمة الانتظار من المفضلة؟</item>
+        <item quantity="other">إزالة %d من الأغاني المحددة في قائمة الانتظار من المفضلة؟</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="zero">إضافة مسارات %1$d من قائمة التشغيل هذه إلى المفضلة؟</item>
         <item quantity="one">إضافة %1$d مسار من قائمة التشغيل هذه إلى المفضلة؟</item>
