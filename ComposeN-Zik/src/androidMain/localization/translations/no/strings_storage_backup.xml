@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Import feilet</string>
     <string name="export_no_songs">Ingen sanger eksportert</string>
     <string name="export_cached_songs_generic_error">Eksportering feilet</string>
+    <string name="export_selection_lost">Eksport avbrutt fordi valget ikke kunne gjenopprettes. Velg elementer igjen og prøv på nytt.</string>
     <string name="backup_startup_preparing_library">Forbereder ditt bibliotek…</string>
     <string name="backup_startup_recovery_failed">Kunne ikke fullføre gjenopprettingen av biblioteket ditt.</string>
     <string name="storage_breakdown_themes">Temaer</string>
