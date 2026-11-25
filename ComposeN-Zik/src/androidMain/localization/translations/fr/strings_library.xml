@@ -197,7 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Ajouter à la playlist</string>
     <string name="playlist_action_add_hint">Ajouter à la playlist</string>
-    <string name="playlist_add_destination_unavailable">Cette playlist n\'est plus disponible pour ajouter des chansons de périphérique. Choisissez une autre playlist.</string>
+    <string name="playlist_add_destination_unavailable">Cette playlist ne permet plus d\'ajouter des morceaux depuis votre appareil. Choisissez une autre playlist.</string>
     <string name="playlist_action_create">Nouvelle playlist</string>
     <string name="playlist_action_delete_selected">Supprimer des playlists</string>
     <string name="playlist_action_export">Exporter la playlist</string>
@@ -315,7 +315,7 @@
     <string name="recommendations_personal_top_title">Mon Top</string>
     <string name="recommendations_playlists_title">Playlists que vous pourriez aimer</string>
     <string name="recommendations_reset_complete">La « Sélection Rapide » a été effacée avec succès</string>
-    <string name="recommendations_reset_content_description">Rechargez les sélections rapides avec de nouvelles recommandations. Votre historique d\'écoute est conservé.</string>
+    <string name="recommendations_reset_content_description">Actualisez la section « Sélection Rapide » avec de nouvelles recommandations. Votre historique d\'écoute est conservé.</string>
     <string name="recommendations_section_other_youtube_title">Autres rubriques</string>
     <string name="recommendations_section_visibility_description">Désactiver si vous ne souhaitez pas voir</string>
     <string name="recommendations_show_section_label">Afficher</string>
@@ -352,6 +352,7 @@
     <string name="search_online">En ligne</string>
     <string name="search_queries">" requêtes de recherche"</string>
     <string name="search_results_for">Résultats de la recherche pour :</string>
+    <string name="search_history_clear_all_button">Tout effacer</string>
     <string name="search_saved_history_title">Recherches sauvegardées</string>
     <string name="search_suggestions_empty_message">Aucune suggestion</string>
     <string name="search_suggestions_title">Suggestions</string>
