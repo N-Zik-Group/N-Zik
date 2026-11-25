@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">%1$s の巻き戻しプレイリストの準備ができました</string>
     <string name="rewind_settings_enabled">巻き戻しを有効化</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">巻き戻しが無効になっています。プライバシー設定を開いて再度有効にしてください。</string>
     <string name="rewind_settings_global">オールタイム巻き戻し</string>
     <string name="rewind_settings_global_description">Rewindホームですべての時間の要約を表示します。</string>
     <string name="rewind_settings_monthly">毎月の巻き戻し</string>
