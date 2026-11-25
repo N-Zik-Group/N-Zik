@@ -43,6 +43,18 @@
         <item quantity="many">%1$d пісень</item>
         <item quantity="other">%1$d пісень</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Add %d selected song in the queue to favorites?</item>
+        <item quantity="few">Додати відмічені пісні в черзі %d до обраного?</item>
+        <item quantity="many">Додати відмічені пісні в черзі %d до обраного?</item>
+        <item quantity="other">Додати відмічені пісні в черзі %d до обраного?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Remove %d selected song in the queue from favorites?</item>
+        <item quantity="few">Видалити обраних пісень у черзі %d з обраного?</item>
+        <item quantity="many">Видалити обраних пісень у черзі %d з обраного?</item>
+        <item quantity="other">Видалити обраних пісень у черзі %d з обраного?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Додати трек %1$d з цього списку відтворення до вибраного?</item>
         <item quantity="few">Додати треки %1$d з цього списку відтворення до улюбленого?</item>
