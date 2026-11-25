@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Завантажено</string>
     <string name="theme_store_following">Підписаний</string>
     <string name="theme_store_creator">Творець</string>
+    <string name="theme_store_group_publishing_access">Публікація доступу</string>
+    <string name="theme_store_group_theme_publication">Публікація теми</string>
     <string name="theme_store_creator_profile">Профіль творця</string>
     <string name="theme_store_creator_identity">Публічна інформація</string>
     <string name="theme_store_creator_images">Зображення профілю</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Створення профілю на GitHub…</string>
     <string name="theme_store_creator_authorizing">Connecting to GitHub to publish…</string>
     <string name="theme_store_creator_submissions">Відстеження</string>
+    <string name="theme_store_group_review_status">Переглянути статус</string>
     <string name="theme_store_submissions_in_progress">Обробка</string>
     <string name="theme_store_submissions_history">Історія</string>
     <string name="theme_store_creator_my_themes">Мої опубліковані теми</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Використовувати поточний вигляд</string>
     <string name="theme_store_local_use_current_description">Замініть налаштування цієї теми своїм поточним зовнішнім виглядом N-Zik .</string>
     <string name="theme_store_local_themes">Локальні теми</string>
+    <string name="theme_store_group_local_editing">Режим он-пристроїв</string>
     <string name="theme_store_create_local">Створити локальну тему</string>
     <string name="theme_store_create_local_description">Зберегти поточний вигляд та попередній перегляд для завантаження.</string>
     <string name="theme_backup_choose_zip">Виберіть тему з ZIP</string>
