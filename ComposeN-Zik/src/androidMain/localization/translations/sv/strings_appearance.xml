@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Nedladdad</string>
     <string name="theme_store_following">Följer</string>
     <string name="theme_store_creator">Skapare</string>
+    <string name="theme_store_group_publishing_access">Publicerar åtkomst</string>
+    <string name="theme_store_group_theme_publication">Publicering av tema</string>
     <string name="theme_store_creator_profile">Skapare profil</string>
     <string name="theme_store_creator_identity">Offentlig information</string>
     <string name="theme_store_creator_images">Profilbilder</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Skickar in profil till GitHub…</string>
     <string name="theme_store_creator_authorizing">Ansluter till GitHub för att publicera…</string>
     <string name="theme_store_creator_submissions">Spårning av inlämningar</string>
+    <string name="theme_store_group_review_status">Granska status</string>
     <string name="theme_store_submissions_in_progress">pågår</string>
     <string name="theme_store_submissions_history">Historik</string>
     <string name="theme_store_creator_my_themes">Mina publicerade teman</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Använd nuvarande utseende</string>
     <string name="theme_store_local_use_current_description">Ersätt detta temas inställningar med ditt nuvarande N-Zik-utseende.</string>
     <string name="theme_store_local_themes">Lokala teman</string>
+    <string name="theme_store_group_local_editing">Redigering på enheten</string>
     <string name="theme_store_create_local">Skapa ett lokalt tema</string>
     <string name="theme_store_create_local_description">Spara nuvarande utseende och förhandsvisningar till Nedladdade.</string>
     <string name="theme_backup_choose_zip">Välj tema ZIP</string>
