@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Pidetty %s</string>
     <string name="library_dislikes_removed">Poistettu %s distyreistä</string>
     <string name="library_favorites_action_add">Lisää suosikkeihin</string>
+    <string name="library_collection_favorites_action_manage">Hallinnoi suosikkeja</string>
     <string name="library_favorites_added">Lisätty suosikkeihin</string>
     <string name="library_favorites_removed">Poistettu suosikeista</string>
     <string name="library_collection_favorites_action_remove">Poista suosikeista</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Lisää soittolistaan</string>
     <string name="playlist_action_add_hint">Lisää soittolistaan</string>
+    <string name="playlist_add_destination_unavailable">Tämä soittolista ei ole enää käytettävissä laitteen kappaleiden lisäämiseen. Valitse toinen soittolista.</string>
     <string name="playlist_action_create">Uusi soittolista</string>
     <string name="playlist_action_delete_selected">Poista soittolistat</string>
     <string name="playlist_action_export">Vie soittolista</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Minun Ylhäällä</string>
     <string name="recommendations_playlists_title">Soittolistat joista saatat pitää</string>
     <string name="recommendations_reset_complete">Pikavalinnat nollattu</string>
-    <string name="recommendations_reset_description">Poista toiston tapahtumat, joita käytetään paikallisten Quick Picks -suositusten laatimiseen.</string>
+    <string name="recommendations_reset_content_description">Lataa pikavalinnat tuoreilla suosituksilla. Kuunteluhistoriasi on säilytetty.</string>
     <string name="recommendations_section_other_youtube_title">Muut osat</string>
     <string name="recommendations_section_visibility_description">Poista käytöstä, jos et halua nähdä</string>
     <string name="recommendations_show_section_label">Näytä</string>
