@@ -36,6 +36,16 @@
         <item quantity="few">%1$d melodii</item>
         <item quantity="other">%1$d melodii</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Adaugă la favorite melodia selectată %d în coada de așteptare?</item>
+        <item quantity="few">Adăugaţi %d melodii selectate în coada de aşteptare la favorite?</item>
+        <item quantity="other">Adăugaţi %d melodii selectate în coada de aşteptare la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Eliminați melodia selectată %d din lista de favorite?</item>
+        <item quantity="few">Eliminați melodiile selectate %d din lista de favorite?</item>
+        <item quantity="other">Eliminați melodiile selectate %d din lista de favorite?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Adaugă piesa %1$d din această listă la favorite?</item>
         <item quantity="few">Adaugă piesele %1$d din această listă la favorite?</item>
