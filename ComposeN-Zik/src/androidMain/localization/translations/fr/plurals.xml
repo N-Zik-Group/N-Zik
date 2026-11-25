@@ -46,12 +46,12 @@
         <item quantity="other">Supprimer %1$d titres de cet album de vos favoris ?</item>
     </plurals>
     <plurals name="library_collection_favorites_add_episodes">
-        <item quantity="one">Add %1$d episode from this podcast to favorites?</item>
+        <item quantity="one">Ajouter %1$d épisode de ce podcast à vos favoris ?</item>
         <item quantity="other">Ajouter %1$d épisodes de ce podcast à vos favoris ?</item>
     </plurals>
     <plurals name="library_collection_favorites_remove_episodes">
-        <item quantity="one">Remove %1$d episode in this podcast from favorites?</item>
-        <item quantity="other">Remove %1$d episodes in this podcast from favorites?</item>
+        <item quantity="one">Supprimer %1$d épisode de ce podcast de vos favoris ?</item>
+        <item quantity="other">Supprimer %1$d épisodes de ce podcast de vos favoris ?</item>
     </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d traducteur</item>
