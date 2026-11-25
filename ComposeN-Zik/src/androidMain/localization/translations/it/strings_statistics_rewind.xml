@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">La tua playlist di riavvolgimento %1$s è pronta</string>
     <string name="rewind_settings_enabled">Abilita Riavvolgi</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind è disabilitato. Apri le impostazioni Privacy per riattivarlo.</string>
     <string name="rewind_settings_global">Riavvolgimento di tutti</string>
     <string name="rewind_settings_global_description">Mostra il riap di tutti i tempi sulla casa Rewind.</string>
     <string name="rewind_settings_monthly">Riavvolgimento mensile</string>
