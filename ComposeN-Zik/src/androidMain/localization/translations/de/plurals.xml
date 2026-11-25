@@ -29,6 +29,14 @@
         <item quantity="one">%1$d Titel</item>
         <item quantity="other">%1$d Lieder</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">%d ausgewählten Titel in der Warteschlange zu Favoriten hinzufügen?</item>
+        <item quantity="other">%d ausgewählte Titel in der Warteschlange zu Favoriten hinzufügen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">%d ausgewählten Titel in der Warteschlange aus den Favoriten entfernen?</item>
+        <item quantity="other">%d ausgewählte Titel in der Warteschlange aus den Favoriten entfernen?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">%1$d Titel aus dieser Wiedergabeliste zu Favoriten hinzufügen?</item>
         <item quantity="other">%1$d Titel aus dieser Wiedergabeliste zu Favoriten hinzufügen?</item>
