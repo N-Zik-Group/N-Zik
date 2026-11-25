@@ -43,6 +43,18 @@
         <item quantity="many">%1$d skladeb</item>
         <item quantity="other">%1$d skladeb</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">Přidat %d vybranou skladbu ve frontě k oblíbeným?</item>
+        <item quantity="few">Přidat %d vybraných skladeb ve frontě k oblíbeným?</item>
+        <item quantity="many">Přidat %d vybraných skladeb ve frontě k oblíbeným?</item>
+        <item quantity="other">Přidat %d vybraných skladeb ve frontě k oblíbeným?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">Odstranit %d vybranou skladbu ve frontě z oblíbených?</item>
+        <item quantity="few">Odstranit %d vybraných skladeb ve frontě z oblíbených?</item>
+        <item quantity="many">Odstranit %d vybraných skladeb ve frontě z oblíbených?</item>
+        <item quantity="other">Odstranit %d vybraných skladeb ve frontě z oblíbených?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Add %1$d track from this playlist to favorites?</item>
         <item quantity="few">Add %1$d tracks from this playlist to favorites?</item>
