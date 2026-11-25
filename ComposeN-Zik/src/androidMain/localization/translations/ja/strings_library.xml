@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">%sを嫌いました</string>
     <string name="library_dislikes_removed">%s が嫌いな状態から削除されました</string>
     <string name="library_favorites_action_add">お気に入りに追加</string>
+    <string name="library_collection_favorites_action_manage">お気に入りを管理</string>
     <string name="library_favorites_added">お気に入りに追加しました</string>
     <string name="library_favorites_removed">お気に入りから削除しました</string>
     <string name="library_collection_favorites_action_remove">お気に入りから削除</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">プレイリストに追加</string>
     <string name="playlist_action_add_hint">プレイリストに追加</string>
+    <string name="playlist_add_destination_unavailable">このプレイリストは端末の曲を追加できません。別のプレイリストを選択してください。</string>
     <string name="playlist_action_create">新規プレイリスト</string>
     <string name="playlist_action_delete_selected">プレイリストを削除</string>
     <string name="playlist_action_export">プレイリストのエクスポート</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">トップ</string>
     <string name="recommendations_playlists_title">気に入るかもしれないプレイリスト</string>
     <string name="recommendations_reset_complete">おすすめを消去しました</string>
-    <string name="recommendations_reset_description">ローカルクイックピックのおすすめを生成するために使用する再生イベントを削除します。</string>
+    <string name="recommendations_reset_content_description">新しいおすすめでクイックピックをリロードします。リスニング履歴は保持されます。</string>
     <string name="recommendations_section_other_youtube_title">その他のセクション</string>
     <string name="recommendations_section_visibility_description">無効なら非表示:</string>
     <string name="recommendations_show_section_label">表示</string>
