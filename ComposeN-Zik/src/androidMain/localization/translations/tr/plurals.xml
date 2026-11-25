@@ -30,28 +30,28 @@
         <item quantity="other">%1$d şarkılar</item>
     </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
-        <item quantity="one">Add %1$d track from this playlist to favorites?</item>
-        <item quantity="other">Add %1$d tracks from this playlist to favorites?</item>
+        <item quantity="one">Bu çalma listesindeki %1$d parçayı favorilere eklemek ister misiniz?</item>
+        <item quantity="other">Bu çalma listesindeki %1$d parçaları favorilere eklemek ister misiniz?</item>
     </plurals>
     <plurals name="library_collection_favorites_remove_playlist_tracks">
-        <item quantity="one">Remove %1$d track in this playlist from favorites?</item>
-        <item quantity="other">Remove %1$d tracks in this playlist from favorites?</item>
+        <item quantity="one">Bu çalma listesindeki %1$d parçayı favorilerden kaldırmak istiyor musunuz?</item>
+        <item quantity="other">Bu çalma listesindeki %1$d parçaları favorilerden kaldırmak istiyor musunuz?</item>
     </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
-        <item quantity="one">Add %1$d track from this album to favorites?</item>
-        <item quantity="other">Add %1$d tracks from this album to favorites?</item>
+        <item quantity="one">Bu albümden %1$d parçayı favorilere eklemek ister misiniz?</item>
+        <item quantity="other">Bu albümden %1$d parçaları favorilere eklemek ister misiniz?</item>
     </plurals>
     <plurals name="library_collection_favorites_remove_album_tracks">
-        <item quantity="one">Remove %1$d track in this album from favorites?</item>
-        <item quantity="other">Remove %1$d tracks in this album from favorites?</item>
+        <item quantity="one">Bu albümdeki %1$d parçayı favorilerden kaldırmak istiyor musunuz?</item>
+        <item quantity="other">Bu albümdeki %1$d parçaları favorilerden kaldırmak istiyor musunuz?</item>
     </plurals>
     <plurals name="library_collection_favorites_add_episodes">
-        <item quantity="one">Add %1$d episode from this podcast to favorites?</item>
-        <item quantity="other">Add %1$d episodes from this podcast to favorites?</item>
+        <item quantity="one">Bu podcast\'ten %1$d bölümü favorilere eklemek ister misiniz?</item>
+        <item quantity="other">Bu podcast\'ten %1$d bölümleri favorilere eklemek ister misiniz?</item>
     </plurals>
     <plurals name="library_collection_favorites_remove_episodes">
-        <item quantity="one">Remove %1$d episode in this podcast from favorites?</item>
-        <item quantity="other">Remove %1$d episodes in this podcast from favorites?</item>
+        <item quantity="one">Bu podcast’teki %1$d bölümü favorilerden kaldırmak ister misiniz?</item>
+        <item quantity="other">Bu podcast’teki %1$d bölümleri favorilerden kaldırmak ister misiniz?</item>
     </plurals>
     <plurals name="about_translator_count">
         <item quantity="one">%1$d çevirmen</item>
