@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">您的 %1$s 后退播放列表已准备好</string>
     <string name="rewind_settings_enabled">启用后退</string>
     <string name="rewind_settings_enabled_description">启用或禁用整个后向功能：菜单项、提醒和播放列表。</string>
+    <string name="rewind_settings_disabled_message">返回已禁用。打开隐私设置以重新开启。</string>
     <string name="rewind_settings_global">全部倒退时间</string>
     <string name="rewind_settings_global_description">在返回家园显示所有时间的回忆录。</string>
     <string name="rewind_settings_monthly">每月后退</string>
