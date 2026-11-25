@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Import mislykkedes</string>
     <string name="export_no_songs">Ingen sange eksporteret</string>
     <string name="export_cached_songs_generic_error">Eksport mislykkedes</string>
+    <string name="export_selection_lost">Eksport annulleret fordi markeringen ikke kunne gendannes. Vælg elementerne igen og prøv igen.</string>
     <string name="backup_startup_preparing_library">Forbereder dit bibliotek…</string>
     <string name="backup_startup_recovery_failed">Kunne ikke fuldføre gendannelse af dit bibliotek.</string>
     <string name="storage_breakdown_themes">Temaer</string>
