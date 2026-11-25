@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Pobrane</string>
     <string name="theme_store_following">Subskrybujesz</string>
     <string name="theme_store_creator">Twórca</string>
+    <string name="theme_store_group_publishing_access">Dostęp do publikacji</string>
+    <string name="theme_store_group_theme_publication">Publikacja motywu</string>
     <string name="theme_store_creator_profile">Profil autora</string>
     <string name="theme_store_creator_identity">Informacje publiczne</string>
     <string name="theme_store_creator_images">Zdjęcia profilowe</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Wysyłanie profilu do GitHub…</string>
     <string name="theme_store_creator_authorizing">Łączenie z GitHub, aby opublikować…</string>
     <string name="theme_store_creator_submissions">Śledzenie zgłoszeń</string>
+    <string name="theme_store_group_review_status">Status przeglądu</string>
     <string name="theme_store_submissions_in_progress">W toku</string>
     <string name="theme_store_submissions_history">Historia</string>
     <string name="theme_store_creator_my_themes">Moje opublikowane motywy</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Użyj bieżącego wyglądu</string>
     <string name="theme_store_local_use_current_description">Zastąp ustawienia tego motywu bieżącym wyglądem N-Zik.</string>
     <string name="theme_store_local_themes">Motywy lokalne</string>
+    <string name="theme_store_group_local_editing">Edycja urządzenia</string>
     <string name="theme_store_create_local">Utwórz lokalny motyw</string>
     <string name="theme_store_create_local_description">Zapisz bieżący wygląd i podglądy do pobrania.</string>
     <string name="theme_backup_choose_zip">Wybierz motyw ZIP</string>
