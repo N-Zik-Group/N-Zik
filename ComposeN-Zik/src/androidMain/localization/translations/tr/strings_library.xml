@@ -352,6 +352,7 @@
     <string name="search_online">Çevrimiçi</string>
     <string name="search_queries">"arama sorguları"</string>
     <string name="search_results_for">Arama sonuçları:</string>
+    <string name="search_history_clear_all_button">Tümünü temizle</string>
     <string name="search_saved_history_title">Arama geçmişi</string>
     <string name="search_suggestions_empty_message">Öneri yok</string>
     <string name="search_suggestions_title">Öneriler</string>
