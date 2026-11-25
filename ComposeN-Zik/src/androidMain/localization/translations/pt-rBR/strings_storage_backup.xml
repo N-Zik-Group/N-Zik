@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Falha na importação</string>
     <string name="export_no_songs">Nenhuma música exportada</string>
     <string name="export_cached_songs_generic_error">Exportação falhou</string>
+    <string name="export_selection_lost">Exportação cancelada porque a seleção não pôde ser restaurada. Selecione os itens novamente e tente novamente.</string>
     <string name="backup_startup_preparing_library">Preparando sua biblioteca…</string>
     <string name="backup_startup_recovery_failed">Não foi possível terminar de restaurar sua biblioteca.</string>
     <string name="storage_breakdown_themes">Temas</string>
