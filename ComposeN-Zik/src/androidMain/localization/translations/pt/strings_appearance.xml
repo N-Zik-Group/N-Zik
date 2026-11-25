@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Baixados</string>
     <string name="theme_store_following">Seguindo</string>
     <string name="theme_store_creator">Criador</string>
+    <string name="theme_store_group_publishing_access">Acesso de publicação</string>
+    <string name="theme_store_group_theme_publication">Tema publicado</string>
     <string name="theme_store_creator_profile">Perfil do criador</string>
     <string name="theme_store_creator_identity">Informação Pública</string>
     <string name="theme_store_creator_images">Imagens do perfil</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Enviando perfil ao GitHub…</string>
     <string name="theme_store_creator_authorizing">Conectando-se ao GitHub para publicar…</string>
     <string name="theme_store_creator_submissions">Rastreamento de envio</string>
+    <string name="theme_store_group_review_status">Status da revisão</string>
     <string name="theme_store_submissions_in_progress">Em Execução</string>
     <string name="theme_store_submissions_history">Histórico</string>
     <string name="theme_store_creator_my_themes">Meus temas publicados</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Usar a aparência atual</string>
     <string name="theme_store_local_use_current_description">Substitua as configurações deste tema por sua aparência N-Zik atual.</string>
     <string name="theme_store_local_themes">Temas locais</string>
+    <string name="theme_store_group_local_editing">Edição no dispositivo</string>
     <string name="theme_store_create_local">Criar um tema local</string>
     <string name="theme_store_create_local_description">Salve a aparência e pré-visualizações atuais para Baixados.</string>
     <string name="theme_backup_choose_zip">Escolher tema ZIP</string>
