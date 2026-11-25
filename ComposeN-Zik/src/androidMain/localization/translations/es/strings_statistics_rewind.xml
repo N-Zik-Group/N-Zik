@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Tu lista de reproducción de rebobinado %1$s está lista</string>
     <string name="rewind_settings_enabled">Activar rebobinado</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Rewind está desactivado. Abre los ajustes de privacidad para volver a activarlo.</string>
     <string name="rewind_settings_global">rebobinado todo el tiempo</string>
     <string name="rewind_settings_global_description">Mostrar el resumen de todo el tiempo en la casa de Rewind.</string>
     <string name="rewind_settings_monthly">rebobinado mensual</string>
