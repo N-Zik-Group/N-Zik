@@ -12,11 +12,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.LayoutDirection
 import java.time.Duration
+import java.util.Locale
 import android.app.Application
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
@@ -121,6 +125,47 @@ class UiSettingsWiringTest {
             }
         }
         if (composeRule.mainClock.autoAdvance) composeRule.waitForIdle()
+    }
+
+    @Test fun sortMenusMatchTheLocalizedCardAndLocalPlaylistTitles() {
+        val french = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.FRENCH) },
+        )
+        val query = mutableStateOf(TextFieldValue(french.getString(R.string.library_sort_menu)))
+        composeRule.setContent {
+            CompositionLocalProvider(LocalContext provides french, LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    UiSortMenusCard(Search(initialVisible = true, inputState = query))
+                }
+            }
+        }
+        val local = french.getString(R.string.settings_local_playlist_title)
+        val playlists = french.getString(R.string.library_playlists_title)
+        composeRule.onNodeWithText(local).assertExists()
+        composeRule.onNodeWithText(playlists).assertExists()
+        composeRule.runOnIdle { query.value = TextFieldValue(local) }
+        composeRule.onNodeWithText(local).assertExists()
+        composeRule.onNodeWithText(playlists).assertDoesNotExist()
+    }
+
+    @Test fun fontSettingsMatchTheirGroupHeadingAndFilterByRowDescription() {
+        val query = mutableStateOf(TextFieldValue(context.getString(R.string.settings_group_app_typography)))
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    UiFontCard(Search(initialVisible = true, inputState = query))
+                }
+            }
+        }
+        val systemFont = context.getString(R.string.settings_font_use_system_label)
+        val padding = context.getString(R.string.settings_font_include_padding_label)
+        composeRule.onNodeWithText(systemFont).assertExists()
+        composeRule.onNodeWithText(padding).assertExists()
+        composeRule.runOnIdle {
+            query.value = TextFieldValue(context.getString(R.string.settings_font_use_system_description))
+        }
+        composeRule.onNodeWithText(systemFont).assertExists()
+        composeRule.onNodeWithText(padding).assertDoesNotExist()
     }
 
     @Test fun selectedContentDoesNotNestThePageShell() {

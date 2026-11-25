@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.ui
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.normalizedSettingsText
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
@@ -32,23 +33,35 @@ internal fun UiFontCard(search: Search) {
     var useSystemFont by rememberPreference(useSystemFontKey, false)
     var applyFontPadding by rememberPreference(applyFontPaddingKey, false)
 
-    val typoSearchContextMatch = search.inputValue.isBlank() ||
-        stringResource(R.string.settings_use_font_type).contains(search.inputValue, true) ||
-        stringResource(R.string.settings_font_use_system_label).contains(search.inputValue, true) ||
-        stringResource(R.string.settings_font_include_padding_label).contains(search.inputValue, true)
+    val query = normalizedSettingsText(search.inputValue)
+    val title = stringResource(R.string.settings_use_font_type)
+    val groupTitle = stringResource(R.string.settings_group_app_typography)
+    fun matches(vararg values: String) = values.any { normalizedSettingsText(it).contains(query) }
+
+    val showGroup = matches(title, groupTitle)
+    val showFontType = showGroup || matches(stringResource(R.string.interface_font_type_description))
+    val showSystemFont = showGroup || matches(
+        stringResource(R.string.settings_font_use_system_label),
+        stringResource(R.string.settings_font_use_system_description),
+    )
+    val showFontPadding = showGroup || matches(
+        stringResource(R.string.settings_font_include_padding_label),
+        stringResource(R.string.settings_font_include_padding_description),
+    )
 
     AnimatedVisibility(
-        visible = typoSearchContextMatch,
+        visible = showFontType || showSystemFont || showFontPadding,
         enter = settingsCardEnter,
         exit = settingsCardExit
     ) {
         SettingsSectionCard(
             modifier = Modifier.testTag("ui.card.font"),
-            title = stringResource(R.string.settings_use_font_type),
+            title = title,
+            groupTitleRes = R.string.settings_group_app_typography,
             icon = R.drawable.text,
             content = {
                 var showFontDialog by remember { mutableStateOf(false) }
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_use_font_type).contains(search.inputValue, true)) {
+                if (showFontType) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.settings_use_font_type"),
                         title = stringResource(R.string.settings_use_font_type),
@@ -69,7 +82,7 @@ internal fun UiFontCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_font_use_system_label).contains(search.inputValue, true)) {
+                if (showSystemFont) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.use_system_font"),
                         title = stringResource(R.string.settings_font_use_system_label),
@@ -80,7 +93,7 @@ internal fun UiFontCard(search: Search) {
                     )
                 }
 
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_font_include_padding_label).contains(search.inputValue, true)) {
+                if (showFontPadding) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.apply_font_padding"),
                         title = stringResource(R.string.settings_font_include_padding_label),
