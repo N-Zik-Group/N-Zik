@@ -34,8 +34,8 @@
         <item quantity="other">Ajouter %d titres sélectionnés dans la file d’attente aux favoris ?</item>
     </plurals>
     <plurals name="library_collection_favorites_remove_queue_tracks">
-        <item quantity="one">Retirer %d titre sélectionné dans la file d’attente des favoris ?</item>
-        <item quantity="other">Retirer %d titres sélectionnés dans la file d’attente des favoris ?</item>
+        <item quantity="one">Supprimer %d titre sélectionné dans la file d\'attente de vos favoris ?</item>
+        <item quantity="other">Supprimer %d titres sélectionnés dans la file d\'attente de vos favoris ?</item>
     </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Ajouter %1$d titre de cette playlist à vos favoris ?</item>
