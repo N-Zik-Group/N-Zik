@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Не понравилось %s</string>
     <string name="library_dislikes_removed">%s удалён из запрещенных</string>
     <string name="library_favorites_action_add">Добавить в Избранное</string>
+    <string name="library_collection_favorites_action_manage">Управление избранным</string>
     <string name="library_favorites_added">Добавлено в избранное</string>
     <string name="library_favorites_removed">Удалено из избранного</string>
     <string name="library_collection_favorites_action_remove">Удалить из избранного</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Добавить в плейлист</string>
     <string name="playlist_action_add_hint">Добавить в плейлист</string>
+    <string name="playlist_add_destination_unavailable">Этот плейлист больше не доступен для добавления треков устройства. Выберите другой плейлист.</string>
     <string name="playlist_action_create">Новый плейлист</string>
     <string name="playlist_action_delete_selected">Удалить плейлисты</string>
     <string name="playlist_action_export">Экспортировать плейлист</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Мои Топ</string>
     <string name="recommendations_playlists_title">Плейлисты, которые вам могут понравиться</string>
     <string name="recommendations_reset_complete">Данные Обзора очищены</string>
-    <string name="recommendations_reset_description">Удалить события воспроизведения, используемые для генерации рекомендаций в быстрых выборах.</string>
+    <string name="recommendations_reset_content_description">Перезагрузите Быстрые Пики с новыми рекомендациями. Ваша история прослушивания сохранена.</string>
     <string name="recommendations_section_other_youtube_title">Другие разделы</string>
     <string name="recommendations_section_visibility_description">Отключите, если не хотите видеть</string>
     <string name="recommendations_show_section_label">Показать</string>
