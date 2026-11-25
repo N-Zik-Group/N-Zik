@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Đã tải về</string>
     <string name="theme_store_following">Following</string>
     <string name="theme_store_creator">Creator</string>
+    <string name="theme_store_group_publishing_access">Publishing access</string>
+    <string name="theme_store_group_theme_publication">Theme publication</string>
     <string name="theme_store_creator_profile">Creator profile</string>
     <string name="theme_store_creator_identity">Public information</string>
     <string name="theme_store_creator_images">Profile images</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Submitting profile to GitHub…</string>
     <string name="theme_store_creator_authorizing">Connecting to GitHub to publish…</string>
     <string name="theme_store_creator_submissions">Submission tracking</string>
+    <string name="theme_store_group_review_status">Review status</string>
     <string name="theme_store_submissions_in_progress">In progress</string>
     <string name="theme_store_submissions_history">History</string>
     <string name="theme_store_creator_my_themes">My published themes</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Use current appearance</string>
     <string name="theme_store_local_use_current_description">Replace this theme’s settings with your current N-Zik appearance.</string>
     <string name="theme_store_local_themes">Local themes</string>
+    <string name="theme_store_group_local_editing">On-device editing</string>
     <string name="theme_store_create_local">Create a local theme</string>
     <string name="theme_store_create_local_description">Save the current appearance and previews to Downloaded.</string>
     <string name="theme_backup_choose_zip">Choose theme ZIP</string>
