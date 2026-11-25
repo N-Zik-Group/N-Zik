@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Tyckte inte om %s</string>
     <string name="library_dislikes_removed">Tog bort %s från ogillade</string>
     <string name="library_favorites_action_add">Lägg till i favoriter</string>
+    <string name="library_collection_favorites_action_manage">Hantera favoriter</string>
     <string name="library_favorites_added">Lades till i favoriter</string>
     <string name="library_favorites_removed">Borttagen från favoriter</string>
     <string name="library_collection_favorites_action_remove">Ta bort från favoriter</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Lägg till i spellistan</string>
     <string name="playlist_action_add_hint">Lägg till i spellistan</string>
+    <string name="playlist_add_destination_unavailable">Den här spellistan är inte längre tillgänglig för att lägga till låtar. Välj en annan spellista.</string>
     <string name="playlist_action_create">Ny spellista</string>
     <string name="playlist_action_delete_selected">Ta bort spellistor</string>
     <string name="playlist_action_export">Exportera spellista</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Min topp</string>
     <string name="recommendations_playlists_title">Spellistor du kanske gillar</string>
     <string name="recommendations_reset_complete">Snabbval rensas</string>
-    <string name="recommendations_reset_description">Ta bort uppspelningshändelser som används för att generera lokala snabbvalsrekommendationer.</string>
+    <string name="recommendations_reset_content_description">Ladda om Snabbval med färska rekommendationer. Din lyssningshistorik behålls.</string>
     <string name="recommendations_section_other_youtube_title">Andra sektioner</string>
     <string name="recommendations_section_visibility_description">Inaktivera om du inte vill se</string>
     <string name="recommendations_show_section_label">Visa</string>
