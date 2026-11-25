@@ -68,8 +68,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.maintenance.formatBytes
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.glassChipBackground
-import app.n_zik.android.components.glass.GlassSectionAction
-import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.components.glass.PageIconButton
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.profiles.ProfileDataItem
@@ -451,12 +449,10 @@ fun ProfileCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                ProfileAvatarFrame(size = 48.dp, area = GlassArea.SettingsCards) {
-                    if (face == null) {
-                        Spacer(Modifier.size(48.dp).clip(artistThumbnailShape()).shimmerEffect())
-                    } else {
-                        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = 48.dp)
-                    }
+                if (face == null) {
+                    Spacer(Modifier.size(ProfileCardAvatarSize).clip(artistThumbnailShape()).shimmerEffect())
+                } else {
+                    ProfileCardAvatar(face, GlassArea.SettingsCards)
                 }
                 Column(modifier = Modifier.weight(1f)) {
                     if (face == null) {
@@ -592,20 +588,20 @@ fun ProfileCard(
             } else if (onRename != null || onDelete != null) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.align(Alignment.End),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (onRename != null) {
-                        GlassSectionActions(
-                            actions = listOf(GlassSectionAction(
-                                icon = R.drawable.pencil,
+                        PageIconButton(onClick = onRename, modifier = Modifier.size(48.dp)) {
+                            Icon(
+                                painter = painterResource(R.drawable.pencil),
                                 contentDescription = stringResource(R.string.profile_rename),
-                                onClick = onRename,
-                            )),
-                        )
+                                tint = colorPalette().textSecondary,
+                            )
+                        }
                     }
                     if (onDelete != null) {
-                        PageIconButton(onClick = onDelete) {
+                        PageIconButton(onClick = onDelete, modifier = Modifier.size(48.dp)) {
                             Icon(
                                 painter = painterResource(R.drawable.trash),
                                 contentDescription = stringResource(R.string.profile_action_remove),
@@ -632,6 +628,7 @@ private fun ProfileCardInfoRow(icon: Int, label: String, value: String?) {
     ) {
         Box(
             modifier = Modifier
+                .padding(horizontal = (ProfileCardAvatarSize - 32.dp) / 2)
                 .size(32.dp)
                 .iconBadgeBackground(palette.accent.copy(alpha = 0.1f), uiRoundnessShape()),
             contentAlignment = Alignment.Center,

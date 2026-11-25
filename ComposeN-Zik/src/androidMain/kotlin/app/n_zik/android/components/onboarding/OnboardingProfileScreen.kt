@@ -67,11 +67,10 @@ import app.n_zik.android.utils.takenProfileNames
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
+import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.ui.screens.profiles.AccountLoginState
-import app.n_zik.android.components.ui.screens.profiles.ProfileFaceAvatar
 import app.n_zik.android.components.ui.screens.profiles.faceSourceIcon
 import app.n_zik.android.components.ui.screens.profiles.faceSourceLabel
 import app.n_zik.android.components.ui.screens.profiles.loadAccountLoginState
@@ -387,13 +386,7 @@ fun OnboardingProfileScreen(
                         .padding(top = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ProfileAvatarFrame(size = 48.dp, area = GlassArea.SettingsCards) {
-                        ProfileFaceAvatar(
-                            avatar = previewFace.avatar,
-                            faceName = previewFace.name,
-                            size = 48.dp
-                        )
-                    }
+                    ProfileCardAvatar(previewFace, GlassArea.SettingsCards)
 
                     Spacer(modifier = Modifier.width(12.dp))
 

@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
@@ -14,6 +15,16 @@ import app.n_zik.android.components.glass.glassEdgeRim
 import app.n_zik.android.components.glass.glassTint
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassContour
+import app.n_zik.android.utils.ProfileFace
+
+internal val ProfileCardAvatarSize = 36.dp
+
+@Composable
+internal fun ProfileCardAvatar(face: ProfileFace, area: GlassArea, modifier: Modifier = Modifier) {
+    ProfileAvatarFrame(ProfileCardAvatarSize, area, modifier) {
+        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = ProfileCardAvatarSize)
+    }
+}
 
 /** Follows the image edge at its exact bounds, without applying material effects to the photo. */
 @Composable

@@ -24,16 +24,22 @@ import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.ui.screens.profiles.ProfileCard
 import app.n_zik.android.components.ui.screens.profiles.ProfileCardSurface
+import app.n_zik.android.utils.FaceAvatar
+import app.n_zik.android.utils.ProfileFace
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -47,6 +53,50 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class GlassProfileCardsTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `rename and remove profile actions align and have separate touch targets`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val shape = RoundedCornerShape(16.dp)
+        var renameClicks = 0
+        var removeClicks = 0
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape),
+            ) {
+                ProfileCard(
+                    face = ProfileFace("Listener", FaceAvatar.Initials("Listener")),
+                    lastUsed = null,
+                    dbSizeBytes = 0,
+                    settingsSizeBytes = 0,
+                    imagesSizeBytes = 0,
+                    songCacheSizeBytes = 0,
+                    downloadsSizeBytes = 0,
+                    isActive = false,
+                    onSwitch = null,
+                    onRename = { renameClicks++ },
+                    onDelete = { removeClicks++ },
+                )
+            }
+        }
+        val renameLabel = context.getString(R.string.profile_rename)
+        val removeLabel = context.getString(R.string.profile_action_remove)
+        val renameIcon = compose.onNodeWithContentDescription(renameLabel, useUnmergedTree = true)
+        val removeIcon = compose.onNodeWithContentDescription(removeLabel, useUnmergedTree = true)
+        assertEquals(renameIcon.fetchSemanticsNode().boundsInRoot.center.y, removeIcon.fetchSemanticsNode().boundsInRoot.center.y, .5f)
+
+        val renameAction = compose.onNodeWithContentDescription(renameLabel)
+        val removeAction = compose.onNodeWithContentDescription(removeLabel)
+        renameAction.assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp).performClick()
+        compose.runOnIdle {
+            assertEquals(1, renameClicks)
+            assertEquals(0, removeClicks)
+        }
+        removeAction.assertWidthIsEqualTo(48.dp).assertHeightIsEqualTo(48.dp).performClick()
+        compose.runOnIdle {
+            assertEquals(1, renameClicks)
+            assertEquals(1, removeClicks)
+        }
+    }
 
     @Test fun `profile surface preserves original native pixels clicks and dimensions and owns its backdrop`() {
         val settings = mutableStateOf(GlassSettings(enabled = false, tintStrength = 0f, film = .5f,
