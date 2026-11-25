@@ -352,6 +352,7 @@
     <string name="search_online">Onlajn</string>
     <string name="search_queries">" upiti za pretragu"</string>
     <string name="search_results_for">Search results for:</string>
+    <string name="search_history_clear_all_button">Clear all</string>
     <string name="search_saved_history_title">Saved searches</string>
     <string name="search_suggestions_empty_message">No suggestions</string>
     <string name="search_suggestions_title">Suggestions</string>
