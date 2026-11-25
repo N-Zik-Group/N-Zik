@@ -284,6 +284,8 @@
     <string name="theme_store_downloaded">Ληφθέντα</string>
     <string name="theme_store_following">Ακολουθεί</string>
     <string name="theme_store_creator">Δημιουργός</string>
+    <string name="theme_store_group_publishing_access">Πρόσβαση δημοσίευσης</string>
+    <string name="theme_store_group_theme_publication">Δημοσίευση θέματος</string>
     <string name="theme_store_creator_profile">Προφίλ δημιουργού</string>
     <string name="theme_store_creator_identity">Δημόσιες πληροφορίες</string>
     <string name="theme_store_creator_images">Εικόνες προφίλ</string>
@@ -300,6 +302,7 @@
     <string name="theme_store_creator_submitting">Υποβολή προφίλ στο GitHub…</string>
     <string name="theme_store_creator_authorizing">Σύνδεση στο GitHub για δημοσίευση…</string>
     <string name="theme_store_creator_submissions">Παρακολούθηση υποβολών</string>
+    <string name="theme_store_group_review_status">Κατάσταση αξιολόγησης</string>
     <string name="theme_store_submissions_in_progress">Σε εξέλιξη</string>
     <string name="theme_store_submissions_history">Ιστορικό</string>
     <string name="theme_store_creator_my_themes">Τα δημοσιευμένα μου θέματα</string>
@@ -465,6 +468,7 @@
     <string name="theme_store_local_use_current">Χρήση τρέχουσας εμφάνισης</string>
     <string name="theme_store_local_use_current_description">Αντικαταστήστε τις ρυθμίσεις αυτού του θέματος με την τρέχουσα εμφάνιση N-Zik.</string>
     <string name="theme_store_local_themes">Τοπικά θέματα</string>
+    <string name="theme_store_group_local_editing">Επεξεργασία συσκευής</string>
     <string name="theme_store_create_local">Δημιουργία τοπικού θέματος</string>
     <string name="theme_store_create_local_description">Αποθήκευση της τρέχουσας εμφάνισης και προεπισκοπήσεων στο Downloaded.</string>
     <string name="theme_backup_choose_zip">Επιλέξτε Θέμα ZIP</string>
