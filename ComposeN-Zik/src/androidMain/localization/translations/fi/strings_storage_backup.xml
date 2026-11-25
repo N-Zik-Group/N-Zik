@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Tuonti epäonnistui</string>
     <string name="export_no_songs">Kappaleita ei tuotu</string>
     <string name="export_cached_songs_generic_error">Vienti epäonnistui</string>
+    <string name="export_selection_lost">Vienti peruutettiin, koska valintaa ei voitu palauttaa. Valitse kohteet uudelleen ja yritä uudelleen.</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">Kirjaston palauttaminen ei onnistunut.</string>
     <string name="storage_breakdown_themes">Teemat</string>
