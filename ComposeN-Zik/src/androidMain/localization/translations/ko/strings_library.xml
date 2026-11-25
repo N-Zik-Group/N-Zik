@@ -352,6 +352,7 @@
     <string name="search_online">온라인</string>
     <string name="search_queries">" 검색어"</string>
     <string name="search_results_for">다음에 대한 검색 결과:</string>
+    <string name="search_history_clear_all_button">Clear all</string>
     <string name="search_saved_history_title">Search history</string>
     <string name="search_suggestions_empty_message">추천 없음</string>
     <string name="search_suggestions_title">추천</string>
