@@ -29,6 +29,14 @@
         <item quantity="one">%1$d nummer</item>
         <item quantity="other">%1$d nummers</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_queue_tracks">
+        <item quantity="one">%d geselecteerd nummer toevoegen aan favorieten aan de wachtrij?</item>
+        <item quantity="other">%d geselecteerde nummers aan favorieten toevoegen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_queue_tracks">
+        <item quantity="one">%d geselecteerd nummer in de wachtrij uit favorieten verwijderen?</item>
+        <item quantity="other">%d geselecteerde nummers in de wachtrij uit favorieten verwijderen?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">%1$d track van deze afspeellijst toevoegen aan favorieten?</item>
         <item quantity="other">%1$d nummers van deze afspeellijst toevoegen aan favorieten?</item>
