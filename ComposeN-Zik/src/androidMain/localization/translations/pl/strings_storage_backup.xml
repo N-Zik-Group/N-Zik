@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Importowanie nie powiodło się</string>
     <string name="export_no_songs">Brak wyeksportowanych utworów</string>
     <string name="export_cached_songs_generic_error">Eksport nieudany</string>
+    <string name="export_selection_lost">Eksport anulowany, ponieważ wybór nie mógł zostać przywrócony. Wybierz elementy ponownie i spróbuj ponownie.</string>
     <string name="backup_startup_preparing_library">Przygotowywanie biblioteki…</string>
     <string name="backup_startup_recovery_failed">Nie można zakończyć przywracania twojej biblioteki.</string>
     <string name="storage_breakdown_themes">Motywy</string>
