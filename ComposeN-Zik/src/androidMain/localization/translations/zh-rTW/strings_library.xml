@@ -352,6 +352,7 @@
     <string name="search_online">在線</string>
     <string name="search_queries">" 關鍵字詞"</string>
     <string name="search_results_for">搜尋結果：</string>
+    <string name="search_history_clear_all_button">Clear all</string>
     <string name="search_saved_history_title">已儲存的的搜尋記錄</string>
     <string name="search_suggestions_empty_message">No suggestions</string>
     <string name="search_suggestions_title">搜尋建議</string>
