@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Importen misslyckades</string>
     <string name="export_no_songs">Inga låtar exporterade</string>
     <string name="export_cached_songs_generic_error">Exporten misslyckades</string>
+    <string name="export_selection_lost">Export avbruten eftersom valet inte kunde återställas. Välj objekt igen och försök igen.</string>
     <string name="backup_startup_preparing_library">Förbereder ditt bibliotek…</string>
     <string name="backup_startup_recovery_failed">Kunde inte slutföra återställningen av ditt bibliotek.</string>
     <string name="storage_breakdown_themes">Teman</string>
