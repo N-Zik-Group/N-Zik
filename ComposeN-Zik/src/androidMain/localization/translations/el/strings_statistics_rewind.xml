@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Η λίστα αναπαραγωγής %1$s σας είναι έτοιμη</string>
     <string name="rewind_settings_enabled">Ενεργοποίηση Rewind</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Η Rewind είναι απενεργοποιημένη. Ανοίξτε τις ρυθμίσεις απορρήτου για να τις ενεργοποιήσετε ξανά.</string>
     <string name="rewind_settings_global">Επανάληψη όλου του χρόνου</string>
     <string name="rewind_settings_global_description">Εμφάνιση του ανακεφαλαιώματος όλων των εποχών στην αρχική σελίδα Rewind</string>
     <string name="rewind_settings_monthly">Μηνιαία ανανέωση</string>
