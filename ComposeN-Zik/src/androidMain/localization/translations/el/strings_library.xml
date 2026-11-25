@@ -352,6 +352,7 @@
     <string name="search_online">Συνδεδεμένο</string>
     <string name="search_queries">" ερωτήματα αναζήτησης"</string>
     <string name="search_results_for">Αποτελέσματα αναζήτησης για:</string>
+    <string name="search_history_clear_all_button">Εκκαθάριση όλων</string>
     <string name="search_saved_history_title">Saved searches</string>
     <string name="search_suggestions_empty_message">Δεν υπάρχουν προτάσεις</string>
     <string name="search_suggestions_title">Προτάσεις</string>
