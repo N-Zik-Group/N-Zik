@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">%s con no me gusta</string>
     <string name="library_dislikes_removed">%s eliminado de no me gusta</string>
     <string name="library_favorites_action_add">Añadir a favoritos</string>
+    <string name="library_collection_favorites_action_manage">Administrar favoritos</string>
     <string name="library_favorites_added">Añadido a favoritos</string>
     <string name="library_favorites_removed">Eliminado de favoritos</string>
     <string name="library_collection_favorites_action_remove">Eliminar de favoritos</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Añadir a lista de reproducción</string>
     <string name="playlist_action_add_hint">Añadir a lista de reproducción</string>
+    <string name="playlist_add_destination_unavailable">Esta lista ya no está disponible para añadir canciones de dispositivos. Elige otra lista de reproducción.</string>
     <string name="playlist_action_create">Nueva lista de reproducción</string>
     <string name="playlist_action_delete_selected">Borrar listas</string>
     <string name="playlist_action_export">Exportar lista de reproducción</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Mi Top</string>
     <string name="recommendations_playlists_title">Listas de reproducción que podrían gustarte</string>
     <string name="recommendations_reset_complete">Selecciones rápidas borradas</string>
-    <string name="recommendations_reset_description">Eliminar los eventos de reproducción utilizados para generar recomendaciones locales de Quick Picks.</string>
+    <string name="recommendations_reset_content_description">Recargar Quick Picks con nuevas recomendaciones.</string>
     <string name="recommendations_section_other_youtube_title">Otras secciones</string>
     <string name="recommendations_section_visibility_description">Deshabilítalo si no quieres ver</string>
     <string name="recommendations_show_section_label">Mostrar</string>
