@@ -352,6 +352,7 @@
     <string name="search_online">Pålogget</string>
     <string name="search_queries">" søkeforespørsler"</string>
     <string name="search_results_for">Søkeresultater for:</string>
+    <string name="search_history_clear_all_button">Fjern alle</string>
     <string name="search_saved_history_title">Søk historikk</string>
     <string name="search_suggestions_empty_message">Ingen forslag</string>
     <string name="search_suggestions_title">Forslag</string>
