@@ -255,6 +255,7 @@
     <string name="backup_import_failed">فشل الاستيراد</string>
     <string name="export_no_songs">لا توجد أغاني تم تصديرها</string>
     <string name="export_cached_songs_generic_error">فشل التصدير</string>
+    <string name="export_selection_lost">تم إلغاء التصدير بسبب تعذر استعادة الاختيار. حدد العناصر مرة أخرى ثم أعد المحاولة.</string>
     <string name="backup_startup_preparing_library">جارٍ إعداد مكتبتك…</string>
     <string name="backup_startup_recovery_failed">تعذر إنهاء استعادة مكتبتك.</string>
     <string name="storage_breakdown_themes">السمات</string>
