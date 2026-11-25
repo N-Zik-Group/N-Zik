@@ -352,6 +352,7 @@
     <string name="search_online">In linea</string>
     <string name="search_queries">" requestas de cerca"</string>
     <string name="search_results_for">Requestas de cerca pro:</string>
+    <string name="search_history_clear_all_button">Clear all</string>
     <string name="search_saved_history_title">Search history</string>
     <string name="search_suggestions_empty_message">Nulle suggestiones</string>
     <string name="search_suggestions_title">Suggestiones</string>
