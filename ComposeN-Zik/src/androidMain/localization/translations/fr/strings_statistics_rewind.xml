@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Votre playlist « Rétrospective %1$s » est prête</string>
     <string name="rewind_settings_enabled">Activer la rétrospective</string>
     <string name="rewind_settings_enabled_description">Activer ou désactiver l\'élément de menu et les rappels.</string>
+    <string name="rewind_settings_disabled_message">Rewind est désactivé. Ouvrez les paramètres de confidentialité pour le réactiver.</string>
     <string name="rewind_settings_global">Retour en arrière à travers les âges</string>
     <string name="rewind_settings_global_description">Afficher le récapitulatif de tous les épisodes sur la page d\'accueil de « Rétrospective ».</string>
     <string name="rewind_settings_monthly">Rétrospective mensuelle</string>
