@@ -255,6 +255,7 @@
     <string name="backup_import_failed">Не вдалося виконати імпорт</string>
     <string name="export_no_songs">Немає збережених пісень</string>
     <string name="export_cached_songs_generic_error">Експорт не вдався</string>
+    <string name="export_selection_lost">Експорт скасовано, оскільки вибір не може бути відновлений. Виберіть його ще раз і спробуйте ще раз.</string>
     <string name="backup_startup_preparing_library">Preparing your library…</string>
     <string name="backup_startup_recovery_failed">Не вдалося завершити відновлення бібліотеки.</string>
     <string name="storage_breakdown_themes">Теми оформлення</string>
