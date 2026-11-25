@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">Не сподобалося %s</string>
     <string name="library_dislikes_removed">Видалено %s з несхожих</string>
     <string name="library_favorites_action_add">Додати до Обраного</string>
+    <string name="library_collection_favorites_action_manage">Керувати обраним</string>
     <string name="library_favorites_added">Додано до обраного</string>
     <string name="library_favorites_removed">Видалено з обраного</string>
     <string name="library_collection_favorites_action_remove">Видалити з улюблених</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Додати до плейлиста</string>
     <string name="playlist_action_add_hint">Додати до плейлиста</string>
+    <string name="playlist_add_destination_unavailable">Цей список відтворення більше недоступний для додавання пісень пристрою. Виберіть інший список відтворення.</string>
     <string name="playlist_action_create">Новий плейлист</string>
     <string name="playlist_action_delete_selected">Видалити списки відтворення</string>
     <string name="playlist_action_export">Експортувати список відтворення</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">Моя вершина</string>
     <string name="recommendations_playlists_title">Плейлисти які можуть вам сподобатися</string>
     <string name="recommendations_reset_complete">Швидкий вибір очищено</string>
-    <string name="recommendations_reset_description">Видаліть події відтворення для створення рекомендацій для швидких налаштувань.</string>
+    <string name="recommendations_reset_content_description">Перезавантажте швидкі піки з свіжими рекомендаціями. Ваш прослуховування збережений.</string>
     <string name="recommendations_section_other_youtube_title">Інші розділи</string>
     <string name="recommendations_section_visibility_description">Вимкніть, якщо ви не хочете бачити</string>
     <string name="recommendations_show_section_label">Показати</string>
