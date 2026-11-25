@@ -96,6 +96,7 @@
     <string name="library_dislikes_added">%s Beğenilmeyenlere eklendi</string>
     <string name="library_dislikes_removed">%s Beğenilmeyenlerden çıkarıldı</string>
     <string name="library_favorites_action_add">Favorilere ekle</string>
+    <string name="library_collection_favorites_action_manage">Manage favorites</string>
     <string name="library_favorites_added">Favorilere eklendi</string>
     <string name="library_favorites_removed">Favorilerden çıkarıldı</string>
     <string name="library_collection_favorites_action_remove">Favorilerden kaldır</string>
@@ -196,6 +197,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Çalma listesine ekle</string>
     <string name="playlist_action_add_hint">Çalma listesine ekle</string>
+    <string name="playlist_add_destination_unavailable">This playlist is no longer available for adding device songs. Choose another playlist.</string>
     <string name="playlist_action_create">Yeni çalma listesi</string>
     <string name="playlist_action_delete_selected">Çalma listelerini sil</string>
     <string name="playlist_action_export">Çalma listesini dışa aktar</string>
@@ -313,7 +315,7 @@
     <string name="recommendations_personal_top_title">En Beğendiklerim</string>
     <string name="recommendations_playlists_title">Beğenebileceğiniz çalma listeleri</string>
     <string name="recommendations_reset_complete">Hızlı seçimler temizlendi</string>
-    <string name="recommendations_reset_description">Yerel Hızlı Seçimler önerilerini oluşturmak için kullanılan oynatma olaylarını silin.</string>
+    <string name="recommendations_reset_content_description">Reload Quick Picks with fresh recommendations. Your listening history is kept.</string>
     <string name="recommendations_section_other_youtube_title">Diğer bölümler</string>
     <string name="recommendations_section_visibility_description">Görmek istemiyorsanız devre dışı bırakın</string>
     <string name="recommendations_show_section_label">Göster</string>
