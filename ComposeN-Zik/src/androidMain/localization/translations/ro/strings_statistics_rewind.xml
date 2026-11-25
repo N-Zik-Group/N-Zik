@@ -206,6 +206,7 @@
     <string name="rewind_playlist_notification_title">Lista ta de redare %1$s este gata</string>
     <string name="rewind_settings_enabled">Activează Rewind</string>
     <string name="rewind_settings_enabled_description">Enable or disable the menu item and the reminders.</string>
+    <string name="rewind_settings_disabled_message">Revolta este dezactivată. Deschideți setările de confidențialitate pentru a o activa.</string>
     <string name="rewind_settings_global">Recoltează în întregime</string>
     <string name="rewind_settings_global_description">Arată permeabilitatea permanentă a casei Rewind</string>
     <string name="rewind_settings_monthly">Recoltări lunare</string>
