@@ -1,4 +1,20 @@
 Added:
+- feat(settings): show the active profile on the settings home
+  - Reuse the header avatar and display name in a shortcut that opens Profiles.
+- feat(player): configure top and bottom action placement
+  - Group the three upper positions and lower actions in one dialog. Prevent duplicate assignments and keep the player menu available in one bar.
+  - Offer the shared two-button Audio / Video selector in either bar and label the queue control Open queue.
+- feat(themes): introduce portable action placement in appearance V3
+  - Encode explicit top slots and the bottom order while retaining the V1 and V2 readers. Reset the bundled Stock layout to the three default upper controls.
+  - Prepare V3 revisions for all eleven catalog themes with their original preview bytes. Require Android version code 101 for V3 distribution.
+  - Refresh valid modern catalogs even when the legacy V1 index is unavailable.
+- feat(ui): make collection and player toolbars configurable
+  - Add per-profile controls for album and artist details, online playlists, podcasts, the app header and the player top bar and queue. Use the same defaults in the editors and on screen.
+  - Let the profile menu take over Search and Notifications in their configured positions when either is hidden in the header. Keep the History sort and the existing MiniPlayer editor.
+  - Include the new action layouts in portable V2 themes and scope Stock resets to the matching settings group.
+- feat(collections): add playlist, playback and queue favorites actions
+  - Offer Add to playlist from Artist Overview and compatible on-device collections. Offer Play next in the online playlist and podcast More menus.
+  - Reuse the collection favorites confirmation in Queue for visible checked tracks. Count duplicate occurrences once and keep files when removing a favorite.
 - feat(library): confirm collection favorite actions
   - Share one count-based confirmation across album, local playlist, online playlist and podcast pages.
   - Keep the heart and selection actions in the online More menu. Restrict favorite changes to checked items when selection is active.
@@ -120,6 +136,21 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(settings): restore access to disabled Rewind and isolate Quick Picks reset
+  - Link disabled Rewind to its existing Privacy switch. Reset only the profile's Quick Picks recommendations and preserve listening history.
+- fix(search): filter all Artist and Album content sections
+  - Match artist cards, videos, albums and playlists by displayed metadata and include album alternatives in the same query.
+  - Hide unmatched sections and use the shared empty-search toast only when all searchable sections are empty. Keep existing rows visible when opening an empty filter and animate item changes during filtering.
+- fix(search): apply collection queries to visible results
+  - Filter online playlist rows and each artist song section with the same metadata shown on screen. Restore the source list when the inline field closes.
+  - Keep device folders, localized Rewind names and literal search terms consistent with their displayed results. Use SearchEmptyFeedback for finished empty queries.
+  - Limit online content-type controls to supported results and keep voice input on the Library tab when it starts there.
+- fix(toolbars): align action rendering and selection targets
+  - Center sparse collection actions, give Normal and Glass the same direct toolbar updates, and preserve local playlist locks and the player action order across theme imports.
+  - Target visible checked queue occurrences and use normalized song IDs for saved metadata. Keep failed downloads retryable and offer removal only for completed queue downloads.
+  - Keep active artist transfers cancelable and show configured loading actions in Artist Overview. Report a playlist destination that becomes unavailable before the add completes.
+  - Keep the captured CSV selection on a normal picker return. Cancel a recreated picker result if the original payload is unavailable and remove its document only when confirmed empty.
+  - Bind persistent navigation bars to the actual destination entry so the bar remains visible during the first artist navigation.
 - fix(downloads): honor automatic favorite downloads
   - Use the current profile's master switch and per-category settings for liked tracks and bookmarked albums and music playlists.
   - Skip local and existing downloads, preserve saved playlist membership during partial loads, and reconcile playlist bookmark aliases.
