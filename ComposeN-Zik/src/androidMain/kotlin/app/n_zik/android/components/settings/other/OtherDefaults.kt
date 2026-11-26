@@ -19,24 +19,33 @@ import app.n_zik.android.utils.proxyPortKey
 import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.regionOverrideKey
 import app.n_zik.android.utils.showFoldersOnDeviceKey
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
 import app.n_zik.android.core.settings.defaultProxyPort
 
-internal fun applyOtherDefaults(context: Context) {
+internal fun applyProxyDefaults(context: Context) {
     context.preferences.edit {
         putBoolean(isProxyEnabledKey, false)
         putString(proxyHostnameKey, "")
         putInt(proxyPortKey, defaultProxyPort)
         putEnum(proxyModeKey, Proxy.Type.HTTP)
         putString(regionOverrideKey, "")
+    }
+    Innertube.regionOverride = ""
+    Innertube.regionOverrideActive = false
+}
+
+internal fun applyOtherDefaults(context: Context) {
+    context.preferences.edit {
         putString(defaultFolderKey, "/")
         putBoolean(isKeepScreenOnEnabledKey, false)
         putBoolean(showFoldersOnDeviceKey, true)
+        putBoolean(DEVICE_LIBRARY_ENABLED_KEY, false)
+        putBoolean(SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY, true)
         putBoolean(parentalControlEnabledKey, false)
         putBoolean(logDebugEnabledKey, false)
         remove(otherLanguageAppAlbumKey)
         remove(otherLanguageAppArtistKey)
         remove(otherLanguageAppPlaylistKey)
     }
-    Innertube.regionOverride = ""
-    Innertube.regionOverrideActive = false
 }

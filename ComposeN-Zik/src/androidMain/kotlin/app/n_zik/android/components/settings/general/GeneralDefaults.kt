@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.general
 
 import android.content.Context
+import android.content.SharedPreferences
+import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.DurationInMinutes
 import app.n_zik.android.enums.Languages
@@ -59,35 +61,18 @@ import app.n_zik.android.utils.putEnum
 /** Restores General settings without touching saved queue contents or account data. */
 internal fun applyGeneralDefaults(context: Context) {
     context.preferences.edit {
+        applyPlaybackQueueDefaults()
         putEnum(languageAppKey, Languages.System)
-        putBoolean(persistentQueueKey, false)
-        putBoolean(resumePlaybackOnStartKey, false)
         putBoolean(closebackgroundPlayerKey, false)
         putBoolean(closeWithBackButtonKey, true)
-        putBoolean(resumePlaybackWhenDeviceConnectedKey, false)
         putBoolean(skipSilenceKey, false)
-        putBoolean(skipMediaOnErrorKey, false)
         putBoolean(volumeNormalizationKey, false)
         putFloat(volumeBoostLevelKey, 0f)
         putBoolean(keepPlayerMinimizedKey, true)
         putBoolean(disableClosingPlayerSwipingDownKey, false)
-        putEnum(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
-        putEnum(maxSongsInQueueKey, MaxSongs.Unlimited)
-        putEnum(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited)
-        putBoolean(crossfadeEnabledKey, false)
-        putInt(crossfadeDurationKey, 3000)
-        putBoolean(crossfadeGaplessKey, false)
         putBoolean(useVolumeKeysToChangeSongKey, false)
-        putEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
-        putBoolean(discoverKey, false)
-        putBoolean(isPauseOnVolumeZeroEnabledKey, false)
-        putBoolean(pauseOnHeadphoneDisconnectKey, true)
-        putEnum(excludeDislikedSongsKey, DislikeMode.Enabled)
-        putEnum(excludeDislikedArtistsKey, DislikeMode.Enabled)
-        putEnum(excludeDislikedAlbumsKey, DislikeMode.Enabled)
         putLong(minimumSilenceDurationKey, 2_000_000L)
         putFloat(loudnessBaseGainKey, 5.00f)
-        putBoolean(autoLoadSongsInQueueKey, true)
         putBoolean(bassboostEnabledKey, false)
         putFloat(bassboostLevelKey, 0f)
         putEnum(audioReverbPresetKey, PresetsReverb.NONE)
@@ -95,12 +80,41 @@ internal fun applyGeneralDefaults(context: Context) {
         putBoolean(enablePictureInPictureKey, false)
         putBoolean(enablePictureInPictureAutoKey, false)
         putEnum(pipModuleKey, PipModule.Cover)
-        putString(jumpPreviousKey, "3")
     }
     if (shouldRecreateActivity(Database.isClosed) && !AppCompatDelegate.getApplicationLocales().isEmpty) {
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
     }
     AppShortcutsSettingsDialog.reset(context)
+}
+
+/** Restores the three cards shown under Playback without changing other categories. */
+internal fun applyPlaybackDefaults(context: Context) {
+    context.preferences.edit {
+        applyPlaybackQueueDefaults()
+        putBoolean(parentalControlEnabledKey, false)
+    }
+}
+
+private fun SharedPreferences.Editor.applyPlaybackQueueDefaults() {
+    putBoolean(persistentQueueKey, false)
+    putBoolean(resumePlaybackOnStartKey, false)
+    putBoolean(resumePlaybackWhenDeviceConnectedKey, false)
+    putBoolean(skipMediaOnErrorKey, false)
+    putEnum(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
+    putEnum(maxSongsInQueueKey, MaxSongs.Unlimited)
+    putEnum(maxSongsInQueueAndroidAutoKey, MaxSongs.Unlimited)
+    putBoolean(crossfadeEnabledKey, false)
+    putInt(crossfadeDurationKey, 3000)
+    putBoolean(crossfadeGaplessKey, false)
+    putEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+    putBoolean(discoverKey, false)
+    putBoolean(isPauseOnVolumeZeroEnabledKey, false)
+    putBoolean(pauseOnHeadphoneDisconnectKey, true)
+    putEnum(excludeDislikedSongsKey, DislikeMode.Enabled)
+    putEnum(excludeDislikedArtistsKey, DislikeMode.Enabled)
+    putEnum(excludeDislikedAlbumsKey, DislikeMode.Enabled)
+    putBoolean(autoLoadSongsInQueueKey, true)
+    putString(jumpPreviousKey, "3")
 }
 
 /** Compatibility entry for the category reset, retaining its synchronous writes. */

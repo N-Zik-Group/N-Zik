@@ -19,6 +19,7 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.utils.discordPersonalAccessTokenKey
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
@@ -28,12 +29,21 @@ import app.n_zik.android.R
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.backup.BackupManager
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.defaultGlassQuality
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassProfileDefaults
+import app.n_zik.android.components.settings.general.applyPlaybackDefaults
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.persistentQueueKey
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
+import kotlinx.coroutines.test.runTest
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.mockk
@@ -44,6 +54,7 @@ import io.mockk.unmockkAll
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -59,6 +70,22 @@ class AllSettingsDefaultsTest {
     private fun store(name: String) = context.getSharedPreferences(name, Context.MODE_PRIVATE)
     private val secure get() = store("all-settings-secure")
 
+    @Test fun `Playback reset touches only Playback queue and parental settings`() {
+        val other = store("preferences_untouched")
+        context.preferences.edit()
+            .putBoolean(parentalControlEnabledKey, true)
+            .putBoolean(persistentQueueKey, true)
+            .putBoolean("skipSilence", true)
+            .commit()
+        other.edit().putBoolean(persistentQueueKey, true).commit()
+        applyPlaybackDefaults(context)
+        assertFalse(context.preferences.getBoolean(parentalControlEnabledKey, true))
+        assertFalse(context.preferences.getBoolean(persistentQueueKey, true))
+        assertTrue(context.preferences.getBoolean("pauseOnHeadphoneDisconnect", false))
+        assertTrue(context.preferences.getBoolean("skipSilence", false))
+        assertTrue(other.getBoolean(persistentQueueKey, false))
+    }
+
     @Before fun setUp() {
         val application = mockk<MainApplication>()
         every { application.applicationContext } returns context
@@ -73,8 +100,8 @@ class AllSettingsDefaultsTest {
         store("app_settings").edit().putString("profile-records", "saved profiles").commit()
         store("preferences_untouched").edit().clear().putString("navigationBarPosition", "Left").commit()
         secure.edit().clear().putBoolean("enableYoutubeLogin", true).putBoolean("enableYoutubeSync", true)
-            .putString("ytCookie", "cookie").putString("discordPersonalAccessToken", "token")
-            .putString("lastfm_session_key", "session").putString("proxyPassword", "password").commit()
+            .putString("ytCookie", "cookie").putString(discordPersonalAccessTokenKey, "token")
+            .putString(lastfmSessionKey, "session").putString("proxyPassword", "password").commit()
         GlassStore(context).apply { setProfile(GlassQuality.Quality); setFloat(glassFilmKey, .263f) }
         mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
         every { any<Context>().encryptedPreferences } returns secure
@@ -87,7 +114,7 @@ class AllSettingsDefaultsTest {
         setActiveProfile("default", context)
     }
 
-    @Test fun `all defaults are applied before one callback while user content and secrets survive repeatedly`() {
+    @Test fun `all defaults are applied before one callback while user content and secrets survive repeatedly`() = runTest {
         val file = context.filesDir.resolve("all-settings-test-download").apply { writeText("download content") }
         val database = context.getDatabasePath("all-settings-test.db").apply { parentFile?.mkdirs(); writeText("database content") }
         var callbacks = 0
@@ -104,10 +131,10 @@ class AllSettingsDefaultsTest {
                     assertEquals(glassProfileDefaults(defaultGlassQuality(Build.VERSION.SDK_INT, lowRam)), GlassStore(context).read())
                 }
                 assertEquals("cookie", secure.getString("ytCookie", null))
-                assertEquals(true, secure.getBoolean("enableYoutubeLogin", false))
+                assertFalse(secure.getBoolean("enableYoutubeLogin", true))
                 assertEquals(false, secure.getBoolean("enableYoutubeSync", true))
-                assertEquals("token", secure.getString("discordPersonalAccessToken", null))
-                assertEquals("session", secure.getString("lastfm_session_key", null))
+                assertEquals("token", secure.getString(discordPersonalAccessTokenKey, null))
+                assertEquals("session", secure.getString(lastfmSessionKey, null))
                 assertEquals("password", secure.getString("proxyPassword", null))
                 assertEquals("saved queue", context.preferences.getString("queue", null))
                 assertEquals("saved playlists", context.preferences.getString("playlist-data", null))
@@ -149,6 +176,16 @@ class AllSettingsDefaultsTest {
         assertEquals(secureBefore, secure.all)
     }
 
+    @Test fun `search opens Glass reset action without applying it`() {
+        val query = context.getString(R.string.settings_reset_glass)
+        val target = searchSettingsEntries(context, query).single { it.id == SettingsResetGlassTarget }
+        assertEquals("system", target.parentCard().categoryId())
+        val before = GlassStore(context).read()
+        renderReset(target.id)
+        compose.onNodeWithTag("settings.reset.glass.action").assertExists()
+        assertEquals(before, GlassStore(context).read())
+    }
+
     @Test fun `search for reset all opens confirmation without applying defaults`() {
         val query = context.getString(R.string.settings_reset_all)
         val target = searchSettingsEntries(context, query).single { it.id == SettingsResetAllTarget }
@@ -159,19 +196,38 @@ class AllSettingsDefaultsTest {
         assertEquals(before, context.preferences.all)
     }
 
-    @Test fun `confirming all applies defaults and preserves saved credentials`() {
+    @Test fun `confirming all waits for storage without blocking UI and preserves credentials`() {
         renderReset()
         compose.onNodeWithTag("settings.reset.open").performClick()
         compose.onNodeWithTag("settings.reset.all.open").performClick()
         assertEquals(false, context.preferences.getBoolean("pauseOnHeadphoneDisconnect", true))
-        compose.onNodeWithText(context.getString(R.string.settings_reset_all_confirm)).performClick()
+        val lockHeld = CountDownLatch(1)
+        val releaseLock = CountDownLatch(1)
+        val storageWorker = thread {
+            DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                lockHeld.countDown()
+                releaseLock.await(10, TimeUnit.SECONDS)
+            }
+        }
+        try {
+            assertTrue(lockHeld.await(5, TimeUnit.SECONDS))
+            compose.onNodeWithText(context.getString(R.string.settings_reset_all_confirm)).performClick()
+            compose.onNodeWithTag("settings.reset.open").assertExists()
+            assertFalse(context.preferences.getBoolean("pauseOnHeadphoneDisconnect", true))
+        } finally {
+            releaseLock.countDown()
+            storageWorker.join()
+        }
+        compose.waitUntil(10_000) {
+            context.preferences.getBoolean("pauseOnHeadphoneDisconnect", false) &&
+                !secure.getBoolean("enableYoutubeSync", true)
+        }
         compose.waitForIdle()
-        assertEquals(true, context.preferences.getBoolean("pauseOnHeadphoneDisconnect", false))
         assertEquals("cookie", secure.getString("ytCookie", null))
-        assertEquals("token", secure.getString("discordPersonalAccessToken", null))
+        assertEquals("token", secure.getString(discordPersonalAccessTokenKey, null))
     }
 
-    @Test fun `global reset covers every concrete reverse audited control and scoped playlist pattern`() {
+    @Test fun `global reset covers every concrete reverse audited control and scoped playlist pattern`() = runTest {
         val resetKeys = listOf(
             "AristItemSizeEnum",
             "AlbumItemSizeEnum",
@@ -280,8 +336,8 @@ class AllSettingsDefaultsTest {
             assertEquals("saved queue", context.preferences.getString("queue", null))
             assertEquals("saved playlists", context.preferences.getString("playlist-data", null))
             assertEquals("cookie", secure.getString("ytCookie", null))
-            assertEquals("token", secure.getString("discordPersonalAccessToken", null))
-            assertEquals("session", secure.getString("lastfm_session_key", null))
+            assertEquals("token", secure.getString(discordPersonalAccessTokenKey, null))
+            assertEquals("session", secure.getString(lastfmSessionKey, null))
         }
     }
 }

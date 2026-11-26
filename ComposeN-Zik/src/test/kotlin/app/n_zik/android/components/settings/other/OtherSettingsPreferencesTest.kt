@@ -46,6 +46,8 @@ class OtherSettingsPreferencesTest {
         showFoldersOnDeviceKey to true,
         parentalControlEnabledKey to false,
         logDebugEnabledKey to false,
+        "deviceLibraryEnabled" to false,
+        "scanDeviceLibraryOnStartup" to true,
     )
 
     @Before fun setUp() {
@@ -76,6 +78,8 @@ class OtherSettingsPreferencesTest {
         Innertube.regionOverride = "FR"
         Innertube.regionOverrideActive = true
         applyOtherDefaults(context)
+        assertEquals("FR", Innertube.regionOverride)
+        applyProxyDefaults(context)
         assertEquals("", Innertube.regionOverride)
         assertFalse(Innertube.regionOverrideActive)
         assertEquals(expected + retained + ("extraspace" to true), context.preferences.all)
@@ -83,6 +87,8 @@ class OtherSettingsPreferencesTest {
         Innertube.regionOverride = "FR"
         Innertube.regionOverrideActive = true
         applyOtherDefaults(context)
+        assertEquals("FR", Innertube.regionOverride)
+        applyProxyDefaults(context)
         assertEquals("", Innertube.regionOverride)
         assertFalse(Innertube.regionOverrideActive)
         assertEquals(expected + retained + ("extraspace" to true), context.preferences.all)
@@ -93,7 +99,7 @@ class OtherSettingsPreferencesTest {
         context.preferences.edit().clear().putInt(proxyPortKey, 8123).commit()
         setActiveProfile("other-settings-test", context)
         applyOtherDefaults(context)
-        assertEquals(expected, context.preferences.all)
+        assertEquals(expected - setOf(isProxyEnabledKey, proxyHostnameKey, proxyPortKey, proxyModeKey, regionOverrideKey), context.preferences.all)
         setActiveProfile("other-settings-untouched", context)
         assertEquals(mapOf(proxyPortKey to 8123), context.preferences.all)
         context.preferences.edit().clear().commit()
@@ -108,7 +114,7 @@ class OtherSettingsPreferencesTest {
 
         context.preferences.edit().putInt(proxyPortKey, 8123).commit()
         assertEquals(8123, context.preferences.readProxyPort())
-        applyOtherDefaults(context)
+        applyProxyDefaults(context)
         assertEquals(1080, context.preferences.readProxyPort())
     }
 

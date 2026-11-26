@@ -80,6 +80,9 @@ class NetworkSettingsPreferencesTest {
             .putString("legacy-unrelated", "keep").commit()
         val globalBefore = store("app_settings").all.toMap()
         applyNetworkDefaults(context)
+        assertTrue(context.preferences.getBoolean("autoDownloadSongWhenLiked", false))
+        assertEquals("changed", context.preferences.getString("downloadQualityFormat", null))
+        applyDownloadDefaults(context)
         defaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
         clients.forEach { assertEquals(it, true, store("preferences").all["stream_client_$it"]) }
         assertEquals(clients.joinToString(prefix = "[", postfix = "]", separator = ",") { "\"$it\"" }, store("preferences").getString("streamClientsOrder", null))

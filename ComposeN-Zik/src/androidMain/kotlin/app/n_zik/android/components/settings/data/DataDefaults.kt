@@ -16,32 +16,67 @@ import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
 import app.n_zik.android.utils.pauseListenHistoryKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.putEnum
+import app.n_zik.android.components.image.ORIGINAL_IMAGE_QUALITY_KEY
+import app.n_zik.android.components.image.readOriginalImageQuality
 import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.profileDownloadSpanBytes
 import app.n_zik.android.core.profiles.profileStorageIdentity
 
-/** Restores storage and history defaults for the active profile. */
-internal fun applyDataDefaults(context: Context) = DatabaseRestoreJournal.withProfileStorageMutation(context) {
-    val target = checkNotNull(profileStorageIdentity(context, getActiveProfile(context)))
-    val preferences = profileDataPrefs(context, target.id)
-    preferences.edit {
-        putEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
-        putEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
-        if (runCatching { profileDownloadSpanBytes(context, target.id) <= ExoPlayerDiskDownloadCacheMaxSize.`2GB`.bytes }
-                .getOrDefault(false)
-        ) {
-            putEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskDownloadCacheMaxSize.`2GB`)
+// Keep the selected destination and its persisted SAF grant when resetting the schedule.
+private val autoBackupSettingKeys = setOf(
+    BackupManager.PREF_ENABLED, BackupManager.PREF_INTERVAL, BackupManager.PREF_DB_CHANGE, BackupManager.PREF_MAX_BACKUPS,
+    BackupManager.PREF_CUSTOM_INTERVAL_VALUE, BackupManager.PREF_CUSTOM_INTERVAL_UNIT,
+    BackupManager.PREF_SCHEDULE_HOUR, BackupManager.PREF_SCHEDULE_DAY_OF_WEEK,
+    BackupManager.PREF_SCHEDULE_DAY_OF_MONTH, BackupManager.PREF_TARGET,
+    BackupManager.PREF_INCLUDE_YTB, BackupManager.PREF_INCLUDE_DISCORD,
+    BackupManager.PREF_INCLUDE_LASTFM, BackupManager.PREF_INCLUDE_PROXY, BackupManager.PREF_INCLUDE_GITHUB, BackupManager.PREF_PRE_INSTALL,
+)
+
+/** Restores storage, history and automatic backup defaults for the active profile. */
+internal fun applyDataDefaults(
+    context: Context,
+    profileId: String = getActiveProfile(context),
+    onDownloadLimitRetained: () -> Unit = {},
+    cancelAutoBackup: (ProfileStorageIdentity) -> Unit = { target ->
+        BackupManager.scheduleBackup(context, BackupManager.INTERVAL_NONE, target)
+    },
+): Boolean =
+    DatabaseRestoreJournal.withProfileStorageMutation(context) {
+        if (getActiveProfile(context) != profileId) return@withProfileStorageMutation false
+        val target = profileStorageIdentity(context, profileId) ?: return@withProfileStorageMutation false
+        val preferences = profileDataPrefs(context, target.id)
+        val usedOriginalArtwork = readOriginalImageQuality(preferences)
+        val backupWasEnabled = BackupManager.isEnabled(preferences)
+        val defaultDownloadLimit = ExoPlayerDiskDownloadCacheMaxSize.`2GB`
+        val currentDownloadLimit = preferences.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, defaultDownloadLimit)
+        val canResetDownloadLimit = currentDownloadLimit == defaultDownloadLimit ||
+            runCatching { profileDownloadSpanBytes(context, target.id) <= defaultDownloadLimit.bytes }.getOrDefault(false)
+        preferences.edit {
+            autoBackupSettingKeys.forEach(::remove)
+            remove(ORIGINAL_IMAGE_QUALITY_KEY)
+            putEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)
+            putEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`)
+            if (canResetDownloadLimit) {
+                putEnum(exoPlayerDiskDownloadCacheMaxSizeKey, defaultDownloadLimit)
+            }
+            ProfileCacheLocationMigration.stageRequest(preferences, this, target, ExoPlayerCacheLocation.System)
+            putInt(exoPlayerCustomCacheKey, 32)
+            putInt(PROFILE_IMAGE_CACHE_CUSTOM_MB, 32)
+            putBoolean(pauseSearchHistoryKey, false)
+            putBoolean(pauseListenHistoryKey, false)
+            putEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
+            SearchHistoryStore.pages.forEach { page -> remove(SearchHistoryStore.enabledKey(page)) }
         }
-        ProfileCacheLocationMigration.stageRequest(preferences, this, target, ExoPlayerCacheLocation.System)
-        putInt(exoPlayerCustomCacheKey, 32)
-        putInt(PROFILE_IMAGE_CACHE_CUSTOM_MB, 32)
-        putBoolean(pauseSearchHistoryKey, false)
-        putBoolean(pauseListenHistoryKey, false)
-        putEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
-        SearchHistoryStore.pages.forEach { page -> remove(SearchHistoryStore.enabledKey(page)) }
+        if (backupWasEnabled) cancelAutoBackup(target)
+        if (usedOriginalArtwork != readOriginalImageQuality(preferences)) ImageCacheFactory.refreshArtworkQuality()
+        if (!canResetDownloadLimit) onDownloadLimitRetained()
+        true
     }
-}

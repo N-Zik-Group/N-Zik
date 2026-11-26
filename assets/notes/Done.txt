@@ -732,3 +732,7 @@ Track information:
 Listen Together settings and menu:
 - fix(listen-together): expose option state and refresh host volume settings
   - Show toggled menu actions and recalculate effective host volume preferences.
+
+Settings reset scopes:
+- fix(settings): isolate resets and preserve protected downloads
+  - Restore playback and download defaults by scope and retain user data where required.
