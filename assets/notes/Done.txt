@@ -430,3 +430,10 @@ URL import:
   - Preserve the exact input sent to the import callback. The targeted dialog test covers clear, paste, import and cancel.
 - fix(intents): resolve YouTube album and track links by their original IDs
 - fix(search): present URL import in a settings card and align its field and actions
+
+Library and playback:
+- feat(database): retain the verified source credits for saved playlists
+- fix(library): preserve exact media identifiers and user-edited links
+- fix(artists): restrict YouTube artist badges to verified subscription imports
+- fix(playback): retain the selected album edition in playback and Android Auto
+- fix(search): align the online and local search tabs and history header
