@@ -3,7 +3,6 @@ package app.n_zik.android.ui.screens.info
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -19,6 +18,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,7 +29,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -179,15 +178,25 @@ fun VideoOrSongInfoScreen(
                 .fillMaxWidth()
                 .background(informationMenuHeaderColor())
         ) {
-            // Arrow down to close
-            Box(
-                modifier = Modifier
-                    .padding(top = 18.dp, bottom = 6.dp)
-                    .size(width = 40.dp, height = 4.dp)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(Color.White)
-                    .clickable { onClose() }
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                IconButton(onClick = onNavigateUp) {
+                    Icon(
+                        painterResource(R.drawable.chevron_back),
+                        contentDescription = stringResource(R.string.common_action_back),
+                        tint = colorPalette().text,
+                    )
+                }
+                IconButton(onClick = onClose) {
+                    Icon(
+                        painterResource(R.drawable.close),
+                        contentDescription = stringResource(R.string.common_action_close),
+                        tint = colorPalette().text,
+                    )
+                }
+            }
 
             // ── Main Info: Cover + Title + Artist + Album ─────────────────────
             Row(

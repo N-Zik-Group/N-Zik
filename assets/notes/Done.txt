@@ -896,3 +896,7 @@ Podcast import dialog:
 Quick Picks and sort menus:
 - fix(menu): show active Quick Picks choices and label sorting
   - Share selected-state rendering across sheet layouts.
+
+Menu subpages:
+- fix(menu): align nested picker layouts and information navigation
+  - Keep List and Grid selection flows consistent and label navigation actions.

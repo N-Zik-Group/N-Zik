@@ -149,7 +149,6 @@ fun PlaylistsItemMenu(
         PlaylistsItemGridMenu(
             navController = navController,
             onDismiss = onDismiss,
-            modifier = modifier,
             playlist = playlist,
             onSelectUnselect = onSelectUnselect,
             onPlayNext = onPlayNext,

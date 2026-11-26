@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
@@ -33,10 +36,12 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.ui.screens.profiles.ProfileAvatarFrame
+import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.listentogether.JoinRequestPayload
 import app.n_zik.android.listentogether.SuggestionReceivedPayload
 import app.n_zik.android.listentogether.UserInfo
@@ -44,6 +49,8 @@ import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.themed.IconButton as ThemeIconButton
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 
 @Composable
@@ -285,44 +292,54 @@ internal fun UserActionMenu(
 ) {
     val menuState = LocalMenuState.current
     val palette = colorPalette()
-
-    ListMenu.Menu(title = stringResource(R.string.listen_together_manage_user)) {
+    val style = rememberPreference(menuStyleKey, MenuStyle.List).value
+    val title = stringResource(R.string.listen_together_manage_user)
+    val header: @Composable () -> Unit = {
         Text(
             text = username,
             style = typography().xs,
             color = palette.textSecondary,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
         )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ListMenu.Entry(
-            text = stringResource(R.string.listen_together_kick_user),
-            subtitle = stringResource(R.string.listen_together_kick_user_description),
-            icon = { SettingIcon(R.drawable.trash, palette.red) },
-            onClick = {
+    }
+    val entries = listOf<@Composable () -> Unit>(
+        {
+            ListenTogetherManagementEntry(
+                style, stringResource(R.string.listen_together_kick_user),
+                stringResource(R.string.listen_together_kick_user_description), R.drawable.trash, palette.red,
+            ) {
                 onKick()
                 menuState.hide()
-            },
-        )
-
-        ListMenu.Entry(
-            text = stringResource(R.string.listen_together_permanently_kick_user),
-            subtitle = stringResource(R.string.listen_together_permanently_kick_user_description),
-            icon = { SettingIcon(R.drawable.close, palette.red) },
-            onClick = {
+            }
+        },
+        {
+            ListenTogetherManagementEntry(
+                style, stringResource(R.string.listen_together_permanently_kick_user),
+                stringResource(R.string.listen_together_permanently_kick_user_description), R.drawable.close, palette.red,
+            ) {
                 onPermanentKick()
                 menuState.hide()
-            },
-        )
-
-        ListMenu.Entry(
-            text = stringResource(R.string.listen_together_transfer_ownership),
-            subtitle = stringResource(R.string.listen_together_transfer_ownership_description),
-            icon = { SettingIcon(R.drawable.star_brilliant, palette.accent) },
-            onClick = {
+            }
+        },
+        {
+            ListenTogetherManagementEntry(
+                style, stringResource(R.string.listen_together_transfer_ownership),
+                stringResource(R.string.listen_together_transfer_ownership_description), R.drawable.star_brilliant, palette.accent,
+            ) {
                 onTransferOwnership()
                 menuState.hide()
-            },
-        )
+            }
+        },
+    )
+    if (style == MenuStyle.List) {
+        ListMenu.Menu(title = title) {
+            header()
+            entries.forEach { it() }
+        }
+    } else {
+        GridMenu.Menu(title = title) {
+            item(span = { GridItemSpan(maxLineSpan) }) { header() }
+            items(entries) { it() }
+        }
     }
 }

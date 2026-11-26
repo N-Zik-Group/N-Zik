@@ -12,11 +12,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -27,12 +30,16 @@ import androidx.compose.ui.unit.dp
 
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.listentogether.LogEntry
 import app.n_zik.android.listentogether.LogLevel
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
 
 /** Displays recent connection events and copies their localized details. */
 @Composable
@@ -169,34 +176,59 @@ fun ListenTogetherBlockedUsersMenu(
 ) {
     val menuState = LocalMenuState.current
     val palette = colorPalette()
-
-    ListMenu.Menu(title = stringResource(R.string.listen_together_blocked_users)) {
-        if (blockedUsernames.isEmpty()) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.listen_together_no_blocked_users),
-                    style = typography().xs,
-                    color = palette.textSecondary,
-                )
-            }
-        } else {
-            blockedUsernames.forEach { username ->
-                ListMenu.Entry(
-                    text = username,
-                    subtitle = stringResource(R.string.listen_together_unblock),
-                    icon = { SettingIcon(R.drawable.close, palette.red) },
-                    onClick = {
-                        onUnblock(username)
-                        menuState.hide()
-                    },
-                )
-            }
+    val style = rememberPreference(menuStyleKey, MenuStyle.List).value
+    val title = stringResource(R.string.listen_together_blocked_users)
+    val unblockLabel = stringResource(R.string.listen_together_unblock)
+    val empty: @Composable () -> Unit = {
+        Box(
+            modifier = Modifier.fillMaxWidth().height(200.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = stringResource(R.string.listen_together_no_blocked_users),
+                style = typography().xs,
+                color = palette.textSecondary,
+            )
         }
+    }
+    val entry: @Composable (String) -> Unit = { username ->
+        ListenTogetherManagementEntry(style, username, unblockLabel, R.drawable.close, palette.red) {
+            onUnblock(username)
+            menuState.hide()
+        }
+    }
+
+    if (style == MenuStyle.List) {
+        ListMenu.Menu(title = title) {
+            if (blockedUsernames.isEmpty()) empty() else blockedUsernames.forEach { entry(it) }
+        }
+    } else {
+        GridMenu.Menu(title = title) {
+            if (blockedUsernames.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
+            else items(blockedUsernames.toList(), key = { it }) { entry(it) }
+        }
+    }
+}
+
+@Composable
+internal fun ListenTogetherManagementEntry(
+    style: MenuStyle,
+    label: String,
+    subtitle: String,
+    icon: Int,
+    tint: Color,
+    onClick: () -> Unit,
+) {
+    val entryIcon: @Composable () -> Unit = { SettingIcon(icon, tint) }
+    if (style == MenuStyle.List) {
+        ListMenu.Entry(text = label, subtitle = subtitle, icon = { entryIcon() }, onClick = onClick)
+    } else {
+        GridMenu.Entry(
+            text = label,
+            subtitle = subtitle,
+            icon = { entryIcon() },
+            iconHasOwnBackground = true,
+            onClick = onClick,
+        )
     }
 }

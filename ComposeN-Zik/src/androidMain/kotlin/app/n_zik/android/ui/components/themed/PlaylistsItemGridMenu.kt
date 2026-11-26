@@ -1,8 +1,5 @@
 package app.n_zik.android.ui.components.themed
 
-import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
-import app.n_zik.android.components.menu.playlist.matchesPickerQuery
-import app.n_zik.android.components.menu.playlist.menuItemCount
 import app.n_zik.android.components.menu.playlist.rememberPlaylistPickerRead
 
 
@@ -47,10 +44,10 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
+import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.typography
 import app.n_zik.android.ui.items.PlaylistItem
@@ -62,10 +59,8 @@ import app.n_zik.android.utils.playlistSortOrderKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.tab.Search
-import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.GridMenu
 import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 
 @Composable
@@ -100,7 +95,6 @@ fun PlaylistsItemGridMenu(
     onSelect: (() -> Unit)? = null,
     onUncheck: (() -> Unit)? = null,
     playlist: PlaylistPreview? = null,
-    modifier: Modifier = Modifier,
     onPlayNext: (() -> Unit)? = null,
     onDeleteSongsNotInLibrary: (() -> Unit)? = null,
     onEnqueue: (() -> Unit)? = null,
@@ -176,216 +170,98 @@ fun PlaylistsItemGridMenu(
                 isViewingPlaylists = false
             }
 
-            ListMenu.Menu {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth()
-                ) {
-                    IconButton(
-                        onClick = { isViewingPlaylists = false },
-                        icon = R.drawable.chevron_back,
-                        contentDescription = stringResource(R.string.common_action_back),
-                        color = colorPalette().accent,
-                        modifier = Modifier
-                            .padding(all = 4.dp)
-                            .size(20.dp)
-                    )
-                    IconButton(
-                        onClick = { search.onShortClick() },
-                        icon = R.drawable.search_circle,
-                        contentDescription = stringResource(R.string.search_title),
-                        color = colorPalette().accent,
-                        modifier = Modifier
-                            .padding(all = 4.dp)
-                            .size(24.dp)
-                    )
-                    BasicText(
-                        text = title,
-                        style = typography().m.semiBold,
-                        modifier = Modifier.weight(1f).padding(start = 8.dp)
-                    )
-                    if (onAddToPlaylist != null) {
+            PlaylistPickerMenu(
+                style = MenuStyle.Grid,
+                playlistRead = playlistRead,
+                query = search.inputValue,
+                groups = listOf(
+                    R.string.playlist_pinned_title to pinnedPlaylists,
+                    R.string.sync_youtube_playlists_title to youtubePlaylists,
+                    R.string.library_playlists_title to unpinnedPlaylists,
+                ),
+                header = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).fillMaxWidth(),
+                    ) {
                         IconButton(
-                            onClick = { newPlaylistDialog.onShortClick() },
-                            icon = R.drawable.add_in_playlist,
-                            contentDescription = stringResource(R.string.playlist_action_create),
+                            onClick = { isViewingPlaylists = false },
+                            icon = R.drawable.chevron_back,
+                            contentDescription = stringResource(R.string.common_action_back),
                             color = colorPalette().accent,
-                            modifier = Modifier
-                                .padding(all = 4.dp)
-                                .size(24.dp)
+                            modifier = Modifier.padding(4.dp).size(20.dp),
                         )
-                    }
-                }
-                search.SearchBar(this)
-                val filteredPinnedPlaylists = pinnedPlaylists.filter { it.playlist.matchesPickerQuery(search.inputValue) }
-                val filteredYoutubePlaylists = youtubePlaylists.filter { it.playlist.matchesPickerQuery(search.inputValue) }
-                val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.matchesPickerQuery(search.inputValue) }
-
-                val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty() && filteredYoutubePlaylists.isEmpty()
-                PlaylistPickerFeedback(playlistRead, search.inputValue, noPlaylistResults)
-                if (pinnedPlaylists.isNotEmpty()) {
-                    SearchHeaderVisibility(filteredPinnedPlaylists.isNotEmpty()) {
+                        IconButton(
+                            onClick = search::onShortClick,
+                            icon = R.drawable.search_circle,
+                            contentDescription = stringResource(R.string.search_title),
+                            color = colorPalette().accent,
+                            modifier = Modifier.padding(4.dp).size(24.dp),
+                        )
                         BasicText(
-                            text = stringResource(R.string.playlist_pinned_title),
+                            text = title,
                             style = typography().m.semiBold,
-                            modifier = modifier.padding(start = 20.dp, top = 5.dp)
+                            modifier = Modifier.weight(1f).padding(start = 8.dp),
                         )
-                    }
-
-                    onAddToPlaylist?.let { onAddToPlaylist ->
-                        PlaylistPickerSearchRows(pinnedPlaylists, filteredPinnedPlaylists) { playlistPreview ->
-                            ListMenu.Entry(
-                                text = playlistPreview.playlist.cleanName(),
-                                icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = playlistPreview.menuItemCount(),
-                                onClick = add@{
-                                    if (!canEditPlaylistMembership(playlistPreview.playlist)) {
-                                        warnPlaylistPickerLocked()
-                                        return@add
-                                    }
-                                    onAddToPlaylist(
-                                        PlaylistPreview(
-                                            playlistPreview.playlist,
-                                            playlistPreview.songCount
-                                        )
-                                    )
-                                    onDismiss()
-                                },
-                                trailingContent = {
-                                    if (!canEditPlaylistMembership(playlistPreview.playlist)) PlaylistPickerLockIcon()
-                                    if (playlistPreview.playlist.isYoutubePlaylist) {
-                                        Image(
-                                            painter = painterResource(R.drawable.ytmusic),
-                                            contentDescription = null,
-                                            colorFilter = ColorFilter.tint(
-                                                Color.Red.copy(0.75f).compositeOver(Color.White)
-                                            ),
-                                            modifier = Modifier
-                                                .size(18.dp)
-                                        )
-                                    }
-                                    IconButton(
-                                        icon = R.drawable.open,
-                                        contentDescription = stringResource(R.string.playlist_action_open),
-                                        color = colorPalette().accent,
-                                        onClick = {
-                                            openPlaylistPickerDestination(
-                                                playlistPreview.playlist.id,
-                                                onGoToPlaylist,
-                                                onDismiss,
-                                            ) { id -> navController.navigate(route = "${NavRoutes.localPlaylist.name}/$id") }
-                                        },
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                    )
-                                }
+                        if (onAddToPlaylist != null) {
+                            IconButton(
+                                onClick = newPlaylistDialog::onShortClick,
+                                icon = R.drawable.add_in_playlist,
+                                contentDescription = stringResource(R.string.playlist_action_create),
+                                color = colorPalette().accent,
+                                modifier = Modifier.padding(4.dp).size(24.dp),
                             )
                         }
                     }
-                }
-
-                if (youtubePlaylists.isNotEmpty()) {
-                    SearchHeaderVisibility(filteredYoutubePlaylists.isNotEmpty()) {
-                        BasicText(
-                            text = stringResource(R.string.sync_youtube_playlists_title),
-                            style = typography().m.semiBold,
-                            modifier = Modifier.padding(start = 20.dp, top = 5.dp)
-                        )
-                    }
-
-                    onAddToPlaylist?.let { onAddToPlaylist ->
-                        PlaylistPickerSearchRows(youtubePlaylists, filteredYoutubePlaylists) { playlistPreview ->
-                            ListMenu.Entry(
-                                text = playlistPreview.playlist.cleanName(),
-                                icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = playlistPreview.menuItemCount(),
-                                onClick = add@{
-                                    if (!canEditPlaylistMembership(playlistPreview.playlist)) {
-                                        warnPlaylistPickerLocked()
-                                        return@add
+                    search.SearchBar(this)
+                },
+                heading = { label ->
+                    BasicText(
+                        text = stringResource(label),
+                        style = typography().m.semiBold,
+                        modifier = Modifier.padding(start = 20.dp, top = 5.dp),
+                    )
+                },
+                entry = { label, preview ->
+                    val playlist = preview.playlist
+                    val locked = !canEditPlaylistMembership(playlist)
+                    PlaylistPickerEntry(
+                        style = MenuStyle.Grid,
+                        preview = preview,
+                        icon = { SettingIcon(R.drawable.add_in_playlist) },
+                        onClick = {
+                            if (locked) {
+                                warnPlaylistPickerLocked()
+                            } else {
+                                onAddToPlaylist?.invoke(preview)
+                                onDismiss()
+                            }
+                        },
+                        trailingContent = {
+                            if (locked) PlaylistPickerLockIcon()
+                            if (label == R.string.playlist_pinned_title && playlist.isYoutubePlaylist) {
+                                Image(
+                                    painter = painterResource(R.drawable.ytmusic),
+                                    contentDescription = null,
+                                    colorFilter = ColorFilter.tint(Color.Red.copy(0.75f).compositeOver(Color.White)),
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                            IconButton(
+                                icon = R.drawable.open,
+                                contentDescription = stringResource(R.string.playlist_action_open),
+                                color = colorPalette().accent,
+                                onClick = {
+                                    openPlaylistPickerDestination(playlist.id, onGoToPlaylist, onDismiss) { id ->
+                                        navController.navigate("${NavRoutes.localPlaylist.name}/$id")
                                     }
-                                    onAddToPlaylist(
-                                        PlaylistPreview(
-                                            playlistPreview.playlist,
-                                            playlistPreview.songCount
-                                        )
-                                    )
-                                    onDismiss()
                                 },
-                                trailingContent = {
-                                    if (!canEditPlaylistMembership(playlistPreview.playlist)) PlaylistPickerLockIcon()
-                                    IconButton(
-                                        icon = R.drawable.open,
-                                        contentDescription = stringResource(R.string.playlist_action_open),
-                                        color = colorPalette().accent,
-                                        onClick = {
-                                            openPlaylistPickerDestination(
-                                                playlistPreview.playlist.id,
-                                                onGoToPlaylist,
-                                                onDismiss,
-                                            ) { id -> navController.navigate(route = "${NavRoutes.localPlaylist.name}/$id") }
-                                        },
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                    )
-                                }
+                                modifier = Modifier.size(24.dp),
                             )
-                        }
-                    }
-                }
-
-                if (unpinnedPlaylists.isNotEmpty()) {
-                    SearchHeaderVisibility(filteredUnpinnedPlaylists.isNotEmpty()) {
-                        BasicText(
-                            text = stringResource(R.string.library_playlists_title),
-                            style = typography().m.semiBold,
-                            modifier = modifier.padding(start = 20.dp, top = 5.dp)
-                        )
-                    }
-
-                    onAddToPlaylist?.let { onAddToPlaylist ->
-                        PlaylistPickerSearchRows(unpinnedPlaylists, filteredUnpinnedPlaylists) { playlistPreview ->
-                            ListMenu.Entry(
-                                text = playlistPreview.playlist.cleanName(),
-                                icon = { SettingIcon(R.drawable.add_in_playlist) },
-                                subtitle = playlistPreview.menuItemCount(),
-                                onClick = add@{
-                                    if (!canEditPlaylistMembership(playlistPreview.playlist)) {
-                                        warnPlaylistPickerLocked()
-                                        return@add
-                                    }
-                                    onAddToPlaylist(
-                                        PlaylistPreview(
-                                            playlistPreview.playlist,
-                                            playlistPreview.songCount
-                                        )
-                                    )
-                                    onDismiss()
-                                },
-                                trailingContent = {
-                                    if (!canEditPlaylistMembership(playlistPreview.playlist)) PlaylistPickerLockIcon()
-                                    IconButton(
-                                        icon = R.drawable.open,
-                                        contentDescription = stringResource(R.string.playlist_action_open),
-                                        color = colorPalette().accent,
-                                        onClick = {
-                                            openPlaylistPickerDestination(
-                                                playlistPreview.playlist.id,
-                                                onGoToPlaylist,
-                                                onDismiss,
-                                            ) { id -> navController.navigate(route = "${NavRoutes.localPlaylist.name}/$id") }
-                                        },
-                                        modifier = Modifier
-                                            .size(24.dp)
-                                    )
-                                }
-                            )
-                        }
-                    }
-                }
-            }
+                        },
+                    )
+                },
+            )
         } else {
             val selectText = "${stringResource(R.string.common_action_select)}/${stringResource(R.string.playlist_selection_action_deselect)}"
             val colorPalette = colorPalette()
