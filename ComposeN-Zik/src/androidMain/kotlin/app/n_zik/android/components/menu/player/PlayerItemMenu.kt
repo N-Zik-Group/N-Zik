@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,10 +38,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.requests.nextPage
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -52,6 +48,7 @@ import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerTimelineType
+import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Button
@@ -70,11 +67,13 @@ import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getDownloadStateMedia
 import app.n_zik.android.utils.playerTimelineTypeKey
+import app.n_zik.android.utils.podcastBrowseId
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.splitArtistNames
 import app.n_zik.android.core.sync.YouTubeSync
+import app.n_zik.android.core.sync.FavoriteAction
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
@@ -83,8 +82,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.dialog.album.ChangeAlbumBrowseIdDialog
 import app.n_zik.android.components.dialog.artist.ChangeArtistBrowseIdDialog
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.dialog.common.ListenOnDialog
 import app.n_zik.android.components.dialog.export.ExportCacheDialog
 import app.n_zik.android.components.dialog.song.ChangeAuthorDialog
 import app.n_zik.android.components.dialog.song.ChangeCoverDialog
@@ -93,17 +90,25 @@ import app.n_zik.android.components.dialog.song.RenameSongDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
-import app.n_zik.android.components.menu.artistMoreFromTitle
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.playlist.OpenCollectionMenuAction
+import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.menuSheetSectionBackground
+import app.n_zik.android.components.menu.rememberListenOnMenuAction
 import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
 import app.n_zik.android.components.menu.song.SongMenuSnapshot
 import app.n_zik.android.components.song.GoToAlbum
+import app.n_zik.android.components.menu.song.localTrackNavigationActions
+import app.n_zik.android.utils.resolveTrackArtistName
+import app.n_zik.android.components.menu.song.rememberTrackMenuArtists
+import app.n_zik.android.components.song.rememberTrackAlbumLink
 import app.n_zik.android.components.song.GoToArtist
+import app.n_zik.android.components.song.chooseTrackArtist
 import app.n_zik.android.components.tab.LikeComponent
+import app.n_zik.android.components.tab.showAddToFavoritesShortcut
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
 import app.n_zik.android.core.database.Database
@@ -169,7 +174,7 @@ class PlayerItemMenu private constructor(
             )
     }
 
-    lateinit var buttons: List<Button>
+    private var buttons: List<Button> = emptyList()
     lateinit var lastFmLoveButton: MenuIcon
     lateinit var lastFmUnloveButton: MenuIcon
     private var showLastFmSection = false
@@ -180,7 +185,10 @@ class PlayerItemMenu private constructor(
     override var menuStyle: MenuStyle by styleState
 
     @Composable
-    override fun ListMenu() {
+    override fun ListMenu() = ListMenu(buttons)
+
+    @Composable
+    private fun ListMenu(buttons: List<Button>) {
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         ListMenu.Menu(title = null, showDragHandle = false) {
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
@@ -195,19 +203,22 @@ class PlayerItemMenu private constructor(
             // first use, so editMetadata (index 2) is always present and the indexes are fixed
             val playbackStart = LOCAL_PLAYER_PLAYBACK_START
             SectionTitle(stringResource(R.string.library_management_section_title))
-            buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
-
-            SectionTitle(stringResource(R.string.common_playback_section_title))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
-            for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
+            buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.ListMenuItem()
+            for (i in (playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
-            for (i in playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT until buttons.size) {
+            SectionTitle(stringResource(R.string.common_playback_section_title))
+            for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
+
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            buttons.localTrackNavigationActions().forEach { it.ListMenuItem() }
         } else {
             // Remote songs: 0=info, 1=waves, 2=rename, 3=author, 4=cover, 5=radio, 6=equalizer, 7=sleep, 8=fav, 9=playlist, 10=refetch, 11+=nav
             SectionTitle(stringResource(R.string.common_playback_section_title))
@@ -232,6 +243,7 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(9)?.let { if (it is MenuIcon) it.ListMenuItem() }
             if (!offlineMode) buttons.getOrNull(10)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.ListMenuItem()
             buttons.getOrNull(11)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(12)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
@@ -239,7 +251,7 @@ class PlayerItemMenu private constructor(
             SectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in 13 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
-                if (btn is DeleteSongDialog) continue
+                if (btn is DeleteSongDialog || btn is ExportCacheDialog) continue
                 btn?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
@@ -253,7 +265,10 @@ class PlayerItemMenu private constructor(
     }
 
     @Composable
-    override fun GridMenu() {
+    override fun GridMenu() = GridMenu(buttons)
+
+    @Composable
+    private fun GridMenu(buttons: List<Button>) {
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val availableStatsButton = statsButton?.takeIf { it.isAvailable }
         GridMenu.Menu(title = null, showDragHandle = false) {
@@ -274,21 +289,26 @@ class PlayerItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.library_management_section_title))
             }
+            if (playerTimelineType == PlayerTimelineType.AudioWaves) {
+                buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            }
             buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
+            for (i in (playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
+                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.common_playback_section_title))
             }
-            if (playerTimelineType == PlayerTimelineType.AudioWaves) {
-                buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            }
-            for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
+            for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
-            for (i in playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT until buttons.size) {
-                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                SectionTitle(stringResource(R.string.common_navigation_section_title))
             }
+            buttons.localTrackNavigationActions().forEach { button -> item { button.GridMenuItem() } }
         } else {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 SectionTitle(stringResource(R.string.common_playback_section_title))
@@ -318,6 +338,7 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(9)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             if (!offlineMode) buttons.getOrNull(10)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(11)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(12)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
@@ -327,7 +348,7 @@ class PlayerItemMenu private constructor(
             }
             for (i in 13 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
-                if (btn is DeleteSongDialog) continue
+                if (btn is DeleteSongDialog || btn is ExportCacheDialog) continue
                 btn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
@@ -347,23 +368,28 @@ class PlayerItemMenu private constructor(
         ObserveSongMenuSnapshot(snapshot, onProfileChanged = menuState::hide)
         val mContext = LocalContext.current
         offlineMode = OfflineMode.enabled(mContext)
-        val uriHandler = LocalUriHandler.current
         val coroutineScope = rememberCoroutineScope()
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
 
         // Reactively collect Album and Artists (like the old menu)
-        val albumData by remember(mediaItem.mediaId) {
-            Database.albumTable.findBySongId(snapshot.songId)
-        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+        val playbackAlbumId = mediaItem.mediaMetadata.extras?.getString("albumId")?.takeIf(String::isNotBlank)
+        val playbackAlbumTitle = mediaItem.mediaMetadata.albumTitle?.toString()?.takeIf(String::isNotBlank)
+        val albumLink by rememberTrackAlbumLink(song, playbackAlbumId, playbackAlbumTitle)
         
         val artistsData by remember(mediaItem.mediaId) {
             Database.artistTable.findBySongId(snapshot.songId)
         }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
+        val menuArtists = rememberTrackMenuArtists(mediaItem, song, artistsData)
+
         // Pre-create GoTo objects to avoid race condition on channelId lookup
-        val goToArtistObj = remember(song) { GoToArtist(navController, song, menuState) }
-        val goToAlbumObj = remember(song) { GoToAlbum(navController, song, menuState) }
+        val goToArtistObj = remember(song, onClosePlayer) { GoToArtist(navController, song, menuState, onNavigate = onClosePlayer) }
+        val goToAlbumObj = remember(song, playbackAlbumId, playbackAlbumTitle, onClosePlayer) {
+            GoToAlbum(
+                navController, song, menuState, playbackAlbumId, playbackAlbumTitle, onClosePlayer,
+            )
+        }
 
         //<editor-fold defaultstate="collapsed" desc="Buttons">
         val renameSong = RenameSongDialog { song }
@@ -371,8 +397,10 @@ class PlayerItemMenu private constructor(
         val changeCover = ChangeCoverDialog { song }
         val editMetadata = EditMetadataDialog { song }
         val updateDialog = UpdateSongDialog( song )
-        val startRadio = Radio { listOf(song) }
-        val addToFavorite = LikeComponent { listOf(song) }
+        val startRadio = Radio.fromMediaItem { currentMediaItem }
+        val addToFavorite = LikeComponent.forMediaItem(
+            isVisible = { showAddToFavoritesShortcut(song.likedAt, showDisliked.isEnabled) },
+        ) { currentMediaItem }
         
         val activityResultLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { }
@@ -494,7 +522,8 @@ class PlayerItemMenu private constructor(
         // Add to Playlist
         val addToPlaylist = PlaylistsMenu.init(
             navController = navController,
-            songId = currentMediaItem.mediaId,
+            songId = snapshot.songId,
+            localDestinationsOnly = song.isLocal,
             mediaItems = { _ -> listOf(currentMediaItem) },
             onFailure = { throwable, preview ->
                 Timber.tag("PlayerItemMenu").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
@@ -504,19 +533,9 @@ class PlayerItemMenu private constructor(
             }
         )
 
-        // Listen On
-        var showListenOnDialog by remember { mutableStateOf(false) }
-        val listenOnButton = remember {
-            object : MenuIcon, Descriptive, Clickable {
-                override val iconId: Int = R.drawable.play
-                override val messageId: Int = R.string.player_listen_on_title
-                @get:Composable
-                override val menuIconTitle: String get() = stringResource(messageId)
-
-                override fun onShortClick() {
-                    showListenOnDialog = true
-                }
-                override fun onLongClick() {}
+        val listenOnButton = if (offlineMode || song.isLocal) null else {
+            rememberListenOnMenuAction(mediaId = snapshot.songId, menuState = menuState) {
+                binder.player.pause()
             }
         }
 
@@ -535,13 +554,15 @@ class PlayerItemMenu private constructor(
                             songTitle = song.title,
                             songArtist = song.artistsText ?: "",
                             songThumbnailUrl = song.thumbnailUrl ?: "",
-                            albumId = albumData?.id ?: "",
-                            albumTitle = albumData?.title ?: "",
+                            albumId = albumLink?.album?.id.orEmpty(),
+                            albumTitle = albumLink?.album?.cleanTitle().orEmpty(),
                             navController = navController,
+                            source = mediaItem,
                             onNavigateUp = { menuState.pop() },
                             onClose = { menuState.hide() },
+                            onEntityNavigation = onClosePlayer,
                             onPlay = {
-                                coroutineScope.launch {
+                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                                     val mediaItem = withContext(NzikDispatchers.DATA) { currentMediaItem }
                                     binder.player.forcePlay(mediaItem)
                                 }
@@ -558,8 +579,19 @@ class PlayerItemMenu private constructor(
         }
         val exportCacheDialog = ExportCacheDialog(binder) { song }
         
-        val changeAlbumId = ChangeAlbumBrowseIdDialog(menuState = menuState) { albumData }
-        val changeArtistId = ChangeArtistBrowseIdDialog(menuState = menuState) { artistsData.firstOrNull() }
+        val metadataTrack = song.takeUnless { it.isLocal }
+        val changeAlbumId = ChangeAlbumBrowseIdDialog(
+            menuState = menuState,
+            targetTrack = metadataTrack,
+            initialQuery = playbackAlbumTitle,
+        ) { albumLink?.album }
+        val changeArtistId = ChangeArtistBrowseIdDialog(
+            menuState = menuState,
+            targetTrack = metadataTrack,
+        ) {
+            val knownArtists = menuArtists.filter { it.id.isNotBlank() }.map { Artist(it.id, it.name) }
+            chooseTrackArtist(knownArtists, null)
+        }
 
         val isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
         val lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
@@ -658,8 +690,8 @@ class PlayerItemMenu private constructor(
         }
 
         // Re-order to match SongItemMenu layout exactly
-        buttons = remember(song, albumData, artistsData) {
-            mutableListOf<Button>().apply {
+        val updatedButtons = remember(song, albumLink, menuArtists, showLastFmSection) {
+            buildList<Button> {
                 add(infoButton)           // 0
                 add(refreshAudioWavesButton) // 1
 
@@ -672,7 +704,13 @@ class PlayerItemMenu private constructor(
                     add(addToPlaylist)       // 6
                     
                     add(goToAlbumObj)
-                    add(goToArtistObj)
+                    if (menuArtists.isEmpty()) {
+                        goToArtistObj.takeIf { it.isEnabled }?.let(::add)
+                    } else {
+                        menuArtists.forEach { artist ->
+                            add(GoToArtist(navController, song, menuState, artistName = artist.name, artistId = artist.id, onNavigate = onClosePlayer))
+                        }
+                    }
                     
                     add(exportCacheDialog)
                 } else {
@@ -690,96 +728,36 @@ class PlayerItemMenu private constructor(
                     add(changeAlbumId)       // 11
                     add(changeArtistId)      // 12
 
-                    // Go to Album
-                    add(object : MenuIcon, Descriptive, Clickable {
-                        override val iconId: Int = R.drawable.album
-                        override val messageId: Int = R.string.album_action_open
-                        @get:Composable
-                        override val menuIconTitle: String get() = stringResource(messageId)
-
-                        override fun onShortClick() {
-                            val albumId = albumData?.id
-                            if (!albumId.isNullOrBlank()) {
-                                onDismiss()
-                                onClosePlayer()
-                                navController.navigate(NavRoutes.album.name + "/$albumId")
-                            } else if (song.title.isNotBlank()) {
-                                onDismiss()
-                                onClosePlayer()
-                                goToAlbumObj.onShortClick()
-                            } else {
-                                Toaster.w(R.string.album_lookup_failed)
-                            }
-                        }
-
-                        override fun onLongClick() {}
-                    })
+                    val podcastBrowseId = mediaItem.podcastBrowseId
+                    if (podcastBrowseId == null) {
+                        add(goToAlbumObj)
+                    } else {
+                        add(OpenCollectionMenuAction(
+                            navController, menuState, podcastBrowseId, R.drawable.podcast, onNavigate = onClosePlayer,
+                        ))
+                    }
 
                     // Go to Artist
-                    if (artistsData.isEmpty()) {
+                    if (menuArtists.isEmpty()) {
                         val artistNames = song.artistsText
                             .splitArtistNames()
 
                         if (artistNames.size <= 1) {
-                            add(object : MenuIcon, Descriptive, Clickable {
-                                override val iconId: Int = R.drawable.people
-                                override val messageId: Int = R.string.library_artists_title
-                                @get:Composable
-                                override val menuIconTitle: String get() = stringResource(R.string.artist_more_from_format, song.cleanArtistsText())
-                                override fun onShortClick() {
-                                    menuState.hide()
-                                    onClosePlayer()
-                                    goToArtistObj.onShortClick()
-                                }
-                                override fun onLongClick() {}
-                            })
+                            goToArtistObj.takeIf { it.isEnabled }?.let(::add)
                         } else {
                             artistNames.forEach { artistName ->
-                                add(object : MenuIcon, Descriptive, Clickable {
-                                    override val iconId: Int = R.drawable.people
-                                    override val messageId: Int = R.string.library_artists_title
-                                    @get:Composable
-                                    override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
-                                    override fun onShortClick() {
-                                        menuState.hide()
-                                        onClosePlayer()
-                                        coroutineScope.launch(NzikDispatchers.DATA) {
-                                            Innertube.nextPage(videoId = song.id)
-                                                ?.getOrNull()
-                                                ?.itemsPage?.items?.firstOrNull()
-                                                ?.authors
-                                                ?.find { it.name?.equals(artistName, ignoreCase = true) == true }
-                                                ?.endpoint
-                                                ?.takeIf { !it.browseId.isNullOrBlank() }
-                                                ?.let {
-                                                    val path = "${it.browseId}?params=${it.params.orEmpty()}"
-                                                    NavRoutes.artist.navigateHere(navController, path)
-                                                }
-                                        }
-                                    }
-                                    override fun onLongClick() {}
-                                })
+                                add(GoToArtist(navController, song, menuState, artistName = artistName, onNavigate = onClosePlayer))
                             }
                         }
                     } else {
-                        artistsData.forEach { artist ->
-                            add(object : MenuIcon, Descriptive, Clickable {
-                                override val iconId: Int = R.drawable.people
-                                override val messageId: Int = R.string.library_artists_title
-                                @get:Composable
-                                override val menuIconTitle: String get() = artistMoreFromTitle(artist.name)
-                                override fun onShortClick() {
-                                    menuState.hide()
-                                    onClosePlayer()
-                                    navController.navigate("${NavRoutes.artist.name}/${artist.id}")
-                                }
-                                override fun onLongClick() {}
-                            })
+                        menuArtists.forEach { artist ->
+                            add(GoToArtist(navController, song, menuState, artistName = artist.name, artistId = artist.id, onNavigate = onClosePlayer))
                         }
                     }
 
-                    add(listenOnButton)
+                    listenOnButton?.let(::add)
                     add(deleteSongDialog)
+                    add(exportCacheDialog)
 
                     if (showLastFmSection) {
                         add(lastFmLoveButton)
@@ -793,9 +771,6 @@ class PlayerItemMenu private constructor(
         //<editor-fold desc="Dialog renders">
         if (song.isLocal) {
             editMetadata.Render()
-            exportCacheDialog.Render()
-
-            exportCacheDialog.RenderProgress()
         } else {
             renameSong.Render()
             changeAuthor.Render()
@@ -803,6 +778,8 @@ class PlayerItemMenu private constructor(
             deleteSongDialog.Render()
             updateDialog.Render()
         }
+        exportCacheDialog.Render()
+        exportCacheDialog.RenderProgress()
         
         if (!song.isLocal) {
             changeAlbumId.Render()
@@ -810,20 +787,10 @@ class PlayerItemMenu private constructor(
         }
         
 
-        DialogPresence(visible = showListenOnDialog) {
-             ListenOnDialog(
-                mediaId = mediaItem.mediaId,
-                onDismiss = { showListenOnDialog = false },
-                onPlayOnUrl = {
-                    binder.player.pause()
-                    showListenOnDialog = false
-                    menuState.hide()
-                    uriHandler.openUri(it)
-                }
-            )
-        }
         //</editor-fold>
         
+
+        buttons = updatedButtons
 
         MenuSheetSurface {
             Column(
@@ -834,6 +801,13 @@ class PlayerItemMenu private constructor(
 
                 SongItem(
                     song = song,
+                    observeStoredMetadata = false,
+                    artistTextOverride = resolveTrackArtistName(
+                        mediaItem.mediaMetadata.artist?.toString(),
+                        song.artistsText,
+                        menuArtists,
+                        stringResource(R.string.metadata_unknown_artist),
+                    ),
                     backgroundColor = androidx.compose.ui.graphics.Color.Transparent,
                     modifier = Modifier.padding(
                         top = 5.dp,
@@ -848,6 +822,10 @@ class PlayerItemMenu private constructor(
 
                         Column {
                             IconButton(
+                                contentDescription = menuLikeActionDescription(
+                                    likeState, showDisliked.isEnabled,
+                                    R.string.library_favorites_action_add, R.string.library_favorites_action_remove,
+                                ),
                                 icon = when(likeState) {
                                     false -> R.drawable.heart_dislike
                                     null -> R.drawable.heart_outline
@@ -859,32 +837,30 @@ class PlayerItemMenu private constructor(
                                     else -> colorPalette().favoritesIcon
                                 },
                             onClick = {
-                                coroutineScope.launch(NzikDispatchers.DATA) {
-                                    if (showDisliked.isEnabled) {
-                                        YouTubeSync.rotateSongLikeState( mContext, currentMediaItem )
-                                    } else {
-                                        YouTubeSync.toggleSongLikeState( mContext, currentMediaItem )
-                                    }
-                                }
+                                val action = if (showDisliked.isEnabled) FavoriteAction.Rotate else FavoriteAction.Toggle
+                                YouTubeSync.launchFavoriteUpdate(mContext, listOf(currentMediaItem), action)
                             },
                                 modifier = Modifier.padding(all = 4.dp).size(20.dp)
                             )
 
-                            IconButton(
-                                icon = R.drawable.share_social,
-                                color = colorPalette().text,
-                                onClick = {
-                                    val intent = Intent(Intent.ACTION_SEND).apply {
-                                        type = "text/plain"
-                                        putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${song.id}")
-                                    }
+                            if (!song.isLocal) {
+                                IconButton(
+                                    icon = R.drawable.share_social,
+                                    contentDescription = stringResource(R.string.player_mini_button_share),
+                                    color = colorPalette().text,
+                                    onClick = {
+                                        val intent = Intent(Intent.ACTION_SEND).apply {
+                                            type = "text/plain"
+                                            putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${song.id}")
+                                        }
 
-                                    mContext.startActivity(
-                                        Intent.createChooser(intent, null)
-                                    )
-                                },
-                                modifier = Modifier.padding(all = 4.dp).size(20.dp)
-                            )
+                                        mContext.startActivity(
+                                            Intent.createChooser(intent, null)
+                                        )
+                                    },
+                                    modifier = Modifier.padding(all = 4.dp).size(20.dp)
+                                )
+                            }
                         }
                     }
                 )
@@ -893,9 +869,9 @@ class PlayerItemMenu private constructor(
             }
 
             if (menuStyle == MenuStyle.List)
-                ListMenu()
+                ListMenu(updatedButtons)
             else
-                GridMenu()
+                GridMenu(updatedButtons)
         }
     }
 
@@ -922,5 +898,5 @@ class PlayerItemMenu private constructor(
 /** First playback button of a local song's player menu, behind editMetadata at `start - 1`. */
 internal const val LOCAL_PLAYER_PLAYBACK_START = 3
 
-/** Local song's player-menu playback buttons: equalizer, sleep timer, favorite, playlist, album id, artist id. */
-internal const val LOCAL_PLAYER_PLAYBACK_COUNT = 6
+/** Local song's player-menu playback buttons: equalizer, sleep timer, favorite and playlist. */
+internal const val LOCAL_PLAYER_PLAYBACK_COUNT = 4

@@ -7,9 +7,11 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.models.Song
+import app.n_zik.android.utils.podcastBrowseId
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -40,4 +42,27 @@ class PlayerMenuMediaItemTest {
         assertEquals("session", current.mediaMetadata.extras?.getString("providerToken"))
         assertFalse(current.mediaMetadata.extras?.getBoolean("is_explicit") == true)
     }
+    @Test
+    fun `menu playback retains official video flags and provider identity`() {
+        val artistId = "UC0000000000000000000000"
+        val extras = Bundle().apply {
+            putBoolean("isVideo", true)
+            putBoolean("isOfficialMusicVideo", true)
+            putString("albumId", "MPREbExample")
+            putString("podcastBrowseId", "MPSPexample")
+            putStringArrayList("artistIds", arrayListOf(artistId))
+        }
+        val provider = MediaItem.Builder().setMediaId("abcdefghijk").setUri("abcdefghijk")
+            .setMediaMetadata(MediaMetadata.Builder().setExtras(extras).build())
+            .build()
+
+        val current = playerMenuMediaItem(provider, Song("abcdefghijk", "Video", "Artist", "2:00", null))
+
+        assertTrue(current.mediaMetadata.extras?.getBoolean("isVideo") == true)
+        assertTrue(current.mediaMetadata.extras?.getBoolean("isOfficialMusicVideo") == true)
+        assertEquals("MPREbExample", current.mediaMetadata.extras?.getString("albumId"))
+        assertEquals("MPSPexample", current.podcastBrowseId)
+        assertEquals(listOf(artistId), current.mediaMetadata.extras?.getStringArrayList("artistIds"))
+    }
+
 }

@@ -692,3 +692,7 @@ External menu links:
 Artist menus:
 - fix(menu): align artist actions with their source
   - Show appropriate playback, bookmark and navigation actions for local and online artists.
+
+Track and player menus:
+- fix(menu): use the represented track identity throughout its actions
+  - Keep metadata, navigation, radio and export behavior consistent for the track that opened the menu.

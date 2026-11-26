@@ -17,8 +17,8 @@ class PlayerItemMenuLocalIndexTest {
     }
 
     @Test
-    fun `local playback buttons fit the 10-slot local layout`() {
-        // 3 fixed slots before playback, 6 playback buttons, 1 export slot after
-        assertEquals(10, LOCAL_PLAYER_PLAYBACK_START + LOCAL_PLAYER_PLAYBACK_COUNT + 1)
+    fun `local playback ends before the two navigation buttons`() {
+        // 3 fixed slots before playback, 4 playback buttons, then album and artist.
+        assertEquals(7, LOCAL_PLAYER_PLAYBACK_START + LOCAL_PLAYER_PLAYBACK_COUNT)
     }
 }

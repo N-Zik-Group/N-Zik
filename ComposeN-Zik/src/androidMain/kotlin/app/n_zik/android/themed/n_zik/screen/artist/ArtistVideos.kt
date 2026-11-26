@@ -42,7 +42,6 @@ import app.n_zik.android.ui.screens.searchresult.ItemsPage
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.forcePlay
@@ -122,7 +121,7 @@ fun ArtistVideos(
                                         menuState.display {
                                             VideoItemMenu(
                                                 navController = navController,
-                                                song = mediaItem.asSong
+                                                mediaItem = mediaItem
                                             ).MenuComponent()
                                         }
                                         hapticFeedback.performHapticFeedback(
