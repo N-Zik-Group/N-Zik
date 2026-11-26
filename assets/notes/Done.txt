@@ -1068,3 +1068,7 @@ Menus:
 Settings:
 - fix(settings): align searchable groups with their visible rows
   - Remove stale search aliases, link exact subgroup headings and changelog, and show their descriptions and breadcrumbs.
+
+Settings:
+- fix(settings): give card headings room at the corners
+  - Restore heading padding independently of the tighter card rows.

@@ -130,9 +130,8 @@ fun SettingsSectionCard(
                     shadowElevation = 4.dp
                 ) {
                     SettingsCardContent {
-                        // Clip only the empty click/ripple skin. A header's 32dp icon
-                        // sits at x=0; clipping its Row to the taller expanded header's
-                        // corner would cut the icon even though its own badge is round.
+                        // Clip the feedback separately so the card's rounded header
+                        // never cuts through the icon badge or the heading text.
                         Box(Modifier.fillMaxWidth().then(headerModifier).semantics(mergeDescendants = true) {
                             heading()
                             if (onHeaderClick != null) semanticsOnClick { onHeaderClick(); true }
@@ -144,6 +143,7 @@ fun SettingsSectionCard(
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
+                                    .padding(start = 4.dp, top = 4.dp, end = 4.dp)
                                     .padding(bottom = if (expanded == false) 0.dp else 12.dp),
                             ) {
                             Box(
