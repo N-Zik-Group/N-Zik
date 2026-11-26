@@ -4,6 +4,7 @@ import androidx.media3.common.MediaItem
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asPodcastMediaItem
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
@@ -24,7 +25,7 @@ import timber.log.Timber
 /** Fetches the complete source before permitting any local membership changes. */
 internal suspend fun loadPlaylistSource(browseId: String): List<MediaItem>? {
     if (isPodcastBrowseId(browseId)) {
-        return loadCompletePodcastEpisodes(browseId).map { it.asMediaItem }
+        return loadCompletePodcastEpisodes(browseId).map { it.asPodcastMediaItem(browseId) }
     }
     val page = YtMusic.getPlaylist(playlistId = browseId.removePrefix(MODIFIED_PREFIX)).getOrNull()
         ?: return null

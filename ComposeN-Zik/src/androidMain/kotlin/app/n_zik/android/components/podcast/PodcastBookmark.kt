@@ -20,6 +20,8 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarRow
+import app.n_zik.android.components.menu.playlist.PlaylistOwner
+import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.uiRoundnessShape
@@ -41,8 +43,9 @@ internal fun podcastBookmarkOperation(existing: Playlist?): PodcastBookmarkOpera
 }
 
 /** Podcast browse IDs (including MPSP...) are not playlist IDs: keep them verbatim and local. */
-internal fun podcastBookmarkPlaylist(browseId: String, title: String): Playlist =
+internal fun podcastBookmarkPlaylist(browseId: String, title: String, owner: PlaylistOwner? = null): Playlist =
     Playlist(name = title, browseId = browseId, isEditable = false, isYoutubePlaylist = false)
+        .withSourcePlaylistOwner(owner)
 
 /** Both the podcast page and search menu update the same exact browse-ID snapshot. */
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -50,6 +53,7 @@ internal suspend fun togglePodcastBookmark(
     browseId: String,
     title: String,
     episodes: List<MediaItem>,
+    owner: PlaylistOwner? = null,
 ): PodcastBookmarkOperation = withContext(NzikDispatchers.DATA) {
     var operation = PodcastBookmarkOperation.Create
     Database.transaction {
@@ -57,7 +61,7 @@ internal suspend fun togglePodcastBookmark(
         operation = podcastBookmarkOperation(latest)
         when (operation) {
             PodcastBookmarkOperation.Create -> {
-                val playlist = podcastBookmarkPlaylist(browseId, title)
+                val playlist = podcastBookmarkPlaylist(browseId, title, owner)
                 // mapIgnore intentionally skips an empty track list.
                 if (episodes.isEmpty()) playlistTable.insert(playlist)
                 else mapIgnore(playlist, *episodes.toTypedArray())
@@ -71,10 +75,11 @@ internal suspend fun togglePodcastBookmark(
 
 @androidx.annotation.OptIn(UnstableApi::class)
 @Composable
-fun PodcastBookmarkAction(
+internal fun PodcastBookmarkAction(
     browseId: String,
     title: String,
     episodes: List<MediaItem>,
+    owner: PlaylistOwner?,
     onExistingImport: () -> Unit,
 ) {
     val existing by remember(browseId) { Database.playlistTable.findByBrowseId(browseId) }
@@ -85,14 +90,13 @@ fun PodcastBookmarkAction(
         HeaderIconButton(
             icon = if (existing != null) R.drawable.bookmark else R.drawable.bookmark_outline,
             color = if (existing != null) colorPalette().favoritesIcon else colorPalette().text,
-            enabled = !busy,
             modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
             onClick = {
                 if (!busy) {
                     busy = true
                     scope.launch {
                         try {
-                            val operation = togglePodcastBookmark(browseId, title, episodes)
+                            val operation = togglePodcastBookmark(browseId, title, episodes, owner)
                             if (operation == PodcastBookmarkOperation.ExistingImport) onExistingImport()
                             else Toaster.done()
                         } catch (cancelled: CancellationException) {

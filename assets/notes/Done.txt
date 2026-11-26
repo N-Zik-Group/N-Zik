@@ -648,3 +648,7 @@ Local playlist creation:
 Account settings reset:
 - fix(settings): restore account defaults while retaining saved credentials
   - Disable live account use and restore the default background checks on reactivation.
+
+Podcast bookmarks:
+- fix(podcast): preserve publisher and episode source identity
+  - Reuse the complete source when bookmarking and refreshing saved podcasts.

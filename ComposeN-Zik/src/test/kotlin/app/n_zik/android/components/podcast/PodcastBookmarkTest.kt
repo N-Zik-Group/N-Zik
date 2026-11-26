@@ -1,6 +1,7 @@
 package app.n_zik.android.components.podcast
 
 import app.n_zik.android.models.Playlist
+import app.n_zik.innertube.Innertube
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -8,9 +9,10 @@ import org.junit.Test
 class PodcastBookmarkTest {
     @Test fun `podcast and playlist browse IDs remain exact local snapshot identities`() {
         for (browseId in listOf("MPSPPL123", "VLPL123", "PL123")) {
-            val saved = podcastBookmarkPlaylist(browseId, "Podcast title")
+            val saved = podcastBookmarkPlaylist(browseId, "Podcast title", Innertube.Info("Podcast host", null))
             assertEquals(browseId, saved.browseId)
             assertEquals("Podcast title", saved.name)
+            assertEquals("Podcast host", saved.authorName)
             assertFalse(saved.isEditable)
             assertFalse(saved.isYoutubePlaylist)
             assertEquals(PodcastBookmarkOperation.Remove, podcastBookmarkOperation(saved))

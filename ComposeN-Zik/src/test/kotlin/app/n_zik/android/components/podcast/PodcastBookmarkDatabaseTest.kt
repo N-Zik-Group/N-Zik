@@ -6,7 +6,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.n_zik.android.models.Playlist
-import app.n_zik.android.utils.asMediaItem
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.android.utils.asPodcastMediaItem
 import app.n_zik.android.components.playlist.loadCompletePodcastEpisodes
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.Database
@@ -50,9 +52,13 @@ class PodcastBookmarkDatabaseTest {
     }
 
     @Test fun `search and podcast page share create state and removal`() = runBlocking {
-        assertEquals(PodcastBookmarkOperation.Create, togglePodcastBookmark(podcastId, "Podcast", emptyList()))
+        val owner = Innertube.Info("Podcast host", NavigationEndpoint.Endpoint.Browse(browseId = "UCpodcast"))
+        assertEquals(PodcastBookmarkOperation.Create, togglePodcastBookmark(podcastId, "Podcast", emptyList(), owner))
         val saved = Database.playlistTable.findByBrowseId(podcastId).first()
         assertEquals(podcastId, saved?.browseId)
+        assertEquals("Podcast", saved?.name)
+        assertEquals("Podcast host", saved?.authorName)
+        assertEquals("UCpodcast", saved?.authorBrowseId)
         assertEquals(false, saved?.isYoutubePlaylist)
         assertEquals(false, saved?.isEditable)
         assertEquals(true, BookmarkStateManager.getPlaylistBookmarkStates(listOf(podcastId)).first()[podcastId])
@@ -130,7 +136,7 @@ class PodcastBookmarkDatabaseTest {
         val malformed = runCatching {
             refreshPodcastPlaylist(saved.id, podcastId) { id ->
                 loadCompletePodcastEpisodes(id) { _, _ -> BrowsePodcastsResponse0624() }
-                    .map { it.asMediaItem }
+                    .map { it.asPodcastMediaItem(id) }
             }
         }
         assertTrue(malformed.isFailure)

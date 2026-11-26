@@ -12,13 +12,31 @@ class PodcastSearchContentTest {
     private val podcastId = "MPSPPLXK2KwV2tv0jwie5sRfW9Mrdz3gyZp9Vr"
 
     // JUnit requires a synchronous entry point for the suspend content loader.
+    @Test fun `offline menus do not call either collection source`() = runBlocking {
+        for (id in listOf(podcastId, "VLPL123")) {
+            assertNull(
+                loadOnlinePlaylistContent(
+                    id,
+                    fetchAllowed = { false },
+                    podcastLoader = { error("Unexpected podcast request") },
+                    playlistLoader = { error("Unexpected playlist request") },
+                ),
+            )
+        }
+    }
+
+    // JUnit requires a synchronous entry point for the suspend content loader.
     @Test fun `podcast menu fetches exact browse ID without generic playlist request`() = runBlocking {
         val expected = OnlinePlaylistContent("Podcast", "Author", null, emptyList())
         val result = loadOnlinePlaylistContent(podcastId,
             podcastLoader = { id -> assertEquals(podcastId, id); expected },
             playlistLoader = { error("Generic playlist API must not receive a podcast browse ID") })
         assertEquals(expected, result)
-        assertEquals("https://music.youtube.com/playlist?list=$podcastId", onlinePlaylistShareUrl(podcastId))
+        assertEquals(
+            "https://music.youtube.com/playlist?list=PLXK2KwV2tv0jwie5sRfW9Mrdz3gyZp9Vr",
+            onlinePlaylistShareUrl(podcastId),
+        )
+        assertNull(onlinePlaylistShareUrl("MPSPopaque"))
     }
 
     // JUnit requires a synchronous entry point for the suspend content loader.
@@ -34,5 +52,7 @@ class PodcastSearchContentTest {
             podcastLoader = { error("No podcast request") },
             playlistLoader = { id -> assertEquals("PL123", id); expected }))
         assertEquals("https://music.youtube.com/playlist?list=PL123", onlinePlaylistShareUrl("PL123"))
+        assertEquals("https://music.youtube.com/playlist?list=PL123", onlinePlaylistShareUrl("VLPL123"))
+        assertEquals("https://music.youtube.com/playlist?list=PL123", onlinePlaylistShareUrl("modified:VLPL123"))
     }
 }
