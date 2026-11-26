@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import timber.log.Timber
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.pauseSearchHistoryKey
+import java.util.Locale
 
 /**
  * Per-screen search history: each screen keeps its own list of past queries
@@ -34,6 +35,27 @@ object SearchHistoryStore {
     const val PAGE_SETTINGS_OTHER = "settings_other"
     const val PAGE_SETTINGS_ACCOUNTS = "settings_accounts"
     const val PAGE_SETTINGS_AI = "settings_ai"
+
+    // Tabs whose settings moved into each category. Shared reset actions do not
+    // make System inherit every tab's history choice.
+    private val legacyPagesByCategory = mapOf(
+        "profiles" to listOf(PAGE_SETTINGS_ACCOUNTS),
+        "playback" to listOf(PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_OTHER),
+        "audio" to listOf(PAGE_SETTINGS_GENERAL),
+        "behavior" to listOf(PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_UI),
+        "interface" to listOf(PAGE_SETTINGS_UI),
+        "player" to listOf(PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_APPEARANCE),
+        "privacy" to listOf(PAGE_SETTINGS_DATA),
+        "data" to listOf(PAGE_SETTINGS_DATA, PAGE_SETTINGS_OTHER),
+        "downloads" to listOf(PAGE_SETTINGS_NETWORK),
+        "network" to listOf(PAGE_SETTINGS_NETWORK, PAGE_SETTINGS_OTHER),
+        "youtube" to listOf(PAGE_SETTINGS_ACCOUNTS),
+        "services" to listOf(PAGE_SETTINGS_ACCOUNTS),
+        "ai" to listOf(PAGE_SETTINGS_AI),
+        "rewind" to listOf(PAGE_SETTINGS_AI),
+        "maintenance" to listOf(PAGE_SETTINGS_OTHER),
+        "system" to listOf(PAGE_SETTINGS_GENERAL, PAGE_SETTINGS_OTHER),
+    ).mapKeys { (category, _) -> categoryPage(category) }
 
     val pages = listOf(
         PAGE_HISTORY, PAGE_LOCAL, PAGE_ONLINE, PAGE_SETTINGS_GLOBAL,
@@ -61,11 +83,21 @@ object SearchHistoryStore {
     )
 
     /** Per-profile page preference, independent from the global pause switch. */
-    fun enabledKey(page: String): String = "searchHistoryEnabled_$page"
+    fun enabledKey(page: String): String = ENABLED_KEY_PREFIX + page
+
+    internal fun categoryPage(category: String): String = "settings_category_$category"
+
+    internal fun isPageChoiceKey(key: String): Boolean = key.startsWith(ENABLED_KEY_PREFIX)
+
+    /** A category inherits any explicit opt-out from its original tabs until it has its own choice. */
+    internal fun isPageEnabled(prefs: SharedPreferences, page: String): Boolean = prefs.getBoolean(
+        enabledKey(page),
+        legacyPagesByCategory[page].orEmpty().all { prefs.getBoolean(enabledKey(it), true) },
+    )
 
     /** Global pause suspends every page without overwriting its individual choice. */
     fun isEnabled(prefs: SharedPreferences, page: String): Boolean =
-        !prefs.getBoolean(pauseSearchHistoryKey, false) && prefs.getBoolean(enabledKey(page), true)
+        !prefs.getBoolean(pauseSearchHistoryKey, false) && isPageEnabled(prefs, page)
 
     /** Counts stored queries, including pages whose history is currently disabled. */
     fun countAll(prefs: SharedPreferences): Int = pages.sumOf { all(prefs, it).size }
@@ -81,15 +113,17 @@ object SearchHistoryStore {
     const val CAP = 20
 
     private const val KEY_PREFIX = "searchHistory_"
+    private const val ENABLED_KEY_PREFIX = "searchHistoryEnabled_"
 
     private val json = Json { ignoreUnknownKeys = true }
 
     /** All stored queries for a page, newest first. */
     fun all(prefs: SharedPreferences, page: String): List<String> {
         val raw = prefs.getString(KEY_PREFIX + page, null) ?: return emptyList()
-        return runCatching { json.decodeFromString<List<String>>(raw) }
+        val entries = runCatching { json.decodeFromString<List<String>>(raw) }
             .onFailure { Timber.tag(TAG).e(it, "Failed to decode search history for page $page") }
             .getOrDefault(emptyList())
+        return if (page.startsWith("settings_")) entries.distinctBy { queryKey(page, it) } else entries
     }
 
     /** Records a query: trims, dedupes (moved to the front), caps at [CAP]. */
@@ -97,14 +131,16 @@ object SearchHistoryStore {
         if (!isEnabled(prefs, page)) return emptyList()
         val trimmed = query.trim()
         if (trimmed.isEmpty()) return all(prefs, page)
-        val updated = (listOf(trimmed) + all(prefs, page).filter { it != trimmed }).take(CAP)
+        val key = queryKey(page, trimmed)
+        val updated = (listOf(trimmed) + all(prefs, page).filterNot { queryKey(page, it) == key }).take(CAP)
         save(prefs, page, updated)
         return updated
     }
 
     /** Deletes one entry; returns the remaining list. */
     fun delete(prefs: SharedPreferences, page: String, query: String): List<String> {
-        val updated = all(prefs, page).filter { it != query }
+        val key = queryKey(page, query)
+        val updated = all(prefs, page).filterNot { queryKey(page, it) == key }
         save(prefs, page, updated)
         return updated
     }
@@ -114,6 +150,9 @@ object SearchHistoryStore {
         save(prefs, page, emptyList())
         return emptyList()
     }
+
+    private fun queryKey(page: String, query: String): String =
+        if (page.startsWith("settings_")) query.lowercase(Locale.ROOT) else query
 
     private fun save(prefs: SharedPreferences, page: String, queries: List<String>) {
         runCatching {
@@ -136,7 +175,7 @@ fun rememberSearchHistory(page: String, isPaused: Boolean = false): MutableState
         }
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == null || key == "searchHistory_$page" ||
-                key == SearchHistoryStore.enabledKey(page) || key == pauseSearchHistoryKey
+                SearchHistoryStore.isPageChoiceKey(key) || key == pauseSearchHistoryKey
             ) refresh()
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)

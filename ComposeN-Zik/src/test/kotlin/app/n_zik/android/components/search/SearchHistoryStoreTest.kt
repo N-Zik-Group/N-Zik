@@ -5,6 +5,7 @@ import app.n_zik.android.utils.pauseSearchHistoryKey
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -59,6 +60,30 @@ class SearchHistoryStoreTest {
     }
 
     @Test
+    fun `a category inherits opt outs from each source tab until explicitly configured`() {
+        val (prefs, values) = fakePrefs()
+        val player = SearchHistoryStore.categoryPage("player")
+        val interfacePage = SearchHistoryStore.categoryPage("interface")
+        val general = SearchHistoryStore.enabledKey(SearchHistoryStore.PAGE_SETTINGS_GENERAL)
+        val appearance = SearchHistoryStore.enabledKey(SearchHistoryStore.PAGE_SETTINGS_APPEARANCE)
+        SearchHistoryStore.record(prefs, player, "kept")
+        values[general] = "true"
+        values[appearance] = "false"
+        assertFalse(SearchHistoryStore.isEnabled(prefs, player))
+        assertTrue(SearchHistoryStore.record(prefs, player, "blocked").isEmpty())
+        assertEquals(listOf("kept"), SearchHistoryStore.all(prefs, player))
+        assertTrue(SearchHistoryStore.isEnabled(prefs, interfacePage))
+
+        values[general] = "false"
+        values[appearance] = "true"
+        assertFalse(SearchHistoryStore.isEnabled(prefs, player))
+        values[SearchHistoryStore.enabledKey(player)] = "true"
+        assertEquals(listOf("allowed", "kept"), SearchHistoryStore.record(prefs, player, "allowed"))
+        assertEquals("false", values[general])
+        assertTrue(SearchHistoryStore.all(prefs, SearchHistoryStore.PAGE_SETTINGS_GENERAL).isEmpty())
+    }
+
+    @Test
     fun `clear all deletes actual page histories and preserves preferences`() {
         val (prefs, values) = fakePrefs()
         SearchHistoryStore.pages.forEach { SearchHistoryStore.record(prefs, it, "query") }
@@ -98,6 +123,22 @@ class SearchHistoryStoreTest {
         val result = SearchHistoryStore.record(prefs, page, "  beatles  ")
 
         assertEquals(listOf("beatles"), result)
+    }
+
+    @Test
+    fun `settings history combines case variants and keeps the latest spelling`() {
+        val (prefs, values) = fakePrefs()
+        val settingsPages = listOf(
+            SearchHistoryStore.PAGE_SETTINGS_GLOBAL,
+            SearchHistoryStore.categoryPage("interface"),
+            SearchHistoryStore.PAGE_SETTINGS_GLASS,
+        )
+        settingsPages.forEach { settingsPage ->
+            values["searchHistory_$settingsPage"] = """["GLASS","glass","old"]"""
+            assertEquals(listOf("GLASS", "old"), SearchHistoryStore.all(prefs, settingsPage))
+            assertEquals(listOf("Glass", "old"), SearchHistoryStore.record(prefs, settingsPage, "Glass"))
+            assertEquals(listOf("old"), SearchHistoryStore.delete(prefs, settingsPage, "Glass"))
+        }
     }
 
     @Test

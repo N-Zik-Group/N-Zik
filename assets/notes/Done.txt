@@ -478,3 +478,8 @@ Playback:
 - fix(player): validate the previous track threshold
   - Accept blank input and reject invalid or oversized values before saving.
   - Share overflow-safe threshold calculations across both layouts, lyrics and Bridge.
+
+Settings search:
+- fix(settings): preserve search history choices across categories
+  - Inherit source-tab opt-outs until a reorganized category defines its own preference.
+  - Deduplicate settings queries by case while preserving their last entered spelling.
