@@ -77,7 +77,8 @@ internal fun DialogActionList(title: String, onDismiss: () -> Unit, actions: Lis
 @Composable
 fun ButtonRow(
     buttons: List<DialogButton>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 16.dp,
 ) {
     val lastPrimary = buttons.indexOfLast { it.primary }
     val placements = buttons.mapIndexed { index, button ->
@@ -99,7 +100,7 @@ fun ButtonRow(
     ) else emptyList()
     val upperButtons = if (anchored) buttons.filterIndexed { index, _ -> index !in finalIndices } else buttons
     BoxWithConstraints(
-        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        modifier = modifier.fillMaxWidth().padding(horizontal = horizontalPadding),
     ) {
         val gap = ((maxWidth - 144.dp) / 2).coerceIn(0.dp, 8.dp)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {

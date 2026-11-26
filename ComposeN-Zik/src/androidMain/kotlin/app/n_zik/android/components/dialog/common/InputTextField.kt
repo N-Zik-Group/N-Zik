@@ -2,127 +2,93 @@ package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Text
-import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassTextField
 import app.n_zik.android.surfaceColor
-import app.n_zik.android.typography
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.textCopyFromClipboard
 
-/**
- * URL / text input content block (migrated from the legacy tree):
- * a title, a [TextField] (red container while invalid) and a
- * search / paste / clear [ButtonRow]. It is a content composable, not a
- * dialog window — it is rendered inside an existing dialog or screen.
- */
 @Composable
-inline fun InputTextField(
-    noinline onDismiss: () -> Unit,
-    title: String,
-    value: String,
+internal fun InputTextField(
+    initialValue: String,
     placeholder: String,
-    crossinline setValue: (String) -> Unit,
-    modifier: Modifier = Modifier
+    enabled: Boolean,
+    onSubmit: (String) -> Unit,
 ) {
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
     val palette = colorPalette()
-    val txtFieldError = remember { mutableStateOf("") }
-    val txtField = remember { mutableStateOf(value) }
-    val value_cannot_empty = stringResource(R.string.common_validation_empty_value)
-
-    var copyText by remember { mutableStateOf(true) }
-    if (copyText) {
-        txtField.value = textCopyFromClipboard(context)
-        copyText = false
+    var input by rememberSaveable(initialValue) { mutableStateOf(initialValue) }
+    val canSubmit = enabled && input.isNotBlank()
+    val submit: () -> Unit = {
+        if (canSubmit) {
+            focusManager.clearFocus()
+            onSubmit(input.trim())
+        }
     }
 
-    txtField.value
-
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-        if (title.isNotBlank()) BasicText(
-            text = title,
-            style = typography().s.semiBold,
-            modifier = Modifier
-                .padding(vertical = 8.dp)
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        GlassTextField(
+            value = input,
+            onValueChange = { input = it },
+            enabled = enabled && dialogInputEnabled,
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text(placeholder) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Go),
+            keyboardActions = KeyboardActions(onGo = { submit() }),
+            colors = TextFieldDefaults.colors(
+                focusedPlaceholderColor = palette.textDisabled,
+                unfocusedPlaceholderColor = palette.textDisabled,
+                cursorColor = palette.text,
+                focusedTextColor = palette.text,
+                unfocusedTextColor = palette.text,
+                focusedContainerColor = surfaceColor(palette.background2),
+                unfocusedContainerColor = surfaceColor(palette.background2),
+                focusedIndicatorColor = palette.accent,
+                unfocusedIndicatorColor = palette.textDisabled,
+            ),
         )
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            TextField(
-                enabled = dialogInputEnabled,
-                modifier = Modifier
-                    .fillMaxWidth(),
-                colors = TextFieldDefaults.colors(
-                    focusedPlaceholderColor = palette.textDisabled,
-                    unfocusedPlaceholderColor = palette.textDisabled,
-                    cursorColor = palette.text,
-                    focusedTextColor = palette.text,
-                    unfocusedTextColor = palette.text,
-                    focusedContainerColor = if (txtFieldError.value.isEmpty()) surfaceColor(palette.background1) else palette.red,
-                    unfocusedContainerColor = if (txtFieldError.value.isEmpty()) surfaceColor(palette.background1) else palette.red,
-                    focusedIndicatorColor = palette.accent,
-                    unfocusedIndicatorColor = palette.textDisabled
-                ),
-                placeholder = { Text(text = placeholder) },
-                value = txtField.value,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                onValueChange = {
-                    txtField.value = it
-                })
-        }
-
-        Spacer(modifier = Modifier.height(30.dp))
-
         ButtonRow(
             buttons = listOf(
                 DialogButton(
                     text = stringResource(R.string.common_action_import),
-                    onClick = {
-                        if (txtField.value.isEmpty()) {
-                            txtFieldError.value = value_cannot_empty
-                        }
-                        if (txtField.value.isNotEmpty()) {
-                            setValue(txtField.value)
-                        }
-                    }
+                    enabled = canSubmit,
+                    onClick = submit,
                 ),
                 DialogButton(
                     text = stringResource(R.string.common_action_paste),
-                    onClick = {
-                        copyText = true
-                    }
+                    primary = true,
+                    placement = DialogButtonPlacement.Center,
+                    enabled = enabled,
+                    onClick = { input = textCopyFromClipboard(context) },
                 ),
                 DialogButton(
                     text = stringResource(R.string.common_action_clear),
-                    onClick = { txtField.value = "" }
-                )
-            )
+                    danger = true,
+                    placement = DialogButtonPlacement.End,
+                    enabled = enabled && input.isNotEmpty(),
+                    onClick = { input = "" },
+                ),
+            ),
+            horizontalPadding = 0.dp,
         )
     }
 }

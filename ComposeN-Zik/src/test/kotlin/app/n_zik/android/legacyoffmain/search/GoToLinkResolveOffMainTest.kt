@@ -145,12 +145,12 @@ class GoToLinkResolveOffMainTest {
     }
 
     @Test
-    fun `resolveGoToLink resolves an OLAK5uy_ playlist id to its album route on Main`() = runBlocking {
+    fun `resolveGoToLink opens the exact playlist on Main if the album edition is unverified`() = runBlocking {
         val uri = mockUri(pathSegments = listOf("playlist"), queryParams = mapOf("list" to "OLAK5uy_abc"))
         val navController = mockk<NavController>(relaxed = true)
         var navigateThreadName: String? = null
         var dataThreadNameDuringNetworkCall: String? = null
-        every { navController.navigate(route = "${NavRoutes.album.name}/albumBrowseId") } answers {
+        every { navController.navigate(route = "${NavRoutes.playlist.name}/VLOLAK5uy_abc") } answers {
             navigateThreadName = Thread.currentThread().name
         }
         val songItem = Innertube.SongItem(
@@ -180,7 +180,7 @@ class GoToLinkResolveOffMainTest {
             resolveGoToLink(uri, navController, binder = null)
         }
 
-        verify(exactly = 1) { navController.navigate(route = "${NavRoutes.album.name}/albumBrowseId") }
+        verify(exactly = 1) { navController.navigate(route = "${NavRoutes.playlist.name}/VLOLAK5uy_abc") }
         assertEquals(mainThreadName, baseThreadName(navigateThreadName))
         assertNotEquals(
             "the network call itself must stay on the surrounding NzikDispatchers.DATA context, not Main",

@@ -257,15 +257,7 @@ fun SearchScreen(
                         2 -> GoToLink(
                             topContentInsetProvider = topContentInset,
                             navController = navController,
-                            textFieldValue = textFieldValue,
-                            onTextFieldValueChanged = onTextFieldValueChanged,
-                            onAction1 = { onTabChanged(0) },
-                            onAction2 = { onTabChanged(1) },
-                            onAction3 = { onTabChanged(2) },
-                            onAction4 = {
-                                //onGoToHome()
-                                //pop()
-                            },
+                            initialLink = textFieldValue.text,
                         )
 
 
