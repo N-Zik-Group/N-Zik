@@ -27,6 +27,7 @@ object LyricsDecisionMaker {
         globalLastUnSyncedAttemptMediaId: String?,
         now: Long,
         forceAutoRetry: Boolean = false,
+        hasTrackTitle: Boolean = true,
     ): FetchNeeds {
         val karaoke = allLyrics.find { it.type == LyricsType.Karaoke.name && !it.data.isNullOrBlank() }
         val synced = allLyrics.find { it.type == LyricsType.Synced.name && !it.data.isNullOrBlank() }
@@ -44,16 +45,25 @@ object LyricsDecisionMaker {
             LyricsType.Unsynced -> unsynced
         }
 
+        if (!hasTrackTitle && lyricsType != LyricsType.Unsynced) {
+            // A fresh plain result would otherwise suppress the later timed searches in Auto.
+            return FetchNeeds(currentLyrics, false, false, false)
+        }
+
         if (lyricsType == LyricsType.Auto) {
             if (currentLyrics == null || forceAutoRetry) {
                 return FetchNeeds(currentLyrics, karaokeNotAttempted, syncedNotAttempted, unsyncedNotAttempted)
             }
             val refresh = !currentLyrics.isEdited && isTtlExpired(currentLyrics.lastFetchedAt, now)
+            val searchHigherFormats = !currentLyrics.isEdited
+            val isKaraoke = currentLyrics.type == LyricsType.Karaoke.name && hasWordTimings(currentLyrics.data)
+            val isPlain = currentLyrics.type == LyricsType.Unsynced.name
             return FetchNeeds(
                 currentLyrics = currentLyrics,
-                needKaraokeFetch = refresh && karaokeNotAttempted && currentLyrics.type == LyricsType.Karaoke.name,
-                needSyncedFetch = refresh && syncedNotAttempted && currentLyrics.type == LyricsType.Synced.name,
-                needUnsyncedFetch = refresh && unsyncedNotAttempted && currentLyrics.type == LyricsType.Unsynced.name,
+                needKaraokeFetch = karaokeNotAttempted && (if (isKaraoke) refresh else searchHigherFormats),
+                needSyncedFetch = syncedNotAttempted && (if (isPlain) searchHigherFormats else
+                    refresh && currentLyrics.type == LyricsType.Synced.name),
+                needUnsyncedFetch = refresh && unsyncedNotAttempted && isPlain,
             )
         }
 

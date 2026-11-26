@@ -51,6 +51,59 @@ fun MediaItem.titleWithFallback(): String {
 internal fun displayTrackTitle(title: String?): String? =
     title?.let { cleanPrefix(cleanPrefix(it)) }?.takeIf { it.isNotBlank() && it != "null" }
 
+internal fun playerTrackName(value: String?, placeholder: String, englishPlaceholder: String): String? =
+    displayTrackTitle(value)?.trim()?.takeUnless {
+        it.isBlank() || it.equals("null", ignoreCase = true) ||
+            it.equals(placeholder, ignoreCase = true) || it.equals(englishPlaceholder, ignoreCase = true)
+    }
+
+internal fun resolvePlayerTrackName(
+    embedded: String?,
+    stored: String?,
+    placeholder: String,
+    englishPlaceholder: String,
+): String? {
+    val embeddedName = playerTrackName(embedded, placeholder, englishPlaceholder)
+    val storedName = playerTrackName(stored, placeholder, englishPlaceholder)
+    return when {
+        storedName != null && stored?.startsWith(MODIFIED_PREFIX) == true -> storedName
+        else -> embeddedName ?: storedName
+    }
+}
+
+internal fun isGenericReleaseChannel(name: String?): Boolean =
+    name?.trim()?.equals("Release - Topic", ignoreCase = true) == true
+
+internal fun usableTrackArtistName(credit: String?, placeholder: String = "Unknown Artist"): String? =
+    playerTrackName(credit, placeholder, "Unknown Artist")?.takeUnless {
+        credit?.startsWith(MODIFIED_PREFIX, ignoreCase = true) != true && isGenericReleaseChannel(it)
+    }
+
+internal fun resolveTrackArtistName(
+    embedded: String?,
+    stored: String?,
+    linkedArtists: List<Info>,
+    placeholder: String,
+): String? {
+    val storedName = usableTrackArtistName(stored, placeholder)
+    if (storedName != null && stored?.startsWith(MODIFIED_PREFIX, ignoreCase = true) == true) return storedName
+    val embeddedName = usableTrackArtistName(embedded, placeholder)
+    if (embeddedName != null && embedded?.startsWith(MODIFIED_PREFIX, ignoreCase = true) == true) return embeddedName
+
+    val embeddedCount = embeddedName.splitArtistNames().size
+    val storedCount = storedName.splitArtistNames().size
+    val displayedName = if (storedCount > embeddedCount) storedName else embeddedName ?: storedName
+    val orderedLinks = alignInfosToDisplayOrder(linkedArtists, displayedName)
+    val linkedNames = orderedLinks.mapNotNull { usableTrackArtistName(it.name, placeholder) }
+    // An incomplete mapping cannot replace a richer track byline.
+    if (linkedNames.isNotEmpty() && linkedNames.size == orderedLinks.size &&
+        linkedNames.size >= maxOf(embeddedCount, storedCount)
+    ) {
+        return linkedNames.joinToString(", ")
+    }
+    return displayedName
+}
+
 internal const val ARTIST_LINKED_NAMES_EXTRA = "artistLinkedNames"
 
 internal data class MediaItemArtistLinks(val entries: List<Info>, val complete: Boolean)

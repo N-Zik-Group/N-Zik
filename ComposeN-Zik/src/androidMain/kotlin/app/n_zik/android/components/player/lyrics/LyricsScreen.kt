@@ -64,6 +64,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.cleanPrefix
@@ -140,6 +141,9 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.LocalPlaybackPositionClock
 import app.n_zik.android.utils.playbackPositionClock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.emptyFlow
+import app.n_zik.android.utils.resolvePlayerTrackName
+import app.n_zik.android.utils.resolveTrackArtistName
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
@@ -187,7 +191,8 @@ fun LyricsScreen(
         val menuState = LocalMenuState.current
         val currentView = LocalView.current
         val binder = LocalPlayerServiceBinder.current
-        val playback = LocalThemePreview.current?.player ?: binder?.player
+        val preview = LocalThemePreview.current
+        val playback = preview?.player ?: binder?.player
         val positionClock = LocalPlaybackPositionClock.current?.takeIf { it.player === playback }
 
         val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
@@ -226,13 +231,24 @@ fun LyricsScreen(
         val requestedLyricsType = if (lyricsType == LyricsType.Auto) LyricsType.Karaoke else lyricsType
 
         val mediaMetadata = mediaMetadataProvider()
+        val storedSong by remember(mediaId, preview) {
+            if (preview == null) Database.songTable.findById(mediaId.substringAfterLast('/')) else emptyFlow()
+        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+        val unknownTitle = stringResource(R.string.metadata_unknown_title)
+        val unknownArtist = stringResource(R.string.metadata_unknown_artist)
+        val resolvedTitle = resolvePlayerTrackName(
+            mediaMetadata.title?.toString(), storedSong?.title, unknownTitle, "Unknown Title",
+        )
+        val resolvedArtist = resolveTrackArtistName(
+            mediaMetadata.artist?.toString(), storedSong?.artistsText, emptyList(), unknownArtist,
+        )
         val editLyricsDialog = EditLyricsDialog(
             mediaId = mediaId,
             lyricsType = actualLyricsType ?: requestedLyricsType,
             getLyrics = { lyrics },
             ensureSongInserted = ensureSongInserted,
-            title = mediaMetadata.title?.toString()?.let(::cleanPrefix),
-            artist = mediaMetadata.artist?.toString()?.let(::cleanPrefix),
+            title = resolvedTitle,
+            artist = resolvedArtist,
             activeMode = lyricsType,
         )
 
@@ -277,8 +293,8 @@ fun LyricsScreen(
         // screen's sub-composition, the subtree most exposed to positional saveable shifts.
         var editedArtistName by rememberSaveable(saver = TolerantStringStateSaver("lyrics.editedArtistName")) { mutableStateOf<String?>(null) }
         var editedTitle by rememberSaveable(saver = TolerantStringStateSaver("lyrics.editedTitle")) { mutableStateOf<String?>(null) }
-        var artistName = editedArtistName ?: cleanPrefix(mediaMetadata.artist?.toString().orEmpty())
-        var title = editedTitle ?: cleanPrefix(mediaMetadata.title?.toString().orEmpty())
+        var artistName = editedArtistName ?: resolvedArtist.orEmpty()
+        var title = editedTitle ?: resolvedTitle.orEmpty()
         var lyricsSize by rememberPreference(lyricsSizeKey, 20f)
         var lyricsSizeL by rememberPreference(lyricsSizeLKey, 20f)
         var customSize = if (isLandscape) lyricsSizeL else lyricsSize
@@ -332,7 +348,7 @@ fun LyricsScreen(
         val showOffsetDialog = ShowOffsetDialog(mediaId = mediaId)
         showOffsetDialog.Render()
 
-        LaunchedEffect(mediaId, mediaMetadata.title, mediaMetadata.artist) {
+        LaunchedEffect(mediaId, resolvedTitle, resolvedArtist) {
             editedArtistName = null
             editedTitle = null
             lyrics = null

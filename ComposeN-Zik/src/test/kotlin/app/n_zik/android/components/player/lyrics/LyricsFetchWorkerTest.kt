@@ -472,7 +472,7 @@ class LyricsFetchWorkerTest {
     }
 
     @Test
-    fun `reopening Auto with fresh line timings keeps the cached result`() = runTest {
+    fun `reopening Auto checks karaoke once and keeps cached line timings`() = runTest {
         setupMocks()
         resetGlobals()
         val fresh = Lyrics("song1", LyricsType.Synced.name, "[00:00.00]Fresh", lastFetchedAt = System.currentTimeMillis())
@@ -482,12 +482,29 @@ class LyricsFetchWorkerTest {
         fetch(worker(testScheduler), LyricsType.Auto)
 
         assertEquals(listOf(fresh, fresh), lyricsUpdates)
-        assertEquals(listOf(false, false), fetchingStates)
-        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(listOf(true, false, false), fetchingStates)
+        coVerify(exactly = 1) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
         assertEquals(0, lrcLibSearchCalls)
         assertEquals(0, kuGouLyricsCalls)
         assertEquals(0, innertubeLyricsCalls)
         assertTrue(upserts.isEmpty())
+    }
+
+    @Test
+    fun `Auto upgrades cached plain lyrics using only enabled timed providers`() = runTest {
+        setupMocks()
+        resetGlobals()
+        val plain = Lyrics("song1", LyricsType.Unsynced.name, "Plain", lastFetchedAt = System.currentTimeMillis())
+        every { lyricsDao.findAllBySongId(any()) } returns flowOf(listOf(plain))
+        lrcLibResponse = { Result.success(LrcLib.LyricsVariants(LrcLib.Lyrics("[00:01.00]Line"), null)) }
+
+        fetch(worker(testScheduler), LyricsType.Auto, enabledProviders = setOf(LyricsProvider.LrcLib))
+
+        assertEquals(plain, lyricsUpdates.first())
+        assertEquals(LyricsType.Synced.name, upserts.single().type)
+        coVerify(exactly = 0) { BetterLyrics.fetchTTML(any(), any(), any(), any()) }
+        assertEquals(listOf(LyricsProvider.LrcLib), providerCalls)
+        assertEquals(0, innertubeLyricsCalls)
     }
 
     @Test

@@ -10,8 +10,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaMetadata
+import app.n_zik.android.R
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.models.Lyrics
+import app.n_zik.android.utils.playerTrackName
 import kotlinx.coroutines.CoroutineScope
 
 // Dedup globals: last mediaId a fetch attempt was made for, per type. Written from the
@@ -74,7 +76,8 @@ internal fun LyricsFetcher(
     var previousLyricsType by remember { mutableStateOf(lyricsType) }
     var previousCheckLyrics by remember { mutableStateOf(checkLyrics) }
     var previousProviders by remember { mutableStateOf(enabledProviders) }
-    LaunchedEffect(mediaId, lyricsType, checkLyrics, mediaMetadata.title, mediaMetadata.artist, enabledProviders) {
+    val lookupTitle = playerTrackName(title, context.getString(R.string.metadata_unknown_title), "Unknown Title")
+    LaunchedEffect(mediaId, lyricsType, checkLyrics, lookupTitle, artistName, mediaMetadata.albumTitle, enabledProviders) {
         val explicitlyRetried = checkLyrics != previousCheckLyrics
         if (explicitlyRetried) {
             globalLastSyncedAttemptMediaId = null
@@ -104,7 +107,7 @@ internal fun LyricsFetcher(
             mediaId = mediaId,
             lyricsType = lyricsType,
             artistName = artistName,
-            title = title,
+            title = lookupTitle,
             mediaMetadata = mediaMetadata,
             durationProvider = durationProvider,
             playerEnableLyricsPopupMessage = playerEnableLyricsPopupMessage,

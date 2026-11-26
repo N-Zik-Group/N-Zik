@@ -101,15 +101,17 @@ class LyricsFetchWorker(
                 globalLastUnSyncedAttemptMediaId = globalLastUnSyncedAttemptMediaId,
                 now = System.currentTimeMillis(),
                 forceAutoRetry = pendingAutoRetry,
+                hasTrackTitle = title != null,
             )
             val cached = needs.currentLyrics
             val lookups = lookupsFor(lyricsType, needs).filter { lookup ->
-                lookup.provider in enabledProviders && lookup !in attempted
+                lookup.provider in enabledProviders && lookup !in attempted &&
+                    (title != null || lookup == Lookup.YouTubeUnsynced)
             }
             withContext(uiDispatcher) {
                 onLyricsUpdated(cached)
                 onFetchingStateChanged(lookups.isNotEmpty())
-                if (lookups.isEmpty() && cached == null) {
+                if (lookups.isEmpty() && cached == null && title != null) {
                     onErrorUpdated(true)
                     onCheckedLrcUpdated(true)
                     onCheckedKugouUpdated(true)
@@ -162,16 +164,20 @@ class LyricsFetchWorker(
                             LyricsProvider.YouTube -> onCheckedInnertubeUpdated(true)
                         }
                         if (playerEnableLyricsPopupMessage) {
-                            val labelRes = if (lookup == Lookup.BetterKaraoke && lyrics?.type == LyricsType.Synced.name) {
-                                Lookup.BetterSynced.label
+                            val brand = context.getString(lookup.brand)
+                            val syncedFallback = found && lyrics != null && !hasWordTimings(lyrics.data.orEmpty()) &&
+                                Lookup.BetterKaraoke in attempted && lookup.type != LyricsType.Unsynced
+                            if (syncedFallback) {
+                                val message = context.getString(
+                                    R.string.lyrics_karaoke_unavailable_synced_fallback_format,
+                                    context.getString(R.string.lyrics_brand_betterlyrics),
+                                    brand,
+                                )
+                                Toaster.w("$message. ${context.getString(R.string.lyrics_karaoke_upgrade_hint)}")
                             } else {
-                                lookup.label
-                            }
-                            val label = context.getString(labelRes, context.getString(lookup.brand))
-                            if (found) {
-                                Toaster.s(R.string.lyrics_provider_found_format, label)
-                            } else {
-                                Toaster.e(R.string.lyrics_provider_missing_format, label, duration = Toast.LENGTH_LONG)
+                                val label = context.getString(lookup.label, brand)
+                                if (found) Toaster.s(R.string.lyrics_provider_found_format, label)
+                                else Toaster.e(R.string.lyrics_provider_missing_format, label, duration = Toast.LENGTH_LONG)
                             }
                         }
                     }

@@ -98,6 +98,7 @@ class LyricsDecisionMakerTest {
         allLyrics: List<Lyrics>,
         now: Long = NOW,
         forceAutoRetry: Boolean = false,
+        hasTrackTitle: Boolean = true,
     ) = LyricsDecisionMaker.evaluateFetchNeeds(
         mediaId = "song1",
         lyricsType = lyricsType,
@@ -107,7 +108,23 @@ class LyricsDecisionMakerTest {
         globalLastUnSyncedAttemptMediaId = "otherSong",
         now = now,
         forceAutoRetry = forceAutoRetry,
+        hasTrackTitle = hasTrackTitle,
     )
+
+    @Test
+    fun `Auto waits for the resolved title before any lookup but explicit plain mode can use the ID`() {
+        val cold = needsFor(LyricsType.Auto, emptyList(), hasTrackTitle = false)
+        val resolved = needsFor(LyricsType.Auto, emptyList(), hasTrackTitle = true)
+        val plain = needsFor(LyricsType.Unsynced, emptyList(), hasTrackTitle = false)
+
+        assertFalse(cold.needKaraokeFetch)
+        assertFalse(cold.needSyncedFetch)
+        assertFalse(cold.needUnsyncedFetch)
+        assertTrue(resolved.needKaraokeFetch)
+        assertTrue(resolved.needSyncedFetch)
+        assertTrue(resolved.needUnsyncedFetch)
+        assertTrue(plain.needUnsyncedFetch)
+    }
 
     @Test
     fun `word-timed row younger than the TTL needs no fetch`() {
@@ -205,13 +222,13 @@ class LyricsDecisionMakerTest {
     }
 
     @Test
-    fun `Auto uses fresh plain text without querying timed providers`() {
+    fun `Auto displays fresh plain text while looking for higher formats`() {
         val unsynced = Lyrics("song1", LyricsType.Unsynced.name, "plain text", lastFetchedAt = NOW - 1)
 
         val needs = needsFor(LyricsType.Auto, listOf(unsynced))
 
-        assertFalse(needs.needKaraokeFetch)
-        assertFalse(needs.needSyncedFetch)
+        assertTrue(needs.needKaraokeFetch)
+        assertTrue(needs.needSyncedFetch)
         assertFalse(needs.needUnsyncedFetch)
         assertSame(unsynced, needs.currentLyrics)
     }
@@ -228,15 +245,37 @@ class LyricsDecisionMakerTest {
     }
 
     @Test
-    fun `Auto revalidates the expired display format only`() {
+    fun `Auto revalidates expired plain text after looking for higher formats`() {
         val stored = Lyrics("song1", LyricsType.Unsynced.name, "plain text")
 
         val needs = needsFor(LyricsType.Auto, listOf(stored))
 
-        assertFalse(needs.needKaraokeFetch)
-        assertFalse(needs.needSyncedFetch)
+        assertTrue(needs.needKaraokeFetch)
+        assertTrue(needs.needSyncedFetch)
         assertTrue(needs.needUnsyncedFetch) // no stamp yet: treated as expired, fetched once
         assertSame(stored, needs.currentLyrics)
+    }
+
+    @Test
+    fun `Auto looks for karaoke over fresh synced lyrics without replacing its fallback`() {
+        val synced = Lyrics("song1", LyricsType.Synced.name, "[00:01.00]text", lastFetchedAt = NOW)
+        val needs = needsFor(LyricsType.Auto, listOf(synced))
+
+        assertTrue(needs.needKaraokeFetch)
+        assertFalse(needs.needSyncedFetch)
+        assertFalse(needs.needUnsyncedFetch)
+        assertSame(synced, needs.currentLyrics)
+    }
+
+    @Test
+    fun `Auto checks for karaoke when the synced fallback expires`() {
+        val stored = Lyrics("song1", LyricsType.Synced.name, "[00:01.00]text", lastFetchedAt = NOW - TTL)
+        val needs = needsFor(LyricsType.Auto, listOf(stored))
+
+        assertSame(stored, needs.currentLyrics)
+        assertTrue(needs.needKaraokeFetch)
+        assertTrue(needs.needSyncedFetch)
+        assertFalse(needs.needUnsyncedFetch)
     }
 
     @Test
