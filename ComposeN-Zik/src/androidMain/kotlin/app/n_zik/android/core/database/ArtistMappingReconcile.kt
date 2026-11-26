@@ -1,5 +1,6 @@
 package app.n_zik.android.core.database
 
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.ArtistConjunctions
 import app.n_zik.innertube.models.NavigationEndpoint
@@ -19,6 +20,11 @@ import app.n_zik.innertube.models.NavigationEndpoint
  */
 object ArtistMappingReconcile {
 
+    /** A changed or unlinked identity replaces its original credit for this song. */
+    internal fun isOverrideOf(editedId: String, incomingId: String, originalId: () -> String?): Boolean =
+        editedId == "$MODIFIED_PREFIX$incomingId" ||
+            ((editedId.startsWith(MODIFIED_PREFIX) || editedId.startsWith("LOCAL_ARTIST_")) && originalId() == incomingId)
+
     /** Matches entries that are nothing but separators ("&", ",", "&&", …). */
     private val SEPARATOR_ONLY_REGEX = Regex("^[,&]+$")
 
@@ -36,10 +42,14 @@ object ArtistMappingReconcile {
      */
     fun parseAuthorEntries(
         authors: List<Innertube.Info<NavigationEndpoint.Endpoint.Browse>>?,
+        includeIdOnly: Boolean = false,
     ): List<Pair<String, String?>> {
         return authors.orEmpty().mapNotNull { author ->
             val name = author.name?.trim()?.replace('\u00a0', ' ')
-            if (name.isNullOrBlank()) return@mapNotNull null
+            if (name.isNullOrBlank()) {
+                val id = author.endpoint?.browseId?.takeIf(String::isNotBlank)
+                return@mapNotNull if (includeIdOnly && id != null) "" to id else null
+            }
             if (name.matches(SEPARATOR_ONLY_REGEX)) return@mapNotNull null
             if (ArtistConjunctions.conjunctions.any { name.equals(it, ignoreCase = true) }) return@mapNotNull null
             name to author.endpoint?.browseId
@@ -56,15 +66,8 @@ object ArtistMappingReconcile {
         parsedNames: List<String>,
         authors: List<Innertube.Info<NavigationEndpoint.Endpoint.Browse>>?,
     ): Boolean {
-        if (parsedNames.isEmpty() || authors == null) return false
-        return parsedNames.all { name ->
-            authors.any { author ->
-                // Names are compared normalized (trim + NBSP): the upsert passes
-                // cleaned entry names, while the raw author names may carry
-//
-                // whitespace quirks from the YTM payload.
-                author.name?.trim()?.replace('\u00a0', ' ') == name && !author.endpoint?.browseId.isNullOrBlank()
-            }
-        }
+        val entries = parseAuthorEntries(authors, includeIdOnly = true)
+        return parsedNames.isNotEmpty() && entries.map { it.first } == parsedNames &&
+            entries.all { it.first.isNotBlank() && !it.second.isNullOrBlank() }
     }
 }

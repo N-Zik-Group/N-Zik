@@ -1,5 +1,6 @@
 package app.n_zik.android.legacyoffmain
 
+import app.n_zik.android.utils.ARTIST_LINKED_NAMES_EXTRA
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.ArtistConjunctions
@@ -109,11 +110,29 @@ class AsMediaItemEntryNamesOffMainTest {
         val media = videoItem(listOf(author("Bigflo & OLi", "UC_BIGFLO"), author("&", "UC_SEPARATOR"))).asMediaItem
         assertEquals("Bigflo & OLi", media.mediaMetadata.artist)
         val extras = media.mediaMetadata.extras!!
-        // Junk entry names are dropped from artistNames; artistIds keeps every
-        // browseId (unfiltered) — the name->id zip (insertIgnore) truncates to
-
-        // the shorter list, so no junk row is ever linked.
         assertEquals(listOf("Bigflo & OLi"), extras.getStringArrayList("artistNames"))
-        assertEquals(listOf("UC_BIGFLO", "UC_SEPARATOR"), extras.getStringArrayList("artistIds"))
+        assertEquals(listOf("UC_BIGFLO"), extras.getStringArrayList("artistIds"))
     }
+    @Test
+    fun mixedTrackAuthorsKeepTheCorrectNameWithTheLinkedId() {
+        val authors = listOf(author("Unlinked artist", null), author("Linked artist", "UC_LINKED"))
+        for (media in listOf(songItem(authors).asMediaItem, videoItem(authors).asMediaItem)) {
+            val extras = media.mediaMetadata.extras!!
+            assertEquals(listOf("Unlinked artist", "Linked artist"), extras.getStringArrayList("artistNames"))
+            assertEquals(listOf("UC_LINKED"), extras.getStringArrayList("artistIds"))
+            assertEquals(listOf("Linked artist"), extras.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA))
+        }
+    }
+    @Test
+    fun artistIdWithoutNameSurvivesAsAnUnlabelledLink() {
+        val source = Innertube.Info(
+            name = null,
+            endpoint = NavigationEndpoint.Endpoint.Browse(browseId = "UC_UNNAMED"),
+        )
+        val extras = songItem(listOf(source)).asMediaItem.mediaMetadata.extras
+        assertEquals(listOf("UC_UNNAMED"), extras?.getStringArrayList("artistIds"))
+        assertEquals(emptyList<String>(), extras?.getStringArrayList("artistNames"))
+        assertEquals(listOf(""), extras?.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA))
+    }
+
 }

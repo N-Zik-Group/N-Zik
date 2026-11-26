@@ -16,7 +16,6 @@ import app.n_zik.innertube.utils.completed
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.models.Album
-import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -131,49 +130,18 @@ suspend fun importYTMSubscribedChannels(force: Boolean = false, showDetails: Boo
 
         if (showDetails) Toaster.i( R.string.sync_running_status, Toast.LENGTH_LONG )
 
-        val page = Innertube.library("FEmusic_library_corpus_artists").completed().getOrThrowRetriable()
-        if (page == null) {
+        val imported = YouTubeArtistProvenance.importSnapshot {
+            val first = Innertube.library("FEmusic_library_corpus_artists", requireLibraryRenderer = true).getOrThrowRetriable()
+                ?: return@importSnapshot null
+            completeYouTubeArtistLibrary(first) { continuation ->
+                Innertube.libraryContinuation(continuation).getOrThrowRetriable()
+            }
+        }
+        if (!imported) {
             coroutineContext[SyncDetailCapture]?.detail = SyncStatusDetail.Text(R.string.sync_fetch_subscribed_channels_failed)
             if (showDetails) Toaster.e(R.string.sync_failed)
             return@withContext false
         }
-
-        val ytmArtists = page.items.filterIsInstance<Innertube.ArtistItem>()
-        val remoteKeys = ytmArtists.map { it.key }.toSet()
-
-        Timber.tag("SyncYTMusicUtils").d("YTM artists: $ytmArtists")
-
-        ytmArtists.forEach { remoteArtist ->
-            var localArtist = Database.artistTable.findById( remoteArtist.key ).first()
-            Timber.tag("SyncYTMusicUtils").d("Local artist: $localArtist")
-            Timber.tag("SyncYTMusicUtils").d("Remote artist: $remoteArtist")
-
-            if (localArtist == null) {
-                localArtist = Artist(
-                    id = remoteArtist.key,
-                    name = remoteArtist.title,
-                    thumbnailUrl = remoteArtist.thumbnail?.url,
-                    bookmarkedAt = System.currentTimeMillis(),
-                    isYoutubeArtist = true
-                )
-                Database.artistTable.upsert( localArtist )
-            } else {
-                localArtist.copy(
-                    bookmarkedAt = localArtist.bookmarkedAt ?: System.currentTimeMillis(),
-                    thumbnailUrl = PropUtils.retainIfModified(localArtist.thumbnailUrl, remoteArtist.thumbnail?.url) ?: localArtist.thumbnailUrl,
-                    isYoutubeArtist = true
-                ).let { Database.artistTable.update(it) }
-            }
-        }
-
-        Database.artistTable
-                .allFollowing()
-                .first()
-                .filter { artist ->
-                    artist.isYoutubeArtist && artist.id !in remoteKeys
-                }
-                .map { it.copy( isYoutubeArtist = false, bookmarkedAt = null ) }
-                .forEach { Database.artistTable.update(it) }
 
         if (showDetails) Toaster.done()
         setLastSyncTimeFor("artists")
@@ -588,6 +556,10 @@ suspend fun importYTMEpisodesForLater(force: Boolean = false, showDetails: Boole
 
 private val lastSyncTimePerFeature = java.util.concurrent.ConcurrentHashMap<String, Long>()
 
+internal fun clearArtistSyncCooldown() {
+    lastSyncTimePerFeature.remove("artists")
+}
+
 fun getLastSyncTime(): Long {
     return appContext().preferences.getLong("lastSyncTime", 0)
 }
@@ -625,6 +597,7 @@ private fun <T> Result<T>.getOrThrowRetriable(): T? {
         onSuccess = { it },
         onFailure = { e ->
             when (e) {
+                is CancellationException,
                 is java.net.UnknownHostException,
                 is java.net.SocketTimeoutException,
                 is java.net.ConnectException,
@@ -768,12 +741,14 @@ suspend fun pushYTMArtistFollows(force: Boolean = false): Boolean = withContext(
     if (!pushArtistFollow && !force) return@withContext false
     if (!isNetworkConnected(appContext())) return@withContext false
 
+    if (!YouTubeArtistProvenance.canShowOrigin()) return@withContext false
     val followedArtists = Database.artistTable.allFollowing().first().filter { it.isYoutubeArtist }
     Timber.tag("SyncYTMusicUtils").d("pushYTMArtistFollows: ${followedArtists.size} YouTube followed artists to push")
 
     var success = 0
     var failed = 0
     followedArtists.forEach { artist ->
+        if (!YouTubeArtistProvenance.canShowOrigin()) return@withContext false
         runCatching {
             YtMusic.subscribeChannel(artist.id)
         }.onSuccess {
@@ -876,11 +851,7 @@ suspend fun clearAllSyncedData(): Boolean = withContext(NzikDispatchers.DATA) {
 
     // Clear all artist YouTube flags
     runCatching {
-        Database.artistTable.allFollowing().first().forEach { artist ->
-            if (artist.isYoutubeArtist) {
-                Database.artistTable.update(artist.copy(isYoutubeArtist = false, bookmarkedAt = null))
-            }
-        }
+        YouTubeArtistProvenance.reset()
     }.onFailure { e ->
         Timber.tag("SyncYTMusicUtils").e(e, "Failed to clear artist YouTube flags")
         hadErrors = true

@@ -1,5 +1,6 @@
 package app.n_zik.android.utils
 
+import android.os.Bundle
 import android.util.LruCache
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
@@ -8,11 +9,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
+import app.n_zik.android.core.database.ArtistMappingReconcile
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Info
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.R
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
@@ -47,17 +51,55 @@ fun MediaItem.titleWithFallback(): String {
 internal fun displayTrackTitle(title: String?): String? =
     title?.let { cleanPrefix(cleanPrefix(it)) }?.takeIf { it.isNotBlank() && it != "null" }
 
+internal const val ARTIST_LINKED_NAMES_EXTRA = "artistLinkedNames"
+
+internal data class MediaItemArtistLinks(val entries: List<Info>, val complete: Boolean)
+
+internal fun readMediaItemArtistLinks(
+    artistIds: List<String>,
+    displayNames: List<String>,
+    linkedNames: List<String>?,
+): MediaItemArtistLinks {
+    val names = (linkedNames ?: displayNames).takeIf { it.size == artistIds.size }
+    val entries = artistIds.mapIndexedNotNull { index, id ->
+        id.takeIf(String::isNotBlank)?.let {
+            Info(it, names?.get(index)?.takeIf(String::isNotBlank))
+        }
+    }
+    val complete = names != null && names == displayNames && entries.isNotEmpty() &&
+        entries.size == artistIds.size && entries.all { !it.name.isNullOrBlank() && !isDeviceArtistId(it.id) }
+    return MediaItemArtistLinks(entries, complete)
+}
+
 @Composable
 fun MediaItem.artistIdsWithFallback(initialArtists: List<Info> = emptyList()): List<Info> {
-    val ids = mediaMetadata.extras?.getStringArrayList("artistIds")
-    val infos = if (!isLocal && !ids.isNullOrEmpty()) {
-        val names = mediaMetadata.extras?.getStringArrayList("artistNames")
-        ids.mapIndexed { i, id -> Info(id, names?.getOrNull(i)) }
+    val extras = mediaMetadata.extras
+    val metadataLinks = readMediaItemArtistLinks(
+        extras?.getStringArrayList("artistIds").orEmpty(),
+        extras?.getStringArrayList("artistNames").orEmpty(),
+        extras?.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA),
+    ).entries.filterNot { isDeviceArtistId(it.id) }
+    val dbArtists by remember(mediaId) {
+        Database.artistTable.findBySongId(mediaId.substringAfterLast('/'))
+            .map { artists -> artists.map { Info(it.id, it.name) } }
+    }.collectAsStateWithLifecycle(initialValue = initialArtists, context = NzikDispatchers.DATA)
+    val infos = if (!isLocal && metadataLinks.isNotEmpty()) {
+        val preferences = LocalContext.current.preferences
+        val resolvedLinks = metadataLinks.map { link ->
+            val edited = dbArtists.singleOrNull { stored ->
+                ArtistMappingReconcile.isOverrideOf(stored.id, link.id) {
+                    preferences.getString("old_browse_id_${stored.id}", null)
+                }
+            }
+            val stored = dbArtists.firstOrNull { it.id == link.id }
+            when {
+                edited != null -> edited
+                stored != null && (link.name == null || stored.name?.startsWith(MODIFIED_PREFIX) == true) -> stored
+                else -> link
+            }
+        }
+        (resolvedLinks + dbArtists.filter { it.id.startsWith(MODIFIED_PREFIX) }).distinctBy(Info::id)
     } else {
-        val dbArtists by remember(mediaId) {
-            Database.artistTable.findBySongId(mediaId.substringAfterLast('/'))
-                .map { artists -> artists.map { Info(it.id, it.name) } }
-        }.collectAsStateWithLifecycle(initialValue = initialArtists, context = NzikDispatchers.DATA)
         dbArtists
     }
     // The links (and the extras built from them) carry no display order: SQLite
@@ -105,16 +147,59 @@ internal fun alignInfosToDisplayOrder(infos: List<Info>, displayText: String?): 
     return ordered
 }
 
+internal fun MediaItem.withPlaybackAlbum(albumId: String, albumTitle: String?): MediaItem {
+    val metadata = mediaMetadata
+    val extras = (metadata.extras?.let(::Bundle) ?: Bundle()).apply { putString("albumId", albumId) }
+    val albumMetadata = metadata.buildUpon()
+        .setAlbumTitle(albumTitle?.takeIf(String::isNotBlank) ?: metadata.albumTitle)
+        .setExtras(extras)
+        .build()
+    return buildUpon().setMediaMetadata(albumMetadata).build()
+}
+
+internal fun selectOnlinePlaybackAlbumId(
+    explicitId: String?,
+    exactTrackAlbumId: String?,
+    storedAlbumIds: List<String>,
+): String? {
+    explicitId?.takeIf(::isOnlinePlaybackAlbumId)?.let { return it }
+    val stored = storedAlbumIds.filter(::isOnlinePlaybackAlbumId).distinct()
+    return stored.singleOrNull(::isUserEditedPlaybackAlbumId)
+        ?: exactTrackAlbumId?.takeIf(::isOnlinePlaybackAlbumId)
+        ?: stored.singleOrNull()
+}
+
+internal fun isUserEditedPlaybackAlbumId(id: String): Boolean =
+    id.startsWith(MODIFIED_PREFIX) || id.startsWith("LOCAL_ALBUM_")
+
+private fun isOnlinePlaybackAlbumId(id: String): Boolean = id.isNotBlank() && !isDeviceAlbumId(id)
+
+internal fun editedPlaybackAlbumFor(
+    explicitId: String,
+    albums: List<Album>,
+    originalId: (String) -> String?,
+): Album? {
+    if (!isOnlinePlaybackAlbumId(explicitId) || isUserEditedPlaybackAlbumId(explicitId)) return null
+    return albums.singleOrNull { album ->
+        !isDeviceAlbumId(album.id) && isUserEditedPlaybackAlbumId(album.id) &&
+            (album.id == "$MODIFIED_PREFIX$explicitId" || originalId(album.id) == explicitId)
+    }
+}
+
 @Composable
 fun MediaItem.albumIdWithFallback(initialAlbumId: String? = null): String? {
-    val albumId = mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
-    if (!isLocal && !albumId.isNullOrBlank()) return albumId
-    val dbAlbum by remember(mediaId) {
-        Database.songAlbumMapTable.findAlbumsOf(mediaId.substringAfterLast('/')).map { albums ->
-            albums.firstOrNull { isDeviceAlbumId(it.id) == isLocal }?.id
-        }
-    }.collectAsStateWithLifecycle(initialValue = initialAlbumId, context = NzikDispatchers.DATA)
-    return dbAlbum
+    val explicitId = mediaMetadata.extras?.getString("albumId")?.takeIf(::isOnlinePlaybackAlbumId)
+    val preferences = LocalContext.current.preferences
+    val storedAlbums by remember(mediaId, preferences) {
+        Database.songAlbumMapTable.findAlbumsOf(mediaId.substringAfterLast('/'))
+    }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    val albums = storedAlbums ?: return explicitId.takeUnless { isLocal } ?: initialAlbumId
+    if (isLocal) return albums.firstOrNull { isDeviceAlbumId(it.id) }?.id
+
+    val edited = explicitId?.let { id ->
+        editedPlaybackAlbumFor(id, albums) { preferences.getString("old_browse_id_$it", null) }
+    }
+    return edited?.id ?: selectOnlinePlaybackAlbumId(explicitId, null, albums.map(Album::id))
 }
 
 internal data class PlayerTrackLinks(val albumId: String?, val artists: List<Info>)

@@ -189,8 +189,9 @@ object SameNameArtistDedup {
 
         for (groupName in groupNames) {
             val rows = artistTable.allByNameIgnoreCase(groupName)
-            val ytRows = rows.filter { !isDeviceArtistId(it.id) && !it.id.startsWith("LOCAL_ARTIST_") }
-            val localCount = rows.size - ytRows.size
+            val onlineRows = rows.filter { !isDeviceArtistId(it.id) && !it.id.startsWith("LOCAL_ARTIST_") }
+            val ytRows = onlineRows.filterNot { it.id.startsWith(MODIFIED_PREFIX) }
+            val localCount = rows.size - onlineRows.size
             localKept += localCount
             if (localCount > 0) {
                 Timber.tag(TAG).d(
@@ -198,8 +199,7 @@ object SameNameArtistDedup {
                     groupName, localCount,
                 )
             }
-            // Fewer than two YouTube rows: nothing to dedup (local rows are
-            // user-localized and never enter the merge).
+            // Keep local rows and explicitly selected identities outside the merge.
             if (ytRows.size < 2) continue
             // A whole group renamed by the user is custom data: untouchable.
             if (groupName.startsWith(MODIFIED_PREFIX)) {
@@ -394,7 +394,6 @@ object SameNameArtistDedup {
                         id = truthId,
                         name = canonicalName,
                         thumbnailUrl = found.thumbnailUrl,
-                        isYoutubeArtist = true,
                     )
                 )
             }

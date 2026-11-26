@@ -120,6 +120,7 @@ internal object LibraryMapping {
         artists: List<Artist>,
         songCounts: Map<String, Int>,
         listening: Map<String, CollectionListening> = emptyMap(),
+        showYouTubeOrigin: Boolean = true,
     ): List<ArtistDto> =
         artists.filter { filter == CollectionFilter.DISLIKED || it.dislikedAt == null }.map { artist ->
             val stats = listening[artist.id] ?: CollectionListening()
@@ -130,7 +131,7 @@ internal object LibraryMapping {
                 hasArtwork = ArtworkUrls.hasArtwork(artist.thumbnailUrl),
                 isBookmarked = artist.bookmarkedAt != null,
                 isDisliked = artist.dislikedAt != null,
-                origin = if (artist.isYoutubeArtist) PlaylistOrigin.YTMUSIC else PlaylistOrigin.LOCAL,
+                origin = if (showYouTubeOrigin && artist.isYoutubeArtist) PlaylistOrigin.YTMUSIC else PlaylistOrigin.LOCAL,
                 playCount = stats.playCount,
                 totalPlayTimeMs = stats.totalPlayTimeMs,
             )

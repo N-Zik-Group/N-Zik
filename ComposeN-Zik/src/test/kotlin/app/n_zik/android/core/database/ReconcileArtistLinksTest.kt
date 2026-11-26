@@ -80,6 +80,20 @@ class ReconcileArtistLinksTest {
     private fun linksOf(songId: String): Set<SongArtistMap> =
         runBlocking { db.songArtistMapTable.pairsBySongIdDirect(songId).toSet() }
 
+    @Test
+    fun refreshDoesNotRecreateTheCanonicalLinkOfAnEditedArtist() = runBlocking<Unit> {
+        val songId = "song"
+        val canonical = Artist(id = "UCcanonical", name = "Artist")
+        val modified = canonical.copy(id = "modified:${canonical.id}")
+        db.songTable.upsert(Song.makePlaceholder(songId))
+        db.artistTable.upsert(modified)
+        db.songArtistMapTable.insertIgnore(SongArtistMap(songId, modified.id))
+
+        Database.reconcileArtistLinks(songId, listOf(canonical))
+
+        assertEquals(listOf(modified.id), db.songArtistMapTable.findArtistsOfDirect(songId).map { it.id })
+    }
+
     @Test
     fun completeListReplacesStaleLinksAndReturnsDroppedCount() = runTest {
         insertSong("song_1")

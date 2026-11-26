@@ -60,6 +60,7 @@ import app.n_zik.android.utils.homeSongsDownloadedSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsFavoritesSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsTopSortMenuOrderKey
+import app.n_zik.android.utils.YouTubeArtistProvenance
 import app.n_zik.android.utils.includeLocalSongsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.preferences
@@ -359,6 +360,7 @@ internal class DatabaseLibraryProvider(
             artists,
             Database.songArtistMapTable.songCountsDirect().associate { it.id to it.count },
             listening,
+            showYouTubeOrigin = YouTubeArtistProvenance.canShowOrigin(),
         )
     }
 

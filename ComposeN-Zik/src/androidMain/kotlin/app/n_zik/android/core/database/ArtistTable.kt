@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import app.n_zik.android.enums.ArtistSortBy
@@ -270,15 +271,34 @@ interface ArtistTable {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIgnore( artists: List<Artist> )
 
-    /** Inserts [artist], replacing the existing row's columns when its primary key already exists. */
+    /** Upserts the artist without changing the subscription-sync provenance column. */
+    @Transaction
+    suspend fun upsert(artist: Artist) {
+        upsertArtistRow(artist.copy(isYoutubeArtist = readYouTubeArtistProvenance(artist.id) == true))
+    }
+
     @Upsert
-    suspend fun upsert( artist: Artist )
+    suspend fun upsertArtistRow(artist: Artist)
+
+    @Query("SELECT isYoutubeArtist FROM Artist WHERE id = :id")
+    suspend fun readYouTubeArtistProvenance(id: String): Boolean?
+
+    @Query("UPDATE Artist SET isYoutubeArtist = 0 WHERE isYoutubeArtist = 1")
+    suspend fun clearYouTubeArtistProvenance(): Int
+
+    @Query("""
+        UPDATE Artist SET
+            isYoutubeArtist = 1,
+            bookmarkedAt = COALESCE(bookmarkedAt, :importedAt),
+            thumbnailUrl = COALESCE(:thumbnailUrl, thumbnailUrl)
+        WHERE id = :id
+    """)
+    suspend fun markYouTubeArtistImported(id: String, importedAt: Long, thumbnailUrl: String?)
 
     @Query("""
         UPDATE Artist SET
             name = :name,
             thumbnailUrl = :thumbnailUrl,
-            isYoutubeArtist = :isYoutubeArtist,
             position = :position
         WHERE id = :id
     """)
@@ -286,20 +306,18 @@ interface ArtistTable {
         id: String,
         name: String?,
         thumbnailUrl: String?,
-        isYoutubeArtist: Boolean,
         position: Int
     ): Int
 
     @Query("""
-        INSERT OR IGNORE INTO Artist (id, name, thumbnailUrl, timestamp, isYoutubeArtist, position)
-        VALUES (:id, :name, :thumbnailUrl, :timestamp, :isYoutubeArtist, :position)
+        INSERT OR IGNORE INTO Artist (id, name, thumbnailUrl, timestamp, position)
+        VALUES (:id, :name, :thumbnailUrl, :timestamp, :position)
     """)
     suspend fun insertMetadata(
         id: String,
         name: String?,
         thumbnailUrl: String?,
         timestamp: Long,
-        isYoutubeArtist: Boolean,
         position: Int
     ): Long
 
@@ -313,9 +331,14 @@ interface ArtistTable {
      *
      * @throws SQLException when there's a conflict
      */
-    @Update
+    @Transaction
     @Throws(SQLException::class)
-    suspend fun update( artist: Artist )
+    suspend fun update(artist: Artist) {
+        updateArtistRow(artist.copy(isYoutubeArtist = readYouTubeArtistProvenance(artist.id) == true))
+    }
+
+    @Update
+    suspend fun updateArtistRow(artist: Artist)
 
     @Query("UPDATE Artist SET thumbnailUrl = :url WHERE id = :id")
     suspend fun updateCover(id: String, url: String)

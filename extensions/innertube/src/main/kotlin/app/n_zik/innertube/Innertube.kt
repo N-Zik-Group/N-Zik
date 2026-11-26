@@ -979,7 +979,7 @@ object Innertube {
         }
     }
 
-    suspend fun library(browseId: String, tabIndex: Int = 0) = runCatching {
+    suspend fun library(browseId: String, tabIndex: Int = 0, requireLibraryRenderer: Boolean = false) = runCatching {
         val response = browse(
             browseId = browseId,
             setLogin = true
@@ -1007,14 +1007,15 @@ object Innertube {
             }
 
             else -> {
-                val shelfItems = contents?.musicShelfRenderer?.contents
+                val shelf = contents?.musicShelfRenderer
+                if (requireLibraryRenderer && shelf?.contents == null) return@runCatching null
+                val shelfItems = shelf?.contents
                     ?.mapNotNull (MusicShelfRenderer.Content::musicResponsiveListItemRenderer)
                     ?.mapNotNull { LibraryPage.fromMusicResponsiveListItemRenderer(it) }
                     ?: emptyList()
                 LibraryPage(
                     items = shelfItems,
-                    continuation = contents?.musicShelfRenderer?.continuations?.firstOrNull()?.
-                    nextContinuationData?.continuation
+                    continuation = shelf?.continuations?.firstOrNull()?.nextContinuationData?.continuation
                 )
             }
         }

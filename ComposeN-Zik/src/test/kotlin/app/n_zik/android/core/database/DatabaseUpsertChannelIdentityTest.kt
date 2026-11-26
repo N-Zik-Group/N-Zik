@@ -1,5 +1,6 @@
 package app.n_zik.android.core.database
 
+import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongArtistMap
@@ -85,7 +86,7 @@ class DatabaseUpsertChannelIdentityTest {
         // Deterministic regardless of the locale wiring done at app startup
         ArtistConjunctions.conjunctions = listOf("and")
         coEvery { artistTable.findByIdDirect(any()) } returns null
-        coEvery { artistTable.findByNameDirect(any()) } returns null
+        coEvery { artistTable.allByNameIgnoreCase(any()) } returns emptyList()
         coEvery { songTable.findByIdDirect(any()) } returns null
     }
 
@@ -153,6 +154,30 @@ class DatabaseUpsertChannelIdentityTest {
         assertEquals("Tanchiky, siromaru", song.captured.artistsText)
     }
 
+    @Test
+    fun upsertingTracksFromACompilationNeverOverwritesItsCredit() {
+        val albums = mockk<AlbumTable>(relaxed = true)
+        val mappings = mockk<SongAlbumMapTable>(relaxed = true)
+        every { Database.albumTable } returns albums
+        every { Database.songAlbumMapTable } returns mappings
+        val albumId = "MPREb_compilation"
+        val canonical = Album(
+            id = albumId,
+            title = "Compilation",
+            authorsText = "Compilation artist",
+            bookmarkedAt = 42L,
+            year = "2026",
+        )
+        coEvery { albums.findByIdDirect(albumId) } returns canonical
+        val album = Innertube.Info(name = "Compilation", endpoint = NavigationEndpoint.Endpoint.Browse(browseId = albumId))
+        runBlocking {
+            Database.upsert(songItem(listOf(author("First track artist", "UC_FIRST"))).copy(album = album))
+            Database.upsert(songItem(listOf(author("Last track artist", "UC_LAST"))).copy(album = album))
+        }
+        coVerify(exactly = 0) { albums.upsert(any<Album>()) }
+        coVerify(exactly = 2) { mappings.map("ORxckE7oN6g", albumId) }
+    }
+
     @Test
     fun modifiedArtistsTextIsPreserved() {
         coEvery { artistTable.findByIdDirect("UC_BIGFLO") } returns Artist(id = "UC_BIGFLO", name = "Bigflo & Oli")
@@ -171,7 +196,7 @@ class DatabaseUpsertChannelIdentityTest {
 
     @Test
     fun entryWithoutBrowseIdKeepsNameOnlyPath() {
-        coEvery { artistTable.findByNameDirect("LocalArtist") } returns Artist(id = "LOCAL_1", name = "LocalArtist")
+        coEvery { artistTable.allByNameIgnoreCase("LocalArtist") } returns listOf(Artist(id = "LOCAL_1", name = "LocalArtist"))
         val item = songItem(listOf(author("LocalArtist", null)))
 
         runBlocking { Database.upsert(item) }

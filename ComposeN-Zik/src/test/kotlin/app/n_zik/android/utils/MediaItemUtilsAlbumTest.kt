@@ -50,6 +50,34 @@ class MediaItemUtilsAlbumTest {
     }
 
     @Test
+    fun restoringAnExplicitReleaseUsesOnlyItsOwnManualOverride() {
+        val chosen = Album("modified:MPREchosen")
+        assertEquals(chosen, editedPlaybackAlbumFor("MPREoriginal", listOf(chosen)) { "MPREoriginal" })
+        assertNull(editedPlaybackAlbumFor("MPREdeluxe", listOf(chosen)) { "MPREoriginal" })
+    }
+
+    @Test
+    fun `explicit release survives exact track metadata and stored alternatives`() {
+        val release = "MPREb_yde4zc2mIz2"
+        val deluxe = "MPREb_TINpB57piQG"
+        val single = "MPREb_kg3qpcMo2vB"
+
+        assertEquals(release, selectOnlinePlaybackAlbumId(release, single, listOf(deluxe, single)))
+        assertEquals(single, selectOnlinePlaybackAlbumId(null, single, listOf(deluxe, release)))
+        assertNull(selectOnlinePlaybackAlbumId(null, null, listOf(deluxe, release)))
+    }
+
+    @Test
+    fun `manual album link and unlink are respected when there is no explicit release`() {
+        val album = "MPREb_TINpB57piQG"
+        val modified = "modified:MPREb_yde4zc2mIz2"
+        val unlinked = "LOCAL_ALBUM_local"
+
+        assertEquals(modified, selectOnlinePlaybackAlbumId(null, album, listOf(album, modified)))
+        assertEquals(unlinked, selectOnlinePlaybackAlbumId(null, album, listOf(album, unlinked)))
+    }
+
+    @Test
     fun `album from metadata wins when present`() = runTest {
         val item = mediaItem("My Album")
 

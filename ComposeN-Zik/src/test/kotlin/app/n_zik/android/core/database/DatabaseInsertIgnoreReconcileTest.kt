@@ -3,9 +3,11 @@ package app.n_zik.android.core.database
 import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.utils.ARTIST_LINKED_NAMES_EXTRA
 import app.n_zik.android.utils.asSong
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
@@ -53,6 +55,7 @@ class DatabaseInsertIgnoreReconcileTest {
     private fun mediaItemWithAuthors(names: List<String>, ids: List<String>): MediaItem {
         every { extras.getStringArrayList("artistNames") } returns ArrayList(names)
         every { extras.getStringArrayList("artistIds") } returns ArrayList(ids)
+        every { extras.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA) } returns null
         // Platform-type default of a relaxed Bundle mock is "" (not null) — pin it so
         // the album branch stays out of the test
         every { extras.getString("albumId") } returns null
@@ -71,6 +74,7 @@ class DatabaseInsertIgnoreReconcileTest {
         every { extras.getStringArrayList("artistNames") } returns ArrayList(names)
         // No browse IDs: forces the names-only branch
         every { extras.getStringArrayList("artistIds") } returns null
+        every { extras.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA) } returns null
         every { extras.getString("albumId") } returns null
         val metadata = MediaMetadata.Builder()
             .setExtras(extras)
@@ -90,7 +94,7 @@ class DatabaseInsertIgnoreReconcileTest {
         every { Database.artistTable } returns artistTable
         every { Database.songArtistMapTable } returns mapTable
         coEvery { songTable.findByIdDirect("s1") } returns existingSong()
-        coEvery { artistTable.findByNameDirect(any()) } returns null
+        coEvery { artistTable.allByNameIgnoreCase(any()) } returns emptyList()
         // A relaxed mock returns a child mock (not null) for findByIdDirect - pin the
         // default to null: in those fixtures the row is (re)created under the context
 
@@ -105,6 +109,34 @@ class DatabaseInsertIgnoreReconcileTest {
         unmockkAll()
     }
 
+    @Test
+    fun trackMediaMetadataPreservesTheAlbumsAuthorsAndUserTitle() = runBlocking<Unit> {
+        val albums = mockk<AlbumTable>(relaxed = true)
+        val mappings = mockk<SongAlbumMapTable>(relaxed = true)
+        every { Database.albumTable } returns albums
+        every { Database.songAlbumMapTable } returns mappings
+        val albumId = "MPREb_compilation"
+        val canonical = Album(
+            id = albumId,
+            title = "modified:My compilation",
+            authorsText = "Compilation artist",
+            year = "2026",
+        )
+        coEvery { albums.findByIdDirect(albumId) } returns canonical
+        val track = mediaItemWithAuthors(listOf("Track artist"), listOf("UC_TRACK_ARTIST"))
+        every { extras.getString("albumId") } returns albumId
+        val metadata = track.mediaMetadata.buildUpon()
+            .setArtist("Track artist")
+            .setAlbumTitle("Compilation")
+            .setReleaseYear(2025)
+            .build()
+
+        Database.insertIgnore(track.buildUpon().setMediaMetadata(metadata).build(), autoFix = false)
+
+        coVerify(exactly = 1) { albums.upsert(canonical.copy(year = "2025")) }
+        coVerify(exactly = 1) { mappings.map("s1", albumId) }
+    }
+
     @Test
     fun reinsertWithAuthorListReconcilesStaleMappings() = runBlocking<Unit> {
         val item = mediaItemWithAuthors(listOf("A", "B"), listOf("UC_A", "UC_B"))
@@ -120,21 +152,55 @@ class DatabaseInsertIgnoreReconcileTest {
     }
 
     @Test
-    fun reinsertWithNamesOnlyListReconcilesStaleMappings() = runBlocking<Unit> {
-        coEvery { artistTable.findByNameDirect("A") } returns Artist(id = "UC_A", name = "A")
-        coEvery { artistTable.findByNameDirect("B") } returns Artist(id = "UC_B", name = "B")
+    fun reinsertWithNamesOnlyListKeepsExistingMappings() = runBlocking<Unit> {
+        coEvery { artistTable.allByNameIgnoreCase("A") } returns listOf(Artist(id = "UC_A", name = "A"))
+        coEvery { artistTable.allByNameIgnoreCase("B") } returns listOf(Artist(id = "UC_B", name = "B"))
         val item = mediaItemWithNamesOnly(listOf("A", "B"))
 
         Database.insertIgnore(item, autoFix = false)
 
-        coVerify(exactly = 1) { mapTable.deleteBySongId("s1") }
+        coVerify(exactly = 0) { mapTable.deleteBySongId("s1") }
         coVerify(exactly = 2) { mapTable.insertIgnore(any<SongArtistMap>()) }
-        coVerifyOrder {
-            mapTable.deleteBySongId("s1")
-            mapTable.insertIgnore(any<SongArtistMap>())
-        }
     }
 
+    @Test
+    fun mixedAuthorsMapOnlyVerifiedPairsAndKeepExistingMappings() = runBlocking<Unit> {
+        val item = mediaItemWithAuthors(listOf("No endpoint", "Linked artist"), listOf("UC_LINKED"))
+        every { extras.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA) } returns arrayListOf("Linked artist")
+        coEvery { artistTable.allByNameIgnoreCase("Linked artist") } returns listOf(Artist("UC_HOMONYM", "Linked artist"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        coVerify(exactly = 0) { mapTable.deleteBySongId("s1") }
+        coVerify(exactly = 1) { artistTable.insertIgnore(Artist("UC_LINKED", "Linked artist")) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("s1", "UC_LINKED")) }
+        coVerify(exactly = 0) { mapTable.insertIgnore(SongArtistMap("s1", "UC_HOMONYM")) }
+    }
+
+    @Test
+    fun oldMismatchedExtrasCanLinkAnExistingIdWithoutGuessingItsName() = runBlocking<Unit> {
+        val item = mediaItemWithAuthors(listOf("No endpoint", "Linked artist"), listOf("UC_LINKED"))
+        coEvery { artistTable.findByIdDirect("UC_LINKED") } returns Artist("UC_LINKED", "Exact row")
+
+        Database.insertIgnore(item, autoFix = false)
+
+        coVerify(exactly = 0) { mapTable.deleteBySongId("s1") }
+        coVerify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("s1", "UC_LINKED")) }
+    }
+
+    @Test
+    fun completeCreditsPreserveExplicitlyLinkedManualArtist() = runBlocking<Unit> {
+        val edited = Artist("LOCAL_ARTIST_MANUAL", "modified:Manual credit")
+        coEvery { artistTable.findBySongIdDirect("s1") } returns listOf(edited)
+        val item = mediaItemWithAuthors(listOf("Remote artist"), listOf("UC_REMOTE"))
+
+        Database.insertIgnore(item, autoFix = false)
+
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("s1", "UC_REMOTE")) }
+        coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("s1", edited.id)) }
+    }
+
     @Test
     fun localPlaybackKeepsIndexedArtistLinksWhenQueueCarriesOnlineIds() = runBlocking<Unit> {
         val item = mediaItemWithAuthors(listOf("A"), listOf("UC_A"))
@@ -150,7 +216,7 @@ class DatabaseInsertIgnoreReconcileTest {
 
     @Test
     fun onlinePlaybackDoesNotReuseAnOnDeviceArtistWithTheSameName() = runBlocking<Unit> {
-        coEvery { artistTable.findByNameDirect("A") } returns Artist(id = "LOCAL_ARTIST_DEVICE_1", name = "A")
+        coEvery { artistTable.allByNameIgnoreCase("A") } returns listOf(Artist(id = "LOCAL_ARTIST_DEVICE_1", name = "A"))
         Database.insertIgnore(mediaItemWithAuthors(listOf("A"), listOf("UC_A")), autoFix = false)
 
         coVerify(exactly = 1) { mapTable.insertIgnore(SongArtistMap("s1", "UC_A")) }
@@ -233,13 +299,13 @@ class DatabaseInsertIgnoreReconcileTest {
         val upserted = mutableListOf<Song>()
         coEvery { songTable.upsert(any<Song>()) } coAnswers { upserted += firstArg<Song>() }
         coEvery { songTable.findByIdDirect("s1") } returns existingSongWithArtists("稲葉曇")
-        coEvery { artistTable.findByNameDirect("Inabakumori") } returns Artist(id = "UC_INABA", name = "Inabakumori")
+        coEvery { artistTable.allByNameIgnoreCase("Inabakumori") } returns listOf(Artist(id = "UC_INABA", name = "Inabakumori"))
         val item = mediaItemWithNamesOnly(listOf("Inabakumori"))
 
         Database.insertIgnore(item, autoFix = false)
 
         assertEquals("Inabakumori", upserted.last().artistsText)
-        coVerify(exactly = 1) { mapTable.deleteBySongId("s1") }
+        coVerify(exactly = 0) { mapTable.deleteBySongId("s1") }
         coVerify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
     }
 
@@ -286,7 +352,7 @@ class DatabaseInsertIgnoreReconcileTest {
         // Stored display text and the fresh context author list are romaji, but the
         // artist row already exists under its JP spelling with the same channel id
         coEvery { songTable.findByIdDirect("s1") } returns existingSongWithArtists("Shaito")
-        coEvery { artistTable.findByNameDirect("Shaito") } returns null
+        coEvery { artistTable.allByNameIgnoreCase("Shaito") } returns emptyList()
         coEvery { artistTable.findByIdDirect("UC_SHAITO") } returns Artist(id = "UC_SHAITO", name = "しゃいと")
         val item = mediaItemWithAuthors(listOf("Shaito"), listOf("UC_SHAITO"))
 
@@ -332,7 +398,7 @@ class DatabaseInsertIgnoreReconcileTest {
         val upserted = mutableListOf<Song>()
         coEvery { songTable.upsert(any<Song>()) } coAnswers { upserted += firstArg<Song>() }
         coEvery { songTable.findByIdDirect("s1") } returns existingSongWithArtists("Yunosuke")
-        coEvery { artistTable.findByNameDirect("Hatsune Miku") } returns null
+        coEvery { artistTable.allByNameIgnoreCase("Hatsune Miku") } returns emptyList()
         // the link resolves to an existing row stored under its pinned name
         coEvery { artistTable.findByIdDirect("UC_MIKU") } returns Artist(id = "UC_MIKU", name = "modified:Hatsune Miku")
         val item = mediaItemWithAuthors(
@@ -412,37 +478,19 @@ class DatabaseInsertIgnoreReconcileTest {
     }
 
     @Test
-    fun reconcileNamesOnlyLogsOneLinePerDroppedPair() = runBlocking<Unit> {
-        val captured = mutableListOf<String>()
-        val captureTree = DatabaseCaptureTree(captured)
-        Timber.plant(captureTree)
-        try {
-            coEvery { mapTable.pairsBySongIdDirect("s1") } returns listOf(
-                SongArtistMap("s1", "UC_A"), SongArtistMap("s1", "UC_GHOST")
-            )
-            coEvery { artistTable.findByIdDirect("UC_A") } returns Artist(id = "UC_A", name = "A")
-            // UC_GHOST has no artist row (orphan link): must log as artist="null"
-            // (a relaxed mock returns a child mock by default, so pin null explicitly)
-            coEvery { artistTable.findByIdDirect("UC_GHOST") } returns null
-            coEvery { artistTable.findByNameDirect("C") } returns Artist(id = "UC_C", name = "C")
-            val item = mediaItemWithNamesOnly(listOf("C"))
-
-            Database.insertIgnore(item, autoFix = false)
-
-            assertEquals(2, captured.count { it.startsWith("reconcile dropped link:") })
-            assertTrue(captured.any { it.startsWith("reconcile dropped link: song=s1") && it.contains("artist=\"A\"") })
-            assertTrue(
-                "orphan artist row must log as artist=\"null\", got: $captured",
-                captured.any {
-                    it.startsWith("reconcile dropped link: song=s1") &&
-                        it.contains("artist=\"null\"")
-                }
-            )
-            assertTrue(captured.any { it.startsWith("insertIgnore RECONCILE names song=s1 dropped=0") })
-        } finally {
-            Timber.uproot(captureTree)
-        }
-    }
+    fun namesOnlyListDoesNotReadOrLogDroppedLinks() = runBlocking<Unit> {
+        val captured = mutableListOf<String>()
+        val captureTree = DatabaseCaptureTree(captured)
+        Timber.plant(captureTree)
+        try {
+            Database.insertIgnore(mediaItemWithNamesOnly(listOf("C")), autoFix = false)
+
+            coVerify(exactly = 0) { mapTable.pairsBySongIdDirect("s1") }
+            assertTrue(captured.none { it.startsWith("reconcile dropped link:") })
+        } finally {
+            Timber.uproot(captureTree)
+        }
+    }
 
     @Test
     fun noStaleLinksMeansNoPerPairLines() = runBlocking<Unit> {

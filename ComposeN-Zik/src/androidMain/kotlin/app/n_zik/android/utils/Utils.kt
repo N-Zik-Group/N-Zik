@@ -11,6 +11,8 @@ import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Bundle
+import app.n_zik.android.core.database.ArtistMappingReconcile
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.network.utils.isNetworkAvailable
 import app.n_zik.android.core.network.utils.isNetworkConnected
@@ -33,6 +35,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.innertube.requests.LibraryPage
 import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.YtMusic.addToPlaylist
 import app.n_zik.innertube.requests.playlistPage
 import app.n_zik.innertube.requests.playlistPageContinuation
@@ -65,6 +68,14 @@ import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 
 const val EXPLICIT_BUNDLE_TAG = "is_explicit"
+
+private fun Bundle.putTrackArtists(authors: List<Innertube.Info<NavigationEndpoint.Endpoint.Browse>>?) {
+    val entries = ArtistMappingReconcile.parseAuthorEntries(authors, includeIdOnly = true)
+    val linked = entries.filterNot { it.second.isNullOrBlank() }
+    putStringArrayList("artistNames", ArrayList(entries.mapNotNull { it.first.takeIf(String::isNotBlank) }))
+    putStringArrayList("artistIds", ArrayList(linked.mapNotNull { it.second }))
+    putStringArrayList(ARTIST_LINKED_NAMES_EXTRA, ArrayList(linked.map { it.first }))
+}
 
 val Innertube.AlbumItem.asAlbum: Album
     get() = Album (
@@ -121,14 +132,10 @@ val Innertube.SongItem.asMediaItem: MediaItem
                     bundleOf(
                         "albumId" to album?.endpoint?.browseId,
                         "durationText" to durationText,
-                        // Whole entry names (one entry = one artist) so the
-                        // name->id zip stays aligned with artistIds.
-                        "artistNames" to ArrayList(authors.artistEntryNames()),
-                        "artistIds" to ArrayList(authors?.mapNotNull { it.endpoint?.browseId } ?: emptyList()),
                         EXPLICIT_BUNDLE_TAG to explicit,
                         EXTRAS_KEY_IS_EXPLICIT to explicit,
                         "setVideoId" to setVideoId,
-                    )
+                    ).apply { putTrackArtists(authors) }
                 )
                 .build()
         )
@@ -223,16 +230,10 @@ val Innertube.VideoItem.asMediaItem: MediaItem
                 .setExtras(
                     bundleOf(
                         "durationText" to durationText,
-                        // Whole entry names (one entry = one artist) so the
-                        // name->id zip stays aligned with artistIds.
-                        "artistNames" to ArrayList(authors.artistEntryNames()),
-                        "artistIds" to ArrayList(authors?.mapNotNull { it.endpoint?.browseId } ?: emptyList()),
                         "isOfficialMusicVideo" to isOfficialMusicVideo,
                         "isUserGeneratedContent" to isUserGeneratedContent,
                         "isVideo" to true,
-                        // "artistNames" to if (isOfficialMusicVideo) authors?.filter { it.endpoint != null }?.mapNotNull { it.name } else null,
-                        // "artistIds" to if (isOfficialMusicVideo) authors?.mapNotNull { it.endpoint?.browseId } else null,
-                    )
+                    ).apply { putTrackArtists(authors) }
                 )
                 .build()
         )

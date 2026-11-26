@@ -31,8 +31,8 @@ import timber.log.Timber
  * including ones that reappear through database imports.
  *
  * Rule: a (song, artist) link is stale when the artist's name does not appear in the song's
- * stored artist list. Custom values are untouchable — a `modified:` artist name or a
- * `modified:` song artist text is never judged, and a song without any artist text keeps all
+ * stored artist list. A `modified:` artist ID, artist name, or song artist text
+ * protects the link, and a song without any artist text keeps all
  * its links.
  *
  * Idempotent and cheap (one read pass over `SongArtistMap` + one cached name lookup per id,
@@ -113,6 +113,7 @@ object DbCleanup {
         val removedLinks = mutableListOf<DbCleanupLinkRecord>()
         for (pair in pairs) {
             if (pair.songId.startsWith(LOCAL_KEY_PREFIX) || isDeviceArtistId(pair.artistId)) continue
+            if (pair.artistId.startsWith(MODIFIED_PREFIX)) continue
             val song = songs[pair.songId] ?: continue // no stored artist list: nothing to judge against
             val name = artistName(pair.artistId)
             if (isSuspiciousArtistLink(name, song.artistsText)) {

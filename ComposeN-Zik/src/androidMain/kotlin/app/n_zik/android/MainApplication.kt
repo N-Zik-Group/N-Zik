@@ -82,6 +82,7 @@ import app.n_zik.android.utils.discordUsernameKey
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
 import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.YouTubeArtistProvenance
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.isDiscordBrowsingEnabledKey
@@ -269,6 +270,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         DiscordRpc.backgroundDispatcher = NzikDispatchers.DATA
 
         migrateCredentialsToEncrypted()
+        YouTubeArtistProvenance.observe(this)
         runCatching { RemovedSettingsMigration.run(preferences) }
             .onFailure { Timber.tag("MainApplication").w(it, "Removed settings migration failed") }
         // One-shot cleanup of the legacy `monthly:YYYYMM` playlists, abandoned with the

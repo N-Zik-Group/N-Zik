@@ -28,6 +28,7 @@ import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.albumPage
 import app.n_zik.innertube.utils.from
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Event
@@ -41,6 +42,9 @@ import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.models.SortedSongPlaylistMap
 import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.ARTIST_LINKED_NAMES_EXTRA
+import app.n_zik.android.utils.readMediaItemArtistLinks
+import app.n_zik.android.utils.preferences
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -107,6 +111,7 @@ import androidx.room.InvalidationTracker
 import timber.log.Timber
 import android.database.sqlite.SQLiteDatabaseLockedException
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.isUserEditedPlaybackAlbumId
 
 object Database {
     /**
@@ -183,6 +188,7 @@ object Database {
             "insertIgnore", "upsert", "updateMetadata", "insertMetadata", "update", "fillMissingCover",
             "toggleFollow", "followState", "rotateLikeState", "resetFetchTtl", "toggleBookmark",
             "toggleDislike", "clearAllDisliked", "updatePosition", "deleteOrphaned", "deleteById",
+            "clearYouTubeArtistProvenance", "markYouTubeArtistImported",
         ),
         PlaylistTable::class.java to setOf(
             "insert", "insertIgnore", "upsert", "update", "delete",
@@ -339,8 +345,8 @@ object Database {
 //
         // back to the add-only path with one online search + junk row per split
         // part on every playback (device captures 2026-09-26: added=2 -> dropped=2 loop).
-        val artistEntries = ArtistMappingReconcile.parseAuthorEntries( songItem.authors )
-        val artistNames = artistEntries.map { it.first }
+        val artistEntries = ArtistMappingReconcile.parseAuthorEntries(songItem.authors, includeIdOnly = true)
+        val artistNames = artistEntries.mapNotNull { it.first.takeIf(String::isNotBlank) }
         val artistDataList = mutableListOf<Triple<String, String?, Artist?>>() // name -> browseId -> existing DB artist
 
         for ((artistName, browseId) in artistEntries) {
@@ -351,15 +357,16 @@ object Database {
 //
                 // from the entry name and converges to the page name at the next
                 // background fetch.
-                val artist = artistTable.findByIdDirect(browseId) ?: Artist(id = browseId, name = artistName)
+                val artist = artistTable.findByIdDirect(browseId)
+                    ?: artistName.takeIf(String::isNotBlank)?.let { Artist(id = browseId, name = it) }
+                    ?: continue
                 artistDataList.add(Triple(artistName, browseId, artist))
             } else {
-                val dbArtistByName = artistTable.findByNameDirect(artistName)?.takeUnless { isDeviceArtistId(it.id) }
+                val dbArtistByName = uniqueOnlineArtistByName(artistName)
                 artistDataList.add(Triple(artistName, null, dbArtistByName))
             }
         }
 
-        val dbAlbum = songItem.album?.endpoint?.browseId?.takeUnless(::isDeviceAlbumId)?.let { albumTable.findByIdDirect(it) }
 
         // Phase 2: Network calls (NO lock held)
         val artistsToUpsert = mutableListOf<Artist>()
@@ -390,14 +397,11 @@ object Database {
                             params = Innertube.SearchFilter.Artist.value
                         ) { content -> Innertube.ArtistItem.from(content) }?.getOrNull()
 
-                    val foundArtist = searchResult?.items?.firstOrNull { item ->
-                        item.info?.name?.equals(artistName, ignoreCase = true) == true
-                    } ?: searchResult?.items?.firstOrNull()
+                    val foundArtist = uniqueArtistSearchMatch(artistName, searchResult)
                     if (foundArtist != null && foundArtist.key != null) {
                         val newArtist = Artist(
                             id = foundArtist.key,
-                            name = foundArtist.info?.name ?: artistName,
-                            isYoutubeArtist = true
+                            name = foundArtist.info?.name ?: artistName
                         )
                         artistsToUpsert.add(newArtist)
                         artistsToMap.add(newArtist)
@@ -487,18 +491,21 @@ object Database {
             // Upsert album
             songItem.album?.let {
                 val browseId = it.endpoint?.browseId?.takeUnless(::isDeviceAlbumId) ?: return@let
+                if (findEditedAlbumLink(song.id, browseId) != null) return@let
+                val dbAlbum = albumTable.findByIdDirect(browseId)
+                val trackArtists = artistNames.joinToString(", ").takeIf { it.isNotBlank() }
                 val fetchedAlbum = if (dbAlbum != null) {
                     dbAlbum.copy(
                         title = PropUtils.retainIfModified(dbAlbum.title, it.name),
                         thumbnailUrl = PropUtils.retainIfModified(dbAlbum.thumbnailUrl, song.thumbnailUrl),
-                        authorsText = PropUtils.retainIfModified(dbAlbum.authorsText, artistNames.joinToString(", ").takeIf { it.isNotBlank() })
+                        authorsText = albumCreditWithTrackFallback(dbAlbum.authorsText, trackArtists)
                     )
                 } else {
                     Album(
                         id = browseId,
                         title = it.name,
                         thumbnailUrl = song.thumbnailUrl,
-                        authorsText = artistNames.joinToString(", ").takeIf { it.isNotBlank() }
+                        authorsText = trackArtists
                     )
                 }
                 if (dbAlbum != fetchedAlbum) {
@@ -559,9 +566,13 @@ object Database {
         if (songId.startsWith(LOCAL_KEY_PREFIX)) return 0
         val onlineArtists = artists.filterNot { isDeviceArtistId(it.id) }
         if (artists.isNotEmpty() && onlineArtists.isEmpty()) return 0
+        val customLinks = artistTable.findBySongIdDirect(songId).filter(::isManuallyEditedArtistLink)
+        val applyArtists = onlineArtists.filter { candidate ->
+            manualArtistOverrideFor(candidate.id, customLinks) == null
+        }
         val dropped = songArtistMapTable.deleteBySongId( songId )
-        artistTable.upsert(onlineArtists)
-        onlineArtists.forEach { artist ->
+        artistTable.upsert(applyArtists)
+        (applyArtists + customLinks).distinctBy(Artist::id).forEach { artist ->
             songArtistMapTable.insertIgnore( SongArtistMap( songId, artist.id ) )
         }
         return dropped
@@ -579,6 +590,21 @@ object Database {
             albumId?.let { albumTable.findByIdDirect(it)?.thumbnailUrl },
         ).distinct().associateWith { validateLibraryArtwork(it, songId) }
     }
+
+    internal suspend fun findEditedAlbumLink(songId: String, incomingAlbumId: String): Album? {
+        if (incomingAlbumId.isBlank() || isDeviceAlbumId(incomingAlbumId) || isUserEditedPlaybackAlbumId(incomingAlbumId)) return null
+        return songAlbumMapTable.findAlbumsOfDirect(songId).singleOrNull { album ->
+            isUserEditedPlaybackAlbumId(album.id) && (
+                album.id == "$MODIFIED_PREFIX$incomingAlbumId" ||
+                    (Dependencies.isInitialized &&
+                        appContext().preferences.getString("old_browse_id_${album.id}", null) == incomingAlbumId)
+                )
+        }
+    }
+
+    // A track's artist can fill missing album credits until that album's own page is read.
+    private fun albumCreditWithTrackFallback(albumCredit: String?, trackCredit: String?): String? =
+        albumCredit?.takeIf { it.isNotBlank() } ?: trackCredit?.takeIf { it.isNotBlank() }
 
     /** Inserts a media item and reconciles its album and artist links. */
     suspend fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean = true) =
@@ -622,7 +648,7 @@ object Database {
         if (cleanSongId.startsWith(LOCAL_KEY_PREFIX)) return
 
         val albumId = mediaItem.mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
-        if (albumId != null) {
+        if (albumId != null && findEditedAlbumLink(cleanSongId, albumId) == null) {
             val albumArtwork = artwork.albumThumbnail()
             val albumTitle = mediaItem.mediaMetadata.albumTitle?.toString()
             val artist = mediaItem.mediaMetadata.artist?.toString()
@@ -631,10 +657,10 @@ object Database {
             val dbAlbum = albumTable.findByIdDirect(albumId)
             val mergedAlbum = if (dbAlbum != null) {
                 dbAlbum.copy(
-                    title = albumTitle.takeIf { !it.isNullOrBlank() } ?: dbAlbum.title,
+                    title = PropUtils.retainIfModified(dbAlbum.title, albumTitle?.takeIf { it.isNotBlank() }) ?: dbAlbum.title,
                     thumbnailUrl = artwork.albumThumbnailWithExisting(albumArtwork, dbAlbum.thumbnailUrl),
                     year = year.takeIf { !it.isNullOrBlank() } ?: dbAlbum.year,
-                    authorsText = artist.takeIf { !it.isNullOrBlank() } ?: dbAlbum.authorsText
+                    authorsText = albumCreditWithTrackFallback(dbAlbum.authorsText, artist)
                 )
             } else {
                 Album(
@@ -642,10 +668,10 @@ object Database {
                     title = albumTitle,
                     thumbnailUrl = albumArtwork,
                     year = year,
-                    authorsText = artist
+                    authorsText = artist?.takeIf { it.isNotBlank() }
                 )
             }
-            albumTable.upsert(mergedAlbum)
+            if (dbAlbum != mergedAlbum) albumTable.upsert(mergedAlbum)
 
             // Background fetch album page metadata if year is missing online
             if (autoFix && mergedAlbum.year.isNullOrBlank()) {
@@ -676,81 +702,60 @@ object Database {
         }
 
         // Insert artist
-        val artistsNames = mediaItem.mediaMetadata.extras?.getStringArrayList("artistNames").orEmpty()
-        val artistsIds = mediaItem.mediaMetadata.extras?.getStringArrayList("artistIds").orEmpty()
+        val extras = mediaItem.mediaMetadata.extras
+        val artistsNames = extras?.getStringArrayList("artistNames").orEmpty()
+        val artistLinks = readMediaItemArtistLinks(
+            extras?.getStringArrayList("artistIds").orEmpty(),
+            artistsNames,
+            extras?.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA),
+        )
 
         // Names of the artist rows the mapping below actually points to - the alignment
         // target for artistsText (see the alignment block at the end of this function).
         val resolvedArtistNames = mutableListOf<String>()
+        val customLinks = if (dbSong == null || (artistLinks.entries.isEmpty() && artistsNames.isEmpty())) emptyList() else {
+            artistTable.findBySongIdDirect(cleanSongId).filter(::isManuallyEditedArtistLink)
+        }
 
-        if (artistsIds.isNotEmpty()) {
-            // Reconcile before re-mapping: the mapping must reflect the latest YTM
-            // author list, not the union of every list ever seen — YTM lists vary
-//
-            // by playback context (a channel playlist/radio credits the channel),
-//
-            // so insert-only accumulation pollutes SongArtistMap (bug: a
-            // channel-derived row collected hundreds of plays of unrelated songs
-//
-            // and ranked as a top artist in the Rewind deck). Guarded: only an
-            // existing song has stale rows to drop, and only the id-bearing path
-//
-            // reconciles — a names-only/local re-insert must never wipe mappings.
-            if (dbSong != null) {
+        if (artistLinks.entries.isNotEmpty()) {
+            if (dbSong != null && artistLinks.complete) {
                 logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
                 val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
                 Timber.tag("Database").d(
                     "insertIgnore RECONCILE ids song=%s dropped=%d latestList=%s",
-                    cleanSongId, dropped, artistsIds
+                    cleanSongId, dropped, artistLinks.entries.map { it.id }
                 )
             }
-            // Normal case: zip names with IDs. `resolvedArtistNames` tracks the name of
-            // the row each link actually points to, because the startup sweep (DbCleanup)
-//
-            // compares that stored name against artistsText - not the raw context name,
-            // which can be a different spelling (JP vs romaji) of the same row.
-            artistsNames.zip(artistsIds).filterNot { (_, id) -> isDeviceArtistId(id) }.forEach { (name, id) ->
-                val existingArtist = artistTable.findByNameDirect(name)?.takeUnless { isDeviceArtistId(it.id) }
-                val targetArtistId = if (existingArtist != null) {
-                    // Row resolved by name: its stored name IS the context name.
-                    resolvedArtistNames += name
-                    existingArtist.id
-                } else {
-                    // insertIgnore is a no-op when the row already exists under another
-                    // spelling - it does NOT rename it - so read the stored name back:
-//
-                    // the link points to that existing row.
-                    artistTable.insertIgnore(Artist(id, name))
-                    resolvedArtistNames += artistTable.findByIdDirect(id)?.name ?: name
-                    id
+            val mappedIds = mutableSetOf<String>()
+            for ((id, name) in artistLinks.entries) {
+                if (isDeviceArtistId(id)) continue
+                val artist = manualArtistOverrideFor(id, customLinks)
+                    ?: artistTable.findByIdDirect(id)
+                    ?: name?.let {
+                        Artist(id, it).also { newArtist -> artistTable.insertIgnore(newArtist) }
+                    }
+                    ?: continue
+                if (mappedIds.add(artist.id)) {
+                    songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, artist.id))
+                    if (artistLinks.complete) (artist.name ?: name)?.let(resolvedArtistNames::add)
                 }
-                songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, targetArtistId))
+            }
+            if (artistLinks.complete) {
+                for (artist in customLinks) {
+                    if (mappedIds.add(artist.id)) {
+                        songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, artist.id))
+                        artist.name?.let(resolvedArtistNames::add)
+                    }
+                }
             }
         } else if (artistsNames.isNotEmpty()) {
-            // A names-only author list (search results often carry names without
-            // browse IDs) is still the latest authoritative answer for this
-//
-            // context, so the same reconcile rule applies: stale rows from other
-            // contexts must not survive it. Guarded like above: existing song only.
-//
-            // Rows are resolved by name here, so the stored row name equals the
-            // context name for every link written synchronously (the async
-//
-            // background search prefers an exact-name match).
             resolvedArtistNames += artistsNames
-            if (dbSong != null) {
-                logReconcileDrops(songArtistMapTable, artistTable, cleanSongId, mergedSong.title)
-                val dropped = songArtistMapTable.deleteBySongId(cleanSongId)
-                Timber.tag("Database").d(
-                    "insertIgnore RECONCILE names song=%s dropped=%d latestList=%s",
-                    cleanSongId, dropped, artistsNames
-                )
-            }
             // No browse IDs but we have names: try database by name first
             artistsNames.forEach { name ->
-                val existingArtist = artistTable.findByNameDirect(name)?.takeUnless { isDeviceArtistId(it.id) }
+                val existingArtist = uniqueOnlineArtistByName(name)
                 if (existingArtist != null) {
-                    songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, existingArtist.id))
+                    val mappedArtist = manualArtistOverrideFor(existingArtist.id, customLinks) ?: existingArtist
+                    songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, mappedArtist.id))
                 } else if (autoFix) {
                     // Search online for the artist in background (non-blocking)
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
@@ -761,12 +766,11 @@ object Database {
                                     params = Innertube.SearchFilter.Artist.value
                                 ) { content -> Innertube.ArtistItem.from(content) }?.getOrNull()
 
-                            val foundArtist = searchResult?.items?.firstOrNull { item ->
-                                item.info?.name?.equals(name, ignoreCase = true) == true
-                            } ?: searchResult?.items?.firstOrNull()
+                            val foundArtist = uniqueArtistSearchMatch(name, searchResult)
                             if (foundArtist != null && foundArtist.key != null) {
-                                artistTable.insertIgnore(Artist(id = foundArtist.key, name = foundArtist.info?.name ?: name, isYoutubeArtist = true))
-                                songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, foundArtist.key))
+                                transaction {
+                                    mapIgnore(Artist(id = foundArtist.key, name = foundArtist.info?.name ?: name), mergedSong)
+                                }
                             }
                         } catch (error: Exception) {
                             Timber.tag("Database").w("Unable to insert artist mapping (%s)", error.javaClass.simpleName)
@@ -811,6 +815,31 @@ object Database {
             }
         }
     }
+
+    private suspend fun uniqueOnlineArtistByName(name: String): Artist? =
+        artistTable.allByNameIgnoreCase(name).singleOrNull { !isDeviceArtistId(it.id) }
+
+    private fun uniqueArtistSearchMatch(
+        name: String,
+        results: Innertube.ItemsPage<Innertube.ArtistItem>?,
+    ): Innertube.ArtistItem? = results?.items.orEmpty().asSequence()
+        .filter { !it.key.isNullOrBlank() && it.info?.name?.equals(name, ignoreCase = true) == true }
+        .distinctBy { it.key }
+        .singleOrNull()
+
+    private fun manualArtistOverrideFor(id: String, linkedOverrides: List<Artist>): Artist? =
+        linkedOverrides.singleOrNull { artist ->
+            (artist.id != id && artist.youtubeChannelId == id) || ArtistMappingReconcile.isOverrideOf(artist.id, id) {
+                if (Dependencies.isInitialized) appContext().preferences.getString("old_browse_id_${artist.id}", null) else null
+            }
+        }
+
+    private fun isManuallyEditedArtistLink(artist: Artist): Boolean =
+        !isDeviceArtistId(artist.id) && (
+            artist.id.startsWith(MODIFIED_PREFIX) ||
+                artist.id.startsWith("LOCAL_ARTIST_") ||
+                artist.name?.startsWith(MODIFIED_PREFIX) == true
+            )
 
     /**
      * Diagnostic helper for reconcile cleanup: right before a reconciliation
@@ -858,6 +887,10 @@ object Database {
 
         artistTable.insertIgnore( artist )
         compatibleSongs.forEach {
+            if (!isManuallyEditedArtistLink(artist) && !isDeviceArtistId(artist.id)) {
+                val editedLinks = artistTable.findBySongIdDirect(it.id).filter(::isManuallyEditedArtistLink)
+                if (manualArtistOverrideFor(artist.id, editedLinks) != null) return@forEach
+            }
             songTable.insertIgnore( it )
             songArtistMapTable.insertIgnore(
                 SongArtistMap(it.id, artist.id)
@@ -1069,15 +1102,19 @@ object Database {
         return songTable.artistSongs(browseId)
     }
 
-    fun updateArtistId(oldId: String, newId: String) = asyncTransaction {
-        val oldEntity = artistTable.findByIdDirect(oldId) ?: return@asyncTransaction
-        artistTable.insertIgnore(oldEntity.copy(id = newId))
+    fun updateArtistId(oldId: String, newId: String, fallbackArtist: Artist? = null) = asyncTransaction {
+        val oldEntity = artistTable.findByIdDirect(oldId)
+            ?: fallbackArtist?.takeIf { it.id == oldId }
+            ?: return@asyncTransaction
+        artistTable.insertIgnore(oldEntity.copy(id = newId, isYoutubeArtist = false))
         songArtistMapTable.updateArtistId(oldId, newId)
         artistTable.deleteById(oldId)
     }
 
-    fun updateAlbumId(oldId: String, newId: String) = asyncTransaction {
-        val oldEntity = albumTable.findByIdDirect(oldId) ?: return@asyncTransaction
+    fun updateAlbumId(oldId: String, newId: String, fallbackAlbum: Album? = null) = asyncTransaction {
+        val oldEntity = albumTable.findByIdDirect(oldId)
+            ?: fallbackAlbum?.takeIf { it.id == oldId }
+            ?: return@asyncTransaction
         albumTable.insertIgnore(oldEntity.copy(id = newId))
         songAlbumMapTable.updateAlbumId(oldId, newId)
         albumTable.deleteById(oldId)
