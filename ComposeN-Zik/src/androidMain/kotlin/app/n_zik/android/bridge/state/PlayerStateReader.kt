@@ -2,6 +2,8 @@ package app.n_zik.android.bridge.state
 
 import androidx.media3.common.C
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.playback.services.sessionArtistTrackId
 import app.n_zik.android.utils.EXPLICIT_BUNDLE_TAG
 
 /** Queue item as read from the player, before its `isLiked` / `isDownloaded` flags are resolved. */
@@ -24,6 +26,7 @@ internal data class RawItem(
 internal data class PlayerRead(val items: List<RawItem>, val sample: PlayerSample)
 
 /** Reads a [Player] into the bridge's shape; call it on the player's (main) thread. */
+@UnstableApi
 internal object PlayerStateReader {
     private const val DURATION_TEXT_EXTRA = "durationText"
 
@@ -46,7 +49,7 @@ internal object PlayerStateReader {
             val metadata = item.mediaMetadata
             RawItem(
                 mediaId = item.mediaId,
-                trackId = TrackMapping.trackIdOf(item.mediaId),
+                trackId = item.sessionArtistTrackId(),
                 title = metadata.title,
                 artist = metadata.artist,
                 hasArtwork = metadata.artworkUri != null,
@@ -96,6 +99,6 @@ internal object PlayerStateReader {
     /** Window index of the item a client designates by its effective-order [index] and [trackId], read from [player] right now; `null` when [index] is out of bounds or the item there is another track (contract §9 `QUEUE_MISMATCH`). */
     fun windowIndexOf(player: Player, index: Int, trackId: String): Int? {
         val window = playOrder(player).getOrNull(index) ?: return null
-        return window.takeIf { TrackMapping.trackIdOf(player.getMediaItemAt(it).mediaId) == trackId }
+        return window.takeIf { player.getMediaItemAt(it).sessionArtistTrackId() == trackId }
     }
 }

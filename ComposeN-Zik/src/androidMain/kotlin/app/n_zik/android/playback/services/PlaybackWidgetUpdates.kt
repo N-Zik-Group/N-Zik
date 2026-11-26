@@ -17,6 +17,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.utils.BitmapProvider
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.isExplicit
 import app.n_zik.android.widget.NZikWidgetManager
 import app.n_zik.android.widget.WidgetAppearance
 import app.n_zik.android.widget.WidgetPlaybackSnapshot
@@ -77,19 +78,23 @@ internal class PlaybackWidgetUpdates(
         widgetRenderJob?.cancel()
         timingRender = null
         val widgetPlayer = widgetPlayer()
-        val currentMediaId = widgetPlayer.currentMediaItem?.mediaId
-        if (currentMediaId == null) {
+        val item = widgetPlayer.currentMediaItem
+        if (item == null) {
             widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
                 NZikWidgetManager.updateIdleWidgets(context.applicationContext)
             }
             return
         }
+        val currentMediaId = item.mediaId
 
         val app = context.applicationContext
         val profileId = getActiveProfile(app)
         val playback = widgetPlayer.snapshotTiming()
-        val metadata = widgetPlayer.mediaMetadata
-        val artworkUri = metadata.artworkUri ?: widgetPlayer.currentMediaItem?.mediaMetadata?.artworkUri
+        val streamMetadata = widgetPlayer.mediaMetadata
+        val metadata = item.mediaMetadata.takeIf {
+            it.extras?.getBoolean(COMMITTED_TRACK_IDENTITY_EXTRA) == true
+        } ?: streamMetadata
+        val artworkUri = streamMetadata.artworkUri ?: item.mediaMetadata.artworkUri
         val currentBitmap = bitmapProvider().bitmap.takeIf { bitmapProvider().lastUri == artworkUri }
 
         widgetRenderJob = coroutineScope.launch(NzikDispatchers.DATA) {
@@ -101,7 +106,7 @@ internal class PlaybackWidgetUpdates(
 
             NZikWidgetManager.updateWidgets(
                 context = app,
-                title = metadata.title?.toString().orEmpty(),
+                title = metadata.title?.toString().orEmpty().let { if (item.isExplicit) "e:$it" else it },
                 artist = metadata.artist?.toString().orEmpty(),
                 artworkBitmap = currentBitmap,
                 isPlaying = playback.isPlaying,

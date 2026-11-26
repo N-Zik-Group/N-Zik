@@ -350,6 +350,7 @@ internal class BridgePlayerSource(
         val SAMPLED_EVENTS = intArrayOf(
             Player.EVENT_TIMELINE_CHANGED,
             Player.EVENT_MEDIA_ITEM_TRANSITION,
+            Player.EVENT_MEDIA_METADATA_CHANGED,
             Player.EVENT_IS_PLAYING_CHANGED,
             Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
             Player.EVENT_REPEAT_MODE_CHANGED,

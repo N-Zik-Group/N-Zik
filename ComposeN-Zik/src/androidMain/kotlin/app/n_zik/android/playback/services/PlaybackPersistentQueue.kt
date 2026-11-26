@@ -5,7 +5,10 @@ import androidx.annotation.MainThread
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.core.database.Database
@@ -60,15 +63,18 @@ internal class PlaybackPersistentQueue(
 
         // A recreated service must read after the previous service's final snapshot.
         coroutineScope.launch(NzikDispatchers.DATA) {
+            if (Database.FILE_NAME != Database.fileNameForProfile(profile)) return@launch
+            val songs = Database.songTable
+            val preferences = context.preferences
             val queuedSong = Database.readSavedQueue()
-            val libraryArtwork = mutableMapOf<String, String?>()
+            val rows = songs.observePlaybackIdentity(queuedSong.map { it.mediaItem.sessionArtistTrackId() }).first()
+            val unknownArtist = appTextResources().getString(R.string.metadata_unknown_artist)
             val restored = queuedSong.map { row ->
-                PersistentQueueArtwork.restore(context, profile, row.mediaItem) { songId ->
-                    if (songId !in libraryArtwork) {
-                        libraryArtwork[songId] = Database.songTable.findByIdDirect(songId)?.thumbnailUrl
-                    }
-                    libraryArtwork[songId]
-                } to row.position
+                val item = row.mediaItem
+                val current = rows[item.sessionArtistTrackId()]?.let {
+                    item.withCurrentTrackIdentity(it, unknownArtist) { id -> preferences.getString("old_browse_id_$id", null) }
+                } ?: item
+                PersistentQueueArtwork.restore(context, profile, current) { rows[it]?.song?.thumbnailUrl } to row.position
             }
 
             withContext(NzikDispatchers.UI) {

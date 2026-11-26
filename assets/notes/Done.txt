@@ -672,3 +672,7 @@ Playback queue edits:
 Playback service integration:
 - fix(playback): coordinate output routing, metadata and track pauses
   - Keep Bluetooth denial nonblocking, preserve distinct routes and handle track-boundary pauses away from the UI.
+
+Playback surfaces:
+- fix(playback): propagate track identity to retained playback surfaces
+  - Use updated credits in persistent queue, widget and bridge views.
