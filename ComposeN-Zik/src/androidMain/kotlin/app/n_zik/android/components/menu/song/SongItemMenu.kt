@@ -25,7 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -58,7 +58,6 @@ import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.screens.info.VideoOrSongInfoScreen
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.excludeDislikedSongsKey
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.utils.getDownloadStateMedia
@@ -92,6 +91,7 @@ import app.n_zik.android.components.dialog.tab.DeleteSongDialog
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.rememberListenTogetherTrackMenuActions
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.rememberListenOnMenuAction
 import app.n_zik.android.components.song.GoToAlbum
@@ -102,7 +102,6 @@ import app.n_zik.android.components.song.rememberTrackAlbumLink
 import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.showAddToFavoritesShortcut
 import app.n_zik.android.components.tab.Radio
-import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -111,8 +110,6 @@ import app.n_zik.android.extensions.audiobar.utils.WaveformResult
 import app.n_zik.android.extensions.lastfm.LastFmActions
 import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
-import app.n_zik.android.listentogether.ListenTogetherManager
-import app.n_zik.android.listentogether.TrackInfo
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -164,19 +161,19 @@ class SongItemMenu private constructor(
     private var buttons: List<Button> = emptyList()
     var refreshBtn: Button? = null
     private var showLastFmSection = false
-    private var showListenTogetherSection = false
-    private var listenTogetherBtn: Button? = null
-    private var listenTogetherDialogBtn: Button? = null
     // Full offline mode (spec-full-offline-mode): network menu entries are pruned.
     // Set in MenuComponent before the List/Grid menus render.
     private var offlineMode = false
     override var menuStyle: MenuStyle by styleState
 
     @Composable
-    override fun ListMenu() = ListMenu(buttons)
+    override fun ListMenu() = ListMenu(buttons, rememberListenTogetherTrackMenuActions(song, menuState))
 
     @Composable
-    private fun ListMenu(buttons: List<Button>) = ListMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
+    private fun ListMenu(
+        buttons: List<Button>,
+        listenTogetherActions: List<MenuIcon>,
+    ) = ListMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         SectionTitle(stringResource(R.string.common_information_title))
@@ -216,10 +213,9 @@ class SongItemMenu private constructor(
 
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room) —
             // pruned in full offline mode (network feature)
-            if (!offlineMode) {
+            if (listenTogetherActions.isNotEmpty()) {
                 SectionTitle(stringResource(R.string.listen_together_title))
-                listenTogetherDialogBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
-                listenTogetherBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
+                listenTogetherActions.forEach { it.ListMenuItem() }
             }
 
             // Section: Management
@@ -254,10 +250,13 @@ class SongItemMenu private constructor(
     }
 
     @Composable
-    override fun GridMenu() = GridMenu(buttons)
+    override fun GridMenu() = GridMenu(buttons, rememberListenTogetherTrackMenuActions(song, menuState))
 
     @Composable
-    private fun GridMenu(buttons: List<Button>) = GridMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
+    private fun GridMenu(
+        buttons: List<Button>,
+        listenTogetherActions: List<MenuIcon>,
+    ) = GridMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         item(span = { GridItemSpan(maxLineSpan) }) {
@@ -307,12 +306,11 @@ class SongItemMenu private constructor(
 
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room) —
             // pruned in full offline mode (network feature)
-            if (!offlineMode) {
+            if (listenTogetherActions.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     SectionTitle(stringResource(R.string.listen_together_title))
                 }
-                listenTogetherDialogBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-                listenTogetherBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+                listenTogetherActions.forEach { action -> item { action.GridMenuItem() } }
             }
 
             // Section: Management
@@ -539,63 +537,6 @@ class SongItemMenu private constructor(
             BuildConfig.LASTFM_API_KEY.isNotEmpty() &&
             BuildConfig.LASTFM_API_SECRET.isNotEmpty()
 
-        // Listen Together: guests in a room can suggest tracks to the host
-        // (remote songs only — the host resolves YouTube ids to play).
-        val ltManager = ListenTogetherManager.getInstance()
-        showListenTogetherSection = !song.isLocal &&
-            ltManager?.let { it.isInRoom && !it.isHost } == true
-
-        listenTogetherBtn = if (showListenTogetherSection) {
-            remember {
-                object : MenuIcon, Descriptive, Clickable {
-                    override val iconId: Int = R.drawable.musical_notes
-                    override val messageId: Int = R.string.listen_together_suggest
-                    @get:Composable
-                    override val menuIconTitle: String get() = stringResource(R.string.listen_together_suggest)
-
-                    override fun onShortClick() {
-                        menuState.hide()
-                        val manager = ListenTogetherManager.getInstance() ?: return
-                        if (!manager.isInRoom || manager.isHost) return
-                        val durationMs = song.durationText
-                            ?.let { durationTextToMillis(it) }
-                            ?.takeIf { it > 0 }
-                            ?: 180000L
-                        manager.suggestTrack(
-                            TrackInfo(
-                                id = song.id,
-                                title = song.cleanTitle(),
-                                artist = song.cleanArtistsText(),
-                                duration = durationMs,
-                                thumbnail = song.thumbnailUrl.orEmpty(),
-                            )
-                        )
-                    }
-                    override fun onLongClick() {}
-                }
-            }
-        } else null
-
-        // Listen Together room dialog (Metrolist PlayerMenu dialog port): opens the
-        // create/join/manage room popup through the shared menu state. Shown for every
-//
-        // song regardless of room state or role — it is the menu entry point to a room.
-        listenTogetherDialogBtn = remember {
-            object : MenuIcon, Descriptive, Clickable {
-                override val iconId: Int = R.drawable.people
-                override val messageId: Int = R.string.listen_together_title
-                @get:Composable
-                override val menuIconTitle: String get() = stringResource(R.string.listen_together_title)
-
-                override fun onShortClick() {
-                    menuState.display {
-                        ListenTogetherMenu()
-                    }
-                }
-                override fun onLongClick() {}
-            }
-        }
-
         val updatedButtons = buildList<Button> {
             add( infoButton )
             if (song.isLocal) {
@@ -776,10 +717,11 @@ class SongItemMenu private constructor(
 
             },
         ) {
-            if( menuStyle == MenuStyle.List )
-                ListMenu(updatedButtons)
+            val listenTogetherActions = rememberListenTogetherTrackMenuActions(song, menuState)
+            if (menuStyle == MenuStyle.List)
+                ListMenu(updatedButtons, listenTogetherActions)
             else
-                GridMenu(updatedButtons)
+                GridMenu(updatedButtons, listenTogetherActions)
         }
     }
 
@@ -793,7 +735,8 @@ class SongItemMenu private constructor(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = PressFeedbackHorizontalInset)
+                .padding(vertical = 12.dp)
+                .menuSectionHorizontalAlignment()
         )
     }
 }
