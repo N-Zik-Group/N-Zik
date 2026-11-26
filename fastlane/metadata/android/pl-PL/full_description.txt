@@ -28,6 +28,7 @@ Wyłączone na świeżych instalacjach. Włącz w ustawieniach: natywne, tylko k
 💾 <b>Offline, Metadane i Prywatność</b>
 - Inteligentne buforowanie i pobieranie ścieżek i list odtwarzania z wybraną jakością pobierania
 - Eksport FFmpeg z pełnymi metadanymi (brak na x86 32-bit)
+- Automatyczna naprawa metadanych wyszukuje brakujące kredyty artystów i linki albumu podczas odtwarzania online. Kontrole uruchamiania usuwają nieaktualne linki, scalaj zweryfikowanych duplikatów artystów i wyrównaj zapisane nazwy wykonawców.
 - Edytor metadanych w aplikacji (AAC/Opus, okładka sztuki)
 - Lokalne statystyki i historia słuchania
 - Automatyczna kopia zapasowa z niestandardowymi odstępami i zatrzymaniem
