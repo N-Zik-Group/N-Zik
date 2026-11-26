@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,6 +20,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -35,10 +35,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import app.n_zik.android.components.navigation.LibraryBrowseKind
+import app.n_zik.android.components.navigation.rememberLibraryBrowseDestination
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import app.n_zik.android.components.podcast.podcastBookmarkOperation
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -46,25 +52,24 @@ import timber.log.Timber
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.MenuStyle
-import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
-import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Clickable
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.ui.components.themed.Enqueue
-import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.themed.IconButton
-import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.withPodcastSource
+import app.n_zik.android.utils.canPushToYTM
 import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.menuStyleKey
@@ -78,27 +83,39 @@ import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
+import app.n_zik.android.components.dialog.playlist.RenamePlaylistAuthorDialog
+import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.glass.GlassHorizontalSeparator
-import app.n_zik.android.components.menu.artistMoreFromTitle
 import app.n_zik.android.components.menu.rememberMenuSongs
 import app.n_zik.android.components.menu.ObserveMenuProfile
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.MenuBookmarkBadge
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.menuSheetSectionBackground
+import app.n_zik.android.components.menu.openExternalMenuLink
 import app.n_zik.android.components.podcast.PodcastBookmarkOperation
 import app.n_zik.android.components.podcast.togglePodcastBookmark
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.components.menu.isCurrentMenu
+import app.n_zik.android.components.menu.collectionQueueActions
+import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.database.findMusicBookmarkByBrowseId
 import app.n_zik.android.core.database.findMusicBookmarkRows
+import app.n_zik.android.core.database.canBookmarkPlaylist
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.surfaceColor
@@ -106,8 +123,6 @@ import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.player.addNextOffMain
-import app.n_zik.android.utils.player.enqueueOffMain
 
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
@@ -131,72 +146,46 @@ class OnlinePlaylistItemMenu private constructor(
             )
     }
 
-    lateinit var buttons: List<Button>
+    private data class MenuSection(val title: Int, val actions: List<MenuIcon>)
+
+    private var sections by mutableStateOf(emptyList<MenuSection>())
     override var menuStyle: MenuStyle by styleState
 
     @Composable
-    override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
-        // Section: Playback
-        SectionTitle(stringResource(R.string.common_playback_section_title))
-        buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
+    override fun ListMenu() = PlaylistListMenu(sections)
 
-        // Section: Management
-        SectionTitle(stringResource(R.string.library_management_section_title))
-        buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
-        buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
-
-        // Section: Navigation
-        if (buttons.size > 8) {
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
-            for (i in 8 until buttons.size) {
-                buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            }
+    @Composable
+    private fun PlaylistListMenu(sections: List<MenuSection>) = ListMenu.Menu(title = null, showDragHandle = false) {
+        sections.forEach { section ->
+            SectionTitle(stringResource(section.title))
+            section.actions.forEach { it.ListMenuItem() }
         }
     }
 
     @Composable
-    override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
-        // Section: Playback
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
-        }
-        buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+    override fun GridMenu() = PlaylistGridMenu(sections)
 
-        // Section: Management
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.library_management_section_title))
-        }
-        buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-        buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-
-        // Section: Navigation
-        if (buttons.size > 8) {
+    @Composable
+    private fun PlaylistGridMenu(sections: List<MenuSection>) = GridMenu.Menu(title = null, showDragHandle = false) {
+        sections.forEach { section ->
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                SectionTitle(stringResource(section.title))
             }
-            for (i in 8 until buttons.size) {
-                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            }
+            section.actions.forEach { action -> item { action.GridMenuItem() } }
         }
     }
 
     @Composable
     private fun PlaylistItemDisplay(
+        sourceId: String,
+        shareUrl: String?,
         title: String?,
         authorText: String?,
         thumbnailUrl: String?,
         songs: List<Song>?,
-        contentLoaded: Boolean,
+        contentLoadFailed: Boolean,
+        owner: PlaylistOwner?,
+        onExistingPodcastImport: () -> Unit,
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
@@ -236,19 +225,11 @@ class OnlinePlaylistItemMenu private constructor(
                         )
                     }
 
-                    val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findMusicBookmarkByBrowseId(playlist.key) }
+                    val localPlaylistFlow = remember(sourceId) { Database.playlistTable.findMusicBookmarkByBrowseId(sourceId) }
                     val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
                     val isBookmarked = isPlaylistBookmarked(localPlaylist)
 
-                    if (isBookmarked)
-                        HeaderIconButton(
-                            onClick = {},
-                            icon = R.drawable.bookmark,
-                            color = colorPalette().favoritesIcon,
-                            iconSize = 12.dp,
-                            placementModifier = Modifier.align( Alignment.BottomStart )
-                                               .absoluteOffset( x = (-8).dp )
-                        )
+                    if (isBookmarked) MenuBookmarkBadge(bookmarked = true)
                 }
 
                 // Playlist's information
@@ -280,83 +261,117 @@ class OnlinePlaylistItemMenu private constructor(
                 }
 
                 // Trailing content (Bookmark & Share)
-                val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findMusicBookmarkByBrowseId(playlist.key) }
+                val localPlaylistFlow = remember(sourceId) { Database.playlistTable.findMusicBookmarkByBrowseId(sourceId) }
                 val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
                 val isBookmarked = isPlaylistBookmarked(localPlaylist)
+                val bookmarkSource = Playlist(name = "", browseId = sourceId)
+                val canBookmark = canBookmarkPlaylist(bookmarkSource)
                 val coroutineScope = rememberCoroutineScope()
-                var bookmarkBusy by remember(playlist.key) { mutableStateOf(false) }
+                var bookmarkBusy by remember(sourceId) { mutableStateOf(false) }
+                val bookmarkContent by rememberUpdatedState(Triple(songs, contentLoadFailed, owner))
+                val isPodcast = isPodcastBrowseId(sourceId)
 
                 Column(
                     Modifier.width(48.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    IconButton(
+                    if (canBookmark) IconButton(
+                        contentDescription = menuLikeActionDescription(
+                            isBookmarked, false, R.string.library_action_bookmark, R.string.library_action_remove_bookmark,
+                        ),
                         icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
                         color = colorPalette().favoritesIcon,
                         enabled = !bookmarkBusy,
                         onClick = {
-                            if (bookmarkBusy) return@IconButton
-                            if (isPodcastBrowseId(playlist.key)) {
-                                if (localPlaylist == null && !contentLoaded) {
-                                    if (songs == null) ToastRelay.loadingWarning() else Toaster.w(R.string.player_no_song_found)
-                                    return@IconButton
-                                }
+                            if (bookmarkBusy || !canBookmark) return@IconButton
+                            if (isPodcast) {
                                 bookmarkBusy = true
                                 coroutineScope.launch {
                                     try {
+                                        val pendingOperation = podcastBookmarkOperation(localPlaylist)
+                                        val ready = if (pendingOperation == PodcastBookmarkOperation.Remove) bookmarkContent
+                                            else snapshotFlow { bookmarkContent }.first { it.first != null || it.second }
+                                        if (pendingOperation != PodcastBookmarkOperation.Remove && ready.first == null) {
+                                            warnPlaylistSongsUnavailable(true)
+                                            return@launch
+                                        }
                                         val operation = togglePodcastBookmark(
-                                            playlist.key,
+                                            sourceId,
                                             title.orEmpty(),
-                                            songs.orEmpty().map { it.asMediaItem },
+                                            ready.first.orEmpty().map { it.asMediaItem },
+                                            owner = ready.third ?: authorText?.let { Innertube.Info(it, null) },
                                         )
-                                        if (operation == PodcastBookmarkOperation.ExistingImport) {
-                                            menuState.hide()
-                                            NavRoutes.podcast.navigateHere(navController, playlist.key)
-                                        } else Toaster.done()
+                                        if (operation == PodcastBookmarkOperation.ExistingImport) onExistingPodcastImport()
+                                        else Toaster.done()
                                     } catch (cancelled: CancellationException) {
                                         throw cancelled
                                     } catch (error: Exception) {
                                         Timber.tag("PodcastBookmark").e(error, "Unable to update podcast bookmark from search")
+                                        Toaster.e(R.string.playlist_import_failed)
                                     } finally {
                                         bookmarkBusy = false
                                     }
                                 }
                                 return@IconButton
                             }
+                            if (!isBookmarked && owner == null && songs == null) {
+                                warnPlaylistSongsUnavailable(contentLoadFailed)
+                                return@IconButton
+                            }
+                            val app = context.applicationContext
+                            val workOwner = ProfileWorkOwner.capture(app) ?: return@IconButton
+                            if (workOwner.id != ownerProfile || !ProfileWorkOwner.isBound(app, workOwner)) return@IconButton
                             bookmarkBusy = true
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                 try {
-                                    val browseId = playlist.key
+                                    if (!ProfileWorkOwner.isBound(app, workOwner)) return@launch
+                                    val browseId = sourceId
                                     val playlistId = browseId.removePrefix("VL")
                                     val updated = Database.awaitWriteBatch {
-                                        val rows = playlistTable.findMusicBookmarkRows(browseId).first()
-                                        val bookmarkedRows = rows.filter { isPlaylistBookmarked(it) }
-                                        if (bookmarkedRows.isNotEmpty()) {
-                                            transaction {
+                                        var updatedPlaylist: Playlist? = null
+                                        transaction {
+                                            if (!ProfileWorkOwner.isBound(app, workOwner)) return@transaction
+                                            val rows = playlistTable.findMusicBookmarkRows(browseId).first()
+                                            val bookmarkedRows = rows.filter { isPlaylistBookmarked(it) }
+                                            if (!ProfileWorkOwner.isBound(app, workOwner)) return@transaction
+                                            if (bookmarkedRows.isNotEmpty()) {
                                                 bookmarkedRows.forEach { playlistTable.update(it.copy(isYoutubePlaylist = false)) }
+                                                updatedPlaylist = bookmarkedRows.first().copy(isYoutubePlaylist = false)
+                                                return@transaction
                                             }
-                                            return@awaitWriteBatch bookmarkedRows.first().copy(isYoutubePlaylist = false)
-                                        }
 
-                                        val existing = rows.firstOrNull()
-                                        val saved = existing?.copy(isYoutubePlaylist = true) ?: Playlist(
-                                            name = playlist.title.orEmpty(),
-                                            browseId = "VL$playlistId",
-                                            isYoutubePlaylist = true,
-                                            isEditable = false,
-                                        )
-                                        if (existing != null) saved.takeIf { playlistTable.update(saved) > 0 }
-                                        else playlistTable.insert(saved).takeIf { it > 0 }?.let { saved.copy(id = it) }
+                                            val existing = rows.firstOrNull()
+                                            val saved = (existing?.copy(isYoutubePlaylist = true) ?: Playlist(
+                                                name = title.orEmpty(),
+                                                browseId = "VL$playlistId",
+                                                isYoutubePlaylist = true,
+                                                isEditable = false,
+                                            )).withSourcePlaylistOwner(owner)
+                                            updatedPlaylist = if (existing != null) {
+                                                saved.takeIf { playlistTable.update(saved) > 0 }
+                                            } else {
+                                                playlistTable.insert(saved).takeIf { it > 0 }?.let { saved.copy(id = it) }
+                                            }
+                                        }
+                                        updatedPlaylist
                                     } ?: return@launch
+                                    if (!ProfileWorkOwner.isBound(app, workOwner)) return@launch
                                     val bookmarked = updated.isYoutubePlaylist
                                     if (bookmarked) {
-                                        MyDownloadHelper.downloadBookmarkedPlaylist(context, browseId, updated)
+                                        MyDownloadHelper.downloadBookmarkedPlaylist(app, browseId, updated)
                                     }
-                                    if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                        if (bookmarked) YtMusic.likePlaylistOrAlbum(playlistId)
-                                        else YtMusic.removelikePlaylistOrAlbum(playlistId)
-                                    }
+                                    if (!ProfileWorkOwner.isBound(app, workOwner)) return@launch
                                     Toaster.s(if (bookmarked) R.string.library_favorites_added else R.string.library_favorites_removed)
+                                    if (isYouTubeSyncEnabled() && canPushToYTM() &&
+                                        app.preferences.getBoolean(syncPushPlaylistKey, false) && isNetworkConnected(app) &&
+                                        ProfileWorkOwner.isBound(app, workOwner)
+                                    ) {
+                                        val result = if (bookmarked) YtMusic.likePlaylistOrAlbum(playlistId)
+                                        else YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                        val error = result.exceptionOrNull()
+                                        if (error is CancellationException) throw error
+                                        if (error != null) Toaster.e(R.string.common_load_failed)
+                                    }
                                 } finally {
                                     withContext(NzikDispatchers.UI) { bookmarkBusy = false }
                                 }
@@ -367,13 +382,14 @@ class OnlinePlaylistItemMenu private constructor(
                             .size(20.dp)
                     )
 
-                    IconButton(
+                    if (shareUrl != null) IconButton(
                         icon = R.drawable.share_social,
+                        contentDescription = stringResource(R.string.player_mini_button_share),
                         color = colorPalette().text,
                         onClick = {
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, onlinePlaylistShareUrl(playlist.key))
+                                putExtra(Intent.EXTRA_TEXT, shareUrl)
                             }
                             context.startActivity(Intent.createChooser(intent, null))
                         },
@@ -394,65 +410,54 @@ class OnlinePlaylistItemMenu private constructor(
         val binder = LocalPlayerServiceBinder.current
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
+        val offlineMode by OfflineMode.rememberEnabled()
 
-        var fetchedSongs by remember { mutableStateOf<List<Song>?>(null) }
-        var contentLoaded by remember(playlist.key) { mutableStateOf(false) }
+        val kind = if (isPodcastBrowseId(playlist.key)) LibraryBrowseKind.Podcast else LibraryBrowseKind.Playlist
+        val sourceId = rememberLibraryBrowseDestination(playlist.key, kind)?.browseId ?: return
+        val shareUrl = onlinePlaylistShareUrl(sourceId)
+        val sourceChanged = sourceId != playlist.key
+
+        var fetchedSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
+        var contentLoadFailed by remember(sourceId) { mutableStateOf(false) }
         
-        var displayTitle by remember { mutableStateOf(playlist.title ?: playlist.info?.name) }
-        var displayAuthor by remember { mutableStateOf(playlist.channel?.name) }
-        var displayThumbnailUrl by remember { mutableStateOf(playlist.thumbnail?.url) }
+        var displayTitle by remember(sourceId) { mutableStateOf((playlist.title ?: playlist.info?.name).takeUnless { sourceChanged }) }
+        var displayAuthor by remember(sourceId) { mutableStateOf(playlist.channel?.name.takeUnless { sourceChanged }) }
+        var ownerChannel by remember(sourceId) { mutableStateOf(playlist.channel.takeUnless { sourceChanged }) }
+        var displayThumbnailUrl by remember(sourceId) { mutableStateOf(playlist.thumbnail?.url.takeUnless { sourceChanged }) }
 
-        val localPlaylistFlow = remember(playlist.key) { Database.playlistTable.findMusicBookmarkByBrowseId(playlist.key) }
+        val localPlaylistFlow = remember(sourceId) { Database.playlistTable.findMusicBookmarkByBrowseId(sourceId) }
         val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-        val songs by rememberMenuSongs(fetchedSongs)
-        val changePlaylistId = if (localPlaylist != null) {
-            ChangePlaylistBrowseIdDialog(menuState = menuState) { localPlaylist }
-        } else null
+        val savedPlaylistId = localPlaylist?.id?.takeIf { offlineMode }
+        val savedSongs by remember(savedPlaylistId) {
+            savedPlaylistId?.let { Database.songPlaylistMapTable.allSongsOf(it) } ?: flowOf(null)
+        }.collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA)
+        val songs by rememberMenuSongs(fetchedSongs ?: savedSongs?.takeIf { offlineMode && it.isNotEmpty() })
+        val contentUnavailable = contentLoadFailed || offlineMode
+        val rename = RenamePlaylistDialog { localPlaylist }
+        val renameAuthor = RenamePlaylistAuthorDialog { localPlaylist }
+        val changePlaylistId = ChangePlaylistBrowseIdDialog(menuState = menuState) { localPlaylist }
 
-        LaunchedEffect(playlist.key) {
+        LaunchedEffect(sourceId, offlineMode) {
+            if (offlineMode) return@LaunchedEffect
+            contentLoadFailed = false
             withContext(NzikDispatchers.DATA) {
-                val result = loadOnlinePlaylistContent(playlist.key.removePrefix(MODIFIED_PREFIX))
+                val result = loadOnlinePlaylistContent(
+                    sourceId.removePrefix(MODIFIED_PREFIX),
+                    fetchAllowed = { !OfflineMode.enabled(context) },
+                )
                 if (result != null) {
                     displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
                     displayAuthor = result.author.takeIf { !it.isNullOrBlank() } ?: displayAuthor
+                    ownerChannel = result.channel ?: ownerChannel
                     displayThumbnailUrl = result.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
-                    fetchedSongs = result.songs
-                    contentLoaded = true
-                } else {
-                    fetchedSongs = emptyList() // Failed to fetch or no songs
                 }
+                result?.songs?.let { fetchedSongs = it }
+                contentLoadFailed = result?.songs == null
             }
         }
 
-        val playNext = PlayNext {
-            val currentSongs = songs
-            if (currentSongs == null) {
-                ToastRelay.loadingWarning()
-            } else if (currentSongs.isNotEmpty()) {
-                // Queue changes must survive the popup closing.
-                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                    val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
-                    binder?.player?.addNextOffMain(mediaItems, appContext())
-                }
-                menuState.hide()
-            } else {
-                Toaster.e(R.string.player_no_song_found)
-            }
-        }
-
-        val enqueue = Enqueue {
-            val currentSongs = songs
-            if (currentSongs == null) {
-                ToastRelay.loadingWarning()
-            } else if (currentSongs.isNotEmpty()) {
-                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                    val mediaItems = withContext(NzikDispatchers.DATA) { currentSongs.map { it.asMediaItem } }
-                    binder?.player?.enqueueOffMain(mediaItems, appContext())
-                }
-                menuState.hide()
-            } else {
-                Toaster.e(R.string.player_no_song_found)
-            }
+        val (playNext, enqueue) = collectionQueueActions(context, menuState, { binder?.captureMenuQueueEdit() }, songs, contentUnavailable) {
+            it.asMediaItem.withPodcastSource(sourceId)
         }
 
         val playlistsMenu = PlaylistsMenu.init(
@@ -462,65 +467,67 @@ class OnlinePlaylistItemMenu private constructor(
             finalAction = { menuState.hide() }
         )
 
-        val addToPlaylist = object : MenuIcon by playlistsMenu, Descriptive by playlistsMenu, Clickable {
-            override fun onShortClick() {
-                val currentSongs = songs
-                if (currentSongs == null) {
-                    ToastRelay.loadingWarning()
-                } else if (currentSongs.isNotEmpty()) {
-                    playlistsMenu.onShortClick()
-                } else {
-                    Toaster.e(R.string.player_no_song_found)
-                }
+        val addToPlaylist = playlistsMenu.withMenuClick {
+            val currentSongs = songs
+            when {
+                currentSongs == null -> warnPlaylistSongsUnavailable(contentUnavailable)
+                currentSongs.isEmpty() -> Toaster.e(R.string.player_no_song_found)
+                else -> playlistsMenu.onShortClick()
             }
-            override fun onLongClick() {}
         }
         
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
-        val downloadAll = object : MenuIcon by downloadAllDialog, Descriptive by downloadAllDialog, Clickable {
-            override fun onShortClick() {
-                val currentSongs = songs
-                if (currentSongs == null) {
-                    ToastRelay.loadingWarning()
-                } else if (currentSongs.isNotEmpty()) {
-                    downloadAllDialog.onShortClick()
-                } else {
-                    Toaster.e(R.string.player_no_song_found)
-                }
+        val downloadAll = downloadAllDialog.withMenuClick {
+            if (OfflineMode.enabled(context)) return@withMenuClick
+            val currentSongs = songs
+            when {
+                currentSongs == null -> warnPlaylistSongsUnavailable(contentUnavailable)
+                currentSongs.isEmpty() -> Toaster.e(R.string.player_no_song_found)
+                else -> downloadAllDialog.onShortClick()
             }
-            override fun onLongClick() {}
         }
 
         val deleteAllDialog = DeleteAllDownloadedSongsDialog { songs ?: emptyList() }
-        val deleteAll = object : MenuIcon by deleteAllDialog, Descriptive by deleteAllDialog, Clickable {
-            override fun onShortClick() {
-                val currentSongs = songs
-                if (currentSongs == null) {
-                    ToastRelay.loadingWarning()
-                } else if (currentSongs.isNotEmpty()) {
-                    deleteAllDialog.onShortClick()
-                } else {
-                    Toaster.e(R.string.player_no_song_found)
-                }
+        val deleteAll = deleteAllDialog.withMenuClick {
+            val currentSongs = songs
+            when {
+                currentSongs == null -> warnPlaylistSongsUnavailable(contentUnavailable)
+                currentSongs.isEmpty() -> Toaster.e(R.string.player_no_song_found)
+                else -> deleteAllDialog.onShortClick()
             }
-            override fun onLongClick() {}
         }
         
         val importDialog = ImportPlaylistDialog(
             initialValue = cleanPrefix(localPlaylist?.name ?: displayTitle ?: "")
         ) { text ->
-            coroutineScope.launch(NzikDispatchers.DATA) {
-                Database.asyncTransaction {
-                    val newPlaylist = Playlist(name = text, browseId = playlist.key)
-                    val playlistId = Database.playlistTable.insert(newPlaylist)
-                    songs?.forEach { song ->
-                        Database.insertIgnore(song.asMediaItem)
-                        Database.songPlaylistMapTable.map(songId = song.id, playlistId = playlistId)
+            val importSongs = songs?.takeIf { it.isNotEmpty() }
+            if (importSongs == null) {
+                warnPlaylistSongsUnavailable(contentUnavailable)
+                return@ImportPlaylistDialog
+            }
+            val appContext = context.applicationContext
+            val owner = ProfileWorkOwner.capture(appContext) ?: return@ImportPlaylistDialog
+            val newPlaylist = Playlist(name = text, browseId = sourceId).withSourcePlaylistOwner(ownerChannel)
+            val menuKey = menuState.transitionKey
+            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                try {
+                    val committed = Database.awaitWriteBatch {
+                        if (!ProfileWorkOwner.isBound(appContext, owner)) return@awaitWriteBatch false
+                        importOnlinePlaylist(newPlaylist, importSongs)
+                        true
                     }
+                    if (!committed || !ProfileWorkOwner.isBound(appContext, owner)) return@launch
+                    withContext(NzikDispatchers.UI) {
+                        if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+                        Toaster.done()
+                    }
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (error: Exception) {
+                    Timber.tag("OnlinePlaylistItemMenu").e(error, "Unable to import playlist")
+                    Toaster.e(R.string.playlist_import_failed)
                 }
             }
-            menuState.hide()
-            Toaster.done()
         }
         importDialog.Render()
 
@@ -530,7 +537,7 @@ class OnlinePlaylistItemMenu private constructor(
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
                 if (songs == null) {
-                    ToastRelay.loadingWarning()
+                    warnPlaylistSongsUnavailable(contentUnavailable)
                 } else if (songs?.isNotEmpty() == true) {
                     importDialog.onShortClick()
                 } else {
@@ -540,70 +547,80 @@ class OnlinePlaylistItemMenu private constructor(
             override fun onLongClick() {}
         }
 
-        val shuffle = SongShuffler { songs ?: emptyList() }
-        
-        val list = mutableListOf<MenuIcon>()
-        list.add(playNext)
-        list.add(enqueue)
-        list.add(shuffle)
-        if (changePlaylistId != null) list.add(changePlaylistId)
-        list.add(addToPlaylist)
-        list.add(importPlaylist)
-        list.add(downloadAll)
-        list.add(deleteAll)
-        
-        buttons = list.apply {
-            val artistName = playlist.channel?.name
+        val shuffleAction = SongShuffler.fromMediaItems {
+            songs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) }
+        }
+        val shuffle = shuffleAction.withMenuClick {
+            if (songs == null) warnPlaylistSongsUnavailable(contentUnavailable)
+            else shuffleAction.onShortClick()
+        }
 
-            val browseId = playlist.channel?.endpoint?.browseId
-            if (!artistName.isNullOrBlank() && !browseId.isNullOrBlank()) {
-
-            add(object : MenuIcon, Descriptive, Clickable {
-                    override val iconId: Int = R.drawable.people
-                    override val messageId: Int = R.string.library_artists_title
-                    @get:Composable override val menuIconTitle: String get() = artistMoreFromTitle(artistName)
-                    override fun onShortClick() {
-                        menuState.hide()
-                        val path = "$browseId?params=${playlist.channel?.endpoint?.params.orEmpty()}"
-                        NavRoutes.artist.navigateHere(navController, path)
-                    }
-                    override fun onLongClick() {}
-                })
-            }
-            
-            add(object : MenuIcon, Descriptive, Clickable {
-                override val iconId: Int = R.drawable.ytmusic
-                override val messageId: Int = R.string.player_action_listen_on_youtube
+        val navigationActions = buildList<MenuIcon> {
+            add(OpenCollectionMenuAction(navController, menuState, sourceId, R.drawable.open, useExactSource = true))
+            val savedOwner = localPlaylist?.sourcePlaylistOwner()
+            val sourceOwner = ownerChannel?.takeIf { !it.endpoint?.browseId.isNullOrBlank() }
+            val displayOwner = displayAuthor?.takeIf(String::isNotBlank)?.let { PlaylistOwner(it, null) }
+            val navigationOwner = if (!savedOwner?.endpoint?.browseId.isNullOrBlank()) savedOwner
+                else sourceOwner?.copy(name = savedOwner?.name ?: sourceOwner.name ?: displayAuthor)
+                    ?: savedOwner ?: displayOwner
+            playlistOwnerAction(navigationOwner, navController, menuState)?.let(::add)
+            if (!offlineMode && shareUrl != null) add(object : MenuIcon, Descriptive, Clickable {
+                override val iconId: Int = R.drawable.play
+                override val messageId: Int = R.string.player_action_listen_on_youtube_music
                 @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
                 override fun onShortClick() {
-                    menuState.hide()
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = Uri.parse(onlinePlaylistShareUrl(playlist.key))
+                    if (openExternalMenuLink {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(shareUrl)))
+                    }) {
+                        menuState.hide()
                     }
-                    context.startActivity(intent)
                 }
                 override fun onLongClick() {}
             })
-            
-            list
         }
+        val menuSections = listOf(
+            MenuSection(R.string.common_playback_section_title, listOf(shuffle, playNext, enqueue)),
+            MenuSection(
+                R.string.library_management_section_title,
+                buildList {
+                    addAll(listOf(addToPlaylist, importPlaylist))
+                    if (!offlineMode) add(downloadAll)
+                    add(deleteAll)
+                    if (localPlaylist != null) {
+                        add(rename)
+                        add(renameAuthor)
+                        if (playlistLinkKind(localPlaylist?.browseId) == PlaylistLinkKind.YouTubePlaylist) {
+                            add(changePlaylistId)
+                        }
+                    }
+                },
+            ),
+            MenuSection(R.string.common_navigation_section_title, navigationActions),
+        )
+        SideEffect { sections = menuSections }
 
         MenuSheetSurface {
             downloadAllDialog.Render()
             deleteAllDialog.Render()
-            changePlaylistId?.Render()
+            rename.Render()
+            renameAuthor.Render()
+            changePlaylistId.Render()
             PlaylistItemDisplay(
+                sourceId = sourceId,
+                shareUrl = shareUrl,
                 title = localPlaylist?.name ?: displayTitle,
-                authorText = displayAuthor,
+                authorText = localPlaylist?.displayAuthorName() ?: displayAuthor,
                 thumbnailUrl = displayThumbnailUrl,
                 songs = songs,
-                contentLoaded = contentLoaded,
+                contentLoadFailed = contentUnavailable,
+                owner = ownerChannel,
+                onExistingPodcastImport = importPlaylist::onShortClick,
             )
 
             if (menuStyle == MenuStyle.List)
-                ListMenu()
+                PlaylistListMenu(menuSections)
             else
-                GridMenu()
+                PlaylistGridMenu(menuSections)
         }
     }
 
@@ -620,4 +637,22 @@ class OnlinePlaylistItemMenu private constructor(
                 .padding(vertical = 12.dp, horizontal = 4.dp)
         )
     }
+}
+
+internal suspend fun Database.importOnlinePlaylist(playlist: Playlist, songs: List<Song>) {
+    val importSongs = songs.distinctBy(Song::id)
+    require(importSongs.isNotEmpty())
+    transaction {
+        val playlistId = playlistTable.insert(playlist)
+        check(playlistId > 0) { "Online playlist could not be inserted" }
+        importSongs.forEachIndexed { index, song ->
+            insertIgnore(song.asMediaItem)
+            songPlaylistMapTable.mapAtPosition(song.id, playlistId, index)
+        }
+    }
+}
+
+private fun warnPlaylistSongsUnavailable(loadFailed: Boolean) {
+    if (loadFailed) Toaster.e(R.string.common_load_failed)
+    else ToastRelay.loadingWarning()
 }

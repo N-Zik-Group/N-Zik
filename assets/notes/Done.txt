@@ -704,3 +704,7 @@ Collection track pagination:
 Album menus:
 - fix(menu): keep album actions scoped to the selected edition
   - Use the artist credits, tracks and source identity of the displayed album.
+
+Playlist menus:
+- fix(menu): share playlist owner and source actions across layouts
+  - Use verified owner metadata and handle failed external links without losing the menu.
