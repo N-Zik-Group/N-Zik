@@ -142,6 +142,11 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(lyrics): recover timed lyrics when track credits become available
+  - Restart the current lookup when the title, artist or album changes after playback starts.
+  - Keep provider choices and try higher-priority formats when a fallback is cached. Explain the synced fallback when karaoke is unavailable.
+- fix(player): treat buffering as paused for M3E shapes
+  - Animate unpinned shapes only while playback is ready and active. Preserve the Always show shapes preference.
 - fix(rewind): preserve playlist choices when toggling Rewind
   - Place the switch on the Rewind page. Hide Rewind playlists throughout the app, Android Auto and Bridge while the switch is off.
 - fix(profiles): align avatars and profile actions
