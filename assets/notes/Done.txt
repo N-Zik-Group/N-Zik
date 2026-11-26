@@ -684,3 +684,7 @@ Favorites and bookmarks:
 Shared menu and toolbar actions:
 - refactor(menu): share track and navigation actions across surfaces
   - Retain complete media items and route toolbar actions through the same handlers.
+
+External menu links:
+- fix(menu): recover when a link has no Android handler
+  - Keep the selector open for retry and preserve playback on failure.

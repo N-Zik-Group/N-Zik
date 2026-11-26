@@ -51,7 +51,40 @@ fun <T> ValueSelectorDialog(
     onValueSelected: (T) -> Unit,
     valueText: @Composable (T) -> String = { it.toString() },
     lockedValues: Set<T> = emptySet(),
-    lockedLabel: String? = null
+    lockedLabel: String? = null,
+    dismissOnSelection: Boolean = true,
+) {
+    ValueSelectorDialog(
+        modifier,
+        onDismiss,
+        title,
+        titleSecondary,
+        selectedValue,
+        values,
+        onValueSelected,
+        valueText,
+        lockedValues,
+        lockedLabel,
+        dismissOnSelection = dismissOnSelection,
+        valueModifier = { Modifier },
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun <T> ValueSelectorDialog(
+    modifier: Modifier = Modifier,
+    onDismiss: () -> Unit,
+    title: String,
+    titleSecondary: String? = null,
+    selectedValue: T,
+    values: List<T>,
+    onValueSelected: (T) -> Unit,
+    valueText: @Composable (T) -> String = { it.toString() },
+    lockedValues: Set<T> = emptySet(),
+    lockedLabel: String? = null,
+    dismissOnSelection: Boolean = true,
+    valueModifier: @Composable (T) -> Modifier,
 ) {
     DialogFrame(
         onDismiss = onDismiss,
@@ -97,8 +130,9 @@ fun <T> ValueSelectorDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(uiRoundnessShape())
+                        .then(valueModifier(value))
                         .clickable(enabled = !isLocked) {
-                            onDismiss()
+                            if (dismissOnSelection) onDismiss()
                             onValueSelected(value)
                         }
                         .alpha(if (isLocked && lockedLabel != null) 0.4f else 1f)
@@ -108,7 +142,7 @@ fun <T> ValueSelectorDialog(
                         selected = selectedValue == value,
                         enabled = !isLocked,
                         onClick = {
-                            onDismiss()
+                            if (dismissOnSelection) onDismiss()
                             onValueSelected(value)
                         },
                     )

@@ -30,6 +30,7 @@ fun ListenOnDialog(
         onValueSelected = {
             onPlayOnUrl(it.id)
         },
+        dismissOnSelection = false,
         valueText = { it.name ?: "" }
     )
 }
