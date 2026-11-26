@@ -596,3 +596,7 @@ Collection deep links:
 Podcast creator metadata:
 - fix(podcast): preserve publisher credits when loading episode pages
   - Keep the publisher name when the source omits a channel endpoint.
+
+Playlist picker navigation:
+- fix(navigation): keep the current playlist entry in destination pickers
+  - Share routing between the reusable destination selectors.
