@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material3.CircularWavyProgressIndicator
@@ -50,6 +52,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
@@ -62,6 +65,7 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.models.Info
 import app.n_zik.android.models.Song
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.isLocal
@@ -93,6 +97,7 @@ import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.song.rememberSongDisplayMetadata
+import app.n_zik.android.components.song.songArtistDisplayLabel
 import app.n_zik.android.components.glass.GlassSongRowSurface
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.platform.LocalDensity
@@ -197,6 +202,12 @@ fun SongItem(
     thumbnailOverlay: @Composable BoxScope.() -> Unit = {},
     observeLikeState: Boolean = isLiked == null,
     observeStoredMetadata: Boolean = true,
+    playbackAlbumId: String? = null,
+    playbackAlbumTitle: String? = null,
+    podcastBrowseId: String? = null,
+    sourceMediaItem: (() -> MediaItem)? = null,
+    artistTextOverride: String? = null,
+    artistCredits: List<Info>? = null,
     onClick: () -> Unit = {}
 ) {
     // Essentials
@@ -220,7 +231,15 @@ fun SongItem(
         rememberSongDisplayMetadata(song, storedSongs)
     } else song
 
-    val menu = if( preview == null && navController != null && onLongClick == null ) SongItemMenu( navController, displaySong ) else null
+    val storedCredits = if (artistTextOverride == null && artistCredits == null && observeStoredMetadata) {
+        val ids = remember(song.id) { listOf(song.id) }
+        rememberSongRowArtistCredits(ids).value[song.id].orEmpty()
+    } else artistCredits.orEmpty()
+    val displayArtist = artistTextOverride ?: songArtistDisplayLabel(displaySong, storedCredits, sourceMediaItem?.invoke())
+
+    val menu = if (preview == null && navController != null && onLongClick == null) {
+        SongItemMenu(navController, displaySong, playbackAlbumId, playbackAlbumTitle, podcastBrowseId, sourceMediaItem)
+    } else null
     GlassSongRowSurface(backgroundColor, if (isPlaying) colorPalette.favoritesOverlay else null, rowShape) { rowBackground ->
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -340,7 +359,7 @@ fun SongItem(
             }
 
             Row( verticalAlignment = Alignment.CenterVertically ) {
-                val artistsText = displaySong.cleanArtistsText()
+                val artistsText = displayArtist
                 val safeArtists = if (artistsText.isBlank() || artistsText == "null") stringResource(R.string.metadata_unknown_artist) else artistsText
                 // Song's author
                 SongText(
@@ -448,11 +467,13 @@ fun SongItem(
             val checked = itemSelector.isSelected(song, Song::id)
             Icon(
                 painter = painterResource(if (checked) R.drawable.checked_filled else R.drawable.unchecked_outline),
-                contentDescription = null,
+                contentDescription = stringResource(R.string.common_action_select),
                 tint = if (checked) colorPalette().accent else colorPalette().text,
                 modifier = Modifier
                     .scale(0.8f)
-                    .clickable(
+                    .toggleable(
+                        value = checked,
+                        role = Role.Checkbox,
                         indication = glassGlobalIndication(null),
                         interactionSource = remember { MutableInteractionSource() },
                     ) {

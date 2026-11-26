@@ -53,7 +53,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadService
-import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.R
 import app.n_zik.innertube.Innertube
 import app.n_zik.android.core.database.Database
@@ -436,7 +435,6 @@ fun SongItem(
         ItemInfoContainer {
             trailingContent?.let {
                 val menuState = LocalMenuState.current
-                val navController = rememberNavController()
                 val binder = LocalPlayerServiceBinder.current
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isRecommended)
@@ -458,7 +456,6 @@ fun SongItem(
                                 menuState.display {
                                     if (binder != null) {
                                         AddToPlaylistPlayerMenu(
-                                            navController = navController,
                                             onDismiss = {
                                                 menuState.hide()
                                             },
@@ -525,7 +522,6 @@ fun SongItem(
                 }
             } ?: Row(verticalAlignment = Alignment.CenterVertically) {
                 val menuState = LocalMenuState.current
-                val navController = rememberNavController()
                 val binder = LocalPlayerServiceBinder.current
                     if (isRecommended)
                         IconButton(
@@ -559,7 +555,6 @@ fun SongItem(
                             menuState.display {
                                 if (binder != null) {
                                     AddToPlaylistPlayerMenu(
-                                        navController = navController,
                                         onDismiss = {
                                             menuState.hide()
                                         },

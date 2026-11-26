@@ -612,3 +612,7 @@ Metadata repair cleanup:
 Metadata lookup messages:
 - chore(resources): retire legacy album and artist lookup messages
   - Preserve the shared source labels and remove the old aliases and translated keys.
+
+Track row metadata:
+- fix(library): show refreshed artist credits in track rows
+  - Resolve metadata shared with playback and expose multiselection state to accessibility.

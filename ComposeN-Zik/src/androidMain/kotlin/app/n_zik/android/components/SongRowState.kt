@@ -14,6 +14,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.enums.DownloadedStateMedia
+import app.n_zik.android.models.Info
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.hasCachedStream
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -98,6 +99,18 @@ internal fun rememberSongRowMetadata(ids: List<String>): State<Map<String, Song>
         if (preview != null || ids.isEmpty()) flowOf(emptyMap())
         else combine(ids.chunked(500).map { Database.songTable.findByIds(it) }) { batches ->
             batches.asSequence().flatMap { it.asSequence() }.associateBy(Song::id)
+        }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+}
+
+/** Collects track-linked artist rows alongside a list's existing metadata query. */
+@Composable
+internal fun rememberSongRowArtistCredits(ids: List<String>): State<Map<String, List<Info>>> {
+    val preview = LocalThemePreview.current
+    return remember(ids, preview) {
+        if (preview != null || ids.isEmpty()) flowOf(emptyMap())
+        else combine(ids.distinct().chunked(500).map(Database.songTable::findArtistCredits)) { batches ->
+            batches.asSequence().flatten().groupBy({ it.songId }, { Info(it.artistId, it.name) })
         }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 }

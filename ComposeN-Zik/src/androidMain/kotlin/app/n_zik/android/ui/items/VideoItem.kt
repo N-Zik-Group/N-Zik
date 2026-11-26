@@ -52,13 +52,15 @@ fun VideoItem(
     modifier: Modifier = Modifier,
     alternative: Boolean = false,
     disableScrollingText: Boolean,
-    likeState: Boolean? = null
+    likeState: Boolean? = null,
+    titleOverride: String? = null,
+    uploaderOverride: String? = null,
 ) {
     VideoItem(
         thumbnailUrl = video.thumbnail?.url,
         duration = video.durationText,
-        title = video.info?.name,
-        uploader = video.authors.artistEntryNames().joinToString(", "),
+        title = titleOverride ?: video.info?.name,
+        uploader = uploaderOverride ?: video.authors.artistEntryNames().joinToString(", "),
         views = video.viewsText,
         thumbnailHeightDp = thumbnailHeightDp,
         thumbnailWidthDp = thumbnailWidthDp,
