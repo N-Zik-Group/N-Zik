@@ -46,7 +46,9 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "refresh_on_open" to R.string.playlist_refresh_on_open,
         "listen_on_yt" to R.string.player_action_listen_on_youtube,
         "import_menu" to R.string.playlist_action_import,
-        "rename" to R.string.playlist_rename_dialog_title,
+        "rename" to R.string.metadata_action_change_title,
+        "rename_author" to R.string.metadata_action_change_artists,
+        "change_browse_id" to R.string.metadata_playlist_action_change_browse_id,
         "delete" to R.string.common_action_delete,
         "export" to R.string.playlist_action_export,
         "thumbnail_picker" to R.string.thumbnail_action_edit,
@@ -60,7 +62,8 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "play_next", "enqueue", "item_selector", "add_to_favorite", "add_to_playlist",
         "download_all", "delete_downloads", "match", "renumber",
         "sync", "refresh_on_open", "listen_on_yt",
-        "import_menu", "export", "rename", "thumbnail_picker", "reset_thumbnail", "update", "delete"
+        "import_menu", "export", "rename", "rename_author", "change_browse_id",
+        "thumbnail_picker", "reset_thumbnail", "update", "delete"
     )
 
     internal fun portableList(): PortableControlList =
@@ -161,6 +164,8 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 "listen_on_yt" -> ToggleItem(uid, R.drawable.play, listenOnYTLabel, pk, true)
                 "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
                 "rename" -> ToggleItem(uid, R.drawable.title_edit, renameLabel, pk, true)
+                "rename_author" -> ToggleItem(uid, R.drawable.artists_edit, stringResource(searchLabelResources.getValue(id)), pk, true)
+                "change_browse_id" -> ToggleItem(uid, R.drawable.title_edit, stringResource(searchLabelResources.getValue(id)), pk, true)
                 "delete" -> ToggleItem(uid, R.drawable.trash, deleteLabel, pk, true)
                 "export" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
                 "thumbnail_picker" -> ToggleItem(uid, R.drawable.image, thumbnailLabel, pk, true)

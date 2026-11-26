@@ -88,6 +88,20 @@ class LocalPlaylistToolbarSettingsDialogTest {
         assertEquals(R.string.library_collection_favorites_action_manage, dialog.searchOptions().single { it.itemId == "pl_add_to_favorite" }.labelRes)
     }
 
+    @Test fun `metadata actions are configurable and next to the title by default`() {
+        val dialog = LocalPlaylistToolbarSettingsDialog
+        val metadata = listOf("rename", "rename_author", "change_browse_id")
+        assertTrue(dialog.parseOrder("").windowed(metadata.size).contains(metadata))
+        assertEquals(
+            R.string.metadata_action_change_artists,
+            dialog.searchOptions().single { it.itemId == "pl_rename_author" }.labelRes,
+        )
+        assertEquals(
+            R.string.metadata_playlist_action_change_browse_id,
+            dialog.searchOptions().single { it.itemId == "pl_change_browse_id" }.labelRes,
+        )
+    }
+
     @Test fun `insertion action setting uses its own key and local playlist title`() {
         showDialog()
 

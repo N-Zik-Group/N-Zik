@@ -584,3 +584,7 @@ Accessible navigation:
 Settings restart footer:
 - fix(settings): explain when the player can be restarted
   - Use a shared action layout for player and app restarts.
+
+Local playlist toolbar:
+- feat(settings): configure playlist metadata actions
+  - Expose title, author and source ID actions in the playlist toolbar editor.
