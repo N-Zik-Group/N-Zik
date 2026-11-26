@@ -273,6 +273,7 @@ fun ListenTogetherMenu() {
         onConfirm = { finalUsername ->
             usernamePref.value = finalUsername
             DataStoreUtils.saveString(context, PREF_USERNAME, finalUsername)
+            settingsVersion.value++
             showCreateRoomSheet = false
             Toaster.i(R.string.listen_together_creating_room)
             isCreatingRoom = true
@@ -289,6 +290,7 @@ fun ListenTogetherMenu() {
         onConfirm = { roomCodeInput, finalUsername ->
             usernamePref.value = finalUsername
             DataStoreUtils.saveString(context, PREF_USERNAME, finalUsername)
+            settingsVersion.value++
             showJoinRoomSheet = false
             Toaster.i(R.string.listen_together_joining_room, roomCodeInput)
             isJoiningRoom = true
