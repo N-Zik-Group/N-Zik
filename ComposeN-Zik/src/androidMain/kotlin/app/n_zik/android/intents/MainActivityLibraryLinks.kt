@@ -3,6 +3,8 @@ package app.n_zik.android.intents
 import java.util.UUID
 
 import android.net.Uri
+import app.n_zik.android.components.navigation.onlinePlaylistBrowseIdFromLink
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.listentogether.parseListenTogetherInvite
 
@@ -35,9 +37,9 @@ internal fun libraryLinkDestination(uri: Uri): LibraryLinkDestination {
 
     return when (val path = uri.pathSegments.firstOrNull()) {
         "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-            val browseId = "VL$playlistId"
+            val browseId = onlinePlaylistBrowseIdFromLink(playlistId)
             if (playlistId.startsWith("OLAK5uy_")) LibraryLinkDestination.RemoteAlbum(browseId)
-            else LibraryLinkDestination.Route("${NavRoutes.playlist.name}/$browseId")
+            else LibraryLinkDestination.Route(onlinePlaylistRoute(browseId))
         }
         "channel", "c" -> uri.lastPathSegment?.let { LibraryLinkDestination.Route("${NavRoutes.artist.name}/$it") }
         "search" -> uri.getQueryParameter("q")?.let { LibraryLinkDestination.Route("${NavRoutes.searchResults.name}/$it") }

@@ -588,3 +588,7 @@ Settings restart footer:
 Local playlist toolbar:
 - feat(settings): configure playlist metadata actions
   - Expose title, author and source ID actions in the playlist toolbar editor.
+
+Collection deep links:
+- fix(navigation): open podcast links from Android intents
+  - Resolve the browse identity exactly as in Go to link.
