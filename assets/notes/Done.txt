@@ -572,3 +572,7 @@ Storage settings search:
 Playlist widget:
 - fix(widget): filter unplayable local quick picks
   - Keep labels and the published selection aligned after filtering.
+
+Menu and settings labels:
+- feat(resources): add source labels for menus and settings
+  - Add accessible actions, collection navigation, updater, and reset messages.

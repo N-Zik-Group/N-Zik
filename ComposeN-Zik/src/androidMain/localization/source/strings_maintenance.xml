@@ -289,6 +289,8 @@
     <string name="updates_build_minified_label">MINIFIED</string>
     <string name="updates_build_release_label">RELEASE</string>
     <string name="updates_cache_cleared">Cache cleared</string>
+    <string name="updates_cache_clear_failed">Could not clear the update cache.</string>
+    <string name="updates_changelog_search_label">Changelog</string>
     <string name="updates_changelog_title">What\'s new in %s</string>
     <string name="updates_channel_name">App Updates</string>
     <string name="updates_check_mode_ask">Ask</string>

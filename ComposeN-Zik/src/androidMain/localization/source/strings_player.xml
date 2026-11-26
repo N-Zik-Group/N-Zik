@@ -288,6 +288,7 @@
     <string name="player_pause_listen_history_info">Does not save playback events used for statistics, history and suggestions in quick pics</string>
     <string name="player_pause_on_volume_zero">Pause on volume zero</string>
     <string name="player_picture_in_picture_content_description">Choose the content displayed in the picture-in-picture window.</string>
+    <string name="player_picture_in_picture_fixed_content_description">The picture-in-picture window displays the track cover.</string>
     <string name="player_picture_in_picture_enabled_description">Allow the player to appear in a small picture-in-picture window.</string>
     <string name="player_play_button_rectangular_label">Rectangular</string>
     <string name="player_play_button_square_label">Square</string>
@@ -308,6 +309,7 @@
     <string name="player_queue_shuffled_count_format">Queue shuffled (tracks: %d)</string>
     <string name="player_remaining_time_visible_description">Show the time remaining in the current track.</string>
     <string name="player_restart_required_message">Player has to be restarted for effective changes!</string>
+    <string name="player_restart_service_unavailable_message">The player is unavailable. Changes apply the next time it starts.</string>
     <string name="player_rotating_buttons">Rotating buttons</string>
     <string name="player_seek_backward_five_seconds">Rewind 5 seconds</string>
     <string name="player_seek_backward_thirty_seconds">Rewinds 30 seconds</string>

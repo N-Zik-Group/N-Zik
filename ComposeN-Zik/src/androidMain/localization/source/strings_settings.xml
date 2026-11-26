@@ -256,7 +256,7 @@
     <string name="settings_group_list_swipes">List swipe gestures</string>
     <string name="settings_group_home_navigation">Home navigation</string>
     <string name="settings_group_menu_entries">Menu entries</string>
-    <string name="settings_group_sort_defaults">Default sort orders</string>
+    <string name="settings_group_sort_defaults">Sort menu order</string>
     <string name="settings_group_player_layout">Player layout</string>
     <string name="settings_group_background_style">Background style and colors</string>
     <string name="settings_group_fullscreen_elements">On-screen elements</string>
@@ -455,6 +455,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Transparent background</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
     <string name="settings_player_action_restart_service">Restart player</string>
+    <string name="settings_app_action_restart">Restart app</string>
     <string name="settings_player_actions_spaced_evenly_label">Spaced evenly</string>
     <string name="settings_player_album_cover_visible_label">Show album cover</string>
     <string name="settings_player_appearance_page_description">The appearance section contains settings for the player\'s visual appearance</string>
@@ -536,9 +537,14 @@
     <string name="settings_recommendations_title">AI Recommendations</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_glass">Reset Glass settings</string>
+    <string name="settings_reset_glass_appearance_description">Restore the default Glass material and effects.</string>
+    <string name="settings_reset_downloads">Reset download settings</string>
     <string name="settings_reset_all">Reset all settings</string>
     <string name="settings_reset_all_confirm">Reset all</string>
     <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_profile_scope_notice">This resets the active profile’s settings and settings shared on this device. Other profiles keep their own settings.</string>
+    <string name="settings_reset_playback_description">Reset playback, queue and parental control settings.</string>
     <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
     <string name="settings_reset_choose_scope">Choose which settings to restore</string>
     <string name="settings_reset_choose_scope_description">Select a settings section, then restore its defaults.</string>

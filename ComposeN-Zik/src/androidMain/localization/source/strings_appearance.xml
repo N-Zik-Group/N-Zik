@@ -344,6 +344,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Edit my profile</string>
     <string name="theme_store_creator_sign_in">Connect GitHub to edit your creator profile.</string>
+    <string name="theme_store_creator_action_sign_in_required">Connect your GitHub account to access this creator action.</string>
     <string name="theme_store_creator_draft">Changes are saved on this device as a draft.</string>
     <string name="theme_store_creator_display_name">Public name</string>
     <string name="theme_store_creator_bio">Bio</string>

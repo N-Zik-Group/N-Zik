@@ -2,6 +2,7 @@
 <resources>
 
     <!-- Common -->
+    <string name="common_action_back">Back</string>
     <string name="common_answer_no">No</string>
     <string name="common_artist_conjunction_and">and</string>
     <string name="common_brand_github" translatable="false">GitHub</string>

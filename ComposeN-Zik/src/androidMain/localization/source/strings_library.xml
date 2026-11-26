@@ -4,6 +4,8 @@
     <!-- Album -->
     <string name="album_action_bookmark">Bookmark album</string>
     <string name="album_action_open">Go to album</string>
+    <string name="playlist_action_open">Go to playlist</string>
+    <string name="podcast_action_open">Go to podcast</string>
     <string name="album_alternative_versions">Alternative versions</string>
     <string name="album_art">Album art</string>
     <string name="album_found_online_verify">Album found online! Please verify it\'s the correct one.</string>
@@ -18,7 +20,10 @@
 
     <!-- Artist -->
     <string name="artist_action_follow">Follow</string>
+    <string name="artist_action_unfollow">Unfollow</string>
+    <string name="artist_action_open">Go to artist</string>
     <string name="artist_action_play_local_songs">Play all local songs</string>
+    <string name="artist_action_play_library_songs">Play all songs in library</string>
     <string name="artist_deduplication_result">Merged %d duplicate artist(s) with the right artist</string>
     <string name="artist_following_status">Following</string>
     <string name="artist_found_online_verify">Artist found online! Please verify it\'s the correct one.</string>
@@ -65,6 +70,7 @@
 
     <!-- Library -->
     <string name="library_action_bookmark">Bookmark</string>
+    <string name="library_action_remove_bookmark">Remove bookmark</string>
     <string name="library_action_randomize">Randomizer</string>
     <string name="library_albums_title">Albums</string>
     <string name="library_artists_title">Artists</string>
@@ -100,9 +106,13 @@
     <string name="library_youtube_playlists_label">YT/YTM</string>
 
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Remove from dislikes</string>
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
     <string name="library_favorites_action_add">Add to favorites</string>
+    <string name="library_favorites_action_remove">Remove from favorites</string>
+    <string name="library_favorites_already_added">Already in favorites.</string>
     <string name="library_collection_favorites_action_manage">Manage favorites</string>
     <string name="library_favorites_added">Added to favorites</string>
     <string name="library_favorites_removed">Removed from favorites</string>
@@ -158,6 +168,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Keywords</string>
     <string name="metadata_loading">Loading…</string>
+    <string name="metadata_link_searching">Searching…</string>
+    <string name="metadata_link_manual_required">ID not confirmed. Link it manually.</string>
     <string name="metadata_lyricist">Lyricist</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes on MusicBrainz</string>
     <string name="metadata_musicbrainz_title" translatable="false">MusicBrainz</string>
@@ -209,6 +221,7 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Add to playlist</string>
     <string name="playlist_action_add_hint">Add to playlist</string>
+    <string name="playlist_add_destination_locked">You can’t add songs to this playlist.</string>
     <string name="playlist_add_destination_unavailable">This playlist is no longer available for adding device songs. Choose another playlist.</string>
     <string name="playlist_action_create">New playlist</string>
     <string name="playlist_action_delete_selected">Delete playlists</string>
@@ -229,6 +242,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Are you sure you want to delete ALL %d playlists?</string>
     <string name="playlist_delete_confirmation">Do you really want to delete this playlist?</string>
     <string name="playlist_delete_dialog_title">Delete playlist</string>
+    <string name="playlist_deletion_failed">Couldn’t delete the playlist from this device.</string>
+    <string name="playlist_deletion_partial">Some playlists were deleted from this device.</string>
+    <string name="playlist_deletion_local_success">Deleted from this device.</string>
+    <string name="playlist_deletion_remote_success">Deleted from YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Couldn’t delete some playlists from YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Linked playlists may also be deleted from YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Delete playlists</string>
     <string name="playlist_delete_selected_confirmation_count_format">Are you sure you want to delete these %d playlists?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Cannot Perform this Action when all the Songs are Disliked</string>

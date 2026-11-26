@@ -46,6 +46,14 @@
         <item quantity="one">Remove %1$d track in this playlist from favorites?</item>
         <item quantity="other">Remove %1$d tracks in this playlist from favorites?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Add %1$d song to favorites?</item>
+        <item quantity="other">Add %1$d songs to favorites?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Remove %1$d song from favorites?</item>
+        <item quantity="other">Remove %1$d songs from favorites?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Add %1$d track from this album to favorites?</item>
         <item quantity="other">Add %1$d tracks from this album to favorites?</item>
