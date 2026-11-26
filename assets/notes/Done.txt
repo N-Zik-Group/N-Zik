@@ -860,3 +860,7 @@ Listen Together pending state:
 Settings reset locale dispatch:
 - fix(settings): reset app locales on the main thread
   - Apply locale changes after the protected reset writes finish.
+
+Picture-in-picture search:
+- fix(settings): index the displayed picture-in-picture description
+  - Search the same copy that appears on the player settings card.

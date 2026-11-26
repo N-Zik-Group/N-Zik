@@ -148,7 +148,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "general.languages.app_language" to R.string.language_app_selection_description,
     "general.picture_in_picture.settings_enable_pip" to R.string.player_picture_in_picture_enabled_description,
     "general.picture_in_picture.open" to R.string.settings_picture_in_picture_open,
-    "general.picture_in_picture.settings_pip_module" to R.string.player_picture_in_picture_content_description,
+    "general.picture_in_picture.settings_pip_module" to R.string.player_picture_in_picture_fixed_content_description,
     "general.playback.crossfade_duration" to R.string.player_crossfade_duration_description,
     "general.playback.exclude_disliked_albums" to R.string.player_exclude_disliked_albums_description,
     "general.playback.exclude_disliked_artists" to R.string.player_exclude_disliked_artists_description,
