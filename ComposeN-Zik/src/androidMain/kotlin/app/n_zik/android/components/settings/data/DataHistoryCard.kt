@@ -30,6 +30,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.search.SearchHistoryPageSettings
@@ -52,23 +53,30 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 /** Owns history preferences and the existing history actions. */
 @UnstableApi
 @Composable
-internal fun DataHistoryCard(search: Search, navController: NavController, restartState: MutableState<Boolean>, modifier: Modifier = Modifier) {
+internal fun DataHistoryCard(
+    search: Search,
+    navController: NavController,
+    restartState: MutableState<Boolean>,
+    openModifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     var restartService by restartState
     var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
     var pauseListenHistory by rememberPreference(pauseListenHistoryKey, false)
     var minimumListeningTime by rememberPreference(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
     var showMinimumListeningTimeDialog by remember { mutableStateOf(false) }
+    var confirmListenClear by remember { mutableStateOf(false) }
+    var confirmSearchClear by remember { mutableStateOf(false) }
     SettingsSectionCard(
         title = stringResource(R.string.library_history_title),
         icon = R.drawable.history,
-        modifier = modifier.testTag("data.card.history"),
+        modifier = Modifier.testTag("data.card.history"),
         content = {
             CardCategoryLabel(stringResource(R.string.settings_history_group_listening))
             // The burger History item only reaches this partial card: the "Ouvrir"
             // row (spec-customizable-burger-menu goal B) opens the full History screen.
             OtherSettingsEntry(
-                modifier = Modifier.settingsSearchTarget("data.history.module_open"),
+                modifier = openModifier.settingsSearchTarget("data.history.module_open"),
                 title = stringResource(R.string.modules_open),
                 text = stringResource(R.string.settings_history_open_description),
                 icon = R.drawable.chevron_forward,
@@ -120,26 +128,8 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                         stringResource(R.string.search_history_empty_message)
                     },
                     icon = R.drawable.trash,
-                    onClick = {
-                        val profile = getActiveProfile(context)
-                        Database.asyncTransaction {
-                            eventTable.deleteAll()
-                        }
-                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                            withContext(NzikDispatchers.DATA) {
-                                DatabaseRestoreJournal.withProfileStorageMutation(context) {
-                                    if (profile == getActiveProfile(context) && profileStorageIdentity(context, profile) != null &&
-                                        !isLegacyStorageShared(context, profile, ProfileDataItem.WAVEFORMS)
-                                    ) {
-                                        val root = context.filesDir.canonicalFile
-                                        ProfileResetSnapshot.deleteVerifiedTree(root.resolve(waveformsDir(context, profile).name))
-                                    }
-                                }
-                            }
-                            WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
-                            Toaster.done()
-                        }
-                    }
+                    isEnabled = eventsCount > 0,
+                    onClick = { confirmListenClear = true },
                 )
             }
 
@@ -171,10 +161,49 @@ internal fun DataHistoryCard(search: Search, navController: NavController, resta
                         stringResource(R.string.search_history_empty_message)
                     },
                     icon = R.drawable.trash,
-                    onClick = {
+                    isEnabled = queriesCount > 0,
+                    onClick = { confirmSearchClear = true },
+                )
+            }
+
+            DialogPresence(visible = confirmListenClear) {
+                ConfirmationDialog(
+                    title = stringResource(R.string.settings_history_action_clear_listening),
+                    text = stringResource(R.string.history_clear_listen_history_description),
+                    confirmText = stringResource(R.string.common_action_clear),
+                    onDismiss = { confirmListenClear = false },
+                    onConfirm = {
+                        val profile = getActiveProfile(context)
+                        Database.asyncTransaction {
+                            eventTable.deleteAll()
+                        }
+                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                            withContext(NzikDispatchers.DATA) {
+                                DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                                    if (profile == getActiveProfile(context) && profileStorageIdentity(context, profile) != null &&
+                                        !isLegacyStorageShared(context, profile, ProfileDataItem.WAVEFORMS)
+                                    ) {
+                                        val root = context.filesDir.canonicalFile
+                                        ProfileResetSnapshot.deleteVerifiedTree(root.resolve(waveformsDir(context, profile).name))
+                                    }
+                                }
+                            }
+                            WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
+                            Toaster.done()
+                        }
+                    },
+                )
+            }
+            DialogPresence(visible = confirmSearchClear) {
+                ConfirmationDialog(
+                    title = stringResource(R.string.search_history_action_clear),
+                    text = stringResource(R.string.history_clear_search_history_description),
+                    confirmText = stringResource(R.string.common_action_clear),
+                    onDismiss = { confirmSearchClear = false },
+                    onConfirm = {
                         SearchHistoryStore.clearAll(context.preferences)
                         Toaster.done()
-                    }
+                    },
                 )
             }
 

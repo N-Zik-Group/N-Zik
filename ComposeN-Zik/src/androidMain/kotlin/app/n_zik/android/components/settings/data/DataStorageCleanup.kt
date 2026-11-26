@@ -5,6 +5,7 @@ import android.os.Build
 import android.system.Os
 import android.system.OsConstants
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -72,72 +74,90 @@ import timber.log.Timber
 private val cleanupInProgress = MutableStateFlow(false)
 
 internal enum class CleanupAction(
+    val searchTargetId: String,
     val label: Int,
     val icon: Int,
     val description: Int,
     val dialogTitle: Int,
 ) {
     IMAGES(
+        "data.cache.clear-images",
         R.string.settings_cache_clear_images_dialog_title,
         R.drawable.image,
         R.string.storage_cleanup_images_action_description,
         R.string.settings_cache_clear_images_dialog_title,
     ),
     STREAMING(
+        "data.cache.clear-songs",
         R.string.storage_cleanup_clear_streaming_cache,
         R.drawable.music_file,
         R.string.storage_cleanup_streaming_action_description,
         R.string.storage_cleanup_clear_streaming_cache,
     ),
     DOWNLOADS(
+        "data.cache.clear-downloads",
         R.string.storage_cleanup_clear_downloads,
         R.drawable.download,
         R.string.storage_cleanup_downloads_confirmed_description,
         R.string.storage_cleanup_clear_downloads,
     ),
     WAVEFORMS(
+        "data.storage.clear-waveforms",
         R.string.storage_cleanup_waveforms_dialog_title,
         R.drawable.equalizer,
         R.string.storage_cleanup_waveforms_action_description,
         R.string.storage_cleanup_waveforms_dialog_title,
     ),
     NETWORK(
+        "data.storage.cleanup.network",
         R.string.storage_cleanup_clear_network_cache,
         R.drawable.server,
         R.string.storage_cleanup_network_description,
         R.string.storage_cleanup_clear_network_cache,
     ),
     DIAGNOSTIC_LOGS(
+        "data.storage.cleanup.diagnostic_logs",
         R.string.storage_cleanup_diagnostic_logs,
         R.drawable.trash,
         R.string.storage_cleanup_logs_action_description,
         R.string.storage_cleanup_diagnostic_logs,
     ),
     TEMPORARY_FILES(
+        "data.storage.cleanup.temporary_files",
         R.string.storage_cleanup_clear_temporary_files,
         R.drawable.trash,
         R.string.storage_cleanup_temporary_action_description,
         R.string.storage_cleanup_clear_temporary_files,
     ),
     THEMES(
+        "data.storage.cleanup.themes",
         R.string.storage_cleanup_clear_theme_cache,
         R.drawable.ui,
         R.string.storage_cleanup_theme_cache_description,
         R.string.storage_cleanup_clear_theme_cache,
     ),
     LYRICS(
+        "data.storage.cleanup.lyrics",
         R.string.storage_cleanup_clear_lyrics,
         R.drawable.song_lyrics,
         R.string.storage_cleanup_lyrics_description,
         R.string.storage_cleanup_clear_lyrics,
     ),
     ALL(
+        "data.storage.clear-all",
         R.string.storage_cleanup_all,
         R.drawable.trash,
         R.string.storage_cleanup_all_confirmed_description,
         R.string.storage_cleanup_all,
     ),
 }
+
+internal fun isStorageCleanupSearchTarget(id: String): Boolean = CleanupAction.entries.any { it.searchTargetId == id }
+
+internal fun storageCleanupSearchLabels(id: String): List<Int> = CleanupAction.entries
+    .firstOrNull { it.searchTargetId == id }
+    ?.let { listOf(it.selectionLabel(), it.description) }
+    .orEmpty()
 
 private fun CleanupAction.selectionLabel(): Int = when (this) {
     CleanupAction.IMAGES -> R.string.storage_cleanup_option_cached_images
@@ -492,6 +512,19 @@ internal fun DataStorageCleanup(
     var planning by remember { mutableStateOf(false) }
     var confirmation by remember { mutableStateOf<StorageCleanupPlan?>(null) }
     var incompleteResult by remember { mutableStateOf<String?>(null) }
+    val searchRegistry = LocalSettingsTargets.current
+    val searchAction = CleanupAction.entries.firstOrNull { it.searchTargetId == searchRegistry?.storageEntryTarget }
+    val searchProfile = searchRegistry?.storageProfileTarget
+    LaunchedEffect(searchAction, searchProfile, selected?.identity) {
+        if (searchRegistry != null && !searchRegistry.storageCleanupOpened &&
+            (searchAction == CleanupAction.ALL || searchAction in eligibleActions) &&
+            (searchProfile == null || searchProfile == selected?.identity) && !planning && !cleanupInProgress.value
+        ) {
+            searchRegistry.storageCleanupOpened = true
+            choices = emptySet()
+            choosing = true
+        }
+    }
     SettingsCardSectionDivider()
     CardCategoryLabel(stringResource(if (selected == null) R.string.storage_cleanup_global_title else R.string.storage_cleanup_profile_title))
 
@@ -658,17 +691,11 @@ internal fun DataStorageCleanup(
         }
     }
 
-    val searchAnchors = listOf(
-        "data.cache.clear-images", "data.cache.clear-songs", "data.cache.clear-downloads",
-        "data.storage.clear-waveforms", "data.storage.clear-all",
-        "data.storage.cleanup.themes", "data.storage.cleanup.lyrics", "data.storage.cleanup.network",
-        "data.storage.cleanup.diagnostic_logs", "data.storage.cleanup.temporary_files",
-    ).fold(Modifier.testTag("data.storage.cleanup.all")) { modifier, id -> modifier.settingsSearchTarget(id) }
     OtherSettingsEntry(
         title = stringResource(R.string.storage_cleanup_picker_title),
         text = stringResource(R.string.storage_cleanup_picker_description),
         icon = R.drawable.trash,
-        modifier = searchAnchors,
+        modifier = Modifier.testTag("data.storage.cleanup.all"),
         onClick = {
             if (!planning && !cleanupInProgress.value) {
                 choices = emptySet()
@@ -702,18 +729,21 @@ internal fun DataStorageCleanup(
                 BackupContentOption(
                     R.string.storage_cleanup_select_everything, R.string.storage_cleanup_select_everything_description,
                     selected = choices.containsAll(eligibleActions),
+                    modifier = Modifier.settingsSearchTarget(CleanupAction.ALL.searchTargetId),
                 ) {
                     choices = if (choices.containsAll(eligibleActions)) emptySet() else eligibleActions.toSet()
                 }
                 CardCategoryLabel(stringResource(R.string.storage_cleanup_cache_group))
                 for (action in eligibleActions.filter { it in cacheActions }) {
-                    BackupContentOption(action.selectionLabel(), action.description, action in choices) {
+                    BackupContentOption(action.selectionLabel(), action.description, action in choices,
+                        modifier = Modifier.settingsSearchTarget(action.searchTargetId)) {
                         choices = if (action in choices) choices - action else choices + action
                     }
                 }
                 CardCategoryLabel(stringResource(R.string.storage_cleanup_delete_group))
                 for (action in eligibleActions.filterNot { it in cacheActions }) {
-                    BackupContentOption(action.selectionLabel(), action.description, action in choices) {
+                    BackupContentOption(action.selectionLabel(), action.description, action in choices,
+                        modifier = Modifier.settingsSearchTarget(action.searchTargetId)) {
                         choices = if (action in choices) choices - action else choices + action
                     }
                 }

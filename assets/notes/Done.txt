@@ -756,3 +756,7 @@ Updater menu and changelog:
 Theme Store settings:
 - fix(theme-store): open the requested Creator action from settings search
   - Reveal the right section or editor and explain account prerequisites.
+
+Data and privacy settings:
+- fix(settings): align storage, history and privacy actions with search
+  - Route requests to the visible action and keep data reset feedback specific.

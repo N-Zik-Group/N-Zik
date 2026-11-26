@@ -91,6 +91,10 @@ import app.n_zik.android.core.database.EventTable
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.SettingsTargetRegistry
+import app.n_zik.android.utils.saveProfileDisplayName
+import kotlinx.coroutines.CompletableDeferred
 import app.n_zik.android.core.profiles.ScopedTemporaryFiles
 import java.util.concurrent.atomic.AtomicInteger
 import java.io.File
@@ -360,6 +364,42 @@ class DataSettingsWiringTest {
         }
     }
 
+    @Test fun `storage search shows the selected profile tab before measurement and keeps it afterward`() {
+        val owner = checkNotNull(profileStorageIdentity(context, "default"))
+        val name = "Studio storage"
+        context.saveProfileDisplayName(owner.id, name)
+        val registry = SettingsTargetRegistry().apply { storageProfileTarget = owner }
+        val downloads = mapOf(StorageCategory.DOWNLOADS to 5L)
+        val sample = checkNotNull(partitionStorage(100L, 80L, downloads))
+            .copy(profiles = listOf(ProfileStorageUsage(owner, name, downloads)))
+        val measurement = CompletableDeferred<StorageBreakdown?>()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides registry) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { measurement.await() })
+                }
+            }
+        }
+        val total = composeRule.onNodeWithTag("settingsDialogTab0")
+        val profile = composeRule.onNodeWithText(name)
+        val deviceLibrary = composeRule.onNodeWithTag("settings.target.other.on_device.enabled", useUnmergedTree = true)
+        profile.assertIsSelected()
+        deviceLibrary.assertExists()
+
+        total.performClick().assertIsSelected()
+        deviceLibrary.assertDoesNotExist()
+        profile.performClick().assertIsSelected()
+        deviceLibrary.assertExists()
+
+        measurement.complete(sample)
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            composeRule.onAllNodes(hasTestTag("data.storage.chart.bar")).fetchSemanticsNodes().isNotEmpty()
+        }
+        profile.assertIsSelected()
+        deviceLibrary.assertExists()
+    }
+
     @Test fun `storage opens on Total and shows cache settings after selecting a profile`() {
         val downloads = mapOf(StorageCategory.DOWNLOADS to 5L)
         val profile = ProfileStorageUsage(ProfileStorageIdentity("default", "legacy"), "Principal", downloads)
@@ -559,10 +599,13 @@ class DataSettingsWiringTest {
     }
 
     @Test fun `reset action is not repeated by recomposition`() {
+        context.preferences.edit().putBoolean(pauseListenHistoryKey, true).commit()
         show()
         composeRule.onNodeWithText(context.getString(R.string.settings_restore_default_settings)).performScrollTo().performClick()
-        composeRule.waitForIdle()
-        assertEquals(false, context.preferences.getBoolean(pauseListenHistoryKey, true))
+        composeRule.waitUntil(10_000) {
+            Shadows.shadowOf(Looper.getMainLooper()).idle()
+            !context.preferences.getBoolean(pauseListenHistoryKey, true)
+        }
         composeRule.runOnIdle { context.preferences.edit().putBoolean(pauseListenHistoryKey, true).apply() }
         composeRule.waitForIdle()
         assertTrue(context.preferences.getBoolean(pauseListenHistoryKey, false))

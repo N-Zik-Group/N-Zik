@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,7 +37,7 @@ import app.n_zik.android.components.dialog.backup.ImportBackupDialog
 import app.n_zik.android.components.dialog.export.ExportBackupDialog
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -63,23 +62,25 @@ fun DataSettings(
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_DATA, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
         history.value = SearchHistoryStore.record(context.preferences, SearchHistoryStore.PAGE_SETTINGS_DATA, query)
     }
     val scrollState = rememberScrollState()
-    var containerTopY by remember { mutableFloatStateOf(-1f) }
-    var historyContentOffset by remember { mutableIntStateOf(-1) }
+    var viewportTopY by remember { mutableFloatStateOf(Float.NaN) }
+    var historyRowContentY by remember { mutableFloatStateOf(Float.NaN) }
+    fun historyOffset(): Int? = (historyRowContentY - viewportTopY)
+        .takeIf(Float::isFinite)?.roundToInt()?.coerceAtLeast(0)
 
     LaunchedEffect(focus) {
         if (focus != DataSettingTargets.HISTORY_FOCUS) return@LaunchedEffect
         // Entry reflow can move the card during the scroll; finish against its latest measured position.
-        snapshotFlow { historyContentOffset }.first { offset ->
-            if (offset < 0) false else {
+        snapshotFlow { historyOffset() }.first { offset ->
+            if (offset == null) false else {
                 scrollState.animateScrollTo(offset)
-                historyContentOffset == offset
+                historyOffset() == offset
             }
         }
     }
@@ -89,8 +90,8 @@ fun DataSettings(
             .background(colorPalette().background0)
             .fillMaxHeight()
             .fillMaxWidth()
+            .onGloballyPositioned { viewportTopY = it.positionInRoot().y }
             .verticalScroll(scrollState)
-            .onGloballyPositioned { containerTopY = it.positionInRoot().y }
             .settingsTopContentPadding()
     ) {
 
@@ -109,6 +110,7 @@ fun DataSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_DATA, it)
@@ -124,11 +126,11 @@ fun DataSettings(
         }
         DataSettingsContent(
             search, navController,
-            onCardPosition = { _, y ->
-                if (containerTopY >= 0f) {
-                    historyContentOffset = (y - containerTopY + scrollState.value).roundToInt()
+            historyOpenModifier = if (focus == DataSettingTargets.HISTORY_FOCUS) {
+                Modifier.onGloballyPositioned {
+                    historyRowContentY = it.positionInRoot().y + scrollState.value
                 }
-            },
+            } else Modifier,
             cardsContainer = { cards -> settingsSearchContent(searchFocus, hasResults = hasSearchResults, query = search.inputValue) { cards() } }
         )
 
@@ -143,7 +145,7 @@ internal fun DataSettingsContent(
     navController: NavController,
     selectedCards: Set<Int>? = null,
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
-    onCardPosition: (String, Float) -> Unit = { _, _ -> },
+    historyOpenModifier: Modifier = Modifier,
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
     val restartState = rememberSaveable { mutableStateOf(false) }
@@ -167,7 +169,9 @@ internal fun DataSettingsContent(
             }
         }
         if (selectedCards == null || R.string.library_history_title in selectedCards) {
-            SettingsCardSlot(R.string.library_history_title, modifier = { cardModifier(R.string.library_history_title) }) { DataHistoryCard(search, navController, restartState, Modifier.onGloballyPositioned { onCardPosition("history", it.positionInRoot().y) }) }
+            SettingsCardSlot(R.string.library_history_title, modifier = { cardModifier(R.string.library_history_title) }) {
+                DataHistoryCard(search, navController, restartState, openModifier = historyOpenModifier)
+            }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) { DataResetCard(search) }

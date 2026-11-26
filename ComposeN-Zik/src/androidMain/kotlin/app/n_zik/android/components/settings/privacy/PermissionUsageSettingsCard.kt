@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,12 +25,16 @@ import app.n_zik.android.utils.secondary
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogButtonPlacement
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.SettingsDialogSearchScope
+import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.privacy.JournalPermission
@@ -44,7 +49,9 @@ import java.util.Date
 
 @Composable
 fun PermissionUsageSettingsCard(modifier: Modifier = Modifier) {
-    var open by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) {
+        onDispose { PermissionUsageDialog.hideDialog() }
+    }
     var paused by rememberPreference(PermissionUsageJournal.PAUSED_KEY, false)
     SettingsSectionCard(
         title = stringResource(R.string.permissions_usage_journal),
@@ -63,79 +70,106 @@ fun PermissionUsageSettingsCard(modifier: Modifier = Modifier) {
                 title = stringResource(R.string.permissions_journal_entries),
                 text = stringResource(R.string.permissions_journal_entries_description),
                 icon = R.drawable.history,
-                onClick = { open = true },
+                onClick = PermissionUsageDialog::showDialog,
                 modifier = Modifier.settingsSearchTarget("privacy.permissions.open"),
             )
         },
     )
-    DialogPresence(visible = open) {
-        PermissionUsageDialog(onDismiss = { open = false })
+    PermissionUsageDialog.Render()
+}
+
+internal object PermissionUsageDialog : Dialog {
+    override var isActive by mutableStateOf(false)
+    override val dialogTitle: String
+        @Composable get() = stringResource(R.string.permissions_usage_journal)
+
+    fun searchOptions(): List<SettingsNestedOption> = listOf(
+        SettingsNestedOption("clear", R.string.permissions_journal_clear, descriptionRes = R.string.permissions_journal_clear_description),
+    )
+
+    @Composable
+    override fun DialogBody() = PermissionUsageList()
+
+    @Composable
+    override fun Render() {
+        SettingsDialogSearchScope(this) {
+            DialogPresence(visible = isActive) {
+                val context = LocalContext.current
+                val target = LocalSettingsTargets.current?.nestedTarget
+                var confirmClear by remember { mutableStateOf(false) }
+                DialogFrame(
+                    bodyPadding = PaddingValues(horizontal = 24.dp),
+                    title = dialogTitle,
+                    onDismiss = ::hideDialog,
+                    modifier = Modifier.testTag("permission_journal_dialog"),
+                    footer = {
+                        ButtonRow(buttons = listOf(
+                            DialogButton(
+                                text = stringResource(R.string.common_action_clear),
+                                placement = DialogButtonPlacement.Start,
+                                onClick = { confirmClear = true },
+                                danger = true,
+                                modifier = if (target != null) Modifier.settingsSearchTarget(target.id) else Modifier,
+                            ),
+                            DialogButton(
+                                text = stringResource(R.string.common_action_close),
+                                onClick = ::hideDialog,
+                                danger = true,
+                            ),
+                        ))
+                    },
+                ) {
+                    PermissionUsageList(Modifier.weight(1f, fill = false))
+                }
+                DialogPresence(visible = confirmClear) {
+                    ConfirmationDialog(
+                        title = stringResource(R.string.permissions_journal_clear),
+                        confirmText = stringResource(R.string.common_action_clear),
+                        text = stringResource(R.string.permissions_journal_clear_confirm),
+                        onDismiss = { confirmClear = false },
+                        onConfirm = {
+                            confirmClear = false
+                            if (!PermissionUsageJournal.clear(context)) {
+                                Toaster.i(context.getString(R.string.permissions_journal_busy))
+                            }
+                        },
+                    )
+                }
+            }
+        }
     }
 }
 
 @Composable
-private fun PermissionUsageDialog(onDismiss: () -> Unit) {
+private fun PermissionUsageList(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val prefs = context.preferences
     val events: List<PermissionUsageEvent>? by remember(prefs) {
         PermissionUsageJournal.observe(prefs)
     }.collectAsStateWithLifecycle(initialValue = null)
     val dateFormat = remember { DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM) }
-    var confirmClear by remember { mutableStateOf(false) }
-    DialogFrame(
-        bodyPadding = PaddingValues(horizontal = 24.dp),
-        title = stringResource(R.string.permissions_usage_journal),
-        onDismiss = onDismiss,
-        modifier = Modifier.testTag("permission_journal_dialog"),
-        footer = {
-            ButtonRow(buttons = listOf(
-                DialogButton(
-                    text = stringResource(R.string.common_action_clear),
-                    placement = DialogButtonPlacement.Start,
-                    onClick = { confirmClear = true },
-                    danger = true,
-                ),
-                DialogButton(text = stringResource(R.string.common_action_close), onClick = onDismiss, danger = true),
-            ))
-        }
+    LazyColumn(
+        modifier = modifier.fillMaxWidth().testTag("permission_journal_list"),
+        contentPadding = PaddingValues(vertical = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxWidth().weight(1f, fill = false).testTag("permission_journal_list"),
-            contentPadding = PaddingValues(vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            if (events == null) items(3) {
-                ItemTextPlaceholder(null, typography().xxs.secondary, width = 0.85f)
-            }
-            if (events?.isEmpty() == true) item {
-                BasicText(
-                    text = stringResource(R.string.permissions_journal_empty),
-                    style = typography().xxs.secondary,
-                )
-            }
-            itemsIndexed(events.orEmpty(), key = { index, _ -> index }, contentType = { _, _ -> "permission_event" }) { _, event ->
-                val timestamp = dateFormat.format(Date(event.timestamp))
-                BasicText(
-                    text = stringResource(R.string.permissions_journal_event, timestamp,
-                        stringResource(featureLabel(event.feature)), stringResource(permissionLabel(event.permission)), stringResource(eventLabel(event.kind))),
-                    style = typography().xxs.secondary,
-                )
-            }
+        if (events == null) items(3) {
+            ItemTextPlaceholder(null, typography().xxs.secondary, width = 0.85f)
         }
-    }
-    DialogPresence(visible = confirmClear) {
-        ConfirmationDialog(
-        title = stringResource(R.string.permissions_journal_clear),
-        confirmText = stringResource(R.string.common_action_clear),
-        text = stringResource(R.string.permissions_journal_clear_confirm),
-        onDismiss = { confirmClear = false },
-        onConfirm = {
-            confirmClear = false
-            if (!PermissionUsageJournal.clear(context)) {
-                Toaster.i(context.getString(R.string.permissions_journal_busy))
-            }
-        },
-    )
+        if (events?.isEmpty() == true) item {
+            BasicText(
+                text = stringResource(R.string.permissions_journal_empty),
+                style = typography().xxs.secondary,
+            )
+        }
+        itemsIndexed(events.orEmpty(), key = { index, _ -> index }, contentType = { _, _ -> "permission_event" }) { _, event ->
+            val timestamp = dateFormat.format(Date(event.timestamp))
+            BasicText(
+                text = stringResource(R.string.permissions_journal_event, timestamp,
+                    stringResource(featureLabel(event.feature)), stringResource(permissionLabel(event.permission)), stringResource(eventLabel(event.kind))),
+                style = typography().xxs.secondary,
+            )
+        }
     }
 }
 
