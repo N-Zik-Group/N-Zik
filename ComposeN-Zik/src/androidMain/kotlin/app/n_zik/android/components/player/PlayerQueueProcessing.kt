@@ -12,13 +12,18 @@ import androidx.compose.runtime.setValue
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.components.rememberSongRowArtistCredits
 import app.n_zik.android.components.song.resolveSongDisplayMetadata
+import app.n_zik.android.components.song.isArtistIdForSong
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.models.Info
 import app.n_zik.android.models.Song
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.SessionDurationMetadata
 import app.n_zik.android.playback.services.automotive.session.enrichAutoQueueDurations
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.resolveTrackArtistName
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -28,6 +33,7 @@ internal data class PlayerQueueRow(
     val song: Song,
     val title: String,
     val artists: String,
+    val displaySong: Song = song,
 )
 
 internal data class NormalizedPlayerQueue(
@@ -133,6 +139,22 @@ private class QueueSnapshotIdentityKey(private val value: Any?) {
     override fun hashCode(): Int = System.identityHashCode(value)
 }
 
+@Composable
+internal fun rememberPlayerQueueArtists(songIds: List<String>): Map<String, List<Info>> =
+    rememberSongRowArtistCredits(songIds).value
+
+private fun resolvePlayerQueueArtist(
+    song: Song,
+    artistLinks: List<Info>,
+    unknownArtist: String,
+): Song {
+    if (artistLinks.isEmpty()) return song
+    val links = artistLinks.filter { isArtistIdForSong(it.id, song.isLocal) }
+    val artist = resolveTrackArtistName(null, song.artistsText, links, unknownArtist)
+    if (artist == null || artist == song.cleanArtistsText()) return song
+    return song.copy(artistsText = artist).apply { playCount = song.playCount }
+}
+
 /** Last valid visual rows remain while cancellable work publishes the newest queue/query. */
 @Composable
 internal fun rememberPlayerQueueSnapshot(
@@ -142,6 +164,8 @@ internal fun rememberPlayerQueueSnapshot(
         { source, previous -> normalizePlayerQueue(source, previous) },
     filterQueue: suspend (NormalizedPlayerQueue, String) -> PlayerQueueSnapshot = ::filterPlayerQueue,
     storedSongs: Map<String, Song> = emptyMap(),
+    storedArtists: Map<String, List<Info>> = emptyMap(),
+    unknownArtist: String = "Unknown Artist",
 ): PlayerQueueSnapshot {
     var normalized by remember { mutableStateOf<NormalizedPlayerQueue?>(null, referentialEqualityPolicy()) }
     var result by remember { mutableStateOf(PlayerQueueSnapshot.Empty, referentialEqualityPolicy()) }
@@ -149,13 +173,21 @@ internal fun rememberPlayerQueueSnapshot(
     LaunchedEffect(sourceKey) {
         normalized = normalizeQueue(windows, normalized)
     }
-    LaunchedEffect(sourceKey, QueueSnapshotIdentityKey(normalized), input, storedSongs) {
+    LaunchedEffect(sourceKey, QueueSnapshotIdentityKey(normalized), input, storedSongs, storedArtists, unknownArtist) {
         val current = normalized
         if (current != null && current.source === windows) {
-            val displayQueue = if (storedSongs.isEmpty()) current else withContext(NzikDispatchers.MEDIA) {
+            val displayQueue = if (storedSongs.isEmpty() && storedArtists.isEmpty()) current else withContext(NzikDispatchers.MEDIA) {
                 val rows = current.rows.map { row ->
-                    val song = resolveSongDisplayMetadata(row.song, storedSongs[row.song.id])
-                    if (song === row.song) row else row.copy(song = song, title = song.cleanTitle(), artists = song.cleanArtistsText())
+                    currentCoroutineContext().ensureActive()
+                    val id = row.song.id
+                    val song = resolveSongDisplayMetadata(row.song, storedSongs[id])
+                    val displaySong = resolvePlayerQueueArtist(song, storedArtists[id].orEmpty(), unknownArtist)
+                    if (song === row.song && displaySong === song) row else row.copy(
+                        song = song,
+                        title = displaySong.cleanTitle(),
+                        artists = displaySong.cleanArtistsText(),
+                        displaySong = displaySong,
+                    )
                 }
                 NormalizedPlayerQueue(current.source, rows, rows.map { it.song })
             }

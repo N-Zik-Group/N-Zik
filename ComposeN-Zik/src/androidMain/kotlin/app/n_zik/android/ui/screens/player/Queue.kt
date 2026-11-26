@@ -104,7 +104,9 @@ import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesOverlay
 import app.n_zik.android.utils.DisposableListener
+import app.n_zik.android.components.menu.player.playerMenuMediaItem
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.podcastBrowseId
 import app.n_zik.android.utils.autoLoadSongsInQueueKey
 import app.n_zik.android.utils.currentMediaItemIdAsState
 import app.n_zik.android.utils.enqueue
@@ -118,6 +120,7 @@ import app.n_zik.android.utils.shouldBePlaying
 import app.n_zik.android.utils.windows
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.player.rememberPlayerQueueSnapshot
+import app.n_zik.android.components.player.rememberPlayerQueueArtists
 import app.n_zik.android.components.player.playerQueueBulkSongs
 import app.n_zik.android.components.player.findPlayerQueueWindowIndex
 import app.n_zik.android.LocalDownloadStatesMap
@@ -287,7 +290,14 @@ fun Queue(
             windowsInQueue.map { it.mediaItem.normalizedSongId }.distinct()
         }
         val storedQueueSongs by rememberSongRowMetadata(storedQueueSongIds)
-        val queueSnapshot = rememberPlayerQueueSnapshot(windowsInQueue, search.filterQuery, storedSongs = storedQueueSongs)
+        val storedQueueArtists = rememberPlayerQueueArtists(if (preview == null) storedQueueSongIds else emptyList())
+        val queueSnapshot = rememberPlayerQueueSnapshot(
+            windowsInQueue,
+            search.filterQuery,
+            storedSongs = storedQueueSongs,
+            storedArtists = storedQueueArtists,
+            unknownArtist = stringResource(R.string.metadata_unknown_artist),
+        )
         // Drag order must update synchronously; all metadata conversion/search stays on MEDIA.
         val rowsOnDisplay = if ((isDragging || pendingDragOrder === windowsInQueue) && search.filterQuery.isEmpty()) {
             remember(windowsInQueue, queueSnapshot) {
@@ -497,7 +507,7 @@ fun Queue(
                     if (forceShimmer) {
                         QueueGlassRowObjects(displayIndex, false) {
                             QueueSongShimmer(
-                                song = song,
+                                song = row.displaySong,
                                 background = itemBackground,
                                 isCurrent = currentMediaId == song.id,
                                 hasReorderSlot = hasReorderSlot,
@@ -558,7 +568,7 @@ fun Queue(
                                 }
                             }
 
-                            val mediaItem = song.asMediaItem
+                            val mediaItem = playerMenuMediaItem(window.mediaItem, song)
                             SwipeableQueueItem(
                                 mediaItem = mediaItem,
                                 backgroundColor = itemBackground,
@@ -634,13 +644,16 @@ fun Queue(
                                 }
                             ) {
                                 SongItem(
-                                    song = song,
+                                    song = row.displaySong,
                                     observeStoredMetadata = false,
                                     navController = navController,
                                     isLiked = isLiked,
                                     inPlaylist = inPlaylist,
                                     backgroundColor = itemBackground,
-                                    onLongClick = null, // null triggers SongItemMenu on long press
+                                    playbackAlbumId = mediaItem.mediaMetadata.extras?.getString("albumId"),
+                                    playbackAlbumTitle = mediaItem.mediaMetadata.albumTitle?.toString(),
+                                    podcastBrowseId = window.mediaItem.podcastBrowseId,
+                                    sourceMediaItem = { window.mediaItem },
                                     trailingContent = {
                                         QueueSelectionCheckbox(window.uid, itemSelector)
                                         if (hasReorderSlot)

@@ -828,3 +828,7 @@ Collection screens:
 Shared dialog controls:
 - fix(dialog): keep input validation and action behavior consistent
   - Use the current input constraints and preserve artist source information.
+
+Queue display:
+- fix(queue): refresh displayed credits and preserve source actions
+  - Use the represented queue entry for track menu metadata and navigation.

@@ -12,6 +12,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.models.Info
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asSong
 import io.mockk.every
@@ -89,6 +90,32 @@ class PlayerQueueProcessingTest {
         }
         compose.waitUntil(5_000) { snapshot.rows.size == 2 }
         compose.runOnIdle { assertEquals(0, snapshot.initialPlaceholderCount(windows.size)) }
+    }
+
+    @Test
+    fun `live linked artists update queue text and search without changing the row identity or action source`() {
+        val item = media("v6t1s8rDS9s", "That's It", "Grand Theft Auto VI")
+        val track = window("queue-track", item)
+        val windows = listOf(track)
+        val query = mutableStateOf("")
+        val credits = mutableStateOf<Map<String, List<Info>>>(emptyMap())
+        var snapshot = PlayerQueueSnapshot.Empty
+        compose.setContent {
+            snapshot = rememberPlayerQueueSnapshot(windows, query.value, storedArtists = credits.value)
+        }
+        compose.waitUntil(5_000) { snapshot.rows.singleOrNull()?.artists == "Grand Theft Auto VI" }
+        applySnapshotChanges {
+            query.value = "Yung Lean"
+            credits.value = mapOf(item.mediaId to listOf(Info("UCKxZPmezUMRaV0rkbQnrtxA", "Yung Lean")))
+        }
+        compose.waitUntil(5_000) { snapshot.input == "Yung Lean" && snapshot.rows.size == 1 }
+        compose.runOnIdle {
+            val row = snapshot.rows.single()
+            assertSame(track, row.window)
+            assertSame(item, row.window.mediaItem)
+            assertEquals("Grand Theft Auto VI", row.song.cleanArtistsText())
+            assertEquals("Yung Lean", row.displaySong.cleanArtistsText())
+        }
     }
 
     @Test

@@ -219,6 +219,7 @@ internal fun DeleteFromQueue(
         }
 
     private val guestLocked = rememberListenTogetherGuestLock()
+    private val binder = LocalPlayerServiceBinder.current
     override val isEnabled: Boolean
         get() = !guestLocked && (!itemSelector.isActive || selectedWindowUids().isNotEmpty())
 
@@ -242,6 +243,7 @@ internal fun DeleteFromQueue(
         onDismiss()
         try {
             if (selected == null) {
+                binder?.onExplicitQueueClear()
                 player.stop()
                 player.clearMediaItems()
                 Toaster.s(R.string.common_delete_success)

@@ -116,6 +116,7 @@ class PlayerQueueInteractionTest {
         every { songs.likeState(any()) } returns flowOf(null)
         every { songs.findById(any()) } returns flowOf(null)
         every { songs.findByIds(any()) } returns flowOf(emptyList())
+        every { songs.findArtistCredits(any()) } returns flowOf(emptyList())
         mockkObject(Database, LikeStateManager, PlaylistStateManager, Toaster)
         every { Toaster.s(any<String>(), any()) } just Runs
         every { Database.songTable } returns songs
