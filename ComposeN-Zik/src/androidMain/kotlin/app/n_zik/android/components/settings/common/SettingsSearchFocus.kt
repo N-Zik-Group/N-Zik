@@ -8,6 +8,9 @@ import androidx.compose.runtime.Stable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.unit.constrainHeight
+import kotlin.math.roundToInt
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -80,16 +83,17 @@ internal fun Modifier.settingsSearchContentVisibility(
 ): Modifier =
     graphicsLayer { this.alpha = alpha }
         .then(if (alpha <= 0f) Modifier.clearAndSetSemantics { } else Modifier)
+        .then(if (retainSpace) Modifier else Modifier.clipToBounds())
         .layout { measurable, constraints ->
             val placeable = measurable.measure(constraints)
-            layout(placeable.width, if (alpha > 0f || retainSpace) placeable.height else 0) {
+            val height = if (retainSpace) placeable.height else (placeable.height * alpha).roundToInt()
+            layout(placeable.width, constraints.constrainHeight(height)) {
                 if (alpha > 0f) placeable.placeRelative(0, 0)
             }
         }
 
 /**
- * Content wrapper of a settings page: a plain alpha fade while the search bar
- * is focused, releasing its height after the fade finishes.
+ * Fades and collapses the content while the search field is focused.
  */
 @Composable
 fun settingsSearchContent(

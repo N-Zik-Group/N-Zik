@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -31,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -39,7 +41,10 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -211,14 +216,15 @@ fun OtherSwitchSettingEntry(
     enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit,
     icon: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    iconTint: Color = colorPalette().accent,
 ) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
-            .clickable(enabled = enabled, onClick = { onCheckedChange(!isChecked) }),
+            .toggleable(isChecked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange),
         color = Color.Transparent
     ) {
         Box(
@@ -244,7 +250,7 @@ fun OtherSwitchSettingEntry(
                 ) {
                     Icon(
                         painter = painterResource(icon),
-                        tint = colorPalette().accent,
+                        tint = iconTint,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -270,15 +276,18 @@ fun OtherSwitchSettingEntry(
                     }
                 }
 
-                Switch(
-                    checked = isChecked,
-                    onCheckedChange = onCheckedChange,
-                    enabled = enabled,
-                    checkedThumbColor = colorPalette().textSecondary,
-                    checkedTrackColor = colorPalette().accent.copy(alpha = 0.3f),
-                    uncheckedThumbColor = colorPalette().textSecondary,
-                    uncheckedTrackColor = colorPalette().textSecondary.copy(alpha = 0.3f)
-                )
+                // The thumb keeps its drag gesture; the labeled row owns accessibility.
+                Box(Modifier.clearAndSetSemantics { hideFromAccessibility() }) {
+                    Switch(
+                        checked = isChecked,
+                        onCheckedChange = onCheckedChange,
+                        enabled = enabled,
+                        checkedThumbColor = colorPalette().textSecondary,
+                        checkedTrackColor = colorPalette().accent.copy(alpha = 0.3f),
+                        uncheckedThumbColor = colorPalette().textSecondary,
+                        uncheckedTrackColor = colorPalette().textSecondary.copy(alpha = 0.3f),
+                    )
+                }
 
             }
         }
@@ -300,6 +309,7 @@ fun SwitchSettingEntry(
         text = text,
         isEnabled = isEnabled,
         onClick = { onCheckedChange(!isChecked) },
+        checked = isChecked,
         trailingContent = { Switch(checked = isChecked, onCheckedChange = null) },
         modifier = modifier
     )
@@ -315,13 +325,20 @@ fun SettingsEntry(
     onClick: () -> Unit,
     isEnabled: Boolean = true,
     selectedValueText: String? = null,
+    checked: Boolean? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
+    val action = if (checked == null) {
+        Modifier.clickable(enabled = isEnabled, onClick = onClick)
+    } else {
+        Modifier.toggleable(checked, enabled = isEnabled, role = Role.Switch, onValueChange = { onClick() })
+    }
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
-            .clip(uiRoundnessShape()).clickable(enabled = isEnabled, onClick = onClick)
+            .clip(uiRoundnessShape())
+            .then(action)
             .alpha(if (isEnabled) 1f else 0.5f)
             .padding(all = 12.dp)
             .fillMaxWidth()
@@ -475,6 +492,8 @@ fun SliderSettingsEntry(
     icon: Int? = null,
     isIntegerOnly: Boolean = false,
     inputValueText: ((Float) -> String)? = null,
+    inputScale: Float = 1f,
+    inputFractionDigits: Int = 1,
     snapToSteps: Boolean = false,
     drawStepPoints: Boolean = true,
     trailingContent: (@Composable () -> Unit)? = null,
@@ -482,6 +501,9 @@ fun SliderSettingsEntry(
 
     val inputLocale = LocalConfiguration.current.locales[0]
     val manualEnterDialog = object: IDialog {
+        override val keyboardType = if (isIntegerOnly) KeyboardType.Number else KeyboardType.Decimal
+
+        override fun isValidInput(value: String): Boolean = parseSliderSettingValue(value, inputLocale, inputScale, range) != null
 
         var valueFloat: Float by remember( state ) { mutableFloatStateOf( state ) }
 
@@ -490,19 +512,23 @@ fun SliderSettingsEntry(
             get() = stringResource( R.string.common_value_input_hint )
 
         override var isActive: Boolean by rememberSaveable { mutableStateOf(false) }
-        override var value: String by remember(valueFloat, inputLocale) {
-            val isInteger = isIntegerOnly || kotlin.math.abs(valueFloat - kotlin.math.round(valueFloat)) < 0.001f
-            val formatted = inputValueText?.invoke(valueFloat)
+        override var value: String by remember(valueFloat, inputLocale, inputScale, inputFractionDigits) {
+            val displayValue = valueFloat * inputScale
+            val isInteger = isIntegerOnly || kotlin.math.abs(displayValue - kotlin.math.round(displayValue)) < 0.001f
+            val formatted = inputValueText?.invoke(displayValue)
                 ?: NumberFormat.getNumberInstance(inputLocale).apply {
                     isGroupingUsed = false
-                    maximumFractionDigits = if (isInteger) 0 else 1
-                }.format(valueFloat.toDouble())
+                    maximumFractionDigits = if (isInteger) 0 else inputFractionDigits
+                }.format(displayValue.toDouble())
             mutableStateOf(formatted)
         }
 
-        override fun onSet( newValue: String ) {
-            val parsed = parseSliderInput(newValue, inputLocale) ?: return
-            this.valueFloat = parsed.coerceIn(range.start, range.endInclusive)
+        override fun onSet(newValue: String) {
+            if (newValue == value) {
+                onDismiss()
+                return
+            }
+            valueFloat = parseSliderSettingValue(newValue, inputLocale, inputScale, range) ?: return
             onSlide( this.valueFloat )
             onSlideComplete()
 
@@ -518,7 +544,7 @@ fun SliderSettingsEntry(
             icon = icon,
             onClick = manualEnterDialog::onShortClick,
             trailingContent = trailingContent,
-            modifier = Modifier.alpha(if (isEnabled) 1f else 0.5f)
+            isEnabled = isEnabled,
         )
     } else {
         SettingsEntry(
@@ -531,6 +557,7 @@ fun SliderSettingsEntry(
     }
 
     Slider(
+        isEnabled = isEnabled,
         state = state,
         setState = { value: Float ->
             manualEnterDialog.valueFloat = value
@@ -545,7 +572,6 @@ fun SliderSettingsEntry(
         drawStepPoints = drawStepPoints,
         modifier = Modifier
             .height(36.dp)
-            .alpha(if (isEnabled) 1f else 0.5f)
             .let { if (usePadding) it.padding(horizontal = 16.dp) else it }
             .padding(vertical = 16.dp)
             .fillMaxWidth()
@@ -949,3 +975,11 @@ internal fun parseSliderInput(text: String, locale: Locale): Float? {
     }
     return value?.takeIf(Float::isFinite)
 }
+
+internal fun parseSliderSettingValue(
+    text: String,
+    locale: Locale,
+    inputScale: Float,
+    range: ClosedFloatingPointRange<Float>,
+): Float? =
+    parseSliderInput(text, locale)?.let { (it / inputScale).coerceIn(range.start, range.endInclusive) }

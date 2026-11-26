@@ -744,3 +744,7 @@ Appearance settings layout:
 Settings search index:
 - fix(settings): index displayed options and actionable destinations
   - Match visible settings, current values and reset scopes while preserving source resource fallback.
+
+Settings search results:
+- fix(settings): open the exact setting and preserve entered values
+  - Show the correct breadcrumb and retain gain precision when confirming the existing value.

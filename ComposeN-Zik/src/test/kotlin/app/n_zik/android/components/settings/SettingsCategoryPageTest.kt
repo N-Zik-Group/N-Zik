@@ -1,6 +1,16 @@
 package app.n_zik.android.components.settings
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
@@ -16,6 +26,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.dp
@@ -23,7 +34,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -35,24 +48,36 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.isConnectionMeteredEnabledKey
+import app.n_zik.android.utils.isShowingThumbnailInLockscreenKey
+import app.n_zik.android.utils.loudnessBaseGainKey
+import app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.volumeNormalizationKey
 import app.n_zik.android.R
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.settingsCardTargetId
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
+import app.n_zik.android.components.settings.common.SettingsScrollToTop
 import app.n_zik.android.components.settings.common.SettingsCards
 import app.n_zik.android.components.settings.common.cardsForCategory
 import app.n_zik.android.components.settings.common.categoryId
+import app.n_zik.android.components.settings.common.destinationRoute
 import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.SettingsResetCard
+import app.n_zik.android.components.settings.common.DOWNLOAD_RESET_SCOPE
+import app.n_zik.android.components.settings.common.LISTEN_TOGETHER_RESET_SCOPE
+import app.n_zik.android.components.settings.common.SettingsResetChooserTarget
+import app.n_zik.android.components.settings.common.SettingsResetDownloadsTarget
 import app.n_zik.android.components.settings.common.resetScopeForTarget
 import app.n_zik.android.components.settings.common.AllSettingsEntryTargets
 import app.n_zik.android.components.settings.common.locationDescription
@@ -60,6 +85,7 @@ import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassFilmKey
+import app.n_zik.android.components.settings.general.GeneralAudioEffectsCard
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -75,6 +101,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
+import java.text.NumberFormat
 import java.time.Duration
 
 @RunWith(RobolectricTestRunner::class)
@@ -106,6 +133,22 @@ class SettingsCategoryPageTest {
         assertTrue(label, condition())
     }
 
+    @Test fun interfaceShortcutsUseTheNavigatorThatOwnsEachDestination() {
+        val nav = mockk<NavController>(relaxed = true)
+        val settingsRoutes = mutableListOf<String>()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = "interface", navController = nav, onSearchResultNavigate = { settingsRoutes.add(it) })
+            }
+        }
+        composeRule.onNodeWithTag("settings.category.list.interface").performScrollToKey("interface-shortcuts")
+        composeRule.onNodeWithTag("settings_global_category_settingsThemeStore").performClick()
+        verify(exactly = 1) { nav.navigate(NavRoutes.themeStore.name) }
+        composeRule.runOnIdle { assertTrue(settingsRoutes.isEmpty()) }
+        composeRule.onNodeWithTag("settings_global_category_settingsGlass").performClick()
+        composeRule.runOnIdle { assertEquals(listOf("settingsGlass"), settingsRoutes) }
+    }
+
     @Test fun aboutHasNoSearchInput() {
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
@@ -132,6 +175,8 @@ class SettingsCategoryPageTest {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertExists() }.isSuccess
         }
         composeRule.onNodeWithText(groupTitle).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.settings_global_search_hint), useUnmergedTree = true)
+            .assertIsDisplayed()
         composeRule.onNode(hasSetTextAction()).performClick()
         pumpUntil("focused category card hidden after fade") {
             runCatching { composeRule.onNodeWithTag(targetTag, useUnmergedTree = true).assertIsNotDisplayed() }.isSuccess
@@ -315,6 +360,43 @@ class SettingsCategoryPageTest {
         verifyBlankScrollArrow(global = true)
     }
 
+    @Test fun `store grid presents a labeled return arrow inside one tall item`() {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+            ) {
+                val grid = rememberLazyGridState()
+                Box(Modifier.fillMaxSize()) {
+                    LazyVerticalGrid(GridCells.Fixed(2), Modifier.fillMaxSize().testTag("grid"), state = grid) {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
+                            Box(Modifier.height(2400.dp))
+                        }
+                    }
+                    SettingsScrollToTop(grid, modifier = Modifier.testTag("arrow"))
+                }
+            }
+        }
+        val list = composeRule.onNodeWithTag("grid")
+        pumpUntil("grid ready") { runCatching { list.assertIsDisplayed() }.isSuccess }
+        val arrow = hasAnyAncestor(hasTestTag("arrow")) and hasClickAction() and
+            hasContentDescription(context.getString(R.string.common_action_scroll_to_top))
+        composeRule.onAllNodes(arrow).assertCountEquals(0)
+        val viewportHeight = list.fetchSemanticsNode().size.height.toFloat()
+        list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, viewportHeight * 1.5f) }
+        settleSearch()
+        list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, -viewportHeight / 4) }
+        val action = composeRule.onNode(arrow)
+        pumpUntil("labeled return arrow appears after scrolling up") {
+            runCatching { action.assertIsDisplayed() }.isSuccess
+        }
+        action.performClick()
+        pumpUntil("return arrow scrolls the grid to the top") {
+            list.fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value() == 0f
+        }
+    }
+
     @Test fun `blank audio page supports scroll arrow while still inside one tall card`() {
         verifyBlankScrollArrow(global = false)
     }
@@ -448,6 +530,95 @@ class SettingsCategoryPageTest {
         assertEquals(before, context.preferences.all)
     }
 
+    @Test fun `system reset picker includes download and device-wide Listen Together scopes`() {
+        showCategoryReset("system", SettingsResetChooserTarget)
+        composeRule.onNodeWithTag("settings.reset.all.open").assertExists()
+        composeRule.onNodeWithTag("settings.reset.scope.$DOWNLOAD_RESET_SCOPE").assertExists()
+        composeRule.onNodeWithTag("settings.reset.scope.$LISTEN_TOGETHER_RESET_SCOPE").assertExists()
+        composeRule.onNodeWithTag("settings.reset.scope.$DOWNLOAD_RESET_SCOPE").performScrollTo().performClick()
+        pumpUntil("the System download reset action is visible") {
+            runCatching { composeRule.onNodeWithTag("settings.reset.downloads.action").assertIsDisplayed() }.isSuccess
+        }
+    }
+
+    @Test fun `local System search opens its download reset scope`() {
+        composeRule.mainClock.autoAdvance = false
+        var destination: String? = null
+        val query = context.getString(R.string.settings_reset_downloads)
+        val globalResult = searchSettingsEntries(context, query).single { it.id == SettingsResetDownloadsTarget }
+        assertEquals("settingsCategory/downloads", Uri.parse(globalResult.destinationRoute(context)).path)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(
+                    categoryId = "system",
+                    navController = mockk(relaxed = true),
+                    onSearchResultNavigate = { destination = it },
+                )
+            }
+        }
+        pumpUntil("System search composed") {
+            runCatching { composeRule.onNode(hasSetTextAction()).fetchSemanticsNode() }.isSuccess
+        }
+        composeRule.onNode(hasSetTextAction())
+            .performClick()
+            .performTextInput(query)
+        settleSearch()
+        val row = composeRule.onNodeWithTag("settings.category.entry.$SettingsResetDownloadsTarget")
+        pumpUntil("the System download reset search result is visible") {
+            runCatching { row.assertIsDisplayed() }.isSuccess
+        }
+        val location = listOf(R.string.settings_title, R.string.settings_category_system, R.string.settings_reset)
+            .joinToString(" › ") { context.getString(it) }
+        row.assertTextContains(location)
+        row.performClick()
+        composeRule.runOnIdle {
+            val route = Uri.parse(checkNotNull(destination))
+            assertEquals("settingsCategory/system", route.path)
+            assertEquals(SettingsResetDownloadsTarget, route.getQueryParameter("target"))
+            assertEquals("card.6.settings_reset", route.getQueryParameter("parent"))
+        }
+    }
+
+    @Test fun `confirming an unchanged gain keeps its hundredths`() {
+        val gain = 5.24f
+        context.preferences.edit().putBoolean(volumeNormalizationKey, true).putFloat(loudnessBaseGainKey, gain).commit()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GeneralAudioEffectsCard(visible = true, onRestartServiceSet = {})
+                }
+            }
+        }
+        composeRule.onNodeWithText(context.getString(R.string.settings_loudness_base_gain)).performScrollTo().performClick()
+        val expected = NumberFormat.getNumberInstance(context.resources.configuration.locales[0]).format(5.24)
+        composeRule.onNode(hasSetTextAction()).assertTextEquals(expected)
+        composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
+        composeRule.runOnIdle { assertEquals(gain, context.preferences.getFloat(loudnessBaseGainKey, 0f), 0f) }
+    }
+
+    @Test fun `downloads reset chooser cannot widen to other settings`() {
+        showCategoryReset("downloads", SettingsResetDownloadsTarget)
+        composeRule.onNodeWithTag("settings.reset.downloads.action").assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.settings_reset_scope_back)).performClick()
+        pumpUntil("the download-only chooser is visible") {
+            runCatching { composeRule.onNodeWithTag("settings.reset.scope.$DOWNLOAD_RESET_SCOPE").assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNodeWithTag("settings.reset.all.open").assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.reset.scope.$LISTEN_TOGETHER_RESET_SCOPE").assertDoesNotExist()
+    }
+
+    private fun showCategoryReset(category: String, target: String) {
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(categoryId = category, navController = mockk(relaxed = true), target = target)
+            }
+        }
+        pumpUntil("the reset dialog is visible") {
+            runCatching { composeRule.onNodeWithTag("settings.reset.dialog").assertIsDisplayed() }.isSuccess
+        }
+    }
+
     @Test fun `reset search targets open only their original scope without changing preferences`() {
         val before = context.preferences.all.toMap()
         composeRule.setContent {
@@ -514,5 +685,52 @@ class SettingsCategoryPageTest {
         composeRule.onNodeWithTag("settings.reset.card", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("settings.target.card.0.settings_reset", useUnmergedTree = true).assertDoesNotExist()
         assertEquals("opening a reset search result must never apply defaults", before, context.preferences.all)
+    }
+
+    @Test fun `General reset keeps one restart action after leaving its scope`() {
+        assertRestartAfterReset("general", 0, pauseOnHeadphoneDisconnectKey, defaultValue = true)
+    }
+
+    @Test fun `Appearance reset keeps one restart action after leaving its scope`() {
+        assertRestartAfterReset("appearance", 2, isShowingThumbnailInLockscreenKey, defaultValue = true)
+    }
+
+    @Test fun `Network reset keeps one restart action after leaving its scope`() {
+        assertRestartAfterReset("network", 6, isConnectionMeteredEnabledKey, defaultValue = false)
+    }
+
+    private fun assertRestartAfterReset(scope: String, tab: Int, preference: String, defaultValue: Boolean) {
+        context.preferences.edit().putBoolean(preference, !defaultValue).commit()
+        composeRule.mainClock.autoAdvance = false
+        val target = "$scope.settings_reset.settings_reset"
+        val restartLabel = context.getString(R.string.settings_player_action_restart_service)
+        val footerRestart = hasAnyAncestor(hasTestTag("settings.category.footer")) and hasText(restartLabel)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+                SettingsCategoryPage(
+                    categoryId = "system",
+                    navController = mockk(relaxed = true),
+                    target = target,
+                    parentTarget = "card.$tab.settings_reset",
+                )
+            }
+        }
+        val action = composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true)
+        pumpUntil("reset action is visible") { runCatching { action.assertIsDisplayed() }.isSuccess }
+        composeRule.onNodeWithText(restartLabel).assertDoesNotExist()
+        action.performClick()
+        assertEquals(defaultValue, context.preferences.getBoolean(preference, !defaultValue))
+        composeRule.onNodeWithText(context.getString(R.string.settings_reset_scope_back)).performClick()
+        pumpUntil("scope chooser is visible") {
+            runCatching { composeRule.onNodeWithTag("settings.reset.all.open").assertIsDisplayed() }.isSuccess
+        }
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
+        pumpUntil("one restart action remains in the page footer") {
+            runCatching {
+                composeRule.onNodeWithTag("settings.reset.dialog").assertDoesNotExist()
+                composeRule.onNode(footerRestart, useUnmergedTree = true).assertIsDisplayed()
+                composeRule.onAllNodes(hasText(restartLabel), useUnmergedTree = true).assertCountEquals(1)
+            }.isSuccess
+        }
     }
 }

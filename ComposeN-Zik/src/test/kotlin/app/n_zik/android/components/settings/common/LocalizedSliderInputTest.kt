@@ -17,6 +17,16 @@ class LocalizedSliderInputTest {
     }
 
     @Test
+    fun `manual settings convert decibels percentages and depth into slider units`() {
+        assertEquals(0.5f, parseSliderSettingValue("7,5", Locale.FRANCE, 15f, 0f..1f))
+        assertEquals(0.5f, parseSliderSettingValue("50", Locale.US, 100f, 0f..1f))
+        assertEquals(1.5f, parseSliderSettingValue("75", Locale.US, 50f, 0f..2f))
+        assertEquals(0.5f, parseSliderSettingValue("24", Locale.US, 48f, 0f..1f))
+        assertEquals(1f, parseSliderSettingValue("101", Locale.US, 100f, 0f..1f))
+        assertNull(parseSliderSettingValue("50x", Locale.US, 100f, 0f..1f))
+    }
+
+    @Test
     fun `partial and non-finite numbers are rejected`() {
         assertNull(parseSliderInput("5,5 dB", Locale.FRANCE))
         assertNull(parseSliderInput("NaN", Locale.US))

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.common
 
+import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -11,9 +13,15 @@ import androidx.compose.foundation.rememberOverscrollEffect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -37,6 +45,7 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -51,24 +60,35 @@ import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.pullrefresh.rememberPullRefreshOverlayInsetProvider
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.pauseSearchHistoryKey
-import app.n_zik.android.utils.holdToSpeedUpKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.lastFmSettingsSearchFallback
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.glass.glassContentCaptureEnabled
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
-import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.about.AboutSettingsContent
 import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
+import app.n_zik.android.components.settings.accounts.discordSettingsSearchFallback
 import app.n_zik.android.components.settings.accounts.githubSettingsSearchFallback
 import app.n_zik.android.components.settings.ai.AIRecommendationSettingsContent
 import app.n_zik.android.components.settings.appearance.AppearanceSettingsContent
+import app.n_zik.android.components.settings.appearance.appearanceBehaviorSearchFallback
 import app.n_zik.android.components.settings.data.DataSettingsContent
+import app.n_zik.android.components.settings.data.isStorageCleanupSearchTarget
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.navigation.LocalPageNavigationEntry
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
@@ -79,9 +99,102 @@ import app.n_zik.android.components.settings.privacy.PrivacyScreenCaptureCard
 import app.n_zik.android.components.settings.ui.UiSettingsContent
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.utils.StringResourceIdentity
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.utils.showNextSongsInPlayerKey
+import app.n_zik.android.utils.showTipsKey
+import app.n_zik.android.utils.showlyricsthumbnailKey
+import app.n_zik.android.utils.showthumbnailKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
+
+private val rewindNotificationPrerequisites = mapOf(
+    "embedded.rewind.rw_settings_monthly_notification" to "embedded.rewind.rw_settings_monthly",
+    "embedded.rewind.rw_settings_yearly_notification" to "embedded.rewind.rw_settings_yearly",
+    "embedded.rewind.rw_settings_playlists_monthly_notification" to "embedded.rewind.rw_settings_playlists_monthly",
+    "embedded.rewind.rw_settings_playlists_yearly_notification" to "embedded.rewind.rw_settings_playlists_yearly",
+)
+
+private const val LyricsOnCoverSettingsTarget = "appearance.txt_lyrics.show_lyrics_thumbnail"
+private const val LyricsBackgroundSettingsTarget = "appearance.txt_lyrics.show_background_in_lyrics"
+private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show_thumbnail"
+private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
+private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
+
+private val hiddenSettingPrerequisites = mapOf(
+    "general.app_behavior.resume_playback_on_start" to "general.app_behavior.persistent_queue",
+    "general.playback.crossfade_duration" to "general.playback.crossfade",
+    "general.playback.crossfade_gapless" to "general.playback.crossfade",
+    "general.audio_effects.minimum_silence_length" to "general.audio_effects.skip_silence",
+    "general.audio_effects.settings_loudness_base_gain" to "general.audio_effects.loudness_normalization",
+    "general.audio_effects.loudness_boost_level" to "general.audio_effects.loudness_normalization",
+    "general.audio_effects.settings_bass_boost_level" to "general.audio_effects.settings_audio_bass_boost",
+    "general.picture_in_picture.settings_pip_module" to "general.picture_in_picture.settings_enable_pip",
+    "general.picture_in_picture.settings_enable_pip_auto" to "general.picture_in_picture.settings_enable_pip",
+    "general.picture_in_picture.open" to "general.picture_in_picture.settings_enable_pip",
+    "appearance.player_behavior_and_visuals.songs_number_to_show" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+    "appearance.player_behavior_and_visuals.showalbumcover" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+    "appearance.cover_and_thumbnail.hold_to_speed_up_rate" to "appearance.cover_and_thumbnail.hold_to_speed_up",
+    "appearance.player_presets_and_layout.pinfo_show_icons" to "appearance.player_presets_and_layout.pinfo_type",
+    "appearance.txt_lyrics.color_custom" to "appearance.txt_lyrics.lyricscolor",
+    GradientSettingsTarget to BackgroundSettingsTarget,
+    "other.proxy.proxy_mode" to "other.proxy.enable_proxy",
+    "other.proxy.proxy_host" to "other.proxy.enable_proxy",
+    "other.proxy.proxy_port" to "other.proxy.enable_proxy",
+    "other.proxy.settings_proxy_username" to "other.proxy.enable_proxy",
+    "other.proxy.settings_proxy_password" to "other.proxy.enable_proxy",
+    "other.proxy.settings_region_override" to "other.proxy.enable_proxy",
+    "accounts.youtube_music.login_for_browse" to "accounts.youtube_music.enable_youtube_music_login",
+    "embedded.youtube.use_account_for_searches" to "accounts.youtube_music.enable_youtube_music_login",
+)
+
+internal fun playerSettingsSearchFallback(
+    target: String,
+    prefs: SharedPreferences,
+    isLandscape: Boolean,
+    hasTarget: (String) -> Boolean,
+): String? {
+    val playerType = prefs.getEnum(playerTypeKey, PlayerType.Essential)
+    val actionButtons = "appearance.player_action_bar.player_action_bar_buttons"
+    val layout = "appearance.player_presets_and_layout.playertype"
+    return when (target) {
+        "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ->
+            ShowCoverSettingsTarget.takeUnless { playerType != PlayerType.Modern || isLandscape }
+                ?: layout.takeUnless { playerType == PlayerType.Modern || isLandscape }
+        "appearance.cover_and_thumbnail.player_thumbnail_size" -> ShowCoverSettingsTarget.takeIf { isLandscape }
+        "appearance.cover_and_thumbnail.thumbnail_roundness" -> ShowCoverSettingsTarget
+        "appearance.cover_and_thumbnail.carousel", "appearance.cover_and_thumbnail.carouselsize" ->
+            if (isLandscape) null else if (playerType != PlayerType.Modern) layout else actionButtons
+        "appearance.cover_and_thumbnail.fadingedge", "appearance.cover_and_thumbnail.thumbnailpause",
+        "appearance.cover_and_thumbnail.statsfornerdsplayer" -> layout
+        "appearance.full_screen_lyrics_components.show_total_time_of_queue" ->
+            "appearance.colors_and_background.show_total_time_of_queue"
+        "appearance.full_screen_lyrics_components.statsfornerds" ->
+            if (prefs.getBoolean(showthumbnailKey, true) && playerType == PlayerType.Essential) layout
+            else "appearance.cover_and_thumbnail.statsfornerdsplayer"
+        "appearance.full_screen_lyrics_components.actionbar" -> actionButtons
+        "appearance.full_screen_lyrics_components.miniqueue" ->
+            if (!prefs.getBoolean(showNextSongsInPlayerKey, false)) {
+                "appearance.player_behavior_and_visuals.show_next_songs_in_player"
+            } else {
+                "appearance.full_screen_lyrics_components.actionbar".takeIf(hasTarget) ?: actionButtons
+            }
+        else -> null
+    }
+}
+
+private fun youtubeLoginSearchFallback(target: String, hasTarget: (String) -> Boolean): String? {
+    val login = "accounts.youtube_music.account_login"
+    val change = "accounts.youtube_music.change_account"
+    val prerequisite = when (target) {
+        login -> change
+        change, "accounts.youtube_music.account_logoff" -> login
+        else -> return null
+    }
+    return prerequisite.takeIf(hasTarget) ?: "accounts.youtube_music.enable_youtube_music_login"
+}
 
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
     "card.$tab.${settingsSectionNavigationName(titleRes) ?: StringResourceIdentity.legacyName(context.resources.getResourceEntryName(titleRes))}"
@@ -99,9 +212,12 @@ fun SettingsCategoryPage(
 ) {
     val category = OrganizedSettingsCategories.firstOrNull { it.id == categoryId } ?: return
     val context = LocalContext.current
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val searchInput = rememberSaveable(categoryId, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
     }
+    var resetRestartRequired by rememberSaveable(categoryId) { mutableStateOf(false) }
+    var searchTargetHandled by rememberSaveable(categoryId, target, parentTarget) { mutableStateOf(false) }
     val search = Search(initialVisible = true, inputState = searchInput)
     val contentSearch = Search(initialVisible = false)
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
@@ -112,15 +228,33 @@ fun SettingsCategoryPage(
             registry.nestedTarget = null
             registry.storageProfileTarget = null
             registry.storageEntryTarget = null
+            registry.storageCleanupOpened = false
         }
     }
     val scroll = rememberLazyListState()
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
     var pinnedFooterHeightPx by remember(categoryId) { mutableIntStateOf(0) }
     var hasPinnedFooter by remember(categoryId) { mutableStateOf(false) }
+    val pageEntryId = LocalPageNavigationEntry.current?.id
+    val reportFooterHeight = LocalSettingsFooterHeight.current
+    DisposableEffect(pageEntryId, reportFooterHeight) {
+        onDispose { pageEntryId?.let { reportFooterHeight(it, 0) } }
+    }
+    val footerGlass = rememberGlassSettings()
+    val footerBackdrop = rememberLayerBackdrop()
+    val captureFooterBackdrop = hasPinnedFooter && footerGlass.usesGlassMaterial(GlassArea.SettingsCards) &&
+        glassContentCaptureEnabled(footerGlass)
+    val footerBottomInset = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+        .only(WindowInsetsSides.Bottom).asPaddingValues()
+    val footerSidePadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp })
+    val footerPadding = remember(footerSidePadding, footerBottomInset) {
+        object : PaddingValues by footerSidePadding {
+            override fun calculateBottomPadding() = footerBottomInset.calculateBottomPadding()
+        }
+    }
     val listPadding = rememberSettingsContentPadding(
         base = PaddingValues(bottom = Dimensions.bottomSpacer),
-        bottomInsetHandledByFooter = hasPinnedFooter,
+        footerBottomInset = footerBottomInset.takeIf { hasPinnedFooter },
     )
     val density = LocalDensity.current
     var listTopPx by remember { mutableFloatStateOf(0f) }
@@ -144,17 +278,38 @@ fun SettingsCategoryPage(
     val overscroll = rememberOverscrollEffect()
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
-    val historyPage = "settings_category_$categoryId"
+    val historyPage = SearchHistoryStore.categoryPage(categoryId)
     val paused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(historyPage, paused)
     fun recordQuery(query: String = search.inputValue) {
         history.value = SearchHistoryStore.record(context.preferences, historyPage, query)
     }
+    fun openInterfaceDestination(item: SettingsPageItem) {
+        when (item) {
+            SettingsGlassItem -> onSearchResultNavigate(SETTINGS_GLASS_ROUTE)
+            SettingsThemeStoreItem -> navController.navigate(NavRoutes.themeStore.name)
+            else -> item.route?.let { navController.navigate(it) }
+        }
+    }
     val cards = remember(categoryId) { cardsForCategory(categoryId) }
     val isSearching = search.inputValue.isNotBlank()
-    val matches = searchSettingsCardResults(context, search.inputValue).filter { it.categoryId() == categoryId }
+    val showInterfaceShortcuts = categoryId == "interface" && !isSearching
+    val settingsHeaderItems = if (showInterfaceShortcuts) 2 else 1
     val entryMatches = searchSettingsEntries(context, search.inputValue)
-        .filter { it.parentCard().categoryId() == categoryId }
+        .filter { it.parentCard(categoryId).categoryId() == categoryId }
+    val resetEntryScopes = entryMatches.filter { it.labelRes == R.string.settings_reset }.map { it.tab }.toSet()
+    val matches = searchSettingsCardResults(context, search.inputValue).filter {
+        it.categoryId() == categoryId && (it.titleRes != R.string.settings_reset || it.tab !in resetEntryScopes)
+    }
+    val interfacePageMatches = if (categoryId == "interface" && isSearching) {
+        searchSettingsPageItems(context, search.inputValue).filter {
+            it == SettingsGlassItem || it == SettingsThemeStoreItem || it.isThemeStoreCreatorPage()
+        }
+    } else emptyList()
+    val exactInterfacePageMatches = interfacePageMatches.filter {
+        normalizedSettingsText(context.getString(it.labelRes)) == normalizedSettingsText(search.inputValue)
+    }
+    val otherInterfacePageMatches = interfacePageMatches - exactInterfacePageMatches.toSet()
     val groupTitles = remember(cards) { cards.associate { it.titleRes to it.groupTitleRes } }
     val sourceTabs = remember(cards) { cards.map { it.tab }.distinct() }
     val slots = remember(categoryId) { sourceTabs.associateWith { SettingsCardSlots() } }
@@ -168,24 +323,42 @@ fun SettingsCategoryPage(
         ordered.filter { it in selected }.map { tab to it }
     }
     val latestRows by rememberUpdatedState(rows)
-    val resetScopes = if (isSearching) emptyList() else cards.filter { it.titleRes == R.string.settings_reset }.map { it.tab }
-    SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty())
+    val resetScopes = when {
+        isSearching -> emptyList()
+        categoryId == "downloads" -> listOf(DOWNLOAD_RESET_SCOPE)
+        categoryId == "system" -> cards.filter { it.titleRes == R.string.settings_reset }.map { it.tab } +
+            listOf(DOWNLOAD_RESET_SCOPE, LISTEN_TOGETHER_RESET_SCOPE, PLAYBACK_RESET_SCOPE)
+        else -> emptyList()
+    }
+    SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty() && interfacePageMatches.isEmpty())
     LaunchedEffect(target, parentTarget) {
-        if (target.isBlank()) return@LaunchedEffect
+        if (target.isBlank() || searchTargetHandled || isSearching) return@LaunchedEffect
         if (categoryId == "privacy" && target in setOf(RewindMasterSettingsTarget, "card.9.rw_settings_master")) {
             val rewindMaster = AllSettingsEntryTargets.first { it.id == RewindMasterSettingsTarget }
+            searchTargetHandled = true
             onSearchResultNavigate(rewindMaster.destinationRoute(context))
             return@LaunchedEffect
         }
         val storageRoute = target.split('|', limit = 3)
         val rawTarget = storageRoute.first()
+        if (categoryId == "network") {
+            val downloadTarget = when (rawTarget) {
+                "network.network_status.download_quality_format",
+                "embedded.network.download_quality_format" -> "embedded.network.download_quality_format"
+                "card.6.settings_download_status",
+                "card.6.settings_download_quality" -> "card.6.settings_download_quality"
+                else -> null
+            }
+            if (downloadTarget != null) {
+                searchTargetHandled = true
+                onSearchResultNavigate("settingsCategory/downloads?target=${Uri.encode(downloadTarget)}")
+                return@LaunchedEffect
+            }
+        }
         // Two layout frames include children and their initial conditional composition.
         withFrameNanos { }
         withFrameNanos { }
         val requestedTarget = when (rawTarget) {
-            "appearance.cover_and_thumbnail.hold_to_speed_up_rate" ->
-                if (context.preferences.getBoolean(holdToSpeedUpKey, false)) rawTarget
-                else "appearance.cover_and_thumbnail.hold_to_speed_up"
             "appearance.player_presets_and_layout.icon_like_button" -> "appearance.timeline_and_controls.icon_like_button"
             "network.network_status.image_quality_format" -> "network.quality.image_quality_format"
             "network.network_status.audio_quality_format" -> "network.quality.audio_quality_format"
@@ -195,34 +368,75 @@ fun SettingsCategoryPage(
             "card.4.cache" -> settingsCardTargetId(context, 4, R.string.storage_breakdown_title)
             "card.4.auto_backup_title" -> "embedded.auto_backup.section"
             "card.7.on_device" -> "other.on_device.section"
+            "ai.quick_picks.tips", "ai.quick_picks.quick_selection_type" -> {
+                val prefs = context.preferences
+                val showTips = prefs.getBoolean(showTipsKey, true)
+                if (prefs.getBoolean(enableQuickPicksPageKey, true) && !showTips) {
+                    SettingsNestedEntryTargets.firstOrNull {
+                        it.nestedDestination?.openerId == "ai.quick_picks.quick_picks_content" &&
+                            it.nestedDestination.itemId == "tips"
+                    }?.id ?: rawTarget
+                } else rawTarget
+            }
             else -> rawTarget
         }
         val entry = AllSettingsEntryTargets.firstOrNull { it.id == requestedTarget }
         val storageEntry = entry?.cardTitleRes == R.string.storage_breakdown_title
-        if (storageEntry && (requestedTarget.startsWith("data.cache.") ||
-                requestedTarget.startsWith("embedded.auto_backup.") || requestedTarget.startsWith("other.on_device.") ||
-                storageRoute.size == 3)
-        ) {
-            registry.storageEntryTarget = requestedTarget
+        val profileStorageTarget = requestedTarget.startsWith("data.cache.") ||
+            requestedTarget.startsWith("embedded.auto_backup.") || requestedTarget.startsWith("other.on_device.") ||
+            storageRoute.size == 3
+        if (storageEntry && profileStorageTarget) {
             val explicit = storageRoute.takeIf { it.size == 3 }?.let { ProfileStorageIdentity(it[2], it[1]) }
             registry.storageProfileTarget = withContext(NzikDispatchers.DATA) {
                 if (explicit == null) profileStorageIdentity(context, getActiveProfile(context))
                 else profileStorageIdentity(context, explicit.id)?.takeIf { it == explicit }
             }
             if (explicit != null && registry.storageProfileTarget == null) {
+                searchTargetHandled = true
                 showMessage(unavailableMessage)
                 return@LaunchedEffect
             }
         }
-        val cardId = entry?.let { settingsCardTargetId(context, it.tab, it.cardTitleRes) }
+        if (storageEntry && (profileStorageTarget || isStorageCleanupSearchTarget(requestedTarget))) {
+            registry.storageEntryTarget = requestedTarget
+        }
+        val quickPicksCardId = settingsCardTargetId(context, 3, R.string.recommendations_title)
+        val isQuickPicksContent = requestedTarget == quickPicksCardId ||
+            (entry?.tab == 3 && entry.cardTitleRes == R.string.recommendations_title)
+        val hiddenQuickPicksTarget = isQuickPicksContent && !context.preferences.getBoolean(enableQuickPicksPageKey, true)
+        val originalCardId = entry?.let { settingsCardTargetId(context, it.tab, it.cardTitleRes) }
             ?: requestedTarget.takeIf { it.startsWith("card.") }
             ?: parentTarget
+        val coverVisible = context.preferences.getBoolean(showthumbnailKey, true)
+        val hiddenCoverLyricsTarget = categoryId == "player" && !coverVisible &&
+            (requestedTarget == LyricsOnCoverSettingsTarget || requestedTarget == LyricsBackgroundSettingsTarget)
+        val hiddenFullscreenLyricsTarget = categoryId == "player" && coverVisible &&
+            originalCardId == settingsCardTargetId(context, 2, R.string.settings_section_fullscreen_lyrics_title) &&
+            context.preferences.getBoolean(showlyricsthumbnailKey, true)
+        val syncOverview = "accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"
+        val youtubeSyncTarget = categoryId == "youtube" && (requestedTarget.startsWith("accounts.autosync.") ||
+            requestedTarget.startsWith("accounts.sync_import_from_youtube.") ||
+            requestedTarget.startsWith("accounts.sync_push_to_youtube.") ||
+            requestedTarget.startsWith("accounts.sync_data_with_ytm_account.") ||
+            originalCardId in setOf(
+                settingsCardTargetId(context, 5, R.string.sync_imported_playlists_automatic_title),
+                settingsCardTargetId(context, 5, R.string.sync_import_from_youtube),
+                settingsCardTargetId(context, 5, R.string.sync_push_to_youtube),
+            ))
+        val cardId = when {
+            hiddenQuickPicksTarget -> settingsCardTargetId(context, 3, R.string.settings_section_quick_picks_visibility_title)
+            hiddenCoverLyricsTarget -> settingsCardTargetId(context, 2, R.string.settings_player_artwork_section_title)
+            hiddenFullscreenLyricsTarget -> settingsCardTargetId(context, 2, R.string.lyrics_title)
+            youtubeSyncTarget && latestRows.none { (tab, title) -> settingsCardTargetId(context, tab, title) == originalCardId } ->
+                settingsCardTargetId(context, 5, R.string.sync_data_with_ytm_account)
+            else -> originalCardId
+        }
         val row = latestRows.indexOfFirst { (tab, title) ->
             title != SettingsSourceFooter && settingsCardTargetId(context, tab, title) == cardId
         }
         val item = when {
-            isSettingsResetDialogTarget(requestedTarget) || resetScopeForTarget(parentTarget) != null -> latestRows.size + 1
-            row >= 0 -> row + 1
+            isSettingsResetDialogTarget(requestedTarget) || resetScopeForTarget(parentTarget) != null -> latestRows.size + settingsHeaderItems
+            row >= 0 -> row + settingsHeaderItems
             else -> null
         }
         if (item != null) {
@@ -233,8 +447,14 @@ fun SettingsCategoryPage(
             withFrameNanos { }
             withFrameNanos { }
         }
-        if (requestedTarget == SettingsResetChooserTarget || requestedTarget == SettingsResetAllTarget) return@LaunchedEffect
-        val nested = entry?.nestedDestination
+        if (requestedTarget == SettingsResetChooserTarget || requestedTarget == SettingsResetAllTarget ||
+            requestedTarget == SettingsResetGlassTarget || requestedTarget == SettingsResetDownloadsTarget ||
+            requestedTarget == SettingsResetListenTogetherTarget || requestedTarget == SettingsResetPlaybackTarget
+        ) {
+            searchTargetHandled = true
+            return@LaunchedEffect
+        }
+        val nested = entry?.nestedDestination.takeUnless { hiddenQuickPicksTarget }
         if (storageEntry) {
             withTimeoutOrNull(1500) {
                 snapshotFlow { registry.targets[requestedTarget] }.first { it != null }
@@ -252,39 +472,70 @@ fun SettingsCategoryPage(
                 }
             }
         }
-        val unavailable = !registry.targets.containsKey(requestedTarget)
-        if (unavailable) {
-            if (nested != null) {
+        val unavailable = hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
+        if (unavailable || requestedTarget != rawTarget && rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")) {
+            if (unavailable && nested != null) {
                 settingsNestedDialog(nested.dialogId)?.hideDialog()
                 registry.nestedTarget = null
             }
             showMessage(unavailableMessage)
         }
         val resolved = if (unavailable) {
-            val prerequisite = when {
+            val prerequisite = hiddenSettingPrerequisites[requestedTarget] ?: when {
                 entry?.paletteTitleRes != null -> "ui.theme.theme"
-                requestedTarget == "appearance.player_behavior_and_visuals.songs_number_to_show" ||
-                    requestedTarget == "appearance.player_behavior_and_visuals.showalbumcover" ->
-                    "appearance.player_behavior_and_visuals.show_next_songs_in_player"
-                requestedTarget.startsWith("embedded.rewind.") -> RewindMasterSettingsTarget
-                else -> githubSettingsSearchFallback(requestedTarget, registry.targets::containsKey)
+                requestedTarget == "appearance.cover_and_thumbnail.cover_thumbnail_animation_type" -> listOf(
+                    "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",
+                    ShowCoverSettingsTarget,
+                ).firstOrNull(registry.targets::containsKey)
+                requestedTarget == "appearance.colors_and_background.m3e_always_show_shapes" ||
+                    requestedTarget == "appearance.colors_and_background.shake_sensitivity_theme" ->
+                    listOf(GradientSettingsTarget, BackgroundSettingsTarget).firstOrNull(registry.targets::containsKey)
+                requestedTarget.startsWith("embedded.rewind.") -> {
+                    rewindNotificationPrerequisites[requestedTarget]?.takeIf(registry.targets::containsKey)
+                        ?: RewindMasterSettingsTarget
+                }
+                hiddenQuickPicksTarget -> "ai.tab_general.enable_quick_picks_page"
+                hiddenCoverLyricsTarget -> ShowCoverSettingsTarget
+                hiddenFullscreenLyricsTarget || requestedTarget == LyricsBackgroundSettingsTarget -> LyricsOnCoverSettingsTarget
+                requestedTarget.startsWith("other.on_device.") -> "other.on_device.enabled"
+                youtubeSyncTarget -> syncOverview
+                else -> playerSettingsSearchFallback(requestedTarget, context.preferences, isLandscape, registry.targets::containsKey)
+                    ?: appearanceBehaviorSearchFallback(requestedTarget, registry.targets::containsKey)
+                    ?: youtubeLoginSearchFallback(requestedTarget, registry.targets::containsKey)
+                    ?: discordSettingsSearchFallback(requestedTarget, registry.targets::containsKey)
+                    ?: lastFmSettingsSearchFallback(requestedTarget, registry.targets::containsKey)
+                    ?: githubSettingsSearchFallback(requestedTarget, registry.targets::containsKey)
+            }
+            if (prerequisite != null && prerequisite !in registry.targets) {
+                val prerequisiteEntry = AllSettingsEntryTargets.firstOrNull { it.id == prerequisite }
+                val prerequisiteRow = latestRows.indexOfFirst { (tab, title) ->
+                    prerequisiteEntry != null && prerequisiteEntry.tab == tab && prerequisiteEntry.cardTitleRes == title
+                }
+                if (prerequisiteRow >= 0) {
+                    val paddingPx = with(density) { listPadding.calculateTopPadding().roundToPx() }
+                    scroll.animateScrollToItem(prerequisiteRow + settingsHeaderItems, scrollOffset = paddingPx - searchClearancePx().roundToInt())
+                    withFrameNanos { }
+                }
             }
             prerequisite?.takeIf(registry.targets::containsKey) ?: cardId
         } else requestedTarget
         withFrameNanos { }
-        registry.targets[resolved]?.let {
+        val requester = registry.targets[resolved]
+        if (requester != null) {
             // A tall card is already positioned by the list. Bringing the full card into view
             // again can move its header behind the overlay to reveal more of its body.
             if (item == null || resolved != cardId) {
                 targetingListRow = nested == null || unavailable
                 try {
-                    it.bringIntoView()
+                    requester.bringIntoView()
                 } finally {
                     targetingListRow = false
                 }
             }
-            registry.blink(resolved)
         }
+        // The destination stays on the back stack after a search hit. Restore its scroll and dialogs as-is.
+        searchTargetHandled = true
+        if (requester != null) registry.blink(resolved)
     }
     CompositionLocalProvider(
         LocalSettingsTargets provides registry,
@@ -303,7 +554,6 @@ fun SettingsCategoryPage(
                         SettingsSourceContent(
                             tab, contentSearch, navController, selection,
                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
-                            normalizePreferences = target.isBlank(),
                             searchTarget = target,
                         )
                     }
@@ -313,6 +563,7 @@ fun SettingsCategoryPage(
                     contentPadding = listPadding,
                     overscrollEffect = if (scroll.canScrollForward || scroll.canScrollBackward) overscroll else null,
                     modifier = Modifier.weight(1f).fillMaxWidth().testTag("settings.category.list.$categoryId")
+                        .then(if (captureFooterBackdrop) Modifier.layerBackdrop(footerBackdrop) else Modifier)
                         .onGloballyPositioned { listTopPx = it.positionInWindow().y },
                 ) {
                     item(key = "header", contentType = "header") {
@@ -326,10 +577,16 @@ fun SettingsCategoryPage(
                                 )
                             }
                             if (categoryId != "about") {
-                                search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordQuery() })
+                                search.SearchBar(
+                                    this,
+                                    barPadding = searchFocus.barPadding,
+                                    placeholderRes = R.string.settings_global_search_hint,
+                                    onSearch = { recordQuery() },
+                                )
                                 SearchHistorySection(
-                                    visible = search.isFocused && filterSearchHistory(history.value, search.inputValue).isNotEmpty(),
-                                    queries = filterSearchHistory(history.value, search.inputValue),
+                                    visible = search.isFocused && filterSettingsSearchHistory(history.value, search.inputValue).isNotEmpty(),
+                                    queries = filterSettingsSearchHistory(history.value, search.inputValue),
+                                    allQueries = history.value,
                                     onQueryClick = { search.input = TextFieldValue(it); recordQuery(it); search.isFocused = false },
                                     onQueryDelete = { history.value = SearchHistoryStore.delete(context.preferences, historyPage, it) },
                                     onQueryDeleteAll = { history.value = SearchHistoryStore.deleteAll(context.preferences, historyPage) },
@@ -337,21 +594,45 @@ fun SettingsCategoryPage(
                             }
                         }
                     }
+                    if (showInterfaceShortcuts) {
+                        item(key = "interface-shortcuts", contentType = "card") {
+                            InterfaceSettingsShortcuts(::openInterfaceDestination)
+                        }
+                    }
+                    items(exactInterfacePageMatches, key = { "page:${it.labelRes}" }, contentType = { "page" }) { item ->
+                        SettingsResultCard(testTag = "settings.category.result.page.${item.route}", modifier = Modifier.animateItem()) {
+                            GlobalPageItemRow(item, showSearchLocation = true, onItemSelected = {
+                                recordQuery()
+                                openInterfaceDestination(item)
+                            })
+                        }
+                    }
                     items(entryMatches, key = { "entry:${it.id}" }, contentType = { "entry" }) { entry ->
                         SettingsEntryResultRow(
                             result = entry,
                             surfaceTag = "settings.category.result.entry.${entry.id}",
                             rowTag = "settings.category.entry.${entry.id}",
+                            modifier = Modifier.animateItem(),
+                            searchCategoryId = categoryId,
                             onClick = {
                                 recordQuery()
-                                onSearchResultNavigate(entry.destinationRoute(context))
+                                onSearchResultNavigate(entry.destinationRoute(context, categoryId))
                             },
                         )
+                    }
+                    items(otherInterfacePageMatches, key = { "page:${it.labelRes}" }, contentType = { "page" }) { item ->
+                        SettingsResultCard(testTag = "settings.category.result.page.${item.route}", modifier = Modifier.animateItem()) {
+                            GlobalPageItemRow(item, showSearchLocation = true, onItemSelected = {
+                                recordQuery()
+                                openInterfaceDestination(item)
+                            })
+                        }
                     }
                     items(matches, key = { "result:${it.tab}:${it.titleRes}" }, contentType = { "card_result" }) { card ->
                         SettingsCardResultRow(
                             card = card,
                             surfaceTag = "settings.category.result.card.${card.tab}.${card.titleRes}",
+                            modifier = Modifier.animateItem(),
                             rowTag = "settings.category.card.${card.tab}.${card.titleRes}",
                             onClick = {
                                 recordQuery()
@@ -365,15 +646,20 @@ fun SettingsCategoryPage(
                             LocalSettingsCardGroupTitle provides groupTitles[title],
                             LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
                         ) {
-                            Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                            Column(Modifier.animateItem().settingsSearchContentVisibility(searchFocus.contentAlpha)) {
                                 slots.getValue(tab).content[title]?.value?.invoke()
                             }
                         }
                     }
                     if (resetScopes.isNotEmpty()) {
                         item(key = "reset", contentType = "reset") {
-                            Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha)) {
-                                SettingsResetCard(resetScopes, target) { tab ->
+                            Column(Modifier.animateItem().settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                                SettingsResetCard(
+                                    resetScopes,
+                                    target,
+                                    onRestartRequired = { resetRestartRequired = true },
+                                    allowAllSettings = categoryId == "system",
+                                ) { tab ->
                                     CompositionLocalProvider(
                                         LocalSettingsCardSlots provides null,
                                         LocalSettingsResetScope provides SettingsCategories.first { it.tab == tab }.labelRes,
@@ -381,7 +667,6 @@ fun SettingsCategoryPage(
                                         SettingsSourceContent(
                                             tab, contentSearch, navController, setOf(R.string.settings_reset),
                                             { title -> Modifier.settingsSearchTarget(settingsCardTargetId(context, tab, title)) },
-                                            normalizePreferences = false,
                                             searchTarget = "",
                                         )
                                     }
@@ -390,15 +675,17 @@ fun SettingsCategoryPage(
                         }
                     }
                 }
-                Box(Modifier.testTag("settings.category.footer").onSizeChanged { pinnedFooterHeightPx = it.height }) {
+                Box(Modifier.testTag("settings.category.footer").onSizeChanged {
+                    pinnedFooterHeightPx = it.height
+                    pageEntryId?.let { id -> reportFooterHeight(id, it.height) }
+                }) {
                     SettingsPinnedFooter(
-                        bottomSpacer = Dimensions.bottomSpacer,
-                        contentPadding = rememberPageChromeContentPadding(
-                            base = PaddingValues(bottom = Dimensions.bottomSpacer),
-                            topInsetProvider = { 0.dp },
-                        ),
+                        bottomSpacer = 0.dp,
+                        contentPadding = footerPadding,
+                        backdrop = footerBackdrop.takeIf { captureFooterBackdrop },
                         onVisibilityChanged = { hasPinnedFooter = it },
                     ) {
+                        RestartPlayerService(resetRestartRequired, onRestart = { resetRestartRequired = false })
                         sourceTabs.forEach { tab ->
                             CompositionLocalProvider(
                                 LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
@@ -412,7 +699,9 @@ fun SettingsCategoryPage(
             GlassFloatingActions(floatingBackdrop) {
                 SettingsScrollToTop(
                     lazyListState = scroll,
-                    pinnedFooterHeightPx = pinnedFooterHeightPx,
+                    pinnedFooterHeightPx = pinnedFooterHeightPx.takeIf { hasPinnedFooter }?.plus(
+                        with(density) { listPadding.calculateBottomPadding().roundToPx() },
+                    ) ?: 0,
                     modifier = Modifier.testTag("settings.category.scrollToTop"),
                 )
             }
@@ -430,13 +719,12 @@ private fun SettingsSourceContent(
     navController: NavController,
     selection: Set<Int>,
     decorate: @Composable (Int) -> Modifier,
-    normalizePreferences: Boolean,
     searchTarget: String,
 ) {
     when (tab) {
         0 -> GeneralSettingsContent(search, selectedCards = selection, cardModifier = decorate)
         1 -> UiSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
-        2 -> AppearanceSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate, normalizePreferences = normalizePreferences)
+        2 -> AppearanceSettingsContent(search, navController, selectedCards = selection, cardModifier = decorate)
         3 -> AIRecommendationSettingsContent(
             search, navController, selectedCards = selection, cardModifier = decorate,
         )
