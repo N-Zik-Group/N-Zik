@@ -5,13 +5,10 @@
     <string name="album_action_open">Idi na album</string>
     <string name="album_alternative_versions">Alternativne verzije</string>
     <string name="album_art">Album art</string>
-    <string name="album_found_online_verify">Album found online! Please verify it\'s the correct one.</string>
     <string name="album_left_swipe">Album Left Swipe</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">Failed to fetch album</string>
-    <string name="album_lookup_running">Looking up album from the internet</string>
     <string name="album_no_alternative_version">Ovaj album nema alternativnu verziju</string>
-    <string name="album_not_found">Album not found</string>
     <string name="album_related_title">Povezani albumi</string>
     <string name="album_right_swipe">Album Right Swipe</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Play all local songs</string>
     <string name="artist_deduplication_result">Merged %d duplicate artist(s) with the right artist</string>
     <string name="artist_following_status">Pratim</string>
-    <string name="artist_found_online_verify">Artist found online! Please verify it\'s the correct one.</string>
     <string name="artist_link_cleanup_result">Removed %d incorrect artist link(s)</string>
     <string name="artist_lookup_failed">Failed to fetch aritst</string>
-    <string name="artist_lookup_running">Looking up %s online...</string>
     <string name="artist_more_from">Još od</string>
     <string name="artist_overview_title">Pregled</string>
     <string name="artist_roundness">Artist roundness</string>

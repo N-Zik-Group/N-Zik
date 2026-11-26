@@ -5,13 +5,10 @@
     <string name="album_action_open">الذهاب إلى الألبوم</string>
     <string name="album_alternative_versions">نسخ بديلة</string>
     <string name="album_art">صورة الألبوم</string>
-    <string name="album_found_online_verify">تم العثور على الألبوم على الإنترنت! الرجاء التحقق من أنه الصحيح.</string>
     <string name="album_left_swipe">مرر الألبوم لليسار</string>
     <string name="album_loading_song_count_format">تحميل %1$d أغنية…</string>
     <string name="album_lookup_failed">فشل في جلب الألبوم</string>
-    <string name="album_lookup_running">البحث عن الألبوم من الإنترنت</string>
     <string name="album_no_alternative_version">هذا الألبوم ليس لديه أي إصدار بديل</string>
-    <string name="album_not_found">الألبوم غير موجود</string>
     <string name="album_related_title">ألبومات ذات صلة</string>
     <string name="album_right_swipe">مرر الألبوم الأيمن</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">تشغيل جميع الأغاني المحلية</string>
     <string name="artist_deduplication_result">دمج الفنان %d المكرر مع الفنان الأيمن</string>
     <string name="artist_following_status">تابع</string>
-    <string name="artist_found_online_verify">الفنان موجود على الإنترنت! الرجاء التحقق من أنه الصحيح.</string>
     <string name="artist_link_cleanup_result">أزيل %d رابط فنان غير صحيح</string>
     <string name="artist_lookup_failed">فشل في جلب الفندق</string>
-    <string name="artist_lookup_running">البحث عن %s على الإنترنت...</string>
     <string name="artist_more_from">المزيد من</string>
     <string name="artist_overview_title">نظرة عامة</string>
     <string name="artist_roundness">جولات الفنان</string>

@@ -5,13 +5,10 @@
     <string name="album_action_open">Ir para o álbum</string>
     <string name="album_alternative_versions">Versões alternativas</string>
     <string name="album_art">Arte do álbum</string>
-    <string name="album_found_online_verify">Álbum encontrado online! Por favor, verifique se é o correto.</string>
     <string name="album_left_swipe">Álbum, Deslize para Esquerda</string>
     <string name="album_loading_song_count_format">Carregando músicas %1$d…</string>
     <string name="album_lookup_failed">Falha ao buscar álbum</string>
-    <string name="album_lookup_running">Pesquisando álbum na Internet</string>
     <string name="album_no_alternative_version">Este álbum não tem nenhuma versão alternativa</string>
-    <string name="album_not_found">Álbum não encontrado</string>
     <string name="album_related_title">Álbuns relacionados</string>
     <string name="album_right_swipe">Álbum, Deslize para Direita</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Reproduzir todas as músicas locais</string>
     <string name="artist_deduplication_result">Artista(s) mesclados %d duplicados com o artista certo</string>
     <string name="artist_following_status">Seguindo</string>
-    <string name="artist_found_online_verify">O artista encontrado online! Por favor verifique se é o correto.</string>
     <string name="artist_link_cleanup_result">Removido(s) link do artista %d incorreto</string>
     <string name="artist_lookup_failed">Falha ao buscar artista</string>
-    <string name="artist_lookup_running">Buscando %s online...</string>
     <string name="artist_more_from">Mais de</string>
     <string name="artist_overview_title">Visão geral</string>
     <string name="artist_roundness">Arredondamento do artista</string>

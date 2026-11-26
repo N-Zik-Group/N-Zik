@@ -5,13 +5,10 @@
     <string name="album_action_open">Accesează albumul</string>
     <string name="album_alternative_versions">Versiuni alternative</string>
     <string name="album_art">Copertă album</string>
-    <string name="album_found_online_verify">Album găsit online! Vă rugăm să verificaţi dacă este cel corect.</string>
     <string name="album_left_swipe">Glisare la stânga în album</string>
     <string name="album_loading_song_count_format">Se încarcă melodiile %1$d…</string>
     <string name="album_lookup_failed">Preluarea albumului a eșuat</string>
-    <string name="album_lookup_running">Privind albumul de pe internet</string>
     <string name="album_no_alternative_version">Acest album nu are nicio versiune alternativă</string>
-    <string name="album_not_found">Albumul nu a fost găsit</string>
     <string name="album_related_title">Albume asemănătoare</string>
     <string name="album_right_swipe">Glisare la dreapta în playlist</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Redă toate melodiile locale</string>
     <string name="artist_deduplication_result">A îmbinat %d duplicat artiști(i) cu artistul drept</string>
     <string name="artist_following_status">Urmărit</string>
-    <string name="artist_found_online_verify">Artist găsit online! Vă rugăm să verificaţi dacă este cel corect.</string>
     <string name="artist_link_cleanup_result">S-a eliminat %d link(uri) incorecte artistice</string>
     <string name="artist_lookup_failed">Preluare aritmie eșuată</string>
-    <string name="artist_lookup_running">Se caută %s online...</string>
     <string name="artist_more_from">Profilul lui</string>
     <string name="artist_overview_title">Prezentare generală</string>
     <string name="artist_roundness">Rotunjirea artistului</string>

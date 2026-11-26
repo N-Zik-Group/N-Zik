@@ -5,13 +5,10 @@
     <string name="album_action_open">Gå til album</string>
     <string name="album_alternative_versions">Alternative versjoner</string>
     <string name="album_art">Album foto</string>
-    <string name="album_found_online_verify">Album funnet på nettet! Bekreft at det er riktig.</string>
     <string name="album_left_swipe">Album venstre-sveip</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">Kan ikke hente album</string>
-    <string name="album_lookup_running">Ser opp album fra internett</string>
     <string name="album_no_alternative_version">Dette albumet har ingen alternativ versjon</string>
-    <string name="album_not_found">Fant ikke albumet</string>
     <string name="album_related_title">Relaterte album</string>
     <string name="album_right_swipe">Album høyre Sveip</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Spill alle lokale sanger</string>
     <string name="artist_deduplication_result">Flettet %d dupliserte artister med høyre artist</string>
     <string name="artist_following_status">Følger</string>
-    <string name="artist_found_online_verify">Kunstner funnet på nettet! Kontroller at det er riktig.</string>
     <string name="artist_link_cleanup_result">Fjernet %d feil artist link(er)</string>
     <string name="artist_lookup_failed">Kunne ikke hente arakt</string>
-    <string name="artist_lookup_running">Ser etter %s på nettet...</string>
     <string name="artist_more_from">Mer av</string>
     <string name="artist_overview_title">Oversikt</string>
     <string name="artist_roundness">Artist roundness</string>

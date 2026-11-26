@@ -5,13 +5,10 @@
     <string name="album_action_open">Přejít do alba</string>
     <string name="album_alternative_versions">Alternativní verze</string>
     <string name="album_art">Obal alba</string>
-    <string name="album_found_online_verify">Album nalezeno online! Ověřte, zda je to správné.</string>
     <string name="album_left_swipe">Album přejetím vlevo</string>
     <string name="album_loading_song_count_format">Načítání %1$d skladeb…</string>
     <string name="album_lookup_failed">Nepodařilo se načíst album</string>
-    <string name="album_lookup_running">Vyhledávání alba z internetu</string>
     <string name="album_no_alternative_version">Toto album nemá žádnou alternativní verzi</string>
-    <string name="album_not_found">Album nenalezeno</string>
     <string name="album_related_title">Příbuzná alba</string>
     <string name="album_right_swipe">Album přejetím vpravo</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Přehrát všechny lokální skladby</string>
     <string name="artist_deduplication_result">Sloučený %d duplicitní umělci s pravým umělcem</string>
     <string name="artist_following_status">Sledovaní</string>
-    <string name="artist_found_online_verify">Umělec nalezen online! Ověřte, zda je to správné.</string>
     <string name="artist_link_cleanup_result">Removed %d incorrect artist link(s)</string>
     <string name="artist_lookup_failed">Nepodařilo se načíst aritmus</string>
-    <string name="artist_lookup_running">Vyhledávání %s online...</string>
     <string name="artist_more_from">Více o</string>
     <string name="artist_overview_title">Přehled</string>
     <string name="artist_roundness">Okolnost umělce</string>

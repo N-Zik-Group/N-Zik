@@ -708,7 +708,7 @@ class PlayerItemMenu private constructor(
                                 onClosePlayer()
                                 goToAlbumObj.onShortClick()
                             } else {
-                                Toaster.w(R.string.album_not_found)
+                                Toaster.w(R.string.album_lookup_failed)
                             }
                         }
 

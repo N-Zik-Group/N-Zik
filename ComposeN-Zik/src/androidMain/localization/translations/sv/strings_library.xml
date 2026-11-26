@@ -5,13 +5,10 @@
     <string name="album_action_open">Gå till album</string>
     <string name="album_alternative_versions">Alternativa versioner</string>
     <string name="album_art">Skivomslag</string>
-    <string name="album_found_online_verify">Album hittades online! Vänligen kontrollera att det är rätt.</string>
     <string name="album_left_swipe">Album vänster svep</string>
     <string name="album_loading_song_count_format">Laddar %1$d låtar…</string>
     <string name="album_lookup_failed">Det gick inte att hämta album</string>
-    <string name="album_lookup_running">Ser upp album från internet</string>
     <string name="album_no_alternative_version">Detta album har ingen alternativ version</string>
-    <string name="album_not_found">Album hittades inte</string>
     <string name="album_related_title">Relaterade album</string>
     <string name="album_right_swipe">Album höger svep</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Spela alla lokala låtar</string>
     <string name="artist_deduplication_result">Sammanfogade %d dublettkonstnär(er) med rätt artist</string>
     <string name="artist_following_status">Följer</string>
-    <string name="artist_found_online_verify">Artist hittades online! Vänligen kontrollera att det är rätt.</string>
     <string name="artist_link_cleanup_result">Tog bort %d felaktiga artistlänkar</string>
     <string name="artist_lookup_failed">Det gick inte att hämta aritst</string>
-    <string name="artist_lookup_running">Letar upp %s online...</string>
     <string name="artist_more_from">Mer av</string>
     <string name="artist_overview_title">Översikt</string>
     <string name="artist_roundness">Konstnärens rundhet</string>

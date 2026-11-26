@@ -5,13 +5,10 @@
     <string name="album_action_open">Album anzeigen</string>
     <string name="album_alternative_versions">Alternative Versionen</string>
     <string name="album_art">Albumcover</string>
-    <string name="album_found_online_verify">Album online gefunden! Bitte überprüfen Sie, ob es das richtige ist.</string>
     <string name="album_left_swipe">Album links wischen</string>
     <string name="album_loading_song_count_format">Lade %1$d Lieder…</string>
     <string name="album_lookup_failed">Abruf des Albums fehlgeschlagen</string>
-    <string name="album_lookup_running">Suche im Internet nach dem Album</string>
     <string name="album_no_alternative_version">Dieses Album hat keine alternative Version</string>
-    <string name="album_not_found">Album nicht gefunden</string>
     <string name="album_related_title">Ähnliche Alben</string>
     <string name="album_right_swipe">Album rechts wischen</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Alle lokalen Titel abspielen</string>
     <string name="artist_deduplication_result">%d Duplikat(e) mit dem richtigen Künstler zusammengeführt</string>
     <string name="artist_following_status">Gefolgt</string>
-    <string name="artist_found_online_verify">Künstler online gefunden! Bitte überprüfen Sie, ob es sich um den richtigen handelt.</string>
     <string name="artist_link_cleanup_result">%d falsche Interpretenlink(s) entfernt</string>
     <string name="artist_lookup_failed">Abruf des Künstlers fehlgeschlagen</string>
-    <string name="artist_lookup_running">Online nach %s suchen...</string>
     <string name="artist_more_from">Mehr von</string>
     <string name="artist_overview_title">Übersicht</string>
     <string name="artist_roundness">Künstlerrundung</string>

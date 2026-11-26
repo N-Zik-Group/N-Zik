@@ -5,13 +5,10 @@
     <string name="album_action_open">アルバムを表示</string>
     <string name="album_alternative_versions">別のバージョン</string>
     <string name="album_art">アルバムアート</string>
-    <string name="album_found_online_verify">オンラインでアルバムが見つかりました！正しいアルバムであることを確認してください。</string>
     <string name="album_left_swipe">アルバム 左スワイプ</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">アルバムの取得に失敗しました</string>
-    <string name="album_lookup_running">インターネットからアルバムを検索</string>
     <string name="album_no_alternative_version">このアルバムには別のバージョンがありません</string>
-    <string name="album_not_found">アルバムが見つかりません</string>
     <string name="album_related_title">関連するアルバム</string>
     <string name="album_right_swipe">アルバム 右スワイプ</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">すべてのローカル曲を再生</string>
     <string name="artist_deduplication_result">%d 右のアーティストと重複したアーティストをマージしました</string>
     <string name="artist_following_status">フォロー中</string>
-    <string name="artist_found_online_verify">アーティストがオンラインで見つかりました！正しいものであることを確認してください。</string>
     <string name="artist_link_cleanup_result">%d 不適切なアーティストリンクを削除しました</string>
     <string name="artist_lookup_failed">aritst の取得に失敗しました</string>
-    <string name="artist_lookup_running">%s をオンラインで検索しています...</string>
     <string name="artist_more_from">表示</string>
     <string name="artist_overview_title">概要</string>
     <string name="artist_roundness">アーティストの丸み</string>

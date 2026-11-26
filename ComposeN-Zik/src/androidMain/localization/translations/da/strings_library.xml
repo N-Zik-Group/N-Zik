@@ -5,13 +5,10 @@
     <string name="album_action_open">Gå til album</string>
     <string name="album_alternative_versions">Alternative versioner</string>
     <string name="album_art">Albumillustrationer</string>
-    <string name="album_found_online_verify">Albummet findes online! Kontroller, at det er det rigtige.</string>
     <string name="album_left_swipe">Venstre stryg for album</string>
     <string name="album_loading_song_count_format">Indlæser %1$d sange…</string>
     <string name="album_lookup_failed">Kunne ikke hente album</string>
-    <string name="album_lookup_running">Slår album op på internettet</string>
     <string name="album_no_alternative_version">Dette album har ingen alternativ version</string>
-    <string name="album_not_found">Albummet blev ikke fundet</string>
     <string name="album_related_title">Relaterede album</string>
     <string name="album_right_swipe">Højre stryg for album</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Afspil alle lokale sange</string>
     <string name="artist_deduplication_result">Fusionerede %d duplikerede kunstnere med højre kunstner</string>
     <string name="artist_following_status">Følger</string>
-    <string name="artist_found_online_verify">Kunstner fundet online! Kontroller, at det er den rigtige.</string>
     <string name="artist_link_cleanup_result">Fjernede %d forkerte kunstnerlink</string>
     <string name="artist_lookup_failed">Kunne ikke hente kunstner</string>
-    <string name="artist_lookup_running">Slår %s op online...</string>
     <string name="artist_more_from">Mere af</string>
     <string name="artist_overview_title">Oversigt</string>
     <string name="artist_roundness">Kunstner rundhed</string>

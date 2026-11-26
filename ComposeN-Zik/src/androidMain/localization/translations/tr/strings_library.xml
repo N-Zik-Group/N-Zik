@@ -5,13 +5,10 @@
     <string name="album_action_open">Albüme git</string>
     <string name="album_alternative_versions">Alternatif versiyonlar</string>
     <string name="album_art">Albüm kapağı</string>
-    <string name="album_found_online_verify">Albüm internette bulundu! Lütfen doğru albüm olup olmadığını kontrol edin.</string>
     <string name="album_left_swipe">Albüm Sola Kaydırma</string>
     <string name="album_loading_song_count_format">%1$d şarkı yükleniyor…</string>
     <string name="album_lookup_failed">Albüm getirilemedi</string>
-    <string name="album_lookup_running">Albüm internetten aranıyor</string>
     <string name="album_no_alternative_version">Bu albümün alternatif versiyonu yok</string>
-    <string name="album_not_found">Albüm bulunamadı</string>
     <string name="album_related_title">İlgili albümler</string>
     <string name="album_right_swipe">Albüm Sağa Kaydırma</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Tüm yerel şarkıları çal</string>
     <string name="artist_deduplication_result">%d adet yinelenen sanatçı, doğru sanatçıyla birleştirildi</string>
     <string name="artist_following_status">Takip ediliyor</string>
-    <string name="artist_found_online_verify">Sanatçı internette bulundu! Lütfen doğru kişi olup olmadığını kontrol edin.</string>
     <string name="artist_link_cleanup_result">%d adet yanlış sanatçı bağlantısı kaldırıldı</string>
     <string name="artist_lookup_failed">Sanatçı getirilemedi</string>
-    <string name="artist_lookup_running">%s çevrimiçi aranıyor...</string>
     <string name="artist_more_from">Daha fazlası</string>
     <string name="artist_overview_title">Genel bakış</string>
     <string name="artist_roundness">Sanatçının yuvarlaklığı</string>

@@ -5,13 +5,10 @@
     <string name="album_action_open">Aller à l\'album</string>
     <string name="album_alternative_versions">Versions alternatives</string>
     <string name="album_art">Pochette d\'album</string>
-    <string name="album_found_online_verify">J\'ai trouvé l\'album en ligne ! Merci de vérifier qu\'il s\'agit bien du bon.</string>
     <string name="album_left_swipe">Balayage vers la gauche de l\'album</string>
     <string name="album_loading_song_count_format">Chargement de %1$d titres…</string>
     <string name="album_lookup_failed">Échec de la récupération de l\'album</string>
-    <string name="album_lookup_running">Recherche d\'album sur Internet</string>
     <string name="album_no_alternative_version">Cet album n\'a pas de version alternative</string>
-    <string name="album_not_found">Album introuvable</string>
     <string name="album_related_title">Albums Associés</string>
     <string name="album_right_swipe">Balayage vers la droite de l\'album</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Jouer toutes les chansons locales</string>
     <string name="artist_deduplication_result">%d artistes en double ont été fusionnés avec le bon artiste</string>
     <string name="artist_following_status">Suit</string>
-    <string name="artist_found_online_verify">Artiste trouvé en ligne ! Veuillez vérifier qu\'il s\'agit bien de la bonne personne.</string>
     <string name="artist_link_cleanup_result">Suppression de %d lien(s) d\'artiste incorrect(s)</string>
     <string name="artist_lookup_failed">Impossible de récupérer l\'artiste</string>
-    <string name="artist_lookup_running">Recherche de %s en ligne...</string>
     <string name="artist_more_from">Plus de</string>
     <string name="artist_overview_title">Aperçu</string>
     <string name="artist_roundness">Polyvalence de l\'artiste</string>

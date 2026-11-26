@@ -608,3 +608,7 @@ Track identity and navigation:
 Metadata repair cleanup:
 - fix(metadata): preserve verified credits during startup repair
   - Ignore generic channel names and retain manual metadata during cleanup.
+
+Metadata lookup messages:
+- chore(resources): retire legacy album and artist lookup messages
+  - Preserve the shared source labels and remove the old aliases and translated keys.

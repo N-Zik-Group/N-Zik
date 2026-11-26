@@ -5,13 +5,10 @@
     <string name="album_action_open">Перейти в альбом</string>
     <string name="album_alternative_versions">Альтернативные версии</string>
     <string name="album_art">Обложка</string>
-    <string name="album_found_online_verify">Альбом найден онлайн! Пожалуйста, убедитесь, что он верный.</string>
     <string name="album_left_swipe">Альбом Свайп влево</string>
     <string name="album_loading_song_count_format">Загрузка %1$d песен…</string>
     <string name="album_lookup_failed">Не удалось получить альбом</string>
-    <string name="album_lookup_running">Поиск альбома из интернета</string>
     <string name="album_no_alternative_version">Этот альбом не имеет других версий</string>
-    <string name="album_not_found">Альбом не найден</string>
     <string name="album_related_title">Похожие альбомы</string>
     <string name="album_right_swipe">Альбом Свайп вправо</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Воспроизвести все локальные песни</string>
     <string name="artist_deduplication_result">Объединенный %d дубликат(ов) с нужным исполнителем</string>
     <string name="artist_following_status">Подписан</string>
-    <string name="artist_found_online_verify">Художник найден в сети! Пожалуйста, убедитесь, что это верно.</string>
     <string name="artist_link_cleanup_result">Удалено %d неверная ссылка(и) исполнителя</string>
     <string name="artist_lookup_failed">Не удалось получить aritst</string>
-    <string name="artist_lookup_running">Поиск %s в сети...</string>
     <string name="artist_more_from">Больше от</string>
     <string name="artist_overview_title">Обзор</string>
     <string name="artist_roundness">Художник круглый</string>

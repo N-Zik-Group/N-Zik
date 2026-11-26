@@ -5,13 +5,10 @@
     <string name="album_action_open">转到专辑</string>
     <string name="album_alternative_versions">替代版本</string>
     <string name="album_art">专辑封面</string>
-    <string name="album_found_online_verify">在线找到相册！请确认这是正确的。</string>
     <string name="album_left_swipe">专辑 左滑动</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">获取相册失败</string>
-    <string name="album_lookup_running">从互联网查找相册</string>
     <string name="album_no_alternative_version">这个专辑没有任何其他版本</string>
-    <string name="album_not_found">找不到相册</string>
     <string name="album_related_title">相关专辑</string>
     <string name="album_right_swipe">专辑 右滑动</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">播放所有本地歌曲</string>
     <string name="artist_deduplication_result">将 %d 重复的艺人与右边的艺人合并</string>
     <string name="artist_following_status">已关注</string>
-    <string name="artist_found_online_verify">小艺术家在线找到！请确认这是正确的。</string>
     <string name="artist_link_cleanup_result">已删除 %d 不正确的艺人链接 (s)</string>
     <string name="artist_lookup_failed">获取参数失败</string>
-    <string name="artist_lookup_running">在线查找 %s...</string>
     <string name="artist_more_from">更多</string>
     <string name="artist_overview_title">概览</string>
     <string name="artist_roundness">艺术家圆角</string>

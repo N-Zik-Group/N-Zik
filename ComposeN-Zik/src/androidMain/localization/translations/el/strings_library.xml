@@ -5,13 +5,10 @@
     <string name="album_action_open">Μετάβαση στο άλμπουμ</string>
     <string name="album_alternative_versions">Εναλλακτικές εκδόσεις</string>
     <string name="album_art">Εξώφυλλο άλμπουμ</string>
-    <string name="album_found_online_verify">Το άλμπουμ βρέθηκε online! Παρακαλώ επιβεβαιώστε ότι είναι το σωστό.</string>
     <string name="album_left_swipe">Άλμπουμ Αριστερά Σύρσιμο</string>
     <string name="album_loading_song_count_format">Φόρτωση %1$d τραγουδιών…</string>
     <string name="album_lookup_failed">Αποτυχία ανάκτησης άλμπουμ</string>
-    <string name="album_lookup_running">Αναζήτηση άλμπουμ από το διαδίκτυο</string>
     <string name="album_no_alternative_version">Αυτό το άλμπουμ δεν έχει άλλες εκδόσεις</string>
-    <string name="album_not_found">Το άλμπουμ δεν βρέθηκε</string>
     <string name="album_related_title">Παρόμοια άλμπουμ</string>
     <string name="album_right_swipe">Σύρσιμο Δεξιά</string>
     <!-- Artist -->
@@ -19,10 +16,8 @@
     <string name="artist_action_play_local_songs">Αναπαραγωγή όλων των τοπικών τραγουδιών</string>
     <string name="artist_deduplication_result">Συγχωνευμένος %d διπλός καλλιτέχνης με τον σωστό καλλιτέχνη</string>
     <string name="artist_following_status">Ακολουθεί</string>
-    <string name="artist_found_online_verify">Καλλιτέχνης βρέθηκε online! Παρακαλώ επιβεβαιώστε ότι είναι η σωστή.</string>
     <string name="artist_link_cleanup_result">Αφαιρέθηκε %d εσφαλμένος σύνδεσμος(οι) καλλιτέχνη</string>
     <string name="artist_lookup_failed">Αποτυχία ανάκτησης aritst</string>
-    <string name="artist_lookup_running">Αναζήτηση σε απευθείας σύνδεση %s...</string>
     <string name="artist_more_from">Περισσότερα από</string>
     <string name="artist_overview_title">Επισκόπηση</string>
     <string name="artist_roundness">Στρογγυλή εμφάνιση καλλιτέχνη</string>
