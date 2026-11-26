@@ -267,6 +267,14 @@ class NameConvergenceTest {
         assertNull(NameConvergence.convergeText("", listOf("Aran")))
     }
 
+    @Test
+    fun recognizedPlaceholderRecoversOnlyUsableLinkedNames() {
+        assertEquals("Yung Lean", NameConvergence.convergeText("Unknown Artist", listOf("Yung Lean")))
+        assertNull(NameConvergence.convergeText("Grand Theft Auto VI", listOf("Yung Lean")))
+        assertNull(NameConvergence.convergeText("Unknown Artist", listOf("null", "Unknown Artist")))
+        assertNull(NameConvergence.convergeText("modified:Unknown Artist", listOf("Yung Lean")))
+    }
+
     @Test
     fun alreadyConvergedCopyYieldsNoWrite() {
         assertNull(NameConvergence.convergeText("Aran", listOf("Aran")))

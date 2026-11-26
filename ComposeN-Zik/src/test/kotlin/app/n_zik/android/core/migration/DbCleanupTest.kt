@@ -124,6 +124,13 @@ class DbCleanupTest {
         assertFalse(DbCleanup.isSuspiciousArtistLink("E.T", null))
     }
 
+    @Test
+    fun recognizedPlaceholdersDoNotInvalidateExactLinks() {
+        assertFalse(DbCleanup.isSuspiciousArtistLink("Yung Lean", "Unknown Artist"))
+        assertFalse(DbCleanup.isSuspiciousArtistLink("Yung Lean", "Artiste inconnu", "Artiste inconnu"))
+        assertTrue(DbCleanup.isSuspiciousArtistLink("Yung Lean", "Grand Theft Auto VI"))
+    }
+
     @Test
     fun blankArtistNameKeepsEveryLink() {
         assertFalse(DbCleanup.isSuspiciousArtistLink(null, "Tanchiky, siromaru"))

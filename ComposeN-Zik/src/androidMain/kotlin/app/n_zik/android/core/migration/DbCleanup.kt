@@ -4,7 +4,6 @@ import android.content.Context
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.MODIFIED_PREFIX
-import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.R
 import app.n_zik.android.core.database.ArtistTable
@@ -13,6 +12,7 @@ import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.maintenance.DbCleanupLinkRecord
 import app.n_zik.android.core.rewind.RewindPostImportRegenerationWorker
+import app.n_zik.android.utils.usableTrackArtistName
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.core.utils.Toaster
 import kotlinx.coroutines.flow.first
@@ -70,7 +70,10 @@ object DbCleanup {
      * so the boot chain can persist the last successful run
      */
     internal suspend fun runPass(context: Context): DbCleanupResult {
-        val result = runClean(Database.songTable, Database.artistTable, Database.songArtistMapTable)
+        val result = runClean(
+            Database.songTable, Database.artistTable, Database.songArtistMapTable,
+            context.getString(R.string.metadata_unknown_artist),
+        )
         if (result.removed > 0) {
             // The mapping feeds the Rewind deck: recompute its playlists from the healed data
             RewindPostImportRegenerationWorker.schedule(context)
@@ -100,6 +103,7 @@ object DbCleanup {
         songTable: SongTable,
         artistTable: ArtistTable,
         mapTable: SongArtistMapTable,
+        unknownArtist: String = "Unknown Artist",
     ): DbCleanupResult {
         val pairs = mapTable.allPairsDirect()
         if (pairs.isEmpty()) return DbCleanupResult(0, emptyList())
@@ -116,7 +120,7 @@ object DbCleanup {
             if (pair.artistId.startsWith(MODIFIED_PREFIX)) continue
             val song = songs[pair.songId] ?: continue // no stored artist list: nothing to judge against
             val name = artistName(pair.artistId)
-            if (isSuspiciousArtistLink(name, song.artistsText)) {
+            if (isSuspiciousArtistLink(name, song.artistsText, unknownArtist)) {
                 Timber.tag(TAG).d(
                     "stale link removed: song=%s \"%s\" artist=\"%s\" artistsText=\"%s\"",
                     pair.songId, song.title, name, song.artistsText
@@ -139,15 +143,18 @@ object DbCleanup {
      * (may carry the `modified:` custom prefix)
      * @return true when the link should be removed
      */
-    internal fun isSuspiciousArtistLink(artistName: String?, songArtistsText: String?): Boolean {
+    internal fun isSuspiciousArtistLink(
+        artistName: String?,
+        songArtistsText: String?,
+        unknownArtist: String = "Unknown Artist",
+    ): Boolean {
         // Custom values are untouchable: a user-modified artist name or a user-modified
         // song artist text is not a YTM author list, so it cannot be used to judge links.
         if (artistName?.startsWith(MODIFIED_PREFIX, true) == true) return false
         if (songArtistsText?.startsWith(MODIFIED_PREFIX, true) == true) return false
-        // No source of truth for this song (no artist text) -> keep every link.
-        if (songArtistsText.isNullOrBlank()) return false
-        if (artistName.isNullOrBlank()) return false
-        val cleaned = cleanPrefix(songArtistsText)
+        // A placeholder provides no evidence against an existing link.
+        val cleaned = usableTrackArtistName(songArtistsText, unknownArtist) ?: return false
+        val artist = usableTrackArtistName(artistName, unknownArtist) ?: return false
         // The artist name must appear in the stored list as a whole phrase delimited by
         // non-letter characters (separators, punctuation, start/end of the string). The
 //
@@ -160,7 +167,7 @@ object DbCleanup {
         // around CJK characters, and accented-name fragments ("gr" in "Grégoire") must not
 //
         // match. Locale-independent — no localized conjunction list involved.
-        val phrase = Regex("(?<!\\p{L})" + Regex.escape(artistName) + "(?!\\p{L})", RegexOption.IGNORE_CASE)
+        val phrase = Regex("(?<!\\p{L})" + Regex.escape(artist) + "(?!\\p{L})", RegexOption.IGNORE_CASE)
         return !phrase.containsMatchIn(cleaned)
     }
 }

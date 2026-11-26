@@ -604,3 +604,7 @@ Playlist picker navigation:
 Track identity and navigation:
 - fix(metadata): preserve verified and manually edited track credits
   - Reconcile artist and album credits in storage and reuse them in track menu navigation.
+
+Metadata repair cleanup:
+- fix(metadata): preserve verified credits during startup repair
+  - Ignore generic channel names and retain manual metadata during cleanup.

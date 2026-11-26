@@ -4,6 +4,8 @@ import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.models.Artist
 import app.n_zik.android.core.database.AlbumTable
@@ -12,6 +14,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongAlbumMapTable
 import app.n_zik.android.core.database.SongArtistMapTable
 import app.n_zik.android.core.database.SongTable
+import app.n_zik.android.utils.usableTrackArtistName
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 
@@ -86,6 +89,7 @@ object NameConvergence {
             albumTable = Database.albumTable,
             songArtistMapTable = Database.songArtistMapTable,
             songAlbumMapTable = Database.songAlbumMapTable,
+            unknownArtist = appContext().getString(R.string.metadata_unknown_artist),
         )
     }
 
@@ -112,6 +116,7 @@ object NameConvergence {
         albumTable: AlbumTable,
         songArtistMapTable: SongArtistMapTable,
         songAlbumMapTable: SongAlbumMapTable,
+        unknownArtist: String = "Unknown Artist",
     ): ConvergenceSummary {
         // songId -> cleaned+trimmed names of its linked rows (one cached lookup
         // per row id; trimmed because the live database has row names with
@@ -153,7 +158,7 @@ object NameConvergence {
                 Timber.tag(TAG).d("song %s: skipped (no linked rows) - \"%s\"", song.id, text)
                 continue
             }
-            convergeText(text, rowNames)?.let { converged ->
+            convergeText(text, rowNames, unknownArtist)?.let { converged ->
                 songTable.updateArtists(song.id, converged)
                 changed++
                 Timber.tag(TAG).d("song %s: \"%s\" -> \"%s\"", song.id, text, converged)
@@ -368,17 +373,21 @@ object NameConvergence {
      * custom (`modified:`), has no tokens or no linked rows, carries a name
      * without a linked row (skip), or is already converged (no write)
      */
-    internal fun convergeText(text: String, rowNames: List<String>): String? {
-        if (text.startsWith(MODIFIED_PREFIX)) return null // custom copies are untouchable
+    internal fun convergeText(
+        text: String,
+        rowNames: List<String>,
+        unknownArtist: String = "Unknown Artist",
+    ): String? {
+        if (text.startsWith(MODIFIED_PREFIX, ignoreCase = true)) return null
+        if (text.isBlank()) return null
+        val placeholder = usableTrackArtistName(text, unknownArtist) == null
         val tokens = tokensOf(text)
-        if (tokens.isEmpty()) return null
         // Row names are cleaned AND trimmed where they are cleaned: the live
         // database has row names with trailing spaces (e.g. "RoughSketch  ").
         val cleanedRowNames = rowNames
-            .map { cleanPrefix(it).trim() }
-            .filter { it.isNotBlank() }
+            .mapNotNull { usableTrackArtistName(it, unknownArtist) }
         if (cleanedRowNames.isEmpty()) return null
-        if (tokens.any { !isCoveredByRowNames(it, cleanedRowNames) }) return null
+        if (!placeholder && tokens.any { !isCoveredByRowNames(it, cleanedRowNames) }) return null
         // The full list is distinct case-insensitively, keeping the first
         // occurrence in link order (duplicated rows never yield a double name).
         val distinctNames = mutableListOf<String>()
