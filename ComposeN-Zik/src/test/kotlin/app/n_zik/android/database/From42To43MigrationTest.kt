@@ -9,6 +9,7 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.migration.From42To43Migration
+import app.n_zik.android.core.database.migration.From43To44Migration
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
@@ -42,12 +43,12 @@ class From42To43MigrationTest {
         }
         helper.close()
         val db = Room.databaseBuilder(context, DatabaseInitializer::class.java, name)
-            .addMigrations(From42To43Migration).openHelperFactory(factory)
+            .addMigrations(From42To43Migration, From43To44Migration).openHelperFactory(factory)
             .allowMainThreadQueries().build()
         try {
             db.query("PRAGMA user_version", null).use { c ->
                 c.moveToFirst()
-                assertEquals(43, c.getInt(0))
+                assertEquals(44, c.getInt(0))
             }
             db.query("SELECT name FROM sqlite_master WHERE name IN ('SearchQuery', 'index_SearchQuery_query')", null).use {
                 assertFalse(it.moveToFirst())

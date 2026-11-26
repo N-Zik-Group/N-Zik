@@ -99,6 +99,7 @@ import app.n_zik.android.core.database.migration.From39To40Migration
 import app.n_zik.android.core.database.migration.From40To41Migration
 import app.n_zik.android.core.database.migration.From41To42Migration
 import app.n_zik.android.core.database.migration.From42To43Migration
+import app.n_zik.android.core.database.migration.From43To44Migration
 import app.n_zik.android.core.utils.PropUtils
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.playback.services.PersistentQueueArtwork
@@ -1174,7 +1175,8 @@ abstract class DatabaseInitializer protected constructor() : RoomDatabase() {
                     From39To40Migration,
                     From40To41Migration,
                     From41To42Migration,
-                    From42To43Migration
+                    From42To43Migration,
+                    From43To44Migration,
                 )
                 .fallbackToDestructiveMigration()
                 .build()

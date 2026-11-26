@@ -11,6 +11,7 @@ import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.migration.From40To41Migration
 import app.n_zik.android.core.database.migration.From41To42Migration
 import app.n_zik.android.core.database.migration.From42To43Migration
+import app.n_zik.android.core.database.migration.From43To44Migration
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -92,13 +93,13 @@ class DatabaseUpgrade40To41Test {
         helper.close()
 
         val db = Room.databaseBuilder(context, DatabaseInitializer::class.java, dbName)
-            .addMigrations(From40To41Migration, From41To42Migration, From42To43Migration)
+            .addMigrations(From40To41Migration, From41To42Migration, From42To43Migration, From43To44Migration)
             .openHelperFactory(helperFactory)
             .allowMainThreadQueries()
             .build()
 
         try {
-            assertEquals(43, db.query("PRAGMA user_version", null).use { it.moveToFirst(); it.getInt(0) })
+            assertEquals(44, db.query("PRAGMA user_version", null).use { it.moveToFirst(); it.getInt(0) })
 
             db.query("SELECT songId, type, data, isEdited, lastFetchedAt FROM Lyrics", null).use { c ->
                 assertEquals(1, c.count)

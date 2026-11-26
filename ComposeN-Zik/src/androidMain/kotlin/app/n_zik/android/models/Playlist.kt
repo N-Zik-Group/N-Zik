@@ -16,9 +16,16 @@ data class Playlist(
     val isEditable: Boolean = true,
     @ColumnInfo(defaultValue = "0") val isYoutubePlaylist: Boolean = false,
     @ColumnInfo(defaultValue = "0") val isAutoSync: Boolean = false,
-    @ColumnInfo(defaultValue = "-1") val position: Int = -1
+    @ColumnInfo(defaultValue = "-1") val position: Int = -1,
+    val authorBrowseId: String? = null,
+    val authorName: String? = null,
+    val authorNameOverride: String? = null,
 ) {
     fun cleanName() = cleanPrefix( this.name )
+
+    fun hasModifiedTitle() = name.dropLast(cleanName().length).contains(MODIFIED_PREFIX, ignoreCase = true)
+
+    fun displayAuthorName() = authorNameOverride ?: authorName
 
     /**
      * Whether this playlist can be bookmarked, i.e. saved to the YouTube Music library.

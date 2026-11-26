@@ -221,8 +221,32 @@ interface PlaylistTable {
     @Query("UPDATE Playlist SET position = :position WHERE id = :playlistId")
     suspend fun updatePosition( playlistId: Long, position: Int ): Int
 
-    @Query("UPDATE Playlist SET browseId = :browseId WHERE id = :playlistId")
+    @Query("""
+        UPDATE Playlist
+        SET browseId = :browseId,
+            authorBrowseId = CASE WHEN browseId IS :browseId THEN authorBrowseId ELSE NULL END,
+            authorName = CASE WHEN browseId IS :browseId THEN authorName ELSE NULL END
+        WHERE id = :playlistId
+    """)
     suspend fun updateBrowseId( playlistId: Long, browseId: String? ): Int
+
+    @Query("""
+        UPDATE Playlist
+        SET authorBrowseId = :authorBrowseId, authorName = :authorName
+        WHERE id = :playlistId AND browseId = :expectedBrowseId
+    """)
+    suspend fun updateSourceAuthor(
+        playlistId: Long,
+        expectedBrowseId: String,
+        authorBrowseId: String,
+        authorName: String,
+    ): Int
+
+    @Query("UPDATE Playlist SET authorNameOverride = :authorName WHERE id = :playlistId")
+    suspend fun updateAuthorNameOverride(playlistId: Long, authorName: String?): Int
+
+    @Query("UPDATE Playlist SET name = :name WHERE id = :playlistId")
+    suspend fun rename(playlistId: Long, name: String): Int
 
     //<editor-fold defaultstate="collapsed" desc="Sort as preview">
     @Query("""

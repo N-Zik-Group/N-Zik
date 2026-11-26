@@ -6,7 +6,7 @@ import java.io.FileNotFoundException
 import org.json.JSONArray
 import org.json.JSONObject
 
-internal const val LIBRARY_SCHEMA_VERSION = 43
+internal const val LIBRARY_SCHEMA_VERSION = 44
 
 /** Checks the staged database against exported Room schemas without starting Room in rescue. */
 internal object LibraryBackupSchema {
@@ -45,9 +45,7 @@ internal object LibraryBackupSchema {
             if (!columnsMatch(reference, database, "room_master_table")) return false
             if (version == LIBRARY_SCHEMA_VERSION) {
                 val hash = database.rows("SELECT identity_hash FROM room_master_table WHERE id=42").singleOrNull()?.singleOrNull()
-                // Room also accepts the legacy hash generated for schema version 43.
-                val legacyHash = version == 43 && hash == "f21af622e3b03c607afda6ad0a721ec9"
-                if (hash != schema.getString("identityHash") && !legacyHash) return false
+                if (hash != schema.getString("identityHash")) return false
             }
         }
         for (entity in schema.getJSONArray("entities").objects()) {
