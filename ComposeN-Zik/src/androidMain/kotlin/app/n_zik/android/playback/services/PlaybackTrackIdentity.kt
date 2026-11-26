@@ -30,6 +30,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
@@ -40,9 +42,16 @@ import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 internal const val COMMITTED_TRACK_IDENTITY_EXTRA = "committedTrackIdentity"
+
+private data class TrackIdentityPatch(
+    val start: Int,
+    val endExclusive: Int,
+    val items: List<MediaItem>,
+)
 
 internal fun SongTable.observePlaybackIdentity(ids: List<String>): Flow<Map<String, PlaybackTrackRow>> = flow {
     val queries = ids.distinct().chunked(500).map(::observePlaybackTracks)
@@ -150,34 +159,32 @@ internal fun Player.bindPlaybackIdentity(
     var rows = emptyMap<String, PlaybackTrackRow>()
     var projectingQueue = false
     var projectionPending = false
+    var playlistRevision = 0L
+    var projectionRevision = 0L
 
-    fun projectQueue() {
+    fun deferDuringBuffering(): Boolean {
+        projectionPending = playWhenReady && playbackState == Player.STATE_BUFFERING
+        return projectionPending
+    }
+
+    suspend fun projectQueue() {
         if (!ownsProfile()) return
-        if (playWhenReady && playbackState == Player.STATE_BUFFERING) {
-            projectionPending = true
-            return
-        }
-        projectionPending = false
+        val requestRevision = ++projectionRevision
+        if (deferDuringBuffering()) return
+        val sourceRevision = playlistRevision
+        val rowSnapshot = rows
+        // Media3 timelines are immutable. Only capture the reference on the player thread.
+        val timeline = currentTimeline
         val unknown = unknownArtist()
-        var firstChanged = -1
-        var lastChanged = -1
-        val projected = List(mediaItemCount) { index ->
-            val item = getMediaItemAt(index)
-            val updated = rows[item.sessionArtistTrackId()]?.let { row ->
-                item.withCurrentTrackIdentity(row, unknown, originalId)
-            } ?: item
-            if (updated !== item) {
-                if (firstChanged == -1) firstChanged = index
-                lastChanged = index
-            }
-            updated
-        }
-        if (firstChanged != -1) {
+        val patch = projectTrackIdentityPatch(timeline, rowSnapshot, unknown, originalId)
+        if (requestRevision != projectionRevision || sourceRevision != playlistRevision ||
+            rows !== rowSnapshot || !ownsProfile() || deferDuringBuffering()
+        ) return
+        if (patch != null) {
             // A timeline change republishes the full queue to Android media controllers.
-            val endExclusive = lastChanged + 1
             projectingQueue = true
             try {
-                replaceMediaItems(firstChanged, endExclusive, projected.subList(firstChanged, endExclusive))
+                replaceMediaItems(patch.start, patch.endExclusive, patch.items)
             } finally {
                 projectingQueue = false
             }
@@ -189,7 +196,8 @@ internal fun Player.bindPlaybackIdentity(
         var refresh: Job? = null
 
         fun scheduleProjection() {
-            if (refresh?.isActive != true) refresh = launch(NzikDispatchers.UI) { projectQueue() }
+            refresh?.cancel()
+            refresh = launch(NzikDispatchers.UI) { projectQueue() }
         }
 
         fun sendTrackIds() {
@@ -202,7 +210,10 @@ internal fun Player.bindPlaybackIdentity(
         }
         val listener = object : Player.Listener {
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED && !projectingQueue) sendTrackIds()
+                if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED && !projectingQueue) {
+                    playlistRevision++
+                    sendTrackIds()
+                }
             }
 
             override fun onPlaybackStateChanged(playbackState: Int) {
@@ -222,9 +233,38 @@ internal fun Player.bindPlaybackIdentity(
         songs.observePlaybackIdentity(ids)
             .flowOn(NzikDispatchers.DATA)
             .catch { error -> Timber.tag("PlaybackTrackIdentity").w(error, "Unable to observe playback identity") }
-            .collect { latest ->
+            .collectLatest { latest ->
                 rows = latest
                 projectQueue()
             }
     }
+}
+
+@OptIn(UnstableApi::class)
+private suspend fun projectTrackIdentityPatch(
+    timeline: Timeline,
+    rows: Map<String, PlaybackTrackRow>,
+    unknownArtist: String,
+    originalId: (String) -> String?,
+): TrackIdentityPatch? = withContext(NzikDispatchers.MEDIA) {
+    if (rows.isEmpty()) return@withContext null
+    val window = Timeline.Window()
+    val owner = currentCoroutineContext()
+    var firstChanged = -1
+    var lastChanged = -1
+    val projected = List(timeline.windowCount) { index ->
+        owner.ensureActive()
+        val item = timeline.getWindow(index, window).mediaItem
+        val updated = rows[item.sessionArtistTrackId()]?.let { row ->
+            item.withCurrentTrackIdentity(row, unknownArtist, originalId)
+        } ?: item
+        if (updated !== item) {
+            if (firstChanged == -1) firstChanged = index
+            lastChanged = index
+        }
+        updated
+    }
+    if (firstChanged == -1) return@withContext null
+    val endExclusive = lastChanged + 1
+    TrackIdentityPatch(firstChanged, endExclusive, projected.subList(firstChanged, endExclusive))
 }

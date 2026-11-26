@@ -131,9 +131,7 @@ internal fun Player.launchForcePlayAtIndex(
 
     // This will prevent UI from freezing up during conversion
     return launchStoredDurationSelection(this) { selection ->
-        val cleanedMediaItems = selection.enrich(
-            mediaItems.fastMap( MediaItem::cleaned ).fastDistinctBy( MediaItem::mediaId )
-        )
+        val cleanedMediaItems = mediaItems.fastMap(MediaItem::cleaned).fastDistinctBy(MediaItem::mediaId)
         // Use the cleaned mediaId for lookup to ensure consistent comparison
         val targetMediaId = mediaItems.getOrNull(mediaItemIndex)?.cleaned?.mediaId
         val foundIndex = if (targetMediaId != null) {
@@ -148,11 +146,16 @@ internal fun Player.launchForcePlayAtIndex(
             0
         }
 
-        // Publish known local lengths before optional network metadata prefetch.
+        // Only the selected item needs its stored length before playback can start.
+        // The queue duration UI and the identity observer fill remaining lengths asynchronously.
+        val selectedItem = cleanedMediaItems[newIndex]
+        val enrichedSelectedItem = selection.enrich(listOf(selectedItem)).single()
+        val playbackItems = if (enrichedSelectedItem === selectedItem) cleanedMediaItems
+            else cleanedMediaItems.toMutableList().apply { this[newIndex] = enrichedSelectedItem }
         var applied = false
         selection.publish {
             if (!canApplyQueue()) return@publish
-            setMediaItems( cleanedMediaItems, newIndex, C.TIME_UNSET )
+            setMediaItems(playbackItems, newIndex, C.TIME_UNSET)
             prepare()
             restoreGlobalVolume()
             playWhenReady = true
@@ -163,7 +166,7 @@ internal fun Player.launchForcePlayAtIndex(
 
         // Pre-fetch full metadata (with browse IDs) asynchronously.
         // This ensures the UI shows the correct artist names + browse IDs without delaying playback.
-        val targetItem = cleanedMediaItems.getOrNull(newIndex)
+        val targetItem = playbackItems.getOrNull(newIndex)
         if (targetItem != null) {
             val videoId = targetItem.mediaId.substringAfterLast('/')
             val explicitAlbumId = targetItem.mediaMetadata.extras?.getString("albumId")?.takeIf(String::isNotBlank)
