@@ -556,3 +556,7 @@ Settings accessibility:
 Library sort preferences:
 - fix(settings): retain hidden library sort positions
   - Keep ordering independent of visibility across the five library sort editors.
+
+Sort shortcuts:
+- fix(menu): keep sort shortcuts available on long press
+  - Expose the existing sort editor shortcut in the shared menu renderers.

@@ -94,6 +94,7 @@ open class Sort<T> (
 
     override fun onShortClick() { sortOrder = !sortOrder }
     override fun onLongClick() = openMenu()
+    override val menuLongClick: (() -> Unit) get() = ::onLongClick
 
     @Suppress("UNCHECKED_CAST")
     protected open fun getEnumConstants(): List<T> {
