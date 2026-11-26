@@ -11,17 +11,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import android.content.res.Configuration
 import app.n_zik.android.ui.styling.Dimensions
+import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 
 /** Settings scroll owners clear the header, physical rails and the bottom player. */
 @Composable
 internal fun rememberSettingsContentPadding(
     base: PaddingValues = PaddingValues(0.dp),
-    bottomInsetHandledByFooter: Boolean = false,
+    footerBottomInset: PaddingValues? = null,
 ): PaddingValues {
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val safeSides = WindowInsets.safeDrawing.only(WindowInsetsSides.Horizontal).asPaddingValues()
@@ -35,10 +37,14 @@ internal fun rememberSettingsContentPadding(
         }
     }
     val padding = rememberPageChromeContentPadding(landscapeBase)
-    return remember(padding, bottomInsetHandledByFooter) {
+    val playerInsets = LocalPlayerAwareWindowInsets.current.asPaddingValues()
+    return remember(padding, playerInsets, footerBottomInset) {
         object : PaddingValues by padding {
-            override fun calculateBottomPadding() =
-                if (bottomInsetHandledByFooter) 0.dp else padding.calculateBottomPadding()
+            override fun calculateBottomPadding(): Dp {
+                if (footerBottomInset == null) return padding.calculateBottomPadding()
+                val playerClearance = playerInsets.calculateBottomPadding() - footerBottomInset.calculateBottomPadding()
+                return if (playerClearance > 0.dp) playerClearance + SettingsFooterMiniPlayerGap else 0.dp
+            }
         }
     }
 }

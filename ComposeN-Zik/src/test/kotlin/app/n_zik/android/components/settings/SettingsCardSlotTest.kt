@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Box
 
 import android.app.Application
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -47,6 +48,10 @@ import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsCardSlots
 import app.n_zik.android.components.settings.common.SettingsPinnedFooter
 import app.n_zik.android.components.settings.common.SettingsSourceFooter
+import app.n_zik.android.ui.styling.Appearance
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.LocalAppearance
+import app.n_zik.android.ui.styling.Typography
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Rule
@@ -59,6 +64,9 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class SettingsCardSlotTest {
     @get:Rule val composeRule = createComposeRule()
+    private val appearance = Appearance(
+        DefaultDarkColorPalette, Typography.fallback, CircleShape, CircleShape, CircleShape,
+    )
 
     @Test fun `lazy cards retain one source and shared host with current state captures`() {
         val slots = SettingsCardSlots()
@@ -136,11 +144,13 @@ class SettingsCardSlotTest {
         composeRule.runOnIdle { assertEquals(listOf(1, 3), slots.titles.toList()) }
     }
 
-    @Test fun `pinned restart footer owns bottom clearance once and releases it back to the list`() {
+    @Test fun `pinned restart footer stays below the mini player and reserves each inset once`() {
         val warning = mutableStateOf(false)
         val hasFooter = mutableStateOf(false)
+        val systemBottomInset = PaddingValues(bottom = 24.dp)
         composeRule.setContent {
             CompositionLocalProvider(
+                LocalAppearance provides appearance,
                 LocalDensity provides Density(1f),
                 LocalPlayerAwareWindowInsets provides WindowInsets(bottom = 140.dp),
                 LocalSideRailContentInsets provides WindowInsets(left = 50.dp),
@@ -150,7 +160,7 @@ class SettingsCardSlotTest {
                         modifier = Modifier.weight(1f).testTag("footer-list"),
                         contentPadding = rememberSettingsContentPadding(
                             base = PaddingValues(bottom = 100.dp),
-                            bottomInsetHandledByFooter = hasFooter.value,
+                            footerBottomInset = systemBottomInset.takeIf { hasFooter.value },
                         ),
                     ) {
                         items(20) { index ->
@@ -158,11 +168,14 @@ class SettingsCardSlotTest {
                         }
                     }
                     SettingsPinnedFooter(
-                        bottomSpacer = 100.dp,
+                        bottomSpacer = 0.dp,
                         contentPadding = rememberPageChromeContentPadding(
-                            base = PaddingValues(bottom = 100.dp),
                             topInsetProvider = { 0.dp },
-                        ),
+                        ).let { chromePadding ->
+                            object : PaddingValues by chromePadding {
+                                override fun calculateBottomPadding() = systemBottomInset.calculateBottomPadding()
+                            }
+                        },
                         onVisibilityChanged = { hasFooter.value = it },
                     ) {
                         if (warning.value) Box(Modifier.fillMaxWidth().height(24.dp).testTag("restart-action"))
@@ -181,10 +194,10 @@ class SettingsCardSlotTest {
         composeRule.runOnIdle { warning.value = true }
         scrollToEnd()
         val action = bounds("restart-action")
-        assertEquals(root.bottom - 140f, action.bottom, 0f)
+        assertEquals(root.bottom - 24f, action.bottom, 0f)
         assertEquals(root.left + 50f, action.left, 0f)
         assertEquals(action.top, bounds("footer-list").bottom, 0f)
-        assertEquals(action.top, bounds("footer-row-19").bottom, 0f)
+        assertEquals(action.top - 122f, bounds("footer-row-19").bottom, 0f)
         composeRule.runOnIdle { warning.value = false }
         scrollToEnd()
         assertEquals(root.bottom, bounds("footer-list").bottom, 0f)
@@ -195,18 +208,20 @@ class SettingsCardSlotTest {
         val slots = SettingsCardSlots()
         val warning = mutableStateOf(false)
         composeRule.setContent {
-            Column(Modifier.height(300.dp)) {
-                CompositionLocalProvider(LocalSettingsCardSlots provides slots) {
-                    val visible = warning.value
-                    SettingsCardSlot(SettingsSourceFooter) {
-                        if (visible) Text("restart service")
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.height(300.dp)) {
+                    CompositionLocalProvider(LocalSettingsCardSlots provides slots) {
+                        val visible = warning.value
+                        SettingsCardSlot(SettingsSourceFooter) {
+                            if (visible) Text("restart service")
+                        }
                     }
-                }
-                LazyColumn(Modifier.weight(1f).testTag("cards")) {
-                    items(20) { Spacer(Modifier.height(400.dp)) }
-                }
-                SettingsPinnedFooter(40.dp) {
-                    slots.content[SettingsSourceFooter]?.value?.invoke()
+                    LazyColumn(Modifier.weight(1f).testTag("cards")) {
+                        items(20) { Spacer(Modifier.height(400.dp)) }
+                    }
+                    SettingsPinnedFooter(40.dp) {
+                        slots.content[SettingsSourceFooter]?.value?.invoke()
+                    }
                 }
             }
         }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
@@ -17,11 +16,15 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
+import app.n_zik.android.components.glass.backdrop.Backdrop
 
 internal const val SettingsSourceFooter = -1
+internal val SettingsFooterMiniPlayerGap = 6.dp
 
 internal class SettingsCardSlots {
     val content = mutableStateMapOf<Int, State<@Composable () -> Unit>>()
@@ -30,24 +33,45 @@ internal class SettingsCardSlots {
 }
 
 internal val LocalSettingsCardSlots = staticCompositionLocalOf<SettingsCardSlots?> { null }
+internal val LocalSettingsFooterHeight = staticCompositionLocalOf<(String, Int) -> Unit> { { _, _ -> } }
 
-/** Keeps restart actions composed outside the lazy viewport and above the player inset. */
+/** Keeps restart actions composed outside the lazy viewport. */
 @Composable
 internal fun SettingsPinnedFooter(
     bottomSpacer: Dp,
     contentPadding: PaddingValues = PaddingValues(bottom = bottomSpacer),
+    backdrop: Backdrop? = null,
     onVisibilityChanged: (Boolean) -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     var visible by remember { mutableStateOf(false) }
-    Column(Modifier.padding(if (visible) contentPadding else PaddingValues(0.dp))) {
-        Column(Modifier.onSizeChanged {
-            val hasContent = it.height > 0
-            if (visible != hasContent) {
-                visible = hasContent
-                onVisibilityChanged(hasContent)
-            }
-        }) { content() }
+    SettingsBottomPanel(
+        backdrop = backdrop,
+    ) {
+        Column(
+            Modifier.layout { measurable, constraints ->
+                val left = contentPadding.calculateLeftPadding(layoutDirection).roundToPx()
+                val right = contentPadding.calculateRightPadding(layoutDirection).roundToPx()
+                val top = contentPadding.calculateTopPadding().roundToPx()
+                val bottom = contentPadding.calculateBottomPadding().roundToPx()
+                val child = measurable.measure(constraints.offset(-left - right, -top - bottom))
+                val hasContent = child.height > 0
+                // The footer and the background behind Android's navigation buttons collapse together.
+                layout(
+                    (child.width + left + right).coerceIn(constraints.minWidth, constraints.maxWidth),
+                    (if (hasContent) child.height + top + bottom else 0)
+                        .coerceIn(constraints.minHeight, constraints.maxHeight),
+                ) {
+                    if (hasContent) child.place(left, top)
+                }
+            }.onSizeChanged {
+                val hasContent = it.height > 0
+                if (visible != hasContent) {
+                    visible = hasContent
+                    onVisibilityChanged(hasContent)
+                }
+            },
+        ) { content() }
     }
 }
 

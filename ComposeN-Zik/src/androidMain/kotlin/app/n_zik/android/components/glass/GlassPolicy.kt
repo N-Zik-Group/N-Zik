@@ -417,8 +417,9 @@ fun glassTint(settings: GlassSettings): Color = when (settings.source) {
 }
 
 @Composable
-fun glassRenderer(settings: GlassSettings): GlassRenderer {
-    val context = LocalContext.current
+fun glassRenderer(settings: GlassSettings): GlassRenderer = glassRenderer(LocalContext.current, settings)
+
+internal fun glassRenderer(context: Context, settings: GlassSettings): GlassRenderer {
     val lowRam = (context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager)?.isLowRamDevice == true
     return selectGlassRenderer(settings, Build.VERSION.SDK_INT, lowRam)
 }

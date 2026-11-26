@@ -22,8 +22,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.navigationBarPositionKey
+import app.n_zik.android.utils.playerPositionKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import org.junit.Assert.assertEquals
@@ -43,6 +45,8 @@ class DestinationChromeUpdaterInsetsTest {
     @Test fun `floating navigation removes only Updater player reserve`() = verify(NavigationBarPosition.BottomFloating)
     @Test fun `left rail survives removal of Updater player reserve`() = verify(NavigationBarPosition.Left)
     @Test fun `right rail survives removal of Updater player reserve`() = verify(NavigationBarPosition.Right)
+    @Test fun `settings with a top mini player only reserves system space at the bottom`() =
+        verify(NavigationBarPosition.Bottom, PlayerPosition.Top)
 
     private data class ObservedInsets(
         val bottom: Dp,
@@ -53,11 +57,12 @@ class DestinationChromeUpdaterInsetsTest {
         val railRight: Dp,
     )
 
-    private fun verify(position: NavigationBarPosition) {
+    private fun verify(position: NavigationBarPosition, miniPlayer: PlayerPosition = PlayerPosition.Bottom) {
         val context = ApplicationProvider.getApplicationContext<Application>()
         setActiveProfile("updater_insets_${position.name}", context)
         context.preferences.edit().clear()
-            .putString(navigationBarPositionKey, position.name).commit()
+            .putString(navigationBarPositionKey, position.name)
+            .putString(playerPositionKey, miniPlayer.name).commit()
         val playerBottom = mutableStateOf(140.dp)
         val observed = mutableMapOf<String, ObservedInsets>()
         lateinit var view: View
@@ -101,12 +106,12 @@ class DestinationChromeUpdaterInsetsTest {
                     .setVisible(WindowInsetsCompat.Type.displayCutout(), cutoutBottom > 0)
                     .build())
             }
-            for (height in listOf(140.dp, 220.dp, 140.dp)) {
+            for (height in listOf(140.dp, 220.dp, maxOf(navigationBottom, cutoutBottom).dp)) {
                 compose.runOnIdle { playerBottom.value = height }
                 compose.runOnIdle {
                     for (route in listOf("updater", "settings")) {
                         val actual = requireNotNull(observed[route])
-                        assertEquals("$route bottom clearance", if (route == "updater") {
+                        assertEquals("$route bottom clearance", if (route == "updater" || miniPlayer == PlayerPosition.Top) {
                             maxOf(navigationBottom, cutoutBottom).dp
                         } else height, actual.bottom)
                         assertEquals("$route inherited top", 24, actual.top)

@@ -123,10 +123,22 @@ class GlassMenuHostState {
         internal set
     val modalBackdrop: Backdrop? get() = foregroundBackdrop ?: sceneBackdrop ?: overlayBackdrop ?: backdrop
     internal var artworkTint by mutableStateOf(GlassArtworkTint())
+    private val standaloneSettingsPages = mutableSetOf<Any>()
     var standaloneSettings by mutableStateOf(false)
     val dialogs = GlassDialogHostState()
     internal val nativeOverlays = mutableStateListOf<Any>()
     val hasOverlays: Boolean get() = entry != null || dialogs.hasDialogs || nativeOverlays.isNotEmpty()
+
+    /** Outgoing and incoming Glass settings pages can share the host during navigation. */
+    internal fun registerStandaloneSettingsPage(): () -> Unit {
+        val page = Any()
+        standaloneSettingsPages.add(page)
+        standaloneSettings = true
+        return {
+            standaloneSettingsPages.remove(page)
+            standaloneSettings = standaloneSettingsPages.isNotEmpty()
+        }
+    }
 
     fun show(next: GlassMenuEntry) {
         val previous = entry

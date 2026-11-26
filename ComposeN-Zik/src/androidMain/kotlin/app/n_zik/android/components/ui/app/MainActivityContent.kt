@@ -44,6 +44,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -109,6 +110,8 @@ import app.n_zik.android.components.glass.GlassSceneContent
 import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.LocalPlayerArtworkObservation
+import app.n_zik.android.components.settings.common.LocalSettingsFooterHeight
+import app.n_zik.android.components.settings.common.SettingsFooterMiniPlayerGap
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.glass.rememberPlayerArtworkObservation
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -165,6 +168,8 @@ import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
+import app.n_zik.android.core.navigation.navigateToPickedPlaylist
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.PendingMiniPlayerAction
 import app.n_zik.android.enums.PipModule
@@ -174,6 +179,10 @@ import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.extensions.discord.DiscordUiState
 import app.n_zik.android.extensions.pip.PipModuleContainer
 import app.n_zik.android.extensions.pip.PipModuleCover
+import app.n_zik.android.extensions.pip.setAutoEnterPip
+import app.n_zik.android.extensions.pip.supportsPictureInPicture
+import app.n_zik.android.utils.enablePictureInPictureAutoKey
+import app.n_zik.android.utils.enablePictureInPictureKey
 import app.n_zik.android.intents.DeliverHomeTabShortcut
 import app.n_zik.android.intents.DeliverRewindTargets
 import app.n_zik.android.intents.DeliverSettingsShortcut
@@ -245,6 +254,16 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
     // Issue #881 (gh-881), Phase 3.1: lifecycle + first-frame probe (frozen UI after wake).
     UiFrameClockDiagnostics()
     val selectedPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
+
+    val pictureInPictureEnabled by rememberPreference(enablePictureInPictureKey, false)
+    val automaticPictureInPictureEnabled by rememberPreference(enablePictureInPictureAutoKey, false)
+    LaunchedEffect(pictureInPictureEnabled, automaticPictureInPictureEnabled) {
+        if (supportsPictureInPicture(this@MainActivityContent)) {
+            runCatching {
+                setAutoEnterPip(pictureInPictureEnabled && automaticPictureInPictureEnabled)
+            }.onFailure { Timber.tag("PictureInPicture").w(it, "Unable to update automatic PiP") }
+        }
+    }
 
     val coroutineScope = rememberCoroutineScope()
     val isSystemInDarkTheme by rememberUpdatedState(isSystemInDarkTheme())
@@ -568,6 +587,14 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
         // Sourced from the nav controller rather than DiscordUiState so layout never
         // depends on the RPC feature's destination listener
         val playerEntry = navController.currentBackStackEntryAsState().value
+        val settingsFooterHeights = remember { mutableStateMapOf<String, Int>() }
+        val reportSettingsFooterHeight = remember(settingsFooterHeights) {
+            { entryId: String, heightPx: Int ->
+                if (heightPx > 0) settingsFooterHeights[entryId] = heightPx
+                else settingsFooterHeights.remove(entryId)
+                Unit
+            }
+        }
         val playerRoute = playerEntry?.destination?.route
         // Home draws one nav bar button per active tab and only shows the bar with two
         // or more, so pass the real tab count: the same preferences HomeScreen reads,
@@ -635,6 +662,10 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
         // The provider is read at draw time so the scroll-hide offset moves it without
         // recomposing this screen on every frame.
         val isTopPlayer = playerPos == PlayerPosition.Top
+        val settingsFooterHeight = playerEntry?.id?.let { settingsFooterHeights[it] }
+        val settingsFooterClearance = if (!isTopPlayer && settingsFooterHeight != null) {
+            with(density) { settingsFooterHeight.toDp() } + SettingsFooterMiniPlayerGap
+        } else 0.dp
         val dockExpandedNavHeight = FloatingDockDimensions.expandedHeight.dp
         val dockSafeWidth = maxWidth - with(density) {
             (safeDrawingInsets.getLeft(density, LayoutDirection.Ltr) +
@@ -913,6 +944,7 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     LocalHomeTopMiniPlayerAnchor provides homeTopMiniAnchor,
                     app.n_zik.android.components.ui.screens.home.LocalHomeHeaderMotionRegistry provides scaffoldScroll.homeHeaderMotionRegistry,
                     LocalPlayerAwareWindowInsets provides playerAwareWindowInsets,
+                    LocalSettingsFooterHeight provides reportSettingsFooterHeight,
                     LocalDownloadHelper provides downloadHelper,
                     LocalPlayerSheetState provides playerSheetState,
                     LocalMonetCompat provides monet,
@@ -920,6 +952,9 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     LocalPendingMiniPlayerAction provides pendingMiniPlayerAction,
                     app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest provides
                         { showQueueOverlay = true },
+                    LocalPlaylistPickerNavigation provides { id ->
+                        navigateToPickedPlaylist(navController, id)
+                    },
                     LocalIsShowingLyrics provides isShowingLyrics,
                     LocalIsShowingVisualizer provides isShowingVisualizer,
                     LocalTopBarOffset provides topBarOffsetState,
@@ -1035,7 +1070,7 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                                     state = playerSheetState,
                                     modifier = Modifier.fillMaxWidth(),
                                     onDismiss = {
-                                        binder?.stopRadio()
+                                        binder?.onExplicitQueueClear()
                                         binder?.player?.clearMediaItems()
                                         runCatching {
                                             this@MainActivityContent.stopService(this@MainActivityContent.intent<app.n_zik.android.playback.services.PlayerServiceModern>())
@@ -1045,7 +1080,7 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                                         val dockPadding = if (floatingDockEnabled && !topDock && !isTopPlayer)
                                             navBarBottomPad + dockGeometry().miniBottomOffset.dp * dockPresence.value
                                         else playerPadBottom.value
-                                        dockPadding + with(density) {
+                                        maxOf(dockPadding, settingsFooterClearance) + with(density) {
                                             if (isTopPlayer) 0.dp else bottomNavigationImeLift().toDp()
                                         }
                                     },

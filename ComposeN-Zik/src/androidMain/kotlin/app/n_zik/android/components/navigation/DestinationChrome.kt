@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -23,11 +24,14 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.components.glass.LocalGlassScope
 import app.n_zik.android.components.glass.glassScopeForRoute
 import app.n_zik.android.core.navigation.LocalPageNavigationEntry
+import app.n_zik.android.utils.playerPositionKey
+import app.n_zik.android.utils.rememberPreference
 
 /** Each animated destination retains its own inset policy until it leaves composition. */
 internal fun NavGraphBuilder.chromeComposable(
@@ -66,8 +70,13 @@ private fun DestinationChromeInsets(route: String?, content: @Composable () -> U
     val headerInset = LocalAppHeaderContentInset.current
     val headerOverlayInset = LocalAppHeaderOverlayInset.current
     val inheritedPlayerInsets = LocalPlayerAwareWindowInsets.current
-    // The hidden sheet keeps its playback state; this rendered page needs only system clearance.
-    val playerInsets = if (route == NavRoutes.updater.name) {
+    val destination = route?.substringBefore('?')
+    val topSettingsPlayer = if (destination == NavRoutes.settings.name) {
+        val position by rememberPreference(playerPositionKey, PlayerPosition.Bottom)
+        position == PlayerPosition.Top
+    } else false
+    // Neither a hidden updater player nor a top-anchored settings player occupies the bottom edge.
+    val playerInsets = if (destination == NavRoutes.updater.name || topSettingsPlayer) {
         inheritedPlayerInsets.only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
             .add(WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Bottom))
     } else inheritedPlayerInsets

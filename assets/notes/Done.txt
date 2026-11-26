@@ -712,3 +712,7 @@ Playlist menus:
 Live proxy preference:
 - fix(network): apply proxy changes to MusicBrainz immediately
   - Update the independent MusicBrainz client when network preferences change.
+
+Settings footer chrome:
+- fix(settings): keep restart actions below the mini-player
+  - Share the updater-style footer and reserve the mini-player and system navigation insets once.
