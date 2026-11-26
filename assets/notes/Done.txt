@@ -628,3 +628,7 @@ Video artist lookup:
 Playlist membership and import:
 - fix(playlist): validate destination membership before adding tracks
   - Keep profile ownership, duplicate checks, YouTube push rules and source order consistent.
+
+Browse ID editing:
+- fix(metadata): resolve manual changes across library destinations
+  - Keep edited source IDs and names available in navigation, with guarded search and saves.

@@ -9,6 +9,9 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.song.RenameDialog
@@ -32,7 +35,7 @@ class RenamePlaylistDialog private constructor(
     }
 
     override val iconId: Int = R.drawable.title_edit
-    override val messageId: Int = R.string.playlist_rename_dialog_title
+    override val messageId: Int = R.string.metadata_action_change_title
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
     override val dialogTitle: String
         @Composable
@@ -53,10 +56,12 @@ class RenamePlaylistDialog private constructor(
 
         val playlist = getPlaylist() ?: return
         val storedPrefixes = playlist.name.dropLast(cleanPrefix(playlist.name).length)
+        val modified = if (playlistLinkKind(playlist.browseId) != PlaylistLinkKind.Local && !playlist.hasModifiedTitle()) {
+            MODIFIED_PREFIX
+        } else ""
 
         Database.asyncTransaction {
-            playlist.copy( name = storedPrefixes + newValue )
-                    .let { playlistTable.update(it) }
+            playlistTable.rename(playlist.id, storedPrefixes + modified + newValue)
         }
 
         hideDialog()
