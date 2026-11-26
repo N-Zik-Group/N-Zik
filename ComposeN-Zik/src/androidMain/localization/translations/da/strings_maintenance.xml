@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Du skifter til en Beta build. Denne version kan indeholde fejl eller være ustabil. Det anbefales stærkt at sikkerhedskopiere dine data, før du fortsætter eller rapporterer noget problem.</string>
     <string name="updates_stable_to_beta_warning_title">Skift til Beta Build</string>
     <string name="updates_starting_status">Starter…</string>
-    <string name="updates_unavailable_build_description">Hvis du ser denne besked, betyder det, at din build ikke har automatisk opdatering aktiveret, pls opdatere appen manuelt fra github</string>
     <string name="updates_up_to_date">Op til dato</string>
     <string name="updates_warning_acknowledge">Jeg forstår</string>
     <string name="updates_check_failed">Kunne ikke søge efter opdateringer.</string>

@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Przełączyłeś się na wersję Beta. Ta wersja może zawierać błędy lub być niestabilna. Zalecane jest tworzenie kopii zapasowej danych przed przystąpieniem lub zgłoszeniem jakichkolwiek problemów.</string>
     <string name="updates_stable_to_beta_warning_title">Przełączanie na wersję beta</string>
     <string name="updates_starting_status">Uruchamianie…</string>
-    <string name="updates_unavailable_build_description">Jeśli widzisz tę wiadomość, oznacza to, że twoja kompilacja nie ma włączonej automatycznej aktualizacji, pls aktualizuje aplikację ręcznie z github</string>
     <string name="updates_up_to_date">Aktualne</string>
     <string name="updates_warning_acknowledge">Rozumiem</string>
     <string name="updates_check_failed">Nie można sprawdzić aktualizacji.</string>

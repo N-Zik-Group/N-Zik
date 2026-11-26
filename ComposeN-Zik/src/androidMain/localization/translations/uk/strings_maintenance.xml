@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Ви переключаєтесь на Бета-збірку. Ця версія може містити помилки або бути нестабільною. Наполегливо рекомендується створити резервну копію даних, перш ніж продовжити або надіслати повідомлення про будь-які проблеми.</string>
     <string name="updates_stable_to_beta_warning_title">Перемикання на бета-версію</string>
     <string name="updates_starting_status">Запуск…</string>
-    <string name="updates_unavailable_build_description">Якщо ви бачите це повідомлення, це означає, що ваша збірка не увімкнена автовідновлення, варто оновити додаток вручну з github</string>
     <string name="updates_up_to_date">Актуальні дані</string>
     <string name="updates_warning_acknowledge">Я розумію</string>
     <string name="updates_check_failed">Не вдається перевірити наявність оновлень.</string>

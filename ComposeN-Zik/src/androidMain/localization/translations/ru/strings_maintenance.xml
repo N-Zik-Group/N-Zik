@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Вы переходите на бета-сборку. Эта версия может содержать ошибки или быть нестабильной. Настоятельно рекомендуется сделать резервную копию ваших данных перед тем как приступить к рассмотрению или сообщить о каких-либо проблемах.</string>
     <string name="updates_stable_to_beta_warning_title">Переход на бета-сборку</string>
     <string name="updates_starting_status">Запуск…</string>
-    <string name="updates_unavailable_build_description">Если вы видите это сообщение, это означает, что ваша сборка не имеет автоматического обновления, пожалуйста, обновите приложение вручную с github</string>
     <string name="updates_up_to_date">Актуально</string>
     <string name="updates_warning_acknowledge">Я понимаю</string>
     <string name="updates_check_failed">Не удалось проверить обновления.</string>

@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">ベータビルドに切り替えています。このバージョンにはバグが含まれているか、不安定である可能性があります。 問題を進めたり報告する前に、データをバックアップすることを強くお勧めします。</string>
     <string name="updates_stable_to_beta_warning_title">ベータビルドに切り替え中</string>
     <string name="updates_starting_status">Starting…</string>
-    <string name="updates_unavailable_build_description">このメッセージが表示された場合、ビルドに自動更新が有効になっていないことを意味します。plsはgithubからアプリを手動で更新します。</string>
     <string name="updates_up_to_date">最新です</string>
     <string name="updates_warning_acknowledge">了解しました</string>
     <string name="updates_check_failed">更新を確認できませんでした。</string>

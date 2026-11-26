@@ -640,7 +640,7 @@ private fun aliases14(): Map<String, String> = mapOf(
     "updates_stable_to_beta_warning_message" to "stable_to_beta_warning_message",
     "updates_stable_to_beta_warning_title" to "stable_to_beta_warning_title",
     "updates_starting_status" to "starting",
-    "updates_unavailable_build_description" to "description_app_not_installed_by_apk",
+
     "updates_up_to_date" to "up_to_date",
     "updates_warning_acknowledge" to "major_update_warning_button",
     "visualizer_action_open_permission_settings" to "open_permission_settings",

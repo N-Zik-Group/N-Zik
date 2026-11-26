@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">أنت تقوم بالتبديل إلى نسخة بيتا. قد يحتوي هذا الإصدار على أخطاء أو يكون غير مستقر. من المستحسن بشدة النسخ الاحتياطي لبياناتك قبل المضي قدما أو الإبلاغ عن أي مشكلة.</string>
     <string name="updates_stable_to_beta_warning_title">التبديل إلى بناء بيتا</string>
     <string name="updates_starting_status">يبدأ…</string>
-    <string name="updates_unavailable_build_description">إذا رأيت هذه الرسالة، فانها تعني أن الإصدار الخاص بك لا يحتوي على تحديث تلقائي، قم بتحديث التطبيق يدوياً من github</string>
     <string name="updates_up_to_date">حتى الآن</string>
     <string name="updates_warning_acknowledge">أنا أفهم</string>
     <string name="updates_check_failed">تعذر التحقق من وجود تحديثات.</string>

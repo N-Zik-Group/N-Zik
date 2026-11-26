@@ -767,7 +767,7 @@ object Updater {
                 if (BuildConfig.IS_AUTOUPDATE)
                     R.string.updates_automatic_check_description
                 else
-                    R.string.updates_unavailable_build_description
+                    R.string.updates_manual_update_install_source_message
             )
         )
     }

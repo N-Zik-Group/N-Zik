@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Vă comutați la un build Beta. Această versiune poate conține erori sau poate fi instabilă. Este foarte recomandat să vă salvați datele înainte de a continua sau de a raporta orice problemă.</string>
     <string name="updates_stable_to_beta_warning_title">Trecerea la versiunea Beta</string>
     <string name="updates_starting_status">Pornire…</string>
-    <string name="updates_unavailable_build_description">Dacă vedeți acest mesaj, înseamnă că construcția dvs. are activată actualizarea automată, vă permite să actualizați aplicația manual de la github</string>
     <string name="updates_up_to_date">Actualizare actualizată</string>
     <string name="updates_warning_acknowledge">Am înțeles</string>
     <string name="updates_check_failed">Nu s-au putut verifica actualizările.</string>

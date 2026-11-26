@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Olet siirtymässä Beta-versioon. Tämä versio saattaa sisältää vikoja tai olla epävakaa. On erittäin suositeltavaa varmuuskopioida tietosi ennen kuin käsittelet tai raportoit ongelmista.</string>
     <string name="updates_stable_to_beta_warning_title">Vaihdetaan Beta-versioon</string>
     <string name="updates_starting_status">Aloitetaan…</string>
-    <string name="updates_unavailable_build_description">Jos näet tämän viestin, se tarkoittaa, että versio ei ole automaattinen päivitys käytössä, pls päivittää sovelluksen manuaalisesti GitHub</string>
     <string name="updates_up_to_date">Ajan tasalla</string>
     <string name="updates_warning_acknowledge">Minä ymmärrän</string>
     <string name="updates_check_failed">Päivityksiä ei voitu tarkistaa.</string>

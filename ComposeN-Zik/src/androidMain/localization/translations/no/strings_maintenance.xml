@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Du bytter til en betaversjon. Denne versjonen kan inneholde feil eller være ustabil. Det anbefales sterkt å ta backup av dataene før du fortsetter eller rapporterer noe problem.</string>
     <string name="updates_stable_to_beta_warning_title">Bytter til betaversjon</string>
     <string name="updates_starting_status">Starter…</string>
-    <string name="updates_unavailable_build_description">Hvis du ser denne meldingen betyr det at bygget ditt ikke har blitt aktivert autooppdatert, oppdaterer du appen manuelt fra github</string>
     <string name="updates_up_to_date">Opp til dato</string>
     <string name="updates_warning_acknowledge">Jeg skjønner</string>
     <string name="updates_check_failed">Kan ikke se etter oppdateringer.</string>

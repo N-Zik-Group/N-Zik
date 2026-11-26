@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">U schakelt over naar een bètaversie. Deze versie kan bugs of instabiel zijn. Het wordt sterk aanbevolen om uw gegevens te back-uppen voordat u verder gaat of een probleem meldt.</string>
     <string name="updates_stable_to_beta_warning_title">Overschakelen naar Beta Build</string>
     <string name="updates_starting_status">Starting…</string>
-    <string name="updates_unavailable_build_description">Als u dit bericht ziet, betekent dit dat uw versie niet automatisch bijgewerkt heeft, pls de app handmatig updaten vanaf github</string>
     <string name="updates_up_to_date">Bijgewerkt tot</string>
     <string name="updates_warning_acknowledge">Ik begrijp het</string>
     <string name="updates_check_failed">Kon niet controleren op updates.</string>

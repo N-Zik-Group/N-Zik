@@ -361,7 +361,7 @@ private fun UpdateRow(
                 )
             } else {
                 BasicText(
-                    text = stringResource(R.string.updates_unavailable_build_description),
+                    text = stringResource(R.string.updates_manual_update_install_source_message),
                     style = typography().xxs.secondary,
                     modifier = Modifier
                         .widthIn(max = 120.dp)

@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Du byter till en Beta build. Denna version kan innehålla buggar eller vara instabil. Det rekommenderas starkt att säkerhetskopiera dina data innan du fortsätter eller rapporterar några problem.</string>
     <string name="updates_stable_to_beta_warning_title">Byter till Beta Build</string>
     <string name="updates_starting_status">Startar…</string>
-    <string name="updates_unavailable_build_description">Om du ser detta meddelande betyder det att din kompilering inte har automatisk uppdatering aktiverad, pls uppdatera appen manuellt från github</string>
     <string name="updates_up_to_date">Senast uppdaterad</string>
     <string name="updates_warning_acknowledge">Jag förstår</string>
     <string name="updates_check_failed">Kunde inte söka efter uppdateringar.</string>

@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Você está mudando para uma compilação Beta. Esta versão pode conter bugs ou ser instável. É altamente recomendável fazer um backup de seus dados antes de prosseguir ou relatar qualquer problema.</string>
     <string name="updates_stable_to_beta_warning_title">Mudando para versão Beta</string>
     <string name="updates_starting_status">Iniciando…</string>
-    <string name="updates_unavailable_build_description">App installed by an APK distributor should let its distributor update the app!</string>
     <string name="updates_up_to_date">Até a data</string>
     <string name="updates_warning_acknowledge">Eu entendo</string>
     <string name="updates_check_failed">Não foi possível verificar se há atualizações.</string>

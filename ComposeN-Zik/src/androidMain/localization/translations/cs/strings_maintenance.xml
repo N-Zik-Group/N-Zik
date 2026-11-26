@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Přepínáte na beta verzi. Tato verze může obsahovat chyby nebo může být nestabilní. Před pokračováním nebo hlášením problému se důrazně doporučuje zálohovat vaše údaje.</string>
     <string name="updates_stable_to_beta_warning_title">Přechod na Beta sestavení</string>
     <string name="updates_starting_status">Začínáme…</string>
-    <string name="updates_unavailable_build_description">Pokud vidíte tuto zprávu, znamená to, že vaše sestavení nemá povolenou automatickou aktualizaci, pls aktualizuje aplikaci ručně z githubu</string>
     <string name="updates_up_to_date">Aktuální</string>
     <string name="updates_warning_acknowledge">Chápu</string>
     <string name="updates_check_failed">Nelze zkontrolovat aktualizace.</string>

@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Beta sürümüne geçiyorsunuz. Bu sürümde hatalar bulunabilir veya kararsız çalışabilir. Devam etmeden veya herhangi bir sorunu bildirmeden önce verilerinizi yedeklemeniz şiddetle tavsiye edilir.</string>
     <string name="updates_stable_to_beta_warning_title">Beta Sürümüne Geçiş</string>
     <string name="updates_starting_status">Başlatılıyor…</string>
-    <string name="updates_unavailable_build_description">Bu mesajı görüyorsanız, derlemenizde otomatik güncelleme özelliği etkin değil demektir, lütfen uygulamayı GitHub\'dan manuel olarak güncelleyin.</string>
     <string name="updates_up_to_date">Güncel</string>
     <string name="updates_warning_acknowledge">Anlıyorum</string>
     <string name="updates_check_failed">Güncellemeler kontrol edilemedi.</string>

@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">Du wechselst zu einem Beta-Build. Diese Version kann Fehler enthalten oder instabil sein. Es wird dringend empfohlen, Ihre Daten zu sichern, bevor Sie fortfahren oder ein Problem melden.</string>
     <string name="updates_stable_to_beta_warning_title">Zum Beta-Build wechseln</string>
     <string name="updates_starting_status">Starte…</string>
-    <string name="updates_unavailable_build_description">Wenn du diese Nachricht siehst, bedeutet dies, dass bei deinem Build keine automatische Aktualisierung aktiviert ist, pls die App manuell von github aktualisieren</string>
     <string name="updates_up_to_date">Aktuell</string>
     <string name="updates_warning_acknowledge">Ich verstehe</string>
     <string name="updates_check_failed">Konnte nicht nach Updates suchen.</string>

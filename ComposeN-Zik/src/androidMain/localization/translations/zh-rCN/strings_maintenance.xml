@@ -317,7 +317,6 @@
     <string name="updates_stable_to_beta_warning_message">您正在切换到 Beta 版本。此版本可能包含bug或不稳定。 强烈建议在处理或报告任何问题之前备份您的数据。</string>
     <string name="updates_stable_to_beta_warning_title">切换到 Beta 版本</string>
     <string name="updates_starting_status">Starting…</string>
-    <string name="updates_unavailable_build_description">App installed by an APK distributor should let its distributor update the app!</string>
     <string name="updates_up_to_date">最新的</string>
     <string name="updates_warning_acknowledge">我明白了</string>
     <string name="updates_check_failed">无法检查更新。</string>
