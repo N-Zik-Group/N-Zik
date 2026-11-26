@@ -5,11 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
 import android.os.Build
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import app.n_zik.android.R
 import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
@@ -28,9 +23,8 @@ fun textCopyToClipboard(textCopied:String, context: Context) {
         Toaster.s( R.string.common_clipboard_copy_success )
 }
 
-@Composable
 fun textCopyFromClipboard(context: Context): String {
-    var textCopied by remember { mutableStateOf("") }
+    var textCopied = ""
     val clipboardManager = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
     runCatching {
         val clip = clipboardManager.primaryClip

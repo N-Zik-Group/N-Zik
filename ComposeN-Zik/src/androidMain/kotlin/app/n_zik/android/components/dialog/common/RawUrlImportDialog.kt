@@ -30,22 +30,17 @@ fun RawUrlImportDialog(
     onDismiss: () -> Unit,
     onImport: (String) -> Unit,
 ) {
-    val context = LocalContext.current
+    val clipboardContext = LocalContext.current.applicationContext
     val palette = colorPalette()
-    var text by remember { mutableStateOf("") }
+    var text by remember { mutableStateOf(textCopyFromClipboard(clipboardContext)) }
     var error by remember { mutableStateOf(false) }
-    var copyText by remember { mutableStateOf(true) }
-    if (copyText) {
-        text = textCopyFromClipboard(context)
-        copyText = false
-    }
 
     DialogFrame(
         title = title,
         onDismiss = onDismiss,
         footer = {
             ButtonRow(listOf(
-                DialogButton(stringResource(R.string.common_action_paste), { copyText = true }),
+                DialogButton(stringResource(R.string.common_action_paste), { text = textCopyFromClipboard(clipboardContext) }),
                 DialogButton(stringResource(R.string.common_action_clear), { text = "" }),
             ))
             Spacer(Modifier.height(8.dp))

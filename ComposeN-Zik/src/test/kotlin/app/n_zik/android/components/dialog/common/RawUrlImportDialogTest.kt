@@ -7,6 +7,7 @@ import android.content.Context
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getBoundsInRoot
@@ -15,6 +16,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
@@ -80,7 +82,8 @@ class RawUrlImportDialogTest {
         composeRule.runOnIdle { assertEquals(listOf(initial), imported) }
         val pasted = "  https://youtube.com/playlist?list=raw  "
         composeRule.runOnIdle { clipboard.setPrimaryClip(ClipData.newPlainText("", pasted)) }
-        composeRule.onNodeWithText(context.getString(R.string.common_action_paste)).performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_action_paste))
+            .performSemanticsAction(SemanticsActions.OnClick) { assertTrue(it()) }
         repeat(3) { composeRule.mainClock.advanceTimeByFrame() }
         field.assertTextEquals(pasted)
         composeRule.onNodeWithText(context.getString(R.string.common_action_import)).performClick()
