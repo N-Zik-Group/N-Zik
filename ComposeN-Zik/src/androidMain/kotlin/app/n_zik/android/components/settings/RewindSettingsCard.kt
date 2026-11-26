@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.RewindNotificationSectionTarget
+import app.n_zik.android.components.settings.common.RewindPlaylistSectionTarget
 import app.n_zik.android.components.settings.common.RewindMasterSettingsTarget
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsEntryEnter
@@ -119,6 +121,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
         SettingsSectionCard(
             title = stringResource(R.string.rewind_settings_playlists_title),
             groupTitleRes = R.string.settings_group_rewind_playlist_creation,
+            headerModifier = Modifier.settingsSearchTarget(RewindPlaylistSectionTarget),
             icon = R.drawable.calendar,
             visible = rewindEnabled,
             content = {
@@ -152,8 +155,9 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
         SettingsSectionCard(
             title = stringResource(R.string.rewind_settings_notifications),
             groupTitleRes = R.string.settings_group_rewind_alerts,
+            headerModifier = Modifier.settingsSearchTarget(RewindNotificationSectionTarget),
             icon = R.drawable.notification2,
-            visible = rewindEnabled,
+            visible = rewindEnabled && (monthlyEnabled || yearlyEnabled || monthlyPlaylistEnabled || yearlyPlaylistEnabled),
             content = {
 
                 AnimatedVisibility(visible = rewindEnabled && monthlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {

@@ -65,6 +65,7 @@ class RewindSettingsCardLayoutTest {
     @After
     fun resetPreferences() {
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
@@ -93,6 +94,29 @@ class RewindSettingsCardLayoutTest {
                 "it, the click lands on the wrong row instead",
             DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
         )
+    }
+
+    @Test
+    fun `notifications are hidden when no recap or playlist is enabled`() {
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, false)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, false)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
+
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    RewindSettingsCard()
+                }
+            }
+        }
+
+        val notifications = composeRule.onNodeWithText(context.getString(R.string.rewind_settings_notifications))
+        notifications.assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_monthly))
+            .performScrollTo().performClick()
+        notifications.performScrollTo().assertIsDisplayed()
     }
 
     @Test

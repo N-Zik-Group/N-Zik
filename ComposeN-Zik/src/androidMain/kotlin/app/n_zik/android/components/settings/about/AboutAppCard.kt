@@ -44,6 +44,8 @@ import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.updater.models.UpdateEndpoints
+import app.n_zik.android.components.settings.common.AboutAuthorSettingsTarget
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 /** Preserves the original About App content. */
 @Composable
@@ -136,6 +138,7 @@ internal fun AboutAppCard() {
                              verticalAlignment = Alignment.CenterVertically,
                              modifier = Modifier
                                  .fillMaxWidth()
+                                 .settingsSearchTarget(AboutAuthorSettingsTarget)
                                  .clip(uiRoundnessShape()).clickable {
                                      val url = "${UpdateEndpoints.GITHUB}/${UpdateEndpoints.REAL_OWNER}"
                                      uriHandler.openUri(url)

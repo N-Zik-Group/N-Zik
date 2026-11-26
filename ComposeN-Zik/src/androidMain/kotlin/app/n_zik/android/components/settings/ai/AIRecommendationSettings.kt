@@ -29,13 +29,14 @@ import kotlinx.coroutines.flow.first
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.enableQuickPicksPageKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.RewindSettingsCard
 import app.n_zik.android.components.settings.common.SettingsCardSlot
@@ -61,7 +62,7 @@ fun AIRecommendationSettings(
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_AI, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -113,6 +114,7 @@ fun AIRecommendationSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_AI, it)
@@ -154,46 +156,53 @@ internal fun AIRecommendationSettingsContent(
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
     QuickPicksContentSettingsDialog.Render()
+    val quickPicksEnabled by rememberPreference(enableQuickPicksPageKey, true)
+    val context = LocalContext.current
+    val showRewind = if (selectedCards != null) {
+        R.string.rewind_settings_title in selectedCards
+    } else {
+        R.string.rewind_settings_title in visibleCardTitleRes(context, 3, search.inputValue)
+    }
     cardsContainer {
         if (selectedCards == null || R.string.settings_section_quick_picks_visibility_title in selectedCards) {
-            SettingsCardSlot(R.string.settings_section_quick_picks_visibility_title, modifier = { cardModifier(R.string.settings_section_quick_picks_visibility_title) }) {
+            SettingsCardSlot(R.string.settings_section_quick_picks_visibility_title, order = 0, modifier = { cardModifier(R.string.settings_section_quick_picks_visibility_title) }) {
                 AiGeneralCard(search)
             }
         }
-        if (selectedCards == null || R.string.recommendations_title in selectedCards) {
-            SettingsCardSlot(R.string.recommendations_title, modifier = { cardModifier(R.string.recommendations_title) }) {
+        if (quickPicksEnabled && (selectedCards == null || R.string.recommendations_title in selectedCards)) {
+            SettingsCardSlot(R.string.recommendations_title, order = 1, modifier = { cardModifier(R.string.recommendations_title) }) {
                 AiQuickPicksCard(search)
             }
         }
-        if (selectedCards == null || R.string.rewind_settings_title in selectedCards) {
-            SettingsCardSlot(R.string.rewind_settings_title, modifier = { cardModifier(R.string.rewind_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) } }) {
+        if (showRewind) {
+            SettingsCardSlot(R.string.rewind_settings_title, order = 2, modifier = { cardModifier(R.string.rewind_settings_title).onGloballyPositioned { onCardPosition("rewind", it.positionInRoot().y) } }) {
                 RewindSettingsCard(
                     onOpenRewind = { navController.navigate(NavRoutes.rewindHome.name) },
                 )
             }
         }
         if (selectedCards == null || R.string.settings_section_smart_recommendations_title in selectedCards) {
-            SettingsCardSlot(R.string.settings_section_smart_recommendations_title, modifier = { cardModifier(R.string.settings_section_smart_recommendations_title) }) {
+            SettingsCardSlot(R.string.settings_section_smart_recommendations_title, order = 3, modifier = { cardModifier(R.string.settings_section_smart_recommendations_title) }) {
                 AiRecommendationsCard(search)
             }
         }
         if (selectedCards == null || R.string.settings_section_quick_picks_refresh_title in selectedCards) {
-            SettingsCardSlot(R.string.settings_section_quick_picks_refresh_title, modifier = { cardModifier(R.string.settings_section_quick_picks_refresh_title) }) {
+            SettingsCardSlot(R.string.settings_section_quick_picks_refresh_title, order = 4, modifier = { cardModifier(R.string.settings_section_quick_picks_refresh_title) }) {
                 AiDataCard(search)
             }
         }
         if (selectedCards == null || R.string.statistics_title in selectedCards) {
-            SettingsCardSlot(R.string.statistics_title, modifier = { cardModifier(R.string.statistics_title).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) } }) {
+            SettingsCardSlot(R.string.statistics_title, order = 5, modifier = { cardModifier(R.string.statistics_title).onGloballyPositioned { onCardPosition("statistics", it.positionInRoot().y) } }) {
                 AiStatisticsCard(search, navController)
             }
         }
         if (selectedCards == null || R.string.playlist_top in selectedCards) {
-            SettingsCardSlot(R.string.playlist_top, modifier = { cardModifier(R.string.playlist_top) }) {
+            SettingsCardSlot(R.string.playlist_top, order = 6, modifier = { cardModifier(R.string.playlist_top) }) {
                 AiTopPlaylistsCard(search)
             }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
+            SettingsCardSlot(R.string.settings_reset, order = 7, modifier = { cardModifier(R.string.settings_reset) }) {
                 AiResetCard(search)
             }
         }

@@ -768,3 +768,7 @@ Account setting routes:
 Playback and network settings:
 - fix(settings): align playback and network controls with their scopes
   - Show searchable current values, preserve gain precision and route resets through their containers.
+
+Settings category layout:
+- fix(settings): align About, AI and Rewind sections with navigation
+  - Expose the intended category and section targets.
