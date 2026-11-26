@@ -39,7 +39,8 @@ internal class ThemeStoreAlertWorker internal constructor(
         if (!mayCheck()) return@withLock Result.success()
         val preferences = profileDataPrefs(context, owner.id)
         val notificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
-        val id = GitHubAccount.userId(context).takeIf { notificationsEnabled }
+        fun mayCheckCreator() = mayCheck() && GitHubAccount.backgroundChecksEnabled(context)
+        val id = if (notificationsEnabled && mayCheckCreator()) GitHubAccount.userId(context) else null
         val library = ThemeStoreLibrary(preferences)
         val needsCatalog = library.hasAutomaticDownloads() || library.hasRestoredStoreUpdates(notificationsEnabled) ||
             (notificationsEnabled && library.hasNotificationSubscriptions()) || id != null
@@ -70,10 +71,10 @@ internal class ThemeStoreAlertWorker internal constructor(
                 if (notificationsEnabled && mayCheck()) notifyThemeStoreAlerts(context, library, themes, owner.id)
             }
         }
-        if (hasPending && mayCheck()) attempt("creator submissions") {
+        if (id != null && hasPending && mayCheckCreator()) attempt("creator submissions") {
             val login = GitHubAccount.accountLogin(context) ?: return@attempt
             val submissions = creatorSubmissions(id, login, GitHubAccount.tokenFor(context, id))
-            if (mayCheck()) {
+            if (mayCheckCreator() && GitHubAccount.userId(context) == id) {
                 notifyCreatorDecisions(context, id, submissions, owner.id)
             }
         }

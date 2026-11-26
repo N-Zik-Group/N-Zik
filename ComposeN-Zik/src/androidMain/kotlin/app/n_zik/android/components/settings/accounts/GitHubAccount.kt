@@ -1,5 +1,10 @@
 package app.n_zik.android.components.settings.accounts
 
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreAlertWorker
+import app.n_zik.android.components.settings.common.SwitchSettingEntry
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.rememberPreference
+
 import android.content.Context
 import android.view.View
 import android.webkit.WebResourceError
@@ -74,11 +79,16 @@ private const val githubAppInstallationPage = "https://github.com/apps/n-zik-sig
 private const val githubAppInstallationTargetPage = "https://github.com/apps/n-zik-sign-in/installations/select_target"
 
 internal const val GITHUB_SETTINGS_SIGN_IN_TARGET = "embedded.github.account_login"
+internal const val GITHUB_BACKGROUND_CHECKS_KEY = "githubBackgroundAccountChecks"
+private const val GITHUB_ACCOUNT_USAGE_ENABLED_KEY = "githubAccountUsageEnabled"
+internal const val GITHUB_SETTINGS_BACKGROUND_CHECKS_TARGET = "embedded.github.background_checks"
 internal const val GITHUB_SETTINGS_SIGN_OUT_TARGET = "embedded.github.account_logout"
 internal const val GITHUB_SETTINGS_APP_INSTALLATION_TARGET = "embedded.github.app_installation"
 
 internal fun githubSettingsSearchFallback(requestedTarget: String, targetAvailable: (String) -> Boolean): String? {
-    if (requestedTarget != GITHUB_SETTINGS_SIGN_OUT_TARGET && requestedTarget != GITHUB_SETTINGS_APP_INSTALLATION_TARGET) {
+    if (requestedTarget != GITHUB_SETTINGS_SIGN_OUT_TARGET && requestedTarget != GITHUB_SETTINGS_APP_INSTALLATION_TARGET &&
+        requestedTarget != GITHUB_SETTINGS_BACKGROUND_CHECKS_TARGET
+    ) {
         return null
     }
     return GITHUB_SETTINGS_SIGN_IN_TARGET.takeIf(targetAvailable)
@@ -206,14 +216,33 @@ internal object GitHubAccount {
         ).also { accountStorage = app to it }
     }
 
-    fun tokenFor(context: Context, id: Long): String? = storage(context).tokenFor(id)
+    fun tokenFor(context: Context, id: Long): String? =
+        if (usageEnabled(context)) storage(context).tokenFor(id) else null
     fun clearPublicationToken(context: Context) = storage(context).clearPublicationToken()
     fun requireWorkflowAuthorization(context: Context) = storage(context).requireWorkflow()
-    fun userId(context: Context): Long? = storage(context).userId()
-    fun accountLogin(context: Context): String? = storage(context).login()
+    fun userId(context: Context): Long? = if (usageEnabled(context)) storage(context).userId() else null
+    fun accountLogin(context: Context): String? = if (usageEnabled(context)) storage(context).login() else null
+    private fun usageEnabled(context: Context): Boolean =
+        context.preferences.getBoolean(GITHUB_ACCOUNT_USAGE_ENABLED_KEY, true)
+
+    fun backgroundChecksEnabled(context: Context): Boolean =
+        usageEnabled(context) && context.preferences.getBoolean(GITHUB_BACKGROUND_CHECKS_KEY, true)
 
     fun read(context: Context) {
-        login.value = storage(context).login()
+        login.value = accountLogin(context)
+    }
+
+    internal fun disableUsage(context: Context) {
+        cancel()
+        context.preferences.edit().putBoolean(GITHUB_ACCOUNT_USAGE_ENABLED_KEY, false).apply()
+        read(context)
+    }
+
+    internal fun resumeSavedAccount(context: Context): Boolean {
+        if (usageEnabled(context)) return false
+        context.preferences.edit().putBoolean(GITHUB_ACCOUNT_USAGE_ENABLED_KEY, true).apply()
+        read(context)
+        return login.value != null
     }
 
     fun restoreIdentity(context: Context, identity: String, profile: String = getActiveProfile(context)) {
@@ -391,12 +420,13 @@ internal fun GitHubAccountCard(
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     val code by GitHubAccount.code.collectAsStateWithLifecycle()
     val offline by OfflineMode.rememberEnabled()
-    androidx.compose.runtime.LaunchedEffect(context, login, offline) {
+    var backgroundChecks by rememberPreference(GITHUB_BACKGROUND_CHECKS_KEY, true)
+    androidx.compose.runtime.LaunchedEffect(context, login, offline, backgroundChecks) {
         val id = GitHubAccount.userId(context) ?: return@LaunchedEffect
-        if (!offline) {
+        if (!offline && backgroundChecks) {
             try {
                 val message = githubContributionBlock(id)
-                if (message != null && GitHubAccount.userId(context) == id) {
+                if (message != null && GitHubAccount.backgroundChecksEnabled(context) && GitHubAccount.userId(context) == id) {
                     GitHubAccount.disconnect(context)
                     Toaster.e(message, android.widget.Toast.LENGTH_LONG)
                 }
@@ -431,6 +461,7 @@ internal fun GitHubAccountCard(
                         showInstallationManagement = false
                         GitHubAccount.disconnect(context)
                     }
+                    GitHubAccount.resumeSavedAccount(context) -> Unit
                     else -> {
                         showLogin = true
                         if (!awaiting) {
@@ -443,6 +474,16 @@ internal fun GitHubAccountCard(
             },
         )
         val connectedLogin = login
+        if (connectedLogin != null) SwitchSettingEntry(
+            modifier = Modifier.settingsSearchTarget(GITHUB_SETTINGS_BACKGROUND_CHECKS_TARGET),
+            title = stringResource(R.string.github_account_background_checks),
+            text = stringResource(R.string.github_account_background_checks_description),
+            isChecked = backgroundChecks,
+            onCheckedChange = { enabled ->
+                backgroundChecks = enabled
+                if (enabled) ThemeStoreAlertWorker.schedule(context.applicationContext)
+            },
+        )
         if (showAppInstallation && connectedLogin != null) OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget(GITHUB_SETTINGS_APP_INSTALLATION_TARGET),
             title = stringResource(R.string.github_app_installation),

@@ -644,3 +644,7 @@ Playlist picker labels:
 Local playlist creation:
 - fix(playlist): allow local-only destinations in playlist creation
   - Keep the created playlist identity available to the caller.
+
+Account settings reset:
+- fix(settings): restore account defaults while retaining saved credentials
+  - Disable live account use and restore the default background checks on reactivation.
