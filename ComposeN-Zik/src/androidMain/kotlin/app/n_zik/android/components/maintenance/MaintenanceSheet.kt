@@ -65,6 +65,7 @@ import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.ui.UiIconButton as IconButton
@@ -901,7 +902,6 @@ private fun ColumnScope.MaintenanceListContent(
     )
 }
 
-/** Accent section title, same styling as the app's own item menus: xxs semiBold accent text with 12dp vertical / 4dp horizontal padding. */
 @Composable
 internal fun MenuSectionTitle(title: String) {
     BasicText(
@@ -913,7 +913,8 @@ internal fun MenuSectionTitle(title: String) {
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 4.dp),
+                .padding(vertical = 12.dp)
+                .menuSectionHorizontalAlignment(),
     )
 }
 

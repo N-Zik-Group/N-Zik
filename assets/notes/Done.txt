@@ -980,3 +980,7 @@ Settings:
 Settings:
 - fix(settings): route search to the matching card subsection
   - Add exact targets and breadcrumbs for audio, queue, player actions and lyrics groups.
+
+Menus:
+- fix(menu): align the remaining picker and sheet headings
+  - Align headings with their icon column in maintenance, rooms, and playlist pickers.

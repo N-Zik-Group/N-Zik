@@ -84,6 +84,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.isCurrentMenu
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.utils.semiBold
 import androidx.compose.material3.Icon
@@ -301,7 +302,9 @@ fun AddToPlaylistItemMenu(
             BasicText(
                 text = stringResource(label),
                 style = typography().m.semiBold,
-                modifier = Modifier.padding(start = 20.dp, top = 5.dp),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(top = 5.dp)
+                    .menuSectionHorizontalAlignment(),
             )
         },
         entry = { label, preview ->
@@ -458,7 +461,9 @@ fun AddToPlaylistArtistSongsMenu(
                 BasicText(
                     text = stringResource(R.string.playlist_pinned_title),
                     style = typography().m.semiBold,
-                    modifier = Modifier.padding(start = 20.dp, top = 5.dp)
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 5.dp)
+                        .menuSectionHorizontalAlignment(),
                 )
             }
 
@@ -515,7 +520,9 @@ fun AddToPlaylistArtistSongsMenu(
                 BasicText(
                     text = stringResource(R.string.sync_youtube_playlists_title),
                     style = typography().m.semiBold,
-                    modifier = Modifier.padding(start = 20.dp, top = 5.dp)
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 5.dp)
+                        .menuSectionHorizontalAlignment(),
                 )
             }
 
@@ -560,7 +567,9 @@ fun AddToPlaylistArtistSongsMenu(
                 BasicText(
                     text = stringResource(R.string.library_playlists_title),
                     style = typography().m.semiBold,
-                    modifier = Modifier.padding(start = 20.dp, top = 5.dp)
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(top = 5.dp)
+                        .menuSectionHorizontalAlignment(),
                 )
             }
 

@@ -84,6 +84,7 @@ import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.isCurrentMenu
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import androidx.compose.material3.Icon
 
 internal fun isPlaylistPickerTarget(playlist: Playlist, localDestinationsOnly: Boolean): Boolean =
@@ -490,7 +491,9 @@ class PlaylistsMenu private constructor(
                 BasicText(
                     text = stringResource(label),
                     style = typography().xxs.semiBold.copy(color = colorPalette().accent),
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 4.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                        .menuSectionHorizontalAlignment(),
                 )
             },
             entry = { _, preview ->

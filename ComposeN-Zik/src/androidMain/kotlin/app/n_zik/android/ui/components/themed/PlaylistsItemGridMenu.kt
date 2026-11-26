@@ -60,6 +60,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 
@@ -219,7 +220,9 @@ fun PlaylistsItemGridMenu(
                     BasicText(
                         text = stringResource(label),
                         style = typography().m.semiBold,
-                        modifier = Modifier.padding(start = 20.dp, top = 5.dp),
+                        modifier = Modifier.fillMaxWidth()
+                            .padding(top = 5.dp)
+                            .menuSectionHorizontalAlignment(),
                     )
                 },
                 entry = { label, preview ->

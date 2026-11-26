@@ -67,6 +67,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 
@@ -267,7 +268,9 @@ fun PlaylistsItemMenu(
                             BasicText(
                                 text = stringResource(R.string.playlist_pinned_title),
                                 style = typography().m.semiBold,
-                                modifier = modifier.padding(start = 20.dp, top = 5.dp)
+                                modifier = modifier.fillMaxWidth()
+                                    .padding(top = 5.dp)
+                                    .menuSectionHorizontalAlignment(),
                             )
                         }
 
@@ -328,7 +331,9 @@ fun PlaylistsItemMenu(
                             BasicText(
                                 text = stringResource(R.string.sync_youtube_playlists_title),
                                 style = typography().m.semiBold,
-                                modifier = Modifier.padding(start = 20.dp, top = 5.dp)
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(top = 5.dp)
+                                    .menuSectionHorizontalAlignment(),
                             )
                         }
 
@@ -378,7 +383,9 @@ fun PlaylistsItemMenu(
                             BasicText(
                                 text = stringResource(R.string.library_playlists_title),
                                 style = typography().m.semiBold,
-                                modifier = modifier.padding(start = 20.dp, top = 5.dp)
+                                modifier = modifier.fillMaxWidth()
+                                    .padding(top = 5.dp)
+                                    .menuSectionHorizontalAlignment(),
                             )
                         }
 
