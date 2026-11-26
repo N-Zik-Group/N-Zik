@@ -1096,3 +1096,7 @@ Menus:
 Menus:
 - fix(menu): show the empty playlist picker state
   - Use the existing empty message in List and Grid when there are no eligible destinations.
+
+Menus:
+- fix(maintenance): announce expanded sections
+  - Expose the state of the expandable maintenance groups to accessibility services.

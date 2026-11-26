@@ -660,6 +660,7 @@ private fun ColumnScope.MaintenanceListContent(
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_downloads),
         icon = { SettingIcon(R.drawable.download, palette.accent) },
+        modifier = maintenanceExpansionSemantics(downloadsExpanded),
         trailingContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -723,6 +724,7 @@ private fun ColumnScope.MaintenanceListContent(
     ListMenu.Entry(
         text = stringResource(R.string.maintenance_jobs),
         icon = { SettingIcon(R.drawable.calendar, palette.accent) },
+        modifier = maintenanceExpansionSemantics(jobsExpanded),
         trailingContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,

@@ -20,6 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -178,6 +182,7 @@ private fun ColumnScope.DatabasePassRow(
     ListMenu.Entry(
         text = stringResource(titleResId),
         icon = { SettingIcon(icon, palette.accent) },
+        modifier = maintenanceExpansionSemantics(expanded),
         trailingContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -201,6 +206,15 @@ private fun ColumnScope.DatabasePassRow(
         exit = settingsEntryExit,
     ) {
         details(statusText.takeIf { passHasState(status) })
+    }
+}
+
+@Composable
+internal fun maintenanceExpansionSemantics(expanded: Boolean): Modifier {
+    val state = stringResource(if (expanded) R.string.accessibility_menu_open else R.string.accessibility_menu_closed)
+    return Modifier.semantics {
+        role = Role.Button
+        stateDescription = state
     }
 }
 
