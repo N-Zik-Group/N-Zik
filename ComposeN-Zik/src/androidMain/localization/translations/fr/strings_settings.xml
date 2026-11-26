@@ -255,9 +255,9 @@ Volume BAS : titre précédent</string>
     <string name="settings_group_recommendation_sources">Disponibilité de la « Sélection Rapide »</string>
     <string name="settings_group_quick_picks_content">Contenu de la « Sélection Rapide »</string>
     <string name="settings_group_suggestion_strategy">Stratégie de suggestion</string>
-    <string name="settings_group_recommendation_data">Actualiser les suggestions</string>
+    <string name="settings_group_recommendation_data">Suggestions de mise à jour</string>
     <string name="settings_section_quick_picks_visibility_title">Visibilité de la « Sélection Rapide »</string>
-    <string name="settings_section_quick_picks_refresh_title">Actualisation de la recommandation</string>
+    <string name="settings_section_quick_picks_refresh_title">Mise à jour des recommandations</string>
     <string name="settings_group_listening_insights">Aperçus à l\'écoute</string>
     <string name="settings_group_playlist_rankings">Classement des playlists</string>
     <string name="settings_group_backup_operations">Opérations de sauvegarde</string>
