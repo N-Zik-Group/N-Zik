@@ -1036,3 +1036,7 @@ Playback:
 Playback:
 - perf(playback): prioritize the selected track in large queues
   - Prepare identity updates off the player thread and look up only the selected track duration before starting.
+
+Playback:
+- fix(player): simplify the available queue duration label
+  - Keep calculating available durations and display the subtotal using the existing label format.
