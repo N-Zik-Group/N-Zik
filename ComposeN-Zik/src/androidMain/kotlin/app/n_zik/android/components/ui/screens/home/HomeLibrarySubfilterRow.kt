@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.R
-import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.SelectionMenu
 import app.n_zik.android.core.rewind.RewindPlaylists
 
 internal enum class HomeLibrarySubfilter { YouTube, Rewind }
@@ -72,15 +72,17 @@ internal fun RewindLibraryFilterChip(
         label = { Text(labels.getValue(selected)) },
         onClick = {
             menuState.display {
-                ListMenu.Menu(title = stringResource(R.string.library_filter_by_title)) {
-                    RewindPlaylists.Filter.entries.forEach { filter ->
-                        ListMenu.Entry(
-                            text = labels.getValue(filter),
-                            icon = { HomeLibraryFilterIcon(icons.getValue(filter)) },
-                            onClick = { menuState.hide(); onSelected(filter) },
-                        )
-                    }
-                }
+                SelectionMenu(
+                    title = stringResource(R.string.library_filter_by_title),
+                    choices = RewindPlaylists.Filter.entries,
+                    selectedChoice = selected,
+                    label = { labels.getValue(it) },
+                    icon = { icons.getValue(it) },
+                    onSelected = { filter ->
+                        menuState.hide()
+                        onSelected(filter)
+                    },
+                )
             }
         },
     )

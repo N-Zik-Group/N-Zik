@@ -772,3 +772,7 @@ Playback and network settings:
 Settings category layout:
 - fix(settings): align About, AI and Rewind sections with navigation
   - Expose the intended category and section targets.
+
+Library selection menus:
+- fix(menu): expose selected options in list and grid layouts
+  - Keep sort, filters, periods and artwork size choices accessible.

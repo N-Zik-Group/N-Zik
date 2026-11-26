@@ -40,6 +40,7 @@ import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.menuSelectionSemantics
 import app.n_zik.android.core.enums.TextView
 import org.json.JSONArray
 import androidx.compose.animation.fadeOut
@@ -185,7 +186,9 @@ open class Sort<T> (
                             )
                         }
                     },
-                    modifier = if (isSelected) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                    modifier = menuSelectionSemantics(isSelected).then(
+                        if (isSelected) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                    ),
                     trailingContent = {
                         AnimatedVisibility(
                             visible = isSelected,
@@ -222,6 +225,7 @@ open class Sort<T> (
                 val isSelected = it == sortBy
                 GridMenu.Entry(
                     text = it.text,
+                    modifier = menuSelectionSemantics(isSelected),
                     icon = {
                         Box(
                             modifier = Modifier

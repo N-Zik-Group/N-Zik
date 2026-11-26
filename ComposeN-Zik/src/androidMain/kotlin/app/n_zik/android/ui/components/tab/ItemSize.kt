@@ -1,26 +1,15 @@
 package app.n_zik.android.ui.components.tab
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.enums.HomeItemSize
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.components.menu.ListMenu
-import androidx.compose.material3.Icon
+import app.n_zik.android.components.menu.SelectionMenu
 import app.n_zik.android.utils.Preference
 
 class ItemSize private constructor(
@@ -47,45 +36,19 @@ class ItemSize private constructor(
     val size: HomeItemSize
         get() = sizeState.value
 
-    @Composable
-    fun SettingIcon(@DrawableRes icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = colorPalette().accent,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
+    override fun onShortClick() {
+        menuState.display {
+            SelectionMenu(
+                title = stringResource(R.string.common_size_label),
+                choices = HomeItemSize.entries,
+                selectedChoice = size,
+                label = { it.text },
+                icon = { it.iconId },
+                onSelected = { selected ->
+                    sizeState.value = selected
+                    menuState.hide()
+                },
             )
         }
     }
-
-    @Composable
-    private fun Entry( size: HomeItemSize) {
-        ListMenu.Entry(
-            text = size.text,
-            icon = { SettingIcon(size.iconId) },
-            onClick = {
-                sizeState.value = size
-                menuState.hide()
-            }
-        )
-    }
-
-    override fun onShortClick() {
-        menuState.display {
-            ListMenu.Menu(title = stringResource(R.string.common_size_label)) {
-                HomeItemSize.entries.forEach { Entry(it) }
-            }
-        }
-    }
 }
-
-

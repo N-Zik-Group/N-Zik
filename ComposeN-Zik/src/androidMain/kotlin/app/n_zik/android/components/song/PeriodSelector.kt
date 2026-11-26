@@ -1,46 +1,28 @@
 package app.n_zik.android.components.song
 
 import app.n_zik.android.utils.preferences
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.colorPalette
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.enums.MaxTopPlaylistItems
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.StatisticsType
-import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.components.menu.ListMenu
-import androidx.compose.material3.Icon
+import app.n_zik.android.components.menu.SelectionMenu
 import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.semiBold
 import org.json.JSONArray
 
 class PeriodSelector private constructor(
@@ -85,10 +67,10 @@ class PeriodSelector private constructor(
     override fun onShortClick() = openMenu()
 
     @Composable
-    override fun ListMenu() { /* Does nothing */ }
+    override fun ListMenu() = PeriodMenu(MenuStyle.List)
 
     @Composable
-    override fun GridMenu() { /* Does nothing */ }
+    override fun GridMenu() = PeriodMenu(MenuStyle.Grid)
 
     @Composable
     private fun readSortedEntries(): List<StatisticsType> {
@@ -145,46 +127,24 @@ class PeriodSelector private constructor(
     }
 
     @Composable
-    fun SettingIcon(@DrawableRes icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = colorPalette().accent,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
+    override fun MenuComponent() = PeriodMenu(menuStyle)
 
     @Composable
-    override fun MenuComponent() {
+    private fun PeriodMenu(style: MenuStyle) {
         val size by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
         val sizeCustomValue by rememberPreference( MaxTopPlaylistItemsCustomValueKey, 10 )
         val sizeLabel = when (size) {
             MaxTopPlaylistItems.Unlimited -> stringResource(R.string.statistics_items_limit_unlimited)
             else -> size.toInt(sizeCustomValue).toString()
         }
-        val sortedEntries = readSortedEntries()
-
-        ListMenu.Menu(title = stringResource( R.string.statistics_top_period_title, sizeLabel )) {
-            sortedEntries.forEach {
-                ListMenu.Entry(
-                    text = it.text,
-                    icon = { SettingIcon(it.iconId) },
-                    onClick = {
-                        onDismiss( it )
-                    }
-                )
-            }
-        }
+        SelectionMenu(
+            title = stringResource(R.string.statistics_top_period_title, sizeLabel),
+            choices = readSortedEntries(),
+            selectedChoice = period,
+            label = { it.text },
+            icon = { it.iconId },
+            style = style,
+            onSelected = ::onDismiss,
+        )
     }
 }
-

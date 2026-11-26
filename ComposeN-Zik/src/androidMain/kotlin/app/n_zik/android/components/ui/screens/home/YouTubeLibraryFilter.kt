@@ -6,7 +6,7 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.R
-import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.SelectionMenu
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
 
@@ -37,18 +37,17 @@ internal fun YouTubeLibraryFilterChip(
         label = { Text(stringResource(selected.labelRes)) },
         onClick = {
             menuState.display {
-                ListMenu.Menu(title = stringResource(R.string.library_filter_by_title)) {
-                    YouTubeLibraryFilter.entries.forEach { filter ->
-                        ListMenu.Entry(
-                            text = stringResource(filter.labelRes),
-                            icon = { HomeLibraryFilterIcon(filter.iconRes) },
-                            onClick = {
-                                menuState.hide()
-                                onSelected(filter)
-                            },
-                        )
-                    }
-                }
+                SelectionMenu(
+                    title = stringResource(R.string.library_filter_by_title),
+                    choices = YouTubeLibraryFilter.entries,
+                    selectedChoice = selected,
+                    label = { stringResource(it.labelRes) },
+                    icon = { it.iconRes },
+                    onSelected = { filter ->
+                        menuState.hide()
+                        onSelected(filter)
+                    },
+                )
             }
         },
     )
