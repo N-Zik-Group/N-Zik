@@ -107,6 +107,7 @@
     <string name="lyrics_karaoke">Karaoke (woordniveau)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Respecteer agent positie</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke niet gevonden op %1$s, toon gesynchroniseerd van %2$s</string>
+    <string name="lyrics_karaoke_upgrade_hint">Karaoke zal het vervangen als het gevonden wordt.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke songteksten</string>
     <string name="lyrics_mode_synchronized_label">gesynchroniseerde songtekst</string>
