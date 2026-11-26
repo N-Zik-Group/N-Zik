@@ -326,7 +326,7 @@ private fun SettingsProfileShortcut(
             .clip(uiRoundnessShape())
             .clickable(role = Role.Button) { onItemSelected(profiles) }
             .testTag("settings_global_profile_open")
-            .padding(horizontal = 12.dp + outset, vertical = 14.dp),
+            .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 14.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

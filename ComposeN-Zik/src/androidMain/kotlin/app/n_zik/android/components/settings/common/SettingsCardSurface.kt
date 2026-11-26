@@ -41,6 +41,9 @@ import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 internal val LocalSettingsCardRowOutset = staticCompositionLocalOf { 0.dp }
 internal val SettingsCardContentPadding = 12.dp
 
+internal fun settingsCardRowHorizontalPadding(outset: Dp): Dp =
+    if (outset > 0.dp) outset + 4.dp else 12.dp
+
 @Composable
 internal fun SettingsCardContent(
     padding: Dp = SettingsCardContentPadding,

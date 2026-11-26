@@ -262,11 +262,12 @@ fun SettingsEntryGroupText(
     title: String,
     modifier: Modifier = Modifier,
 ) {
+    val outset = LocalSettingsCardRowOutset.current
     BasicText(
         text = title,
         style = typography().xs.semiBold.copy(colorPalette().accent),
         modifier = modifier
-            .padding(start = 12.dp)
+            .padding(start = settingsCardRowHorizontalPadding(outset) - outset)
     )
 }
 
@@ -335,6 +336,7 @@ fun ImportantSettingsDescription(
 /** Accent category label inside the card (the sheet's MenuSectionTitle pattern, compact 8dp vertical padding for the card layout). */
 @Composable
 internal fun CardCategoryLabel(label: String, modifier: Modifier = Modifier) {
+    val outset = LocalSettingsCardRowOutset.current
     BasicText(
         text = label,
         style = typography().xxs.semiBold.copy(
@@ -344,7 +346,7 @@ internal fun CardCategoryLabel(label: String, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .semantics { heading() }
-            .padding(vertical = 8.dp, horizontal = 12.dp),
+            .padding(vertical = 8.dp, horizontal = settingsCardRowHorizontalPadding(outset) - outset),
     )
 }
 

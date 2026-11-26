@@ -237,7 +237,7 @@ fun OtherSwitchSettingEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp + outset, vertical = 12.dp),
+                    .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -343,7 +343,7 @@ fun SettingsEntry(
             .clip(uiRoundnessShape())
             .then(action)
             .alpha(if (isEnabled) 1f else 0.5f)
-            .padding(horizontal = 12.dp + outset, vertical = 12.dp)
+            .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 12.dp)
             .fillMaxWidth()
     ) {
         Column(
@@ -617,7 +617,7 @@ fun OtherSettingsEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp + outset, vertical = 12.dp),
+                    .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -745,6 +745,7 @@ fun OtherInfoSettingsEntry(
     selectedValueText: String? = null,
     shimmerText: Boolean = false,
 ) {
+    val outset = LocalSettingsCardRowOutset.current
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -759,7 +760,7 @@ fun OtherInfoSettingsEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(horizontal = settingsCardRowHorizontalPadding(outset) - outset, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -834,7 +835,7 @@ fun CacheSettingsEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp + outset, vertical = 12.dp),
+                    .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -924,7 +925,7 @@ fun ModernSettingsEntry(
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
             .clickable(onClick = onClick)
-            .padding(horizontal = 12.dp + outset, vertical = 12.dp)
+            .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 12.dp)
             ) {
                 Box(
                     modifier = Modifier
