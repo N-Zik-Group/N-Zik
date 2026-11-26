@@ -153,11 +153,12 @@ object GridMenu {
         val alpha = if (enabled) 1f else 0.5f
         val isScrollingTextDisabled by rememberPreference( disableScrollingTextKey, false )
         val glass = rememberGlassSettings()
+        val shape = gridMenuShape()
 
         Column(
             modifier = modifier
-                .clip(gridMenuShape())
-                .menuEntryClick(enabled, onClick, onLongClick)
+                .clip(shape)
+                .menuEntryClick(shape, enabled, onClick, onLongClick)
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center

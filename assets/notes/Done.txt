@@ -908,3 +908,7 @@ PC server and history search:
 System font settings:
 - fix(settings): reflect the active system font
   - Keep the saved custom typeface available after disabling the system font.
+
+Menu feedback spacing:
+- fix(ui): inset menu feedback and space the first list entry
+  - Reuse the same eight dp visual margin in Normal and Glass.

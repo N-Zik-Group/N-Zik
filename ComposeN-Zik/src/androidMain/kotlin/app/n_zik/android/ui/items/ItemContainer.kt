@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.insetPressIndication
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.shimmerEffect
 
@@ -38,7 +39,7 @@ fun ItemContainer(
     content: @Composable () -> Unit,
 ) {
     val childIndication = LocalIndication.current
-    val itemIndication = mediaItemRipple()
+    val itemIndication = insetPressIndication()
     CompositionLocalProvider(LocalIndication provides itemIndication) {
         if (alternative) {
             Column(

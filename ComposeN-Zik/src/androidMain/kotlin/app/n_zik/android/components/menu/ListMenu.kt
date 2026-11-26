@@ -122,7 +122,8 @@ object ListMenu {
                             clip(topShape)
                         }
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp),
+                        .padding(horizontal = 16.dp)
+                        .padding(top = MenuConstants.LIST_CONTENT_TOP_PADDING.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     content()
@@ -146,14 +147,15 @@ object ListMenu {
     ) {
         val alpha = if (enabled) 1f else 0.5f
         val isScrollingTextDisabled by rememberPreference( disableScrollingTextKey, false )
+        val shape = uiRoundnessShape()
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy( 12.dp ),
             modifier = modifier
                 .fillMaxWidth()
-                .clip(uiRoundnessShape())
-                .menuEntryClick(enabled && !loading, onClick, onLongClick)
+                .clip(shape)
+                .menuEntryClick(shape, enabled && !loading, onClick, onLongClick)
                 .padding( vertical = 10.dp )
         ) {
             icon()

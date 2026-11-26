@@ -4,7 +4,7 @@ package app.n_zik.android.components
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.glassGlobalIndication
 
-import app.n_zik.android.ui.items.mediaItemRipple
+import app.n_zik.android.components.ui.insetPressIndication
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
 
@@ -250,7 +250,7 @@ fun SongItem(
                            .then( rowBackground )
                            .clip(uiRoundnessShape()).combinedClickable(
                                interactionSource = null,
-                               indication = mediaItemRipple(),
+                               indication = insetPressIndication(rowShape),
                                onClick = onClick,
                                onLongClick = {
                                    hapticFeedback.performHapticFeedback( HapticFeedbackType.LongPress )

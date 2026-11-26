@@ -25,6 +25,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.InsetPressFeedback
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -67,7 +68,7 @@ class MediaItemRippleTest {
 
     private object SolidInsetFeedback : IndicationNodeFactory {
         override fun create(interactionSource: InteractionSource): DelegatableNode =
-            InsetMediaItemFeedback(SolidFeedbackNode(), RectangleShape)
+            InsetPressFeedback(SolidFeedbackNode(), RectangleShape)
 
         override fun equals(other: Any?) = other === this
         override fun hashCode() = System.identityHashCode(this)
