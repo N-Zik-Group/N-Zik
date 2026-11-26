@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -31,6 +32,8 @@ import app.n_zik.android.R
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.settings.network.applyDownloadDefaults
+import app.n_zik.android.components.settings.data.hasPendingDataResetCacheMove
+import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.components.settings.general.applyPlaybackDefaults
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
@@ -136,7 +139,13 @@ internal fun SettingsResetCard(
                                             if (applyAllSettingsDefaults(
                                                     context,
                                                     onDownloadLimitRetained = { downloadLimitRetained = true },
-                                                    onSettingsApplied = onRestartRequired,
+                                                    onSettingsApplied = {
+                                                        if (hasPendingDataResetCacheMove(context, getActiveProfile(context))) {
+                                                            RestartAppDialog.showDialog()
+                                                        } else {
+                                                            onRestartRequired()
+                                                        }
+                                                    },
                                                 )
                                             ) showDataResetFeedback(downloadLimitRetained)
                                         } finally {

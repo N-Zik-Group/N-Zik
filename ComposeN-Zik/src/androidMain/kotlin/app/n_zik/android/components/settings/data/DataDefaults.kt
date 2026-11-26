@@ -40,6 +40,12 @@ private val autoBackupSettingKeys = setOf(
     BackupManager.PREF_INCLUDE_LASTFM, BackupManager.PREF_INCLUDE_PROXY, BackupManager.PREF_INCLUDE_GITHUB, BackupManager.PREF_PRE_INSTALL,
 )
 
+/** Reports whether restoring the storage location still requires an app restart. */
+internal fun hasPendingDataResetCacheMove(context: Context, profileId: String): Boolean {
+    val target = profileStorageIdentity(context, profileId) ?: return false
+    return ProfileCacheLocationMigration.requested(context, target) == ExoPlayerCacheLocation.System
+}
+
 /** Restores storage, history and automatic backup defaults for the active profile. */
 internal fun applyDataDefaults(
     context: Context,

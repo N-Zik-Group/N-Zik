@@ -116,9 +116,11 @@ class DataSettingsPreferencesTest {
     @Test fun `reset stages a return from Private without switching the effective root`() {
         context.preferences.edit().putString(exoPlayerCacheLocationKey, ExoPlayerCacheLocation.Private.name).commit()
 
+        assertFalse(hasPendingDataResetCacheMove(context, "data-test"))
         applyDataDefaults(context)
 
         val owner = checkNotNull(profileStorageIdentity(context, "data-test"))
+        assertTrue(hasPendingDataResetCacheMove(context, "data-test"))
         assertEquals(ExoPlayerCacheLocation.System, ProfileCacheLocationMigration.requested(context, owner))
         assertEquals(ExoPlayerCacheLocation.Private.name, context.preferences.getString(exoPlayerCacheLocationKey, null))
     }

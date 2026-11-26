@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.data
 
+import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -50,7 +51,10 @@ internal fun DataResetCard(search: Search) {
                                 val applied = withContext(NzikDispatchers.DATA) {
                                     applyDataDefaults(context, profileId, onDownloadLimitRetained = { downloadLimitRetained = true })
                                 }
-                                if (applied && getActiveProfile(context) == profileId) showDataResetFeedback(downloadLimitRetained)
+                                if (applied && getActiveProfile(context) == profileId) {
+                                    showDataResetFeedback(downloadLimitRetained)
+                                    if (hasPendingDataResetCacheMove(context, profileId)) RestartAppDialog.showDialog()
+                                }
                             } finally {
                                 resetting = false
                             }

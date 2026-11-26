@@ -968,3 +968,7 @@ Menus:
 Settings:
 - fix(settings): restore YouTube search defaults on reactivation
   - Reset account use while retaining credentials and guard authenticated search behind the connection toggle.
+
+Settings:
+- fix(settings): show the restart needed by storage reset
+  - Prompt for an app restart when reset schedules a cache migration.
