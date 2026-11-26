@@ -77,7 +77,7 @@ fun YtSearchAccountToggle(
     )
 }
 
-/** Restores [Innertube.useLoginForSearch] from the persisted preference at startup — called from [MainApplication.onCreate] next to the `useLoginForBrowse` restore (the flag only lives in memory while the app runs). */
-fun applyUseLoginForSearch(context: Context) {
-    Innertube.useLoginForSearch = context.preferences.getBoolean(useLoginForSearchKey, true)
+/** Restores the search preference when YouTube login is enabled. */
+fun applyUseLoginForSearch(context: Context, isLoginEnabled: Boolean = true) {
+    Innertube.useLoginForSearch = isLoginEnabled && context.preferences.getBoolean(useLoginForSearchKey, true)
 }

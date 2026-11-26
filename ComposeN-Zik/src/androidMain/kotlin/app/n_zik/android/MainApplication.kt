@@ -362,7 +362,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
             val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, true)
             Innertube.useLoginForBrowse = useLoginForBrowse
-            applyUseLoginForSearch(this)
+            val youtubeLoginEnabled = encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)
+            applyUseLoginForSearch(this, youtubeLoginEnabled)
             
             NetworkClientFactory.configure(
                 proxy = proxy,
@@ -381,7 +382,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             GatewayWebSocket.offlineGate = NetworkGate::isOnline
 
             // Preserve the search preference across login changes. Guests already search anonymously.
-            if (encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)) {
+            if (youtubeLoginEnabled) {
                 Store.initSession(this@MainApplication)
             } else {
                 Store.setSession(YouTubeSession(null, null, null, null))

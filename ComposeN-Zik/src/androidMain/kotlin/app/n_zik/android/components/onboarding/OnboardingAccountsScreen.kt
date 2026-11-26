@@ -52,6 +52,7 @@ import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.components.settings.applyUseLoginForSearch
 import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
@@ -371,6 +372,7 @@ fun OnboardingAccountsScreen(
                     .apply()
                 MainApplication.cookieStatus = MainApplication.CookieStatus.VALID
                 Innertube.useLoginForBrowse = true
+                applyUseLoginForSearch(appContext())
                 ytLoggedIn = true
                 ytName = ytAccountName()
                 Toaster.i(R.string.account_youtube_login_success)

@@ -87,6 +87,7 @@ import app.n_zik.android.components.dialog.settings.clearAudioCache
 import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.YtSearchAccountToggle
+import app.n_zik.android.components.settings.applyUseLoginForSearch
 import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -159,6 +160,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 // Keep account info so user doesn't have to reconnect
                                 Store.setSession(YouTubeSession(null, null, null, null))
                                 Innertube.useLoginForBrowse = false
+                                Innertube.useLoginForSearch = false
                                 // Reset cookie status
                                 app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
                                 appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
@@ -195,6 +197,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             } else {
                                 // Re-enable: restore Innertube from saved preferences
                                 val savedCookie = appContext().encryptedPreferences.getString(ytCookieKey, "") ?: ""
+                                applyUseLoginForSearch(context)
                                 if (savedCookie.isNotEmpty()) {
                                     Store.initSession(context)
                                     // Only activate browse if we have real credentials

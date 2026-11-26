@@ -10,6 +10,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.backup.LibraryStartupState
 import app.n_zik.android.listentogether.ListenTogetherPlayerBridge
+import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.preferences
 import app.n_zik.innertube.Innertube
@@ -58,11 +59,13 @@ class StartupSearchRestoreWiringTest {
         Innertube.useLoginForSearch = true
     }
 
-    private fun launchApp() {
+    private fun launchApp(youtubeLoginEnabled: Boolean = true) {
         mockkObject(ListenTogetherPlayerBridge)
         every { ListenTogetherPlayerBridge.ensureBound(any()) } just runs
         mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
-        every { any<Context>().encryptedPreferences } returns mockk<SharedPreferences>(relaxed = true)
+        val securePreferences = mockk<SharedPreferences>(relaxed = true)
+        every { securePreferences.getBoolean(enableYouTubeLoginKey, true) } returns youtubeLoginEnabled
+        every { any<Context>().encryptedPreferences } returns securePreferences
         ShadowProcess.setProcessName(context.packageName)
         val app = MainApplication()
         ContextWrapper::class.java
@@ -107,5 +110,15 @@ class StartupSearchRestoreWiringTest {
         launchApp()
 
         assertTrue(Innertube.useLoginForSearch)
+    }
+
+    @Test
+    fun `onCreate keeps authenticated search off when YouTube login is disabled`() {
+        context.preferences.edit { remove(useLoginForSearchKey) }
+        Innertube.useLoginForSearch = true
+
+        launchApp(youtubeLoginEnabled = false)
+
+        assertFalse(Innertube.useLoginForSearch)
     }
 }

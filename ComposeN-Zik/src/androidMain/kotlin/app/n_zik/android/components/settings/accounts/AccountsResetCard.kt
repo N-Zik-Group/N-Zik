@@ -83,7 +83,7 @@ internal fun applyAccountsDefaults(context: Context) {
         accountProfileSettingKeys.forEach(::remove)
         remove(GITHUB_BACKGROUND_CHECKS_KEY)
         putBoolean(useLoginForBrowseKey, false)
-        putBoolean(useLoginForSearchKey, false)
+        remove(useLoginForSearchKey)
         putBoolean(restartActivityKey, false)
     }
     context.encryptedPreferences.edit {

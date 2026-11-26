@@ -964,3 +964,7 @@ Settings:
 Menus:
 - fix(menu): complete search and playlist menu interactions
   - Expose collection menus over the whole card, mark the active filter, and open sorting from the playlist sort arrow.
+
+Settings:
+- fix(settings): restore YouTube search defaults on reactivation
+  - Reset account use while retaining credentials and guard authenticated search behind the connection toggle.
