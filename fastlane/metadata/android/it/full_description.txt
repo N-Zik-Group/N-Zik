@@ -28,6 +28,7 @@ Crediti: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Backdrop 
 💾 <b>Offline, Metadati e Privacy</b>
 - Caching intelligente e download di brani/playlist, qualità selezionabile
 - Esportazione FFmpeg con metadati completi (solo build standard)
+- Riparazione automatica dei metadati cerca i crediti dell'artista mancanti e i link dell'album durante la riproduzione online. I controlli di avvio rimuovono i collegamenti fissi, uniscono gli artisti duplicati verificati e allineano i nomi degli artisti salvati.
 - Editor metadati in-app (AAC/Opus, copertina)
 - Statistiche d'ascolto e cronologia locali
 - Backup automatico con intervalli e conservazione personalizzati
