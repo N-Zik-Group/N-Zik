@@ -508,3 +508,7 @@ Picture-in-picture support:
 Profile storage:
 - fix(profile): guard cold shortcut selection against stale storage
   - Validate the target under the same lock used for profile storage changes.
+
+Playlist and podcast links:
+- fix(navigation): preserve online collection browse identities
+  - Resolve imported podcast and playlist links to their correct destination.

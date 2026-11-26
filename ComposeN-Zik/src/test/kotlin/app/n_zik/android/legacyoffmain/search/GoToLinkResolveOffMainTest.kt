@@ -1,6 +1,8 @@
 package app.n_zik.android.legacyoffmain.search
 
 import android.net.Uri
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import androidx.navigation.NavController
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.ui.screens.search.resolveGoToLink
@@ -72,6 +74,10 @@ class GoToLinkResolveOffMainTest {
             runBlocking { withContext(mainThreadDispatcher) { Thread.currentThread().name } }
         )!!
         mockkStatic("app.n_zik.innertube.requests.PlaylistPageKt")
+        mockkStatic(Uri::class)
+        every { Uri.encode(any<String>()) } answers {
+            URLEncoder.encode(firstArg<String>(), StandardCharsets.UTF_8.name()).replace("+", "%20")
+        }
     }
 
     @AfterEach

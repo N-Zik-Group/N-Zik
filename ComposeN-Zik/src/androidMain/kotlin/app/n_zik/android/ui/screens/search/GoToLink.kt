@@ -27,6 +27,8 @@ import app.n_zik.android.components.dialog.common.InputTextField
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.components.navigation.onlinePlaylistBrowseIdFromLink
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.intents.remoteAlbumLinkRoute
 import app.n_zik.android.intents.resolveRemoteTrackLink
@@ -56,11 +58,11 @@ internal suspend fun resolveGoToLink(
     Timber.tag("GoToLink").d("channelId: ${uri.pathSegments}")
     when (val path = uri.pathSegments.firstOrNull()) {
         "playlist" -> uri.getQueryParameter("list")?.let { playlistId ->
-            val browseId = "VL$playlistId"
+            val browseId = onlinePlaylistBrowseIdFromLink(playlistId)
 
             val route = if (playlistId.startsWith("OLAK5uy_")) {
                 remoteAlbumLinkRoute(browseId)
-            } else "${NavRoutes.playlist.name}/$browseId"
+            } else onlinePlaylistRoute(browseId)
             withContext(NzikDispatchers.UI) {
                 navController.navigate(route = route)
             }
