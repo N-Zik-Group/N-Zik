@@ -20,7 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -45,6 +44,7 @@ import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.menuToggleSemantics
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -197,16 +197,15 @@ class VisualizerSettingsMenu private constructor(
                 text = "",
                 icon = R.drawable.sound_effect,
                 state = visualizerLineThickness,
-                onSlide = { if (currentVisualizer == 0 || currentVisualizer == 1 || currentVisualizer == 21) visualizerLineThickness = kotlin.math.round(it) },
+                onSlide = { visualizerLineThickness = kotlin.math.round(it) },
                 toDisplay = { "${it.toInt()}" },
                 range = 1f..20f,
                 stepSize = 0f,
                 defaultValue = 6f,
                 drawValuePoints = true,
+                isEnabled = currentVisualizer == 0 || currentVisualizer == 1 || currentVisualizer == 21,
                 isIntegerOnly = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .alpha(if (currentVisualizer == 0 || currentVisualizer == 1 || currentVisualizer == 21) 1f else 0.5f)
+                modifier = Modifier.fillMaxWidth(),
             )
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -297,16 +296,15 @@ class VisualizerSettingsMenu private constructor(
                     text = "",
                     icon = R.drawable.sound_effect,
                     state = visualizerLineThickness,
-                    onSlide = { if (currentVisualizer == 0 || currentVisualizer == 1 || currentVisualizer == 21) visualizerLineThickness = kotlin.math.round(it) },
+                    onSlide = { visualizerLineThickness = kotlin.math.round(it) },
                     toDisplay = { "${it.toInt()}" },
                     range = 1f..20f,
                     stepSize = 0f,
                     defaultValue = 6f,
                     drawValuePoints = true,
+                    isEnabled = currentVisualizer == 0 || currentVisualizer == 1 || currentVisualizer == 21,
                     isIntegerOnly = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .alpha(if (currentVisualizer == 0 || currentVisualizer == 1 || currentVisualizer == 21) 1f else 0.5f)
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             
@@ -380,6 +378,7 @@ class VisualizerSettingsMenu private constructor(
                 text = title,
                 icon = { SettingIcon(icon) },
                 subtitle = subtitle,
+                modifier = Modifier.menuToggleSemantics(isChecked),
                 onClick = { onCheckedChange(!isChecked) },
                 trailingContent = {
                     Switch(
@@ -398,6 +397,7 @@ class VisualizerSettingsMenu private constructor(
                 text = title,
                 icon = { SettingIcon(icon) },
                 subtitle = subtitle,
+                modifier = Modifier.menuToggleSemantics(isChecked),
                 onClick = { onCheckedChange(!isChecked) },
                 trailingContent = {
                     Switch(

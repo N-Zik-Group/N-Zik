@@ -4,7 +4,6 @@ import app.n_zik.android.components.glass.glassOverlayPaint
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -146,7 +145,7 @@ object GridMenu {
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
         subtitle: String? = null,
-        onClick: () -> Unit = {},
+        onClick: (() -> Unit)? = null,
         onLongClick: (() -> Unit)? = null,
         iconHasOwnBackground: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
@@ -158,11 +157,7 @@ object GridMenu {
         Column(
             modifier = modifier
                 .clip(gridMenuShape())
-                .combinedClickable(
-                    enabled = enabled,
-                    onClick = onClick,
-                    onLongClick = onLongClick
-                )
+                .menuEntryClick(enabled, onClick, onLongClick)
                 .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center

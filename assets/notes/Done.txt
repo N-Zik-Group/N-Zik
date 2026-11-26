@@ -848,3 +848,7 @@ Search result transitions:
 Menu and metadata regression coverage:
 - test(menu): cover shared renderers and refreshed entities
   - Verify accessibility labels, state, bypass routes, and metadata display behavior.
+
+Menu entry semantics:
+- fix(menu): expose toggle state and allow passive entries
+  - Keep native menu controls usable by screen readers and retain precise visualizer input.

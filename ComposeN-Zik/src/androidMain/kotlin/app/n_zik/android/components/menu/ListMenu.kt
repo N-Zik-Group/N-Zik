@@ -4,7 +4,6 @@ import app.n_zik.android.components.glass.glassOverlayPaint
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -140,7 +139,7 @@ object ListMenu {
         modifier: Modifier = Modifier,
         enabled: Boolean = true,
         subtitle: String? = null,
-        onClick: () -> Unit = {},
+        onClick: (() -> Unit)? = null,
         onLongClick: (() -> Unit)? = null,
         loading: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
@@ -154,11 +153,7 @@ object ListMenu {
             modifier = modifier
                 .fillMaxWidth()
                 .clip(uiRoundnessShape())
-                .combinedClickable(
-                    enabled = enabled && !loading,
-                    onClick = onClick,
-                    onLongClick = onLongClick
-                )
+                .menuEntryClick(enabled && !loading, onClick, onLongClick)
                 .padding( vertical = 10.dp )
         ) {
             icon()

@@ -31,6 +31,7 @@ import app.n_zik.android.components.glass.TextContrast
 import app.n_zik.android.components.glass.surfaceGlyphColor
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.menuToggleSemantics
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.ui.iconBadgeGlyphColor
 import app.n_zik.android.components.ui.toggles.Switch
@@ -88,6 +89,7 @@ internal fun LyricsSettingsMenu.ToggleSettingEntry(
             text = title,
             icon = { SettingIcon(icon) },
             subtitle = subtitle,
+            modifier = Modifier.menuToggleSemantics(isChecked),
             onClick = { onCheckedChange(!isChecked) },
             trailingContent = {
                 Switch(
@@ -106,6 +108,7 @@ internal fun LyricsSettingsMenu.ToggleSettingEntry(
             text = title,
             icon = { SettingIcon(icon) },
             subtitle = subtitle,
+            modifier = Modifier.menuToggleSemantics(isChecked),
             onClick = { onCheckedChange(!isChecked) },
             trailingContent = {
                 Switch(
