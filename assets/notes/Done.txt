@@ -524,3 +524,7 @@ Menu navigation guards:
 Last.fm metadata:
 - fix(lastfm): refresh track credits before reporting playback
   - Serialize now-playing requests and snapshot metadata before submitting a scrobble.
+
+Podcast links:
+- fix(links): derive YouTube Music URLs from podcast browse IDs
+  - Preserve playlist-backed podcast identities when opening externally.
