@@ -540,3 +540,7 @@ Selection completion:
 History sort:
 - fix(settings): retain hidden history sort positions
   - Restore each sort option in its configured position when made visible.
+
+Appearance and interface defaults:
+- fix(settings): reset player and interface preferences independently
+  - Keep customizations outside the selected reset scope.

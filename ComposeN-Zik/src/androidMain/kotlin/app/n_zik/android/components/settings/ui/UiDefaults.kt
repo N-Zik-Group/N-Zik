@@ -1,47 +1,27 @@
 package app.n_zik.android.components.settings.ui
 
-import app.n_zik.android.utils.effectRotationDefault
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import androidx.core.content.edit
 import app.n_zik.android.enums.AlbumSwipeAction
-import app.n_zik.android.enums.BackgroundProgress
-import app.n_zik.android.enums.CarouselSize
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.HomeScreenTabs
-import app.n_zik.android.enums.IconLikeType
 import app.n_zik.android.enums.MenuStyle
-import app.n_zik.android.enums.MiniPlayerType
 import app.n_zik.android.enums.MusicAnimationType
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.NavigationBarType
-import app.n_zik.android.enums.PlayerBackgroundColors
-import app.n_zik.android.enums.PlayerControlsType
-import app.n_zik.android.enums.PlayerInfoType
-import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.enums.PlayerPosition
-import app.n_zik.android.enums.PlayerTimelineSize
-import app.n_zik.android.enums.PlayerTimelineType
-import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.enums.QueueSwipeAction
-import app.n_zik.android.enums.QueueType
 import app.n_zik.android.enums.SearchDisplayOrder
-import app.n_zik.android.enums.ThumbnailType
 import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
-import app.n_zik.android.utils.backgroundProgressKey
-import app.n_zik.android.utils.blackgradientKey
-import app.n_zik.android.utils.buttonzoomoutKey
-import app.n_zik.android.utils.carouselKey
-import app.n_zik.android.utils.carouselSizeKey
-import app.n_zik.android.utils.clickOnLyricsTextKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.customColorKey
@@ -67,68 +47,34 @@ import app.n_zik.android.utils.customThemeLight_textDisabledKey
 import app.n_zik.android.utils.customThemeLight_textSecondaryKey
 import app.n_zik.android.utils.disableIconButtonOnTopKey
 import app.n_zik.android.utils.disableNavigationBackStackKey
-import app.n_zik.android.utils.disablePlayerHorizontalSwipeKey
-import app.n_zik.android.utils.disableScrollingTextKey
-import app.n_zik.android.utils.effectRotationKey
-import app.n_zik.android.utils.fadingedgeKey
 import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.nowPlayingIndicatorKey
 import app.n_zik.android.utils.playlistindicatorKey
 import app.n_zik.android.utils.rightToLeftInterfaceKey
-import app.n_zik.android.utils.iconLikeTypeKey
 import app.n_zik.android.utils.indexNavigationTabKey
 import app.n_zik.android.utils.isSwipeToActionEnabledKey
-import app.n_zik.android.utils.keepPlayerMinimizedKey
-import app.n_zik.android.utils.lastPlayerPlayButtonTypeKey
-import app.n_zik.android.utils.lastPlayerTimelineTypeKey
-import app.n_zik.android.utils.lastThumbnailSizeDpKey
 import app.n_zik.android.utils.menuStyleKey
-import app.n_zik.android.utils.miniPlayerTypeKey
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.navigationBarTypeKey
-import app.n_zik.android.utils.playerBackgroundColorsKey
-import app.n_zik.android.utils.playerControlsTypeKey
-import app.n_zik.android.utils.playerEnableLyricsPopupMessageKey
-import app.n_zik.android.utils.playerInfoShowIconsKey
-import app.n_zik.android.utils.playerInfoTypeKey
-import app.n_zik.android.utils.playerPlayButtonTypeKey
 import app.n_zik.android.utils.playerPositionKey
-import app.n_zik.android.utils.playerSwapControlsWithTimelineKey
-import app.n_zik.android.utils.playerTimelineSizeKey
-import app.n_zik.android.utils.playerTimelineTypeKey
-import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.playlistSwipeLeftActionKey
 import app.n_zik.android.utils.playlistSwipeRightActionKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
-import app.n_zik.android.utils.queueTypeKey
 import app.n_zik.android.utils.searchDisplayOrderKey
 import app.n_zik.android.utils.showCachedPlaylistKey
 import app.n_zik.android.utils.showDownloadedPlaylistKey
 import app.n_zik.android.utils.showFavoritesPlaylistKey
 import app.n_zik.android.utils.showFloatingIconKey
-import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showOnDevicePlaylistKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
-import app.n_zik.android.utils.showRemainingSongTimeKey
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.showStatsInNavbarKey
-import app.n_zik.android.utils.showTopActionsBarKey
-import app.n_zik.android.utils.showTotalTimeQueueKey
-import app.n_zik.android.utils.showthumbnailKey
-import app.n_zik.android.utils.thumbnailSizeDpKey
-import app.n_zik.android.utils.thumbnailSizeLDpKey
-import app.n_zik.android.utils.thumbnailTapEnabledKey
-import app.n_zik.android.utils.DEFAULT_HOLD_TO_SPEED_UP_RATE
-import app.n_zik.android.utils.holdToSpeedUpKey
-import app.n_zik.android.utils.holdToSpeedUpRateKey
-import app.n_zik.android.utils.thumbnailTypeKey
 import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.utils.useSystemFontKey
-import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
 import app.n_zik.android.components.dialog.settings.HistorySortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsSettingsDialog
@@ -151,21 +97,15 @@ import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDia
 import app.n_zik.android.components.settings.common.resetInterfaceReaderDefaults
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
-import app.n_zik.android.core.settings.DEFAULT_THUMBNAIL_SIZE_DP
 
-/** Applies the legacy Interface reset once to the active profile and dialog stores. */
+/** Restores theme and interface defaults for the active profile and dialog stores. */
 internal fun applyUiDefaults(context: Context) {
     resetInterfaceReaderDefaults(context.preferences)
     context.preferences.edit().remove(app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey).apply()
     context.preferences.edit {
         putBoolean(hideStatusBarKey, false)
         putBoolean(rightToLeftInterfaceKey, false)
-        putBoolean(keepPlayerMinimizedKey, true)
         putBoolean(disableIconButtonOnTopKey, false)
-        putEnum(lastPlayerTimelineTypeKey, PlayerTimelineType.Default)
-        putFloat(lastThumbnailSizeDpKey, 30f)
-        putBoolean(disablePlayerHorizontalSwipeKey, false)
-        putEnum(lastPlayerPlayButtonTypeKey, PlayerPlayButtonType.Rectangular)
         putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
         putBoolean(dynamicThemeRespectBrightnessKey, DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT)
         putEnum(colorPaletteModeKey, ColorPaletteMode.System)
@@ -206,46 +146,12 @@ internal fun applyUiDefaults(context: Context) {
         putInt(customThemeDark_iconButtonPlayerKey, DefaultDarkColorPalette.iconButtonPlayer.hashCode())
         putInt(customThemeDark_accentKey, DefaultDarkColorPalette.accent.hashCode())
         putEnum(playerPositionKey, PlayerPosition.Bottom)
-        putBoolean(showTopActionsBarKey, true)
-        putEnum(playerControlsTypeKey, PlayerControlsType.Essential)
-        putEnum(playerInfoTypeKey, PlayerInfoType.Modern)
-        putEnum(playerTypeKey, PlayerType.Essential)
-        putEnum(queueTypeKey, QueueType.Modern)
-        putBoolean(fadingedgeKey, false)
-        putBoolean(carouselKey, true)
-        putEnum(carouselSizeKey, CarouselSize.Biggest)
-        putEnum(thumbnailTypeKey, ThumbnailType.Modern)
-        putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
-        putFloat(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
-        remove(thumbnailSizeLDpKey)
-        putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
-        putBoolean(playerInfoShowIconsKey, true)
-        putEnum(miniPlayerTypeKey, MiniPlayerType.Essential)
-        putBoolean(playerSwapControlsWithTimelineKey, false)
-        putEnum(playerPlayButtonTypeKey, PlayerPlayButtonType.CircularRibbed)
-        putBoolean(buttonzoomoutKey, true)
-        putEnum(iconLikeTypeKey, IconLikeType.Essential)
-        putEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient)
-        putBoolean(blackgradientKey, false)
-        putBoolean(showTotalTimeQueueKey, true)
-        putBoolean(showNextSongsInPlayerKey, false)
-        putBoolean(showRemainingSongTimeKey, true)
-        putBoolean(disableScrollingTextKey, false)
-        putBoolean(effectRotationKey, effectRotationDefault)
-        putBoolean(thumbnailTapEnabledKey, true)
-        putBoolean(holdToSpeedUpKey, false)
-        putFloat(holdToSpeedUpRateKey, DEFAULT_HOLD_TO_SPEED_UP_RATE)
-        putBoolean(clickOnLyricsTextKey, true)
-        putEnum(backgroundProgressKey, BackgroundProgress.MiniPlayer)
         putEnum(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue)
         putEnum(queueSwipeRightActionKey, QueueSwipeAction.PlayNext)
         putEnum(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
         putEnum(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
         putEnum(albumSwipeLeftActionKey, AlbumSwipeAction.PlayNext)
         putEnum(albumSwipeRightActionKey, AlbumSwipeAction.Bookmark)
-        putBoolean(playerEnableLyricsPopupMessageKey, true)
-        putBoolean(visualizerEnabledKey, false)
-        putBoolean(showthumbnailKey, true)
         putEnum(searchDisplayOrderKey, SearchDisplayOrder.SuggestionsFirst)
         putBoolean(playlistindicatorKey, false)
         putEnum(nowPlayingIndicatorKey, MusicAnimationType.Bubbles)

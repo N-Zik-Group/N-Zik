@@ -12,8 +12,6 @@ import androidx.core.content.edit
 import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.BackgroundProgress
 import app.n_zik.android.enums.CarouselSize
-import app.n_zik.android.enums.ColorPaletteMode
-import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.IconLikeType
 import app.n_zik.android.enums.MiniPlayerType
 import app.n_zik.android.enums.NotificationButtons
@@ -46,8 +44,6 @@ import app.n_zik.android.utils.buttonzoomoutKey
 import app.n_zik.android.utils.carouselKey
 import app.n_zik.android.utils.carouselSizeKey
 import app.n_zik.android.utils.clickOnLyricsTextKey
-import app.n_zik.android.utils.colorPaletteModeKey
-import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.controlsExpandedKey
 import app.n_zik.android.utils.coverThumbnailAnimationKey
 import app.n_zik.android.utils.cropVideoThumbnailsKey
@@ -62,6 +58,8 @@ import app.n_zik.android.utils.iconLikeTypeKey
 import app.n_zik.android.utils.isShowingThumbnailInLockscreenKey
 import app.n_zik.android.utils.keepPlayerMinimizedKey
 import app.n_zik.android.utils.lastPlayerPlayButtonTypeKey
+import app.n_zik.android.utils.lastPlayerTimelineTypeKey
+import app.n_zik.android.utils.lastThumbnailSizeDpKey
 import app.n_zik.android.utils.lyricsColorKey
 import app.n_zik.android.utils.lyricsCustomColorKey
 import app.n_zik.android.utils.lyricsFontSizeKey
@@ -157,7 +155,7 @@ import app.n_zik.android.enums.ShakeSensitivityTheme
 import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.enums.lyrics.LyricsFontSize
 
-/** Applies the original Appearance reset once to the active profile. */
+/** Restores player appearance and controls for the active profile. */
 internal fun applyAppearanceDefaults(context: Context) {
     context.preferences.edit {
         resetLyricsMenuDefaults()
@@ -182,7 +180,9 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(playerVisualizerTypeKey, PlayerVisualizerType.Disabled)
         putFloat(visualizerLineThicknessKey, 6f)
         putEnum(playerTimelineTypeKey, PlayerTimelineType.Wavy)
+        putEnum(lastPlayerTimelineTypeKey, PlayerTimelineType.Default)
         putFloat(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
+        putFloat(lastThumbnailSizeDpKey, 30f)
         remove(thumbnailSizeLDpKey)
         putEnum(playerTimelineSizeKey, PlayerTimelineSize.Biggest)
         putBoolean(effectRotationKey, effectRotationDefault)
@@ -273,8 +273,6 @@ internal fun applyAppearanceDefaults(context: Context) {
         putFloat(thumbnailSpacingKey, 0f)
         putFloat(thumbnailSpacingLKey, 0f)
         putFloat(VinylSizeKey, 50f)
-        putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)
-        putEnum(colorPaletteModeKey, ColorPaletteMode.System)
         putEnum(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
         putBoolean(rotatingAlbumCoverKey, false)
         remove(currentVisualizerKey)

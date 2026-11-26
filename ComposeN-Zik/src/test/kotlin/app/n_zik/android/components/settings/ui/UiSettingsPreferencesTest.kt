@@ -10,6 +10,7 @@ import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.settings.appearance.applyAppearanceDefaults
 import app.n_zik.android.components.settings.common.SettingsEntryTargets
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.enums.MusicAnimationType
@@ -57,12 +58,7 @@ class UiSettingsPreferencesTest {
 
     private val fullReset: Map<String, Any> = mapOf(
         "hideStatusBarKey" to false,
-        "keepPlayerMinimized" to true,
         "disableIconButtonOnTop" to false,
-        "lastPlayerTimelineType" to "Default",
-        "lastThumbnailSizeDp" to 30f,
-        "disablePlayerHorizontalSwipe" to false,
-        "lastPlayerPlayButtonType" to "Rectangular",
         "colorPaletteName" to "Dynamic",
         "colorPaletteMode" to "System",
         dynamicThemeRespectBrightnessKey to false,
@@ -105,45 +101,12 @@ class UiSettingsPreferencesTest {
         "customThemeDark_iconButtonPlayer" to DefaultDarkColorPalette.iconButtonPlayer.hashCode(),
         "customThemeDark_accent" to DefaultDarkColorPalette.accent.hashCode(),
         "playerPosition" to "Bottom",
-        "showTopActionsBar" to true,
-        "playerControlsType" to "Essential",
-        "playerInfoType" to "Modern",
-        "playerType" to "Essential",
-        "queueType" to "Modern",
-        "fadingedge" to false,
-        "carousel" to true,
-        "carouselSize" to "Biggest",
-        "thumbnailType" to "Modern",
-        "playerTimelineType" to "Wavy",
-        "thumbnailSizeDpKey" to 90f,
-        "playerTimelineSize" to "Biggest",
-        "playerInfoShowIcons" to true,
-        "miniPlayerType" to "Essential",
-        "playerSwapControlsWithTimeline" to false,
-        "playerPlayButtonType" to "CircularRibbed",
-        "buttonzoomout" to true,
-        "iconLikeType" to "Essential",
-        "playerBackgroundColors" to "AnimatedGradient",
-        "blackgradient" to false,
-        "showTotalTimeQueue" to true,
-        "showNextSongsInPlayer" to false,
-        "showRemainingSongTime" to true,
-        "disableScrollingText" to false,
-        "effectRotation" to false,
-        "thumbnailTapEnabled" to true,
-        "holdToSpeedUp" to false,
-        "holdToSpeedUpRate" to 2f,
-        "clickOnLyricsText" to true,
-        "backgroundProgress" to "MiniPlayer",
         "queueSwipeLeftAction" to "RemoveFromQueue",
         "queueSwipeRightAction" to "PlayNext",
         "playlistSwipeLeftAction" to "Favourite",
         "playlistSwipeRightAction" to "PlayNext",
         "albumSwipeLeftAction" to "PlayNext",
         "albumSwipeRightAction" to "Bookmark",
-        "playerEnableLyricsPopupMessage" to true,
-        "visualizerEnabled" to false,
-        "showthumbnail" to true,
         "searchDisplayOrder" to "SuggestionsFirst",
         "customColor" to Color.Green.hashCode(),
         "disableNavigationBackStack" to false,
@@ -163,7 +126,7 @@ class UiSettingsPreferencesTest {
         "rightToLeftInterface" to false,
     )
 
-    @Test fun `full reset restores baseline profile values and store boundaries`() {
+    @Test fun `interface reset restores baseline profile values and store boundaries`() {
         seedOpposite(context.preferences, fullReset)
         context.preferences.edit().putString("unrelated", "keep").putString("playerSwipeSensitivity", "High").commit()
         context.preferences.edit().putBoolean("showButtonPlayerDiscover", true)
@@ -199,6 +162,39 @@ class UiSettingsPreferencesTest {
         assertFalse(store("app_settings").getBoolean("burger_menu_toggle_notifications", true))
         assertFalse(store("preferences").contains("homeTabsOrder"))
         assertFalse(context.preferences.contains("burger_menu_order"))
+    }
+
+    @Test fun `player and interface resets preserve each other's customizations`() {
+        val preferences = context.preferences
+        preferences.edit()
+            .putString("colorPaletteName", "Customized")
+            .putString("colorPaletteMode", "Light")
+            .putString("playerType", "Modern")
+            .putString("queueType", "Essential")
+            .putFloat("thumbnailSizeLDpKey", 45f)
+            .commit()
+
+        applyAppearanceDefaults(context)
+
+        assertEquals("Customized", preferences.getString("colorPaletteName", null))
+        assertEquals("Light", preferences.getString("colorPaletteMode", null))
+        assertEquals("Essential", preferences.getString("playerType", null))
+        assertEquals("Modern", preferences.getString("queueType", null))
+        assertFalse(preferences.contains("thumbnailSizeLDpKey"))
+
+        preferences.edit()
+            .putString("playerType", "Modern")
+            .putString("queueType", "Essential")
+            .putFloat("thumbnailSizeLDpKey", 45f)
+            .commit()
+
+        applyUiDefaults(context)
+
+        assertEquals("Dynamic", preferences.getString("colorPaletteName", null))
+        assertEquals("System", preferences.getString("colorPaletteMode", null))
+        assertEquals("Modern", preferences.getString("playerType", null))
+        assertEquals("Essential", preferences.getString("queueType", null))
+        assertEquals(45f, preferences.getFloat("thumbnailSizeLDpKey", -1f), 0f)
     }
 
     @Test fun `reset does not recreate retired selectors or change Glass selection`() {

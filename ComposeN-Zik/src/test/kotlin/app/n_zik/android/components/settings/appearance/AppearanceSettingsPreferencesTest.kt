@@ -141,8 +141,8 @@ class AppearanceSettingsPreferencesTest {
         "thumbnailSpacing" to 0f,
         "thumbnailSpacingL" to 0f,
         "VinylSize" to 50f,
-        "colorPaletteName" to "Dynamic",
-        "colorPaletteMode" to "System",
+        "lastPlayerTimelineType" to "Default",
+        "lastThumbnailSizeDp" to 30f,
         "swipeAnimationsNoThumbnail" to "Sliding",
         "rotatingAlbumCover" to false,
     )
