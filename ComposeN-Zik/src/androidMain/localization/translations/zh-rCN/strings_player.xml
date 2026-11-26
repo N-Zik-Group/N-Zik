@@ -107,6 +107,7 @@
     <string name="lyrics_karaoke">卡拉奥克语(单词级别)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">尊重代理位置</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">在 %1$s上找不到Karaoke , 显示从 %2$s 的同步</string>
+    <string name="lyrics_karaoke_upgrade_hint">如果找到它，Karaoke将会替换它。</string>
     <string name="lyrics_mode_automatic_label">自动歌词</string>
     <string name="lyrics_mode_karaoke_label">卡拉奥克歌词</string>
     <string name="lyrics_mode_synchronized_label">同步歌词</string>
