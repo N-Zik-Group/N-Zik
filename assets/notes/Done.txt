@@ -948,3 +948,7 @@ Menus:
 Menus:
 - fix(player): label the add-to-playlist action
   - Expose the action label to accessibility services in the player.
+
+Menus:
+- fix(menu): align section labels with row icons
+  - Align menu section labels with the leading edge of the icon containers.

@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -36,7 +35,7 @@ internal fun Modifier.listMenuRowOutset(outset: Dp): Modifier =
 @Composable
 internal fun Modifier.menuSectionHorizontalAlignment(): Modifier {
     val outset = LocalListMenuRowOutset.current
-    return if (outset > 0.dp) offset(x = -outset) else padding(horizontal = PressFeedbackHorizontalInset)
+    return if (outset > 0.dp) this else padding(horizontal = PressFeedbackHorizontalInset)
 }
 
 @Composable
