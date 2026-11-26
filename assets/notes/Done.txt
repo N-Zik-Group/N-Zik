@@ -576,3 +576,7 @@ Playlist widget:
 Menu and settings labels:
 - feat(resources): add source labels for menus and settings
   - Add accessible actions, collection navigation, updater, and reset messages.
+
+Accessible navigation:
+- fix(ui): expose navigation roles and scroll actions to accessibility
+  - Label compact toolbar actions, announce menu state and extend scroll-to-top to grids.

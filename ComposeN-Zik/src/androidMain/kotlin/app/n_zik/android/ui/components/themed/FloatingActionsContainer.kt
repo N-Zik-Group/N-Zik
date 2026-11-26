@@ -197,6 +197,7 @@ fun BoxScope.FloatingActions(
     actionEnabled: Boolean = true,
 ) {
     val transition = rememberTransition(transitionState, "")
+    val coroutineScope = rememberCoroutineScope()
     val bottomPadding = floatingActionsBottomPadding(windowInsets)
 
     val offsetX = rememberPreference(floatActionIconOffsetXkey, 0F)
@@ -217,9 +218,9 @@ fun BoxScope.FloatingActions(
                 offsetY = offsetY,
                 enterDelayMillis = if (iconId == null) 0 else 100,
             ) { motionModifier ->
-                val coroutineScope = rememberCoroutineScope()
                 PrimaryButton(
                     iconId = R.drawable.chevron_up,
+                    contentDescription = stringResource(R.string.common_action_scroll_to_top),
                     onClick = {
                         coroutineScope.launch {
                             onScrollToTop()

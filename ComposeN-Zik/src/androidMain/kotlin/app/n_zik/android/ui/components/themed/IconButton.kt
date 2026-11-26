@@ -36,10 +36,11 @@ fun HeaderIconButton(
     iconSize: Dp? = 20.dp,
     onLongClick: (() -> Unit)? = null,
     placementModifier: Modifier = Modifier,
+    contentDescription: String? = null,
 ) {
     if (GlassToolbarIcon(painterResource(icon), color, iconSize ?: 18.dp, enabled,
             modifier = placementModifier.then(modifier), modifierOnContainer = true,
-            onClick = onClick, onLongClick = onLongClick)) return
+            onClick = onClick, onLongClick = onLongClick, contentDescription = contentDescription)) return
     IconButton(
         icon = icon,
         color = color,
@@ -48,6 +49,7 @@ fun HeaderIconButton(
         indication = indication,
         onLongClick = onLongClick,
         placementModifier = placementModifier,
+        contentDescription = contentDescription,
         modifier = modifier
             .padding(all = 2.dp)
             .size(iconSize ?: 18.dp)
@@ -65,6 +67,7 @@ fun IconButton(
     indication: Indication? = null,
     onLongClick: (() -> Unit)? = null,
     placementModifier: Modifier = Modifier,
+    contentDescription: String? = null,
 ) {
     if (icon == R.drawable.download || icon == R.drawable.downloaded || icon == R.drawable.download_progress) {
         DownloadIconButton(
@@ -81,7 +84,7 @@ fun IconButton(
     }
     Image(
         painter = painterResource(icon),
-        contentDescription = null,
+        contentDescription = contentDescription,
         colorFilter = ColorFilter.tint(color),
         modifier = modifier.reservedIconActionCanvas(
                 shape = uiRoundnessShape(),

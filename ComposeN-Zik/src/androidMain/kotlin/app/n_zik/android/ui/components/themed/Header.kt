@@ -45,6 +45,8 @@ import app.n_zik.android.utils.semiBold
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import kotlin.random.Random
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 
 @Composable
 fun Header(
@@ -61,7 +63,8 @@ fun Header(
                 style = typography().xxl.medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                modifier = Modifier.semantics { heading() }
+                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
             )
         },
         actionsContent = actionsContent
@@ -206,7 +209,8 @@ fun HeaderWithIcon (
                     textAlign = TextAlign.Start
                 ),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.semantics { heading() },
             )
         }
 

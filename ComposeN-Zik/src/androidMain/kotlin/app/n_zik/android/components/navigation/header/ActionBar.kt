@@ -12,8 +12,12 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -126,13 +130,19 @@ private fun HamburgerMenu(
     var showMaintenanceSheet by remember { mutableStateOf(false) }
     var showExtensionsSheet by remember { mutableStateOf(false) }
 
+    val menuLabel = stringResource(R.string.common_menu_label)
+    val openState = stringResource(R.string.accessibility_menu_open)
     val menu = DropdownMenu(
         expanded = expanded,
         trigger = trigger,
         // Alpha applied AFTER surfaceColor: wrapping the pre-alpha color would
         // drop the 0.90 in pitch black (surfaceColor returns an opaque gray)
         containerColor = surfaceColor(colorPalette().background0).copy(0.90f),
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        modifier = Modifier.semantics {
+            paneTitle = menuLabel
+            stateDescription = openState
+        },
     )
     // Customizable burger menu (spec-customizable-burger-menu): the stored order (parsed
     // defensively), the stored per-item toggles and the runtime conditions (rewind, offline
@@ -398,6 +408,14 @@ fun ActionBar(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val menuTrigger = rememberHeaderMenuTrigger(vertical)
+    val menuLabel = stringResource(R.string.common_menu_label)
+    val menuStateLabel = stringResource(
+        if (expanded) R.string.accessibility_menu_open else R.string.accessibility_menu_closed,
+    )
+    val profileMenuSemantics = Modifier.semantics {
+        contentDescription = menuLabel
+        stateDescription = menuStateLabel
+    }
 
     val activeFace = LocalHeaderProfileFace.current ?: rememberHeaderProfileFace()
 
@@ -455,7 +473,7 @@ fun ActionBar(
         ProfileAvatarFrame(size = 28.dp, area = GlassArea.Header, settings = glass) {
             ProfileFaceAvatar(
                 avatar = face.avatar, faceName = face.name, size = 28.dp,
-                modifier = Modifier.clip(artistThumbnailShape()),
+                modifier = Modifier.clip(artistThumbnailShape()).clearAndSetSemantics { },
             )
         }
     }
@@ -507,6 +525,7 @@ fun ActionBar(
                     ToolbarAction.PROFILE_MENU -> if (vertical || useGlass) {
                         GlassActionGroupItem(
                             onClick = { expanded = !expanded },
+                            modifier = profileMenuSemantics,
                             menuTrigger = menuTrigger,
                             groupIndex = index.takeUnless { vertical },
                             nativeIndication = !useGlass,
@@ -521,7 +540,8 @@ fun ActionBar(
                             Box(
                                 modifier = Modifier.size(HeaderActionCanvasSize).glassMenuTrigger(menuTrigger)
                                     .clip(sourceShape)
-                                    .clickable { expanded = !expanded },
+                                    .then(profileMenuSemantics)
+                                    .clickable(role = Role.Button) { expanded = !expanded },
                                 contentAlignment = Alignment.Center,
                             ) { profileContent() }
                         }
