@@ -28,6 +28,7 @@ Créditos Glass: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 💾 <b>Offline, Metadados e Privacidade</b>
 - Cache inteligente e downloads de faixas/playlists, com qualidade selecionável
 - Exportação via FFmpeg com metadados completos (apenas builds padrão)
+- Reparo automático de metadados procura links de álbuns e créditos do artista ausentes durante a reprodução online. Verificação de inicialização para remover links obsoletos, mesclar artistas duplicados verificados e alinhar os nomes de artistas salvos.
 - Editor de metadados na app (AAC/Opus, capa)
 - Estatísticas de audição e histórico locais
 - Backup automático com intervalos e retenção próprios
