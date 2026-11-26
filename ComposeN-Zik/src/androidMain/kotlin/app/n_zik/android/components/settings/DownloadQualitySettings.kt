@@ -29,6 +29,7 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -88,12 +89,22 @@ fun UpdateDownloadsButton() {
         title = stringResource(R.string.downloads_action_refresh_quality),
         text = stringResource(R.string.downloads_refresh_quality_description),
         icon = R.drawable.download,
+        isEnabled = !isChecking,
         onClick = {
             if (isChecking) return@OtherSettingsEntry
             isChecking = true
             coroutineScope.launch {
-                val count = runCatching { MyDownloadHelper.countNonCompliantDownloads() }.getOrDefault(0)
-                isChecking = false
+                val count = try {
+                    MyDownloadHelper.countNonCompliantDownloads()
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Timber.tag("UpdateDownloads").e(error, "Unable to check the saved download quality")
+                    Toaster.e(R.string.player_error_unknown)
+                    return@launch
+                } finally {
+                    isChecking = false
+                }
                 if (count == 0) {
                     Toaster.i(R.string.downloads_refresh_quality_already_current)
                 } else {

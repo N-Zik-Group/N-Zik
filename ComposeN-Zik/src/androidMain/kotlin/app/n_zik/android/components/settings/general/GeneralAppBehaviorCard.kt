@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.general
 
-import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -8,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.utils.closeWithBackButtonKey
 import app.n_zik.android.utils.closebackgroundPlayerKey
+import app.n_zik.android.utils.isAtLeastAndroid13
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.RestartActivity
@@ -32,7 +32,7 @@ fun GeneralAppBehaviorCard(
         icon = R.drawable.settings,
         visible = visible,
         content = {
-            if (Build.VERSION.SDK_INT >= 33) {
+            if (isAtLeastAndroid13) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("general.app_behavior.close_app_with_back_button"),
                     title = stringResource(R.string.settings_behavior_back_button_exits_label),

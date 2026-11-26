@@ -30,6 +30,7 @@ internal fun NetworkDownloadCard(query: String, searchTarget: String) {
     var autoDownloadSongWhenLiked by rememberPreference(autoDownloadSongWhenLikedKey, false)
     var autoDownloadSongWhenAlbumBookmarked by rememberPreference(autoDownloadSongWhenAlbumBookmarkedKey, false)
     var autoDownloadSongWhenPlaylistBookmarked by rememberPreference(autoDownloadSongWhenPlaylistBookmarkedKey, false)
+    val masterHint = if (autoDownloadSong) "" else "\n" + stringResource(R.string.settings_enable_autodownload_song)
     val revealCategoryOptions = query.isNotBlank() ||
         searchTarget.startsWith("network.download.settings_enable_autodownload_song_when_")
 
@@ -68,8 +69,9 @@ internal fun NetworkDownloadCard(query: String, searchTarget: String) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_liked"),
                             title = stringResource(R.string.settings_enable_autodownload_song_when_liked),
-                            text = stringResource(R.string.settings_downloads_on_like_description),
+                            text = stringResource(R.string.settings_downloads_on_like_description) + masterHint,
                             isChecked = autoDownloadSongWhenLiked,
+                            enabled = autoDownloadSong,
                             onCheckedChange = {
                                 autoDownloadSongWhenLiked = it
                             },
@@ -81,8 +83,9 @@ internal fun NetworkDownloadCard(query: String, searchTarget: String) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_album_bookmarked"),
                             title = stringResource(R.string.settings_enable_autodownload_song_when_album_bookmarked),
-                            text = stringResource(R.string.settings_downloads_on_album_bookmark_description),
+                            text = stringResource(R.string.settings_downloads_on_album_bookmark_description) + masterHint,
                             isChecked = autoDownloadSongWhenAlbumBookmarked,
+                            enabled = autoDownloadSong,
                             onCheckedChange = {
                                 autoDownloadSongWhenAlbumBookmarked = it
                             },
@@ -96,8 +99,9 @@ internal fun NetworkDownloadCard(query: String, searchTarget: String) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("network.download.settings_enable_autodownload_song_when_playlist_bookmarked"),
                             title = playlistTitle,
-                            text = playlistDescription,
+                            text = playlistDescription + masterHint,
                             isChecked = autoDownloadSongWhenPlaylistBookmarked,
+                            enabled = autoDownloadSong,
                             onCheckedChange = { autoDownloadSongWhenPlaylistBookmarked = it },
                             icon = R.drawable.bookmark,
                         )

@@ -31,7 +31,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.ExtensionsSettingsCard
 import app.n_zik.android.components.settings.MaintenanceSettingsCard
@@ -61,7 +61,7 @@ fun OtherSettings(
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_OTHER, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -116,6 +116,7 @@ fun OtherSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_OTHER, it)

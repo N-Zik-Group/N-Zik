@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.general
 
-import android.text.TextUtils
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -11,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import app.n_zik.android.utils.secondsLabel
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.DislikeMode
@@ -42,9 +42,6 @@ import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.utils.coroutines.NzikDispatchers
-import kotlinx.coroutines.launch
 
 /** Playback card: automatic resume/pause, error handling, exclusions and transitions. */
 @Composable
@@ -259,14 +256,7 @@ fun GeneralPlaybackCard(
                 ValueSelectorDialog(
                     title = stringResource(R.string.settings_playback_exclude_disliked_songs_label),
                     selectedValue = excludeDislikedSongs,
-                    onValueSelected = {
-                        excludeDislikedSongs = it
-                        if (it == DislikeMode.Disabled) {
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                Database.songTable.clearAllDisliked()
-                            }
-                        }
-                    },
+                    onValueSelected = { excludeDislikedSongs = it },
                     valueText = { it.text },
                     values = DislikeMode.values().toList(),
                     onDismiss = { showDislikeSongsDialog = false }
@@ -286,14 +276,7 @@ fun GeneralPlaybackCard(
                 ValueSelectorDialog(
                     title = stringResource(R.string.settings_playback_exclude_disliked_artists_label),
                     selectedValue = excludeDislikedArtists,
-                    onValueSelected = {
-                        excludeDislikedArtists = it
-                        if (it == DislikeMode.Disabled) {
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                Database.artistTable.clearAllDisliked()
-                            }
-                        }
-                    },
+                    onValueSelected = { excludeDislikedArtists = it },
                     valueText = { it.text },
                     values = DislikeMode.values().toList(),
                     onDismiss = { showDislikeArtistsDialog = false }
@@ -313,14 +296,7 @@ fun GeneralPlaybackCard(
                 ValueSelectorDialog(
                     title = stringResource(R.string.settings_playback_exclude_disliked_albums_label),
                     selectedValue = excludeDislikedAlbums,
-                    onValueSelected = {
-                        excludeDislikedAlbums = it
-                        if (it == DislikeMode.Disabled) {
-                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                Database.albumTable.clearAllDisliked()
-                            }
-                        }
-                    },
+                    onValueSelected = { excludeDislikedAlbums = it },
                     valueText = { it.text },
                     values = DislikeMode.values().toList(),
                     onDismiss = { showDislikeAlbumsDialog = false }

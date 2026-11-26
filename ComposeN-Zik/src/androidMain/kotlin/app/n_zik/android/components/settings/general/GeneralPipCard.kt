@@ -1,14 +1,11 @@
 package app.n_zik.android.components.settings.general
 
 import android.app.PictureInPictureParams
-import android.content.pm.PackageManager
-import android.os.Build
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -19,6 +16,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.compose.persist.findActivityNullable
 import app.n_zik.android.enums.PipModule
+import app.n_zik.android.extensions.pip.supportsPictureInPicture
 import app.n_zik.android.utils.enablePictureInPictureAutoKey
 import app.n_zik.android.utils.enablePictureInPictureKey
 import app.n_zik.android.utils.isAtLeastAndroid12
@@ -26,8 +24,6 @@ import app.n_zik.android.utils.pipModuleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.RestartActivity
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -49,9 +45,8 @@ fun GeneralPipCard(
 ) {
     var enablePictureInPicture by rememberPreference(enablePictureInPictureKey, false)
     var enablePictureInPictureAuto by rememberPreference(enablePictureInPictureAutoKey, false)
-    var pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
-
-    var showPipModuleDialog by remember { mutableStateOf(false) }
+    val pipModule by rememberPreference(pipModuleKey, PipModule.Cover)
+    val supportsPip = supportsPictureInPicture(LocalContext.current)
 
     // The burger long press (focus=pip) scrolls to this card.
     SettingsSectionCard(
@@ -65,6 +60,7 @@ fun GeneralPipCard(
                 title = stringResource(R.string.settings_enable_pip),
                 text = stringResource(R.string.player_picture_in_picture_enabled_description),
                 isChecked = enablePictureInPicture,
+                enabled = supportsPip,
                 onCheckedChange = {
                     enablePictureInPicture = it
                     onRestartActivitySet()
@@ -72,38 +68,21 @@ fun GeneralPipCard(
                 icon = R.drawable.logo_youtube
             )
             RestartActivity(restartActivity, onRestart = { onRestartActivityClear() })
-            AnimatedVisibility(visible = enablePictureInPicture) {
+            AnimatedVisibility(visible = enablePictureInPicture && supportsPip) {
                 Column(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("general.picture_in_picture.settings_pip_module"),
                         title = stringResource(R.string.settings_pip_module),
-                        text = stringResource(R.string.player_picture_in_picture_content_description),
+                        text = stringResource(R.string.player_picture_in_picture_fixed_content_description),
                         selectedValueText = when (pipModule) {
                             PipModule.Cover -> stringResource(R.string.settings_picture_in_picture_artwork_module_label)
                         },
-                        onClick = { showPipModuleDialog = true },
+                        isEnabled = false,
+                        onClick = {},
                         icon = R.drawable.logo_youtube
                     )
-
-                    DialogPresence(visible = showPipModuleDialog) {
-                        ValueSelectorDialog(
-                            title = stringResource(R.string.settings_pip_module),
-                            selectedValue = pipModule,
-                            onValueSelected = {
-                                pipModule = it
-                                onRestartActivitySet()
-                            },
-                            valueText = {
-                                when (it) {
-                                    PipModule.Cover -> stringResource(R.string.settings_picture_in_picture_artwork_module_label)
-                                }
-                            },
-                            values = PipModule.values().toList(),
-                            onDismiss = { showPipModuleDialog = false }
-                        )
-                    }
 
                     if (isAtLeastAndroid12) {
                         OtherSwitchSettingEntry(
@@ -111,10 +90,7 @@ fun GeneralPipCard(
                             title = stringResource(R.string.settings_enable_pip_auto),
                             text = stringResource(R.string.settings_picture_in_picture_android_12_auto_description),
                             isChecked = enablePictureInPictureAuto,
-                            onCheckedChange = {
-                                enablePictureInPictureAuto = it
-                                onRestartActivitySet()
-                            },
+                            onCheckedChange = { enablePictureInPictureAuto = it },
                             icon = R.drawable.logo_youtube
                         )
                     }
@@ -128,9 +104,7 @@ fun GeneralPipCard(
 @Composable
 private fun OpenPipButton(enabled: Boolean) {
     val context = LocalContext.current
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O ||
-        !context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-    ) return
+    if (!supportsPictureInPicture(context)) return
 
     val activity = remember(context) { context.findActivityNullable() } ?: return
     OtherSettingsEntry(

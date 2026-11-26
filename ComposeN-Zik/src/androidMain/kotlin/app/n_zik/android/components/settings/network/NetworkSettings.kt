@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.network
 
 import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.LocalSettingsResetRestart
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import app.n_zik.android.components.tab.Search
@@ -32,7 +33,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchHistorySection
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsSourceFooter
@@ -66,7 +67,7 @@ fun NetworkSettings(
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_NETWORK, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -114,6 +115,7 @@ fun NetworkSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_NETWORK, it)
@@ -150,6 +152,7 @@ internal fun NetworkSettingsContent(
     searchTarget: String = "",
 ) {
     var restartService by rememberSaveable { mutableStateOf(false) }
+    val onResetRestartRequired = LocalSettingsResetRestart.current
     val audioDialog = rememberSaveable { mutableStateOf(false) }
     val imageDialog = rememberSaveable { mutableStateOf(false) }
     val networkQuality by produceState(initialValue = ImageCacheFactory.getCurrentNetworkQuality()) {
@@ -191,11 +194,14 @@ internal fun NetworkSettingsContent(
             }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
-            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) { NetworkResetCard(search.inputValue) { restartService = true } }
+            SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
+                NetworkResetCard(search.inputValue, onResetRestartRequired ?: { restartService = true })
+            }
         }
-        // The reset-only System host also needs the restart action after restoring defaults.
-        SettingsCardSlot(SettingsSourceFooter) {
-            RestartPlayerService(restartService, onRestart = { restartService = false })
+        if (onResetRestartRequired == null) {
+            SettingsCardSlot(SettingsSourceFooter) {
+                RestartPlayerService(restartService, onRestart = { restartService = false })
+            }
         }
     }
 }

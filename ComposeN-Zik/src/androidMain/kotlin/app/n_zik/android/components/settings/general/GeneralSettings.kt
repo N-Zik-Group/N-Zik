@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.general
 
 import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.LocalSettingsResetRestart
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -37,7 +38,7 @@ import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchHistorySection
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContent
@@ -73,7 +74,7 @@ fun GeneralSettings(
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_GENERAL, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -126,6 +127,7 @@ fun GeneralSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GENERAL, it)
@@ -158,6 +160,7 @@ internal fun GeneralSettingsContent(
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
     val visibleCards = visibleCardTitleRes(LocalContext.current, 0, search.inputValue)
+    val onResetRestartRequired = LocalSettingsResetRestart.current
     var restartService by rememberSaveable { mutableStateOf(false) }
     var restartActivity by rememberSaveable { mutableStateOf(false) }
     cardsContainer {
@@ -236,13 +239,15 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
                 GeneralResetCard(
                     visible = visibleCards.contains(R.string.settings_reset),
-                    onRestartServiceSet = { restartService = true }
+                    onRestartServiceSet = onResetRestartRequired ?: { restartService = true },
                 )
             }
         }
     }
     AppShortcutsSettingsDialog.Render()
-    SettingsCardSlot(SettingsSourceFooter) {
-        RestartPlayerService(restartService, onRestart = { restartService = false })
+    if (onResetRestartRequired == null) {
+        SettingsCardSlot(SettingsSourceFooter) {
+            RestartPlayerService(restartService, onRestart = { restartService = false })
+        }
     }
 }

@@ -55,7 +55,7 @@ class NetworkSettingsSearchTest {
 
     @Test fun `registry keeps the source cards and download quality split in order and both focus destinations`() {
         val cards = SettingsCards.filter { it.tab == 6 }
-        assertEquals(listOf(R.string.bridge_server, R.string.settings_download_quality, R.string.settings_network_quality_title, R.string.network_settings, R.string.settings_network_offline_mode_label, R.string.downloads_title, R.string.settings_reset), cards.map { it.titleRes })
-        assertEquals(listOf("pcserver", "offline"), cards.map { it.focusId }.filter { it.isNotBlank() })
+        assertEquals(listOf(R.string.settings_network_quality_title, R.string.settings_download_quality, R.string.network_settings, R.string.settings_network_offline_mode_label, R.string.bridge_server, R.string.downloads_title, R.string.settings_reset), cards.map { it.titleRes })
+        assertEquals(listOf("offline", "pcserver"), cards.map { it.focusId }.filter { it.isNotBlank() })
     }
 }
