@@ -880,3 +880,7 @@ Accessible player settings triggers:
 Reset completion thread:
 - test(settings): verify reset completion on Android main
   - Use the main immediate dispatcher for locale and completion work.
+
+Media item ripple:
+- fix(ui): inset media item feedback without changing hit targets
+  - Keep the item geometry and use a four dp horizontal margin in Normal and Glass.

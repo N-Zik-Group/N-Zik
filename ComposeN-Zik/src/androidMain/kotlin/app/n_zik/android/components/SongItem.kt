@@ -4,6 +4,7 @@ package app.n_zik.android.components
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.glass.glassGlobalIndication
 
+import app.n_zik.android.ui.items.mediaItemRipple
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.res.stringResource
 
@@ -247,9 +248,9 @@ fun SongItem(
         modifier = modifier.fillMaxWidth()
                            .clip( rowShape )
                            .then( rowBackground )
-                           // This component must be placed before padding to prevent
-                           // ripple effect to only highlight padded area
                            .clip(uiRoundnessShape()).combinedClickable(
+                               interactionSource = null,
+                               indication = mediaItemRipple(),
                                onClick = onClick,
                                onLongClick = {
                                    hapticFeedback.performHapticFeedback( HapticFeedbackType.LongPress )

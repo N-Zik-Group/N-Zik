@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.items
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,48 +29,37 @@ internal fun ItemArtworkPlaceholder(thumbnailSize: Dp, card: Boolean, shape: Sha
 }
 
 @Composable
-inline fun ItemContainer(
+fun ItemContainer(
     alternative: Boolean,
     thumbnailSizeDp: Dp,
     modifier: Modifier = Modifier,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
-    content: @Composable (
-        //centeredMod: Modifier KOTLIN 2
-    ) -> Unit
+    content: @Composable () -> Unit,
 ) {
-    if (alternative) {
-        Column(
-            horizontalAlignment = horizontalAlignment,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = modifier
-                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-                .width(thumbnailSizeDp)
-        ) {
-            content(
-                /*
-                KOTLIN 2
-                centeredMod = Modifier
-                    .align(Alignment.CenterHorizontally)
-
-                 */
-            )
-        }
-    } else {
-        Row(
-            verticalAlignment = verticalAlignment,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = modifier
-                .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
-                .fillMaxWidth()
-        ) {
-            content(
-                /*
-                KOTLIN 2
-                centeredMod = Modifier
-                    .align(Alignment.CenterVertically)
-                 */
-            )
+    val childIndication = LocalIndication.current
+    val itemIndication = mediaItemRipple()
+    CompositionLocalProvider(LocalIndication provides itemIndication) {
+        if (alternative) {
+            Column(
+                horizontalAlignment = horizontalAlignment,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = modifier
+                    .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+                    .width(thumbnailSizeDp),
+            ) {
+                CompositionLocalProvider(LocalIndication provides childIndication, content = content)
+            }
+        } else {
+            Row(
+                verticalAlignment = verticalAlignment,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = modifier
+                    .padding(vertical = Dimensions.itemsVerticalPadding, horizontal = 16.dp)
+                    .fillMaxWidth(),
+            ) {
+                CompositionLocalProvider(LocalIndication provides childIndication, content = content)
+            }
         }
     }
 }
