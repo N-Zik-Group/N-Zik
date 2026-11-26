@@ -148,32 +148,69 @@ internal fun Player.bindPlaybackIdentity(
 ) = scope.launch(NzikDispatchers.UI) {
     var observedIds = emptyList<String>()
     var rows = emptyMap<String, PlaybackTrackRow>()
+    var projectingQueue = false
+    var projectionPending = false
 
     fun projectQueue() {
         if (!ownsProfile()) return
+        if (playWhenReady && playbackState == Player.STATE_BUFFERING) {
+            projectionPending = true
+            return
+        }
+        projectionPending = false
         val unknown = unknownArtist()
-        for (index in 0 until mediaItemCount) {
+        var firstChanged = -1
+        var lastChanged = -1
+        val projected = List(mediaItemCount) { index ->
             val item = getMediaItemAt(index)
-            val row = rows[item.sessionArtistTrackId()] ?: continue
-            val updated = item.withCurrentTrackIdentity(row, unknown, originalId)
-            if (updated !== item) replaceMediaItem(index, updated)
+            val updated = rows[item.sessionArtistTrackId()]?.let { row ->
+                item.withCurrentTrackIdentity(row, unknown, originalId)
+            } ?: item
+            if (updated !== item) {
+                if (firstChanged == -1) firstChanged = index
+                lastChanged = index
+            }
+            updated
+        }
+        if (firstChanged != -1) {
+            // A timeline change republishes the full queue to Android media controllers.
+            val endExclusive = lastChanged + 1
+            projectingQueue = true
+            try {
+                replaceMediaItems(firstChanged, endExclusive, projected.subList(firstChanged, endExclusive))
+            } finally {
+                projectingQueue = false
+            }
         }
         onCurrentItem(currentMediaItem)
     }
 
     callbackFlow {
         var refresh: Job? = null
+
+        fun scheduleProjection() {
+            if (refresh?.isActive != true) refresh = launch(NzikDispatchers.UI) { projectQueue() }
+        }
+
         fun sendTrackIds() {
             val ids = (0 until mediaItemCount).map { getMediaItemAt(it).sessionArtistTrackId() }.distinct()
-            if (ids == observedIds && rows.isNotEmpty() && refresh?.isActive != true) {
+            if (ids == observedIds && rows.isNotEmpty()) {
                 // A caller can replace a snapshot in place without changing the set of track IDs.
-                refresh = launch(NzikDispatchers.UI) { projectQueue() }
+                scheduleProjection()
             }
             trySend(ids)
         }
         val listener = object : Player.Listener {
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
-                if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) sendTrackIds()
+                if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED && !projectingQueue) sendTrackIds()
+            }
+
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                if (projectionPending && playbackState != Player.STATE_BUFFERING) scheduleProjection()
+            }
+
+            override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+                if (projectionPending && !playWhenReady) scheduleProjection()
             }
         }
         addListener(listener)

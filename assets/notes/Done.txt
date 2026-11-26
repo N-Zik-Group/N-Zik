@@ -988,3 +988,7 @@ Menus:
 Build:
 - fix(ui): import the shared layout modifier type
   - Keep the shared row feedback layout available to menus and settings.
+
+Playback:
+- fix(playback): batch track identity updates after buffering
+  - Preserve the full queue and stream startup while publishing committed metadata in a single timeline change.
