@@ -2,6 +2,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.components.playlist.launchLocalPlaylistDeletion
+import app.n_zik.android.components.playlist.launchPlaylistLinkImport
 import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
 
 
@@ -162,13 +163,10 @@ import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
 import timber.log.Timber
-import app.n_zik.innertube.requests.playlistPage
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.tab.toolbar.Button
-import app.n_zik.innertube.Innertube
-import app.n_zik.android.utils.asSong
 import app.n_zik.android.appContext
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.ui.components.themed.Enqueue
@@ -290,25 +288,8 @@ fun HomeLibrary(
     DialogPresence(visible = showYouTubeLinkDialog) {
         YouTubeLinkImportDialog(
             onImport = { playlistId ->
-                coroutineScope.launch(NzikDispatchers.DATA) {
-                    val browseId = if (playlistId.startsWith("VL")) playlistId else "VL$playlistId"
-                    Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                        val playlistName = playlistPage.title ?: appTextResources().getString(R.string.playlist_youtube_title)
-                        val playlist = Playlist(name = playlistName, browseId = browseId)
-                        val playlistRowId = Database.playlistTable.insert(playlist)
-                        
-                        val songs = playlistPage.songsPage?.items?.mapNotNull { it.asSong.copy(totalPlayTimeMs = 1L) }
-                        if (songs != null) {
-                            Database.asyncTransaction {
-                                songTable.upsert(songs)
-                                songs.forEach { song ->
-                                    songPlaylistMapTable.map(song.id, playlistRowId)
-                                }
-                            }
-                            appContext().preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
-                            Toaster.done()
-                        }
-                    }
+                launchPlaylistLinkImport(context, coroutineScope, playlistId) {
+                    context.preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
                 }
             },
             onDismiss = { showYouTubeLinkDialog = false }

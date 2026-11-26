@@ -70,8 +70,6 @@ class ImportPlaylistsMenu(
                 override val menuState = menuState
                 override var menuStyle: MenuStyle by styleState
                 
-                // The local NZik/CSV import is always offered; the network sources
-                // (Spotify, RiPlay, YouTube link) are pruned in full offline mode.
                 private val buttons: List<Button> = buildList {
                     add(
                         object : MenuIcon, Descriptive, Clickable {
@@ -83,27 +81,27 @@ class ImportPlaylistsMenu(
                             override fun onLongClick() {}
                         }
                     )
+                    add(
+                        object : MenuIcon, Descriptive, Clickable {
+                            override val iconId: Int = R.drawable.spotify
+                            override val messageId: Int = R.string.playlist_import_format_exportify_csv
+                            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                            @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
+                            override fun onShortClick() { menuState.hide(); onImportSpotify() }
+                            override fun onLongClick() {}
+                        }
+                    )
+                    add(
+                        object : MenuIcon, Descriptive, Clickable {
+                            override val iconId: Int = R.drawable.riplay
+                            override val messageId: Int = R.string.playlist_import_format_riplay_csv
+                            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
+                            @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
+                            override fun onShortClick() { menuState.hide(); onImportRiplay() }
+                            override fun onLongClick() {}
+                        }
+                    )
                     if (networkOptionsEnabled()) {
-                        add(
-                            object : MenuIcon, Descriptive, Clickable {
-                                override val iconId: Int = R.drawable.spotify
-                                override val messageId: Int = R.string.playlist_import_format_exportify_csv
-                                @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-                                @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
-                                override fun onShortClick() { menuState.hide(); onImportSpotify() }
-                                override fun onLongClick() {}
-                            }
-                        )
-                        add(
-                            object : MenuIcon, Descriptive, Clickable {
-                                override val iconId: Int = R.drawable.riplay
-                                override val messageId: Int = R.string.playlist_import_format_riplay_csv
-                                @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-                                @get:Composable override val color: androidx.compose.ui.graphics.Color get() = androidx.compose.ui.graphics.Color.Unspecified
-                                override fun onShortClick() { menuState.hide(); onImportRiplay() }
-                                override fun onLongClick() {}
-                            }
-                        )
                         add(
                             object : MenuIcon, Descriptive, Clickable {
                                 override val iconId: Int = R.drawable.ytmusic

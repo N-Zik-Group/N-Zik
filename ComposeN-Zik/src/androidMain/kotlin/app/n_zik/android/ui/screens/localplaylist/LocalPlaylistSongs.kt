@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.screens.localplaylist
 
 import app.n_zik.android.components.playlist.launchLocalPlaylistDeletion
+import app.n_zik.android.components.playlist.launchPlaylistLinkImport
 import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.enqueue
@@ -57,7 +58,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.core.net.toUri
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -89,7 +89,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.dialog.common.RawUrlImportDialog
+import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
 import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
@@ -210,7 +210,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.withPodcastSource
-import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.checkFileExists
 import app.n_zik.android.utils.color
@@ -227,7 +226,6 @@ import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.localPlaylistToolbarOrderKey
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.parentalControlEnabledKey
-import app.n_zik.android.utils.playlist.importSongsToPlaylist
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.queueSwipeLeftActionKey
@@ -237,9 +235,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.syncPushPlaylistKey
-import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
-import app.n_zik.innertube.requests.playlistPage
 import app.n_zik.innertube.requests.relatedSongs
 
 @KotlinCsvExperimental
@@ -475,34 +471,11 @@ fun LocalPlaylistSongs(
 
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
     DialogPresence(visible = showYouTubeLinkDialog) {
-        RawUrlImportDialog(
-            title = stringResource(R.string.playlist_import_youtube_link),
+        YouTubeLinkImportDialog(
             onDismiss = { showYouTubeLinkDialog = false },
-            placeholder = stringResource(R.string.playlist_import_youtube_link_hint),
-            onImport = { url ->
-                showYouTubeLinkDialog = false
-                val targetPlaylist = playlist ?: return@RawUrlImportDialog
-                coroutineScope.launch(NzikDispatchers.DATA) {
-                    val urlPlaylistId = listOf(
-                        "https://www.youtube.com/playlist?",
-                        "https://youtube.com/playlist?",
-                        "https://music.youtube.com/playlist?",
-                        "https://m.youtube.com/playlist?"
-                    ).find { url.startsWith(it) }?.let { url.toUri().getQueryParameter("list") }
-
-                    if (urlPlaylistId != null) {
-                        val browseId = if (urlPlaylistId.startsWith("VL")) urlPlaylistId else "VL$urlPlaylistId"
-                        Innertube.playlistPage(browseId = browseId)?.getOrNull()?.let { playlistPage ->
-                            val songs = playlistPage.songsPage?.items?.map { it.asSong.copy(totalPlayTimeMs = 1L) }.orEmpty()
-                            if (songs.isNotEmpty()) {
-                                Database.asyncTransaction {
-                                    importSongsToPlaylist(targetPlaylist, songs)
-                                }
-                                appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
-                                Toaster.done()
-                            }
-                        }
-                    }
+            onImport = { sourceId ->
+                launchPlaylistLinkImport(context, coroutineScope, sourceId, targetPlaylistId = playlistId) {
+                    context.preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
                 }
             }
         )
