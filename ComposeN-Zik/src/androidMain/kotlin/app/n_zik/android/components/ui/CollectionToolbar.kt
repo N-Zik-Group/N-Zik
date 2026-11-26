@@ -26,6 +26,7 @@ import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.ui.components.tab.toolbar.Icon
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 
 private val PrimaryGap = 8.dp
 private val CollectionToolbarMaxWidth = 356.dp
@@ -105,6 +106,7 @@ internal fun CollectionButtonToolbar(
                     size = button.sizeDp,
                     enabled = false,
                     modifier = button.modifier,
+                    contentDescription = (button as? MenuIcon)?.menuIconTitle,
                     onClick = {},
                 )
             }

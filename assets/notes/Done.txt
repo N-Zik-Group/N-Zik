@@ -1100,3 +1100,7 @@ Menus:
 Menus:
 - fix(maintenance): announce expanded sections
   - Expose the state of the expandable maintenance groups to accessibility services.
+
+Menus:
+- fix(toolbar): name visible controls for accessibility
+  - Expose action labels on the toolbar and overflow in Normal and Glass.

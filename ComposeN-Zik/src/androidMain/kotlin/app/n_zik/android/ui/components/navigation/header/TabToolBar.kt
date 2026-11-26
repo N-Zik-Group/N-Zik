@@ -89,9 +89,10 @@ object TabToolBar {
         size: Dp = TOOLBAR_ICON_SIZE,
         enabled: Boolean = true,
         modifier: Modifier = Modifier,
+        contentDescription: String? = null,
         onClick: () -> Unit = {}
     ) {
-        if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick)) return
+        if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick, contentDescription = contentDescription)) return
         val interactionSource = remember { MutableInteractionSource() }
         Box(
             modifier = Modifier.minimumInteractiveComponentSize().reservedIconActionCanvas(
@@ -102,10 +103,9 @@ object TabToolBar {
         ) {
             Icon(
                 painter = icon,
-                null,
-                modifier.size( size )
-                        .padding( horizontal = 4.dp ),
-                tint
+                contentDescription = contentDescription,
+                modifier = modifier.size(size).padding(horizontal = 4.dp),
+                tint = tint,
             )
         }
     }
@@ -119,7 +119,7 @@ object TabToolBar {
         enabled: Boolean = true,
         modifier: Modifier = Modifier,
         onClick: () -> Unit = {},
-        onLongClick: () -> Unit = {},
+        onLongClick: () -> Unit,
         contentDescription: String? = null,
     ) {
         if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick, onLongClick,
@@ -134,7 +134,8 @@ object TabToolBar {
                     indication = glassGlobalIndication(nativeControlIndication()),
                     enabled = enabled,
                     onClick = onClick,
-                    onLongClick = onLongClick
+                    onLongClick = onLongClick,
+                    role = Role.Button,
                 ),
             contentAlignment = Alignment.Center
         ) {

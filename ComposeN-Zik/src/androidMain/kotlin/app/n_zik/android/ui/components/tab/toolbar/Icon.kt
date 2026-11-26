@@ -31,6 +31,7 @@ interface Icon: Button {
 
     @Composable
     override fun ToolBarButton() {
+        val label = (this as? MenuIcon)?.menuIconTitle
         if( this is Clickable)
             TabToolBar.Icon(
                 icon,
@@ -39,7 +40,8 @@ interface Icon: Button {
                 isEnabled,
                 modifier,
                 this::onShortClick,
-                this::onLongClick
+                this::onLongClick,
+                contentDescription = label,
             )
         else
             TabToolBar.Icon(
@@ -48,7 +50,8 @@ interface Icon: Button {
                 sizeDp,
                 isEnabled,
                 modifier,
-                this::onShortClick
+                contentDescription = label,
+                onClick = this::onShortClick,
             )
     }
 }

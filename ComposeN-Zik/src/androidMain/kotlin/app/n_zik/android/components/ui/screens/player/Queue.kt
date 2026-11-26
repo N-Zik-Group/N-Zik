@@ -113,7 +113,8 @@ class Repeat private constructor(
             TabToolBar.TOOLBAR_ICON_SIZE,
             isEnabled,
             Modifier,
-            this::onShortClick
+            contentDescription = menuIconTitle,
+            onClick = this::onShortClick,
         )
     }
 

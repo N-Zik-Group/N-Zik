@@ -112,7 +112,8 @@ class ItemSelector<E> private constructor(
             TabToolBar.TOOLBAR_ICON_SIZE,
             true,
             Modifier,
-            this::onShortClick
+            contentDescription = menuIconTitle,
+            onClick = this::onShortClick,
         )
     }
 
