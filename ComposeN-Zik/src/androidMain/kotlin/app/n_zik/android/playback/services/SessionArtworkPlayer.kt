@@ -31,6 +31,8 @@ import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMap
 class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { System.currentTimeMillis() }) : ForwardingPlayer(upstream) {
     private val listeners = IdentityHashMap<Player.Listener, Player.Listener>()
     private var profile = getActiveProfile(appContext())
+    private val artistCreditProfile = profile
+    private var artistCredit: Pair<String, SessionArtistCredit>? = null
     private var square = appContext().preferences.getBoolean(cropVideoThumbnailsKey, true)
     private var expires = now() + 24 * 60 * 60 * 1000L
     private var localArtwork: LocalSessionArtwork? = null
@@ -150,6 +152,22 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         publishMetadata()
     }
 
+    internal fun refreshTrackIdentity() = publishMetadata()
+
+    internal fun artistTrackId(): String? =
+        currentMediaItem?.sessionArtistTrackId()?.takeIf {
+            it.isNotBlank() && getActiveProfile(appContext()) == artistCreditProfile
+        }
+
+    internal fun updateArtistCredit(trackId: String, credit: SessionArtistCredit?) {
+        if (artistTrackId() != trackId) return
+        val updatedCredit = credit?.let { trackId to it }
+        if (artistCredit == updatedCredit) return
+        val previousArtist = mediaMetadata.artist
+        artistCredit = updatedCredit
+        if (previousArtist != mediaMetadata.artist) publishMetadata()
+    }
+
     private fun publishMetadata() {
         val metadata = mediaMetadata
         val events = Player.Events(FlagSet.Builder().add(Player.EVENT_MEDIA_METADATA_CHANGED).build())
@@ -168,10 +186,21 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     }
 
     override fun getMediaMetadata(): MediaMetadata {
-        val metadata = super.getMediaMetadata()
         val currentItem = currentMediaItem
+        val upstream = super.getMediaMetadata()
+        val identity = currentItem?.mediaMetadata?.takeIf {
+            it.extras?.getBoolean(COMMITTED_TRACK_IDENTITY_EXTRA) == true &&
+                getActiveProfile(appContext()) == artistCreditProfile
+        }
+        val metadata = if (identity == null) upstream else upstream.buildUpon()
+            .setTitle(identity.title)
+            .setArtist(identity.artist)
+            .setAlbumTitle(identity.albumTitle)
+            .setExtras(Bundle(upstream.extras ?: Bundle()).apply { identity.extras?.let(::putAll) })
+            .build()
         rememberArtworkItem(currentItem)
-        val ownsArtwork = (currentItem == null || artworkProfile == profile) && profile == getActiveProfile(appContext())
+        val activeProfile = getActiveProfile(appContext())
+        val ownsArtwork = (currentItem == null || artworkProfile == profile) && profile == activeProfile
         val hasLoadedTrack = currentItem != null && playbackState != Player.STATE_IDLE
         val mediaId = currentItem?.mediaId
         val selectedArtwork = currentItem?.mediaMetadata?.takeIf { it.extras?.getBoolean("isCoverModified") == true }
@@ -199,6 +228,11 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         val clearArtwork = !ownsArtwork || rejectedProvider
         val needsTitleFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtistFallback = hasLoadedTrack && SessionMetadataFallbacks.needsFallback(metadata.artist)
+        val correctedArtist = currentItem?.takeIf { hasLoadedTrack && artistCreditProfile == activeProfile }?.let { item ->
+            artistCredit?.takeIf { it.first == item.sessionArtistTrackId() }?.second?.resolve(
+                item, metadata, appTextResources().getString(R.string.metadata_unknown_artist),
+            ) { artistId -> appContext().preferences.getString("old_browse_id_$artistId", null) }
+        }?.takeUnless { it == metadata.artist?.toString() }
         if (durationMediaId != mediaId || isCurrentMediaItemLive) {
             durationMediaId = mediaId
             knownDurationMs = null
@@ -226,7 +260,7 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             }
         }
         val hasReservedDuration = metadata.extras?.containsKey(METADATA_KEY_DURATION) == true
-        if (providerArtworkUri == null && !clearArtwork && !needsTitleFallback && !needsArtistFallback &&
+        if (providerArtworkUri == null && !clearArtwork && !needsTitleFallback && !needsArtistFallback && correctedArtist == null &&
             declaredDuration == metadata.durationMs && !hasReservedDuration
         ) return metadata
         return metadata.buildUpon().apply {
@@ -238,7 +272,8 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
                 setArtworkData(null, null)
             }
             if (needsTitleFallback) setTitle(appTextResources().getString(R.string.metadata_unknown_title))
-            if (needsArtistFallback) setArtist(appTextResources().getString(R.string.metadata_unknown_artist))
+            if (correctedArtist != null) setArtist(correctedArtist)
+            else if (needsArtistFallback) setArtist(appTextResources().getString(R.string.metadata_unknown_artist))
         }.build()
     }
 }

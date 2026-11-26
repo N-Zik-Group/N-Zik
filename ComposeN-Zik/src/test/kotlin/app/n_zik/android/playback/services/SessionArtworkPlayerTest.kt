@@ -10,6 +10,7 @@ import androidx.media3.common.Player
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.models.Info
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.utils.asMediaItem
@@ -17,9 +18,11 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.writeProfileEntries
 import io.mockk.every
+import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
+import io.mockk.verify
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -178,6 +181,55 @@ class SessionArtworkPlayerTest {
 
         assertEquals("Real Title", metadata.title.toString())
         assertEquals("Real Artist", metadata.artist.toString())
+    }
+
+    @Test
+    fun `the session republishes exact artist edits without replacing the current media item`() {
+        stubAppContext()
+        val upstream = upstreamWith("Title", "Old Credit", "stream-abc")
+        justRun { upstream.addListener(any()) }
+        val original = upstream.currentMediaItem
+        val session = SessionArtworkPlayer(upstream)
+        val events = mutableListOf<String>()
+        session.addListener(object : Player.Listener {
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                events += mediaMetadata.artist.toString()
+            }
+        })
+        val artist = Info("UC1234567890123456789012", "Correct Credit")
+        val credit = SessionArtistCredit("Old Credit", listOf(artist))
+
+        session.updateArtistCredit("different-track", credit)
+        session.updateArtistCredit("stream-abc", credit)
+        session.updateArtistCredit("stream-abc", credit)
+        session.updateArtistCredit("stream-abc", SessionArtistCredit("modified:Manual Credit", listOf(artist)))
+
+        assertEquals(listOf("Correct Credit", "Manual Credit"), events)
+        assertEquals("Manual Credit", session.mediaMetadata.artist.toString())
+        assertEquals(original, session.currentMediaItem)
+        verify(exactly = 0) { upstream.replaceMediaItem(any(), any()) }
+    }
+
+    @Test
+    fun `a room credit never leaks to a new item or to a new profile`() {
+        stubAppContext()
+        val originalProfile = getActiveProfile(app)
+        val upstream = upstreamWith("Title", "Queued Credit", "stream-abc")
+        val session = SessionArtworkPlayer(upstream)
+        val credit = SessionArtistCredit("modified:Original Profile Credit", emptyList())
+        session.updateArtistCredit("stream-abc", credit)
+        assertEquals("Original Profile Credit", session.mediaMetadata.artist.toString())
+
+        every { upstream.currentMediaItem } returns MediaItem.Builder().setMediaId("different-track").build()
+        assertEquals("Queued Credit", session.mediaMetadata.artist.toString())
+
+        every { upstream.currentMediaItem } returns MediaItem.Builder().setMediaId("stream-abc").build()
+        try {
+            setActiveProfile("session-credit-test", app)
+            assertEquals("Queued Credit", session.mediaMetadata.artist.toString())
+        } finally {
+            setActiveProfile(originalProfile, app)
+        }
     }
 
     @Test

@@ -11,9 +11,17 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.utils.EXPLICIT_BUNDLE_TAG
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.appContext
+import app.n_zik.android.appTextResources
+import app.n_zik.android.R
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.PlaybackTrackRow
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.services.sessionArtistTrackId
+import app.n_zik.android.playback.services.withCurrentTrackIdentity
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.preferences
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 /** Updates player/menu snapshots only after the corresponding database commit. */
@@ -26,16 +34,31 @@ internal object SongUpdatePlaybackRefresh {
         profile: String,
     ) {
         if (binder == null || !selection.needsFetch) return
+        val context = appContext()
+        if (getActiveProfile(context) != profile || Database.FILE_NAME != Database.fileNameForProfile(profile)) return
+        val songTable = Database.songTable
+        val preferences = context.preferences
+        val identity = withContext(NzikDispatchers.DATA) { songTable.observePlaybackTracks(listOf(song.id)).first().singleOrNull() }
+        val unknownArtist = appTextResources().getString(R.string.metadata_unknown_artist)
         withContext(NzikDispatchers.UI) {
-            if (getActiveProfile(appContext()) != profile) return@withContext
-            refresh(binder.player, song, selection)
+            if (getActiveProfile(context) != profile) return@withContext
+            refresh(binder.player, song, selection, identity, unknownArtist) {
+                preferences.getString("old_browse_id_$it", null)
+            }
         }
     }
 
-    internal fun refresh(player: Player, song: Song, selection: SongUpdateSelection) {
+    internal fun refresh(
+        player: Player,
+        song: Song,
+        selection: SongUpdateSelection,
+        identity: PlaybackTrackRow? = null,
+        unknownArtist: String = "Unknown Artist",
+        originalId: (String) -> String? = { null },
+    ) {
         for (index in 0 until player.mediaItemCount) {
             val item = player.getMediaItemAt(index)
-            if (item.mediaId != song.id) continue
+            if (item.sessionArtistTrackId() != song.id) continue
             val extras = Bundle(item.mediaMetadata.extras ?: Bundle())
             val metadata = item.mediaMetadata.buildUpon()
             if (selection.title) {
@@ -55,7 +78,8 @@ internal object SongUpdatePlaybackRefresh {
                 extras.putBoolean("isCoverModified", song.thumbnailUrl?.startsWith(MODIFIED_PREFIX, true) == true)
             }
             val replacement = item.buildUpon().setMediaMetadata(metadata.setExtras(extras).build()).build()
-            if (replacement != item) player.replaceMediaItem(index, replacement)
+            val updated = identity?.let { replacement.withCurrentTrackIdentity(it, unknownArtist, originalId) } ?: replacement
+            if (updated !== replacement || replacement != item) player.replaceMediaItem(index, updated)
         }
     }
 }

@@ -99,6 +99,10 @@ object ListenTogetherPlayerBridge {
             refreshUpcomingQueue()
         }
 
+        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+            refreshUpcomingQueue()
+        }
+
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             updateCurrentListenTogetherVideoId()
             refreshUpcomingQueue()

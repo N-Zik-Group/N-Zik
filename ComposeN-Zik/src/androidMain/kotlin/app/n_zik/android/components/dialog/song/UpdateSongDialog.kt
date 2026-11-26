@@ -22,6 +22,7 @@ import app.n_zik.innertube.requests.song
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.utils.isGenericReleaseChannel
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.core.migration.NameConvergence
 import app.n_zik.android.utils.getActiveProfile
@@ -372,14 +373,15 @@ internal fun mergeFetchedArtistsText(
     storedArtistsText: String?,
     fetchedArtistsText: String?
 ): String? {
-    if( fetchedArtistsText.isNullOrBlank() && !storedArtistsText.isNullOrBlank() ) {
+    val usableFetchedText = fetchedArtistsText?.takeUnless(::isGenericReleaseChannel)
+    if (usableFetchedText.isNullOrBlank() && !storedArtistsText.isNullOrBlank()) {
         Timber.tag( "Database" ).d(
             "update keep stored artistsText song=%s value=%s (blank fetch)",
             songId, storedArtistsText
         )
         return storedArtistsText
     }
-    return fetchedArtistsText ?: storedArtistsText
+    return usableFetchedText ?: storedArtistsText
 }
 
 /** Reset artist links only when requested and backed by a complete provider list. */

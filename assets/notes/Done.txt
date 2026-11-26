@@ -656,3 +656,7 @@ Podcast bookmarks:
 Playback metadata resolution:
 - fix(playback): verify stream metadata against the requested track
   - Use the exact video identity and reconcile verified song credits.
+
+Playback session metadata:
+- fix(playback): refresh media session identity after metadata changes
+  - Propagate verified artist, album and duration changes while retaining the playing item.
