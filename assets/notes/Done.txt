@@ -468,3 +468,8 @@ Settings search:
 - fix(settings): index the displayed proxy connection type
   - Reuse the proxy selector label for global and category search.
   - Cover a localized DIRECT choice and the source resource fallback.
+
+Audio output:
+- fix(menu): format localized audio device battery levels
+  - Format the battery subtitle consistently in both layouts and handle an unescaped percent sign.
+  - Cover the Romanian battery label in AudioDeviceBatteryFormatTest.

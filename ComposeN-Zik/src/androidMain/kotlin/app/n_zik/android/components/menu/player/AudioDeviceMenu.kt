@@ -108,6 +108,12 @@ import app.n_zik.android.utils.shimmerEffect
  * sorted first while active): the same contract §8.5 rule on two different models — keep
  * both in sync when the rule changes.
  */
+internal fun formatAudioDeviceBattery(context: Context, level: Int): String {
+    val pattern = context.getString(R.string.audio_device_battery_format)
+    val format = if (pattern.endsWith('%') && !pattern.endsWith("%%")) "$pattern%" else pattern
+    return String.format(context.resources.configuration.locales[0], format, level)
+}
+
 internal fun withBridgePcEntry(
     devices: List<AudioDevice>,
     pc: ActiveDevice?,
@@ -361,7 +367,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                     }
                                 },
                                 modifier = if (dev.isActive) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
-                                subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
+                                subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
                                 trailingContent = {
                                     AnimatedVisibility(
                                         visible = dev.isActive,
@@ -518,7 +524,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                     }
                                 }
                             },
-                            subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { stringResource(R.string.audio_device_battery_format, it) },
+                            subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
                             trailingContent = {
                                 AnimatedVisibility(
                                     visible = dev.isActive,
