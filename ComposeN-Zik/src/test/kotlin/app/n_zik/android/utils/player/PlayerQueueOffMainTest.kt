@@ -3,6 +3,7 @@ package app.n_zik.android.utils.player
 import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import java.util.concurrent.atomic.AtomicReference
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
@@ -16,6 +17,8 @@ import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -124,5 +127,45 @@ class PlayerQueueOffMainTest {
             callerThreadName,
             filterThreadName
         )
+    }
+
+    @Test
+    fun `empty and filtered out selections do not mutate the queue`() = runBlocking {
+        val player = mockk<Player>(relaxed = true)
+        val context = mockk<Context>()
+        val items = listOf(mediaItem("excluded"))
+        every { player.excludeMediaItems(items, context) } returns emptyList()
+
+        assertFalse(player.addNextOffMain(emptyList(), context))
+        assertFalse(player.enqueueOffMain(emptyList(), context))
+        assertFalse(player.addNextOffMain(items, context))
+        assertFalse(player.enqueueOffMain(items, context))
+        verify(exactly = 0) { player.addNext(any<List<MediaItem>>(), any()) }
+        verify(exactly = 0) { player.enqueue(any<List<MediaItem>>(), any()) }
+    }
+
+    @Test
+    fun `queue edit targets the replacement player after filtering`() = runBlocking {
+        val oldPlayer = mockk<Player>(relaxed = true)
+        val replacement = mockk<Player>(relaxed = true)
+        val activePlayer = AtomicReference(oldPlayer)
+        val context = mockk<Context>()
+        val items = listOf(mediaItem("track"))
+        every { oldPlayer.excludeMediaItems(items, context) } answers {
+            activePlayer.set(replacement)
+            items
+        }
+        every { replacement.addNext(items, null) } just Runs
+        every { replacement.enqueue(items, null) } just Runs
+
+        for (playNext in listOf(true, false)) {
+            activePlayer.set(oldPlayer)
+            assertTrue(queueMediaItemsOffMain(items, context, playNext, activePlayer::get))
+        }
+
+        verify(exactly = 1) { replacement.addNext(items, null) }
+        verify(exactly = 1) { replacement.enqueue(items, null) }
+        verify(exactly = 0) { oldPlayer.addNext(any<List<MediaItem>>(), any()) }
+        verify(exactly = 0) { oldPlayer.enqueue(any<List<MediaItem>>(), any()) }
     }
 }

@@ -664,3 +664,7 @@ Playback session metadata:
 Android Auto metadata:
 - fix(auto): refresh track credits in browse and playback resumption
   - Apply stored identity and preserve artwork information when restoring the queue.
+
+Playback queue edits:
+- fix(queue): preserve playback when applying menu queue actions
+  - Serialize delayed edits and respect shuffle, explicit clearing and Listen Together locks.

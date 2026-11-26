@@ -18,6 +18,7 @@ import app.n_zik.android.R
 import app.n_zik.android.enums.DurationInMinutes
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import app.n_zik.android.core.utils.Toaster
@@ -26,12 +27,9 @@ import java.util.ArrayDeque
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.utils.Shuffler
 import kotlinx.coroutines.withContext
-import app.n_zik.android.cleanPrefix
-import app.n_zik.android.models.Album
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.upsertSongInfo
 import app.n_zik.android.playback.services.launchStoredDurationSelection
-import android.os.Bundle
 
 var GlobalVolume: Float = 0.5f
 
@@ -118,10 +116,21 @@ fun Player.playAtIndex(mediaItemIndex: Int) {
 @SuppressLint("Range")
 @UnstableApi
 fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
-    if ( mediaItems.isEmpty() ) return
+    launchForcePlayAtIndex(mediaItems, mediaItemIndex)
+}
+
+@SuppressLint("Range")
+@UnstableApi
+internal fun Player.launchForcePlayAtIndex(
+    mediaItems: List<MediaItem>,
+    mediaItemIndex: Int,
+    canApplyQueue: () -> Boolean = { true },
+    onQueueApplied: () -> Unit = {},
+): Job? {
+    if (mediaItems.isEmpty()) return null
 
     // This will prevent UI from freezing up during conversion
-    launchStoredDurationSelection(this) { selection ->
+    return launchStoredDurationSelection(this) { selection ->
         val cleanedMediaItems = selection.enrich(
             mediaItems.fastMap( MediaItem::cleaned ).fastDistinctBy( MediaItem::mediaId )
         )
@@ -140,12 +149,17 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
         }
 
         // Publish known local lengths before optional network metadata prefetch.
+        var applied = false
         selection.publish {
+            if (!canApplyQueue()) return@publish
             setMediaItems( cleanedMediaItems, newIndex, C.TIME_UNSET )
             prepare()
             restoreGlobalVolume()
             playWhenReady = true
+            applied = true
+            onQueueApplied()
         }
+        if (!applied) return@launchStoredDurationSelection
 
         // Pre-fetch full metadata (with browse IDs) asynchronously.
         // This ensures the UI shows the correct artist names + browse IDs without delaying playback.
@@ -161,58 +175,19 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
                 Timber.tag("PlayerPrefetch").w(error, "Metadata prefetch failed for $videoId")
                 null
             }
-            // Now read the DB to populate the MediaItem.
-            val enrichedItem = runCatching {
-                val dbSong = Database
-                    .songTable.findByIdDirect(videoId)
-                if (dbSong != null) {
-                    val dbArtists = Database
-                        .artistTable.findBySongIdDirect(videoId)
-                    val existing = targetItem.mediaMetadata
-                    val storedAlbums = if (targetItem.isLocal || explicitAlbumId != null) emptyList()
-                        else Database.songAlbumMapTable.findAlbumsOfDirect(videoId)
-                    val resolvedAlbumId = if (targetItem.isLocal) explicitAlbumId else
-                        selectOnlinePlaybackAlbumId(explicitAlbumId, exactTrackAlbum?.id, storedAlbums.map(Album::id))
-                    val resolvedAlbumTitle = if (resolvedAlbumId == explicitAlbumId) {
-                        existing.albumTitle?.toString()
-                    } else {
-                        storedAlbums.firstOrNull { it.id == resolvedAlbumId }?.title
-                            ?: exactTrackAlbum?.takeIf { it.id == resolvedAlbumId }?.title
-                    }
-                    val extras = (existing.extras?.let(::Bundle) ?: Bundle()).apply {
-                        if (getStringArrayList("artistIds").isNullOrEmpty()) {
-                            if (getStringArrayList("artistNames").isNullOrEmpty()) {
-                                putStringArrayList("artistNames", ArrayList(dbArtists.mapNotNull { it.name }))
-                            }
-                            putStringArrayList("artistIds", ArrayList(dbArtists.map { it.id }))
-                            putStringArrayList(ARTIST_LINKED_NAMES_EXTRA, ArrayList(dbArtists.map { it.name.orEmpty() }))
-                        }
-                    }
-                    val artist = if (dbSong.artistsText.isNullOrBlank() || existing.extras?.getBoolean("isArtistModified") == true) {
-                        existing.artist
-                    } else {
-                        cleanPrefix(dbSong.artistsText)
-                    }
-                    val enriched = targetItem.buildUpon().setMediaMetadata(
-                        existing.buildUpon().setArtist(artist).setExtras(extras).build()
-                    ).build()
-                    resolvedAlbumId?.let { enriched.withPlaybackAlbum(it, resolvedAlbumTitle) } ?: enriched
-                } else null
-            }.getOrNull()
-            if (enrichedItem != null) {
-                Timber.tag("PlayerPrefetch").d("Prefetch success! Enriched metadata for: $videoId")
+            // The service observes the committed artist and title. Keep the verified exact
+            // endpoint as an album hint when several stored editions make it ambiguous.
+            if (explicitAlbumId == null && exactTrackAlbum != null) {
                 withContext(NzikDispatchers.UI) {
                     selection.ensureCurrent()
-                    for (i in 0 until mediaItemCount) {
-                        if (getMediaItemAt(i).mediaId == targetItem.mediaId) {
-                            Timber.tag("PlayerPrefetch").d("Replaced mediaItem in queue at index: $i")
-                            replaceMediaItem(i, enrichedItem)
+                    for (index in 0 until mediaItemCount) {
+                        val queued = getMediaItemAt(index)
+                        if (queued.mediaId == targetItem.mediaId && queued.mediaMetadata.extras?.getString("albumId").isNullOrBlank()) {
+                            replaceMediaItem(index, queued.withPlaybackAlbum(exactTrackAlbum.id, exactTrackAlbum.title, derived = true))
                             break
                         }
                     }
                 }
-            } else {
-                Timber.tag("PlayerPrefetch").w("Prefetch finished, but enrichedItem is null for: $videoId")
             }
         }
     }
@@ -267,6 +242,7 @@ fun Player.addNext(mediaItem: MediaItem, context: Context? = null) {
 fun Player.addNext(mediaItems: List<MediaItem>, context: Context? = null) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
+    if (filteredMediaItems.isEmpty()) return
 
     filteredMediaItems.forEach { mediaItem ->
         val itemIndex = findMediaItemIndexById(mediaItem.mediaId)
@@ -302,6 +278,7 @@ fun Player.enqueue(mediaItem: MediaItem, context: Context? = null) {
 fun Player.enqueue(mediaItems: List<MediaItem>, context: Context? = null) {
     val filteredMediaItems = if (context != null) excludeMediaItems(mediaItems, context)
     else mediaItems
+    if (filteredMediaItems.isEmpty()) return
 
     if (playbackState == Player.STATE_IDLE || playbackState == Player.STATE_ENDED) {
         forcePlayFromBeginning(filteredMediaItems)

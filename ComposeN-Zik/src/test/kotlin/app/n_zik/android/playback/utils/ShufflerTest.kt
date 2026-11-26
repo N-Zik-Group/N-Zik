@@ -13,14 +13,16 @@ import app.n_zik.android.enums.MaxSongs
 import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.utils.excludeDislikedArtistsKey
 import app.n_zik.android.utils.excludeDislikedSongsKey
-import app.n_zik.android.utils.forcePlayFromBeginning
+import app.n_zik.android.utils.launchForcePlayAtIndex
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.utils.maxSongsInQueueKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import io.mockk.*
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -149,7 +151,10 @@ class ShufflerTest {
 
             val captured = slot<List<MediaItem>>()
             mockkStatic("app.n_zik.android.utils.PlayerKt")
-            every { player.forcePlayFromBeginning(capture(captured)) } just Runs
+            every { player.launchForcePlayAtIndex(capture(captured), 0, any(), any()) } answers {
+                if (arg<() -> Boolean>(invocation.args.lastIndex - 1)()) lastArg<() -> Unit>()()
+                CompletableDeferred(Unit)
+            }
 
             Shuffler.play(binder, mediaItems(150))
 
@@ -188,7 +193,7 @@ class ShufflerTest {
                 sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             } returns DislikeMode.Disabled.name
             mockkStatic("app.n_zik.android.utils.PlayerKt")
-            every { player.forcePlayFromBeginning(any()) } just Runs
+            every { player.launchForcePlayAtIndex(any(), 0, any(), any()) } returns CompletableDeferred(Unit)
             var completed = false
 
             Shuffler.play(binder, mediaItems(5), onComplete = { completed = true })
@@ -196,8 +201,33 @@ class ShufflerTest {
             assertTrue(completed)
         }
 
+        @Test
+        fun guestLockAcquiredBeforePublicationSuppressesShuffleSuccess() {
+            every { sharedPreferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name) } returns DislikeMode.Disabled.name
+            every { sharedPreferences.getString(excludeDislikedArtistsKey, DislikeMode.Enabled.name) } returns DislikeMode.Disabled.name
+            every { sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name) } returns DislikeMode.Disabled.name
+            mockkStatic("app.n_zik.android.utils.PlayerKt")
+            every { player.launchForcePlayAtIndex(any(), 0, any(), any()) } answers {
+                listenTogetherGuestLock.value = true
+                try {
+                    if (arg<() -> Boolean>(invocation.args.lastIndex - 1)()) lastArg<() -> Unit>()()
+                } finally {
+                    listenTogetherGuestLock.value = false
+                }
+                CompletableDeferred(Unit)
+            }
+
+            var applied = false
+            var completed = false
+            Shuffler.play(binder, mediaItems(5), onQueueApplied = { applied = true }, onComplete = { completed = true })
+
+            assertFalse(applied)
+            assertTrue(completed)
+            verify(exactly = 0) { binder.stopRadio() }
+        }
+
         @Test
-        fun `onComplete fires only after stopRadio and forcePlayFromBeginning complete, not before`() {
+        fun `onComplete fires only after radio stops and the prepared queue is applied`() {
             every {
                 sharedPreferences.getString(excludeDislikedSongsKey, DislikeMode.Enabled.name)
             } returns DislikeMode.Disabled.name
@@ -210,11 +240,17 @@ class ShufflerTest {
             mockkStatic("app.n_zik.android.utils.PlayerKt")
             val events = mutableListOf<String>()
             every { binder.stopRadio() } answers { events.add("stopRadio") }
-            every { player.forcePlayFromBeginning(any()) } answers { events.add("forcePlayFromBeginning") }
+            every { player.launchForcePlayAtIndex(any(), 0, any(), any()) } answers {
+                if (arg<() -> Boolean>(invocation.args.lastIndex - 1)()) {
+                    events.add("apply queue")
+                    lastArg<() -> Unit>()()
+                }
+                CompletableDeferred(Unit)
+            }
 
             Shuffler.play(binder, mediaItems(5), onComplete = { events.add("onComplete") })
 
-            assertEquals(listOf("stopRadio", "forcePlayFromBeginning", "onComplete"), events)
+            assertEquals(listOf("stopRadio", "apply queue", "onComplete"), events)
         }
 
         @Test
@@ -239,7 +275,10 @@ class ShufflerTest {
                 sharedPreferences.getString(excludeDislikedAlbumsKey, DislikeMode.Enabled.name)
             } returns DislikeMode.Disabled.name
             mockkStatic("app.n_zik.android.utils.PlayerKt")
-            every { player.forcePlayFromBeginning(any()) } just Runs
+            every { player.launchForcePlayAtIndex(any(), 0, any(), any()) } answers {
+                if (arg<() -> Boolean>(invocation.args.lastIndex - 1)()) lastArg<() -> Unit>()()
+                CompletableDeferred(Unit)
+            }
             var completed = false
 
             Shuffler.play(binder, mediaItems(5), onComplete = { completed = true })

@@ -7,13 +7,15 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.enums.MaxSongs
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.forcePlayFromBeginning
+import app.n_zik.android.utils.launchForcePlayAtIndex
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.maxSongsInQueueKey
 import app.n_zik.android.utils.mediaItems
@@ -24,6 +26,7 @@ import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -37,6 +40,12 @@ object Shuffler {
     internal var backgroundDispatcher: CoroutineDispatcher = NzikDispatchers.DATA
     internal val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
+    internal fun canStart(): Boolean {
+        if (!listenTogetherGuestLock.value) return true
+        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(appContext())
+        return false
+    }
+
     /**
      * [onComplete] is invoked once the real work for the given exit path is actually finished,
      * never before -- on the caller's own thread for the immediate `mediaItems.isEmpty()` early
@@ -47,7 +56,16 @@ object Shuffler {
      * flag) must do so via this callback rather than by assuming `play()` blocks until done, as it
      * used to via `runBlocking`.
      */
-    fun play(binder: PlayerServiceModern.Binder, mediaItems: List<MediaItem>, onComplete: () -> Unit = {}) {
+    fun play(
+        binder: PlayerServiceModern.Binder,
+        mediaItems: List<MediaItem>,
+        onQueueApplied: () -> Unit = {},
+        onComplete: () -> Unit = {},
+    ) {
+        if (!canStart()) {
+            onComplete()
+            return
+        }
         if (mediaItems.isEmpty()) {
             ToastRelay.i(R.string.player_shuffle_empty_message)
             onComplete()
@@ -106,9 +124,27 @@ object Shuffler {
                 val toPlay = filteredMediaItems.shuffled().take(max)
                 withContext(NzikDispatchers.UI) {
                     try {
-                        binder.stopRadio()
-                        binder.player.forcePlayFromBeginning(toPlay)
-                        ToastRelay.s(R.string.player_shuffled_song_count_format, toPlay.size)
+                        val ready = CompletableDeferred<Unit>()
+                        val selection = binder.player.launchForcePlayAtIndex(
+                            toPlay,
+                            0,
+                            canApplyQueue = {
+                                if (canStart()) {
+                                    binder.stopRadio()
+                                    true
+                                } else false
+                            },
+                            onQueueApplied = {
+                                ToastRelay.s(R.string.player_shuffled_song_count_format, toPlay.size)
+                                onQueueApplied()
+                                ready.complete(Unit)
+                            },
+                        )
+                        selection?.invokeOnCompletion { error ->
+                            if (error == null || error is CancellationException) ready.complete(Unit)
+                            else ready.completeExceptionally(error)
+                        } ?: ready.complete(Unit)
+                        ready.await()
                     } catch (e: Exception) {
                         ToastRelay.e(R.string.player_no_song_found)
                     } finally {
@@ -136,8 +172,13 @@ object Shuffler {
     }
 
     @JvmName("playSongs")
-    fun play(binder: PlayerServiceModern.Binder, songs: List<Song>, onComplete: () -> Unit = {}) {
-        play(binder, songs.map(Song::asMediaItem), onComplete)
+    fun play(
+        binder: PlayerServiceModern.Binder,
+        songs: List<Song>,
+        onQueueApplied: () -> Unit = {},
+        onComplete: () -> Unit = {},
+    ) {
+        play(binder, songs.map(Song::asMediaItem), onQueueApplied, onComplete)
     }
 
     fun queue(player: Player): Boolean {

@@ -4,37 +4,51 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.listentogether.ListenTogetherGuestGuardPlayer
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * Issue #606 H8 (paired with M10 at the call sites that also build the list from
- * `Song.asMediaItem`) -- legacy `Player.addNext`/`Player.enqueue`
- * (`app.n_zik.android.utils.Player.kt`) filter the incoming list through `excludeMediaItems`
- * whenever the caller passes a non-null [Context] -- up to 3 `runBlocking` DB reads
- * (disliked songs/artists/albums) on whatever thread the call runs on, Main in every case this
- * lot fixes. `Player.kt` is legacy and out of scope for editing (AD-4 tier 1: fixable only from
- * the caller, not the callee), so these two suspend extension functions are the caller-side fix,
- * reused by every `app.n_zik.android.*` site that adds/enqueues a filtered list: run the
- * filtering on [NzikDispatchers.DATA], then call the legacy function with `context = null` so
- * its own synchronous filtering branch is skipped -- the list is already filtered (also avoids
- * filtering twice).
- *
- * The actual queue mutation (`player.*`, ExoPlayer) happens exactly once, on whatever context
- * launched the enclosing coroutine: these functions are dispatcher-agnostic and don't guarantee
- * Main -- it's Main only because every current caller launches from Main.
- */
 @UnstableApi
-suspend fun Player.addNextOffMain(mediaItems: List<MediaItem>, context: Context) {
-    val filteredMediaItems = withContext(NzikDispatchers.DATA) { excludeMediaItems(mediaItems, context) }
-    addNext(filteredMediaItems, context = null)
-}
+suspend fun Player.addNextOffMain(mediaItems: List<MediaItem>, context: Context): Boolean =
+    queueMediaItemsOffMain(mediaItems, context, playNext = true) { this }
 
 @UnstableApi
-suspend fun Player.enqueueOffMain(mediaItems: List<MediaItem>, context: Context) {
-    val filteredMediaItems = withContext(NzikDispatchers.DATA) { excludeMediaItems(mediaItems, context) }
-    enqueue(filteredMediaItems, context = null)
+suspend fun Player.enqueueOffMain(mediaItems: List<MediaItem>, context: Context): Boolean =
+    queueMediaItemsOffMain(mediaItems, context, playNext = false) { this }
+
+/** Filters off the caller thread, then resolves the current player immediately before the queue edit. */
+@UnstableApi
+internal suspend fun queueMediaItemsOffMain(
+    mediaItems: List<MediaItem>,
+    context: Context,
+    playNext: Boolean,
+    currentPlayer: () -> Player?,
+): Boolean = withFilteredQueueItems(mediaItems, context, currentPlayer) { player, filteredMediaItems ->
+    if (playNext) player.addNext(filteredMediaItems, context = null)
+    else player.enqueue(filteredMediaItems, context = null)
+}
+
+internal suspend fun withFilteredQueueItems(
+    mediaItems: List<MediaItem>,
+    context: Context,
+    currentPlayer: () -> Player?,
+    applyEdit: (Player, List<MediaItem>) -> Unit,
+): Boolean {
+    if (mediaItems.isEmpty()) return false
+    val filterReceiver = currentPlayer() ?: return false
+    val filteredMediaItems = withContext(NzikDispatchers.DATA) {
+        filterReceiver.excludeMediaItems(mediaItems, context)
+    }
+    if (filteredMediaItems.isEmpty()) return false
+    if (listenTogetherGuestLock.value) {
+        ListenTogetherGuestGuardPlayer.reportUiBlockedOp(context)
+        return false
+    }
+    val player = currentPlayer() ?: return false
+    applyEdit(player, filteredMediaItems)
+    return true
 }
