@@ -17,6 +17,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
@@ -346,17 +347,17 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
                 browseId = browseIdWithVL,
                 isYoutubePlaylist = true,
                 isEditable = remotePlaylist.isEditable ?: false
-            )
+            ).withSourcePlaylistOwner(remotePlaylist.channel)
             playlistId = Database.playlistTable.insert(newPlaylist)
             Timber.tag("SyncYTMusicUtils").d("Created playlist: ${remotePlaylist.title}")
         } else {
             playlistId = existingPlaylist.id
             Database.playlistTable.update(
                 existingPlaylist.copy(
-                    name = remoteTitle ?: existingPlaylist.name,
+                    name = remoteTitle?.takeUnless { existingPlaylist.hasModifiedTitle() } ?: existingPlaylist.name,
                     browseId = browseIdWithVL,
                     isEditable = remotePlaylist.isEditable ?: existingPlaylist.isEditable
-                )
+                ).withSourcePlaylistOwner(remotePlaylist.channel)
             )
             Timber.tag("SyncYTMusicUtils").d("Updated playlist: ${remotePlaylist.title}")
         }

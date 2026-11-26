@@ -1,5 +1,10 @@
 package app.n_zik.android.ui.screens.localplaylist
 
+import app.n_zik.android.components.playlist.launchLocalPlaylistDeletion
+import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
+import app.n_zik.android.utils.addNext
+import app.n_zik.android.utils.enqueue
+
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -73,6 +78,10 @@ import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.MONTHLY_PREFIX
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.utils.player.addNextOffMain
+import app.n_zik.android.utils.player.enqueueOffMain
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
@@ -84,6 +93,9 @@ import app.n_zik.android.components.dialog.common.RawUrlImportDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
 import app.n_zik.android.components.dialog.playlist.PlaylistInsertionDialog
+import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
+import app.n_zik.android.components.dialog.playlist.canChangePlaylistBrowseId
+import app.n_zik.android.components.dialog.playlist.RenamePlaylistAuthorDialog
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
@@ -133,6 +145,7 @@ import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -195,8 +208,8 @@ import app.n_zik.android.ui.styling.overlay
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.ExternalUris
-import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.withPodcastSource
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.checkFileExists
@@ -206,8 +219,6 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.deleteFileIfExists
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
-import app.n_zik.android.utils.enqueue
-import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.getActiveProfile
@@ -282,6 +293,8 @@ fun LocalPlaylistSongs(
         source.map { Result.success(it) }
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     val playlist = playlistResult?.getOrNull()
+    val podcastBrowseId = playlist?.browseId?.takeIf(::isPodcastBrowseId)
+    fun playbackItem(song: Song) = song.asMediaItem.withPodcastSource(podcastBrowseId)
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
@@ -424,7 +437,11 @@ fun LocalPlaylistSongs(
     val shuffle = itemSelector.guard(SongShuffler(::getSongs), hasEligibleSelection)
     val insertionDialog = PlaylistInsertionDialog { playlist }
     insertionDialog.Render()
+    val canEditPlaylistMetadata = playlist != null && !forceOnDevice && !isRewindPlaylist
+    val sourceKind = playlistLinkKind(playlist?.browseId)
     val renameDialog = RenamePlaylistDialog { playlist }
+    val renameAuthorDialog = RenamePlaylistAuthorDialog { playlist }
+    val changeBrowseIdDialog = ChangePlaylistBrowseIdDialog { playlist }
     val exportDialog = ExportSongsToCSVDialog(
         playlistBrowseId = playlist?.browseId.orEmpty(),
         playlistName = playlist?.name ?: "",
@@ -503,7 +520,8 @@ fun LocalPlaylistSongs(
     val deleteDialog =
         object : MenuIcon, Descriptive, Dialog {
             override val iconId: Int = R.drawable.trash
-            override val messageId: Int = R.string.common_action_delete
+            override val messageId: Int
+                get() = if (itemSelector.isActive) R.string.playlist_action_remove_songs else R.string.common_action_delete
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             @get:Composable override val dialogTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
@@ -525,7 +543,9 @@ fun LocalPlaylistSongs(
                     val text = if (hasSelection) {
                         stringResource(R.string.playlist_remove_songs_confirmation, getSongs().size)
                     } else {
-                        stringResource(R.string.playlist_delete_confirmation)
+                        playlistDeletionConfirmationText(
+                            stringResource(R.string.playlist_delete_confirmation), listOfNotNull(playlist),
+                        )
                     }
                     ConfirmationDialog(
                         title = stringResource(if (hasSelection) R.string.playlist_action_remove_songs else R.string.playlist_delete_dialog_title),
@@ -539,6 +559,7 @@ fun LocalPlaylistSongs(
                                 if (!membershipEditable) return@ConfirmationDialog
                                 val selectedSongs = getSongs()
                                 if (selectedSongs.isEmpty()) return@ConfirmationDialog
+                                val endSelection = itemSelector.captureSelectionCompletion()
                                 coroutineScope.launch(NzikDispatchers.DATA) {
                                     val removed = editStoredPlaylistMembership(playlistId) {
                                         selectedSongs.forEach { song ->
@@ -553,18 +574,15 @@ fun LocalPlaylistSongs(
                                                 selectedSongs.size,
                                             ),
                                         )
-                                        itemSelector.isActive = false
+                                        endSelection()
                                     }
                                 }
                             } else {
-                                coroutineScope.launch(NzikDispatchers.DATA) {
-                                    Database.asyncTransaction {
-                                        playlist?.let { playlistTable.delete(it) }
-                                    }
-                                    withContext(NzikDispatchers.UI) {
-                                        if (navController.currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED)
-                                            navController.popBackStack()
-                                    }
+                                val origin = navController.currentBackStackEntry
+                                launchLocalPlaylistDeletion(context, listOfNotNull(playlist)) {
+                                    if (navController.currentBackStackEntry === origin &&
+                                        origin?.lifecycle?.currentState == Lifecycle.State.RESUMED
+                                    ) navController.popBackStack()
                                 }
                             }
                         }
@@ -592,41 +610,31 @@ fun LocalPlaylistSongs(
         }
     }
 
-    val playNext = PlayNext {
+    val queueMenuState = LocalMenuState.current
+    fun queueSelection(playNext: Boolean) {
+        val player = binder?.player ?: return
         val songs = getSongs().toList()
-        if (itemSelector.isActive && songs.isEmpty()) return@PlayNext
-
-        // Turn of selector clears the selected list
-        itemSelector.isActive = false
+        if (songs.isEmpty()) return
+        val endSelection = itemSelector.captureSelectionCompletion()
+        val menuKey = queueMenuState.transitionKey
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) {
-                val player = binder?.player ?: return@withContext emptyList()
-                player.excludeMediaItems(songs.map(Song::asMediaItem), appContext())
+            val items = withContext(NzikDispatchers.DATA) { songs.map(::playbackItem) }
+            val queued = if (playNext) player.addNextOffMain(items, context)
+                else player.enqueueOffMain(items, context)
+            if (queued) {
+                endSelection()
+                if (queueMenuState.isCurrentMenu(menuKey)) queueMenuState.hide()
             }
-            val player = binder?.player ?: return@launch
-            player.addNext(mediaItems)
         }
     }
-    val enqueue = Enqueue {
-        val songs = getSongs().toList()
-        if (itemSelector.isActive && songs.isEmpty()) return@Enqueue
 
-        // Turn of selector clears the selected list
-        itemSelector.isActive = false
-        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) {
-                val player = binder?.player ?: return@withContext emptyList()
-                player.excludeMediaItems(songs.map(Song::asMediaItem), context)
-            }
-            val player = binder?.player ?: return@launch
-            player.enqueue(mediaItems)
-        }
-    }
+    val playNext = PlayNext(dismissOnClick = false) { queueSelection(playNext = true) }
+    val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
         captureMediaItems = {
             val songs = getSongs().toList()
-            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(Song::asMediaItem) })
+            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(::playbackItem) })
         },
         onFailure = { throwable, preview ->
             Timber.tag("LocalPlaylistSongs").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
@@ -760,6 +768,8 @@ fun LocalPlaylistSongs(
 
     changePlaylistCover.Render()
     renameDialog.Render()
+    renameAuthorDialog.Render()
+    changeBrowseIdDialog.Render()
     exportDialog.Render()
     deleteDialog.Render()
     (renumberDialog as Dialog).Render()
@@ -1051,10 +1061,12 @@ fun LocalPlaylistSongs(
                             "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
                             "sync" -> if (!onDeviceOnly && !offlineMode && canRefreshPlaylist(playlist)) add( syncComponent )
                             "refresh_on_open" -> if (!onDeviceOnly && canRefreshPlaylist(playlist)) add(refreshOnOpen)
-                            "listen_on_yt" -> if (!onDeviceOnly && playlistLinkKind(playlist?.browseId) != PlaylistLinkKind.Local) add( listenOnYT )
+                            "listen_on_yt" -> if (!onDeviceOnly && !offlineMode && playlistLinkKind(playlist?.browseId) != PlaylistLinkKind.Local) add( listenOnYT )
                             "import_menu" -> if (!onDeviceOnly && membershipEditable) add( importMenu )
                             // Spec 2: rewind-* keep their language-neutral name â€” no rename
-                            "rename" -> if (!forceOnDevice && !isRewindPlaylist) add( renameDialog )
+                            "rename" -> if (canEditPlaylistMetadata) add(renameDialog)
+                            "rename_author" -> if (canEditPlaylistMetadata && sourceKind != PlaylistLinkKind.Local) add(renameAuthorDialog)
+                            "change_browse_id" -> if (canEditPlaylistMetadata && canChangePlaylistBrowseId(playlist)) add(changeBrowseIdDialog)
                             "delete" -> if (!forceOnDevice) add(itemSelector.guard(deleteDialog) {
                                 canOfferPlaylistDeleteAction(playlist, true) && hasEligibleSelection()
                             })
@@ -1187,7 +1199,7 @@ fun LocalPlaylistSongs(
                             SwipeableQueueItem(
                         mediaItem = song.asMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(song.asMediaItem)
+                            binder?.player?.addNext(playbackItem(song))
                         },
                         onRemoveFromQueue = {
                             if (membershipEditable) {
@@ -1218,7 +1230,7 @@ fun LocalPlaylistSongs(
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(
-                                song.asMediaItem,
+                                playbackItem(song),
                                 context
                             )
                         },
@@ -1234,6 +1246,7 @@ fun LocalPlaylistSongs(
                             inPlaylist = playlistStatesMap[song.id],
                             itemSelector = itemSelector,
                             navController = navController,
+                            podcastBrowseId = podcastBrowseId,
                             isRecommended = song in relatedSongs,
                             modifier = Modifier,
 
@@ -1288,7 +1301,7 @@ fun LocalPlaylistSongs(
                                 } else {
                                     binder?.stopRadio()
                                     binder?.player?.forcePlayAtIndex(
-                                        displayedSongs.map(Song::asMediaItem),
+                                        displayedSongs.map(::playbackItem),
                                         index
                                     )
 

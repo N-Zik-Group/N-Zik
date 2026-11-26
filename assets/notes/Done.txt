@@ -820,3 +820,7 @@ Playlist destination menus:
 Library screens:
 - fix(library): keep source-aware actions and selection consistent
   - Use fixed layout and accessible selection in the home categories.
+
+Collection screens:
+- fix(playlist): preserve selected source and current collection actions
+  - Use source metadata for playlists and podcasts and label compact actions.

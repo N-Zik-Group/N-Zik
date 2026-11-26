@@ -47,6 +47,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -57,8 +58,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -68,9 +67,10 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import app.n_zik.android.core.database.editStoredPlaylistMembership
+import app.n_zik.android.core.database.addTracksToStoredPlaylist
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.core.database.canEditPlaylistMembership
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.components.radioButtonIcon
 import app.n_zik.android.components.shuffleButtonIcon
@@ -118,6 +118,9 @@ import app.n_zik.android.ui.items.FullSongListPlaceholderCount
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
+import app.n_zik.android.core.database.findMusicBookmarkByBrowseId
 import app.n_zik.android.components.rememberSongRowMetadata
 
 import app.n_zik.android.components.search.SearchEmptyFeedback
@@ -127,7 +130,7 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.addToYtPlaylist
-import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.asPodcastMediaItem
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.enqueue
@@ -147,6 +150,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.ui.components.themed.reportPlaylistAddResult
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.MODIFIED_PREFIX
@@ -181,6 +185,11 @@ fun Podcast(
     var podcastPage by persist<Innertube.Podcast?>("podcast/$browseId/listEpisodes")
     val podcastLoader = remember(browseId) { PodcastPageLoader(podcastPage) }
     val podcastLoadState by podcastLoader.state.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
+    val storedPodcast by remember(browseId) { Database.playlistTable.findMusicBookmarkByBrowseId(browseId) }
+        .collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val podcastTitle = storedPodcast?.cleanName() ?: podcastPage?.title
+    val podcastAuthor = storedPodcast?.displayAuthorName() ?: podcastPage?.author
+    val owner = podcastPage?.owner
     var retryAttempt by remember(browseId) { mutableIntStateOf(0) }
 
     val search = key(browseId) { Search.detail() }
@@ -215,13 +224,13 @@ fun Podcast(
     }
 
     val importDialog = ImportPlaylistDialog(
-        initialValue = podcastPage?.title ?: "",
+        initialValue = podcastTitle.orEmpty(),
         onImport = { text ->
             Database.asyncTransaction {
-                val playlist = Playlist(name = text, browseId = browseId)
+                val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(owner)
 
                 podcastPage?.listEpisode
-                           ?.map( Innertube.Podcast.EpisodeItem::asMediaItem )
+                           ?.map { it.asPodcastMediaItem(browseId) }
                            ?.let {
                                mapIgnore( playlist, *it.toTypedArray() )
                            }
@@ -254,13 +263,14 @@ fun Podcast(
         collectionEpisodes.map { collectionFavoriteSongId(it.videoId) }.distinct()
     }
     val storedEpisodes by rememberSongRowMetadata(episodeIds)
+    val episodeCredits by rememberSongRowArtistCredits(episodeIds)
     val visibleEpisodes = remember(collectionEpisodes, filter, storedEpisodes) {
         val seenEpisodeIds = HashSet<String>()
         collectionEpisodes.mapIndexedNotNull { index, episode ->
             val key = if (seenEpisodeIds.add(episode.videoId)) "episode-id-${episode.videoId}"
                 else "episode-repeat-$index"
             val matches = filter.isBlank() || resolveSongDisplayMetadata(
-                episode.asMediaItem.asSong, storedEpisodes[collectionFavoriteSongId(episode.videoId)]
+                episode.asPodcastMediaItem(browseId).asSong, storedEpisodes[collectionFavoriteSongId(episode.videoId)]
             ).matchesCollectionSearch(filter)
             if (matches) Triple(key, index, episode) else null
         }
@@ -273,13 +283,13 @@ fun Podcast(
     val searchTargets = remember(visibleEpisodes) { visibleEpisodes.map { it.third } }
     fun targetEpisodes() = itemSelector.actionTargets(searchTargets, Song::id,
         { collectionFavoriteSongId(it.videoId) })
-    fun targetMediaItems() = targetEpisodes().map(Innertube.Podcast.EpisodeItem::asMediaItem)
+    fun targetMediaItems() = targetEpisodes().map { it.asPodcastMediaItem(browseId) }
     fun shuffleSelection() {
+        if (!Shuffler.canStart()) return
         val mediaItems = targetMediaItems()
         if (mediaItems.isEmpty()) return
         binder?.let {
-            it.triggerShuffleOkFlash()
-            Shuffler.play(it, mediaItems)
+            Shuffler.play(it, mediaItems, onQueueApplied = it::triggerShuffleOkFlash)
         }
     }
     val episodes = targetEpisodes()
@@ -288,14 +298,17 @@ fun Podcast(
     val radioActive = binder?.isRadioActive == true
     val canUseRadio = hasEpisodeTargets || radioActive
     val ltGuestLocked = rememberListenTogetherGuestLock()
-    val favoriteMediaItems = remember(episodes) { episodes.map(Innertube.Podcast.EpisodeItem::asMediaItem) }
-    val playNext = PlayNext(enabled = hasEpisodeTargets && !ltGuestLocked && binder != null) {
+    val favoriteMediaItems = remember(browseId, episodes) { episodes.map { it.asPodcastMediaItem(browseId) } }
+    val playNext = PlayNext(enabled = hasEpisodeTargets && !ltGuestLocked && binder != null, dismissOnClick = false) {
         val player = binder?.player ?: return@PlayNext
         val items = targetMediaItems().ifEmpty { return@PlayNext }
         val completeSelection = itemSelector.captureSelectionCompletion()
+        val menuKey = menuState.transitionKey
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            player.addNextOffMain(items, context)
-            completeSelection()
+            if (player.addNextOffMain(items, context)) {
+                completeSelection()
+                if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+            }
         }
     }
     val favorites = rememberCollectionFavoritesButton(
@@ -313,7 +326,8 @@ fun Podcast(
             else -> null
         }
     }
-    val moreActions = EllipsisMenuComponent.init { overflowActions }
+    val currentOverflowActions by rememberUpdatedState(overflowActions)
+    val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
     val inlineActionIds = toolbarOrder.filterNot {
         it == ToolbarControl.BOOKMARK || it == ToolbarControl.PLAY_NEXT ||
             it == ToolbarControl.FAVORITES || it == ToolbarControl.SELECT
@@ -335,7 +349,7 @@ fun Podcast(
         val downloadStatesMap by remember {
             derivedStateOf {
                 podcastPage?.listEpisode.orEmpty().associate { episode ->
-                    val songId = episode.asMediaItem.mediaId
+                    val songId = episode.asPodcastMediaItem(browseId).mediaId
                     songId to when {
                         songId in downloadedIds -> DownloadedStateMedia.DOWNLOADED
                         else -> DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
@@ -374,10 +388,13 @@ fun Podcast(
                     val titleStyle = typography().l.semiBold
                     val summaryStyle = typography().xs.medium
                     val episodeCount = podcastPage?.listEpisode.orEmpty().size
-                    val summary = pluralStringResource(
+                    val episodeSummary = pluralStringResource(
                         R.plurals.podcast_episode_count_with_duration,
                         episodeCount, episodeCount, formatAsTime(totalPlayTimes),
                     )
+                    val summary = listOfNotNull(
+                        podcastAuthor?.let(::cleanPrefix)?.takeIf(String::isNotBlank), episodeSummary,
+                    ).joinToString(" · ")
                     val artworkModifier = if (isLandscape) Modifier.fillMaxWidth()
                         else Modifier.fillMaxWidth().aspectRatio(4f / 3f)
                     GlassArtworkBackdrop(hasArtwork = !isLandscape && !showShimmer) { artworkBackdrop ->
@@ -400,7 +417,7 @@ fun Podcast(
                                 }
                             }
                             AutoResizeText(
-                                text = podcastPage?.title ?: stringResource(R.string.podcast_title),
+                                text = podcastTitle ?: stringResource(R.string.podcast_title),
                                 style = titleStyle,
                                 fontSizeRange = FontSizeRange(32.sp, 38.sp),
                                 fontWeight = titleStyle.fontWeight,
@@ -428,7 +445,7 @@ fun Podcast(
                             }
                             CollectionArtworkTopAction {
                                 CollectionArtworkShareButton(
-                                    ExternalUris.youtubeMusicPlaylist(browseId.removePrefix(MODIFIED_PREFIX).removePrefix("VL")),
+                                    ExternalUris.youtubeMusicPodcast(browseId),
                                 )
                             }
                         }
@@ -454,7 +471,8 @@ fun Podcast(
                                     browseId = browseId,
                                     title = podcastPage?.title.orEmpty(),
                                     episodes = podcastPage?.listEpisode.orEmpty()
-                                        .map(Innertube.Podcast.EpisodeItem::asMediaItem),
+                                        .map { it.asPodcastMediaItem(browseId) },
+                                    owner = owner,
                                     onExistingImport = { isImportingPlaylist = true },
                                 )
                             }
@@ -611,12 +629,11 @@ fun Podcast(
                                         modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                                 onClick = {
                                                     if (binder?.stopActiveRadio() == true) return@HeaderIconButton
-                                                    val active = itemSelector.isActive
                                                     val episodes = targetMediaItems()
                                                     val first = episodes.firstOrNull() ?: return@HeaderIconButton
-                                                    val current = binder?.player?.currentMediaItem
-                                                        ?.takeIf { playing -> !active || episodes.any { it.mediaId == playing.mediaId } }
-                                                    binder?.startRadio(current ?: first, false, null, true)
+                                                    val currentId = binder?.player?.currentMediaItem?.mediaId
+                                                    val seed = episodes.firstOrNull { it.mediaId == currentId } ?: first
+                                                    binder?.startRadio(seed, false, null, true)
                                                 },
                                                 onLongClick = {
                                                     Toaster.i( binder?.radioActionTextRes ?: R.string.radio_action_start_hint )
@@ -628,6 +645,7 @@ fun Podcast(
                                 ToolbarControl.ADD_TO_PLAYLIST to {
                                     HeaderIconButton(
                                         icon = R.drawable.add_in_playlist,
+                                        contentDescription = stringResource(R.string.playlist_action_add),
                                         enabled = collectionActionEnabled,
                                         color = if (collectionActionEnabled) colorPalette().text else colorPalette().textDisabled,
                                         modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
@@ -649,9 +667,11 @@ fun Podcast(
 
                                                                 if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
                                                                     Database.asyncTransaction {
-                                                                        editStoredPlaylistMembership(playlistPreview.playlist.id) {
-                                                                            mapIgnore(playlistPreview.playlist, *songs.toTypedArray())
-                                                                        }
+                                                                        val result = addTracksToStoredPlaylist(
+                                                                            playlistPreview.playlist.id,
+                                                                            songs.map(MediaItem::asSong),
+                                                                        )
+                                                                        withContext(NzikDispatchers.UI) { reportPlaylistAddResult(result) }
                                                                     }
                                                                 } else {
                                                                     val youtubeId = target.browseId?.let(::cleanPrefix) ?: return@addToPlaylist
@@ -661,12 +681,14 @@ fun Podcast(
                                                                         if (!current.isYoutubePlaylist || !canEditPlaylistMembership(current) ||
                                                                             current.browseId?.let(::cleanPrefix) != youtubeId
                                                                         ) return@launch
-                                                                        addToYtPlaylist(target.id, position, youtubeId, songs)
+                                                                        val existingIds = Database.songPlaylistMapTable.songIdsInPlaylist(target.id).toHashSet()
+                                                                        val pending = songs.distinctBy(MediaItem::mediaId).filterNot { it.mediaId in existingIds }
+                                                                        if (pending.isEmpty()) {
+                                                                            Toaster.i(R.string.playlist_contains_song)
+                                                                        } else {
+                                                                            addToYtPlaylist(target.id, position, youtubeId, pending)
+                                                                        }
                                                                     }
-                                                                }
-
-                                                                NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                                                    Toaster.done()
                                                                 }
                                                             },
                                                             onGoToPlaylist = {
@@ -687,9 +709,8 @@ fun Podcast(
                                         icon = moreActions.iconId,
                                         color = if (forceShimmer) colorPalette().textDisabled else colorPalette().text,
                                         enabled = !forceShimmer,
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                            .semantics { contentDescription = menuLabel },
+                                        modifier = Modifier.padding(horizontal = 5.dp),
+                                        contentDescription = menuLabel,
                                         onClick = moreActions::onShortClick,
                                     )
                                 },
@@ -733,48 +754,54 @@ fun Podcast(
                         SongItemPlaceholder(title = song.title, artist = song.author)
                         return@itemsIndexed
                     }
-                    val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
-                    downloadState = getDownloadState(song.asMediaItem.mediaId)
-                    val isDownloaded = if (!isLocal) isDownloadedSong(song.asMediaItem.mediaId) else true
+                    val episodeMedia = remember(song, browseId) { song.asPodcastMediaItem(browseId) }
+                    val isLocal = episodeMedia.isLocal
+                    downloadState = getDownloadState(episodeMedia.mediaId)
+                    val isDownloaded = if (!isLocal) isDownloadedSong(episodeMedia.mediaId) else true
 
                     SwipeablePlaylistItem(
-                        mediaItem = song.asMediaItem,
+                        mediaItem = episodeMedia,
+                        modifier = Modifier.animateItem(),
                         onPlayNext = {
-                            binder?.player?.addNext(song.asMediaItem)
+                            binder?.player?.addNext(episodeMedia)
                         },
                         onDownload = {
-                            binder?.cache?.removeResource(song.asMediaItem.mediaId)
+                            binder?.cache?.removeResource(episodeMedia.mediaId)
                             Database.asyncTransaction {
-                                formatTable.updateContentLengthOf( song.asMediaItem.mediaId )
+                                formatTable.updateContentLengthOf( episodeMedia.mediaId )
                             }
 
                             if (!isLocal)
                                 manageDownload(
                                     context = context,
-                                    mediaItem = song.asMediaItem,
+                                    mediaItem = episodeMedia,
                                     downloadState = isDownloaded
                                 )
                         },
                         onEnqueue = {
-                            binder?.player?.enqueue(song.asMediaItem)
+                            binder?.player?.enqueue(episodeMedia)
                         }
                     ) {
                         val episode = resolveSongDisplayMetadata(
-                            song.asMediaItem.asSong, storedEpisodes[collectionFavoriteSongId(song.videoId)],
+                            episodeMedia.asSong, storedEpisodes[collectionFavoriteSongId(song.videoId)],
                         )
                         SongItem(
                             song = episode,
                             observeStoredMetadata = false,
+                            artistCredits = episodeCredits[episode.id].orEmpty(),
+                            sourceMediaItem = { episodeMedia },
                             itemSelector = itemSelector,
                             navController = navController,
-                            modifier = Modifier.animateItem()
+                            modifier = Modifier
                                 .background(colorPalette().background0)
                                 .clip(uiRoundnessShape()),
                             onLongClick = {
                                 menuState.display {
                                     SongItemMenu(
                                         navController = navController,
-                                        song = song.asMediaItem.asSong
+                                        song = episode,
+                                        podcastBrowseId = browseId,
+                                        sourceMediaItem = { episodeMedia },
                                     ).MenuComponent()
                                 }
                                 hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -784,7 +811,7 @@ fun Podcast(
                                     itemSelector.toggle(episode, Song::id)
                                 } else {
                                     search.clearAndClose()
-                                    podcastPage?.listEpisode?.map(Innertube.Podcast.EpisodeItem::asMediaItem)
+                                    podcastPage?.listEpisode?.map { it.asPodcastMediaItem(browseId) }
                                         ?.let { mediaItems ->
                                             binder?.stopRadio()
                                             binder?.player?.forcePlayAtIndex(mediaItems, sourceIndex)
