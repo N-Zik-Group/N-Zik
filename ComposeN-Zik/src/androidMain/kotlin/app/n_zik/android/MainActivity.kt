@@ -68,7 +68,7 @@ import app.n_zik.android.components.settings.appearance.preview.ThemeStoreAlertW
 import app.n_zik.android.components.theme.configuredApplicationAppearance
 import app.n_zik.android.components.ui.app.MainActivityContent
 import app.n_zik.android.components.ui.screens.home.initialShortcutAction
-import app.n_zik.android.components.ui.screens.profiles.executeProfileSwitch
+import app.n_zik.android.components.ui.screens.profiles.executeRegisteredProfileSwitch
 import app.n_zik.android.components.ui.screens.rescue.LibraryStartupScreen
 import app.n_zik.android.compose.persist.PersistMap
 import app.n_zik.android.compose.persist.PersistMapOwner
@@ -356,7 +356,7 @@ class MainActivity :
     /**
      * Consumes the direct profile shortcut carried by [intent] — WARM path (app already
      * running, spec-profile-shortcuts): a tap on a different valid profile runs the whole
-     * CAP-3 switch ([executeProfileSwitch] — same wiring as the profiles page: cancel the
+     * CAP-3 switch ([executeRegisteredProfileSwitch] — same wiring as the profiles page: cancel the
      * outgoing profile's notifications, stop the services, ensure the incoming channels) and
      * exits the process, so the relaunch reads the new profile. A tap on the active profile,
      * or on an unknown/deleted ID, is a bare consumption — no switch, no restart.
@@ -371,8 +371,8 @@ class MainActivity :
     }
 
     private fun handoffProfileShortcut(profileId: String) {
-        Timber.tag("MainActivity").i("Profile shortcut: switching to $profileId, exiting the process")
-        executeProfileSwitch(profileId, this)
+        if (!executeRegisteredProfileSwitch(profileId, this)) return
+        Timber.tag("MainActivity").i("Profile shortcut: switched to $profileId, exiting the process")
         exitProcess(0)
     }
 
@@ -947,9 +947,9 @@ internal fun isMiniplayerHiddenRoute(currentRoute: String?): Boolean =
     currentRoute?.let { route ->
         route == NavRoutes.rewind.name ||
             route.startsWith("${NavRoutes.rewind.name}?") ||
-            route == NavRoutes.updater.name ||
+            route?.substringBefore('?') == NavRoutes.updater.name ||
             route == NavRoutes.notifications.name ||
-            route == NavRoutes.themeStore.name ||
+            route.substringBefore('?') == NavRoutes.themeStore.name ||
             route.substringBefore('?') == NavRoutes.themeStoreNew.name ||
             route.substringBefore('/') == NavRoutes.themeStoreDetail.name ||
             route.substringBefore('/') == NavRoutes.themeStoreCreator.name ||

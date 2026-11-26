@@ -13,6 +13,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -33,6 +34,7 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.AndroidComposeTestRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -181,7 +183,7 @@ class SettingsScreenHostWiringTest {
     }
 
     /** Composes the host on a frozen clock and pumps until the global page is settled. */
-    private fun showHost(initialTab: Int = 0, focus: String = "") {
+    private fun showHost(initialTab: Int = 0, focus: String = "", restoration: StateRestorationTester? = null) {
         composeRule.mainClock.autoAdvance = false
         // Models the parent host callback; the nested host takes priority only above its root.
         testActivity.onBackPressedDispatcher.addCallback(object : OnBackPressedCallback(true) {
@@ -189,7 +191,7 @@ class SettingsScreenHostWiringTest {
                 navController.popBackStack(NavRoutes.home.name, false)
             }
         })
-        composeRule.setContent {
+        val content: @Composable () -> Unit = {
             CompositionLocalProvider(
                 LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalAppearance provides appearance,
@@ -202,6 +204,7 @@ class SettingsScreenHostWiringTest {
                 )
             }
         }
+        if (restoration == null) composeRule.setContent(content) else restoration.setContent(content)
         // Deep link: pump until the tab is composed AND the global page is
         // gone (they overlap during the 350 ms transition, so the tab
         // alone is not enough to declare the transition settled)
@@ -351,6 +354,18 @@ class SettingsScreenHostWiringTest {
         composeRule.onNodeWithTag("settings.glass.preview").assertIsDisplayed()
         composeRule.runOnIdle { assertTrue(backNavigation.handleBack()) }
         pumpUntil("Global restored from Glass deep link", 30_000) { globalPageIsComposed() && !glassPageIsComposed() }
+    }
+
+    @Test
+    fun restoredGlassShortcutReturnsToGlobalWithOneBack() {
+        val restoration = StateRestorationTester(composeRule)
+        showHost(initialTab = 1, focus = "glass", restoration = restoration)
+        restoration.emulateSavedInstanceStateRestore()
+        pumpUntil("Restored Glass shortcut", 30_000) { glassPageIsComposed() && globalPageIsGone() }
+
+        composeRule.runOnIdle { assertTrue(backNavigation.handleBack()) }
+        pumpUntil("One Back returns to the settings hub", 30_000) { globalPageIsComposed() && !glassPageIsComposed() }
+        verify(exactly = 0) { navController.popBackStack(NavRoutes.home.name, false) }
     }
 
     @Test

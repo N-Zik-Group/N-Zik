@@ -792,3 +792,7 @@ Interface and Glass settings:
 Configurable menu and action bars:
 - fix(settings): target individual toolbar and menu controls
   - Index reorder and visibility actions without making fixed actions editable.
+
+Navigation and settings hosts:
+- fix(navigation): preserve settings routes and refreshed library destinations
+  - Route settings search and explicit profile or library navigation through the owning host.

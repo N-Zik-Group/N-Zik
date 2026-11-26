@@ -3,6 +3,7 @@ package app.n_zik.android.components.navigation
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.media3.common.util.UnstableApi
@@ -20,6 +21,7 @@ import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceArtistScree
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.ui.screens.localplaylist.LocalPlaylistScreen
 import app.n_zik.android.ui.screens.playlist.PlaylistScreen
 import app.n_zik.android.ui.screens.podcast.PodcastScreen
 
@@ -43,11 +45,15 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
             )
         )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments?.getString("id") ?: ""
-        if (isDeviceArtistId(id)) {
-            OnDeviceArtistScreen(navController, id, miniPlayer)
-        } else {
-            ArtistScreen(navController = navController, browseId = id, miniPlayer = miniPlayer)
+        val requestedId = navBackStackEntry.arguments?.getString("id").orEmpty()
+        val id = rememberLibraryBrowseDestination(requestedId, LibraryBrowseKind.Artist)?.browseId
+            ?: return@chromeComposable
+        key(id) {
+            if (isDeviceArtistId(id)) {
+                OnDeviceArtistScreen(navController, id, miniPlayer)
+            } else {
+                ArtistScreen(navController = navController, browseId = id, miniPlayer = miniPlayer)
+            }
         }
     }
 
@@ -60,11 +66,15 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
             )
         )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments?.getString("id") ?: ""
-        if (isDeviceAlbumId(id)) {
-            OnDeviceAlbumScreen(navController, id, miniPlayer)
-        } else {
-            AlbumScreen(navController = navController, browseId = id, miniPlayer = miniPlayer)
+        val requestedId = navBackStackEntry.arguments?.getString("id").orEmpty()
+        val id = rememberLibraryBrowseDestination(requestedId, LibraryBrowseKind.Album)?.browseId
+            ?: return@chromeComposable
+        key(id) {
+            if (isDeviceAlbumId(id)) {
+                OnDeviceAlbumScreen(navController, id, miniPlayer)
+            } else {
+                AlbumScreen(navController = navController, browseId = id, miniPlayer = miniPlayer)
+            }
         }
     }
 
@@ -77,7 +87,9 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
             )
         )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments?.getString("id") ?: ""
+        val requestedId = navBackStackEntry.arguments?.getString("id").orEmpty()
+        val id = rememberLibraryBrowseDestination(requestedId, LibraryBrowseKind.Artist)?.browseId
+            ?: return@chromeComposable
         ArtistInsightsScreen(
             navController = navController,
             artistId = id
@@ -85,23 +97,31 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
     }
 
     chromeComposable(
-        route = "albumInsights/{id}",
+        route = "albumInsights/{id}?artistId={artistId}",
         arguments = listOf(
             navArgument(
                 name = "id",
                 builder = { type = NavType.StringType }
-            )
+            ),
+            navArgument("artistId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            }
         )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments?.getString("id") ?: ""
+        val requestedId = navBackStackEntry.arguments?.getString("id").orEmpty()
+        val id = rememberLibraryBrowseDestination(requestedId, LibraryBrowseKind.Album)?.browseId
+            ?: return@chromeComposable
         AlbumInsightsScreen(
             navController = navController,
-            albumId = id
+            albumId = id,
+            albumArtistId = navBackStackEntry.arguments?.getString("artistId"),
         )
     }
 
     chromeComposable(
-        route = "${NavRoutes.playlist.name}/{id}?params={params}",
+        route = "${NavRoutes.playlist.name}/{id}?params={params}&$COLLECTION_SOURCE_ONLY_ARGUMENT={sourceOnly}",
         arguments = listOf(
             navArgument(
                 name = "id",
@@ -115,34 +135,63 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
                     type = NavType.StringType
                     defaultValue = ""
                 }
-            )
+            ),
+            navArgument(COLLECTION_SOURCE_ONLY_ARGUMENT) {
+                type = NavType.BoolType
+                defaultValue = false
+            }
         )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments?.getString("id") ?: ""
-        val params = navBackStackEntry.arguments?.getString( "params" )
-        PlaylistScreen(
-            navController = navController,
-            browseId = id,
-            params = params,
-            miniPlayer = miniPlayer,
-        )
+        val requestedId = navBackStackEntry.arguments?.getString("id").orEmpty()
+        val target = if (navBackStackEntry.arguments?.getBoolean(COLLECTION_SOURCE_ONLY_ARGUMENT) == true) {
+            LibraryBrowseDestination(requestedId)
+        } else {
+            rememberLibraryBrowseDestination(requestedId, LibraryBrowseKind.Playlist) ?: return@chromeComposable
+        }
+        key(target) {
+            if (target.localPlaylistId != null) {
+                LocalPlaylistScreen(navController, target.localPlaylistId, miniPlayer = miniPlayer)
+            } else {
+                PlaylistScreen(
+                    navController = navController,
+                    browseId = target.browseId,
+                    params = navBackStackEntry.arguments?.getString("params").takeIf { target.browseId == requestedId },
+                    miniPlayer = miniPlayer,
+                )
+            }
+        }
     }
 
     chromeComposable(
-        route = "${NavRoutes.podcast.name}/{id}",
+        route = "${NavRoutes.podcast.name}/{id}?$COLLECTION_SOURCE_ONLY_ARGUMENT={sourceOnly}",
         arguments = listOf(
             navArgument(
                 name = "id",
                 builder = { type = NavType.StringType }
-            )
+            ),
+            navArgument(COLLECTION_SOURCE_ONLY_ARGUMENT) {
+                type = NavType.BoolType
+                defaultValue = false
+            }
         )
     ) { navBackStackEntry ->
-        val id = navBackStackEntry.arguments?.getString("id") ?: ""
-        PodcastScreen(
-            navController = navController,
-            browseId = id,
-            params = null,
-            miniPlayer = miniPlayer,
-        )
+        val requestedId = navBackStackEntry.arguments?.getString("id").orEmpty()
+        val target = if (navBackStackEntry.arguments?.getBoolean(COLLECTION_SOURCE_ONLY_ARGUMENT) == true) {
+            LibraryBrowseDestination(requestedId)
+        } else {
+            rememberLibraryBrowseDestination(requestedId, LibraryBrowseKind.Podcast) ?: return@chromeComposable
+        }
+        key(target) {
+            if (target.localPlaylistId != null) {
+                LocalPlaylistScreen(navController, target.localPlaylistId, miniPlayer = miniPlayer)
+            } else {
+                PodcastScreen(
+                    navController = navController,
+                    browseId = target.browseId,
+                    params = null,
+                    miniPlayer = miniPlayer,
+                )
+            }
+        }
     }
 }

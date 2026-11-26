@@ -90,7 +90,11 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.navArgument
+import app.n_zik.android.components.settings.appearance.preview.CREATOR_PROFILE_TARGET_ARGUMENT
+import app.n_zik.android.components.settings.appearance.preview.THEME_STORE_CREATOR_TAB
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreCreatorTarget
 import app.n_zik.android.components.settings.appearance.preview.ThemeStoreSection
+import app.n_zik.android.components.settings.common.UPDATER_SETTINGS_TARGET_ARGUMENT
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -572,7 +576,7 @@ fun AppNavigation(
         predictivePopExitTransition = transitions.predictivePopExitTransition,
     ) {
         val navigateToPlaylist =
-            { browseId: String -> navController.navigateClean("${NavRoutes.playlist.name}/$browseId", context) }
+            { browseId: String -> navController.navigateClean(onlinePlaylistRoute(browseId), context) }
 
         chromeComposable(route = NavRoutes.home.name) {
             val toolbarProgress = if (LocalHomeGlassInAppHeader.current && transitionEffect != TransitionEffect.None) {
@@ -667,8 +671,19 @@ fun AppNavigation(
         chromeComposable(route = NavRoutes.notifications.name) {
             app.n_zik.android.components.ui.screens.notifications.NotificationsScreen(navController, miniPlayer)
         }
-        chromeComposable(route = NavRoutes.themeStore.name) {
-            app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer)
+        chromeComposable(
+            route = "${NavRoutes.themeStore.name}?tab={tab}&target={target}",
+            arguments = listOf(
+                navArgument("tab") { type = NavType.StringType; defaultValue = "" },
+                navArgument("target") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) { entry ->
+            app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(
+                navController,
+                miniPlayer,
+                startInCreatorTab = entry.arguments?.getString("tab") == THEME_STORE_CREATOR_TAB,
+                creatorTargetKey = entry.arguments?.getString("target"),
+            )
         }
 
         chromeComposable(
@@ -700,9 +715,16 @@ fun AppNavigation(
             app.n_zik.android.components.settings.appearance.preview.ThemeStoreScreen(navController, miniPlayer, creatorId = creatorId)
         }
 
-        // Local PC bridge server page
-        chromeComposable(route = NavRoutes.themeStoreCreatorSettings.name) {
-            app.n_zik.android.components.settings.appearance.preview.CreatorProfileSettings(navController, miniPlayer)
+        chromeComposable(
+            route = "${NavRoutes.themeStoreCreatorSettings.name}?$CREATOR_PROFILE_TARGET_ARGUMENT={$CREATOR_PROFILE_TARGET_ARGUMENT}",
+            arguments = listOf(navArgument(CREATOR_PROFILE_TARGET_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = ""
+            }),
+        ) { entry ->
+            val targetKey = entry.arguments?.getString(CREATOR_PROFILE_TARGET_ARGUMENT)
+            val target = ThemeStoreCreatorTarget.entries.firstOrNull { it.opensProfileEditor && it.routeKey == targetKey }
+            app.n_zik.android.components.settings.appearance.preview.CreatorProfileSettings(navController, miniPlayer, target)
         }
 
         chromeComposable(
@@ -756,7 +778,7 @@ fun AppNavigation(
         }
 
         chromeComposable(
-            route = "${NavRoutes.search.name}?text={text}",
+            route = "${NavRoutes.search.name}?text={text}&local={local}",
             arguments = listOf(
                 navArgument(
                     name = "text",
@@ -764,7 +786,11 @@ fun AppNavigation(
                         type = NavType.StringType
                         defaultValue = ""
                     }
-                )
+                ),
+                navArgument("local") {
+                    type = NavType.BoolType
+                    defaultValue = false
+                },
             )
         ) { navBackStackEntry ->
             val text = navBackStackEntry.arguments?.getString("text") ?: ""
@@ -773,6 +799,7 @@ fun AppNavigation(
                 navController = navController,
                 miniPlayer = miniPlayer,
                 initialTextInput = text,
+                startWithLocalSearch = navBackStackEntry.arguments?.getBoolean("local") == true,
                 onViewPlaylist = {},
                 onSearch = { query ->
                     Timber.tag("AppNavigation").d("onSearch: $query")
@@ -787,12 +814,13 @@ fun AppNavigation(
         }
 
         chromeComposable(
-            route = "${NavRoutes.searchResults.name}/{query}",
+            route = "${NavRoutes.searchResults.name}/{query}?tab={tab}",
             arguments = listOf(
-                navArgument(
-                    name = "query",
-                    builder = { type = NavType.StringType }
-                )
+                navArgument("query") { type = NavType.StringType },
+                navArgument("tab") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                },
             )
         ) { navBackStackEntry ->
             val query = navBackStackEntry.arguments?.getString("query") ?: ""
@@ -801,6 +829,7 @@ fun AppNavigation(
                 navController = navController,
                 miniPlayer = miniPlayer,
                 query = query,
+                initialTab = navBackStackEntry.arguments?.getInt("tab")?.takeIf { it in 1..2 },
                 onSearchAgain = {}
             )
         }
@@ -922,8 +951,14 @@ fun AppNavigation(
             ArtistPlaylists( navController, id, params, miniPlayer )
         }
 
-        chromeComposable(route = NavRoutes.updater.name) {
-            UpdateScreen(navController = navController)
+        chromeComposable(
+            route = "${NavRoutes.updater.name}?$UPDATER_SETTINGS_TARGET_ARGUMENT={$UPDATER_SETTINGS_TARGET_ARGUMENT}",
+            arguments = listOf(navArgument(UPDATER_SETTINGS_TARGET_ARGUMENT) {
+                type = NavType.StringType
+                defaultValue = ""
+            }),
+        ) { entry ->
+            UpdateScreen(navController = navController, settingsTarget = entry.arguments?.getString(UPDATER_SETTINGS_TARGET_ARGUMENT).orEmpty())
         }
     }
     } // end destination Glass scope

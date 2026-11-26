@@ -25,17 +25,17 @@ class MiniplayerHiddenRouteTest {
     @Test
     fun `updater route hides the miniplayer`() {
         assertTrue(isMiniplayerHiddenRoute(NavRoutes.updater.name))
+        assertTrue(isMiniplayerHiddenRoute("${NavRoutes.updater.name}?settingsTarget=options"))
         assertTrue(isMiniplayerHiddenRoute(NavRoutes.notifications.name))
         assertTrue(isMiniplayerHiddenRoute(NavRoutes.themeStore.name))
+        assertTrue(isMiniplayerHiddenRoute("${NavRoutes.themeStore.name}?tab=creator"))
     }
 
     @Test
     fun `other routes keep the miniplayer`() {
         assertFalse(isMiniplayerHiddenRoute(NavRoutes.home.name))
         assertFalse(isMiniplayerHiddenRoute("settings"))
-        // Prefix look-alikes must not match: the updater is argless, the rewind check is
-        // exact or a '?'-suffixed query.
-        assertFalse(isMiniplayerHiddenRoute("${NavRoutes.updater.name}?key=value"))
+        assertFalse(isMiniplayerHiddenRoute("${NavRoutes.updater.name}X?settingsTarget=options"))
         assertFalse(isMiniplayerHiddenRoute("${NavRoutes.rewind.name}X"))
         assertFalse(isMiniplayerHiddenRoute("rewindX?key=value"))
     }
