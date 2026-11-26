@@ -30,12 +30,14 @@
         <item quantity="other">%1$d şarkılar</item>
     </plurals>
     <plurals name="library_collection_favorites_add_queue_tracks">
-        <item quantity="one">Add %d selected song in the queue to favorites?</item>
-        <item quantity="other">Add %d selected songs in the queue to favorites?</item>
+        <item quantity="one">Kuyrukta bulunan %d seçili şarkıyı favorilere eklemek ister misiniz?</item>
+        <item quantity="other">Kuyrukta bulunan %d seçili şarkıları favorilere eklemek ister misiniz?</item>
     </plurals>
     <plurals name="library_collection_favorites_remove_queue_tracks">
-        <item quantity="one">Remove %d selected song in the queue from favorites?</item>
-        <item quantity="other">Remove %d selected songs in the queue from favorites?</item>
+        <item quantity="one">Kuyrukta bulunan %d seçili şarkıyı favorilerden silmek istiyor musunuz?
+</item>
+        <item quantity="other">Kuyrukta bulunan %d seçili şarkıları favorilerden silmek istiyor musunuz?
+</item>
     </plurals>
     <plurals name="library_collection_favorites_add_playlist_tracks">
         <item quantity="one">Bu çalma listesindeki %1$d parçayı favorilere eklemek ister misiniz?</item>
