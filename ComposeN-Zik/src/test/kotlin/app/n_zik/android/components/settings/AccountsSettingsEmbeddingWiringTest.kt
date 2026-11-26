@@ -29,6 +29,8 @@ import androidx.compose.ui.test.assertIsDisplayed
 
 import androidx.compose.ui.test.junit4.createComposeRule
 
+import androidx.compose.ui.test.onNodeWithTag
+
 import androidx.compose.ui.test.onNodeWithText
 
 import androidx.compose.ui.test.performClick
@@ -42,6 +44,8 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.settings.accounts.AccountsSettings
+import app.n_zik.android.components.settings.accounts.AccountsDiscordCard
+import app.n_zik.android.components.tab.Search
 import app.n_zik.android.ui.styling.Appearance
 
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -234,6 +238,19 @@ class AccountsSettingsEmbeddingWiringTest {
     }
 
 
+
+    @Test
+
+    fun `Discord card presents its beta label as a separate badge`() {
+        mockEncryptedPrefs(cookie = "", loginEnabled = false)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                AccountsDiscordCard(search = Search(initialVisible = false))
+            }
+        }
+        composeRule.onNodeWithText(context.getString(R.string.settings_discord_title), useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithTag("settings.discord.beta", useUnmergedTree = true).assertIsDisplayed()
+    }
 
     @Test
 

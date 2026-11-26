@@ -1,37 +1,24 @@
 package app.n_zik.android.components.settings.accounts
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
@@ -47,10 +34,9 @@ import app.n_zik.android.components.glass.GlassOutlinedTextField as OutlinedText
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
+import app.n_zik.android.components.settings.common.normalizedSettingsText
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
-import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.extensions.discord.DiscordActivityBuilder
 import app.n_zik.android.extensions.discord.DiscordRefreshIntervalEntry
 import app.n_zik.android.extensions.discord.DiscordTemplateFieldActions
@@ -77,7 +63,6 @@ import app.n_zik.android.extensions.discord.discordAdvancedShowTimestampsKey
 import app.n_zik.android.extensions.discord.discordAdvancedSmallImageTextKey
 import app.n_zik.android.extensions.discord.discordAdvancedStateTemplateKey
 import app.n_zik.android.typography
-import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.semiBold
 
@@ -105,6 +90,14 @@ private fun DiscordSettingsGroup(
 /** Configures presence templates, visible sections, buttons and connection timing. */
 @Composable
 internal fun DiscordAdvancedSection(search: Search) {
+    val resources = LocalResources.current
+    val buttonTitles = DiscordButtonField.entries.associateWith { it.title(resources::getString) }
+    val query = normalizedSettingsText(search.inputValue)
+    fun matchesButtonField(field: DiscordButtonField): Boolean =
+        normalizedSettingsText(buttonTitles.getValue(field)).contains(query) ||
+            normalizedSettingsText(field.title(resources::getString, separator = " ")).contains(query) ||
+            normalizedSettingsText(resources.getString(field.fieldRes)).contains(query)
+
     var activityType by rememberEncryptedPreference(discordAdvancedActivityTypeKey, 2)
     var pausePresenceEnabled by rememberEncryptedPreference(discordAdvancedPausePresenceEnabledKey, true)
     var activityName by rememberEncryptedPreference(discordAdvancedNameKey, "")
@@ -281,22 +274,14 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_small_image).contains(search.inputValue, true)) {
-                // The shared switch entry would tint the app logo.
-                DiscordLogoSettingsEntry(
+                OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_show_small_image"),
                     title = stringResource(R.string.discord_advanced_show_small_image),
                     text = stringResource(R.string.discord_advanced_show_small_image_description),
-                    onClick = { showSmallImage = !showSmallImage },
-                    trailingContent = {
-                        Switch(
-                            checked = showSmallImage,
-                            onCheckedChange = { showSmallImage = it },
-                            checkedThumbColor = colorPalette().textSecondary,
-                            checkedTrackColor = colorPalette().accent.copy(alpha = 0.3f),
-                            uncheckedThumbColor = colorPalette().textSecondary,
-                            uncheckedTrackColor = colorPalette().textSecondary.copy(alpha = 0.3f)
-                        )
-                    }
+                    isChecked = showSmallImage,
+                    onCheckedChange = { showSmallImage = it },
+                    icon = R.drawable.ic_launcher,
+                    iconTint = Color.Unspecified,
                 )
             }
             AnimatedVisibility(visible = showSmallImage) {
@@ -326,7 +311,9 @@ internal fun DiscordAdvancedSection(search: Search) {
             }
         }
         DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_buttons), showDivider = showGroupDividers) {
-            if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button1).contains(search.inputValue, true)) {
+            if (normalizedSettingsText(stringResource(R.string.discord_advanced_button1)).contains(query) ||
+                matchesButtonField(DiscordButtonField.FirstLabel) || matchesButtonField(DiscordButtonField.FirstUrl)
+            ) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1"),
                     title = stringResource(R.string.discord_advanced_button1),
@@ -341,20 +328,20 @@ internal fun DiscordAdvancedSection(search: Search) {
 
             AnimatedVisibility(visible = btn1Enabled) {
                 Column {
-                    if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_label).contains(search.inputValue, true)) {
+                    if (matchesButtonField(DiscordButtonField.FirstLabel)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1.label"),
-                            title = "${stringResource(R.string.discord_advanced_button1)} - ${stringResource(R.string.discord_advanced_button_label)}",
+                            modifier = Modifier.settingsSearchTarget(DiscordButtonField.FirstLabel.targetId),
+                            title = buttonTitles.getValue(DiscordButtonField.FirstLabel),
                             text = stringResource(R.string.discord_first_button_label_description),
                             selectedValueText = btn1Label.ifEmpty { stringResource(R.string.discord_presence_button_get_nzik) },
                             icon = R.drawable.text,
                             onClick = { showBtn1LabelDialog = true }
                         )
                     }
-                    if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_url).contains(search.inputValue, true)) {
+                    if (matchesButtonField(DiscordButtonField.FirstUrl)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button1.url"),
-                            title = "${stringResource(R.string.discord_advanced_button1)} - ${stringResource(R.string.discord_advanced_button_url)}",
+                            modifier = Modifier.settingsSearchTarget(DiscordButtonField.FirstUrl.targetId),
+                            title = buttonTitles.getValue(DiscordButtonField.FirstUrl),
                             text = stringResource(R.string.discord_first_button_url_description),
                             selectedValueText = btn1Url.ifEmpty { DiscordActivityBuilder.DEFAULT_BUTTON1_URL },
                             icon = R.drawable.open,
@@ -363,7 +350,9 @@ internal fun DiscordAdvancedSection(search: Search) {
                     }
                 }
             }
-            if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button2).contains(search.inputValue, true)) {
+            if (normalizedSettingsText(stringResource(R.string.discord_advanced_button2)).contains(query) ||
+                matchesButtonField(DiscordButtonField.SecondLabel) || matchesButtonField(DiscordButtonField.SecondUrl)
+            ) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2"),
                     title = stringResource(R.string.discord_advanced_button2),
@@ -375,20 +364,20 @@ internal fun DiscordAdvancedSection(search: Search) {
             }
             AnimatedVisibility(visible = btn2Enabled) {
                 Column {
-                    if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_label).contains(search.inputValue, true)) {
+                    if (matchesButtonField(DiscordButtonField.SecondLabel)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2.label"),
-                            title = "${stringResource(R.string.discord_advanced_button2)} - ${stringResource(R.string.discord_advanced_button_label)}",
+                            modifier = Modifier.settingsSearchTarget(DiscordButtonField.SecondLabel.targetId),
+                            title = buttonTitles.getValue(DiscordButtonField.SecondLabel),
                             text = stringResource(R.string.discord_second_button_label_description),
                             selectedValueText = btn2Label.ifEmpty { stringResource(R.string.discord_presence_button_listen_ytmusic) },
                             icon = R.drawable.text,
                             onClick = { showBtn2LabelDialog = true }
                         )
                     }
-                    if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_button_url).contains(search.inputValue, true)) {
+                    if (matchesButtonField(DiscordButtonField.SecondUrl)) {
                         OtherSettingsEntry(
-                            modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_button2.url"),
-                            title = "${stringResource(R.string.discord_advanced_button2)} - ${stringResource(R.string.discord_advanced_button_url)}",
+                            modifier = Modifier.settingsSearchTarget(DiscordButtonField.SecondUrl.targetId),
+                            title = buttonTitles.getValue(DiscordButtonField.SecondUrl),
                             text = stringResource(R.string.discord_second_button_url_description),
                             selectedValueText = btn2Url.ifEmpty { DiscordActivityBuilder.DEFAULT_BUTTON2_URL },
                             icon = R.drawable.open,
@@ -410,8 +399,12 @@ internal fun DiscordAdvancedSection(search: Search) {
                 )
             }
             // The manager reads the interval on each tick so edits apply live.
-            if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_refresh_interval).contains(search.inputValue, true)) {
-                DiscordRefreshIntervalEntry()
+            if (search.inputValue.isBlank() || listOf(
+                    stringResource(R.string.discord_advanced_refresh_interval),
+                    stringResource(R.string.discord_advanced_refresh_interval_description),
+                ).any { normalizedSettingsText(it).contains(query) }
+            ) {
+                DiscordRefreshIntervalEntry(Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_refresh_interval"))
             }
         }
     }
@@ -471,7 +464,7 @@ internal fun DiscordAdvancedSection(search: Search) {
     }
     DialogPresence(visible = showBtn1LabelDialog) {
         DiscordTemplateFieldDialog(
-            title = "${stringResource(R.string.discord_advanced_button1)} - ${stringResource(R.string.discord_advanced_button_label)}",
+            title = buttonTitles.getValue(DiscordButtonField.FirstLabel),
             value = btn1Label,
             placeholderValue = stringResource(R.string.discord_presence_button_get_nzik),
             onDone = { btn1Label = it },
@@ -480,7 +473,7 @@ internal fun DiscordAdvancedSection(search: Search) {
     }
     DialogPresence(visible = showBtn1UrlDialog) {
         DiscordTemplateFieldDialog(
-            title = "${stringResource(R.string.discord_advanced_button1)} - ${stringResource(R.string.discord_advanced_button_url)}",
+            title = buttonTitles.getValue(DiscordButtonField.FirstUrl),
             value = btn1Url,
             placeholderValue = DiscordActivityBuilder.DEFAULT_BUTTON1_URL,
             onDone = { btn1Url = it },
@@ -489,7 +482,7 @@ internal fun DiscordAdvancedSection(search: Search) {
     }
     DialogPresence(visible = showBtn2LabelDialog) {
         DiscordTemplateFieldDialog(
-            title = "${stringResource(R.string.discord_advanced_button2)} - ${stringResource(R.string.discord_advanced_button_label)}",
+            title = buttonTitles.getValue(DiscordButtonField.SecondLabel),
             value = btn2Label,
             placeholderValue = stringResource(R.string.discord_presence_button_listen_ytmusic),
             onDone = { btn2Label = it },
@@ -498,7 +491,7 @@ internal fun DiscordAdvancedSection(search: Search) {
     }
     DialogPresence(visible = showBtn2UrlDialog) {
         DiscordTemplateFieldDialog(
-            title = "${stringResource(R.string.discord_advanced_button2)} - ${stringResource(R.string.discord_advanced_button_url)}",
+            title = buttonTitles.getValue(DiscordButtonField.SecondUrl),
             value = btn2Url,
             placeholderValue = DiscordActivityBuilder.DEFAULT_BUTTON2_URL,
             onDone = { btn2Url = it },
@@ -598,83 +591,5 @@ private fun DiscordTemplateFieldDialog(
             }
         }
 
-    }
-}
-
-/** Preserves app logo colors that the shared accent-tinted entry would flatten. */
-@Composable
-private fun DiscordLogoSettingsEntry(
-    modifier: Modifier = Modifier,
-    title: String,
-    text: String,
-    onClick: () -> Unit,
-    trailingContent: @Composable () -> Unit
-) {
-    var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.95f else 1f,
-        animationSpec = tween(150),
-        label = "scale"
-    )
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clip(uiRoundnessShape())
-            .clickable(onClick = onClick),
-        color = Color.Transparent
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .scale(scale)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .iconBadgeBackground(
-                            color = colorPalette().accent.copy(alpha = 0.1f),
-                            shape = uiRoundnessShape()
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_launcher),
-                        tint = Color.Unspecified,
-                        contentDescription = null,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-
-                Column(
-                    modifier = Modifier.weight(1f)
-                ) {
-                    BasicText(
-                        text = title,
-                        style = typography().s.semiBold.copy(
-                            color = colorPalette().text
-                        )
-                    )
-                    if (text.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(2.dp))
-                        BasicText(
-                            text = text,
-                            style = typography().xs.copy(
-                                color = colorPalette().textSecondary
-                            )
-                        )
-                    }
-                }
-
-                trailingContent()
-            }
-        }
     }
 }

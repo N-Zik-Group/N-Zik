@@ -21,6 +21,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,10 +56,12 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.normalizedSettingsText
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.components.ui.header.HeaderBadgeBox
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
@@ -74,6 +79,7 @@ import app.n_zik.android.utils.discordUsernameKey
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.isAtLeastAndroid7
 import app.n_zik.android.utils.isDiscordPresenceEnabledKey
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.utils.rememberEncryptedPreference
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -81,6 +87,8 @@ import app.n_zik.android.utils.rememberEncryptedPreference
 @Composable
 internal fun AccountsDiscordCard(search: Search) {
     val context = LocalContext.current
+    val title = discordSettingsCardTitle(LocalResources.current::getString)
+    val matchesCardTitle = normalizedSettingsText(title).contains(normalizedSettingsText(search.inputValue))
     if (isAtLeastAndroid7) {
         AnimatedVisibility(
             visible = true,
@@ -88,12 +96,21 @@ internal fun AccountsDiscordCard(search: Search) {
             exit = settingsCardExit
         ) {
             SettingsSectionCard(
-                title = stringResource(R.string.settings_discord_title) + " " + stringResource(R.string.updates_build_beta_label),
+                title = stringResource(R.string.settings_discord_title),
                 icon = R.drawable.logo_discord,
+                headerAction = {
+                    HeaderBadgeBox(
+                        text = stringResource(R.string.updates_build_beta_label),
+                        color = colorPalette().accent,
+                        modifier = Modifier.testTag("settings.discord.beta"),
+                    )
+                },
                 content = {
                     if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_service_connection))
                     // The encrypted preference implementation needs API 24 or later.
-                    var isDiscordPresenceEnabled by rememberEncryptedPreference(isDiscordPresenceEnabledKey, false)
+                    var isDiscordPresenceEnabled by key(encryptedPreferencesUpdateTrigger) {
+                        rememberEncryptedPreference(isDiscordPresenceEnabledKey, false)
+                    }
                     var loginDiscord by remember { mutableStateOf(false) }
                     var discordPersonalAccessToken by rememberEncryptedPreference(
                         key = discordPersonalAccessTokenKey,
@@ -130,7 +147,7 @@ internal fun AccountsDiscordCard(search: Search) {
                         }
                     }
 
-                    if (search.inputValue.isBlank() || stringResource(R.string.discord_enable_rich_presence).contains(search.inputValue, true) || stringResource(R.string.discord_beta_warning).contains(search.inputValue, true)) {
+                    if (matchesCardTitle || stringResource(R.string.discord_enable_rich_presence).contains(search.inputValue, true) || stringResource(R.string.discord_beta_warning).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(
                             modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_enable_rich_presence"),
                             title = stringResource(R.string.discord_enable_rich_presence),

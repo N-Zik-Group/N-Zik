@@ -42,9 +42,10 @@ import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.LastFmSettingsCard
+import app.n_zik.android.components.settings.isLastFmSettingsAvailable
 import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.n_zik.android.components.settings.ProfileFaceCard
 import app.n_zik.android.components.settings.common.SettingsCardSlot
@@ -75,7 +76,7 @@ fun AccountsSettings(
 
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_ACCOUNTS, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -127,6 +128,7 @@ fun AccountsSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_ACCOUNTS, it)
@@ -180,7 +182,7 @@ internal fun AccountsSettingsContent(
             }
         }
         AccountsSyncCards(selectedCards, cardModifier)
-        if (selectedCards == null || R.string.settings_lastfm_title in selectedCards) {
+        if (isLastFmSettingsAvailable() && (selectedCards == null || R.string.settings_lastfm_title in selectedCards)) {
             SettingsCardSlot(R.string.settings_lastfm_title, order = 6, modifier = { cardModifier(R.string.settings_lastfm_title) }) {
                 LastFmSettingsCard()
             }

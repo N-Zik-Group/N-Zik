@@ -30,6 +30,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +58,7 @@ import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
+import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
@@ -81,6 +83,27 @@ import app.n_zik.lastfm.LastFm
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
+internal const val LastFmSettingsLoginTarget = "embedded.lastfm.account_login"
+internal const val LastFmSettingsLogoutTarget = "embedded.lastfm.account_logout"
+
+internal fun isLastFmSettingsAvailable(
+    apiKey: String = BuildConfig.LASTFM_API_KEY,
+    apiSecret: String = BuildConfig.LASTFM_API_SECRET,
+): Boolean = apiKey.isNotBlank() && apiSecret.isNotBlank()
+
+internal fun lastFmSettingsSearchFallback(target: String, isVisible: (String) -> Boolean): String? {
+    val master = "embedded.lastfm.lastfm_enable_scrobbling"
+    if (!target.startsWith("embedded.lastfm.") || target == master) return null
+    val prerequisite = when (target) {
+        LastFmSettingsLoginTarget -> LastFmSettingsLogoutTarget
+        LastFmSettingsLogoutTarget -> LastFmSettingsLoginTarget
+        "embedded.lastfm.lastfm_scrobble_threshold", "embedded.lastfm.lastfm_max_scrobble_delay" ->
+            "embedded.lastfm.lastfm_scrobble"
+        else -> master
+    }
+    return prerequisite.takeIf(isVisible) ?: master.takeIf(isVisible)
+}
+
 /**
  * Last.fm settings card shown in the Accounts tab.
  * Renders nothing when the API keys are not configured.
@@ -88,14 +111,16 @@ import timber.log.Timber
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LastFmSettingsCard() {
-    if (BuildConfig.LASTFM_API_KEY.isEmpty() || BuildConfig.LASTFM_API_SECRET.isEmpty()) return
+    if (!isLastFmSettingsAvailable()) return
 
     SettingsSectionCard(
         title = stringResource(R.string.settings_lastfm_title),
         icon = R.drawable.logo_lastfm,
         content = {
             CardCategoryLabel(stringResource(R.string.settings_group_service_connection))
-            var isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
+            var isLastfmScrobblingEnabled by key(encryptedPreferencesUpdateTrigger) {
+                rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
+            }
             var isLastfmNowPlayingEnabled by rememberEncryptedPreference(isLastfmNowPlayingEnabledKey, true)
             var isLastfmScrobbleEnabled by rememberEncryptedPreference(isLastfmScrobbleEnabledKey, true)
             var lastfmMinTrackDurationSeconds by rememberEncryptedPreference(lastfmMinTrackDurationSecondsKey, 30)
@@ -171,9 +196,10 @@ fun LastFmSettingsCard() {
                         }
                     }
 
+                    val isConnected = lastfmSession.isNotEmpty()
                     OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("embedded.lastfm.account_login"),
-                        title = if (lastfmSession.isNotEmpty()) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
+                        modifier = Modifier.settingsSearchTarget(if (isConnected) LastFmSettingsLogoutTarget else LastFmSettingsLoginTarget),
+                        title = stringResource(if (isConnected) R.string.account_action_logout else R.string.account_action_login),
                         text = stringResource(R.string.lastfm_login_description),
                         selectedValueText = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.settings_lastfm_scrobbling_description),
                         icon = R.drawable.logout,

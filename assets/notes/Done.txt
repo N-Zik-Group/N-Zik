@@ -760,3 +760,7 @@ Theme Store settings:
 Data and privacy settings:
 - fix(settings): align storage, history and privacy actions with search
   - Route requests to the visible action and keep data reset feedback specific.
+
+Account setting routes:
+- fix(settings): match account search to available controls
+  - Respect connected services, platform availability and individual control labels.

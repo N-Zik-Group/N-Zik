@@ -129,7 +129,9 @@ internal fun AccountsYouTubeCard(search: Search) {
             icon = R.drawable.ytmusic,
             content = {
                 // rememberEncryptedPreference only works correct with API 24 and up
-                var isYouTubeLoginEnabled by rememberEncryptedPreference(enableYouTubeLoginKey, false)
+                var isYouTubeLoginEnabled by key(encryptedPreferencesUpdateTrigger) {
+                    rememberEncryptedPreference(enableYouTubeLoginKey, false)
+                }
                 var isYouTubeSyncEnabled by key(encryptedPreferencesUpdateTrigger) {
                     rememberEncryptedPreference(enableYouTubeSyncKey, false)
                 }

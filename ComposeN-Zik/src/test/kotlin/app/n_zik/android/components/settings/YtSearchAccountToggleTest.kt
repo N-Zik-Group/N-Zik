@@ -90,7 +90,7 @@ class YtSearchAccountToggleTest {
 
     private fun onRowSwitch(): SemanticsNodeInteraction = composeRule.onNode(
         SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch),
-        useUnmergedTree = true,
+        useUnmergedTree = false,
     )
 
     @Test
