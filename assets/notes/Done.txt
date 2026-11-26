@@ -1040,3 +1040,7 @@ Playback:
 Playback:
 - fix(player): simplify the available queue duration label
   - Keep calculating available durations and display the subtotal using the existing label format.
+
+Settings:
+- fix(settings): reduce horizontal card content padding
+  - Use a 12 dp content gutter while preserving the 8 dp press feedback margin.

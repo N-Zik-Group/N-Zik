@@ -113,7 +113,7 @@ internal fun SettingsCardResultRow(
 @Composable
 internal fun SettingsResultCard(
     testTag: String,
-    contentPadding: Dp = 16.dp,
+    contentPadding: Dp = SettingsCardContentPadding,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {

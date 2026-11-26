@@ -39,10 +39,11 @@ import app.n_zik.android.components.glass.glassFilmColor
 import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 
 internal val LocalSettingsCardRowOutset = staticCompositionLocalOf { 0.dp }
+internal val SettingsCardContentPadding = 12.dp
 
 @Composable
 internal fun SettingsCardContent(
-    padding: Dp = 16.dp,
+    padding: Dp = SettingsCardContentPadding,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val outset = (padding - PressFeedbackHorizontalInset).coerceAtLeast(0.dp)
