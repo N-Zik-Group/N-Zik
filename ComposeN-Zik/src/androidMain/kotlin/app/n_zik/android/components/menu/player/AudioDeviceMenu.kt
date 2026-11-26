@@ -333,7 +333,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     Column(modifier = Modifier.glassAwareContentSize()) {
         val error = errorMessage
         if (!isLoading && error != null) {
-            AudioDeviceStatusMenu(error = error) {
+            AudioDeviceStatusMenu(error = error, menuStyle = menuStyle) {
                 errorMessage = null
                 isLoading = true
                 refreshDevices()
@@ -619,37 +619,60 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
 
 /** Uses the same menu surface for the progress and retry content. */
 @Composable
-internal fun AudioDeviceStatusMenu(error: String?, onRetry: () -> Unit) {
-    ListMenu.Menu(title = stringResource(R.string.audio_devices)) {
-        if (error == null) {
-            SectionTitle(stringResource(R.string.audio_output_title))
-            AudioDeviceListLoadingRows()
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Error,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp),
-                    tint = Color.hsl(0f, .8f, .35f + .30f * paletteDarkness())
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Keyed on the effective tone, not the un-remapped M3 onSurface token
-                Text(
-                    text = error,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colorPalette().text,
-                    textAlign = TextAlign.Center
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onRetry) {
-                    Text(text = stringResource(R.string.common_action_retry))
+internal fun AudioDeviceStatusMenu(
+    error: String?,
+    menuStyle: MenuStyle = MenuStyle.List,
+    onRetry: () -> Unit,
+) {
+    val title = stringResource(R.string.audio_devices)
+    if (menuStyle == MenuStyle.Grid) {
+        GridMenu.Menu(title = title) {
+            if (error != null) {
+                item(span = { GridItemSpan(maxLineSpan) }) { AudioDeviceRetry(error, onRetry) }
+            } else {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    SectionTitle(stringResource(R.string.audio_output_title))
+                }
+                items(count = AudioDeviceLoadingCount, key = { "audio-device-loading-$it" }) { index ->
+                    AudioDeviceGridLoadingTile(
+                        modifier = if (index == 0) Modifier.progressSemantics() else Modifier,
+                    )
                 }
             }
+        }
+    } else {
+        ListMenu.Menu(title = title) {
+            if (error != null) AudioDeviceRetry(error, onRetry)
+            else {
+                SectionTitle(stringResource(R.string.audio_output_title))
+                AudioDeviceListLoadingRows()
+            }
+        }
+    }
+}
+
+@Composable
+private fun AudioDeviceRetry(error: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Error,
+            contentDescription = null,
+            modifier = Modifier.size(48.dp),
+            tint = Color.hsl(0f, .8f, .35f + .30f * paletteDarkness()),
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = error,
+            style = MaterialTheme.typography.bodyMedium,
+            color = colorPalette().text,
+            textAlign = TextAlign.Center,
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onRetry) {
+            Text(text = stringResource(R.string.common_action_retry))
         }
     }
 }

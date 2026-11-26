@@ -1000,3 +1000,7 @@ Settings:
 Menus:
 - fix(menu): stabilize online item sheets while identity resolves
   - Keep the opening sheet anchors available during browse alias resolution.
+
+Menus:
+- fix(menu): keep the audio retry sheet in the selected layout
+  - Render device discovery status in List or Grid as configured.
