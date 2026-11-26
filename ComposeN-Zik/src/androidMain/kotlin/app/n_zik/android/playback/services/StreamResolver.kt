@@ -1,6 +1,13 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.core.migration.NameConvergence
+import app.n_zik.android.core.profiles.boundProcessStorageIdentity
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.components.song.isArtistIdForSong
+import app.n_zik.android.components.song.searchExactTrackSongs
+import app.n_zik.android.utils.isGenericReleaseChannel
+import app.n_zik.android.utils.splitArtistNames
+import app.n_zik.android.utils.usableTrackArtistName
 
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -21,6 +28,8 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.hasYouTubeAuthCookie
 import app.n_zik.innertube.models.PlayerResponse
 import app.n_zik.innertube.requests.nextPage
+import app.n_zik.innertube.requests.song
+import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.requests.artistPage
 import app.n_zik.android.appContext
 import app.n_zik.android.enums.DownloadQualityFormat
@@ -38,6 +47,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.core.database.ArtistMappingReconcile
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
@@ -48,7 +58,6 @@ import kotlinx.coroutines.runBlocking
 import java.io.IOException
 import org.jetbrains.annotations.NonBlocking
 import java.util.Collections
-import java.net.UnknownHostException
 import io.ktor.client.call.body
 import timber.log.Timber
 import app.n_zik.android.EXPLICIT_PREFIX
@@ -226,84 +235,143 @@ internal suspend fun upsertSongInfo(videoId: String, preferredAlbumId: String? =
     }
 
     var exactTrackAlbum: Album? = null
+    val owner = boundProcessStorageIdentity()
     try {
         Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: calling Innertube.nextPage for $videoId")
-        Innertube.nextPage(videoId = videoId)?.fold(
-            onSuccess = { nextPage ->
-            val songItem = nextPage.itemsPage?.items?.firstOrNull { it.info?.endpoint?.videoId == videoId }
-            if (songItem == null) {
-                Timber.tag(STREAM_RESOLVER_TAG).w("upsertSongInfo: nextPage did not contain $videoId")
-                return@fold
-            }
+        val next = Innertube.nextPage(videoId = videoId)?.onFailure { error ->
+            if (error is CancellationException) throw error
+            Timber.tag(STREAM_RESOLVER_TAG).w(error, "upsertSongInfo: nextPage failed for %s", videoId)
+        }?.getOrNull()
+        if (boundProcessStorageIdentity() != owner) return null
+        val songItem = next?.itemsPage?.items?.firstOrNull { it.info?.endpoint?.videoId == videoId }
+        if (songItem != null) {
             exactTrackAlbum = songItem.album?.let { album ->
                 album.endpoint?.browseId?.takeIf(String::isNotBlank)?.let { Album(id = it, title = album.name) }
             }
-            Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: got songItem '${songItem.info?.name}' for $videoId")
+            Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: got songItem '%s' for %s", songItem.info?.name, videoId)
             Database.upsert(songItem)
             yield()
+        } else {
+            Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: nextPage did not contain %s", videoId)
+        }
 
-            // Read IDs from DB (retry up to 3 times if empty)
-            var artistIdsFromDb = emptyList<Artist>()
-            var storedAlbums = emptyList<Album>()
-            for (attempt in 1..3) {
-                kotlinx.coroutines.delay(3000L * attempt)
+        // Read IDs from DB (retry up to 3 times if empty)
+        var artistIdsFromDb = emptyList<Artist>()
+        var storedAlbums = emptyList<Album>()
+        for (attempt in 1..3) {
+            kotlinx.coroutines.delay(3000L * attempt)
+            artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
+                .filterNot { isGenericReleaseChannel(it.name) }
+            storedAlbums = Database.songAlbumMapTable.findAlbumsOf(videoId).firstOrNull().orEmpty()
+            val needsAlbum = preferredAlbumId == null && exactTrackAlbum == null && storedAlbums.isEmpty()
+            if (attempt == 1 && (artistIdsFromDb.isEmpty() || needsAlbum) &&
+                boundProcessStorageIdentity() == owner
+            ) {
+                val storedSong = Database.songTable.findByIdDirect(videoId)
+                if (storedSong != null) {
+                    val matches = searchExactTrackSongs(storedSong)
+                    Timber.tag(STREAM_RESOLVER_TAG).d("[Track credits] %s: %d exact title-search results", videoId, matches.size)
+                    val storedByline = usableTrackArtistName(storedSong.artistsText).splitArtistNames()
+                    val needsArtist = artistIdsFromDb.isEmpty()
+                    val titleCredits = if (needsArtist) {
+                        matchingPlaybackArtists(matches.flatMap { it.authors.orEmpty() }, storedByline)
+                    } else emptyList()
+                    val details = if (needsArtist && titleCredits.isEmpty() || needsAlbum && matches.none { it.album != null }) {
+                        Innertube.song(videoId)?.onFailure { error ->
+                            if (error is CancellationException) throw error
+                        }?.getOrNull()?.takeIf { it.key == videoId }
+                    } else null
+                    val detailNames = ArtistMappingReconcile.parseAuthorEntries(details?.authors)
+                        .mapNotNull { usableTrackArtistName(it.first) }.distinct()
+                    val byline = storedByline.ifEmpty { detailNames }
+                    val exactCredits = titleCredits.ifEmpty { matchingPlaybackArtists(details?.authors.orEmpty(), byline) }
+                    val artists = if (needsArtist && exactCredits.isEmpty()) {
+                        val albumId = selectOnlinePlaybackAlbumId(preferredAlbumId, exactTrackAlbum?.id, storedAlbums.map(Album::id))
+                            ?.takeIf { it.startsWith("MPRE") }
+                        val page = albumId?.let {
+                            YtMusic.getAlbum(it).onFailure { error ->
+                                if (error is CancellationException) throw error
+                            }.getOrNull()
+                        }
+                        val track = page?.songs?.firstOrNull { it.key == videoId }
+                        if (track == null) emptyList()
+                        else matchingPlaybackArtists(track.authors.orEmpty(), byline).ifEmpty {
+                            if (byline.isEmpty()) emptyList()
+                            else matchingPlaybackArtists(page.album.authors.orEmpty(), byline)
+                        }
+                    } else exactCredits
+                    val album = (matches + listOfNotNull(details)).mapNotNull { match ->
+                        val credit = match.album ?: return@mapNotNull null
+                        val id = credit.endpoint?.browseId?.takeIf { it.startsWith("MPRE") }
+                        id?.let { Album(it, credit.name) }
+                    }.distinctBy(Album::id).singleOrNull()
+                    Database.transaction {
+                        if (boundProcessStorageIdentity() != owner) return@transaction
+                        val current = songTable.findByIdDirect(videoId) ?: return@transaction
+                        if (current.artistsText == storedSong.artistsText) {
+                            if (artists.isNotEmpty()) {
+                                val linked = artistTable.findBySongIdDirect(videoId)
+                                if (linked.all { isGenericReleaseChannel(it.name) && !it.id.startsWith(MODIFIED_PREFIX) }) {
+                                    artists.forEach { mapIgnore(it, current) }
+                                    linked.forEach { songArtistMapTable.deletePairDirect(videoId, it.id) }
+                                }
+                            }
+                            val refreshedNames = detailNames.ifEmpty { artists.mapNotNull(Artist::name) }
+                            if (refreshedNames.isNotEmpty() && usableTrackArtistName(current.artistsText) == null) {
+                                songTable.updateArtists(videoId, refreshedNames.joinToString(", "))
+                            }
+                        }
+                        if (needsAlbum && album != null && songAlbumMapTable.findAlbumsOfDirect(videoId).isEmpty()) {
+                            mapIgnore(album, current)
+                        }
+                    }
+                }
                 artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
+                    .filterNot { isGenericReleaseChannel(it.name) }
                 storedAlbums = Database.songAlbumMapTable.findAlbumsOf(videoId).firstOrNull().orEmpty()
-                if (artistIdsFromDb.isNotEmpty() || storedAlbums.isNotEmpty()) break
-                // First attempt only: the queue brought no artist (the video case —
-                // a video's byline channel is never a YTM artist) and no link
-//
-                // exists yet, so identify the video's channel through a YTM video
-                // search and copy it as the artist. A link already in the DB
-//
-                // breaks the loop above, so the search never runs for audio or
-//
-                // already-linked videos.
-                if (attempt == 1 && songItem.authors.isNullOrEmpty()) {
-                    val storedSong = Database.songTable.findByIdDirect(videoId)
+                if (artistIdsFromDb.isEmpty() && boundProcessStorageIdentity() == owner) {
                     resolveVideoArtistFallback(
                         videoId = videoId,
-                        queueTitle = songItem.info?.name,
+                        queueTitle = songItem?.info?.name,
                         dbTitle = storedSong?.title,
-                        storedThumbnailUrl = storedSong?.thumbnailUrl
+                        stillCurrent = { boundProcessStorageIdentity() == owner },
                     )
-                    // The fallback commits in a suspending transaction before
-                    // the re-read, so a new link (if any) is already visible:
-//
-                    // re-read the IDs before continuing the retry loop.
                     artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
-                    storedAlbums = Database.songAlbumMapTable.findAlbumsOf(videoId).firstOrNull().orEmpty()
-                    if (artistIdsFromDb.isNotEmpty() || storedAlbums.isNotEmpty()) break
+                        .filterNot { isGenericReleaseChannel(it.name) }
                 }
-                Timber.tag(STREAM_RESOLVER_TAG).d("[IDs] attempt $attempt/3: no artist/album IDs for $videoId, retrying...")
             }
-            if (artistIdsFromDb.isEmpty() && storedAlbums.isEmpty() && exactTrackAlbum == null) {
-                Timber.tag(STREAM_RESOLVER_TAG).w("[IDs] No artist/album IDs for $videoId after 3 retries, skipping.")
-            }
+            if (artistIdsFromDb.isNotEmpty() || storedAlbums.isNotEmpty()) break
+            Timber.tag(STREAM_RESOLVER_TAG).d("[IDs] attempt $attempt/3: no artist/album IDs for $videoId, retrying...")
+        }
+        if (artistIdsFromDb.isEmpty() && storedAlbums.isEmpty() && exactTrackAlbum == null) {
+            Timber.tag(STREAM_RESOLVER_TAG).w("[IDs] No artist/album IDs for $videoId after 3 retries, skipping.")
+        }
 
-            // Artist cache — read IDs from DB
-            artistIdsFromDb?.forEach { artist ->
-                val artistId = artist.id
-                if (!artistId.isNullOrBlank()) {
-                    val dbArtist = Database.artistTable.findByIdDirect(artistId)
-                    val currentTime = System.currentTimeMillis()
-                    val lastFetchTime = dbArtist?.lastFetch
-                    val isArtistRecentlyFetched = lastFetchTime?.let { currentTime - it < 2592000000L } == true
+        // Artist cache — read IDs from DB
+        artistIdsFromDb.forEach { artist ->
+            val artistId = artist.id
+            if (!artistId.isNullOrBlank()) {
+                val dbArtist = Database.artistTable.findByIdDirect(artistId)
+                val currentTime = System.currentTimeMillis()
+                val lastFetchTime = dbArtist?.lastFetch
+                val isArtistRecentlyFetched = lastFetchTime?.let { currentTime - it < 2592000000L } == true
 
-                    if (isArtistRecentlyFetched) {
-                        val msAgo = currentTime - (lastFetchTime ?: currentTime)
-                        val daysAgo = msAgo / 86400000L
-                        Timber.tag(STREAM_RESOLVER_TAG).d("[Artist Cache] $artistId was fetched $daysAgo days ago ($msAgo ms), skipping.")
-                    } else if (fetchingArtists.add(artistId)) {
-                        Timber.tag(STREAM_RESOLVER_TAG).d("[Artist Cache] $artistId outdated, fetching in background.")
-                        scope.launch(NzikDispatchers.PLAYBACK) {
-                            try {
-                                Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: fetching artist page for $artistId")
-                                val artistPage = Innertube.artistPage(browseId = artistId)?.getOrNull()
-                                if (artistPage != null) {
-                                    Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: got artist page '${artistPage.name}' for $artistId")
-                                    Database.asyncTransaction {
-                                        val existing = Database.artistTable.findByIdDirect(artistId)
+                if (isArtistRecentlyFetched) {
+                    val msAgo = currentTime - (lastFetchTime ?: currentTime)
+                    val daysAgo = msAgo / 86400000L
+                    Timber.tag(STREAM_RESOLVER_TAG).d("[Artist Cache] $artistId was fetched $daysAgo days ago ($msAgo ms), skipping.")
+                } else if (fetchingArtists.add(artistId)) {
+                    Timber.tag(STREAM_RESOLVER_TAG).d("[Artist Cache] $artistId outdated, fetching in background.")
+                    scope.launch(NzikDispatchers.PLAYBACK) {
+                        try {
+                            Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: fetching artist page for $artistId")
+                            val artistPage = Innertube.artistPage(browseId = artistId)?.getOrNull()
+                            if (artistPage != null) {
+                                Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: got artist page '${artistPage.name}' for $artistId")
+                                Database.asyncTransaction {
+                                    transaction {
+                                        if (boundProcessStorageIdentity() != owner) return@transaction
+                                        val existing = artistTable.findByIdDirect(artistId)
                                         if (existing != null) {
                                             if (artistPage.name.isNullOrBlank()) {
                                                 // Page is empty (classic channel, no music header): stored
@@ -317,69 +385,74 @@ internal suspend fun upsertSongInfo(videoId: String, preferredAlbumId: String? =
                                                 // deleted between the TTL check and the fetch is a no-op).
                                                 Timber.tag(STREAM_RESOLVER_TAG).d("[Artist Cache] $artistId page empty — keeping stored name/thumbnail, lastFetch updated")
                                             }
-                                            Database.artistTable.upsert(existing.copy(
-                                                name = mergePageValue(existing.name, artistPage.name),
+                                            val name = mergePageValue(existing.name, artistPage.name)
+                                            artistTable.upsert(existing.copy(
+                                                name = name,
                                                 thumbnailUrl = mergePageValue(existing.thumbnailUrl, artistPage.thumbnail?.url),
                                                 lastFetch = System.currentTimeMillis()
                                             ))
+                                            if (name != null && existing.name != null && name != existing.name) {
+                                                NameConvergence.propagateRename(this, artistId, existing.name, name)
+                                            }
                                         }
                                     }
                                 }
-                            } catch (e: Exception) {
-                                Timber.tag(STREAM_RESOLVER_TAG).w(e, "Failed to fetch artist $artistId")
-                            } finally {
-                                fetchingArtists.remove(artistId)
                             }
-                        }
-                    }
-                }
-            }
-
-            val albumId = selectOnlinePlaybackAlbumId(preferredAlbumId, exactTrackAlbum?.id, storedAlbums.map(Album::id))
-                ?.takeUnless { it.startsWith("LOCAL_ALBUM_") }
-
-            if (!albumId.isNullOrBlank()) {
-                val dbAlbum = Database.albumTable.findByIdDirect(albumId)
-                val currentTime = System.currentTimeMillis()
-                val lastFetchTime = dbAlbum?.lastFetch
-                val isRecentlyFetched = lastFetchTime?.let { currentTime - it < 2592000000L } == true
-
-                if (isRecentlyFetched) {
-                    val msAgo = currentTime - (lastFetchTime ?: currentTime)
-                    val daysAgo = msAgo / 86400000L
-                    Timber.tag(STREAM_RESOLVER_TAG).d("[Album Cache] $albumId fetched $daysAgo days ago ($msAgo ms), skipping.")
-                } else if (fetchingAlbums.add(albumId)) {
-                    Timber.tag(STREAM_RESOLVER_TAG).d("[Album Cache] $albumId outdated, fetching songs.")
-                    scope.launch(NzikDispatchers.PLAYBACK) {
-                        try {
-                            val savedCount = fetchAndSaveAlbumSongs(albumId)
-                            if (savedCount < 2) {
-                                Timber.tag(STREAM_RESOLVER_TAG).w("[Album Cache] $albumId: only $savedCount songs saved")
-                            }
+                        } catch (e: Exception) {
+                            Timber.tag(STREAM_RESOLVER_TAG).w(e, "Failed to fetch artist $artistId")
                         } finally {
-                            fetchingAlbums.remove(albumId)
+                            fetchingArtists.remove(artistId)
                         }
                     }
                 }
-            } else {
-                Timber.tag(STREAM_RESOLVER_TAG).d("[Album Cache] No album found for $videoId, skipping album fetch")
-            }
-        },
-        onFailure = {
-            when (it) {
-                is UnknownHostException -> {
-                    Timber.tag(STREAM_RESOLVER_TAG).w("upsertSongInfo: UnknownHostException for $videoId (DNS failure)")
-                    justInserted = videoId
-                }
-                else -> Timber.tag(STREAM_RESOLVER_TAG).w(it, "upsertSongInfo: FAILED for $videoId")
             }
         }
-    )
+
+        val albumId = selectOnlinePlaybackAlbumId(preferredAlbumId, exactTrackAlbum?.id, storedAlbums.map(Album::id))
+            ?.takeUnless { it.startsWith("LOCAL_ALBUM_") }
+
+        if (!albumId.isNullOrBlank()) {
+            val dbAlbum = Database.albumTable.findByIdDirect(albumId)
+            val currentTime = System.currentTimeMillis()
+            val lastFetchTime = dbAlbum?.lastFetch
+            val isRecentlyFetched = lastFetchTime?.let { currentTime - it < 2592000000L } == true
+
+            if (isRecentlyFetched) {
+                val msAgo = currentTime - (lastFetchTime ?: currentTime)
+                val daysAgo = msAgo / 86400000L
+                Timber.tag(STREAM_RESOLVER_TAG).d("[Album Cache] $albumId fetched $daysAgo days ago ($msAgo ms), skipping.")
+            } else if (fetchingAlbums.add(albumId)) {
+                Timber.tag(STREAM_RESOLVER_TAG).d("[Album Cache] $albumId outdated, fetching songs.")
+                scope.launch(NzikDispatchers.PLAYBACK) {
+                    try {
+                        val savedCount = fetchAndSaveAlbumSongs(albumId)
+                        if (savedCount < 2) {
+                            Timber.tag(STREAM_RESOLVER_TAG).w("[Album Cache] $albumId: only $savedCount songs saved")
+                        }
+                    } finally {
+                        fetchingAlbums.remove(albumId)
+                    }
+                }
+            }
+        } else {
+            Timber.tag(STREAM_RESOLVER_TAG).d("[Album Cache] No album found for $videoId, skipping album fetch")
+        }
     } finally {
         fetchingSongInfos.remove(videoId)
     }
     return exactTrackAlbum
 }
+
+internal fun matchingPlaybackArtists(
+    credits: List<Innertube.Info<NavigationEndpoint.Endpoint.Browse>>,
+    byline: List<String>,
+): List<Artist> = credits.mapNotNull { author ->
+    val id = author.endpoint?.browseId?.takeIf { isArtistIdForSong(it, false) }
+    val name = usableTrackArtistName(author.name)
+    if (id != null && name != null && (byline.isEmpty() || byline.any { it.equals(name, ignoreCase = true) })) {
+        Artist(id, name)
+    } else null
+}.distinctBy(Artist::id).groupBy { it.name.orEmpty().lowercase() }.values.mapNotNull { it.singleOrNull() }
 
 /**
  * Fetches all songs from an album and saves them to the database.

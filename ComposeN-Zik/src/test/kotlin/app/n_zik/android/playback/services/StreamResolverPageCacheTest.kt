@@ -30,6 +30,7 @@ import app.n_zik.innertube.requests.AlbumPage
 import app.n_zik.innertube.requests.artistPage
 import app.n_zik.innertube.requests.nextPage
 import app.n_zik.innertube.requests.searchPage
+import kotlin.coroutines.SuspendFunction1
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -73,6 +74,10 @@ class StreamResolverPageCacheTest {
 
         mockkObject(Database)
         coEvery { Database.upsert(any<Innertube.SongItem>()) } just runs
+        val transaction = slot<SuspendFunction1<Database, Unit>>()
+        coEvery { Database.transaction(capture(transaction)) } answers {
+            runBlocking { transaction.captured(Database) }
+        }
         every { Database.songArtistMapTable } returns songArtistMapTable
         every { Database.songAlbumMapTable } returns songAlbumMapTable
         every { Database.artistTable } returns artistTable

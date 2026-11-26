@@ -652,3 +652,7 @@ Account settings reset:
 Podcast bookmarks:
 - fix(podcast): preserve publisher and episode source identity
   - Reuse the complete source when bookmarking and refreshing saved podcasts.
+
+Playback metadata resolution:
+- fix(playback): verify stream metadata against the requested track
+  - Use the exact video identity and reconcile verified song credits.
