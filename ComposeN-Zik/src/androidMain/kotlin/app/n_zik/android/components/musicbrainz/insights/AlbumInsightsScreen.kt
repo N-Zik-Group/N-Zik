@@ -82,7 +82,8 @@ import app.n_zik.android.uiRoundnessShape
 @Composable
 fun AlbumInsightsScreen(
     navController: NavController,
-    albumId: String
+    albumId: String,
+    albumArtistId: String? = null,
 ) {
     val viewModel: AlbumInsightsViewModel = viewModel(factory = AlbumInsightsViewModel)
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -91,8 +92,8 @@ fun AlbumInsightsScreen(
     val hapticFeedback = LocalHapticFeedback.current
     val gridItemSize = ItemSize.init(HOME_ALBUM_ITEM_SIZE)
 
-    LaunchedEffect(albumId) {
-        viewModel.loadAlbum(albumId)
+    LaunchedEffect(albumId, albumArtistId) {
+        viewModel.loadAlbum(albumId, albumArtistId)
     }
 
     val songIds = remember(state.tracks) { state.tracks.map { it.id } }

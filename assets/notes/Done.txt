@@ -716,3 +716,7 @@ Live proxy preference:
 Settings footer chrome:
 - fix(settings): keep restart actions below the mini-player
   - Share the updater-style footer and reserve the mini-player and system navigation insets once.
+
+Album insights:
+- fix(insights): use credits from the selected album edition
+  - Cancel previous requests and prefer the published credit for the current album.

@@ -5,9 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.components.menu.album.resolveAlbumCreditArtists
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
 import app.n_zik.android.Dependencies
 import app.n_zik.android.core.database.Database
 import app.n_zik.innertube.Innertube
@@ -15,6 +19,8 @@ import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.ArtistSection
 import timber.log.Timber
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.preferences
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,8 +49,11 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
     private val _state = MutableStateFlow(AlbumDetailUiState())
     val state: StateFlow<AlbumDetailUiState> = _state.asStateFlow()
 
-    fun loadAlbum(albumId: String) {
-        viewModelScope.launch {
+    private var albumLoad: Job? = null
+
+    fun loadAlbum(albumId: String, albumArtistId: String? = null) {
+        albumLoad?.cancel()
+        albumLoad = viewModelScope.launch {
             _state.value = AlbumDetailUiState(isLoading = true)
 
             val album = withContext(NzikDispatchers.DATA) {
@@ -70,14 +79,18 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
 
             val deviceAlbum = isDeviceAlbumId(albumId)
             val artist = withContext(NzikDispatchers.DATA) {
-                val authors = album.authorsText?.trim().orEmpty()
-                val byName = if (!deviceAlbum && authors.isNotBlank()) artistTable.findByNameDirect(authors) else null
-                // Name matching is fragile (casing, "feat.", collab text); fall back to the
-                // actual SongArtistMap relation of the album's own tracks, same source used
-//
-                // by "Go to artist" elsewhere in the app.
-                byName ?: tracks.firstOrNull()?.let { song ->
-                    artistTable.findBySongIdDirect(song.id).firstOrNull()
+                val authors = cleanPrefix(album.authorsText.orEmpty()).trim()
+                if (deviceAlbum) {
+                    authors.takeIf(String::isNotBlank)?.let {
+                        artistTable.allByNameIgnoreCase(it).singleOrNull { candidate -> isDeviceArtistId(candidate.id) }
+                    }
+                } else {
+                    val header = albumArtistId?.takeIf(String::isNotBlank)?.let { Artist(it, authors) }
+                    resolveAlbumCreditArtists(
+                        album.authorsText,
+                        listOfNotNull(header),
+                        getApplication<Application>().applicationContext.preferences
+                    ).singleOrNull()
                 }
             }
 
@@ -99,13 +112,35 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
             }
             val localAlbumsAll = localOtherAlbums + localSinglesAndEps
 
+            val stats = withContext(NzikDispatchers.DATA) {
+                val likedSongs = tracks.count { it.likedAt != null }
+                val totalPlayTimeMs = eventTable.getAlbumTotalPlayTime(albumId).first()
+                val playCount = eventTable.getAlbumPlayCount(albumId).first()
+                AlbumStats(totalPlayTimeMs, playCount, likedSongs, tracks.size)
+            }
+
+            val localState = AlbumDetailUiState(
+                isLoading = false,
+                album = album,
+                tracks = tracks,
+                topTracks = topTracks,
+                artist = artist,
+                otherAlbums = localOtherAlbums,
+                singlesAndEps = localSinglesAndEps,
+                externalLinks = album.links.orEmpty(),
+                stats = stats
+            )
+
+            _state.value = localState
+
             // Local library only tracks albums the user has already interacted with, so
             // fetch the artist's YouTube Music page to fill in what's missing: full
 //
             // albums go into "Other albums", singles/EPs into their own section
             // (YTM bundles EPs with singles under "Singles & EPs", no way to split them).
             val (missingAlbums, missingSinglesAndEps) = withContext(NzikDispatchers.DATA) {
-                val artistId = artist?.id?.takeIf { !deviceAlbum && it.isNotBlank() && !it.startsWith("local:") }
+                val artistId = artist?.id?.removePrefix(MODIFIED_PREFIX)
+                    ?.takeIf { !deviceAlbum && it.isNotBlank() && !it.startsWith("local:") && !it.startsWith("LOCAL_ARTIST_") }
                 if (artistId == null) {
                     Timber.tag("AlbumInsights").d(
                         "missingAlbums skipped: no usable YouTube artist id (artist.id=${artist?.id})"
@@ -161,27 +196,12 @@ class AlbumInsightsViewModel(application: Application) : AndroidViewModel(applic
                 }
             }
 
-            val otherAlbums = localOtherAlbums + missingAlbums
-            val singlesAndEps = localSinglesAndEps + missingSinglesAndEps
-
-            val stats = withContext(NzikDispatchers.DATA) {
-                val likedSongs = tracks.count { it.likedAt != null }
-                val totalPlayTimeMs = eventTable.getAlbumTotalPlayTime(albumId).first()
-                val playCount = eventTable.getAlbumPlayCount(albumId).first()
-                AlbumStats(totalPlayTimeMs, playCount, likedSongs, tracks.size)
+            if (missingAlbums.isNotEmpty() || missingSinglesAndEps.isNotEmpty()) {
+                _state.value = localState.copy(
+                    otherAlbums = localOtherAlbums + missingAlbums,
+                    singlesAndEps = localSinglesAndEps + missingSinglesAndEps,
+                )
             }
-
-            _state.value = AlbumDetailUiState(
-                isLoading = false,
-                album = album,
-                tracks = tracks,
-                topTracks = topTracks,
-                artist = artist,
-                otherAlbums = otherAlbums,
-                singlesAndEps = singlesAndEps,
-                externalLinks = album.links.orEmpty(),
-                stats = stats
-            )
 
             // "Other albums"/"Singles & EPs" cards only get their rating badge once the
             // user actually opens that specific album (AlbumScreen's own on-view sync) —
