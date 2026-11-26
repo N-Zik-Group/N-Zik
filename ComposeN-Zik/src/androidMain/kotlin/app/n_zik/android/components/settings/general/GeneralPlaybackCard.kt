@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.DurationInMinutes
 import app.n_zik.android.enums.PauseBetweenSongs
+import app.n_zik.android.playback.utils.parsePreviousTrackThreshold
 import app.n_zik.android.utils.crossfadeDurationKey
 import app.n_zik.android.utils.crossfadeEnabledKey
 import app.n_zik.android.utils.crossfadeGaplessKey
@@ -200,7 +201,7 @@ fun GeneralPlaybackCard(
                 modifier = Modifier.settingsSearchTarget("general.playback.jump_previous"),
                 title = stringResource(R.string.settings_playback_previous_restart_threshold_label),
                 text = stringResource(R.string.player_previous_track_threshold_description),
-                selectedValueText = jumpPrevious,
+                selectedValueText = (parsePreviousTrackThreshold(jumpPrevious) ?: 0).toString(),
                 onClick = { showJumpPreviousDialog = true },
                 icon = R.drawable.play_skip_back
             )
@@ -210,10 +211,12 @@ fun GeneralPlaybackCard(
                     title = stringResource(R.string.settings_playback_previous_restart_threshold_description),
                     initialValue = jumpPrevious,
                     placeholder = stringResource(R.string.settings_playback_previous_restart_threshold_description),
+                    allowEmpty = true,
+                    keyboardType = KeyboardType.Number,
+                    isValid = { parsePreviousTrackThreshold(it) != null },
                     onDismiss = { showJumpPreviousDialog = false },
                     onSetValue = {
-                        if (TextUtils.isDigitsOnly(it))
-                            jumpPrevious = it
+                        parsePreviousTrackThreshold(it)?.let { seconds -> jumpPrevious = seconds.toString() }
                     }
                 ).apply {
                     showDialog()

@@ -473,3 +473,8 @@ Audio output:
 - fix(menu): format localized audio device battery levels
   - Format the battery subtitle consistently in both layouts and handle an unescaped percent sign.
   - Cover the Romanian battery label in AudioDeviceBatteryFormatTest.
+
+Playback:
+- fix(player): validate the previous track threshold
+  - Accept blank input and reject invalid or oversized values before saving.
+  - Share overflow-safe threshold calculations across both layouts, lyrics and Bridge.

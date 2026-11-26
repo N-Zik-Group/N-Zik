@@ -94,6 +94,8 @@ import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.getUnlikedIcon
 import app.n_zik.android.utils.jumpPreviousKey
+import app.n_zik.android.playback.utils.parsePreviousTrackThreshold
+import app.n_zik.android.playback.utils.shouldRestartTrackOnPrevious
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.playerControlsTypeKey
@@ -487,7 +489,7 @@ fun ControlsEssential(
     )
     val playGlyph = playerControlGlyphColor(playColor, playPlate, measuredBackdrop = playBackdrop)
     val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey,PlayerBackgroundColors.AnimatedGradient)
-    var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
+    val jumpPrevious by rememberPreference(jumpPreviousKey, "3")
     val currentMediaItem = player.currentMediaItem
 
     val likeInteraction = remember { MutableInteractionSource() }
@@ -541,8 +543,8 @@ fun ControlsEssential(
                 enabled = previousEnabled,
                 onClick = {
                     if (previousEnabled) {
-                        if (jumpPrevious == "") jumpPrevious = "0"
-                        if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
+                        val threshold = parsePreviousTrackThreshold(jumpPrevious) ?: 0
+                        if (shouldRestartTrackOnPrevious(player.hasPreviousMediaItem(), player.currentPosition, threshold)) {
                             player.seekTo(0)
                         }
                         else if (carouselNavigation?.invoke(false) != true) player.playPrevious()

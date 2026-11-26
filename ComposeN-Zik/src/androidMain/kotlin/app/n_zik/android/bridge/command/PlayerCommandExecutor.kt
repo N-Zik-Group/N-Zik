@@ -12,6 +12,8 @@ import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.findMediaItemIndexById
 import app.n_zik.android.utils.jumpPreviousKey
+import app.n_zik.android.playback.utils.parsePreviousTrackThreshold
+import app.n_zik.android.playback.utils.shouldRestartTrackOnPrevious
 import app.n_zik.android.utils.playNext
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playbackSpeedKey
@@ -69,7 +71,7 @@ internal class PreferencePlayerSettings(context: Context) : PlayerSettings {
 
     // Same reading as the phone's previous button: an empty value means "0"
     override fun jumpPreviousSeconds(): Int =
-        appContext.preferences.getString(jumpPreviousKey, "3")?.trim()?.toIntOrNull() ?: 0
+        parsePreviousTrackThreshold(appContext.preferences.getString(jumpPreviousKey, "3").orEmpty()) ?: 0
 
     override fun saveSpeed(speed: Float) {
         appContext.preferences.edit().putFloat(playbackSpeedKey, speed).apply()
@@ -228,7 +230,7 @@ internal class PlayerCommandExecutor(
             PlayerAction.Previous -> {
                 // Same rule as the phone's previous button (Modern controls)
                 val jumpSeconds = settings.jumpPreviousSeconds()
-                if (!p.hasPreviousMediaItem() || (jumpSeconds != 0 && p.currentPosition > jumpSeconds * 1_000L)) {
+                if (shouldRestartTrackOnPrevious(p.hasPreviousMediaItem(), p.currentPosition, jumpSeconds)) {
                     p.seekTo(0)
                     Outcome.Done()
                 } else {

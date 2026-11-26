@@ -78,6 +78,8 @@ import app.n_zik.android.utils.doubleShadowDrop
 import app.n_zik.android.utils.dropShadow
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.jumpPreviousKey
+import app.n_zik.android.playback.utils.parsePreviousTrackThreshold
+import app.n_zik.android.playback.utils.shouldRestartTrackOnPrevious
 import app.n_zik.android.utils.playPrevious
 import app.n_zik.android.utils.playerControlsTypeKey
 import app.n_zik.android.utils.playerInfoShowIconsKey
@@ -462,7 +464,7 @@ fun ControlsModern(
         targetValue = if (isRotated) 360F else 0f,
         animationSpec = tween(durationMillis = 200), label = ""
     )
-    var jumpPrevious by rememberPreference(jumpPreviousKey, "3")
+    val jumpPrevious by rememberPreference(jumpPreviousKey, "3")
     // Listen Together guest lock (spec-listen-together): guests in a room cannot
     // skip tracks; play/pause stays available.
 
@@ -487,8 +489,8 @@ fun ControlsModern(
           backgroundColor = playerTransportNativeFill(transportFilm, transportSettings),
           onClick = {
               if (previousEnabled) {
-                  if (jumpPrevious == "") jumpPrevious = "0"
-                  if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
+                  val threshold = parsePreviousTrackThreshold(jumpPrevious) ?: 0
+                  if (shouldRestartTrackOnPrevious(player.hasPreviousMediaItem(), player.currentPosition, threshold)) {
                       player.seekTo(0)
                   }
                   else if (carouselNavigation?.invoke(false) != true) player.playPrevious()
@@ -751,8 +753,8 @@ if (isBuffering && shouldBePlaying) {
                           enabled = previousEnabled,
                           onClick = {
                               if (previousEnabled) {
-                                  if (jumpPrevious == "") jumpPrevious = "0"
-                                  if(!player.hasPreviousMediaItem() || (jumpPrevious != "0" && player.currentPosition > jumpPrevious.toInt()*1000)){
+                                  val threshold = parsePreviousTrackThreshold(jumpPrevious) ?: 0
+                                  if (shouldRestartTrackOnPrevious(player.hasPreviousMediaItem(), player.currentPosition, threshold)) {
                                       player.seekTo(0)
                                   }
                                   else if (carouselNavigation?.invoke(false) != true) player.playPrevious()

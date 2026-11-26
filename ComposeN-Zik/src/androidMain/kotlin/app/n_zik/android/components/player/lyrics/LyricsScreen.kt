@@ -101,6 +101,8 @@ import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.expandedplayerKey
 import app.n_zik.android.utils.jumpPreviousKey
+import app.n_zik.android.playback.utils.parsePreviousTrackThreshold
+import app.n_zik.android.playback.utils.shouldRestartTrackOnPrevious
 import app.n_zik.android.utils.karaokeRespectAgentPositionKey
 import app.n_zik.android.utils.landscapeControlsKey
 import app.n_zik.android.utils.lyricsAlignmentKey
@@ -311,7 +313,7 @@ fun LyricsScreen(
         val translator = remember { Translator() }
         val effectRotationEnabled by rememberPreference(effectRotationKey, false)
         var landscapeControls by rememberPreference(landscapeControlsKey, true)
-        var jumpPrevious by rememberPreference(jumpPreviousKey,"3")
+        val jumpPrevious by rememberPreference(jumpPreviousKey, "3")
         // Issue #881 (gh-881): tolerant saver (spec M5).
         var isRotated by rememberSaveable(saver = TolerantBoolStateSaver("lyrics.isRotated")) { mutableStateOf(false) }
         val rotationAngle by animateFloatAsState(targetValue = if (isRotated) 360F else 0f, animationSpec = tween(durationMillis = 200), label = "")
@@ -704,12 +706,14 @@ fun LyricsScreen(
                                 indication = playerTransportIndication(nativeControlIndication()),
                                 interactionSource = previousInteraction,
                                 onClick = {
-                                    if (jumpPrevious == "") jumpPrevious = "0"
-                                    if(playback?.hasPreviousMediaItem() == false || (jumpPrevious != "0" && (playback?.currentPosition ?: 0) > jumpPrevious.toInt() * 1000)
-                                    ){
-                                        playback?.seekTo(0)
+                                    playback?.let {
+                                        val threshold = parsePreviousTrackThreshold(jumpPrevious) ?: 0
+                                        if (shouldRestartTrackOnPrevious(it.hasPreviousMediaItem(), it.currentPosition, threshold)) {
+                                            it.seekTo(0)
+                                        } else {
+                                            it.playPrevious()
+                                        }
                                     }
-                                    else playback?.playPrevious()
                                     if (effectRotationEnabled) isRotated = !isRotated
                                 }
                             )
