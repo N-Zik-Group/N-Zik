@@ -44,6 +44,8 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import timber.log.Timber
 
+internal val AutoBackupRetentionOptions = listOf(1, 3, 5, 10, 20, -1)
+
 @Composable
 internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
     val context = LocalContext.current
@@ -179,7 +181,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                         isChecked = autoBackupIncludeGitHub,
                         onCheckedChange = { autoBackupIncludeGitHub = it },
                         icon = R.drawable.github_icon,
-                        modifier = Modifier.padding(start = 24.dp),
+                        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.include_github_credentials").padding(start = 24.dp),
                     )
                     OtherSwitchSettingEntry(
                         title = stringResource(R.string.backup_include_proxy_password),
@@ -473,7 +475,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 ValueSelectorDialog(
                     title = stringResource(R.string.backup_auto_max_backups),
                     selectedValue = autoBackupMaxBackups,
-                    values = listOf(1, 3, 5, 10, 20, -1),
+                    values = AutoBackupRetentionOptions,
                     onValueSelected = {
                         autoBackupMaxBackups = it
                         showMaxBackupsDialog = false

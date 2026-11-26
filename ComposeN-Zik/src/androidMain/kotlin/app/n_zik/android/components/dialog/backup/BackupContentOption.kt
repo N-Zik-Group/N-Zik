@@ -65,11 +65,12 @@ internal fun BackupContentOption(
     @StringRes description: Int,
     selected: Boolean,
     enabled: Boolean = true,
+    modifier: Modifier = Modifier,
     onToggle: () -> Unit,
 ) {
     val palette = colorPalette()
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clip(uiRoundnessShape())
             .toggleable(selected, enabled = enabled, role = Role.Checkbox, onValueChange = { onToggle() })

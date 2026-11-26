@@ -560,3 +560,7 @@ Library sort preferences:
 Sort shortcuts:
 - fix(menu): keep sort shortcuts available on long press
   - Expose the existing sort editor shortcut in the shared menu renderers.
+
+Backup settings:
+- fix(settings): expose searchable auto-backup controls
+  - Share retention choices with search and target the GitHub credentials switch.
