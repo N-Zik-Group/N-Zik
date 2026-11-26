@@ -581,6 +581,7 @@ internal fun playerActionBarActions(
                             val color = colorPalette()
                             PlayerActionIcon(
                                 icon = R.drawable.add_in_playlist,
+                                contentDescription = stringResource(R.string.playlist_action_add),
                                 color = if (isSongMappedToPlaylist && showPlaylistIndicator) Color.White else color.accent,
                                 onClick = {
                                     menuState.display {

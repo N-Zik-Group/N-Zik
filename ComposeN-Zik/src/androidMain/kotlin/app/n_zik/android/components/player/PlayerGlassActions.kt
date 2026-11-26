@@ -408,14 +408,19 @@ fun PlayerActionIcon(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onLongClick: (() -> Unit)? = null,
+    contentDescription: String? = null,
 ) {
     val style = LocalPlayerToolbar.current
     if (style == null) {
-        IconButton(onClick, icon, color, modifier, enabled, onLongClick = onLongClick)
+        IconButton(
+            onClick, icon, color, modifier, enabled,
+            onLongClick = onLongClick,
+            contentDescription = contentDescription,
+        )
         return
     }
     PlayerActionCell(enabled, onClick, onLongClick) {
-        Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled)
+        Image(painterResource(icon), contentDescription, colorFilter = ColorFilter.tint(if (enabled)
             surfaceGlyphColor(color, LocalPlayerActionSurface.current) else color), modifier = modifier)
     }
 }

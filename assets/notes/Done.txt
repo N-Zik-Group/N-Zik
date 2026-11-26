@@ -944,3 +944,7 @@ Menus:
 Menus:
 - fix(menu): support grid layout in the lyrics track picker
   - Keep the search field and results usable in Grid menu mode.
+
+Menus:
+- fix(player): label the add-to-playlist action
+  - Expose the action label to accessibility services in the player.
