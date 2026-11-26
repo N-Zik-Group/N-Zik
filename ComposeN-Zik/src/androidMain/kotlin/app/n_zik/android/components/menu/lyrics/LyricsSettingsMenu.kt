@@ -507,10 +507,7 @@ class LyricsSettingsMenu private constructor(
                     ActionSettingEntry(
                         title = stringResource(R.string.lyrics_provider_picker_label, stringResource(R.string.lyrics_brand_lrclib)),
                         icon = R.drawable.search,
-                        onClick = {
-                            menuState.hide()
-                            onPickFromLrcLib()
-                        }
+                        onClick = onPickFromLrcLib
                     )
                 }
             }
@@ -911,10 +908,7 @@ class LyricsSettingsMenu private constructor(
                         ActionSettingEntry(
                             title = stringResource(R.string.lyrics_provider_picker_label, stringResource(R.string.lyrics_brand_lrclib)),
                             icon = R.drawable.search,
-                            onClick = {
-                                menuState.hide()
-                                onPickFromLrcLib()
-                            }
+                            onClick = onPickFromLrcLib
                         )
                     }
                 }

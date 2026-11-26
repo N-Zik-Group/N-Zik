@@ -8,12 +8,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import app.n_zik.android.components.glass.GlassTextField as TextField
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -22,7 +23,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
@@ -30,7 +30,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.ui.components.LocalMenuState
-import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.menu.ListMenu
@@ -39,8 +38,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.lrclib.LrcLib
 import app.n_zik.lrclib.models.Track
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 import app.n_zik.android.enums.lyrics.LyricsType
@@ -57,7 +54,7 @@ private val trackSelectorTextFieldColors: TextFieldColors
     )
 
 @Composable
-fun SettingIcon(@DrawableRes icon: Int) {
+private fun SettingIcon(@DrawableRes icon: Int) {
     Box(
         modifier = Modifier
             .size(32.dp)
@@ -101,219 +98,122 @@ internal fun pickedLyrics(mediaId: String, track: Track, lyricsType: LyricsType)
     }
 
 @Composable
-fun LyricsTrackSelector(
+internal fun LyricsTrackSelector(
     mediaId: String,
-    lyrics: Lyrics?,
     lyricsType: LyricsType,
     initialTitle: String,
     initialArtistName: String,
-    onTitleChange: (String) -> Unit,
-    onArtistNameChange: (String) -> Unit,
-    playerEnableLyricsPopupMessage: Boolean,
-    coroutineScope: CoroutineScope,
-    onSearchRetry: () -> Unit,
-    onDismiss: () -> Unit
+    onSearch: (String, String) -> Unit,
+    showProviderMessages: Boolean,
+    searchTracks: suspend (artist: String, title: String) -> List<Track> = { artist, title ->
+        LrcLib.lyrics(artist = artist, title = title)?.getOrThrow().orEmpty()
+    },
 ) {
     val providerName = stringResource(R.string.lyrics_brand_lrclib)
     val menuState = LocalMenuState.current
-    var loading by remember { mutableStateOf(true) }
-    val tracks = remember { mutableStateListOf<Track>() }
     var title by remember { mutableStateOf(initialTitle) }
     var artistName by remember { mutableStateOf(initialArtistName) }
+    var searchRequest by remember { mutableIntStateOf(0) }
+    var tracks by remember { mutableStateOf<List<Track>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
+    var resultMessage by remember { mutableStateOf<Int?>(null) }
 
-    val searchFields: @Composable (Boolean) -> Unit = { enabled ->
+    LaunchedEffect(searchRequest) {
+        tracks = emptyList()
+        resultMessage = null
+        try {
+            val found = searchTracks(artistName, title)
+            tracks = found.filter { canPick(it, lyricsType) }
+            if (tracks.isEmpty()) {
+                resultMessage = R.string.lyrics_provider_missing_format
+                if (showProviderMessages) Toaster.e(R.string.lyrics_provider_missing_format, providerName, duration = Toast.LENGTH_LONG)
+            } else if (showProviderMessages) {
+                Toaster.s(R.string.lyrics_provider_tracks_found_format, providerName, duration = Toast.LENGTH_LONG)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("LyricsTrackSelector").e(error, "Lyrics search failed")
+            resultMessage = R.string.common_load_failed
+            if (showProviderMessages) {
+                Toaster.e(R.string.lyrics_provider_fetch_error_message, duration = Toast.LENGTH_LONG)
+            }
+        } finally {
+            loading = false
+        }
+    }
+
+    ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
+        ListMenu.Entry(
+            text = stringResource(R.string.common_action_cancel),
+            icon = { SettingIcon(R.drawable.chevron_back) },
+            onClick = menuState::pop,
+        )
         Row {
             TextField(
                 value = title,
-                onValueChange = { newTitle ->
-                    title = newTitle
-                },
+                onValueChange = { title = it },
                 singleLine = true,
-                enabled = enabled,
+                enabled = !loading,
+                label = { Text(stringResource(R.string.metadata_title)) },
                 colors = trackSelectorTextFieldColors,
-                modifier = Modifier
-                    .padding(horizontal = 6.dp)
-                    .weight(1f)
+                modifier = Modifier.padding(horizontal = 6.dp).weight(1f),
             )
             TextField(
                 value = artistName,
-                onValueChange = { newArtistName ->
-                    artistName = newArtistName
-                },
+                onValueChange = { artistName = it },
                 singleLine = true,
-                enabled = enabled,
+                enabled = !loading,
+                label = { Text(stringResource(R.string.metadata_artist)) },
                 colors = trackSelectorTextFieldColors,
-                modifier = Modifier
-                    .padding(horizontal = 6.dp)
-                    .weight(1f)
+                modifier = Modifier.padding(horizontal = 6.dp).weight(1f),
             )
             IconButton(
                 icon = R.drawable.search,
-                enabled = enabled,
+                contentDescription = stringResource(R.string.search_title),
+                enabled = !loading,
                 color = colorPalette().text,
                 onClick = {
-                    menuState.hide()
-                    onSearchRetry()
+                    loading = true
+                    onSearch(title, artistName)
+                    searchRequest++
                 },
                 modifier = Modifier
-                    .background(
-                        shape = uiRoundnessShape(),
-                        color = surfaceColor(colorPalette().background2)
-                    )
-                    .padding(all = 4.dp)
+                    .background(color = surfaceColor(colorPalette().background2), shape = uiRoundnessShape())
+                    .padding(4.dp)
                     .size(24.dp)
-                    .align(Alignment.CenterVertically)
-                    .weight(0.2f)
+                    .align(Alignment.CenterVertically),
             )
         }
-    }
-
-    fun showSearchRetry() {
-        menuState.display {
-            ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
-                ListMenu.Entry(
-                    text = stringResource(R.string.common_action_cancel),
-                    icon = { SettingIcon(R.drawable.chevron_back) },
-                    onClick = {
-                        menuState.hide()
-                        onDismiss()
-                    },
-                )
-                searchFields(true)
-            }
-        }
-    }
-
-    LaunchedEffect(title, artistName) {
-        onTitleChange(title)
-        onArtistNameChange(artistName)
-    }
-
-    LaunchedEffect(Unit) {
-        kotlin.runCatching {
-            LrcLib.lyrics(
-                artist = artistName,
-                title = title
-            )?.onSuccess { found ->
-                val pickable = found.filter { canPick(it, lyricsType) }
-                if (pickable.isNotEmpty() && playerEnableLyricsPopupMessage)
-                    coroutineScope.launch {
-                        Toaster.s(
-                            R.string.lyrics_provider_tracks_found_format,
-                            providerName,
-                            duration = Toast.LENGTH_LONG
-                        )
-                    }
-                else
-                    if (playerEnableLyricsPopupMessage)
-                        coroutineScope.launch {
-                            Toaster.e(
-                                R.string.lyrics_provider_missing_format,
-                                providerName,
-                                duration = Toast.LENGTH_LONG
-                            )
-                        }
-                if (pickable.isEmpty()) showSearchRetry()
-
-                tracks.clear()
-                tracks.addAll(pickable)
-                loading = false
-            }?.onFailure {
-                if (it is CancellationException) throw it
-                if (playerEnableLyricsPopupMessage)
-                    coroutineScope.launch {
-                        Toaster.e(
-                            R.string.lyrics_provider_fetch_error_message,
-                            providerName,
-                            duration = Toast.LENGTH_LONG
-                        )
-                    }
-
-                loading = false
-                showSearchRetry()
-            } ?: run {
-                loading = false
-                showSearchRetry()
-            }
-        }.onFailure {
-            if (it is CancellationException) throw it
-            Timber.tag("LyricsTrackSelector").e(it, "Lyrics search failed")
-            loading = false
-            showSearchRetry()
-        }
-    }
-
-    DialogPresence(visible = loading) {
-        DefaultDialog(
-            title = stringResource(R.string.lyrics_title),
-            onDismiss = {
-                onDismiss()
-            }
-        ) {
-            ListMenu.Entry(
-                text = stringResource(R.string.common_action_cancel),
-                icon = { SettingIcon(R.drawable.chevron_back) },
-                onClick = onDismiss,
-            )
-            searchFields(false)
+        if (loading) {
             repeat(4) {
-                ListMenu.Entry(
-                    text = "",
-                    subtitle = "",
-                    icon = { SettingIcon(R.drawable.text) },
-                    loading = true,
-                )
+                ListMenu.Entry(text = "", icon = { SettingIcon(R.drawable.text) }, loading = true)
             }
-            ListMenu.Entry(
-                text = stringResource(R.string.common_action_cancel),
-                icon = { SettingIcon(R.drawable.chevron_back) },
-                onClick = onDismiss,
+        }
+        resultMessage?.let { message ->
+            Text(
+                if (message == R.string.lyrics_provider_missing_format) stringResource(message, providerName)
+                else stringResource(message),
+                color = colorPalette().text,
+                modifier = Modifier.padding(12.dp),
             )
         }
-    }
-
-    LaunchedEffect(tracks.size, title, artistName) {
-        if (tracks.isNotEmpty()) {
-            menuState.display {
-                ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
-                    ListMenu.Entry(
-                        text = stringResource(R.string.common_action_cancel),
-                        icon = { SettingIcon(R.drawable.chevron_back) },
-                        onClick = {
-                            menuState.hide()
-                            onDismiss()
-                        }
-                    )
-                    searchFields(true)
-                    tracks.forEach {
-                        ListMenu.Entry(
-                            text = "${it.artistName} - ${it.trackName}",
-                            icon = { SettingIcon(R.drawable.text) },
-                            subtitle = "(${stringResource(R.string.library_sort_duration)} ${
-                                it.duration.seconds.toComponents { minutes, seconds, _ ->
-                                    "$minutes:${seconds.toString().padStart(2, '0')}"
-                                }
-                            } ${stringResource(R.string.player_statistics_media_id_label)} ${it.id}) ",
-                            onClick = {
-                                menuState.hide()
-                                onDismiss()
-                                pickedLyrics(mediaId, it, lyricsType)?.let { row ->
-                                    Database.asyncTransaction { lyricsTable.upsert(row) }
-                                }
-                            }
-                        )
+        tracks.forEach { track ->
+            ListMenu.Entry(
+                text = "${track.artistName} - ${track.trackName}",
+                icon = { SettingIcon(R.drawable.text) },
+                subtitle = "(${stringResource(R.string.library_sort_duration)} ${
+                    track.duration.seconds.toComponents { minutes, seconds, _ ->
+                        "$minutes:${seconds.toString().padStart(2, '0')}"
                     }
-                    ListMenu.Entry(
-                        text = stringResource(R.string.common_action_cancel),
-                        icon = { SettingIcon(R.drawable.chevron_back) },
-                        onClick = { 
-                            menuState.hide() 
-                            onDismiss()
-                        }
-                    )
-                }
-            }
+                } ${stringResource(R.string.player_statistics_media_id_label)} ${track.id})",
+                onClick = {
+                    pickedLyrics(mediaId, track, lyricsType)?.let { row ->
+                        Database.asyncTransaction { lyricsTable.upsert(row) }
+                    }
+                    menuState.hide()
+                },
+            )
         }
     }
 }
-

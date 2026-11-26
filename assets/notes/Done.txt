@@ -776,3 +776,7 @@ Settings category layout:
 Library selection menus:
 - fix(menu): expose selected options in list and grid layouts
   - Keep sort, filters, periods and artwork size choices accessible.
+
+LrcLib search menu:
+- fix(lyrics): restart LrcLib search in the same menu
+  - Keep edits stable and allow re-opening the selector after dismissal.

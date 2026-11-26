@@ -208,7 +208,6 @@ fun LyricsScreen(
             mutableStateOf(false)
         }
         var invalidLrc by remember(mediaId, lyricsType) { mutableStateOf(false) }
-        var isPicking by remember(mediaId, lyricsType) { mutableStateOf(false) }
         var lyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
         var lyricsOutline by rememberPreference(lyricsOutlineKey, LyricsOutline.None)
         val playerBackgroundColors by rememberPreference(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient)
@@ -406,26 +405,6 @@ fun LyricsScreen(
 
         editLyricsDialog.Render()
 
-        if (isPicking) {
-            LyricsTrackSelector(
-                mediaId = mediaId,
-                lyrics = lyrics,
-                lyricsType = lyricsType,
-                initialTitle = title,
-                initialArtistName = artistName,
-                onTitleChange = { editedTitle = it },
-                onArtistNameChange = { editedArtistName = it },
-                playerEnableLyricsPopupMessage = playerEnableLyricsPopupMessage,
-                coroutineScope = coroutineScope,
-                onSearchRetry = {
-                    isPicking = false
-                    menuState.hide()
-                    isPicking = true
-                },
-                onDismiss = { isPicking = false }
-            )
-        }
-
         if (lyricsType != LyricsType.Unsynced) {
             DisposableEffect(Unit) {
                 currentView.keepScreenOn = true
@@ -600,7 +579,7 @@ fun LyricsScreen(
                     }
                 }
 
-                if (!forceShimmer && noLyricsFound && !isPicking && !isFetching) {
+                if (!forceShimmer && noLyricsFound && !isFetching) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
@@ -848,7 +827,21 @@ fun LyricsScreen(
                                                 }
                                             }
                                         },
-                                        onPickFromLrcLib = { isPicking = true },
+                                        onPickFromLrcLib = {
+                                            menuState.display {
+                                                LyricsTrackSelector(
+                                                    mediaId = mediaId,
+                                                    lyricsType = lyricsType,
+                                                    initialTitle = title,
+                                                    initialArtistName = artistName,
+                                                    onSearch = { searchTitle, searchArtist ->
+                                                        editedTitle = searchTitle
+                                                        editedArtistName = searchArtist
+                                                    },
+                                                    showProviderMessages = playerEnableLyricsPopupMessage,
+                                                )
+                                            }
+                                        },
                                         onShowProviders = { showProviderDialog = true },
                                         onShowOffsetDialog = { showOffsetDialog.onShortClick() }
                                     ).MenuComponent()
