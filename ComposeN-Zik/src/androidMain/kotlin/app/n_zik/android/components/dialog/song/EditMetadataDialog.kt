@@ -6,6 +6,9 @@ import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
+import android.os.ParcelFileDescriptor
+import android.system.Os
+import android.system.OsConstants
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -75,6 +78,8 @@ import kotlin.coroutines.coroutineContext
 import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
@@ -116,7 +121,7 @@ class EditMetadataDialog internal constructor(
     private var isLoading by mutableStateOf(false)
     private var opening by mutableStateOf(false)
     private val ffmpegPreparation = FfmpegPreparation()
-    private var filePath: String? = null
+    private var filePath by mutableStateOf<String?>(null)
     private var coverArtBytes by mutableStateOf<ByteArray?>(null)
     private var dialogSong: Song? = null
     private var dialogProfile: String? = null
@@ -179,6 +184,8 @@ class EditMetadataDialog internal constructor(
     )
 
     companion object {
+        private val mediaStoreWriteMutex = Mutex()
+
         val STANDARD_TAGS = listOf(
             "TITLE", "ARTIST", "ALBUM", "GENRE", "DATE", "TRACK", "DISC_NUMBER",
             "ALBUM_ARTIST", "COMPOSER", "COPYRIGHT", "COMMENT", "ENCODER",
@@ -330,6 +337,7 @@ class EditMetadataDialog internal constructor(
             }
 
             filePath = result.path
+            result.error?.let { Toaster.e(it) }
             coverArtBytes = result.coverBytes
             fields.clear()
             fields.addAll(result.fields)
@@ -497,7 +505,7 @@ class EditMetadataDialog internal constructor(
             DialogButton(
                 text = stringResource(R.string.common_action_save),
                 onClick = { saveToFile() },
-                enabled = !isLoading,
+                enabled = !isLoading && filePath != null,
                 primary = true
             )
         )
@@ -636,13 +644,7 @@ class EditMetadataDialog internal constructor(
                 if (mediaStoreUri != null) {
                     Timber.tag("EditMetadata").i("Writing to MediaStore: $mediaStoreUri")
                     try {
-                        val outputStream = context.contentResolver.openOutputStream(mediaStoreUri)
-                        if (outputStream == null) {
-                            throw Exception("Failed to open output stream for MediaStore URI")
-                        }
-                        outputStream.use { out ->
-                            tempFile.inputStream().use { inp -> inp.copyTo(out) }
-                        }
+                        writeMediaStoreFile(context, mediaStoreUri, tempFile, request)
                         Timber.tag("EditMetadata").i("MediaStore write successful")
                         onWriteSuccess(request)
                     } catch (e: RecoverableSecurityException) {
@@ -662,9 +664,10 @@ class EditMetadataDialog internal constructor(
                     }
                 } else {
                     Timber.tag("EditMetadata").i("No MediaStore URI, writing directly to original file: $path")
-                    originalFile.outputStream().use { out ->
-                        tempFile.inputStream().use { inp -> inp.copyTo(out) }
-                    }
+                    replaceMetadataFile(originalFile, tempFile, beforeReplace = {
+                        coroutineContext.ensureActive()
+                        if (!currentTarget(request)) throw CancellationException("Metadata target changed")
+                    })
                     Timber.tag("EditMetadata").i("Direct write successful")
                     onWriteSuccess(request)
                 }
@@ -689,9 +692,7 @@ class EditMetadataDialog internal constructor(
             try {
                 coroutineContext.ensureActive()
                 if (!currentTarget(pending.request)) return@launch
-                requireNotNull(context.contentResolver.openOutputStream(pending.uri)) { "Cannot open media destination" }.use { out ->
-                    pending.file.inputStream().use { inp -> inp.copyTo(out) }
-                }
+                writeMediaStoreFile(context, pending.uri, pending.file, pending.request)
                 onWriteSuccess(pending.request)
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -706,6 +707,38 @@ class EditMetadataDialog internal constructor(
         }.also { worker ->
             // A scope already cancelled before launch never enters the worker's finally block.
             worker.invokeOnCompletion { pending.file.delete() }
+        }
+    }
+
+    private suspend fun writeMediaStoreFile(context: Context, uri: Uri, encoded: File, request: MetadataSaveRequest) {
+        val writeContext = coroutineContext
+        val resolver = context.contentResolver
+        val recoveryDirectory = context.noBackupFilesDir
+        mediaStoreWriteMutex.withLock {
+            writeContext.ensureActive()
+            if (!currentTarget(request)) throw CancellationException("Metadata target changed")
+            writeMetadataWithRecovery(
+                encoded = encoded,
+                backupDirectory = recoveryDirectory,
+                backupPrefix = "metadata-${uri.lastPathSegment}-",
+                openOriginal = { requireNotNull(resolver.openInputStream(uri)) { "Cannot read original media" } },
+                openWritable = {
+                    val descriptor = requireNotNull(resolver.openFileDescriptor(uri, "rw")) { "Cannot open media destination" }
+                    ParcelFileDescriptor.AutoCloseOutputStream(descriptor)
+                },
+                syncBackupDirectory = {
+                    val directory = Os.open(recoveryDirectory.path, OsConstants.O_RDONLY, 0)
+                    try {
+                        Os.fsync(directory)
+                    } finally {
+                        Os.close(directory)
+                    }
+                },
+                beforeWrite = {
+                    writeContext.ensureActive()
+                    if (!currentTarget(request)) throw CancellationException("Metadata target changed")
+                },
+            )
         }
     }
 
@@ -728,15 +761,13 @@ class EditMetadataDialog internal constructor(
     private data class ReadResult(
         val path: String?,
         val coverBytes: ByteArray?,
-        val fields: List<EditableField>
+        val fields: List<EditableField>,
+        val error: Int? = null,
     )
 
     private fun readTagsFromFile(context: Context, song: Song): ReadResult {
         val path = resolveFilePath(context, song.id)
-            ?: return ReadResult(null, null, listOf(
-                EditableField("TITLE", "TITLE", TextFieldValue(cleanPrefix(song.title)), true),
-                EditableField("ARTIST", "ARTIST", TextFieldValue(song.artistsText?.let { cleanPrefix(it) } ?: ""), true)
-            ))
+            ?: return ReadResult(null, null, emptyList(), R.string.metadata_file_path_unavailable)
 
         Timber.tag("EditMetadata").i("readTagsFromFile: song=${song.title}, path=$path")
 
@@ -757,10 +788,11 @@ class EditMetadataDialog internal constructor(
 
             try {
                 val session = FFprobeKit.getMediaInformation(path)
-                val info = session.mediaInformation
+                check(ReturnCode.isSuccess(session.returnCode)) { "FFprobe could not read metadata" }
+                val info = requireNotNull(session.mediaInformation) { "No media information was returned" }
                 val tags = mutableMapOf<String, String>()
 
-                info?.tags?.let { json ->
+                info.tags?.let { json ->
                     Timber.tag("EditMetadata").d("Global tags: ${json.length()} entries")
                     val keys = json.keys()
                     while (keys.hasNext()) {
@@ -769,7 +801,7 @@ class EditMetadataDialog internal constructor(
                     }
                 }
 
-                info?.streams?.forEach { stream ->
+                info.streams?.forEach { stream ->
                     stream.tags?.let { json ->
                         Timber.tag("EditMetadata").d("Stream tags: ${json.length()} entries")
                         val keys = json.keys()
@@ -820,8 +852,11 @@ class EditMetadataDialog internal constructor(
                         result.add(EditableField(tagKey, tagKey, TextFieldValue(value), true))
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Timber.tag("EditMetadata").e(e, "FFprobeKit failed to read tags")
+                return ReadResult(null, null, emptyList(), R.string.common_load_failed)
             }
 
             if (cover == null) {
@@ -877,12 +912,11 @@ class EditMetadataDialog internal constructor(
             result.forEach { Timber.tag("EditMetadata").d("  [${it.key}] ${it.value.text.take(80)}") }
 
             return ReadResult(path, cover, result)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Timber.tag("EditMetadata").e(e, "Failed to read tags")
-            return ReadResult(path, null, listOf(
-                EditableField("TITLE", "TITLE", TextFieldValue(cleanPrefix(song.title)), true),
-                EditableField("ARTIST", "ARTIST", TextFieldValue(song.artistsText?.let { cleanPrefix(it) } ?: ""), true)
-            ))
+            return ReadResult(null, null, emptyList(), R.string.common_load_failed)
         }
     }
 

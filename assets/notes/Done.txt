@@ -483,3 +483,8 @@ Settings search:
 - fix(settings): preserve search history choices across categories
   - Inherit source-tab opt-outs until a reorganized category defines its own preference.
   - Deduplicate settings queries by case while preserving their last entered spelling.
+
+Metadata editor:
+- fix(metadata): recover files after interrupted tag writes
+  - Keep a synchronized backup before rewriting MediaStore content.
+  - Restore the original after partial writes or retain the backup when restoration fails.
