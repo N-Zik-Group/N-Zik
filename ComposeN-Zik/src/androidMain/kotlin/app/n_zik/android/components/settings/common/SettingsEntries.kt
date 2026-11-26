@@ -50,7 +50,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.ui.insetPressIndication
 
 import app.n_zik.android.enums.ValidationType
 import app.n_zik.android.ui.components.themed.HeaderIconButton
@@ -225,14 +224,7 @@ fun OtherSwitchSettingEntry(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
-            .toggleable(
-                value = isChecked,
-                interactionSource = null,
-                indication = insetPressIndication(),
-                enabled = enabled,
-                role = Role.Switch,
-                onValueChange = onCheckedChange,
-            ),
+            .toggleable(isChecked, enabled = enabled, role = Role.Switch, onValueChange = onCheckedChange),
         color = Color.Transparent
     ) {
         Box(
@@ -337,21 +329,9 @@ fun SettingsEntry(
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     val action = if (checked == null) {
-        Modifier.clickable(
-            interactionSource = null,
-            indication = insetPressIndication(),
-            enabled = isEnabled,
-            onClick = onClick,
-        )
+        Modifier.clickable(enabled = isEnabled, onClick = onClick)
     } else {
-        Modifier.toggleable(
-            value = checked,
-            interactionSource = null,
-            indication = insetPressIndication(),
-            enabled = isEnabled,
-            role = Role.Switch,
-            onValueChange = { onClick() },
-        )
+        Modifier.toggleable(checked, enabled = isEnabled, role = Role.Switch, onValueChange = { onClick() })
     }
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -623,12 +603,7 @@ fun OtherSettingsEntry(
             .clip(uiRoundnessShape())
             .alpha(if (isEnabled || shimmer) 1f else 0.5f)
             .semantics { if (!clickable) this[SemanticsProperties.Disabled] = Unit }
-            .clickable(
-                interactionSource = null,
-                indication = insetPressIndication(),
-                enabled = clickable,
-                onClick = onClick,
-            ),
+            .clickable(enabled = clickable, onClick = onClick),
         color = Color.Transparent
     ) {
         Box(

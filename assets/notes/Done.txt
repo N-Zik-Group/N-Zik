@@ -928,3 +928,7 @@ Queue row spacing:
 Playlist badge accessibility:
 - fix(library): label playlist badges that open the picker
   - Give each variant the existing Add to playlist label.
+
+Settings:
+- fix(settings): restore the original card feedback layout
+  - Restore the original placement and shape of row feedback in settings cards.
