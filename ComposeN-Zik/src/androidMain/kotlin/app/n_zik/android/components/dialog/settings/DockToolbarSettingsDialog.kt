@@ -15,16 +15,19 @@ import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
-import app.n_zik.android.components.navigation.dock.DockToolbarCatalogue
 import app.n_zik.android.components.navigation.dock.DockToolbarPreferences
 import app.n_zik.android.components.navigation.dock.DockToolbarTab
+import app.n_zik.android.components.navigation.dock.artistDockTabs
+import app.n_zik.android.components.navigation.dock.searchDockTabs
+import app.n_zik.android.components.navigation.dock.searchResultDockTabs
+import app.n_zik.android.components.navigation.dock.statisticsDockTabs
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 /** Reorders expanded dock tabs with the same drag interaction as other toolbar dialogs. */
 object DockToolbarSettingsDialog : ContentFramedDialog {
 
     /** Exact searchable options from the same definitions used by this dialog. */
-    internal fun searchOptions(): List<SettingsNestedOption> = buildHomeTabDefs().values.map { tab ->
+    private val homeTabs = buildHomeTabDefs().values.map { tab ->
         val id = when (tab.id) {
             "quickpicks" -> "sparkles"
             "songs" -> "musical_notes"
@@ -32,7 +35,15 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
             "albums" -> "album"
             else -> "library"
         }
-        SettingsNestedOption(id, tab.labelRes)
+        DockToolbarTab(id, tab.labelRes, tab.iconRes)
+    }
+    private val tabsById = (homeTabs + searchDockTabs + searchResultDockTabs + statisticsDockTabs + artistDockTabs)
+        .groupBy { it.id }
+    private val tabs = tabsById.mapValues { (_, sameIcon) -> sameIcon.first() }
+
+    internal fun searchOptions(): List<SettingsNestedOption> = tabs.values.map { tab ->
+        val alternateLabel = tabsById.getValue(tab.id).firstOrNull { it.labelRes != tab.labelRes }?.labelRes
+        SettingsNestedOption(tab.id, tab.labelRes, descriptionRes = alternateLabel)
     }
 
     override val dialogTitle: String
@@ -43,11 +54,7 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
     override fun DialogBody() {
         val context = LocalContext.current
         val prefs = context.preferences
-        val fallback = buildHomeTabDefs().values.map { tab ->
-            DockToolbarTab(context.resources.getResourceEntryName(tab.iconRes), stringResource(tab.labelRes), tab.iconRes)
-        }
-        val tabs = remember { (DockToolbarCatalogue.entries + fallback).associateBy { it.id }.values.toList() }
-        val defaultOrder = remember(tabs) { tabs.map { it.id } }
+        val defaultOrder = tabs.keys.toList()
         var order by remember {
             mutableStateOf(DockToolbarPreferences.orderedIds(defaultOrder,
                 prefs.getString(DockToolbarPreferences.orderKey, "").orEmpty()))
@@ -64,8 +71,8 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
             frameTitle = dialogTitle,
             onDismiss = ::hideDialog,
             items = order.map { id ->
-                val tab = tabs.first { it.id == id }
-                ToggleItem(tab.id, tab.iconRes, tab.title, "", true)
+                val tab = tabs.getValue(id)
+                ToggleItem(tab.id, tab.iconRes, stringResource(tab.labelRes), "", true)
             },
             lazyListState = listState,
             reorderableState = reorderable,

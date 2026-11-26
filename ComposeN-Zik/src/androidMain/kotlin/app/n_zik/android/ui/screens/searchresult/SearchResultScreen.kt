@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -32,6 +33,7 @@ import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.dock.searchResultDockTabs
 import app.n_zik.android.ui.components.themed.Title
 
 import app.n_zik.android.utils.disableScrollingTextKey
@@ -67,12 +69,18 @@ fun SearchResultScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
     query: String,
+    initialTab: Int? = null,
     onSearchAgain: () -> Unit
 ) {
     val context = LocalContext.current
     val binder = LocalPlayerServiceBinder.current
     val saveableStateHolder = rememberSaveableStateHolder()
-    val (tabIndex, onTabIndexChanges) = rememberPreference(searchResultScreenTabIndexKey, 0)
+    val (savedTab, saveTab) = rememberPreference(searchResultScreenTabIndexKey, 0)
+    val routeTab = rememberSaveable(query, initialTab) { mutableStateOf(initialTab) }
+    val tabIndex = routeTab.value ?: savedTab
+    val onTabIndexChanges: (Int) -> Unit = { tab ->
+        if (initialTab == null) saveTab(tab) else routeTab.value = tab
+    }
 
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -184,13 +192,9 @@ fun SearchResultScreen(
         topInsetHandledByContent = true,
         topContentInsetProvider = topContentInset,
         navBarContent = { item ->
-            item(0, stringResource(R.string.library_songs_title), R.drawable.musical_notes)
-            item(1, stringResource(R.string.library_albums_title), R.drawable.album)
-            item(2, stringResource(R.string.library_artists_title), R.drawable.artist)
-            item(3, stringResource(R.string.search_videos_title), R.drawable.video)
-            item(4, stringResource(R.string.library_playlists_title), R.drawable.playlist)
-            item(5, stringResource(R.string.search_featured_title), R.drawable.featured_playlist)
-            item(6, stringResource(R.string.podcast_title), R.drawable.podcast)
+            searchResultDockTabs.forEachIndexed { index, tab ->
+                item(index, stringResource(tab.labelRes), tab.iconRes)
+            }
         }
     ) { currentTabIndex ->
         saveableStateHolder.SaveableStateProvider(currentTabIndex) {

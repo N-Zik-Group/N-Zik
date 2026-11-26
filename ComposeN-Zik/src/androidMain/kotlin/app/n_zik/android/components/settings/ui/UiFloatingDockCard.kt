@@ -9,6 +9,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.settings.DockToolbarSettingsDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.normalizedSettingsText
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -19,10 +20,11 @@ import app.n_zik.android.components.tab.Search
 internal fun UiFloatingDockCard(search: Search) {
     val title = stringResource(R.string.settings_dock_title)
     val orderTitle = stringResource(R.string.settings_dock_expanded_tab_order_label)
-    val terms = listOf(title, orderTitle, stringResource(R.string.settings_library_toolbar_title))
-    val showAll = search.inputValue.isBlank() || title.contains(search.inputValue, true)
+    val orderDescription = stringResource(R.string.settings_dock_expanded_tab_order_description)
+    val query = normalizedSettingsText(search.inputValue)
+    val terms = listOf(title, orderTitle, orderDescription, stringResource(R.string.settings_library_toolbar_title))
     AnimatedVisibility(
-        visible = showAll || terms.any { it.contains(search.inputValue, true) },
+        visible = query.isEmpty() || terms.any { normalizedSettingsText(it).contains(query) },
         enter = settingsCardEnter,
         exit = settingsCardExit,
     ) {
@@ -31,15 +33,13 @@ internal fun UiFloatingDockCard(search: Search) {
             title = title,
             icon = R.drawable.ellipsis_horizontal,
             content = {
-                if (showAll || orderTitle.contains(search.inputValue, true) || stringResource(R.string.settings_library_toolbar_title).contains(search.inputValue, true)) {
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("ui.floating_dock.toolbar_order"),
-                        title = orderTitle,
-                        text = stringResource(R.string.settings_dock_expanded_tab_order_description),
-                        icon = R.drawable.reorder,
-                        onClick = { DockToolbarSettingsDialog.showDialog() },
-                    )
-                }
+                OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget("ui.floating_dock.toolbar_order"),
+                    title = orderTitle,
+                    text = orderDescription,
+                    icon = R.drawable.reorder,
+                    onClick = { DockToolbarSettingsDialog.showDialog() },
+                )
             },
         )
     }

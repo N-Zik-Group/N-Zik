@@ -780,3 +780,7 @@ Library selection menus:
 LrcLib search menu:
 - fix(lyrics): restart LrcLib search in the same menu
   - Keep edits stable and allow re-opening the selector after dismissal.
+
+Floating dock inventory:
+- fix(dock): list only destinations with configurable tabs
+  - Share the live multi-tab inventory with the editor instead of retaining temporary entries.

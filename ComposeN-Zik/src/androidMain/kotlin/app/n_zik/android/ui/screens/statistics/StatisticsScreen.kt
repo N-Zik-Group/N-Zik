@@ -14,9 +14,9 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.compose.persist.PersistMapCleanup
-import app.n_zik.android.R
 import app.n_zik.android.enums.StatisticsType
 import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.dock.statisticsDockTabs
 
 @ExperimentalTextApi
 @ExperimentalFoundationApi
@@ -55,13 +55,9 @@ fun StatisticsScreen(
                 topInsetHandledByContent = true,
                 topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
-                    item(0, stringResource(R.string.calendar_today), R.drawable.stat_today)
-                    item(1, stringResource(R.string.calendar_period_one_week), R.drawable.stat_week)
-                    item(2, stringResource(R.string.calendar_period_one_month), R.drawable.stat_month)
-                    item(3, stringResource(R.string.calendar_period_three_months), R.drawable.stat_3months)
-                    item(4, stringResource(R.string.calendar_period_six_months), R.drawable.stat_6months)
-                    item(5, stringResource(R.string.calendar_period_one_year), R.drawable.stat_year)
-                    item(6, stringResource(R.string.common_option_all), R.drawable.calendar_clear)
+                    statisticsDockTabs.forEachIndexed { index, tab ->
+                        item(index, stringResource(tab.labelRes), tab.iconRes)
+                    }
                 }
             ) { currentTabIndex ->
                 saveableStateHolder.SaveableStateProvider(key = currentTabIndex) {

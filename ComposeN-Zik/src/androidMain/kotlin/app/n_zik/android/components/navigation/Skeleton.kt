@@ -250,10 +250,12 @@ fun Skeleton(
             }
         }
         if (preview == null) {
-        NewUpdateAvailableDialog.Render(
-            onNavigateToUpdater = { navController.navigate(NavRoutes.updater.name) }
-        )
-        CheckForUpdateDialog.Render()
+        if (BuildConfig.IS_AUTOUPDATE) {
+            NewUpdateAvailableDialog.Render(
+                onNavigateToUpdater = { navController.navigate(NavRoutes.updater.name) }
+            )
+            CheckForUpdateDialog.Render()
+        }
 
         val lastVersionCode = rememberPreference(lastVersionCodeKey, 0)
         val lastBuildType = rememberPreference(lastBuildTypeKey, "")
@@ -302,6 +304,7 @@ fun Skeleton(
         
         // Reset update state when beta preferences change
         LaunchedEffect( checkBetaUpdates ) {
+            if (!BuildConfig.IS_AUTOUPDATE) return@LaunchedEffect
             if (NewUpdateAvailableDialog.isActive) {
                 // If beta preferences changed and there's an active update dialog, recheck
                 NewUpdateAvailableDialog.isCancelled = false
@@ -314,6 +317,7 @@ fun Skeleton(
         }
         
         LaunchedEffect( check4UpdateState ) {
+            if (!BuildConfig.IS_AUTOUPDATE) return@LaunchedEffect
             when( check4UpdateState ) {
                 CheckUpdateState.Enabled  -> if( !NewUpdateAvailableDialog.isCancelled ) Updater.checkForUpdate(checkBetaUpdates = checkBetaUpdates)
                 CheckUpdateState.Ask      -> CheckForUpdateDialog.isActive = true

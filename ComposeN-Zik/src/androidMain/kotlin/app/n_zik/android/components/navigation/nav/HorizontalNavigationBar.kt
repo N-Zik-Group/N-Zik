@@ -4,12 +4,9 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassAreaContour
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.components.tab.NavigationButtonSlots
-import app.n_zik.android.components.navigation.dock.DockToolbarCatalogue
 import app.n_zik.android.components.navigation.dock.DockToolbarPreferences
-import app.n_zik.android.components.navigation.dock.DockToolbarTab
 import app.n_zik.android.components.navigation.dock.ClassicBottomDockNavigation
 import app.n_zik.android.components.player.TOP_NAV_BAR_HEIGHT
 import androidx.compose.runtime.CompositionLocalProvider
@@ -155,7 +152,7 @@ class HorizontalNavigationBar(
     navController: NavController,
     modifier: Modifier = Modifier
 ): AbstractNavigationBar( navController, modifier ) {
-    private val dockTabs = NavigationButtonSlots<Pair<Int, DockToolbarTab>>()
+    private val dockTabs = NavigationButtonSlots<Pair<Int, String>>()
 
     @Composable
     private fun navButtonProperties(): Modifier {
@@ -187,9 +184,7 @@ class HorizontalNavigationBar(
 
         val resources = LocalContext.current.resources
         buttons { index, text, iconId ->
-            val descriptor = DockToolbarTab(resources.getResourceEntryName(iconId), text, iconId)
-            dockTabs.register(index, index to descriptor)
-            SideEffect { DockToolbarCatalogue.register(listOf(descriptor)) }
+            dockTabs.register(index, index to resources.getResourceEntryName(iconId))
             tabIndices.register(index, index)
             buttonList.register(index) {
                 val color = navigationTabInk(transition, index)
@@ -260,9 +255,9 @@ class HorizontalNavigationBar(
         if (isFloating && dock?.enabled == true) {
             val dockOrder by app.n_zik.android.utils.rememberPreference(DockToolbarPreferences.orderKey, "")
             val metadata = dockTabs.toList().toMap()
-            val orderedIds = DockToolbarPreferences.orderedIds(metadata.values.map { it.id }, dockOrder)
+            val orderedIds = DockToolbarPreferences.orderedIds(metadata.values.toList(), dockOrder)
             val orderedIndices = tabIndices.toList().sortedBy { index ->
-                orderedIds.indexOf(metadata[index]?.id).let { if (it < 0) Int.MAX_VALUE else it }
+                orderedIds.indexOf(metadata[index]).let { if (it < 0) Int.MAX_VALUE else it }
             }
             val allIndices = orderedIndices
             val openSearch = { navController.navigate(NavRoutes.search.name) }

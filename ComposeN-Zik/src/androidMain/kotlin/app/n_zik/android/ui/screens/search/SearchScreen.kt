@@ -46,6 +46,7 @@ import app.n_zik.android.components.search.SearchBarBubble
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.VoiceSearchState
 import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.dock.searchDockTabs
 import app.n_zik.android.components.VoiceSearchOverlay
 import app.n_zik.android.components.ui.screens.find.MusicAudioSearchOverlay
 import app.n_zik.android.core.utils.Toaster
@@ -218,12 +219,8 @@ fun SearchScreen(
                 topInsetHandledByContent = true,
                 topContentInsetProvider = topContentInset,
                 navBarContent = { item ->
-                    if (offlineMode)
-                        item(1, stringResource(R.string.library_title), R.drawable.library)
-                    else {
-                        item(0, stringResource(R.string.search_online), R.drawable.globe)
-                        item(1, stringResource(R.string.library_title), R.drawable.library)
-                        item(2, stringResource(R.string.search_youtube_action_open_url), R.drawable.link)
+                    searchDockTabs.forEachIndexed { index, tab ->
+                        if (!offlineMode || index == 1) item(index, stringResource(tab.labelRes), tab.iconRes)
                     }
                 }
             ) { currentTabIndex ->
