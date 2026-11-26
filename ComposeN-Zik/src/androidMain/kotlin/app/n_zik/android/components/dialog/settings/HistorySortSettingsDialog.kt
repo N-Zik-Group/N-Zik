@@ -103,7 +103,7 @@ object HistorySortSettingsDialog : ContentFramedDialog {
             onConfirm = {
                 val edit = prefs.edit()
                 workingToggles.forEach { (id, isChecked) -> edit.putBoolean("hist_sort_${id}_visible", isChecked) }
-                edit.putString(historySortMenuOrderKey, serializeOrder(workingOrder.filter { id -> workingToggles[id] == true }))
+                edit.putString(historySortMenuOrderKey, serializeOrder(workingOrder))
                 edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )

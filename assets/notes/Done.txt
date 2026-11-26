@@ -536,3 +536,7 @@ Updater availability:
 Selection completion:
 - test(selection): cover deferred completion after switching selections
   - Keep a newer selection active when a previous action finishes.
+
+History sort:
+- fix(settings): retain hidden history sort positions
+  - Restore each sort option in its configured position when made visible.
