@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,8 +25,11 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -35,6 +39,19 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
+
+internal fun Playlist.matchesPickerQuery(query: String): Boolean =
+    cleanName().contains(query, ignoreCase = true)
+
+@Composable
+internal fun PlaylistPreview.menuItemCount(): String {
+    val countResource = if (playlistLinkKind(playlist.browseId) == PlaylistLinkKind.YouTubePodcast) {
+        R.plurals.sync_detail_episodes
+    } else {
+        R.plurals.library_song_count
+    }
+    return pluralStringResource(countResource, songCount, songCount)
+}
 
 internal fun playlistPickerResults(source: Flow<List<PlaylistPreview>>): Flow<Result<List<PlaylistPreview>>> =
     source.map { Result.success(it) }.catch { error ->

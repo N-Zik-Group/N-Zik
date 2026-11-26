@@ -636,3 +636,7 @@ Browse ID editing:
 Playlist deletion:
 - fix(playlist): report local and YouTube deletion outcomes
   - Respect profile ownership and sync direction when deleting a linked playlist.
+
+Playlist picker labels:
+- fix(playlist): expose destination search and episode counts
+  - Match picker entries by source metadata and show the correct item count.
