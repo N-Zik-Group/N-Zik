@@ -494,6 +494,8 @@ class AutoSessionCallback(
             noteCurrentContainer(actualParentId)
             val list = (if (page > 0) autoBrowseTree.retainedChildren(parentId, browser) else null)
                 ?: autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null, browser)
+            val visible = PaginationHelper.slice(list, page, pageSize)
+            val credited = refreshAutoArtistCredits(context, database, requestProfile, visible)
             synchronized(selectionRequestLock) {
                 synchronized(browsedParents) {
                     // Publish counts, subscriptions and sliced rows in the same access epoch.
@@ -501,11 +503,10 @@ class AutoSessionCallback(
                         !autoBrowseTree.selectionStore.retains(list)) {
                         LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
                     } else {
-                        val visible = PaginationHelper.slice(list, page, pageSize)
                         autoBrowseTree.retainFolders(visible, requestProfile)
                         browsedParents[parentId] = list.size
                         while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
-                        LibraryResult.ofItemList(ImmutableList.copyOf(visible), params)
+                        LibraryResult.ofItemList(ImmutableList.copyOf(credited), params)
                     }
                 }
             }
@@ -564,6 +565,7 @@ class AutoSessionCallback(
                 ?: return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
                 else selection.items[selection.startIndex].buildUpon().setMediaId(mediaId).build()
             val eligible = accessPolicy().eligible(if (scopedAction) selection.items else listOf(item), selection.parentId)
+            val credited = refreshAutoArtistCredits(context, database, requestProfile, listOf(item)).single()
             val retained = if (scopedAction) autoBrowseTree.selectionStore.resolveAction(mediaId)
                 else autoBrowseTree.selectionStore.resolve(mediaId)
             if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get() ||
@@ -571,7 +573,7 @@ class AutoSessionCallback(
                 return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
             }
             if (eligible.isEmpty()) return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
-            return@future LibraryResult.ofItem(item, null)
+            return@future LibraryResult.ofItem(credited, null)
         }
         val songId = mediaId.split('/').lastOrNull() ?: mediaId
         val item = database.songTable.findByIdDirect(songId)?.let { song ->
@@ -580,10 +582,13 @@ class AutoSessionCallback(
             } else CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = true)
         }
         val eligible = item?.let { accessPolicy().eligible(listOf(it)).isNotEmpty() } ?: false
+        val credited = if (eligible && item != null) {
+            refreshAutoArtistCredits(context, database, requestProfile, listOf(item)).single()
+        } else null
         if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
             return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
         }
-        if (item != null && eligible) LibraryResult.ofItem(item, null)
+        if (credited != null) LibraryResult.ofItem(credited, null)
             else LibraryResult.ofError(SessionError.ERROR_UNKNOWN)
     }
     // Mapping and queue resolution perform disk work; Media3 receives the result on its own thread.
@@ -627,6 +632,7 @@ class AutoSessionCallback(
             val enriched = enrichAutoQueueDurations(limited.mediaItems) { ids ->
                 database.songTable.findByIdsDirect(ids)
             }
+            val credited = refreshAutoArtistCredits(context, database, requestProfile, enriched)
             val currentCapture = selectedId?.let {
                 if (scopedAction) autoBrowseTree.selectionStore.resolveAction(it)
                 else autoBrowseTree.selectionStore.resolve(it)
@@ -637,7 +643,7 @@ class AutoSessionCallback(
                 throw CancellationException("Automotive queue publication invalidated")
             }
             MediaSession.MediaItemsWithStartPosition(
-                enriched,
+                credited,
                 limited.startIndex,
                 limited.startPositionMs,
             )
@@ -981,13 +987,15 @@ class AutoSessionCallback(
                 accepted[group[it.index].index] = true
             }
         }
+        val acceptedItems = mappedItems.filterIndexed { index, _ -> accepted[index] }.map { it.first }
+        val credited = refreshAutoArtistCredits(context, database, requestProfile, acceptedItems)
         if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get() || retained.any { (id, items) ->
                 autoBrowseTree.selectionStore.resolve(id)?.items !== items
             }) {
             Timber.tag("AutoSessionCallback").w("Profile or capture changed before automotive append publication")
             return@future mutableListOf()
         }
-        mappedItems.filterIndexed { index, _ -> accepted[index] }.map { it.first }.toMutableList()
+        credited.toMutableList()
     }
     @Deprecated("Deprecated in Java")
     override fun onPlaybackResumption(

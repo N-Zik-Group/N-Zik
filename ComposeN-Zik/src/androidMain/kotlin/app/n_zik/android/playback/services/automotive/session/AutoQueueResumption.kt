@@ -67,21 +67,25 @@ internal fun loadAutoQueueResumption(
                     }
                 }
                 val mapped = CancellableAutoMediaItemMapper.mapSongToMediaItem(song, true, song.isLocal)
-                if (original == null) mapped else {
-                    val extras = Bundle(mapped.mediaMetadata.extras).apply {
-                        putString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA, original)
-                    }
-                    mapped.buildUpon().setMediaMetadata(mapped.mediaMetadata.buildUpon().setExtras(extras).build()).build()
+                val extras = Bundle(restored.mediaMetadata.extras ?: Bundle()).apply {
+                    mapped.mediaMetadata.extras?.let(::putAll)
+                    if (original != null) putString(SessionMediaItemMapper.ORIGINAL_ARTWORK_SOURCE_EXTRA, original)
                 }
+                val metadata = mapped.mediaMetadata.buildUpon()
+                    .setAlbumTitle(restored.mediaMetadata.albumTitle)
+                    .setExtras(extras)
+                    .build()
+                mapped.buildUpon().setMediaMetadata(metadata).build()
             }
             val available = accessPolicy().eligible(mediaItems)
+            val credited = refreshAutoArtistCredits(context, database, requestProfile, available.map { it.value })
             if (getActiveProfile(context) != requestProfile || epoch != accessEpoch.get()) {
                 Timber.tag("AutoSessionCallback").w("Access changed before automotive resumption publication")
                 throw CancellationException("Automotive resumption publication invalidated")
             } else {
                 val retainedIndex = available.indexOfFirst { it.index == idx }
                 if (retainedIndex < 0) defaultResult
-                else MediaSession.MediaItemsWithStartPosition(available.map { it.value }, retainedIndex, startPos)
+                else MediaSession.MediaItemsWithStartPosition(credited, retainedIndex, startPos)
             }
         } catch (exception: CancellationException) {
             throw exception
