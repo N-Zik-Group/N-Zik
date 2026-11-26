@@ -1084,3 +1084,7 @@ Interface:
 Menus:
 - fix(lyrics): disable copying when no lyrics are available
   - Protect the clipboard from empty lyrics and keep the copy action unavailable until text exists.
+
+Menus:
+- fix(queue): report when all requested tracks are excluded
+  - Show one result when filters leave no track to play next or enqueue.

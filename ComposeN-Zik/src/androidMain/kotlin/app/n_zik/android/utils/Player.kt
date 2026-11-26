@@ -318,8 +318,13 @@ fun Player.findMediaItemIndexById(mediaId: String): Int {
     return -1
 }
 
-fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): List<MediaItem> {
+fun Player.excludeMediaItems(
+    mediaItems: List<MediaItem>,
+    context: Context,
+    reportAllExcluded: Boolean = false,
+): List<MediaItem> {
     var filteredMediaItems = mediaItems
+    var excludedByDuration = 0
     runCatching {
         val preferences = context.preferences
         val excludeSongWithDurationLimit =
@@ -331,9 +336,7 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
                 duration == null || duration < excludeSongWithDurationLimit.asMillis
             }
 
-            val excludedSongs = mediaItems.size - filteredMediaItems.size
-            if (excludedSongs > 0)
-                Toaster.n( R.string.player_excluded_song_count_format, arrayOf( excludedSongs ) )
+            excludedByDuration = mediaItems.size - filteredMediaItems.size
         }
 
         // Filter disliked songs if setting is enabled
@@ -393,6 +396,8 @@ fun Player.excludeMediaItems(mediaItems: List<MediaItem>, context: Context): Lis
         Timber.tag("Player").e(it.message)
     }
 
+    val excludedCount = if (reportAllExcluded && filteredMediaItems.isEmpty()) mediaItems.size else excludedByDuration
+    if (excludedCount > 0) Toaster.n(R.string.player_excluded_song_count_format, arrayOf(excludedCount))
     return filteredMediaItems
 }
 fun Player.excludeMediaItem(mediaItem: MediaItem, context: Context): Boolean {

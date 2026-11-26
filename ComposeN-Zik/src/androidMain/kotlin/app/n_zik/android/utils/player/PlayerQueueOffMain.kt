@@ -41,7 +41,7 @@ internal suspend fun withFilteredQueueItems(
     if (mediaItems.isEmpty()) return false
     val filterReceiver = currentPlayer() ?: return false
     val filteredMediaItems = withContext(NzikDispatchers.DATA) {
-        filterReceiver.excludeMediaItems(mediaItems, context)
+        filterReceiver.excludeMediaItems(mediaItems, context, reportAllExcluded = true)
     }
     if (filteredMediaItems.isEmpty()) return false
     if (listenTogetherGuestLock.value) {
