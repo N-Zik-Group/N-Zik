@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
@@ -47,6 +49,6 @@ private fun MenuTitleText(title: String) {
         text = title,
         style = typography().m.copy(color = colorPalette().text),
         textAlign = TextAlign.Center,
-        modifier = Modifier.padding(top = 5.dp, bottom = 10.dp),
+        modifier = Modifier.semantics { heading() }.padding(top = 5.dp, bottom = 10.dp),
     )
 }

@@ -1056,3 +1056,7 @@ Menus:
 Menus:
 - fix(menu): label secondary menu actions for accessibility
   - Name the long press in the burger and online search results.
+
+Menus:
+- fix(menu): expose menu section headings to accessibility
+  - Keep the existing heading layout and share its semantics in List and Grid.

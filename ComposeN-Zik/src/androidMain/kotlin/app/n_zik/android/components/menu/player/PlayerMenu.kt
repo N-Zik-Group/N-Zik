@@ -76,7 +76,7 @@ import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.isCurrentMenu
-import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
+import app.n_zik.android.components.menu.menuSectionHeading
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.utils.semiBold
 import androidx.compose.material3.Icon
@@ -289,7 +289,7 @@ fun AddToPlaylistItemMenu(
                 style = typography().m.semiBold,
                 modifier = Modifier.fillMaxWidth()
                     .padding(top = 5.dp)
-                    .menuSectionHorizontalAlignment(),
+                    .menuSectionHeading(),
             )
         },
         entry = { label, preview ->
@@ -446,7 +446,7 @@ fun AddToPlaylistArtistSongsMenu(
                     style = typography().m.semiBold,
                     modifier = Modifier.fillMaxWidth()
                         .padding(top = 5.dp)
-                        .menuSectionHorizontalAlignment(),
+                        .menuSectionHeading(),
                 )
             }
 
@@ -505,7 +505,7 @@ fun AddToPlaylistArtistSongsMenu(
                     style = typography().m.semiBold,
                     modifier = Modifier.fillMaxWidth()
                         .padding(top = 5.dp)
-                        .menuSectionHorizontalAlignment(),
+                        .menuSectionHeading(),
                 )
             }
 
@@ -552,7 +552,7 @@ fun AddToPlaylistArtistSongsMenu(
                     style = typography().m.semiBold,
                     modifier = Modifier.fillMaxWidth()
                         .padding(top = 5.dp)
-                        .menuSectionHorizontalAlignment(),
+                        .menuSectionHeading(),
                 )
             }
 

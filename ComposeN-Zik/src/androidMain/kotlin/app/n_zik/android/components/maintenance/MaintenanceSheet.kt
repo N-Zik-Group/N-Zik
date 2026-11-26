@@ -65,7 +65,7 @@ import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
+import app.n_zik.android.components.menu.menuSectionHeading
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.ui.UiIconButton as IconButton
@@ -914,7 +914,7 @@ internal fun MenuSectionTitle(title: String) {
             Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
-                .menuSectionHorizontalAlignment(),
+                .menuSectionHeading(),
     )
 }
 

@@ -30,7 +30,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
+import app.n_zik.android.components.menu.menuSectionHeading
 import app.n_zik.android.components.menu.menuToggleSemantics
 import app.n_zik.android.components.ui.InlineLoader
 import app.n_zik.android.components.ui.toggles.Switch
@@ -614,7 +614,7 @@ private fun MenuSectionTitle(title: String) {
             Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
-                .menuSectionHorizontalAlignment(),
+                .menuSectionHeading(),
     )
 }
 

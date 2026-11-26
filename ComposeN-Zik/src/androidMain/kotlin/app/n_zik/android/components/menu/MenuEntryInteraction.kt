@@ -8,6 +8,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
@@ -20,9 +21,10 @@ import app.n_zik.android.components.ui.insetPressIndication
 internal val LocalListMenuRowOutset = staticCompositionLocalOf { 0.dp }
 
 @Composable
-internal fun Modifier.menuSectionHorizontalAlignment(): Modifier {
+internal fun Modifier.menuSectionHeading(): Modifier {
     val outset = LocalListMenuRowOutset.current
-    return if (outset > 0.dp) this else padding(horizontal = PressFeedbackHorizontalInset)
+    val headingModifier = semantics { heading() }
+    return if (outset > 0.dp) headingModifier else headingModifier.padding(horizontal = PressFeedbackHorizontalInset)
 }
 
 @Composable

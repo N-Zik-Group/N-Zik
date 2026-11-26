@@ -63,7 +63,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
+import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 
@@ -264,7 +264,7 @@ fun PlaylistsItemMenu(
                                 style = typography().m.semiBold,
                                 modifier = modifier.fillMaxWidth()
                                     .padding(top = 5.dp)
-                                    .menuSectionHorizontalAlignment(),
+                                    .menuSectionHeading(),
                             )
                         }
 
@@ -327,7 +327,7 @@ fun PlaylistsItemMenu(
                                 style = typography().m.semiBold,
                                 modifier = Modifier.fillMaxWidth()
                                     .padding(top = 5.dp)
-                                    .menuSectionHorizontalAlignment(),
+                                    .menuSectionHeading(),
                             )
                         }
 
@@ -379,7 +379,7 @@ fun PlaylistsItemMenu(
                                 style = typography().m.semiBold,
                                 modifier = modifier.fillMaxWidth()
                                     .padding(top = 5.dp)
-                                    .menuSectionHorizontalAlignment(),
+                                    .menuSectionHeading(),
                             )
                         }
 

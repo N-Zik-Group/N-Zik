@@ -2,6 +2,7 @@ package app.n_zik.android.components.menu
 
 import android.app.Application
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
@@ -30,6 +31,34 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")
 class MenuEntryInteractionTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test
+    fun `list and grid expose their menu title and section headings`() {
+        val useGrid = mutableStateOf(false)
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
+
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                if (useGrid.value) {
+                    GridMenu.Menu(title = "Track options", showDragHandle = false) {
+                        item { Text("Playback", modifier = Modifier.menuSectionHeading()) }
+                    }
+                } else {
+                    ListMenu.Menu(title = "Track options", showDragHandle = false) {
+                        Text("Playback", modifier = Modifier.menuSectionHeading())
+                    }
+                }
+            }
+        }
+
+        val isHeading = SemanticsMatcher.keyIsDefined(SemanticsProperties.Heading)
+        for (grid in listOf(false, true)) {
+            composeRule.runOnIdle { useGrid.value = grid }
+            composeRule.onNodeWithText("Track options").assert(isHeading)
+            composeRule.onNodeWithText("Playback").assert(isHeading)
+        }
+    }
 
     @Test
     fun `list and grid expose toggle state and keep informational rows passive`() {

@@ -55,7 +55,7 @@ import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.menu.GridMenu
-import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
+import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 
@@ -215,7 +215,7 @@ fun PlaylistsItemGridMenu(
                         style = typography().m.semiBold,
                         modifier = Modifier.fillMaxWidth()
                             .padding(top = 5.dp)
-                            .menuSectionHorizontalAlignment(),
+                            .menuSectionHeading(),
                     )
                 },
                 entry = { label, preview ->
