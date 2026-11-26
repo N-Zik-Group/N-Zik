@@ -131,6 +131,7 @@ Join the N-Zik Discord:
 - 🪟 **Widgets**: New widgets for your home screen (Compact, Turntable, and Playlist).
 - 🧩 **Extensions**: Heavy features are delivered as small, downloadable modules that add capability without bloating every APK. Manage them from the burger menu → **Extensions**, which opens the Extensions page in Settings with **Installed** (state, size, update/uninstall) and **Marketplace** (browse + download available extensions) tabs. The first extension is **FFmpeg**, which unlocks **Media Export** and the **Metadata Editor**, the app's only FFmpeg-powered features; regular playback, streaming and downloads never use it. It downloads automatically on first use (≈ 25 MB, SHA-256 verified, app-update-style progress notification), updates and uninstalls independently of the app, and is version-pinned to the app. _(Note: the FFmpeg extension is not available on x86 32-bit devices.)_
 - 📤 **Media Export**: Export cached or downloaded music to external storage with full metadata (title, artist, album, cover art, copyright, etc.) powered by FFmpeg. _(Note: requires the **FFmpeg extension**; see the [Extensions](#-features) entry in the Features list. Managed in Settings → Extensions. Not available on x86 32-bit devices.)_
+- 🛠️ **[Automatic Metadata Repair](#automatic-metadata-repair)** looks up missing artist credits and album links during online playback and checks the library at startup.
 - ✏️ **Metadata Editor**: Edit song metadata (title, artist, album, genre, year, cover art, and more) directly in-app. Supports both AAC and Opus codecs with automatic cover art embedding.
 - ⚙️ **Settings & Database Auto-Backup**: Save, restore, and automatically back up your complete app configuration and database with customizable intervals, retention limits, and optional YouTube/Discord/Last.fm credential inclusion.
 - 📡 **Offline First**: Enjoy your music library even without an internet connection.
@@ -158,6 +159,12 @@ Join the N-Zik Discord:
 - 🚪 **First-Launch Onboarding**: A guided 4-step flow (display name, playlist import, account setup).
 - ⚡ **App Shortcuts**: Dynamically registered home-screen shortcuts (search, albums, artists, library, rescue).
 - 📈 **Audio Bar**: A visual waveform seekbar for precise track navigation.
+
+## Automatic Metadata Repair
+
+- **During online playback.** N-Zik looks up the track by its YouTube video ID to refresh track information and recover missing artist credits and album links when available. An incomplete artist list leaves existing artist links in place. If a video lacks usable artist credits, N-Zik can use the channel from a matching video result.
+- **At startup.** Artist link cleanup removes stale links when they conflict with the song's saved credits. Same-name artist deduplication checks for a common YouTube Music identity before merging entries and leaves uncertain matches for inspection. Name convergence aligns saved song and album credits with their linked artists when the identities agree.
+- **Your edits.** Automatic track refresh preserves custom track titles, artist names, and covers. See **Maintenance** for the results of the startup checks.
 
 <a id="glass-effect-beta"></a>
 
