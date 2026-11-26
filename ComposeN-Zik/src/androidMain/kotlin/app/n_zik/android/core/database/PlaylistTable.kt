@@ -232,13 +232,13 @@ interface PlaylistTable {
 
     @Query("""
         UPDATE Playlist
-        SET authorBrowseId = :authorBrowseId, authorName = :authorName
+        SET authorBrowseId = COALESCE(:authorBrowseId, authorBrowseId), authorName = :authorName
         WHERE id = :playlistId AND browseId = :expectedBrowseId
     """)
     suspend fun updateSourceAuthor(
         playlistId: Long,
         expectedBrowseId: String,
-        authorBrowseId: String,
+        authorBrowseId: String?,
         authorName: String,
     ): Int
 

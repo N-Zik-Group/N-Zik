@@ -12,8 +12,27 @@ suspend fun importSongsToPlaylist(playlist: Playlist, songs: List<Song>) {
     Database.transaction {
         check(canEditPlaylistMembership(playlist) &&
             (playlist.id <= 0 || canEditStoredPlaylistMembership(playlist.id))) { "Playlist membership is read-only" }
-        songTable.upsert(songs)
+        mergeCsvImportSongs(songs)
         mapIgnore(playlist, *songs.toTypedArray())
+    }
+}
+
+/** Sparse imports fill missing metadata and preserve existing library state. */
+internal suspend fun Database.mergeCsvImportSongs(songs: List<Song>) {
+    songs.distinctBy(Song::id).chunked(500).forEach { batch ->
+        val existing = songTable.findByIdsDirect(batch.map(Song::id)).associateBy(Song::id)
+        songTable.upsert(batch.map { imported ->
+            existing[imported.id]?.let { stored ->
+                stored.copy(
+                    title = stored.title.ifBlank { imported.title },
+                    artistsText = stored.artistsText.takeUnless { it.isNullOrBlank() } ?: imported.artistsText,
+                    durationText = stored.durationText.takeUnless { it.isNullOrBlank() } ?: imported.durationText,
+                    thumbnailUrl = stored.thumbnailUrl.takeUnless { it.isNullOrBlank() } ?: imported.thumbnailUrl,
+                    likedAt = stored.likedAt ?: imported.likedAt,
+                    totalPlayTimeMs = maxOf(stored.totalPlayTimeMs, imported.totalPlayTimeMs),
+                ).apply { playCount = stored.playCount }
+            } ?: imported
+        })
     }
 }
 

@@ -3,7 +3,9 @@ package app.n_zik.android.core.database
 import android.content.Context
 import android.net.Uri
 import androidx.room.Room
+import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.LOCAL_KEY_PREFIX
 import app.n_zik.android.enums.PlaylistSongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Playlist
@@ -12,6 +14,10 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.appContext
 import app.n_zik.android.components.tab.ImportSongsFromServices
+import app.n_zik.android.components.menu.playlist.importOnlinePlaylist
+import app.n_zik.android.core.sync.FavoriteAction
+import app.n_zik.android.core.sync.YouTubeSync
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.playlist.PlaylistInsertionPosition
 import app.n_zik.android.utils.playlist.PlaylistInsertionPreferences
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
@@ -24,6 +30,7 @@ import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -74,6 +81,26 @@ class PlaylistInsertionTest {
     private fun begin() = preferences.set(playlist.id, PlaylistInsertionPosition.Beginning)
     private fun ids() = runBlocking { db.songPlaylistMapTable.songsByPositionDirect(playlist.id).map { it.id } }
     private fun positions() = runBlocking { ids().map { db.songPlaylistMapTable.findPositionOf(it, playlist.id) } }
+
+    @Test fun `online import commits songs and playlist in source order`() = runBlocking<Unit> {
+        val source = Playlist(name = "Online import", browseId = "VLPLfixture")
+        val songs = listOf("A", "B", "A").map { Song.makePlaceholder(it) }
+        Database.importOnlinePlaylist(source, songs)
+        val stored = db.playlistTable.getAll().single { it.name == source.name }
+        assertEquals(listOf("A", "B"), db.songPlaylistMapTable.songsByPositionDirect(stored.id).map { it.id })
+    }
+
+    @UnstableApi
+    @Test fun `favorite menu row inserts a track absent from the library`() = runBlocking<Unit> {
+        setActiveProfile("default", context)
+        val track = Song.makePlaceholder("missing-favorite-track")
+        assertEquals(null, db.songTable.findByIdDirect(track.id))
+
+        YouTubeSync.launchFavoriteUpdate(context, listOf(track.asMediaItem), FavoriteAction.Add)
+
+        withTimeout(10_000) { db.songTable.likeState(track.id).first { it == true } }
+        assertTrue(db.songTable.isLikedDirect(track.id))
+    }
 
     @Test fun `missing preference appends after max including gaps`() = runBlocking<Unit> {
         add("A", "B")
@@ -201,6 +228,32 @@ class PlaylistInsertionTest {
         Database.mapIgnore(remote, Song.makePlaceholder("A"))
         Database.mapIgnore(remote, Song.makePlaceholder("B"))
         assertEquals(listOf("A", "B"), ids())
+    }
+
+    // JUnit is synchronous, while Room membership writes require a coroutine.
+    @Test fun `membership result confirms new mappings and distinguishes duplicates`() = runBlocking<Unit> {
+        db.playlistTable.insert(playlist)
+        val first = Song.makePlaceholder("A")
+        val second = Song.makePlaceholder("B")
+
+        assertEquals(PlaylistAddResult.Added, Database.addTracksToStoredPlaylist(playlist.id, listOf(first, first, second)))
+        assertEquals(PlaylistAddResult.AlreadyPresent, Database.addTracksToStoredPlaylist(playlist.id, listOf(first, second)))
+        assertEquals(PlaylistAddResult.Empty, Database.addTracksToStoredPlaylist(playlist.id, emptyList()))
+        assertEquals(listOf("A", "B"), ids())
+    }
+
+    // JUnit is synchronous, while Room membership writes require a coroutine.
+    @Test fun `device tracks cannot be added to a stored YouTube destination`() = runBlocking<Unit> {
+        val remote = playlist.copy(browseId = "VLPLremote", isYoutubePlaylist = true)
+        db.playlistTable.insert(remote)
+        val device = Song.makePlaceholder("${LOCAL_KEY_PREFIX}track")
+        val online = Song.makePlaceholder("A")
+
+        assertEquals(PlaylistAddResult.Unavailable, Database.addTracksToStoredPlaylist(remote.id, listOf(device)))
+        assertEquals(emptyList<String>(), ids())
+        assertEquals(PlaylistAddResult.Added, Database.addTracksToStoredPlaylist(remote.id, listOf(device, online)))
+        assertEquals(listOf("A"), ids())
+        assertEquals(PlaylistAddResult.Unavailable, Database.addTracksToStoredPlaylist(remote.id, listOf(online), localDestinationsOnly = true))
     }
 
     @Test fun `generated playlist id supports normal default insertion`() = runBlocking<Unit> {

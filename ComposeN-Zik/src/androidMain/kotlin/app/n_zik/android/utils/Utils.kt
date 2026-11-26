@@ -43,7 +43,14 @@ import app.n_zik.kugou.KuGou
 import app.n_zik.lrclib.LrcLib
 import androidx.media3.session.MediaConstants.EXTRAS_KEY_IS_EXPLICIT
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.database.canEditStoredPlaylistMembership
+import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.core.database.PlaylistAddResult
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.addTracksToStoredPlaylist
+import app.n_zik.android.core.database.canEditPlaylistMembership
+import app.n_zik.android.core.database.isYouTubePlaylistSource
+import app.n_zik.android.core.database.playlistLinkKind
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.hasExplicitPrefix
@@ -52,6 +59,7 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.context
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Lyrics
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.stripExplicitEmoji
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
@@ -89,25 +97,38 @@ val Innertube.AlbumItem.asAlbum: Album
         //shareUrl =
     )
 
-val Innertube.Podcast.EpisodeItem.asMediaItem: MediaItem
-    @UnstableApi
-    get() = MediaItem.Builder()
+private const val PODCAST_BROWSE_ID_EXTRA = "podcastBrowseId"
+
+internal val MediaItem.podcastBrowseId: String?
+    get() = mediaMetadata.extras?.getString(PODCAST_BROWSE_ID_EXTRA)?.takeIf(String::isNotBlank)
+
+/** Carry an exact source across the conversion from stored playlist rows to playback items. */
+internal fun MediaItem.withPodcastSource(browseId: String?): MediaItem {
+    if (!isPodcastBrowseId(browseId)) return this
+    val metadata = mediaMetadata
+    val extras = (metadata.extras?.let(::Bundle) ?: Bundle()).apply {
+        putString(PODCAST_BROWSE_ID_EXTRA, browseId)
+    }
+    return buildUpon().setMediaMetadata(metadata.buildUpon().setExtras(extras).build()).build()
+}
+
+@UnstableApi
+internal fun Innertube.Podcast.EpisodeItem.asPodcastMediaItem(browseId: String): MediaItem =
+    MediaItem.Builder()
         .setMediaId(videoId)
         .setUri(videoId)
         .setCustomCacheKey(videoId)
         .setMediaMetadata(
             MediaMetadata.Builder()
                 .setTitle(title)
-                .setArtist(author.toString())
-                .setAlbumTitle(title)
+                .setArtist(author)
                 .setArtworkUri(thumbnail.lastOrNull()?.url?.thumbnail(1200)?.toUri())
                 .setExtras(
                     bundleOf(
-                        //"albumId" to album?.endpoint?.browseId,
+                        PODCAST_BROWSE_ID_EXTRA to browseId,
                         "durationText" to durationString,
-                        "artistNames" to author,
+                        "artistNames" to author?.takeIf(String::isNotBlank)?.let { arrayListOf(it) },
                         EXTRAS_KEY_IS_EXPLICIT to false,
-                        //"artistIds" to authors?.mapNotNull { it.endpoint?.browseId },
                     )
                 )
                 .build()
@@ -549,83 +570,104 @@ suspend fun downloadSyncedLyrics( song: Song ) {
     }
 }
 
-suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItems: List<MediaItem>){
-    if( !isYouTubeSyncEnabled() ) return
-    if( !canPushToYTM() ) return
-    if( !isNetworkConnected(appContext()) ) return
+private val playlistAddMutex = Mutex()
 
-    if (mediaItems.isEmpty()) return
+internal fun shouldPushPlaylistChanges(syncEnabled: Boolean, canPush: Boolean, pushPlaylists: Boolean): Boolean =
+    syncEnabled && canPush && pushPlaylists
 
-    val resources = appTextResources()
-    val progressInterval = 50
-    if (mediaItems.size > progressInterval) {
-        Toaster.i(
-            resources.getQuantityString(
-                R.plurals.sync_youtube_playlist_songs_adding,
-                mediaItems.size,
-                mediaItems.size,
-            )
-        )
-    }
+private fun playlistPushAllowed(context: Context) = shouldPushPlaylistChanges(
+    isYouTubeSyncEnabled(), canPushToYTM(), context.preferences.getBoolean(syncPushPlaylistKey, false),
+)
 
-    // The multi-item API sends individual requests and can fail after a partial write.
-    // Count confirmed single-item requests so we never retry or count an entire failed batch.
-    var addedCount = 0
-    mediaItems.forEachIndexed { index, item ->
-        PlaylistEditThrottle.throttle(ytplaylistId)
-        addToPlaylist(ytplaylistId, item.mediaId)
-            .onSuccess {
-                addedCount++
-                Database.playlistTable.findById(localPlaylistId).first()?.let { playlist ->
-                    Database.mapIgnore(playlist, item)
-                }
-            }
-            .onFailure { error ->
-                if (error is CancellationException) throw error
-                Timber.tag("Utils").e(error, "Failed to add a song to the YouTube playlist")
-                Toaster.e(
-                    resources.getString(R.string.sync_youtube_playlist_add_failed) +
-                        ": ${item.mediaMetadata.title} - ${item.mediaMetadata.artist}"
-                )
-            }
-
-        if ((index + 1) % progressInterval == 0 && index < mediaItems.lastIndex) {
-            Toaster.i(
-                R.string.sync_youtube_songs_remaining,
-                formatArgs = arrayOf((mediaItems.lastIndex - index).toString())
-            )
+/** Returns null after reporting a partial or failed remote edit. */
+internal suspend fun addPlaylistItemsFromMenu(
+    confirmedPlaylist: Playlist,
+    mediaItems: List<MediaItem>,
+    localDestinationsOnly: Boolean = false,
+): PlaylistAddResult? {
+    if (mediaItems.isEmpty()) return PlaylistAddResult.Empty
+    val context = appContext()
+    val owner = ProfileWorkOwner.capture(context) ?: return PlaylistAddResult.Unavailable
+    val playlistId = confirmedPlaylist.id
+    return playlistAddMutex.withLock {
+        if (!ProfileWorkOwner.isBound(context, owner)) return@withLock PlaylistAddResult.Unavailable
+        val playlist = Database.playlistTable.findById(playlistId).first()
+            ?.takeIf(::canEditPlaylistMembership) ?: return@withLock PlaylistAddResult.Unavailable
+        val browseId = playlist.browseId
+        if (browseId != confirmedPlaylist.browseId || playlist.isYoutubePlaylist != confirmedPlaylist.isYoutubePlaylist) {
+            return@withLock PlaylistAddResult.Unavailable
         }
-    }
+        val remoteSource = isYouTubePlaylistSource(browseId, playlist.isYoutubePlaylist)
+        if (localDestinationsOnly && remoteSource) return@withLock PlaylistAddResult.Unavailable
+        val items = mediaItems.filterNot { remoteSource && it.isLocal }.distinctBy { it.asSong.id }
+        if (items.isEmpty()) return@withLock PlaylistAddResult.Unavailable
 
-    if (addedCount == 0) {
-        Toaster.w(R.string.sync_youtube_playlist_no_songs_added)
-    } else {
-        Toaster.n(resources.getQuantityString(R.plurals.sync_youtube_playlist_songs_added, addedCount, addedCount))
+        suspend fun store(itemsToAdd: List<MediaItem>): PlaylistAddResult = Database.awaitWriteBatch {
+            var result = PlaylistAddResult.Unavailable
+            transaction {
+                if (!ProfileWorkOwner.isBound(context, owner)) return@transaction
+                val latest = playlistTable.findById(playlistId).first() ?: return@transaction
+                if (latest.browseId != browseId || latest.isYoutubePlaylist != playlist.isYoutubePlaylist) return@transaction
+                result = addTracksToStoredPlaylist(playlistId, itemsToAdd.map(MediaItem::asSong), localDestinationsOnly)
+                if (result == PlaylistAddResult.Added) itemsToAdd.forEach { insertIgnore(it) }
+            }
+            result
+        }
+
+        val remoteId = browseId?.takeIf {
+            playlist.isYoutubePlaylist && !it.startsWith(MODIFIED_PREFIX) &&
+                playlistLinkKind(it) == PlaylistLinkKind.YouTubePlaylist
+        }?.removePrefix("VL")
+        if (remoteId == null || !playlistPushAllowed(context)) return@withLock store(items)
+
+        val existingIds = Database.songPlaylistMapTable.songIdsInPlaylist(playlistId).toHashSet()
+        val pending = items.filterNot { it.asSong.id in existingIds }
+        if (pending.isEmpty()) return@withLock PlaylistAddResult.AlreadyPresent
+        var confirmedCount = 0
+        val resources = appTextResources()
+        val progressInterval = 50
+        if (pending.size > progressInterval) {
+            Toaster.i(resources.getQuantityString(R.plurals.sync_youtube_playlist_songs_adding, pending.size, pending.size))
+        }
+        for ((index, item) in pending.withIndex()) {
+            PlaylistEditThrottle.throttle(remoteId)
+            val current = Database.playlistTable.findById(playlistId).first() ?: break
+            if (!ProfileWorkOwner.isBound(context, owner) || !playlistPushAllowed(context) ||
+                !isNetworkConnected(context) || current.browseId != browseId ||
+                current.isYoutubePlaylist != playlist.isYoutubePlaylist || !canEditPlaylistMembership(current)) break
+            val error = addToPlaylist(remoteId, item.asSong.id).exceptionOrNull()
+            if (error is CancellationException) throw error
+            if (error == null) {
+                val stored = store(listOf(item))
+                if (stored == PlaylistAddResult.Unavailable) break
+                confirmedCount++
+            } else {
+                Timber.tag("Utils").w(error, "Failed to add a song to the YouTube playlist")
+            }
+            if ((index + 1) % progressInterval == 0 && index < pending.lastIndex) {
+                Toaster.i(R.string.sync_youtube_songs_remaining, formatArgs = arrayOf((pending.size - index - 1).toString()))
+            }
+        }
+        if (confirmedCount != pending.size) {
+            if (confirmedCount > 0) {
+                Toaster.n(resources.getQuantityString(R.plurals.sync_youtube_playlist_songs_added, confirmedCount, confirmedCount))
+            }
+            Toaster.e(R.string.sync_youtube_playlist_add_failed)
+            null
+        } else PlaylistAddResult.Added
     }
 }
 
-private val singleYouTubePlaylistAddMutex = Mutex()
-
-suspend fun addSongToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItem: MediaItem) {
-    if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return
-
-    singleYouTubePlaylistAddMutex.withLock {
-        PlaylistEditThrottle.throttle(ytplaylistId)
-        if (!canEditStoredPlaylistMembership(localPlaylistId)) return@withLock
-        if (Database.songPlaylistMapTable.findById(mediaItem.mediaId, localPlaylistId).first() != null) {
-            Toaster.i(R.string.playlist_contains_song)
-            return@withLock
-        }
-        addToPlaylist(ytplaylistId, mediaItem.mediaId)
-            .onSuccess {
-                Database.playlistTable.findById(localPlaylistId).first()?.let {
-                    Database.mapIgnore(it, mediaItem)
-                }
-                Toaster.s(R.string.sync_youtube_playlist_add_success)
-            }
-            .onFailure {
-                if (it is CancellationException) throw it
-                Toaster.e(R.string.sync_youtube_playlist_add_failed)
-            }
+suspend fun addToYtPlaylist(localPlaylistId: Long, position: Int, ytplaylistId: String, mediaItems: List<MediaItem>) {
+    val confirmed = Database.playlistTable.findById(localPlaylistId).first()
+        ?.takeIf { it.browseId?.let(::cleanPrefix) == cleanPrefix(ytplaylistId) }
+    val result = if (confirmed != null) addPlaylistItemsFromMenu(confirmed, mediaItems)
+        else PlaylistAddResult.Unavailable
+    when (result) {
+        PlaylistAddResult.Added -> Toaster.done()
+        PlaylistAddResult.AlreadyPresent -> Toaster.i(R.string.playlist_contains_song)
+        PlaylistAddResult.Empty -> Toaster.w(R.string.player_no_song_found)
+        PlaylistAddResult.Unavailable -> Toaster.w(R.string.playlist_add_destination_unavailable)
+        null -> Unit
     }
 }

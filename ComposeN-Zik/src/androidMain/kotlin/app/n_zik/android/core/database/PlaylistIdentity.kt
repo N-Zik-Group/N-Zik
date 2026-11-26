@@ -2,9 +2,12 @@ package app.n_zik.android.core.database
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.MODIFIED_PREFIX
 
 enum class PlaylistLinkKind { Local, YouTubePlaylist, YouTubePodcast }
@@ -84,6 +87,31 @@ fun canEditPlaylistMembership(playlist: Playlist): Boolean = !isReadOnlyPlaylist
 suspend fun canEditStoredPlaylistMembership(playlistId: Long): Boolean =
     Database.playlistTable.getAll().firstOrNull { it.id == playlistId }
         ?.let(::canEditPlaylistMembership) == true
+
+internal enum class PlaylistAddResult { Added, AlreadyPresent, Empty, Unavailable }
+
+/** Adds to the current stored destination and reports what the transaction changed. */
+internal suspend fun Database.addTracksToStoredPlaylist(
+    playlistId: Long,
+    songs: List<Song>,
+    localDestinationsOnly: Boolean = false,
+): PlaylistAddResult {
+    if (songs.isEmpty()) return PlaylistAddResult.Empty
+    var result = PlaylistAddResult.Unavailable
+    transaction {
+        val playlist = playlistTable.findById(playlistId).first() ?: return@transaction
+        if (!canEditPlaylistMembership(playlist)) return@transaction
+        val remote = isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
+        if (remote && (localDestinationsOnly || songs.all { it.isLocal })) return@transaction
+
+        result = if (mapMissingPlaylistSongs(playlist, songs) > 0) {
+            PlaylistAddResult.Added
+        } else {
+            PlaylistAddResult.AlreadyPresent
+        }
+    }
+    return result
+}
 
 /** Legacy target pickers dispatch callbacks only after rechecking their current stored row. */
 fun dispatchPlaylistMembershipEdit(playlistId: Long, edit: () -> Unit) {

@@ -624,3 +624,7 @@ Discord presence links:
 Video artist lookup:
 - fix(metadata): verify video credits against the playing track
   - Filter generic channels and preserve user edits when enriching video metadata.
+
+Playlist membership and import:
+- fix(playlist): validate destination membership before adding tracks
+  - Keep profile ownership, duplicate checks, YouTube push rules and source order consistent.

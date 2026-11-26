@@ -20,6 +20,7 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importSongsToPlaylist
+import app.n_zik.android.utils.playlist.mergeCsvImportSongs
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.ImportFromFile
@@ -145,9 +146,9 @@ class ImportSongsFromCSV(
                                 // One batch preserves the previous stray/group order when prepending.
                                 importSongsToPlaylist(targetPlaylist, straySongs + combos.values.flatten())
                             } else {
-                                songTable.upsert(straySongs)
+                                mergeCsvImportSongs(straySongs)
                                 combos.forEach { (playlist, songs) ->
-                                    songTable.upsert(songs)
+                                    mergeCsvImportSongs(songs)
                                     mapIgnore( playlist, *songs.toTypedArray() )
                                 }
                             }
