@@ -10,7 +10,12 @@ import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -137,8 +142,7 @@ class BurgerMenuAssemblyTest {
 
     /**
      * Composes the real header (frozen clock: the overflowing labels marquee forever)
-     * and opens the menu by clicking the profile face - the base profile's
-     * deterministic initials ("NF" for the base profile name) replace the burger icon.
+     * and opens the menu through its accessible profile trigger.
      */
     private fun openMenu() {
         composeRule.mainClock.autoAdvance = false
@@ -147,13 +151,20 @@ class BurgerMenuAssemblyTest {
                 ActionBar(navController = mockk<NavController>(relaxed = true))
             }
         }
-        composeWaitUntil("the profile face rendered its initials", 10_000) {
-            composeRule.onAllNodesWithText("NF").fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText("NF").performClick()
+        val label = app.getString(R.string.common_menu_label)
+        val menuTrigger = hasClickAction() and hasContentDescription(label)
+        composeRule.onNode(menuTrigger)
+            .assert(SemanticsMatcher.expectValue(
+                SemanticsProperties.StateDescription, app.getString(R.string.accessibility_menu_closed),
+            ))
+            .performClick()
         composeWaitUntil("the burger menu opened", 5_000) {
             composeRule.onAllNodesWithText(app.getString(R.string.library_history_title)).fetchSemanticsNodes().isNotEmpty()
         }
+        composeRule.onNode(SemanticsMatcher.expectValue(SemanticsProperties.PaneTitle, label))
+            .assert(SemanticsMatcher.expectValue(
+                SemanticsProperties.StateDescription, app.getString(R.string.accessibility_menu_open),
+            ))
     }
 
     /** The default-seed rows in render order (label resources). */

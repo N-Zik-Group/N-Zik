@@ -2,7 +2,6 @@ package app.n_zik.android.components.menu
 
 import android.app.Application
 import android.content.Context
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
@@ -49,7 +48,7 @@ class MenuIconBadgeIntegrationTest {
     @get:Rule val compose = createComposeRule()
 
     @Test
-    fun `actual MenuIcon list and grid retain native fills and use one Glass support around unchanged glyph`() {
+    fun `list and grid share one icon badge in native and Glass modes`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         context.getSharedPreferences("nzik_square_glass_v2", Context.MODE_PRIVATE).edit().clear().commit()
         val mode = mutableStateOf(false to false)
@@ -77,7 +76,6 @@ class MenuIconBadgeIntegrationTest {
                         if (grid) item.GridMenuItem() else item.ListMenuItem()
                     } else Box(Modifier.size((layout[0] / density).dp, (layout[1] / density).dp).testTag("entry")) {
                         Box(Modifier.offset((layout[2] / density).dp, (layout[3] / density).dp).size(32.dp)
-                            .then(if (grid && !glass) Modifier.background(accent.copy(alpha = .1f), shape) else Modifier)
                             .iconBadgeBackground(accent.copy(alpha = .1f), shape),
                             contentAlignment = Alignment.Center) {
                             Icon(painterResource(R.drawable.search), null, Modifier.size(18.dp), tint = accent)

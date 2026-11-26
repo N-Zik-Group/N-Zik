@@ -230,7 +230,7 @@ class InformationMenuSurfaceTest {
         context.preferences.edit().putBoolean(glassEnabledKey, true)
             .putString(colorPaletteModeKey, ColorPaletteMode.PitchBlack.name).commit()
         mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
-        coEvery { loadVideoOrSongInfo(any(), any()) } returns VideoOrSongInfoResult(null, emptyList())
+        coEvery { loadVideoOrSongInfo(any(), any(), null) } returns VideoOrSongInfoResult(null, emptyList())
         var playCount = 0
         var density = 1f
         var header = Color.Unspecified

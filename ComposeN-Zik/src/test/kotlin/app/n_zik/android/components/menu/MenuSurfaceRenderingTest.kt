@@ -4,27 +4,42 @@ import android.app.Application
 import android.content.Context
 import android.view.View
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.unit.dp
@@ -32,6 +47,7 @@ import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
@@ -42,6 +58,7 @@ import app.n_zik.android.ui.styling.ModernBlackColorPalette
 import app.n_zik.android.ui.styling.PureBlackColorPalette
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.ui.styling.dynamicColorPaletteOf
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.preferences
@@ -49,7 +66,13 @@ import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.menu.player.audioOptionSelection
+import app.n_zik.android.components.menu.playlist.menuItemCount
 import app.n_zik.android.components.menu.song.SongMenuSurface
+import app.n_zik.android.components.ui.CollectionToolbar
+import app.n_zik.android.ui.components.themed.HeaderIconButton
+import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -67,6 +90,31 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class MenuSurfaceRenderingTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test fun compactCollectionActionsKeepTheirAccessibleLabels() {
+        var clicked = false
+        val appearance = Appearance(
+            DefaultDarkColorPalette,
+            Typography.fallback,
+            RoundedCornerShape(8.dp),
+            RoundedCornerShape(8.dp),
+            RoundedCornerShape(8.dp),
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                CollectionToolbar(bookmark = {}, showBookmark = false, actions = listOf({
+                    HeaderIconButton(
+                        onClick = { clicked = true },
+                        icon = R.drawable.add_in_playlist,
+                        color = Color.White,
+                        contentDescription = "Add to playlist",
+                    )
+                }))
+            }
+        }
+        composeRule.onNodeWithContentDescription("Add to playlist").performClick()
+        composeRule.runOnIdle { assertTrue(clicked) }
+    }
 
     private val context: Context = ApplicationProvider.getApplicationContext()
     private var previousProfile: String? = null
@@ -113,6 +161,135 @@ class MenuSurfaceRenderingTest {
     @Test
     fun `list menu renders separate tones and retains pitch black elevated surfaces`() {
         verifySurfaces(grid = false)
+    }
+
+    @Test
+    fun `guarded collection actions route list and grid taps through the guard`() {
+        val useGrid = mutableStateOf(false)
+        var guardedClicks = 0
+        var delegateClicks = 0
+        val delegate = object : MenuIcon {
+            override val iconId = R.drawable.trash
+            @get:Composable
+            override val menuIconTitle: String get() = "Collection action"
+            override fun onShortClick() { delegateClicks++ }
+        }
+        val guarded = delegate.withMenuClick { guardedClicks++ }
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(
+            colorPalette = ColorPalette.fallback, typography = Typography.fallback,
+            thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                if (useGrid.value) {
+                    GridMenu.Menu(showDragHandle = false) { item { guarded.GridMenuItem() } }
+                } else {
+                    ListMenu.Menu(showDragHandle = false) { guarded.ListMenuItem() }
+                }
+            }
+        }
+
+        composeRule.onNodeWithText("Collection action").performClick()
+        composeRule.runOnIdle { useGrid.value = true }
+        composeRule.onNodeWithText("Collection action").performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(2, guardedClicks)
+            assertEquals(0, delegateClicks)
+        }
+    }
+
+    @Test
+    fun `audio option forwards its role and selection through list and grid rows`() {
+        val useGrid = mutableStateOf(false)
+        val selected = mutableStateOf(false)
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(
+            colorPalette = ColorPalette.fallback, typography = Typography.fallback,
+            thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                val optionModifier = Modifier.audioOptionSelection(selected.value)
+                val select = { selected.value = true }
+                if (useGrid.value) {
+                    GridMenu.Menu(showDragHandle = false) {
+                        item {
+                            GridMenu.Entry("Speaker", icon = {}, modifier = optionModifier, onClick = select)
+                        }
+                    }
+                } else {
+                    ListMenu.Menu(showDragHandle = false) {
+                        ListMenu.Entry("Speaker", icon = {}, modifier = optionModifier, onClick = select)
+                    }
+                }
+            }
+        }
+
+        val speaker = composeRule.onNodeWithText("Speaker")
+        val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
+        speaker.assert(radio).assertIsNotSelected().performClick().assertIsSelected()
+        composeRule.runOnIdle { useGrid.value = true }
+        speaker.assert(radio).assertIsSelected()
+        composeRule.runOnIdle { selected.value = false }
+        speaker.assertIsNotSelected().performClick().assertIsSelected()
+    }
+
+    @Test
+    fun `playlist menus show the correct count unit for saved podcasts`() {
+        val podcast = PlaylistPreview(Playlist(name = "Saved podcast", browseId = "MPSPPLexample"), 3)
+        val playlist = PlaylistPreview(Playlist(name = "Local playlist"), 3)
+        composeRule.setContent {
+            Column {
+                BasicText(podcast.menuItemCount())
+                BasicText(playlist.menuItemCount())
+            }
+        }
+
+        val resources = context.resources
+        composeRule.onNodeWithText(resources.getQuantityString(R.plurals.sync_detail_episodes, 3, 3)).assertExists()
+        composeRule.onNodeWithText(resources.getQuantityString(R.plurals.library_song_count, 3, 3)).assertExists()
+    }
+
+    @Test
+    fun `only the visible trailing header action responds to touch in list and grid`() {
+        val selectedGrid = mutableStateOf(false)
+        var activations = 0
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(
+            colorPalette = ColorPalette.fallback, typography = Typography.fallback,
+            thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Box(Modifier.size(300.dp).testTag("menu-header-container")) {
+                    if (selectedGrid.value) {
+                        GridMenu.Menu(showDragHandle = false, title = "Menu", headerTrailing = {
+                            Box(Modifier.size(48.dp).clickable { activations++ })
+                        }) {}
+                    } else {
+                        ListMenu.Menu(showDragHandle = false, title = "Menu", headerTrailing = {
+                            Box(Modifier.size(48.dp).clickable { activations++ })
+                        }) {}
+                    }
+                }
+            }
+        }
+        for (grid in listOf(false, true)) {
+            composeRule.runOnIdle {
+                selectedGrid.value = grid
+                activations = 0
+            }
+            composeRule.onNodeWithTag("menu-header-container").performTouchInput {
+                click(Offset(width * 0.08f, height * 0.08f))
+            }
+            composeRule.runOnIdle { assertEquals("grid=$grid has no mirrored action", 0, activations) }
+            composeRule.onNodeWithTag("menu-header-container").performTouchInput {
+                click(Offset(width * 0.92f, height * 0.08f))
+            }
+            composeRule.runOnIdle { assertEquals("grid=$grid exposes the trailing action", 1, activations) }
+        }
     }
 
     @Test

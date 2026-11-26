@@ -76,7 +76,7 @@ class LegacyDisplayPrefixRenderingTest {
     fun `information rows hide local metadata prefixes without changing loader input or playback`() {
         val rawArtist = "modified:local:Test artist"
         mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
-        coEvery { loadVideoOrSongInfo(any(), any()) } returns VideoOrSongInfoResult(
+        coEvery { loadVideoOrSongInfo(any(), any(), null) } returns VideoOrSongInfoResult(
             info = null,
             finalArtists = listOf("artist-id" to rawArtist),
         )
@@ -102,13 +102,13 @@ class LegacyDisplayPrefixRenderingTest {
         composeRule.onNodeWithText("modified:account:Test album").assertDoesNotExist()
         composeRule.onNodeWithText("Local title: subtitle").assertIsDisplayed().performClick()
         composeRule.runOnIdle { assertEquals(1, playCount) }
-        coVerify(exactly = 1) { loadVideoOrSongInfo("prefix-info-local", rawArtist) }
+        coVerify(exactly = 1) { loadVideoOrSongInfo("prefix-info-local", rawArtist, null) }
     }
 
     @Test
     fun `information rows clean loaded titles and multiple artists while retaining ordinary colon text`() {
         mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
-        coEvery { loadVideoOrSongInfo(any(), any()) } returns VideoOrSongInfoResult(
+        coEvery { loadVideoOrSongInfo(any(), any(), null) } returns VideoOrSongInfoResult(
             info = VideoOrSongInfo(videoId = "prefix-info-online", title = "e:modified:Online title"),
             finalArtists = listOf("one" to "modified:First artist", "two" to "Artist: second"),
         )
@@ -141,7 +141,7 @@ class LegacyDisplayPrefixRenderingTest {
         val table = mockk<PlaylistTable>()
         mockkObject(Database)
         every { Database.playlistTable } returns table
-        every { table.sortPreviewsByName(any()) } returns flowOf(previews)
+        every { table.sortPreviews(any(), any()) } returns flowOf(previews)
         val navController = mockk<NavController>(relaxed = true)
         showContent {
             PlaylistsMenu.init(

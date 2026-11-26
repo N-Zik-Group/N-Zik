@@ -16,6 +16,7 @@ class EmptySongMetadataRule : ExternalResource() {
     fun stub() {
         val songTable = mockk<SongTable>()
         every { songTable.findById(any()) } returns flowOf(null)
+        every { songTable.findArtistCredits(any()) } returns flowOf(emptyList())
         mockkObject(Database)
         installed = true
         every { Database.songTable } returns songTable

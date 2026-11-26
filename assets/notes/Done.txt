@@ -844,3 +844,7 @@ Player surfaces:
 Search result transitions:
 - fix(search): keep results stable during filtering and navigation
   - Preserve row positions and actions while asynchronous searches update.
+
+Menu and metadata regression coverage:
+- test(menu): cover shared renderers and refreshed entities
+  - Verify accessibility labels, state, bypass routes, and metadata display behavior.
