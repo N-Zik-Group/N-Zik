@@ -38,7 +38,7 @@ class MenuState {
     fun pop() {
         if (contentStack.size > 1) {
             contentStack.removeLast()
-            this.transitionKey--
+            this.transitionKey++
         } else {
             hide()
         }
