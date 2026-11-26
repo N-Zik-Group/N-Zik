@@ -888,3 +888,7 @@ Media item ripple:
 Media item ripple margin:
 - fix(ui): use an eight dp media ripple inset
   - Preserve item spacing and full click bounds.
+
+Podcast import dialog:
+- fix(podcast): reopen import with the latest source title
+  - Keep draft text while editing and clear the open request on dismissal.

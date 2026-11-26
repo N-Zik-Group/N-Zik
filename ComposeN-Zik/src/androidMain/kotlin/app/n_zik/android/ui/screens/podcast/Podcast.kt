@@ -48,7 +48,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -206,10 +205,6 @@ fun Podcast(
     }
 
 
-    var isImportingPlaylist by rememberSaveable {
-        mutableStateOf(false)
-    }
-
     var downloadState by remember {
         mutableStateOf(Download.STATE_STOPPED)
     }
@@ -237,14 +232,10 @@ fun Podcast(
 
                 Toaster.done()
             }
-            isImportingPlaylist = false
         }
     )
 
-    if (isImportingPlaylist) {
-        importDialog.showDialog()
-        importDialog.Render()
-    }
+    importDialog.Render()
 
     val thumbnailContent: @Composable () -> Unit = {
         PodcastBannerThumbnail(
@@ -473,7 +464,7 @@ fun Podcast(
                                     episodes = podcastPage?.listEpisode.orEmpty()
                                         .map { it.asPodcastMediaItem(browseId) },
                                     owner = owner,
-                                    onExistingImport = { isImportingPlaylist = true },
+                                    onExistingImport = importDialog::onShortClick,
                                 )
                             }
 
@@ -659,7 +650,7 @@ fun Podcast(
                                                             modifier = Modifier.fillMaxHeight(0.4f),
                                                             onDismiss = menuState::hide,
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
-                                                                { isImportingPlaylist = true }
+                                                                importDialog::onShortClick
                                                             },
                                                             onAddToPlaylist = addToPlaylist@{ playlistPreview ->
                                                                 val target = playlistPreview.playlist

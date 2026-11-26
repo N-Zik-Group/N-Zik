@@ -9,6 +9,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -22,6 +23,7 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 class ImportPlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
     valueState: MutableState<TextFieldValue>,
+    private val initialValue: () -> String,
     private val onImport: (String) -> Unit
 ): TextInputDialog(InputDialogConstraints.ALL), MenuIcon, Descriptive {
 
@@ -30,12 +32,18 @@ class ImportPlaylistDialog private constructor(
         operator fun invoke(
             initialValue: String,
             onImport: (String) -> Unit
-        ): ImportPlaylistDialog =
-            ImportPlaylistDialog(
-                remember { mutableStateOf(false) },
-                remember { mutableStateOf( TextFieldValue(initialValue) ) },
-                onImport
-            )
+        ): ImportPlaylistDialog {
+            val currentInitialValue = rememberUpdatedState(initialValue)
+            val currentOnImport = rememberUpdatedState(onImport)
+            return remember {
+                ImportPlaylistDialog(
+                    mutableStateOf(false),
+                    mutableStateOf(TextFieldValue()),
+                    initialValue = { currentInitialValue.value },
+                    onImport = { currentOnImport.value(it) },
+                )
+            }
+        }
     }
 
     override val submitText: String
@@ -55,6 +63,13 @@ class ImportPlaylistDialog private constructor(
     override var isActive: Boolean by activeState
 
     override fun onShortClick() = showDialog()
+
+    override fun showDialog() {
+        if (isActive) return
+        value = TextFieldValue(initialValue())
+        errorMessage = ""
+        super.showDialog()
+    }
 
     @Composable
     override fun LeadingIcon() = Icon(
