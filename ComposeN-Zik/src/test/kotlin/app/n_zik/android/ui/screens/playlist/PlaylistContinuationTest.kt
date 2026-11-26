@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.playlist
 
+import app.n_zik.android.components.menu.playlist.toOnlinePlaylistMenuContent
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.requests.PlaylistContinuationPage
@@ -46,6 +47,35 @@ class PlaylistContinuationTest {
         assertEquals(1, requests)
         assertEquals(listOf("A", "B"), partial.songs.map { it.key })
         assertEquals("second", partial.songsContinuation)
+    }
+
+    @Test
+    fun `menu bulk operations only receive songs after the last continuation`() = runTest {
+        val initial = firstPage()
+        val partial = loadPlaylistContinuations(initial, requestNextPage = {
+            Result.success(PlaylistContinuationPage(listOf(song("B")), it))
+        })
+        val complete = loadPlaylistContinuations(initial, requestNextPage = {
+            Result.success(PlaylistContinuationPage(listOf(song("B"), song("C")), null))
+        })
+
+        assertNull(partial.toOnlinePlaylistMenuContent().songs)
+        assertEquals(listOf("A", "B", "C"), complete.toOnlinePlaylistMenuContent().songs?.map { it.id })
+    }
+
+    @Test
+    fun `album track pages share completeness and deduplication rules`() = runTest {
+        val initial = Innertube.ItemsPage(listOf(song("A")), "second")
+        val partial = loadPlaylistTrackContinuations(initial, requestNextPage = {
+            Result.failure(IOException("disconnected"))
+        })
+        val complete = loadPlaylistTrackContinuations(initial, requestNextPage = {
+            Result.success(PlaylistContinuationPage(listOf(song("A"), song("B")), null))
+        })
+
+        assertEquals("second", partial.continuation)
+        assertNull(complete.continuation)
+        assertEquals(listOf("A", "B"), complete.items?.map { it.key })
     }
 
     private fun firstPage() = PlaylistPage(

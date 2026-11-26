@@ -23,9 +23,22 @@ internal suspend fun loadPlaylistContinuations(
     },
     onSongsLoaded: (List<Innertube.SongItem>) -> Unit = {},
 ): PlaylistPage {
-    val tracks = firstPage.songs.toMutableList()
+    val page = loadPlaylistTrackContinuations(
+        Innertube.ItemsPage(firstPage.songs, firstPage.songsContinuation), requestNextPage, onSongsLoaded,
+    )
+    return firstPage.copy(songs = page.items.orEmpty(), songsContinuation = page.continuation)
+}
+
+internal suspend fun loadPlaylistTrackContinuations(
+    firstPage: Innertube.ItemsPage<Innertube.SongItem>,
+    requestNextPage: suspend (String) -> Result<PlaylistContinuationPage> = { token ->
+        withContext(NzikDispatchers.DATA) { YtMusic.getPlaylistContinuation(token) }
+    },
+    onSongsLoaded: (List<Innertube.SongItem>) -> Unit = {},
+): Innertube.ItemsPage<Innertube.SongItem> {
+    val tracks = firstPage.items.orEmpty().toMutableList()
     val attemptedTokens = mutableSetOf<String>()
-    var continuation = firstPage.songsContinuation
+    var continuation = firstPage.continuation
     while (continuation != null && attemptedTokens.size < 50 && attemptedTokens.add(continuation)) {
         val result = requestNextPage(continuation)
         result.exceptionOrNull()?.let { if (it is CancellationException) throw it }
@@ -34,5 +47,5 @@ internal suspend fun loadPlaylistContinuations(
         onSongsLoaded(next.songs)
         continuation = next.continuation
     }
-    return firstPage.copy(songs = tracks.fastDistinctBy { it.key to it.explicit }, songsContinuation = continuation)
+    return firstPage.copy(items = tracks.fastDistinctBy { it.key to it.explicit }, continuation = continuation)
 }

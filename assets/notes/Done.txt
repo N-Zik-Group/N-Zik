@@ -696,3 +696,7 @@ Artist menus:
 Track and player menus:
 - fix(menu): use the represented track identity throughout its actions
   - Keep metadata, navigation, radio and export behavior consistent for the track that opened the menu.
+
+Collection track pagination:
+- fix(playlist): wait for complete content before bulk actions
+  - Deduplicate paginated tracks and keep partial results away from bulk mutations.
