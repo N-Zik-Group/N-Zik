@@ -428,3 +428,5 @@ URL import:
 - fix(dialog): read the latest URL when pasting
   - Read the clipboard directly when the Paste button is pressed, so the dialog can accept a new clipboard value after opening.
   - Preserve the exact input sent to the import callback. The targeted dialog test covers clear, paste, import and cancel.
+- fix(intents): resolve YouTube album and track links by their original IDs
+- fix(search): present URL import in a settings card and align its field and actions
