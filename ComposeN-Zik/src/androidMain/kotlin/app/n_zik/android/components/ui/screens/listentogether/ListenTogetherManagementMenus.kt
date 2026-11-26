@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -46,65 +49,82 @@ import app.n_zik.android.utils.rememberPreference
 fun ListenTogetherLogsMenu(
     logs: List<LogEntry>,
     onClear: () -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val menuState = LocalMenuState.current
     val palette = colorPalette()
-
-    ListMenu.Menu(title = stringResource(R.string.listen_together_logs)) {
-        if (logs.isEmpty()) {
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = stringResource(R.string.listen_together_no_logs),
-                    style = typography().xs,
-                    color = colorPalette().textSecondary,
-                )
-            }
-        } else {
-            logs.forEach { log ->
-                LogEntryRow(log)
+    val style by rememberPreference(menuStyleKey, MenuStyle.List)
+    val title = stringResource(R.string.listen_together_logs)
+    val onCopy = {
+        val text = logs.joinToString("\n") { log ->
+            buildString {
+                append(log.timestamp)
+                append(" [")
+                append(context.getString(log.level.labelRes))
+                append("] ")
+                append(context.getString(log.messageRes))
+                log.details?.resolve(context.resources)?.let { append(" -- $it") }
             }
         }
-
-        ListMenu.Entry(
-            text = stringResource(R.string.listen_together_copy),
-            icon = { SettingIcon(R.drawable.copy, palette.textSecondary) },
-            enabled = logs.isNotEmpty(),
-            onClick = {
-                val textToCopy =
-                    logs.joinToString("\n") { log ->
-                        buildString {
-                            append(log.timestamp)
-                            append(" [")
-                            append(context.getString(log.level.labelRes))
-                            append("] ")
-                            append(context.getString(log.messageRes))
-                            log.details?.resolve(context.resources)?.let { d -> append(" -- $d") }
-                        }
-                    }
-                val cm = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                cm.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.listen_together_logs), textToCopy))
-                Toaster.i(R.string.listen_together_copied_to_clipboard)
-                menuState.hide()
-            },
-        )
-        ListMenu.Entry(
-            text = stringResource(R.string.common_action_clear),
-            icon = { SettingIcon(R.drawable.trash, palette.red) },
-            enabled = logs.isNotEmpty(),
-            onClick = {
-                onClear()
-                menuState.hide()
-            },
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText(title, text))
+        Toaster.i(R.string.listen_together_copied_to_clipboard)
+        if (onBack == null) menuState.hide()
+    }
+    val onClearLogs = {
+        onClear()
+        if (onBack == null) menuState.hide()
+    }
+    val copyEntry: @Composable () -> Unit = {
+        ListenTogetherManagementEntry(
+            style, stringResource(R.string.listen_together_copy), null, R.drawable.copy,
+            palette.textSecondary, enabled = logs.isNotEmpty(), onClick = onCopy,
         )
     }
+    val clearEntry: @Composable () -> Unit = {
+        ListenTogetherManagementEntry(
+            style, stringResource(R.string.common_action_clear), null, R.drawable.trash,
+            palette.red, enabled = logs.isNotEmpty(), onClick = onClearLogs,
+        )
+    }
+    val empty: @Composable () -> Unit = {
+        Box(Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+            Text(
+                text = stringResource(R.string.listen_together_no_logs),
+                style = typography().xs,
+                color = palette.textSecondary,
+            )
+        }
+    }
+    if (style == MenuStyle.List) {
+        ListMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
+            if (logs.isEmpty()) empty() else logs.forEach { LogEntryRow(it) }
+            copyEntry()
+            clearEntry()
+        }
+    } else {
+        GridMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
+            if (logs.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
+            else items(logs, span = { GridItemSpan(maxLineSpan) }) { LogEntryRow(it) }
+            item { copyEntry() }
+            item { clearEntry() }
+        }
+    }
 }
+
+private fun managementBackButton(onBack: (() -> Unit)?): (@Composable RowScope.() -> Unit)? =
+    onBack?.let { navigateBack ->
+        {
+            IconButton(onClick = navigateBack) {
+                Icon(
+                    painter = painterResource(R.drawable.chevron_back),
+                    contentDescription = stringResource(R.string.common_action_back),
+                    tint = colorPalette().text,
+                )
+            }
+        }
+    }
 
 @Composable
 private fun LogEntryRow(log: LogEntry) {
@@ -173,6 +193,7 @@ private fun LogEntryRow(log: LogEntry) {
 fun ListenTogetherBlockedUsersMenu(
     blockedUsernames: Set<String>,
     onUnblock: (String) -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     val menuState = LocalMenuState.current
     val palette = colorPalette()
@@ -194,16 +215,16 @@ fun ListenTogetherBlockedUsersMenu(
     val entry: @Composable (String) -> Unit = { username ->
         ListenTogetherManagementEntry(style, username, unblockLabel, R.drawable.close, palette.red) {
             onUnblock(username)
-            menuState.hide()
+            if (onBack == null) menuState.hide()
         }
     }
 
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title) {
+        ListMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
             if (blockedUsernames.isEmpty()) empty() else blockedUsernames.forEach { entry(it) }
         }
     } else {
-        GridMenu.Menu(title = title) {
+        GridMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
             if (blockedUsernames.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
             else items(blockedUsernames.toList(), key = { it }) { entry(it) }
         }
@@ -214,20 +235,22 @@ fun ListenTogetherBlockedUsersMenu(
 internal fun ListenTogetherManagementEntry(
     style: MenuStyle,
     label: String,
-    subtitle: String,
+    subtitle: String?,
     icon: Int,
     tint: Color,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     val entryIcon: @Composable () -> Unit = { SettingIcon(icon, tint) }
     if (style == MenuStyle.List) {
-        ListMenu.Entry(text = label, subtitle = subtitle, icon = { entryIcon() }, onClick = onClick)
+        ListMenu.Entry(text = label, subtitle = subtitle, icon = { entryIcon() }, enabled = enabled, onClick = onClick)
     } else {
         GridMenu.Entry(
             text = label,
             subtitle = subtitle,
             icon = { entryIcon() },
             iconHasOwnBackground = true,
+            enabled = enabled,
             onClick = onClick,
         )
     }

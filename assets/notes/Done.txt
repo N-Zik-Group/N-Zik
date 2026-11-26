@@ -1024,3 +1024,7 @@ Menus:
 Menus:
 - fix(menu): remove the empty header and share filter feedback
   - Fit the overflow handle to its content and use the app feedback in the search filter.
+
+Menus:
+- fix(menu): align room submenus in list and grid
+  - Keep section guidance and an explicit return action in room management.

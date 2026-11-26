@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -69,15 +70,7 @@ class ListenTogetherMenuTest {
 
     @Test
     fun `join rejection is still received while logs are open`() {
-        val menuState = MenuState().apply { display {} }
-        val shape = RoundedCornerShape(8.dp)
-        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
-        composeRule.setContent {
-            CompositionLocalProvider(LocalMenuState provides menuState, LocalAppearance provides appearance) {
-                ListenTogetherMenu()
-            }
-        }
-
+        showRoomMenu()
         val activity = composeRule.activity
         composeRule.onNodeWithText(activity.getString(R.string.listen_together_view_logs))
             .performScrollTo()
@@ -90,5 +83,34 @@ class ListenTogetherMenuTest {
         composeRule.runOnIdle { activity.onBackPressedDispatcher.onBackPressed() }
 
         composeRule.onNodeWithText(activity.getString(R.string.listen_together_join_request_denied)).assertExists()
+    }
+
+    @Test
+    fun `management pages have a button that returns to the room menu`() {
+        showRoomMenu()
+        val activity = composeRule.activity
+        val back = activity.getString(R.string.common_action_back)
+
+        composeRule.onNodeWithText(activity.getString(R.string.listen_together_view_logs))
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithContentDescription(back).performClick()
+
+        composeRule.onNodeWithText(activity.getString(R.string.listen_together_blocked_users))
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithContentDescription(back).performClick()
+        composeRule.onNodeWithText(activity.getString(R.string.listen_together_view_logs)).assertExists()
+    }
+
+    private fun showRoomMenu() {
+        val menuState = MenuState().apply { display {} }
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalMenuState provides menuState, LocalAppearance provides appearance) {
+                ListenTogetherMenu()
+            }
+        }
     }
 }

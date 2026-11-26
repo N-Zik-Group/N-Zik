@@ -535,6 +535,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
     item {
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_auto_approval_joins),
+            subtitle = stringResource(R.string.listen_together_auto_approval_joins_description),
             icon = { GridEntryIcon(R.drawable.checkmark, palette.accent) },
             enabled = content.canEditApprovals,
             modifier = Modifier.menuToggleSemantics(content.autoApprovalJoins),
@@ -545,6 +546,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
     item {
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_auto_approval_suggestions),
+            subtitle = stringResource(R.string.listen_together_auto_approval_suggestions_description),
             icon = { GridEntryIcon(R.drawable.musical_notes, palette.accent) },
             enabled = content.canEditApprovals,
             modifier = Modifier.menuToggleSemantics(content.autoApproveSuggestions),
@@ -555,6 +557,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
     item {
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_sync_volume),
+            subtitle = stringResource(R.string.listen_together_sync_volume_description),
             icon = { GridEntryIcon(R.drawable.volume_up, palette.accent) },
             modifier = Modifier.menuToggleSemantics(content.syncHostVolume),
             trailingContent = { ToggleSwitch(content.syncHostVolume) },
@@ -564,6 +567,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
     item {
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_history),
+            subtitle = stringResource(R.string.listen_together_history_description),
             icon = { GridEntryIcon(R.drawable.history, palette.accent) },
             modifier = Modifier.menuToggleSemantics(content.historyEnabled),
             trailingContent = { ToggleSwitch(content.historyEnabled) },
@@ -573,6 +577,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
     item {
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_view_logs),
+            subtitle = stringResource(R.string.listen_together_view_logs_description),
             icon = { GridEntryIcon(R.drawable.bugs, palette.accent) },
             onClick = content.onOpenLogs,
         )

@@ -259,10 +259,12 @@ fun ListenTogetherMenu() {
             RoomMenuPage.Logs -> ListenTogetherLogsMenu(
                 logs = logs,
                 onClear = { listenTogetherManager.clearLogs() },
+                onBack = { page = RoomMenuPage.Room },
             )
             RoomMenuPage.BlockedUsers -> ListenTogetherBlockedUsersMenu(
                 blockedUsernames = blockedUsernames,
                 onUnblock = { listenTogetherManager.unblockUser(it) },
+                onBack = { page = RoomMenuPage.Room },
             )
         }
     }
