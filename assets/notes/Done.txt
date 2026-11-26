@@ -812,3 +812,7 @@ Search history presentation:
 Album and artist details:
 - fix(library): keep detail actions bound to current tracks
   - Preserve exact sources and reflect current metadata across detail sections.
+
+Playlist destination menus:
+- fix(menu): unify playlist pickers across list and grid
+  - Preserve local destinations, source IDs, lock states and navigation through menu openings.

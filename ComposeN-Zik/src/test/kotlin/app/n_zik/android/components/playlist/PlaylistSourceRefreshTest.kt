@@ -287,6 +287,13 @@ class PlaylistSourceRefreshTest {
             assertEquals(R.drawable.radio, requireNotNull(radio).iconId)
             assertEquals(appearance.colorPalette.text, color)
             assertEquals(context.getString(R.string.radio_action_start), title)
+            menu.display { }
+            requireNotNull(radio).onShortClick()
+            assertFalse(menu.isDisplayed)
+            verify(exactly = 1) {
+                binder.startRadio(match<MediaItem> { it.mediaId == song.id }, false, null, true)
+            }
+            every { binder.player.currentMediaItem } returns null
             active.value = true
         }
         compose.runOnIdle {
@@ -296,7 +303,7 @@ class PlaylistSourceRefreshTest {
             menu.display { }
             requireNotNull(radio).onShortClick()
             assertFalse(menu.isDisplayed)
-            verify(exactly = 1) { binder.startRadio(song, false, null, true) }
+            verify(exactly = 1) { binder.stopRadio() }
         }
     }
 
