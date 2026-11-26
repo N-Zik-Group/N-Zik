@@ -107,6 +107,7 @@
     <string name="lyrics_karaoke">Karaoke (úroveň slova)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Pozice respektujícího činitele</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke nebyl nalezen v %1$s, zobrazuje se synchronizace z %2$s</string>
+    <string name="lyrics_karaoke_upgrade_hint">Karaoke ji nahradí, pokud ji najdete.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke texty</string>
     <string name="lyrics_mode_synchronized_label">synchronizovaný písňový text</string>
