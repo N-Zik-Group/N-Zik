@@ -67,6 +67,7 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -698,6 +699,6 @@ private fun SectionTitle(title: String) {
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = 4.dp)
+            .padding(vertical = 12.dp, horizontal = PressFeedbackHorizontalInset)
     )
 }

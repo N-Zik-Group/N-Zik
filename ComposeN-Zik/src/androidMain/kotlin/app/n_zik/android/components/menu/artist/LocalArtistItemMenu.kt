@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -429,7 +430,7 @@ class LocalArtistItemMenu private constructor(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 4.dp)
+                .padding(vertical = 12.dp, horizontal = PressFeedbackHorizontalInset)
         )
     }
 }

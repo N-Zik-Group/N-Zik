@@ -912,3 +912,7 @@ System font settings:
 Menu feedback spacing:
 - fix(ui): inset menu feedback and space the first list entry
   - Reuse the same eight dp visual margin in Normal and Glass.
+
+Menu section alignment:
+- fix(menu): align section labels to the ripple edge
+  - Keep entry icons, text and hit targets in their existing positions.
