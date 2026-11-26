@@ -28,6 +28,7 @@ Glaskrediter: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Back
 💾 <b>Offline, Metadata & Sekretess</b>
 - Smart caching och nedladdningar för spår och spellistor, med valbar nedladdningskvalitet
 - FFmpeg-driven export med full metadata (nedladdningsbar vid första användningen, otillgänglig på 32-bitars x86-enheter)
+- Automatisk metadata reparation ser upp saknade artist krediter och album länkar under online-uppspelning. Start kontroller ta bort inaktuella länkar, slå samman verifierade duplicerade artister och anpassa sparade artistnamn.
 - Redigerare för metadata i appen (AAC/Opus, omslagsbild)
 - Lokal lyssningsstatistik och historik
 - Automatisk säkerhetskopiering med anpassade intervall och lagring
