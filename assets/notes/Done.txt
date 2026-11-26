@@ -512,3 +512,7 @@ Profile storage:
 Playlist and podcast links:
 - fix(navigation): preserve online collection browse identities
   - Resolve imported podcast and playlist links to their correct destination.
+
+Shared menu actions:
+- fix(menu): preserve long presses and center sheet titles
+  - Use shared list and grid behavior for guarded actions and sheet headers.

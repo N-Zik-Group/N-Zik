@@ -158,6 +158,8 @@ private open class SelectionGuardedMenuIcon(
     override val sizeDp: Dp get() = action.sizeDp
     override val modifier: Modifier get() = action.modifier
     override val isEnabled: Boolean get() = action.isEnabled && selectionAllowsAction()
+    override val menuLongClick: (() -> Unit)?
+        get() = action.menuLongClick?.let { onLongClick -> { if (isEnabled) onLongClick() } }
 
     override fun onShortClick() {
         if (isEnabled) action.onShortClick()

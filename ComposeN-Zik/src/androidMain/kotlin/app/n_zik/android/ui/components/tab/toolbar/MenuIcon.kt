@@ -18,6 +18,7 @@ interface MenuIcon: Icon {
 
     @get:Composable
     val menuIconTitle: String
+    val menuLongClick: (() -> Unit)? get() = null
 
     @Composable
     private fun SettingIcon() {
@@ -60,7 +61,7 @@ interface MenuIcon: Icon {
         iconHasOwnBackground = color != Color.Unspecified,
         enabled = isEnabled,
         onClick = ::onShortClick,
-        onLongClick = if (this is Clickable) ::onLongClick else { {} }
+        onLongClick = menuLongClick,
     )
 
     @Composable
@@ -70,7 +71,7 @@ interface MenuIcon: Icon {
         modifier = modifier,
         enabled = isEnabled,
         onClick = ::onShortClick,
-        onLongClick = if (this is Clickable) ::onLongClick else { {} }
+        onLongClick = menuLongClick,
     )
 }
 

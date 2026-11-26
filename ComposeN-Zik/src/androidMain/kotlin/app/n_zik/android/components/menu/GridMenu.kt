@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -26,11 +25,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,7 +45,6 @@ import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.glassAreaContour
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.menu.MenuConstants.CONTENT_HEIGHT_FRACTION
 import app.n_zik.android.components.menu.MenuConstants.CONTENT_HORIZONTAL_PADDING
@@ -113,39 +109,7 @@ object GridMenu {
                         MenuSheetDragHandle(color = colorPalette().text)
                     }
 
-                    if (headerTrailing != null) {
-                        // Mirror the action width to keep the title centered.
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .alpha(0f)
-                                    .clearAndSetSemantics {}
-                            ) {
-                                headerTrailing()
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                            title?.let {
-                                Text(
-                                    text = it,
-                                    style = typography().m.copy(color = colorPalette().text),
-                                    modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.weight(1f))
-                            headerTrailing()
-                        }
-                    } else {
-                        title?.let {
-                            Text(
-                                text = it,
-                                style = typography().m.copy(color = colorPalette().text),
-                                modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
-                            )
-                        }
-                    }
+                    MenuHeaderTitle(title, headerTrailing)
 
                     GlassHorizontalSeparator(Modifier.height(1.dp))
                 }
@@ -183,15 +147,13 @@ object GridMenu {
         enabled: Boolean = true,
         subtitle: String? = null,
         onClick: () -> Unit = {},
-        onLongClick: () -> Unit = {},
+        onLongClick: (() -> Unit)? = null,
         iconHasOwnBackground: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
     ) {
         val alpha = if (enabled) 1f else 0.5f
         val isScrollingTextDisabled by rememberPreference( disableScrollingTextKey, false )
         val glass = rememberGlassSettings()
-        val innerDrawsMaterial = iconHasOwnBackground &&
-            (glass.usesGlassMaterial(GlassArea.ActionButtons) || glass.usesGlassContour(GlassArea.ActionButtons))
 
         Column(
             modifier = modifier
@@ -214,7 +176,7 @@ object GridMenu {
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .then(if (innerDrawsMaterial) Modifier else Modifier.iconBadgeBackground(
+                        .then(if (iconHasOwnBackground) Modifier else Modifier.iconBadgeBackground(
                             color = colorPalette().accent.copy(alpha = 0.1f),
                             shape = uiRoundnessShape(),
                             settings = glass,

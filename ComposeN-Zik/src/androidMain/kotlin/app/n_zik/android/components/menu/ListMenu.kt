@@ -22,11 +22,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -104,39 +102,7 @@ object ListMenu {
                             MenuSheetDragHandle(color = colorPalette().text)
                         }
 
-                        if (headerTrailing != null) {
-                            // Mirror the action width to keep the title centered.
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    modifier = Modifier
-                                        .alpha(0f)
-                                        .clearAndSetSemantics {}
-                                ) {
-                                    headerTrailing()
-                                }
-                                Spacer(modifier = Modifier.weight(1f))
-                                title?.let {
-                                    Text(
-                                        text = it,
-                                        style = typography().m.copy(color = colorPalette().text),
-                                        modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.weight(1f))
-                                headerTrailing()
-                            }
-                        } else {
-                            title?.let {
-                                Text(
-                                    text = it,
-                                    style = typography().m.copy(color = colorPalette().text),
-                                    modifier = Modifier.padding(top = 5.dp, bottom = 10.dp)
-                                )
-                            }
-                        }
+                        MenuHeaderTitle(title, headerTrailing)
 
                         GlassHorizontalSeparator(Modifier.height(1.dp))
                     }
@@ -175,7 +141,7 @@ object ListMenu {
         enabled: Boolean = true,
         subtitle: String? = null,
         onClick: () -> Unit = {},
-        onLongClick: () -> Unit = {},
+        onLongClick: (() -> Unit)? = null,
         loading: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
     ) {
