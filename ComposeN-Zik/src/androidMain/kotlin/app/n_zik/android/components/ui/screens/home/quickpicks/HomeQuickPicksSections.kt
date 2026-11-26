@@ -13,7 +13,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
-import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
@@ -64,13 +63,12 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
-import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.rememberSongRowArtistCredits
 import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.components.SongItem
-import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.SelectionMenu
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -122,26 +120,6 @@ fun QuickPicksHeader(
     val menuState = LocalMenuState.current
     val glass = rememberGlassSettings()
 
-    @Composable
-    fun MenuIcon(@DrawableRes icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = colorPalette().accent,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
-
     Column(modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -162,31 +140,15 @@ fun QuickPicksHeader(
 
             val onSortClick: () -> Unit = {
                 menuState.display {
-                    ListMenu.Menu(title = stringResource(R.string.library_sort_order_title)) {
-                        ListMenu.Entry(
-                            icon = { MenuIcon(R.drawable.chevron_up) },
-                            text = stringResource(R.string.home_sort_most_played_song_label),
-                            onClick = {
-                                onPlayEventTypeChange(PlayEventsType.MostPlayed)
-                                menuState.hide()
-                            }
-                        )
-                        ListMenu.Entry(
-                            icon = { MenuIcon(R.drawable.chevron_down) },
-                            text = stringResource(R.string.home_sort_last_played_song_label),
-                            onClick = {
-                                onPlayEventTypeChange(PlayEventsType.LastPlayed)
-                                menuState.hide()
-                            }
-                        )
-                        ListMenu.Entry(
-                            icon = { MenuIcon(R.drawable.random) },
-                            text = stringResource(R.string.home_sort_random_label),
-                            onClick = {
-                                onPlayEventTypeChange(PlayEventsType.CasualPlayed)
-                                menuState.hide()
-                            }
-                        )
+                    SelectionMenu(
+                        title = stringResource(R.string.library_sort_order_title),
+                        choices = PlayEventsType.entries,
+                        selectedChoice = playEventType,
+                        label = { it.text },
+                        icon = { it.iconId },
+                    ) { type ->
+                        onPlayEventTypeChange(type)
+                        menuState.hide()
                     }
                 }
             }

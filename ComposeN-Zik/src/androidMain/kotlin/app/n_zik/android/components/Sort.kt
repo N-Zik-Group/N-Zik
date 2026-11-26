@@ -21,6 +21,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
@@ -284,15 +286,18 @@ open class Sort<T> (
     @Composable
     override fun ToolBarButton() {
         val animatedArrow by arrowDirection
+        val label = menuIconTitle
 
         TabToolBar.Icon(
             icon,
             color,
             sizeDp,
             isEnabled,
-            this.modifier.graphicsLayer { rotationZ = animatedArrow },
+            this.modifier.semantics { onLongClick(label = label, action = null) }
+                .graphicsLayer { rotationZ = animatedArrow },
             this::onShortClick,
-            this::onLongClick
+            this::onLongClick,
+            contentDescription = label,
         )
     }
 }

@@ -119,9 +119,11 @@ object TabToolBar {
         enabled: Boolean = true,
         modifier: Modifier = Modifier,
         onClick: () -> Unit = {},
-        onLongClick: () -> Unit = {}
+        onLongClick: () -> Unit = {},
+        contentDescription: String? = null,
     ) {
-        if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick, onLongClick, modifierOnContainer = true)) return
+        if (GlassToolbarIcon(icon, tint, size, enabled, modifier, onClick, onLongClick,
+                contentDescription = contentDescription, modifierOnContainer = true)) return
         val interactionSource = remember { MutableInteractionSource() }
         Box(
             modifier = modifier
@@ -138,7 +140,7 @@ object TabToolBar {
         ) {
             Icon(
                 painter = icon,
-                contentDescription = null,
+                contentDescription = contentDescription,
                 modifier = Modifier
                     .then(Modifier.testTag("toolbar.native.glyph"))
                     .size(size)

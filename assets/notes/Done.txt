@@ -892,3 +892,7 @@ Media item ripple margin:
 Podcast import dialog:
 - fix(podcast): reopen import with the latest source title
   - Keep draft text while editing and clear the open request on dismissal.
+
+Quick Picks and sort menus:
+- fix(menu): show active Quick Picks choices and label sorting
+  - Share selected-state rendering across sheet layouts.

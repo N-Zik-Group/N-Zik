@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -22,7 +21,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -31,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,10 +47,9 @@ import app.n_zik.android.components.rememberSongRowArtistCredits
 import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.components.SongItem
-import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.SelectionMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
-import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -141,34 +137,15 @@ fun ChartsSection(
                         title = stringResource(R.string.recommendations_charts_country_format, stringResource(R.string.recommendations_charts_title), selectedCountryCode.displayLabel()),
                         onClick = {
                             menuState.display {
-                                ListMenu.Menu(title = stringResource(R.string.recommendations_charts_title)) {
-                                    Countries.entries.forEach { country ->
-                                        ListMenu.Entry(
-                                            icon = {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(32.dp)
-                                                        .iconBadgeBackground(
-                                                            color = colorPalette().accent.copy(alpha = 0.1f),
-                                                            shape = uiRoundnessShape()
-                                                        ),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Icon(
-                                                        painter = painterResource(R.drawable.arrow_right),
-                                                        tint = colorPalette().accent,
-                                                        contentDescription = null,
-                                                        modifier = Modifier.size(18.dp)
-                                                    )
-                                                }
-                                            },
-                                            text = country.displayLabel(),
-                                            onClick = {
-                                                onCountryChange(country)
-                                                menuState.hide()
-                                            }
-                                        )
-                                    }
+                                SelectionMenu(
+                                    title = stringResource(R.string.recommendations_charts_title),
+                                    choices = Countries.entries,
+                                    selectedChoice = selectedCountryCode,
+                                    label = { it.displayLabel() },
+                                    icon = { R.drawable.arrow_right },
+                                ) { country ->
+                                    onCountryChange(country)
+                                    menuState.hide()
                                 }
                             }
                         },
