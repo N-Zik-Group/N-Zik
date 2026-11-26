@@ -82,6 +82,7 @@ fun SettingsSectionCard(
     bottomSpacing: androidx.compose.ui.unit.Dp = 16.dp,
     shimmerHeader: Boolean = false,
     @StringRes groupTitleRes: Int? = null,
+    showDescription: Boolean = expanded != null,
 ) {
     val context = LocalContext.current
     val groupTitle = groupTitleRes ?: LocalSettingsCardGroupTitle.current
@@ -173,14 +174,15 @@ fun SettingsSectionCard(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
-                                if (expanded != null && !description.isNullOrEmpty()) {
+                                if (showDescription && !description.isNullOrEmpty()) {
                                     Spacer(Modifier.height(2.dp))
                                     if (shimmerHeader) {
                                         MeasuredMetadataPlaceholder(description, typography().xxs.secondary, maxLines = 2)
                                     } else BasicText(
                                         text = description,
                                         style = typography().xxs.secondary.copy(color = colorPalette().textSecondary),
-                                        maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                        maxLines = if (expanded == null) Int.MAX_VALUE else 2,
+                                        overflow = TextOverflow.Ellipsis,
                                     )
                                 }
                             }

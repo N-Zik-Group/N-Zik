@@ -18,7 +18,6 @@ import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDia
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardEnter
@@ -103,7 +102,7 @@ internal fun AppearanceActionBarCard(search: Search) {
             title = title,
             icon = R.drawable.ellipsis_vertical,
             content = {
-                if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_action_customization))
+                if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_action_customization, "appearance.player_action_bar.section.customization", showDivider = false)
                 if (showPlayerActions) OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.player_action_bar_buttons"),
                     icon = R.drawable.ellipsis_vertical,

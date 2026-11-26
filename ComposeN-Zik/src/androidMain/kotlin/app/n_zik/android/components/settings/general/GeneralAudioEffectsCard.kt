@@ -1,7 +1,6 @@
 package app.n_zik.android.components.settings.general
 
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.annotation.OptIn
@@ -81,7 +80,7 @@ fun GeneralAudioEffectsCard(
         icon = R.drawable.sound_effect,
         visible = visible,
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_group_focus_and_silence))
+            SearchableSettingsSectionHeading(R.string.settings_group_focus_and_silence, "general.audio_effects.section.focus_and_silence", showDivider = false)
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.settings_audio_focus"),
                 title = stringResource(R.string.settings_audio_focus),

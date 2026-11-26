@@ -290,8 +290,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_navigation_transition_effect_label,
         )),
     SettingsCardRegistryEntry(1, R.string.settings_dock_title, R.drawable.ellipsis_horizontal, groupTitleRes = R.string.settings_group_dock_layout,
-        keywordRes = listOf(R.string.settings_dock_title, R.string.settings_dock_expanded_tab_order_label,
-            R.string.settings_dock_compact_first_action_label, R.string.settings_dock_compact_second_action_label, R.string.settings_library_toolbar_title)),
+        keywordRes = listOf(R.string.settings_dock_expanded_tab_order_label, R.string.settings_dock_expanded_tab_order_description)),
     SettingsCardRegistryEntry(1, R.string.common_color_source_theme, R.drawable.color_palette, groupTitleRes = R.string.settings_group_palette_selection,
         keywordRes = listOf(R.string.common_color_source_theme, R.string.settings_theme_mode_label)),
     SettingsCardRegistryEntry(1, R.string.settings_use_font_type, R.drawable.text, groupTitleRes = R.string.settings_group_app_typography,
@@ -328,8 +327,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_player_artwork_section_title, R.string.settings_player_artwork_visible_label,
             R.string.player_artwork_hidden_swipe_animation, R.string.settings_transition_slide_vertical, R.string.settings_transition_fade,
             R.string.settings_transition_scale, R.string.settings_player_artwork_carousel_label, R.string.player_artwork_transition_circular, R.string.settings_player_artwork_fading_edge_label,
-            R.string.settings_player_expanded_artwork_size_label, R.string.settings_player_artwork_shrink_when_paused_label, R.string.settings_lyrics_artwork_visible_label,
-            R.string.settings_visualizer_artwork_visible_label, R.string.settings_player_artwork_animation_enabled_label,
+            R.string.settings_player_expanded_artwork_size_label, R.string.settings_player_artwork_shrink_when_paused_label,
+            R.string.settings_player_artwork_animation_enabled_label,
             R.string.settings_player_artwork_animation_style_label, R.string.player_thumbnail_size,
             R.string.settings_player_artwork_corner_radius_label, R.string.artist_roundness, R.string.settings_player_background_blur_disabled_without_lyrics_label,
             R.string.player_artwork_technical_info_title, R.string.player_artwork_hold_to_speed_up_title,
@@ -345,7 +344,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(2, R.string.settings_player_timeline_controls_section_title, R.drawable.horizontal_straight_line,
         keywordRes = listOf(
             R.string.settings_group_timeline, R.string.player_controls, R.string.settings_group_miniplayer,
-            R.string.settings_player_timeline_controls_section_title, R.string.settings_player_timeline_size_label, R.string.settings_player_mini_style_label,
+            R.string.settings_player_timeline_controls_section_title, R.string.settings_player_timeline_size_label,
             R.string.player_swap_controls_with_timeline, R.string.settings_player_timeline_label, R.string.settings_player_timeline_transparent_label,
             R.string.settings_player_play_button_label, R.string.settings_player_button_zoom_out_animation_label,
             R.string.settings_player_queue_duration_visible_label, R.string.settings_player_remaining_duration_visible_label, R.string.settings_player_seek_time_buttons_label,
@@ -405,16 +404,14 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     // Tab 3 - AI Recommendations
     SettingsCardRegistryEntry(3, R.string.settings_section_quick_picks_visibility_title, R.drawable.settings, groupTitleRes = R.string.settings_group_recommendation_sources,
         keywordRes = listOf(
-            R.string.settings_general_title, R.string.settings_recommendations_quick_picks_enabled_label,
-            R.string.recommendations_section_visibility_description,
+            R.string.settings_recommendations_quick_picks_enabled_label, R.string.recommendations_page_enabled_description,
         )),
     SettingsCardRegistryEntry(3, R.string.recommendations_title, R.drawable.star_brilliant, groupTitleRes = R.string.settings_group_quick_picks_content,
         keywordRes = listOf(
-            R.string.recommendations_title, R.string.recommendations_content, R.string.recommendations_show_section_label, R.string.recommendations_for_you_title,
+            R.string.recommendations_title, R.string.recommendations_content, R.string.recommendations_for_you_title,
             R.string.recommendations_charts_title, R.string.album_related_title, R.string.artist_similar_title,
             R.string.recommendations_followed_artists_new_albums_title, R.string.recommendations_new_albums_title, R.string.recommendations_playlists_title,
             R.string.recommendations_moods_and_genres_title, R.string.settings_recommendations_song_count_description,
-            R.string.recommendations_section_visibility_description,
         )),
     SettingsCardRegistryEntry(3, R.string.rewind_settings_title, R.drawable.sparkles, focusId = "rewind",
         keywordRes = listOf(
@@ -443,7 +440,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         )),
     SettingsCardRegistryEntry(4, R.string.storage_breakdown_title, R.drawable.folder, groupTitleRes = R.string.settings_group_device_storage,
         keywordRes = listOf(
-            R.string.storage_breakdown_subtitle, R.string.storage_breakdown_nzik_total, R.string.storage_cleanup_profile_title,
+            R.string.storage_breakdown_nzik_total, R.string.storage_cleanup_profile_title,
             R.string.storage_breakdown_cached_images, R.string.storage_breakdown_streamed_audio,
             R.string.storage_breakdown_downloaded_audio, R.string.storage_breakdown_waveforms,
             R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_clear_temporary_files,
@@ -454,7 +451,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.backup_auto_enabled_title,
             R.string.storage_image_quality_title, R.string.storage_image_quality_original,
             R.string.storage_image_quality_optimized,
-            R.string.settings_cache_title, R.string.settings_cache_eviction_description, R.string.settings_cache_image_size_limit_label,
+            R.string.storage_cache_settings_title, R.string.settings_cache_image_size_limit_label,
             R.string.settings_cache_action_set_custom_size, R.string.settings_cache_song_size_limit_label, R.string.settings_downloads_storage_limit_label,
             R.string.settings_cache_location_label,
         )),
@@ -595,7 +592,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(8, R.string.settings_section_troubleshooting_title, R.drawable.bugs, groupTitleRes = R.string.settings_group_support_links,
         keywordRes = listOf(
             R.string.settings_section_troubleshooting_title, R.string.about_action_view_source,
-            R.string.about_github_link_description, R.string.about_action_report_issue,
+            R.string.about_action_report_issue,
             R.string.about_action_request_feature,
         )),
     SettingsCardRegistryEntry(8, R.string.settings_section_contributors_title, R.drawable.people, groupTitleRes = R.string.settings_group_project_credits,
@@ -664,7 +661,10 @@ fun searchSettingsPageItems(context: Context, query: String): List<SettingsPageI
             val updateTitle = normalizedSettingsText(context.getString(item.labelRes))
             val updaterQuery = needle.removePrefix("$updateTitle ").removeSuffix(" $updateTitle")
             val changelogLabel = normalizedSettingsText(context.getString(R.string.updates_changelog_search_label))
-            if (updaterQuery.isNotEmpty() && changelogLabel.contains(updaterQuery)) {
+            val releaseNotesHeading = normalizedSettingsText(context.getString(R.string.updates_changelog_title, ""))
+            if (updaterQuery.isNotEmpty() &&
+                (changelogLabel.contains(updaterQuery) || releaseNotesHeading.contains(updaterQuery))
+            ) {
                 return@mapNotNull item.copy(
                     labelRes = R.string.updates_changelog_search_label,
                     route = "${item.route}?$UPDATER_SETTINGS_TARGET_ARGUMENT=$UPDATER_CHANGELOG_TARGET",

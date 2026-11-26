@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings
 
 import app.n_zik.android.utils.debug.profileDiagnosticsDir
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.compose.foundation.basicMarquee
@@ -34,8 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
-import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -117,8 +116,9 @@ fun MaintenanceSettingsCard(
         icon = R.drawable.shield_checkmark,
         modifier = modifier,
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_group_maintenance_tools))
+            SearchableSettingsSectionHeading(R.string.settings_group_maintenance_tools, "embedded.maintenance.section.tools", showDivider = false)
             MaintenanceHealthRow(
+                modifier = Modifier.settingsSearchTarget("embedded.maintenance.live_subsystems"),
                 title = stringResource(R.string.maintenance_live_subsystems),
                 status = healthText,
                 statusColor = healthColor,
@@ -135,8 +135,7 @@ fun MaintenanceSettingsCard(
             // + the restart note + the ALWAYS-visible export entry (the dialog greys out
 //
             // the debug-dependent options while the switch is off)
-            SettingsCardSectionDivider()
-            CardCategoryLabel(stringResource(R.string.common_debug_title))
+            SearchableSettingsSectionHeading(R.string.common_debug_title, "embedded.maintenance.section.debug")
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.maintenance.enable_log_debug"),
                 title = stringResource(R.string.maintenance_debug_logging_title),
@@ -184,10 +183,11 @@ private fun MaintenanceHealthRow(
     status: String?,
     icon: Int,
     statusColor: Color? = null,
+    modifier: Modifier = Modifier,
 ) {
     val palette = colorPalette()
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape()),

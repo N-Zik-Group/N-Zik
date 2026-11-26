@@ -121,6 +121,7 @@ internal fun AutoStopCard(settings: AutoStopSettings?) {
     SettingsSectionCard(
         title = stringResource(R.string.bridge_auto_stop),
         icon = R.drawable.time,
+        showDescription = true,
         description = stringResource(R.string.bridge_auto_stop_description) + "\n" +
             stringResource(R.string.bridge_auto_stop_inactivity_hint),
         content = {

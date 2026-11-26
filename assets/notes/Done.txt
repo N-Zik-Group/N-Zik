@@ -1064,3 +1064,7 @@ Menus:
 Menus:
 - fix(menu): propagate the room suggestion result
   - Expose the socket result across the manager boundary so menu dismissal follows successful sends.
+
+Settings:
+- fix(settings): align searchable groups with their visible rows
+  - Remove stale search aliases, link exact subgroup headings and changelog, and show their descriptions and breadcrumbs.

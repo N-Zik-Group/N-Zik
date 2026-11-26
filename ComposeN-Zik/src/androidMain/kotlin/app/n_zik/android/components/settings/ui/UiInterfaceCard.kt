@@ -1,8 +1,7 @@
 package app.n_zik.android.components.settings.ui
 
 import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.Composable
@@ -116,7 +115,7 @@ internal fun UiInterfaceCard(search: Search) {
             icon = R.drawable.ui,
             content = {
                 if (search.inputValue.isBlank()) {
-                    CardCategoryLabel(stringResource(R.string.common_navigation_section_title))
+                    SearchableSettingsSectionHeading(R.string.common_navigation_section_title, "ui.user_interface.section.navigation", showDivider = false)
                 }
 
                 var showNavPosDialog by remember { mutableStateOf(false) }
@@ -241,8 +240,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 if (search.inputValue.isBlank()) {
-                    SettingsCardSectionDivider()
-                    CardCategoryLabel(stringResource(R.string.home_title))
+                    SearchableSettingsSectionHeading(R.string.home_title, "ui.user_interface.section.home")
                 }
 
                 var showDefPageDialog by remember { mutableStateOf(false) }
@@ -278,8 +276,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 if (search.inputValue.isBlank()) {
-                    SettingsCardSectionDivider()
-                    CardCategoryLabel(stringResource(R.string.settings_interface_group_display))
+                    SearchableSettingsSectionHeading(R.string.settings_interface_group_display, "ui.user_interface.section.display")
                 }
 
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true)) {
@@ -305,8 +302,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 if (search.inputValue.isBlank()) {
-                    SettingsCardSectionDivider()
-                    CardCategoryLabel(stringResource(R.string.search_title))
+                    SearchableSettingsSectionHeading(R.string.search_title, "ui.user_interface.section.search")
                 }
 
                 var showSearchOrderDialog by remember { mutableStateOf(false) }
@@ -347,8 +343,7 @@ internal fun UiInterfaceCard(search: Search) {
                 }
 
                 if (search.inputValue.isBlank()) {
-                    SettingsCardSectionDivider()
-                    CardCategoryLabel(stringResource(R.string.settings_interface_group_indicators))
+                    SearchableSettingsSectionHeading(R.string.settings_interface_group_indicators, "ui.user_interface.section.indicators")
                 }
 
                 if (playlistIndicatorMatches) {

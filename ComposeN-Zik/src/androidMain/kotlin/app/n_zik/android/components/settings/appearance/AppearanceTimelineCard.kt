@@ -1,8 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
-import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -70,7 +68,7 @@ internal fun AppearanceTimelineCard(search: Search) {
         false
     )
     var buttonzoomout by rememberPreference(buttonzoomoutKey, true)
-    val searchCtx_0_3 = search.inputValue.isBlank() || stringResource(R.string.settings_player_favorite_button_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_controls_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_size_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_mini_style_label).contains(search.inputValue, true) || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_transparent_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_play_button_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_button_zoom_out_animation_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_remaining_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_seek_time_buttons_label).contains(search.inputValue, true)
+    val searchCtx_0_3 = search.inputValue.isBlank() || stringResource(R.string.settings_player_favorite_button_style_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_controls_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_size_label).contains(search.inputValue, true) || stringResource(R.string.player_swap_controls_with_timeline).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_transparent_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_play_button_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_button_zoom_out_animation_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_remaining_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_seek_time_buttons_label).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_3,
                 enter = settingsCardEnter,
@@ -81,7 +79,7 @@ internal fun AppearanceTimelineCard(search: Search) {
             title = stringResource(R.string.settings_player_timeline_controls_section_title),
             icon = R.drawable.horizontal_straight_line,
             content = {
-                if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_timeline))
+                if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_timeline, "appearance.timeline_and_controls.section.timeline", showDivider = false)
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_timeline_label).contains(
                     search.inputValue,
                     true
@@ -168,8 +166,7 @@ internal fun AppearanceTimelineCard(search: Search) {
                 }
 
             if (search.inputValue.isBlank()) {
-                SettingsCardSectionDivider()
-                CardCategoryLabel(stringResource(R.string.player_controls))
+                SearchableSettingsSectionHeading(R.string.player_controls, "appearance.timeline_and_controls.section.controls")
             }
 
             if (search.inputValue.isBlank() || stringResource(R.string.player_swap_controls_with_timeline).contains(
@@ -275,7 +272,7 @@ internal fun AppearanceTimelineCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank()) SettingsCardSectionHeading(R.string.settings_group_miniplayer)
+            if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_miniplayer, "appearance.timeline_and_controls.section.miniplayer")
 
             if (search.inputValue.isBlank() || stringResource(R.string.player_mini_buttons_config).contains(
                     search.inputValue,

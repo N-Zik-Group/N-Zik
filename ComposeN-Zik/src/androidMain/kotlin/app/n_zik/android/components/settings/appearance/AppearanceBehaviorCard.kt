@@ -1,8 +1,7 @@
 package app.n_zik.android.components.settings.appearance
 
 import app.n_zik.android.utils.effectRotationDefault
-import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -130,7 +129,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
             title = stringResource(R.string.player_behavior_and_visuals),
             icon = R.drawable.equalizer,
             content = {
-                if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_player_gestures))
+                if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_player_gestures, "appearance.player_behavior_and_visuals.section.gestures", showDivider = false)
                 if (search.inputValue.isBlank() || stringResource(swipeSetting.labelRes).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget(swipeSetting.target),
@@ -156,7 +155,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
                 }
             }
 
-            if (search.inputValue.isBlank()) SettingsCardSectionHeading(R.string.settings_group_text_and_visualizer)
+            if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_text_and_visualizer, "appearance.player_behavior_and_visuals.section.visualizer")
 
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_disable_text_marquee_label).contains(
                     search.inputValue,

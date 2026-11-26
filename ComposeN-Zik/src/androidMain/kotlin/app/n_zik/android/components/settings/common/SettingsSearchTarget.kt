@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.semantics
 import app.n_zik.android.colorPalette
@@ -87,9 +88,10 @@ internal fun SettingsDialogSearchScope(dialog: Dialog, content: @Composable () -
 
 /** Reuses the native section heading while exposing its own search destination. */
 @Composable
-internal fun SearchableSettingsSectionHeading(@StringRes title: Int, id: String) {
+internal fun SearchableSettingsSectionHeading(@StringRes title: Int, id: String, showDivider: Boolean = true) {
     Column(Modifier.settingsSearchTarget(id)) {
-        SettingsCardSectionHeading(title)
+        if (showDivider) SettingsCardSectionDivider()
+        CardCategoryLabel(stringResource(title))
     }
 }
 

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings
 
 import app.n_zik.android.utils.percentLabel
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.compose.animation.AnimatedVisibility
@@ -54,8 +55,6 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
@@ -117,7 +116,7 @@ fun LastFmSettingsCard() {
         title = stringResource(R.string.settings_lastfm_title),
         icon = R.drawable.logo_lastfm,
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_group_service_connection))
+            SearchableSettingsSectionHeading(R.string.settings_group_service_connection, "embedded.lastfm.section.connection", showDivider = false)
             var isLastfmScrobblingEnabled by key(encryptedPreferencesUpdateTrigger) {
                 rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
             }
@@ -215,7 +214,7 @@ fun LastFmSettingsCard() {
                         }
                     )
 
-                    SettingsCardSectionHeading(R.string.settings_group_scrobbling)
+                    SearchableSettingsSectionHeading(R.string.settings_group_scrobbling, "embedded.lastfm.section.scrobbling")
 
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_now_playing"),

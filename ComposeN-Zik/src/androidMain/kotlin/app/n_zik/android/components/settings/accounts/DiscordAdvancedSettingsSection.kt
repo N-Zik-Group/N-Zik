@@ -70,16 +70,16 @@ import app.n_zik.android.utils.semiBold
 @Composable
 private fun DiscordSettingsGroup(
     title: String,
-    modifier: Modifier = Modifier,
+    target: String,
     showDivider: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(modifier = modifier) {
+    Column {
         if (showDivider) SettingsCardSectionDivider()
         Text(
             text = title,
             style = typography().xs.semiBold.copy(colorPalette().textSecondary),
-            modifier = Modifier
+            modifier = Modifier.settingsSearchTarget(target)
                 .padding(top = if (showDivider) 0.dp else 12.dp)
                 .padding(start = 12.dp),
         )
@@ -142,7 +142,7 @@ internal fun DiscordAdvancedSection(search: Search) {
     val showGroupDividers = search.inputValue.isBlank()
     Column {
 
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_identity)) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_identity), target = "accounts.social_discord.section.identity") {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_activity_type).contains(search.inputValue, true)) {
                 OtherSettingsEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_activity_type"),
@@ -164,7 +164,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 )
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_lines), showDivider = showGroupDividers) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_lines), target = "accounts.social_discord.section.lines", showDivider = showGroupDividers) {
             // Keep the toggle reachable while the linked template is hidden.
 
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_details).contains(search.inputValue, true)) {
@@ -249,7 +249,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_images), showDivider = showGroupDividers) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_images), target = "accounts.social_discord.section.images", showDivider = showGroupDividers) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_artwork).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_show_artwork"),
@@ -298,7 +298,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_progress), showDivider = showGroupDividers) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_progress), target = "accounts.social_discord.section.progress", showDivider = showGroupDividers) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_show_timestamps).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_show_timestamps"),
@@ -310,7 +310,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 )
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_buttons), showDivider = showGroupDividers) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_buttons), target = "accounts.social_discord.section.buttons", showDivider = showGroupDividers) {
             if (normalizedSettingsText(stringResource(R.string.discord_advanced_button1)).contains(query) ||
                 matchesButtonField(DiscordButtonField.FirstLabel) || matchesButtonField(DiscordButtonField.FirstUrl)
             ) {
@@ -387,7 +387,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 }
             }
         }
-        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_connection), showDivider = showGroupDividers) {
+        DiscordSettingsGroup(title = stringResource(R.string.discord_advanced_group_connection), target = "accounts.social_discord.section.connection", showDivider = showGroupDividers) {
             if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_idle_close).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_idle_close"),

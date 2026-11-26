@@ -77,6 +77,7 @@ val SettingsNestedEntryTargets: List<SettingsEntryTarget> by lazy {
                 labelRes = option.labelRes,
                 labelFormatRes = option.labelFormatRes,
                 keywordRes = listOfNotNull(option.descriptionRes),
+                groupTitleRes = opener.groupTitleRes,
                 nestedDestination = SettingsNestedDestination(
                     openerId = opener.id,
                     dialogId = registration.dialogId,

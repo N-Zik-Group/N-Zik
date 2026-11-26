@@ -136,6 +136,7 @@ private val hiddenSettingPrerequisites = mapOf(
     "general.picture_in_picture.open" to "general.picture_in_picture.settings_enable_pip",
     "appearance.player_behavior_and_visuals.songs_number_to_show" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
     "appearance.player_behavior_and_visuals.showalbumcover" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+    "appearance.cover_and_thumbnail.section.motion" to ShowCoverSettingsTarget,
     "appearance.cover_and_thumbnail.hold_to_speed_up_rate" to "appearance.cover_and_thumbnail.hold_to_speed_up",
     "appearance.player_presets_and_layout.pinfo_show_icons" to "appearance.player_presets_and_layout.pinfo_type",
     "appearance.txt_lyrics.color_custom" to "appearance.txt_lyrics.lyricscolor",

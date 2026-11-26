@@ -22,7 +22,7 @@ internal fun UiFloatingDockCard(search: Search) {
     val orderTitle = stringResource(R.string.settings_dock_expanded_tab_order_label)
     val orderDescription = stringResource(R.string.settings_dock_expanded_tab_order_description)
     val query = normalizedSettingsText(search.inputValue)
-    val terms = listOf(title, orderTitle, orderDescription, stringResource(R.string.settings_library_toolbar_title))
+    val terms = listOf(title, orderTitle, orderDescription)
     AnimatedVisibility(
         visible = query.isEmpty() || terms.any { normalizedSettingsText(it).contains(query) },
         enter = settingsCardEnter,

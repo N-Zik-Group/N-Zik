@@ -24,7 +24,6 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -50,7 +49,7 @@ fun GeneralQueueManagementCard(
         icon = R.drawable.playlist,
         visible = visible,
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_group_queue_restore))
+            SearchableSettingsSectionHeading(R.string.settings_group_queue_restore, "general.queue_management.section.queue_restore", showDivider = false)
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_behavior.persistent_queue"),
                 title = stringResource(R.string.settings_player_persistent_queue_label),

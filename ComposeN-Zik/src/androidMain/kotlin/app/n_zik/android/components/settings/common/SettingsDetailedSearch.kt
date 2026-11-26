@@ -255,17 +255,17 @@ fun SettingsEntryTarget.locationDescription(context: Context, searchCategoryId: 
     val glassSection = glassSearchOption(id)?.sectionTitle
     val nested = nestedDestination
     val opener = nested?.let { destination -> AllSettingsEntryTargets.firstOrNull { it.id == destination.openerId } }
-    if ((id == SettingsResetDownloadsTarget && category.id == "system") ||
-        id in setOf(SettingsResetAllTarget, SettingsResetChooserTarget, SettingsResetGlassTarget,
-            SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget)
+    if (id in setOf(SettingsResetDownloadsTarget, SettingsResetAllTarget, SettingsResetChooserTarget,
+            SettingsResetGlassTarget, SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget)
     ) {
-        return listOf(R.string.settings_title, R.string.settings_category_system, R.string.settings_reset)
+        return listOf(R.string.settings_title, category.labelRes, R.string.settings_reset)
             .joinToString(" › ", transform = context::getString)
     }
     return listOfNotNull(context.getString(R.string.settings_title), context.getString(category.labelRes).takeUnless { id.startsWith("glass.") }, card.displayTitle(context),
         card.groupTitleRes?.let(context::getString),
         glassSection?.let(GlassSectionGroupTitles::get)?.let(context::getString),
         glassSection?.let(context::getString),
+        innerCardTitleRes?.let(context::getString),
         groupTitleRes?.let(context::getString),
         paletteTitleRes?.let(context::getString),
         opener?.let { context.getString(it.labelRes) },
@@ -313,6 +313,7 @@ private fun SettingsEntryTarget.qualifiedSearchTitleResources(): List<Int> {
         searchScopeTitleRes(),
         card.titleRes,
         card.groupTitleRes,
+        innerCardTitleRes,
         groupTitleRes,
         glassSectionTitle,
         glassSectionTitle?.let(GlassSectionGroupTitles::get),

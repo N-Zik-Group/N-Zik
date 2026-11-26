@@ -1,8 +1,7 @@
 package app.n_zik.android.components.settings.data
 
-import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.RestartPlayerService
-import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -72,7 +71,7 @@ internal fun DataHistoryCard(
         icon = R.drawable.history,
         modifier = Modifier.testTag("data.card.history"),
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_history_group_listening))
+            SearchableSettingsSectionHeading(R.string.settings_history_group_listening, "data.history.section.listening", showDivider = false)
             // The burger History item only reaches this partial card: the "Ouvrir"
             // row (spec-customizable-burger-menu goal B) opens the full History screen.
             OtherSettingsEntry(
@@ -133,8 +132,7 @@ internal fun DataHistoryCard(
                 )
             }
 
-            SettingsCardSectionDivider()
-            CardCategoryLabel(stringResource(R.string.search_saved_history_title))
+            SearchableSettingsSectionHeading(R.string.search_saved_history_title, "data.history.section.search")
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("data.history.pause_search_history"),

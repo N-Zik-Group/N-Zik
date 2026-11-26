@@ -3,8 +3,7 @@ package app.n_zik.android.components.settings
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
-import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -110,6 +109,7 @@ fun ProfileFaceCard(
     SettingsSectionCard(
         title = stringResource(R.string.profile_face),
         icon = R.drawable.person,
+        showDescription = true,
         description = stringResource(R.string.profile_face_description),
         modifier = modifier,
         content = {
@@ -245,7 +245,7 @@ fun ProfileFaceCard(
                 )
             }
 
-            CardCategoryLabel(stringResource(R.string.settings_group_profile_name))
+            SearchableSettingsSectionHeading(R.string.settings_group_profile_name, "embedded.profile.section.display_name", showDivider = false)
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_name_source"),
                 title = stringResource(R.string.profile_name_source),
@@ -264,7 +264,7 @@ fun ProfileFaceCard(
                 onClick = { showRenameDialog = true }
             )
 
-            SettingsCardSectionHeading(R.string.settings_group_avatar)
+            SearchableSettingsSectionHeading(R.string.settings_group_avatar, "embedded.profile.section.avatar")
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.profile.face_avatar_source"),

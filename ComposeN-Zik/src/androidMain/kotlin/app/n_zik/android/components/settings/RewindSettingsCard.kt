@@ -16,6 +16,7 @@ import app.n_zik.android.components.settings.common.RewindMasterSettingsTarget
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
@@ -40,9 +41,9 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
     Column {
         SettingsSectionCard(
             title = stringResource(R.string.rewind_settings_title),
-            groupTitleRes = R.string.settings_group_rewind_summaries,
             icon = R.drawable.sparkles,
             content = {
+                SearchableSettingsSectionHeading(R.string.settings_group_rewind_summaries, "embedded.rewind.section.summaries", showDivider = false)
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget(RewindMasterSettingsTarget),
                     title = stringResource(R.string.rewind_settings_enabled),
@@ -120,11 +121,11 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
         // the master is off (user decision, 2026-10-25: master off stops every feature).
         SettingsSectionCard(
             title = stringResource(R.string.rewind_settings_playlists_title),
-            groupTitleRes = R.string.settings_group_rewind_playlist_creation,
             headerModifier = Modifier.settingsSearchTarget(RewindPlaylistSectionTarget),
             icon = R.drawable.calendar,
             visible = rewindEnabled,
             content = {
+                SearchableSettingsSectionHeading(R.string.settings_group_rewind_playlist_creation, "embedded.rewind.section.playlist_creation", showDivider = false)
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly"),
                     title = stringResource(R.string.rewind_settings_playlists_monthly),
@@ -154,11 +155,11 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
         // with its parent type (off type = off notification).
         SettingsSectionCard(
             title = stringResource(R.string.rewind_settings_notifications),
-            groupTitleRes = R.string.settings_group_rewind_alerts,
             headerModifier = Modifier.settingsSearchTarget(RewindNotificationSectionTarget),
             icon = R.drawable.notification2,
             visible = rewindEnabled && (monthlyEnabled || yearlyEnabled || monthlyPlaylistEnabled || yearlyPlaylistEnabled),
             content = {
+                SearchableSettingsSectionHeading(R.string.settings_group_rewind_alerts, "embedded.rewind.section.alerts", showDivider = false)
 
                 AnimatedVisibility(visible = rewindEnabled && monthlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                     OtherSwitchSettingEntry(
