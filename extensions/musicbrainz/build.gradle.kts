@@ -17,4 +17,13 @@ dependencies {
     implementation(libs.ktor.encoding)
     implementation(libs.ktor.serialization)
     implementation(libs.ktor.serialization.json)
+
+    testImplementation(libs.junit5.jupiter.api)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testRuntimeOnly(libs.junit5.jupiter.engine)
+    testRuntimeOnly(libs.junit.platform)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

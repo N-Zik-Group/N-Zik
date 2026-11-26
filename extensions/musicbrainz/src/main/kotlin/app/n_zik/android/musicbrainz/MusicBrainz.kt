@@ -8,6 +8,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.encodeURLParameter
 import io.ktor.serialization.kotlinx.json.json
@@ -29,6 +30,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.net.Proxy
 import java.net.URLEncoder
 import okhttp3.Protocol
 import okhttp3.Response
@@ -121,7 +123,7 @@ class MusicBrainz {
     // Also enforces the circuit breaker: force-resync (manual button mashing) and the
     // background worker share this same gate, so neither can bypass a MusicBrainz
     // outage by retrying faster than the rest of the app.
-    private suspend fun rateLimitedGet(url: String) =
+    private suspend fun <T> rateLimitedGet(url: String, readBody: suspend (HttpResponse) -> T): T =
         rateLimiter.withLock {
             val now = System.currentTimeMillis()
             if (now < circuitOpenUntil) {
@@ -130,20 +132,24 @@ class MusicBrainz {
                 )
             }
             delay(1050) // 1 second + margin
-            try {
-                val response = client.get(url) { header("User-Agent", userAgent) }
-                consecutiveFailures = 0
-                response
-            } catch (e: Exception) {
-                consecutiveFailures++
-                if (consecutiveFailures >= CIRCUIT_FAILURE_THRESHOLD) {
-                    circuitOpenUntil = System.currentTimeMillis() + CIRCUIT_COOLDOWN_MS
+            client.use { httpClient ->
+                val response = try {
+                    httpClient.get(url) { header("User-Agent", userAgent) }
+                } catch (e: Exception) {
+                    consecutiveFailures++
+                    if (consecutiveFailures >= CIRCUIT_FAILURE_THRESHOLD) {
+                        circuitOpenUntil = System.currentTimeMillis() + CIRCUIT_COOLDOWN_MS
+                    }
+                    throw e
                 }
-                throw e
+                consecutiveFailures = 0
+                readBody(response)
             }
         }
 
-    private val client by lazy {
+    private val client = ProxyBoundClient(::createClient, HttpClient::close)
+
+    private fun createClient(proxy: Proxy?): HttpClient =
         HttpClient(OkHttp) {
             expectSuccess = true
 
@@ -163,9 +169,9 @@ class MusicBrainz {
                 deflate()
             }
 
-            MBNetwork.proxy?.let { proxy ->
+            proxy?.let {
                 engine {
-                    this.proxy = proxy
+                    this.proxy = it
                 }
             }
 
@@ -194,7 +200,6 @@ class MusicBrainz {
                 url(BASE_URL)
             }
         }
-    }
 
     /**
      * Fetches artist metadata (genres, tags, rating, links) from MusicBrainz.
@@ -202,14 +207,16 @@ class MusicBrainz {
     suspend fun fetchArtistMetadata(artistName: String): MBArtistMetadata {
         // 1. Search the artist to get the MBID
         val encodedName = URLEncoder.encode(artistName, "UTF-8")
-        val searchResponse = rateLimitedGet("$BASE_URL/artist?query=$encodedName&fmt=json")
-        val searchResult = searchResponse.body<MBSearchArtistResponse>()
+        val searchResult = rateLimitedGet("$BASE_URL/artist?query=$encodedName&fmt=json") {
+            it.body<MBSearchArtistResponse>()
+        }
         val mbid = searchResult.artists.maxByOrNull { it.score }?.id
             ?: return MBArtistMetadata(emptyList(), null, null, null, emptyList(), null, null, null, null, null, emptyList(), null)
 
         // 2. Fetch details with genres
-        val detailResponse = rateLimitedGet("$BASE_URL/artist/$mbid?inc=genres+tags+ratings+url-rels&fmt=json")
-        val detailResult = detailResponse.body<MBArtistDetailResponse>()
+        val detailResult = rateLimitedGet("$BASE_URL/artist/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
+            it.body<MBArtistDetailResponse>()
+        }
 
         val genres = detailResult.genres
             .sortedByDescending { it.count }
@@ -263,14 +270,16 @@ class MusicBrainz {
     suspend fun fetchAlbumMetadata(albumTitle: String, artistName: String): MBAlbumMetadata {
         // 1. Search the Release Group
         val query = URLEncoder.encode("releasegroup:\"$albumTitle\" AND artist:\"$artistName\"", "UTF-8")
-        val searchResponse = rateLimitedGet("$BASE_URL/release-group?query=$query&fmt=json")
-        val searchResult = searchResponse.body<MBSearchReleaseGroupResponse>()
+        val searchResult = rateLimitedGet("$BASE_URL/release-group?query=$query&fmt=json") {
+            it.body<MBSearchReleaseGroupResponse>()
+        }
         val mbid = searchResult.releaseGroups.maxByOrNull { it.score }?.id
             ?: return MBAlbumMetadata(emptyList(), null, null, emptyList(), null, null, null, mbId = null)
 
         // 2. Fetch details
-        val detailResponse = rateLimitedGet("$BASE_URL/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json")
-        val detailResult = detailResponse.body<MBReleaseGroupDetailResponse>()
+        val detailResult = rateLimitedGet("$BASE_URL/release-group/$mbid?inc=genres+tags+ratings+url-rels&fmt=json") {
+            it.body<MBReleaseGroupDetailResponse>()
+        }
 
         // 3. Extract and format the data
         val genres = detailResult.genres
@@ -338,8 +347,8 @@ class MusicBrainz {
             val searchUrl = "$WIKI_API_URL?" +
                     "action=query&titles=$cleanName&prop=extracts&exintro&explaintext&format=json&redirects=true"
 
-            val searchResponse = client.get(searchUrl)
-            val searchJson = Json.parseToJsonElement(searchResponse.bodyAsText()).jsonObject
+            val searchBody = client.use { it.get(searchUrl).bodyAsText() }
+            val searchJson = Json.parseToJsonElement(searchBody).jsonObject
 
             val pages = searchJson["query"]?.jsonObject?.get("pages")?.jsonObject
 
@@ -383,8 +392,9 @@ class MusicBrainz {
      * Fetches artist relations (members, collaborations, ...) from MusicBrainz.
      */
     suspend fun fetchArtistRelations(artistMbId: String): List<MBArtistRelationEntry> {
-        val response = rateLimitedGet("$BASE_URL/artist/$artistMbId?inc=artist-rels&fmt=json")
-        return response.body<MBArtistRelationResponse>().relations
+        return rateLimitedGet("$BASE_URL/artist/$artistMbId?inc=artist-rels&fmt=json") {
+            it.body<MBArtistRelationResponse>().relations
+        }
     }
 
     /**

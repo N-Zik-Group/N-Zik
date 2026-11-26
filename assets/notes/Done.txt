@@ -488,3 +488,7 @@ Metadata editor:
 - fix(metadata): recover files after interrupted tag writes
   - Keep a synchronized backup before rewriting MediaStore content.
   - Restore the original after partial writes or retain the backup when restoration fails.
+
+MusicBrainz proxy:
+- fix(musicbrainz): refresh the client after proxy changes
+  - Keep existing responses readable until in-flight requests complete.
