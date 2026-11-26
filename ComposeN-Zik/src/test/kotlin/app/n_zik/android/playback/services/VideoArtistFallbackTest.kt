@@ -9,7 +9,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Pure-function I/O matrix for the video-artist fallback (spec-video-artist-search-fallback.md): the [sameVideo] identity check (strict video id / conservative title+thumbnail fallback) and the [channelWithBrowseId] channel extraction. */
+/** Pure-function I/O matrix for the video-artist fallback (spec-video-artist-search-fallback.md): the [sameVideo] identity check (exact video ID) and the [channelWithBrowseId] channel extraction. */
 class VideoArtistFallbackTest {
 
     private fun info(videoId: String?, name: String?) =
@@ -44,15 +44,15 @@ class VideoArtistFallbackTest {
         // different title and a missing thumbnail.
         val result = videoItem(info = info("vid_A", "Different title"), thumbnailUrl = null)
         assertTrue(
-            sameVideo(result, "vid_A", storedTitle = "Stored title", storedThumbnailUrl = "https://stored/thumb")
+            sameVideo(result, "vid_A")
         )
     }
 
     @Test
-    fun fallbackMatchesOnExactTitleIgnoreCaseAndIdenticalThumbnail() {
+    fun matchingTitleAndThumbnailCannotReplaceADifferentVideoId() {
         val result = videoItem(info = info("vid_B", "Stored Title"), thumbnailUrl = "https://stored/thumb")
-        assertTrue(
-            sameVideo(result, "vid_A", storedTitle = "stored title", storedThumbnailUrl = "https://stored/thumb")
+        assertFalse(
+            sameVideo(result, "vid_A")
         )
     }
 
@@ -61,7 +61,7 @@ class VideoArtistFallbackTest {
         // Same title, different thumbnail: the image is required, not optional.
         val result = videoItem(info = info("vid_B", "Stored title"), thumbnailUrl = "https://other/thumb")
         assertFalse(
-            sameVideo(result, "vid_A", storedTitle = "Stored title", storedThumbnailUrl = "https://stored/thumb")
+            sameVideo(result, "vid_A")
         )
     }
 
@@ -70,20 +70,20 @@ class VideoArtistFallbackTest {
         // Same thumbnail, different title.
         val result = videoItem(info = info("vid_B", "Other title"), thumbnailUrl = "https://stored/thumb")
         assertFalse(
-            sameVideo(result, "vid_A", storedTitle = "Stored title", storedThumbnailUrl = "https://stored/thumb")
+            sameVideo(result, "vid_A")
         )
     }
 
     @Test
     fun fallbackIsDisallowedWhenTheStoredThumbnailIsNull() {
         val result = videoItem(info = info("vid_B", "Stored title"), thumbnailUrl = "https://stored/thumb")
-        assertFalse(sameVideo(result, "vid_A", storedTitle = "Stored title", storedThumbnailUrl = null))
+        assertFalse(sameVideo(result, "vid_A"))
     }
 
     @Test
     fun fallbackIsDisallowedWhenTheStoredTitleIsNull() {
         val result = videoItem(info = info("vid_B", "Some title"), thumbnailUrl = "https://stored/thumb")
-        assertFalse(sameVideo(result, "vid_A", storedTitle = null, storedThumbnailUrl = "https://stored/thumb"))
+        assertFalse(sameVideo(result, "vid_A"))
     }
 
     @Test
@@ -91,16 +91,16 @@ class VideoArtistFallbackTest {
         // A result without info cannot match at all: no crash, strict-only.
         val noInfo = videoItem(info = null)
         assertFalse(
-            sameVideo(noInfo, "vid_A", storedTitle = "Stored title", storedThumbnailUrl = "https://stored/thumb")
+            sameVideo(noInfo, "vid_A")
         )
         // Null stored values: the fallback is off, but the strict video id
         // still matches (null name / null thumbnail in the result).
         val strict = videoItem(info = info("vid_A", null), thumbnailUrl = null)
-        assertTrue(sameVideo(strict, "vid_A", storedTitle = null, storedThumbnailUrl = null))
+        assertTrue(sameVideo(strict, "vid_A"))
         // A null result name must not crash the title comparison.
         val nullName = videoItem(info = info("vid_B", null), thumbnailUrl = "https://stored/thumb")
         assertFalse(
-            sameVideo(nullName, "vid_A", storedTitle = "Stored title", storedThumbnailUrl = "https://stored/thumb")
+            sameVideo(nullName, "vid_A")
         )
     }
 
@@ -139,4 +139,13 @@ class VideoArtistFallbackTest {
         val channel = channelWithBrowseId(result)
         assertEquals("UC_ch2", channel?.endpoint?.browseId)
     }
+    @Test
+    fun exactCreditsMustMatchTheKnownBylineAndRejectHomonyms() {
+        val justice = author("Justice", "UCcJLC91v0A0iD-CMUWdZkig")
+        val guest = author("Michael McDonald", "UCxUpStV7fhnk8sk5C5YFI0Q")
+        val homonym = author("Justice", "UCanotherJusticeChannel")
+        assertEquals(listOf("UCcJLC91v0A0iD-CMUWdZkig"),
+            matchingPlaybackArtists(listOf(justice, guest), listOf("Justice")).map { it.id })
+        assertTrue(matchingPlaybackArtists(listOf(justice, homonym), listOf("Justice")).isEmpty())
+    }
 }

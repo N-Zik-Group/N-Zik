@@ -620,3 +620,7 @@ Track row metadata:
 Discord presence links:
 - fix(discord): keep presence links aligned with playable item types
   - Use the current playback identity for supported external actions.
+
+Video artist lookup:
+- fix(metadata): verify video credits against the playing track
+  - Filter generic channels and preserve user edits when enriching video metadata.

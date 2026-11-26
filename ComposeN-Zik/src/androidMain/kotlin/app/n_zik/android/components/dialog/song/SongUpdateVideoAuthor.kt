@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.song
 
 import io.ktor.client.call.body
+import app.n_zik.android.utils.usableTrackArtistName
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.models.PlayerResponse
@@ -21,7 +22,7 @@ internal suspend fun withVideoAuthorFallback(
     },
 ): Innertube.SongItem? {
     if (!authorsSelected || fetchedItem == null || fetchedItem.key != videoId) return fetchedItem
-    if (fetchedItem.authors.orEmpty().any { !it.name.isNullOrBlank() }) return fetchedItem
+    if (fetchedItem.authors.orEmpty().any { usableTrackArtistName(it.name) != null }) return fetchedItem
     val queueType = fetchedItem.info?.endpoint?.type
     if (queueType != null && queueType !in VIDEO_AUTHOR_TYPES) return fetchedItem
 
@@ -40,7 +41,7 @@ internal suspend fun withVideoAuthorFallback(
     if (playerType != null && playerType !in VIDEO_AUTHOR_TYPES) return fetchedItem
     if (queueType == null && playerType == null) return fetchedItem
     if (queueType != null && playerType != null && queueType != playerType) return fetchedItem
-    val author = details.author?.trim()?.takeIf { it.isNotBlank() } ?: return fetchedItem
+    val author = usableTrackArtistName(details.author) ?: return fetchedItem
     val channelId = details.channelId?.takeIf(VIDEO_AUTHOR_CHANNEL_ID::matches) ?: return fetchedItem
 
     return fetchedItem.copy(

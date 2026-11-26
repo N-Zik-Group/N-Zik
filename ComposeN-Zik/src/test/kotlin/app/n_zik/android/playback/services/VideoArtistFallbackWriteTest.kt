@@ -1,14 +1,14 @@
 package app.n_zik.android.playback.services
 
+import app.n_zik.android.models.Song
+import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.core.database.ArtistTable
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.SongArtistMapTable
-import io.mockk.coVerify
 import io.mockk.coEvery
-import io.mockk.coEvery
-import io.mockk.coVerify
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -40,12 +40,18 @@ import org.junit.Test
 class VideoArtistFallbackWriteTest {
 
     private val artistTable = mockk<ArtistTable>(relaxed = true)
+    private val songTable = mockk<SongTable>(relaxed = true)
     private val songArtistMapTable = mockk<SongArtistMapTable>(relaxed = true)
 
     @Before
     fun setup() {
         mockkObject(Database)
         every { Database.artistTable } returns artistTable
+        every { Database.songTable } returns songTable
+        coEvery { artistTable.findBySongIdDirect(any()) } returns emptyList()
+        coEvery { songTable.findByIdDirect(any()) } coAnswers {
+            Song(id = firstArg<String>(), title = "Some video", artistsText = "Unknown Artist", durationText = null, thumbnailUrl = null)
+        }
         every { Database.songArtistMapTable } returns songArtistMapTable
         // The transaction block is a suspend lambda with the Database
         // receiver: capture it as its runtime type SuspendFunction1 (reifying
@@ -112,7 +118,7 @@ class VideoArtistFallbackWriteTest {
         stubSearch(listOf(videoItem(videoId, "Some video", "SomeChannel", "UC_strict", thumb)))
         coEvery { artistTable.findByIdDirect("UC_strict") } returns null
 
-        resolveVideoArtistFallback(videoId, "Some video", null, thumb)
+        resolveVideoArtistFallback(videoId, "Some video", null)
 
         val row = slot<Artist>()
         coVerify(exactly = 1) { artistTable.insertIgnore(capture(row)) }
@@ -123,31 +129,27 @@ class VideoArtistFallbackWriteTest {
         coVerify(exactly = 1) { songArtistMapTable.insertIgnore(capture(link)) }
         assertEquals(videoId, link.captured.songId)
         assertEquals("UC_strict", link.captured.artistId)
+        coVerify(exactly = 1) { songTable.updateArtists(videoId, "SomeChannel") }
         coVerify(exactly = 1) { Innertube.searchPage<Innertube.VideoItem>(any(), any(), any()) }
     }
 
     @Test
-    fun fallbackMatchOnCleanedTitleAndThumbnailCreatesTheRow() = runBlocking {
+    fun sameTitleAndThumbnailWithWrongVideoIdCannotCreateAnAssociation() = runBlocking {
         val videoId = "vid_fb"
         val thumb = "https://i.ytimg.com/vi/vid_fb/mqdefault.jpg"
-        // The stored title carries an explicit prefix; the query and the
-        // fallback comparison must both use the CLEANED title, and the
-
-        // result (different videoId) matches on title (ignoreCase) + thumb.
         stubSearch(listOf(videoItem("other_vid", "some VIDEO", "SomeChannel", "UC_fb", thumb)))
         coEvery { artistTable.findByIdDirect("UC_fb") } returns null
 
-        resolveVideoArtistFallback(videoId, null, "e:Some video", thumb)
+        resolveVideoArtistFallback(videoId, null, "e:Some video")
 
         val query = slot<String>()
         coVerify(exactly = 1) { Innertube.searchPage<Innertube.VideoItem>(capture(query), any(), any()) }
         assertEquals("Some video", query.captured)
-        val row = slot<Artist>()
-        coVerify(exactly = 1) { artistTable.insertIgnore(capture(row)) }
-        assertEquals("SomeChannel", row.captured.name)
-        coVerify(exactly = 1) { songArtistMapTable.insertIgnore(any<SongArtistMap>()) }
-    }
-
+        coVerify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
+        coVerify(exactly = 0) { songArtistMapTable.insertIgnore(any<SongArtistMap>()) }
+        coVerify(exactly = 0) { songTable.updateArtists(any(), any()) }
+    }
+
     @Test
     fun wipedRowIsRepairedWithTheChannelName() = runBlocking {
         val videoId = "vid_repair"
@@ -155,7 +157,7 @@ class VideoArtistFallbackWriteTest {
         coEvery { artistTable.findByIdDirect("UC_repair") } returns
             Artist(id = "UC_repair", name = null, thumbnailUrl = "https://kept/thumb")
 
-        resolveVideoArtistFallback(videoId, "Some video", "Some video", "https://t")
+        resolveVideoArtistFallback(videoId, "Some video", "Some video")
 
         val payload = slot<Artist>()
         coVerify(exactly = 1) { artistTable.upsert(capture(payload)) }
@@ -173,7 +175,7 @@ class VideoArtistFallbackWriteTest {
         coEvery { artistTable.findByIdDirect("UC_keep") } returns
             Artist(id = "UC_keep", name = "StoredName", thumbnailUrl = null)
 
-        resolveVideoArtistFallback(videoId, "Some video", "Some video", "https://t")
+        resolveVideoArtistFallback(videoId, "Some video", "Some video")
 
         // the stored name is authoritative: no create, no repair
         coVerify(exactly = 0) { artistTable.upsert(any<Artist>()) }
@@ -188,7 +190,7 @@ class VideoArtistFallbackWriteTest {
         val videoId = "vid_nomatch"
         stubSearch(listOf(videoItem("other_vid", "Different title", "SomeChannel", "UC_nom", "https://other")))
 
-        resolveVideoArtistFallback(videoId, "Our title", "Our title", "https://ours")
+        resolveVideoArtistFallback(videoId, "Our title", "Our title")
 
         coVerify(exactly = 0) { artistTable.upsert(any<Artist>()) }
         coVerify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
@@ -202,7 +204,7 @@ class VideoArtistFallbackWriteTest {
             Innertube.searchPage<Innertube.VideoItem>(any(), any(), any())
         } returns null
 
-        resolveVideoArtistFallback("vid_fail", "Title", "Title", "https://t")
+        resolveVideoArtistFallback("vid_fail", "Title", "Title")
 
         coVerify(exactly = 0) { artistTable.upsert(any<Artist>()) }
         coVerify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
@@ -215,7 +217,7 @@ class VideoArtistFallbackWriteTest {
             Innertube.searchPage<Innertube.VideoItem>(any(), any(), any())
         } returns null
 
-        resolveVideoArtistFallback("vid_blank", "   ", "   ", null)
+        resolveVideoArtistFallback("vid_blank", "   ", "   ")
 
         coVerify(exactly = 0) { Innertube.searchPage<Innertube.VideoItem>(any(), any(), any()) }
         coVerify(exactly = 0) { songArtistMapTable.insertIgnore(any<SongArtistMap>()) }
@@ -231,7 +233,7 @@ class VideoArtistFallbackWriteTest {
         stubSearch(listOf(videoItem(videoId, "Some video", null, "UC_nullname", "https://t")))
         coEvery { artistTable.findByIdDirect("UC_nullname") } returns null
 
-        resolveVideoArtistFallback(videoId, "Some video", "Some video", "https://t")
+        resolveVideoArtistFallback(videoId, "Some video", "Some video")
 
         coVerify(exactly = 0) { artistTable.upsert(any<Artist>()) }
         coVerify(exactly = 0) { artistTable.insertIgnore(any<Artist>()) }
