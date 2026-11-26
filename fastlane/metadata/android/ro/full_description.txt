@@ -28,6 +28,7 @@ Credite de sticlă: Proiect pătrat / Convx (GPL-3.0); Kyant0 AndroidLiquidGass 
 💾 <b>Offline, Metadate & Privacy</b>
 - Caching și descărcări inteligente pentru piese și liste de redare, cu o calitate selectabilă a descărcării
 - Exportul alimentat de FFmpeg-pe metadate complete (poate fi descărcat la prima utilizare; indisponibil pe dispozitive x86 de biți)
+- Repararea automată a metadatelor analizează dacă artistul nu este creditat și legăturile albumului în timpul redării online. Verificările de pornire elimină link-uri vechi, îmbinează artiști duplicat verificați și aliniază numele artistului salvat.
 - Editor de metadate în aplicație (AAC/Opus, copertă artă)
 - Statistici și istoric ascultări locale
 - Copie de rezervă automată cu intervale și retenție personalizate
