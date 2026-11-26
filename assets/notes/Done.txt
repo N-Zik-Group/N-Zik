@@ -748,3 +748,7 @@ Settings search index:
 Settings search results:
 - fix(settings): open the exact setting and preserve entered values
   - Show the correct breadcrumb and retain gain precision when confirming the existing value.
+
+Updater menu and changelog:
+- fix(updater): open changelogs on builds with disabled updates
+  - Keep translation available and let Back leave an active download running.

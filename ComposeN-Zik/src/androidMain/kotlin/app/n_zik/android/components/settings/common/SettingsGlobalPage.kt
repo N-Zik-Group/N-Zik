@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
+import android.net.Uri
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
@@ -46,6 +47,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreCreatorTarget
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
@@ -59,6 +61,8 @@ import app.n_zik.android.utils.lastUpdateCheckKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.BuildConfig
@@ -69,7 +73,6 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.UnifiedSearchBar
-import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -101,19 +104,29 @@ fun SettingsGlobalPage(
         label = "settingsGlobalPageContentAlpha"
     )
     val configuration = LocalConfiguration.current
+    val ambiguousCategoryIds = remember(context, configuration) { ambiguousSettingsCategoryIds(context) }
     val itemResults = remember(context, configuration, query) {
         searchSettingsPageItems(context, query)
     }
-    val cardResults = remember(context, configuration, query) {
-        searchSettingsCardResults(context, query)
+    val normalizedQuery = normalizedSettingsText(query)
+    val exactItems = itemResults.filter { it.hasPrioritySearchMatch(context, normalizedQuery) }
+    val otherItems = itemResults - exactItems.toSet()
+    val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
+    val entryResults = remember(context, configuration, query, playerType) {
+        searchSettingsEntries(context, query)
     }
-    val entryResults = remember(context, configuration, query) { searchSettingsEntries(context, query) }
     val categoryResults = remember(context, configuration, query) {
-        val needle = normalizedSettingsText(query)
-        if (needle.isEmpty()) emptyList() else OrganizedSettingsCategories.filter {
-            normalizedSettingsText(context.getString(it.labelRes)).contains(needle) ||
-                normalizedSettingsText(context.getString(it.descriptionRes)).contains(needle)
+        searchSettingsCategories(context, query)
+    }
+    val cardResults = remember(context, configuration, query, entryResults, categoryResults) {
+        val resetScopes = entryResults.filter { it.labelRes == R.string.settings_reset }.map { it.tab }.toSet()
+        searchSettingsCardResults(context, query).filterNot { card ->
+            (card.titleRes == R.string.settings_reset && card.tab in resetScopes) ||
+                card.duplicatesCategoryResult(context, categoryResults)
         }
+    }
+    val (exactCategories, otherCategories) = categoryResults.partition {
+        normalizedSettingsText(context.getString(it.labelRes)) == normalizedQuery
     }
     val noResults = query.isNotBlank() && itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()
     SettingsSearchEmptyFeedback(query, noResults)
@@ -126,7 +139,7 @@ fun SettingsGlobalPage(
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_GLOBAL, isHistoryPaused)
     // Keep only saved searches matching the current filter while focused.
-    val historyMatches = filterSearchHistory(history.value, query)
+    val historyMatches = filterSettingsSearchHistory(history.value, query)
     val historyVisible = isSearchFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = searchInput.text) {
@@ -174,6 +187,7 @@ fun SettingsGlobalPage(
                     SearchHistorySection(
                         visible = historyVisible,
                         queries = historyMatches,
+                        allQueries = history.value,
                         onQueryClick = { searchInput = TextFieldValue(it); recordSearchQuery(it); isSearchFocused = false },
                         onQueryDelete = {
                             history.value = SearchHistoryStore.delete(
@@ -195,7 +209,7 @@ fun SettingsGlobalPage(
             if (query.isBlank()) {
                 // Keep group state composed while releasing its height after the focus fade.
                 item(key = "groups", contentType = "groups") {
-                    Column(modifier = Modifier.settingsSearchContentVisibility(contentAlpha)) {
+                    Column(modifier = Modifier.animateItem().settingsSearchContentVisibility(contentAlpha)) {
                         SettingsPageGroups.forEach { group ->
                             SettingsResultCard(
                                 testTag = "settings_global_group_${group.group}",
@@ -206,7 +220,11 @@ fun SettingsGlobalPage(
                                             if (item.categoryId == "profiles") {
                                                 SettingsProfileShortcut(item, onItemSelected)
                                             } else {
-                                                GlobalPageItemRow(item = item, onItemSelected = onItemSelected)
+                                                GlobalPageItemRow(
+                                                    item = item,
+                                                    onItemSelected = onItemSelected,
+                                                    showDescription = item.categoryId in ambiguousCategoryIds,
+                                                )
                                             }
                                         }
                                 }
@@ -217,11 +235,33 @@ fun SettingsGlobalPage(
             } else if (itemResults.isEmpty() && cardResults.isEmpty() && entryResults.isEmpty() && categoryResults.isEmpty()) {
                 // Empty-result feedback is a debounced toast; keep the page clear.
             } else {
+                items(exactItems, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
+                    SettingsResultCard(testTag = "settings_result_item_${item.route}", modifier = Modifier.animateItem()) {
+                        GlobalPageItemRow(
+                            item = item,
+                            onItemSelected = { recordSearchQuery(); onItemSelected(it) },
+                            testTag = if (item.isUpdaterSettingsItem()) "settings_global_result_update" else "settings_global_result_${item.route}",
+                            showSearchLocation = true,
+                        )
+                    }
+                }
+                items(exactCategories, key = { "category_${it.id}" }, contentType = { "category" }) { category ->
+                    val item = SettingsPageItems.first { it.categoryId == category.id }
+                    SettingsResultCard(testTag = "settings_result_category_${category.id}", modifier = Modifier.animateItem()) {
+                        GlobalPageItemRow(
+                            item = item,
+                            onItemSelected = { recordSearchQuery(); onItemSelected(it) },
+                            showDescription = category.id in ambiguousCategoryIds,
+                            showSearchLocation = true,
+                        )
+                    }
+                }
                 items(entryResults, key = { "entry_${it.id}" }, contentType = { "entry" }) { result ->
                     SettingsEntryResultRow(
                         result = result,
                         surfaceTag = "settings_result_entry_${result.id}",
                         rowTag = "settings_global_entry_${result.id}",
+                        modifier = Modifier.animateItem(),
                         onClick = {
                             recordSearchQuery()
                             val card = result.parentCard()
@@ -229,18 +269,24 @@ fun SettingsGlobalPage(
                         },
                     )
                 }
-                items(categoryResults, key = { "category_${it.id}" }, contentType = { "category" }) { category ->
-                    val item = SettingsPageItems.first { it.categoryId == category.id }
-                    SettingsResultCard(testTag = "settings_result_category_${category.id}") {
-                        GlobalPageItemRow(item = item, onItemSelected = { recordSearchQuery(); onItemSelected(it) })
-                    }
-                }
-                items(itemResults, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
-                    SettingsResultCard(testTag = "settings_result_item_${item.route}") {
+                items(otherItems, key = { "item_${it.labelRes}" }, contentType = { "item" }) { item ->
+                    SettingsResultCard(testTag = "settings_result_item_${item.route}", modifier = Modifier.animateItem()) {
                         GlobalPageItemRow(
                             item = item,
                             onItemSelected = { recordSearchQuery(); onItemSelected(it) },
-                            testTag = if (item == SettingsUpdateItem) "settings_global_result_update" else "settings_global_result_${item.route}",
+                            testTag = if (item.isUpdaterSettingsItem()) "settings_global_result_update" else "settings_global_result_${item.route}",
+                            showSearchLocation = true,
+                        )
+                    }
+                }
+                items(otherCategories, key = { "category_${it.id}" }, contentType = { "category" }) { category ->
+                    val item = SettingsPageItems.first { it.categoryId == category.id }
+                    SettingsResultCard(testTag = "settings_result_category_${category.id}", modifier = Modifier.animateItem()) {
+                        GlobalPageItemRow(
+                            item = item,
+                            onItemSelected = { recordSearchQuery(); onItemSelected(it) },
+                            showDescription = category.id in ambiguousCategoryIds,
+                            showSearchLocation = true,
                         )
                     }
                 }
@@ -249,6 +295,7 @@ fun SettingsGlobalPage(
                         card = card,
                         surfaceTag = "settings_result_card_${card.tab}_${card.titleRes}",
                         rowTag = "settings_global_result_${card.tab}_${card.titleRes}",
+                        modifier = Modifier.animateItem(),
                         onClick = { recordSearchQuery(); onOrganizedCardSelected?.invoke(card) ?: onCardSelected(card.tab, card.focusId) },
                     )
                 }
@@ -302,14 +349,17 @@ private fun SettingsProfileShortcut(
     }
 }
 
-/** One row of a group card (single line, no displayed description): a category row, or the Update row with its trailing state. */
+/** Renders a category or dedicated destination, with a trailing status for Update. */
 @Composable
 internal fun GlobalPageItemRow(
     item: SettingsPageItem,
     onItemSelected: (SettingsPageItem) -> Unit,
-    testTag: String = if (item == SettingsUpdateItem) "settings_global_update" else "settings_global_category_${item.categoryId ?: item.route ?: item.tab}",
+    testTag: String = if (item.isUpdaterSettingsItem()) "settings_global_update" else "settings_global_category_${item.categoryId ?: item.route ?: item.tab}",
+    showDescription: Boolean = false,
+    showSearchLocation: Boolean = false,
 ) {
-    if (item != SettingsUpdateItem) {
+    val location = if (showSearchLocation) settingsPageSearchLocation(item) else ""
+    if (!item.isUpdaterSettingsItem()) {
         val betaTag = when (item) {
             SettingsGlassItem -> "settings.glass.beta"
             SettingsThemeStoreItem -> "settings.theme_store.beta"
@@ -317,7 +367,13 @@ internal fun GlobalPageItemRow(
         }
         OtherSettingsEntry(
             title = stringResource(item.labelRes),
-            text = "",
+            text = when {
+                showSearchLocation && showDescription -> "$location · ${stringResource(item.descriptionRes)}"
+                showSearchLocation -> location
+                showDescription -> stringResource(item.descriptionRes)
+                item == SettingsThemeStoreCreatorItem -> stringResource(R.string.theme_store_title)
+                else -> ""
+            },
             icon = item.iconRes,
             modifier = Modifier.clip(uiRoundnessShape()).testTag(testTag),
             onClick = { onItemSelected(item) },
@@ -328,37 +384,59 @@ internal fun GlobalPageItemRow(
             } },
         )
     } else {
-        UpdateRow(item = item, onItemSelected = onItemSelected, testTag = testTag)
+        UpdateRow(item = item, onItemSelected = onItemSelected, testTag = testTag, location = location)
     }
 }
 
-/** Updater row with an opt-in debug layout entry independent of auto-update. */
+@Composable
+private fun settingsPageSearchLocation(item: SettingsPageItem): String {
+    val root = stringResource(R.string.settings_title)
+    if (item.isThemeStoreCreatorPage()) {
+        val targetKey = item.route?.let(Uri::parse)?.getQueryParameter("target")
+        val group = when (ThemeStoreCreatorTarget.entries.firstOrNull { it.routeKey == targetKey }) {
+            ThemeStoreCreatorTarget.PublishingAccess -> R.string.theme_store_group_publishing_access
+            ThemeStoreCreatorTarget.Profile -> R.string.theme_store_creator_profile
+            ThemeStoreCreatorTarget.PublicInformation, ThemeStoreCreatorTarget.PublishProfile ->
+                R.string.theme_store_edit_creator
+            ThemeStoreCreatorTarget.Publish, ThemeStoreCreatorTarget.EditPublished,
+            ThemeStoreCreatorTarget.MyThemes -> R.string.theme_store_group_theme_publication
+            ThemeStoreCreatorTarget.Submissions -> R.string.theme_store_group_review_status
+            ThemeStoreCreatorTarget.CreateLocal, ThemeStoreCreatorTarget.EditLocal -> R.string.theme_store_local_themes
+            null -> null
+        }
+        val parentGroup = R.string.theme_store_group_local_editing.takeIf { group == R.string.theme_store_local_themes }
+        return listOfNotNull(root, stringResource(R.string.theme_store_title),
+            stringResource(SettingsThemeStoreCreatorItem.labelRes), parentGroup?.let { stringResource(it) }, group?.let { stringResource(it) })
+            .joinToString(" › ")
+    }
+    return when {
+        item == SettingsGlassItem || item == SettingsThemeStoreItem ->
+            "$root › ${stringResource(R.string.settings_category_interface)}"
+        item.isUpdaterSettingsItem() && item != SettingsUpdateItem ->
+            "$root › ${stringResource(R.string.common_action_update)} › ${stringResource(R.string.common_menu_label)}"
+        else -> root
+    }
+}
+
+/** Opens release notes on every build and shows the appropriate updater status. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun UpdateRow(
     item: SettingsPageItem,
     onItemSelected: (SettingsPageItem) -> Unit,
     testTag: String = "settings_global_update",
+    location: String = "",
 ) {
     val autoUpdate = hasAutoUpdate()
-    val debugAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
-    val canOpen = canOpenUpdater(autoUpdate, BuildConfig.DEBUG, debugAccess)
     OtherSettingsEntry(
         title = stringResource(item.labelRes),
-        text = "",
+        text = location,
         icon = item.iconRes,
         modifier = Modifier.testTag(testTag),
-        isEnabled = canOpen,
         onClick = { onItemSelected(item) },
         trailingContent = {
             if (autoUpdate) {
                 UpdateRowTrailingStatus()
-            } else if (canOpen) {
-                BasicText(
-                    text = stringResource(R.string.common_debug_title),
-                    style = typography().xxs.secondary,
-                    modifier = Modifier.testTag("settings_global_update_debug_preview"),
-                )
             } else {
                 BasicText(
                     text = stringResource(R.string.updates_manual_update_install_source_message),

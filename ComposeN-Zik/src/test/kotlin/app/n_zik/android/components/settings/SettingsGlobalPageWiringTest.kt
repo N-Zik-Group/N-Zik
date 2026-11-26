@@ -27,13 +27,13 @@ import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.components.settings.common.OrganizedSettingsCategories
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.isNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -41,8 +41,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -60,10 +58,12 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
 import app.n_zik.android.components.settings.common.SettingsPageItem
+import app.n_zik.android.components.settings.common.SettingsUpdateItem
 import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.hasAutoUpdate
-import app.n_zik.android.components.settings.common.DEBUG_UPDATER_ACCESS_KEY
+import app.n_zik.android.components.settings.common.isUpdaterSettingsItem
+import app.n_zik.android.components.settings.common.searchSettingsPageItems
 import app.n_zik.android.components.navigation.header.LocalHeaderProfileFace
 import app.n_zik.android.updater.models.GithubRelease
 import app.n_zik.android.updater.services.Updater
@@ -385,10 +385,10 @@ class SettingsGlobalPageWiringTest {
     }
 
     @Test
-    fun theUpdateRowIsGreyedAndBlockedWhenTheBuildHasNoAutoUpdate() {
+    fun theUpdateRowOpensReleaseNotesWithTheUnsupportedBuildExplanation() {
         every { hasAutoUpdate() } returns false
 
-        // The blocked explanation is an infinite marquee: compose on a frozen
+        // The explanation is an infinite marquee: compose on a frozen
         // clock and pump until it is composed (see the class KDoc).
         composeRule.mainClock.autoAdvance = false
         composeRule.setContent {
@@ -405,9 +405,9 @@ class SettingsGlobalPageWiringTest {
             runCatching { blockedMessage.fetchSemanticsNode().boundsInRoot.height > 0f }.getOrDefault(false)
         }
 
-        // Matcher form: the 1.12.1 top-level assertIsNotEnabled import does not
-        // resolve in this toolchain, isNotEnabled() + assert() do (same semantics).
-        composeRule.onNodeWithTag("settings_global_update").assert(isNotEnabled())
+        composeRule.onNodeWithTag("settings_global_update").assertIsEnabled().performClick()
+        settle()
+        assertEquals(NavRoutes.updater.name, selectedItem?.route)
         assertTrue(
             "the blocked explanation must be shown on the right of the row",
             blockedMessage.fetchSemanticsNode().boundsInRoot.height > 0f
@@ -432,21 +432,6 @@ class SettingsGlobalPageWiringTest {
         assertEquals(NavRoutes.updater.name, item?.route)
         assertEquals(null, item?.tab)
         assertEquals(R.string.common_action_update, item?.labelRes)
-    }
-
-    @Test
-    fun debugOptInOpensUpdaterWithoutEnablingAutoUpdate() {
-        every { hasAutoUpdate() } returns false
-        context.preferences.edit().putBoolean(DEBUG_UPDATER_ACCESS_KEY, true).commit()
-        showGlobalPage()
-
-        composeRule.onNodeWithTag("settings_global_update").assertIsEnabled().performClick()
-        settle()
-
-        assertEquals(NavRoutes.updater.name, selectedItem?.route)
-        composeRule.onNodeWithTag("settings_global_update_debug_preview", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("settings_global_update_status", useUnmergedTree = true).assertDoesNotExist()
-        assertEquals(false, hasAutoUpdate())
     }
 
     @Test
@@ -493,12 +478,29 @@ class SettingsGlobalPageWiringTest {
     }
 
     @Test
-    fun theSearchIndexesTheUpdateItem() {
+    fun `search categories display their location`() {
+        showGlobalPage()
+        composeRule.onNodeWithTag("settings_global_search")
+            .performTextInput(context.getString(R.string.common_playback_section_title))
+        settle()
+        val category = hasTestTag("settings_result_category_playback")
+        composeRule.onNode(category).assertIsDisplayed()
+        composeRule.onNode(
+            hasAnyAncestor(category) and hasText(context.getString(R.string.settings_title)),
+            useUnmergedTree = true,
+        ).assertExists()
+    }
+
+    @Test
+    fun theSearchOpensTheUpdaterFromTheAutomaticCheckLabel() {
         showGlobalPage()
 
-        composeRule.onNodeWithTag("settings_global_search").performTextInput("update")
+        composeRule.onNodeWithTag("settings_global_search")
+            .performTextInput(context.getString(R.string.updates_automatic_check_title))
         settle()
-        scrollToGlobalNode("settings_global_result_update")
+        composeRule.onNodeWithTag("settings_global_list")
+            .performScrollToKey("item_${R.string.updates_automatic_check_title}")
+        settle()
 
         val result = composeRule.onNodeWithTag("settings_global_result_update")
         pumpUntil("the Update item result is composed", 30_000) {
@@ -512,11 +514,79 @@ class SettingsGlobalPageWiringTest {
         result.performClick()
         settle()
 
-        assertEquals(NavRoutes.updater.name, selectedItem?.route)
+        assertEquals("${NavRoutes.updater.name}?settingsTarget=automatic-check", selectedItem?.route)
     }
 
     @Test
-    fun theSearchKeepsTheUpdateResultBlockedWhenTheBuildHasNoAutoUpdate() {
+    fun betaUpdateLabelFindsTheUpdaterOnlyWhenAvailable() {
+        val query = context.getString(R.string.updates_beta_enabled_label)
+        assertEquals("${NavRoutes.updater.name}?settingsTarget=beta-updates", searchSettingsPageItems(context, query).single().route)
+        every { hasAutoUpdate() } returns false
+        assertTrue(searchSettingsPageItems(context, query).isEmpty())
+        listOf(R.string.updates_automatic_check_title, R.string.updates_action_download_current_version).forEach { label ->
+            assertTrue(searchSettingsPageItems(context, context.getString(label)).none { it.isUpdaterSettingsItem() })
+        }
+        val notesTitle = context.getString(R.string.updates_changelog_title, "123")
+        assertTrue(searchSettingsPageItems(context, notesTitle.substringBefore("123").trim()).any { it == SettingsUpdateItem })
+        val changelog = context.getString(R.string.updates_changelog_search_label)
+        assertTrue(searchSettingsPageItems(context, changelog).any { it == SettingsUpdateItem })
+        val translation = context.getString(R.string.common_translation_title)
+        val updaterTranslation = searchSettingsPageItems(context, translation).single { it.isUpdaterSettingsItem() }
+        assertEquals("${NavRoutes.updater.name}?settingsTarget=translation", updaterTranslation.route)
+        val clearCache = context.getString(R.string.recovery_clear_cache)
+        assertTrue(searchSettingsPageItems(context, clearCache).none { it.isUpdaterSettingsItem() })
+    }
+
+    @Test
+    fun theSearchFindsTranslationAndRedownloadInUpdaterOptions() {
+        mapOf(
+            R.string.common_translation_title to "translation",
+            R.string.updates_action_download_current_version to "download-current-version",
+        ).forEach { (label, target) ->
+            val text = context.getString(label)
+            listOf(text, text.dropLast(2)).forEach { query ->
+                val result = searchSettingsPageItems(context, query).single { it.labelRes == label }
+                assertEquals("${NavRoutes.updater.name}?settingsTarget=$target", result.route)
+            }
+        }
+    }
+
+    @Test
+    fun updaterOptionSearchAcceptsDisplayedStatesAndDisambiguatesCache() {
+        val automatic = context.getString(R.string.updates_automatic_check_title)
+        val update = context.getString(R.string.common_action_update)
+        listOf(R.string.common_state_on, R.string.updates_check_mode_ask, R.string.common_state_off).forEach { state ->
+            val value = context.getString(state)
+            listOf(value, "$automatic $value", "$update $value").forEach { query ->
+                val result = searchSettingsPageItems(context, query).single { it.isUpdaterSettingsItem() }
+                assertEquals("${NavRoutes.updater.name}?settingsTarget=automatic-check", result.route)
+            }
+        }
+        val clearCache = context.getString(R.string.recovery_clear_cache)
+        val result = searchSettingsPageItems(context, "$update $clearCache").single { it.isUpdaterSettingsItem() }
+        assertEquals("${NavRoutes.updater.name}?settingsTarget=clear-cache", result.route)
+        assertTrue(searchSettingsEntries(context, clearCache).any { it.id.startsWith("data.") })
+    }
+
+    @Test
+    fun theSearchOpensTheThemeStoreCreatorDestination() {
+        showGlobalPage()
+        val route = "${NavRoutes.themeStore.name}?tab=creator&target=profile"
+        val tag = "settings_global_result_$route"
+
+        composeRule.onNodeWithTag("settings_global_search")
+            .performTextInput(context.getString(R.string.theme_store_edit_creator))
+        settle()
+        composeRule.onNodeWithTag("settings_global_list").performScrollToKey("item_${R.string.theme_store_edit_creator}")
+        settle()
+        composeRule.onNodeWithTag(tag).assertIsDisplayed().performClick()
+        settle()
+
+        assertEquals(route, selectedItem?.route)
+    }
+
+    @Test
+    fun theSearchOpensUpdateWithoutAutoUpdateOrADebugPreference() {
         every { hasAutoUpdate() } returns false
         showGlobalPage()
         composeRule.onNodeWithTag("settings_global_search").performTextInput("update")
@@ -524,10 +594,9 @@ class SettingsGlobalPageWiringTest {
         scrollToGlobalNode("settings_global_result_update")
 
         val result = composeRule.onNodeWithTag("settings_global_result_update")
-        result.assert(isNotEnabled())
-        result.performTouchInput { click() }
+        result.assertIsEnabled().performClick()
         settle()
-        assertEquals(null, selectedItem)
+        assertEquals(NavRoutes.updater.name, selectedItem?.route)
         composeRule.onNodeWithTag("settings_global_update_blocked_message", useUnmergedTree = true).assertExists()
     }
 

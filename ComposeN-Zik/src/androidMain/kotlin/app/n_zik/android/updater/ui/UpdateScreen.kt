@@ -27,6 +27,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import app.n_zik.android.components.settings.common.UPDATER_OPEN_OPTIONS_TARGET
+import app.n_zik.android.components.settings.common.UpdaterSettingsOption
+import app.n_zik.android.components.settings.common.SettingsBottomPanel
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
@@ -42,6 +45,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -105,15 +109,17 @@ import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 
 @Composable
-fun UpdateScreen(navController: NavController) {
-    UpdaterGlassScope { UpdateScreenContent(navController) }
+fun UpdateScreen(navController: NavController, settingsTarget: String = "") {
+    UpdaterGlassScope { UpdateScreenContent(navController, settingsTarget) }
 }
 
 @Composable
-private fun UpdateScreenContent(navController: NavController) {
+private fun UpdateScreenContent(navController: NavController, settingsTarget: String) {
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
-    val downloadState by UpdateDownloadManager.downloadState.collectAsStateWithLifecycle()
+    val downloadState = if (BuildConfig.IS_AUTOUPDATE) {
+        UpdateDownloadManager.downloadState.collectAsStateWithLifecycle().value
+    } else UpdateDownloadManager.DownloadState.Idle
     val colorPaletteMode by rememberPreference(colorPaletteModeKey, ColorPaletteMode.Dark)
 
     var checkUpdateState by rememberPreference(checkUpdateStateKey, CheckUpdateState.Enabled)
@@ -132,7 +138,7 @@ private fun UpdateScreenContent(navController: NavController) {
         else contentTranslationLanguage(appLocale)
     }
     val changelogTranslationTarget = activeTranslateLang.changelogTranslationTarget
-    var isTranslationActive by rememberPreference("updateTranslationActive", appLang != "en")
+    var isTranslationActive by rememberPreference("updateTranslationActive", BuildConfig.IS_AUTOUPDATE && appLang != "en")
     var showLanguageDialog by remember { mutableStateOf(false) }
 
     var showInstallWarningDialog by remember { mutableStateOf(false) }
@@ -143,27 +149,20 @@ private fun UpdateScreenContent(navController: NavController) {
     val preInstallBackupUri by rememberPreference(BackupManager.PREF_URI, "")
     val preInstallCoroutineScope = rememberCoroutineScope()
 
-    // Return to the previous screen while the download continues.
-    BackHandler(enabled = downloadState is UpdateDownloadManager.DownloadState.Downloading ||
-            downloadState is UpdateDownloadManager.DownloadState.Starting) {
-        Toaster.i(R.string.downloads_cancelled)
-        UpdateDownloadManager.cancelDownload(context)
-        navController.popBackStack()
-    }
-
     // Preserve download results and any active download across screen exits.
     DisposableEffect(Unit) {
         onDispose {
             val currentState = UpdateDownloadManager.downloadState.value
-            if (currentState is UpdateDownloadManager.DownloadState.Failed) {
+            if (BuildConfig.IS_AUTOUPDATE && currentState is UpdateDownloadManager.DownloadState.Failed) {
                 UpdateDownloadManager.resetState()
             }
         }
     }
 
-    val newVersion = Updater.getDisplayVersion()
-    val hasUpdate = Updater.githubRelease != null && Updater.isVersionNewer(Updater.githubRelease?.tagName ?: "", BuildConfig.VERSION_NAME)
     val currentVersion = BuildConfig.VERSION_NAME
+    val release = Updater.githubRelease.takeIf { BuildConfig.IS_AUTOUPDATE }
+    val newVersion = if (release != null) Updater.getDisplayVersion() else currentVersion
+    val hasUpdate = release != null && Updater.isVersionNewer(release.tagName, currentVersion)
     val isFoss = BuildConfig.BUILD_TYPE.equals("foss", ignoreCase = true)
     val currentLabel = Updater.flavorLabel(currentVersion, isFoss) ?: Updater.FlavorLabel(R.string.updates_build_release_label)
     val currentBuildTypeLabel = if (currentLabel.literal != null) currentLabel.literal
@@ -184,9 +183,8 @@ private fun UpdateScreenContent(navController: NavController) {
         containerColor = colorPalette().background0,
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = {
-            UpdaterBottomPanel(
+            SettingsBottomPanel(
                 backdrop = footerBackdrop.takeIf { captureFooterBackdrop },
-                drawSurface = !singleDownloadSurface || downloadState !is UpdateDownloadManager.DownloadState.Completed,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(rememberPageChromeContentPadding(topInsetProvider = { 0.dp }))
@@ -356,7 +354,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                if (hasUpdate) {
+                                if (BuildConfig.IS_AUTOUPDATE && hasUpdate) {
                                     UpdaterActionCard(
                                         onClick = {
                                                 UpdateDownloadManager.startDownload(
@@ -397,7 +395,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                             }
                                         }
                                     }
-                                } else {
+                                } else if (BuildConfig.IS_AUTOUPDATE) {
                                     UpdaterActionCard(
                                         onClick = {
                                                 Toaster.i(R.string.updates_checking_status)
@@ -438,7 +436,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                 UpdaterActionCard(
                                         onClick = {
                                             // Use the actual tag because dev builds append a date.
-                                            val tag = (if (hasUpdate) Updater.githubRelease?.tagName else null)
+                                            val tag = (if (hasUpdate) release?.tagName else null)
                                                 ?: Updater.releaseTag(currentVersion)
                                             uriHandler.openUri("${UpdateEndpoints.REPO_URL}/releases/tag/$tag")
 
@@ -511,7 +509,19 @@ private fun UpdateScreenContent(navController: NavController) {
                         ) {
                             Box(modifier = Modifier.fillMaxWidth()) {
                                 Box(modifier = Modifier.align(Alignment.TopEnd).padding(8.dp)) {
-                                    var showMenu by remember { mutableStateOf(false) }
+                                    val requestedOption = UpdaterSettingsOption.entries.firstOrNull { it.routeKey == settingsTarget }
+                                    var showMenu by rememberSaveable(settingsTarget) {
+                                        mutableStateOf(requestedOption != null || settingsTarget == UPDATER_OPEN_OPTIONS_TARGET)
+                                    }
+                                    var highlightRequestedOption by rememberSaveable(settingsTarget) { mutableStateOf(requestedOption != null) }
+                                    val optionHighlight = DropdownMenu.Item.colors().copy(textColor = colorPalette().accent)
+                                    fun colorsFor(option: UpdaterSettingsOption) = optionHighlight.takeIf {
+                                        highlightRequestedOption && requestedOption == option
+                                    }
+                                    fun dismissOptions() {
+                                        showMenu = false
+                                        highlightRequestedOption = false
+                                    }
                                     val menuTrigger = remember { GlassMenuTriggerState() }
                                     GlassMenuTrigger(menuTrigger, uiRoundnessShape()) {
                                         UpdaterIconAction(
@@ -530,88 +540,108 @@ private fun UpdateScreenContent(navController: NavController) {
                                         expanded = showMenu,
                                         trigger = menuTrigger,
                                         containerColor = surfaceColor(colorPalette().background0).copy(0.90f),
-                                        onDismissRequest = { showMenu = false }
+                                        onDismissRequest = ::dismissOptions,
                                     )
 
                                     // Only release and beta builds can receive beta updates.
-                                    val showBetaToggle = !Updater.isMinifiedFamily(BuildConfig.VERSION_NAME) &&
-                                        !Updater.isDevFamily(BuildConfig.VERSION_NAME)
+                                    val showBetaToggle = BuildConfig.IS_AUTOUPDATE &&
+                                        Updater.supportsBetaUpdatePreference(BuildConfig.VERSION_NAME)
                                     if (showBetaToggle) {
                                         menu.add(
                                             DropdownMenu.Item(
                                                 iconId = R.drawable.shield_checkmark,
-                                                customText = "${stringResource(R.string.updates_beta_enabled_label)}: ${if (effectiveCheckBeta) stringResource(R.string.common_state_on) else stringResource(R.string.common_state_off)}",
+                                                customText = UpdaterSettingsOption.BetaUpdates.labelWithValue(
+                                                    stringResource(R.string.updates_beta_enabled_label),
+                                                    stringResource(if (effectiveCheckBeta) R.string.common_state_on else R.string.common_state_off),
+                                                ),
+                                                colors = colorsFor(UpdaterSettingsOption.BetaUpdates),
                                                 enabled = BuildConfig.IS_AUTOUPDATE
                                             ) {
+                                                highlightRequestedOption = false
                                                 checkBetaUpdates = !checkBetaUpdates
                                             }
                                         )
                                     }
-                                    val stateStr = when(effectiveCheckState) {
-                                        CheckUpdateState.Enabled -> stringResource(R.string.common_state_on)
-                                        CheckUpdateState.Ask -> stringResource(R.string.updates_check_mode_ask)
-                                        CheckUpdateState.Disabled -> stringResource(R.string.common_state_off)
+                                    if (BuildConfig.IS_AUTOUPDATE) {
+                                        val stateStr = when(effectiveCheckState) {
+                                            CheckUpdateState.Enabled -> stringResource(R.string.common_state_on)
+                                            CheckUpdateState.Ask -> stringResource(R.string.updates_check_mode_ask)
+                                            CheckUpdateState.Disabled -> stringResource(R.string.common_state_off)
+                                        }
+                                        menu.add(
+                                            DropdownMenu.Item(
+                                                iconId = R.drawable.update,
+                                                customText = UpdaterSettingsOption.AutomaticCheck.labelWithValue(
+                                                    stringResource(R.string.updates_automatic_check_title), stateStr,
+                                                ),
+                                                colors = colorsFor(UpdaterSettingsOption.AutomaticCheck),
+                                            ) {
+                                                highlightRequestedOption = false
+                                                checkUpdateState = when (checkUpdateState) {
+                                                    CheckUpdateState.Enabled -> CheckUpdateState.Ask
+                                                    CheckUpdateState.Ask -> CheckUpdateState.Disabled
+                                                    CheckUpdateState.Disabled -> CheckUpdateState.Enabled
+                                                }
+                                            }
+                                        )
                                     }
                                     menu.add(
                                         DropdownMenu.Item(
-                                            iconId = R.drawable.update,
-                                            customText = "${stringResource(R.string.updates_automatic_check_title)}: $stateStr",
-                                            enabled = BuildConfig.IS_AUTOUPDATE
-                                        ) {
-                                            checkUpdateState = when (checkUpdateState) {
-                                                CheckUpdateState.Enabled -> CheckUpdateState.Ask
-                                                CheckUpdateState.Ask -> CheckUpdateState.Disabled
-                                                CheckUpdateState.Disabled -> CheckUpdateState.Enabled
-                                            }
-                                        }
-                                    )
-                                    val currentVersionStr = BuildConfig.VERSION_NAME
-                                    val currentDownloadUrl = Updater.redownloadUrl(BuildConfig.APP_NAME, currentVersionStr)
-
-                                    menu.add(
-                                        DropdownMenu.Item(
                                             iconId = R.drawable.translate,
-                                            customText = "${stringResource(R.string.common_translation_title)}: \n${otherLanguageApp.text}"
+                                            customText = "${stringResource(R.string.common_translation_title)}: \n${otherLanguageApp.text}",
+                                            colors = colorsFor(UpdaterSettingsOption.Translation),
                                         ) {
-                                            showMenu = false
+                                            dismissOptions()
                                             showLanguageDialog = true
                                         }
                                     )
-                                    val downloadText = "${stringResource(R.string.updates_action_download_current_version)} ($currentVersionStr)"
-                                    menu.add(
-                                        DropdownMenu.Item(
-                                            iconId = R.drawable.download,
-                                            customText = downloadText
-                                        ) {
-                                            showMenu = false
-                                            try {
-                                                Timber.tag("UpdateScreen").d("Redownload URL: $currentDownloadUrl")
-                                                UpdateDownloadManager.startDownload(
-                                                    context = context,
-                                                    apkUrl = currentDownloadUrl,
-                                                    version = currentVersionStr
-                                                )
-                                                Updater.fetchCurrentChangelog()
-                                            } catch (e: Exception) {
-                                                Timber.tag("UpdateScreen").e(e, "Error fetching update")
-                                                Toaster.w(R.string.updates_not_available_yet)
-                                            }
-                                        }
-                                    )
-                                    menu.add(
-                                        DropdownMenu.Item(
-                                            R.drawable.trash,
-                                            R.string.updates_cache_cleared
-                                        ) {
-                                            showMenu = false
-                                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                clearUpdateCache(context)
-                                                withContext(NzikDispatchers.UI) {
-                                                    Toaster.s(R.string.updates_cache_cleared)
+                                    if (BuildConfig.IS_AUTOUPDATE) {
+                                        val currentVersionStr = BuildConfig.VERSION_NAME
+                                        val currentDownloadUrl = Updater.redownloadUrl(BuildConfig.APP_NAME, currentVersionStr)
+
+                                        val downloadText = UpdaterSettingsOption.DownloadCurrentVersion.labelWithValue(
+                                            stringResource(R.string.updates_action_download_current_version), currentVersionStr,
+                                        )
+                                        menu.add(
+                                            DropdownMenu.Item(
+                                                iconId = R.drawable.download,
+                                                customText = downloadText,
+                                                colors = colorsFor(UpdaterSettingsOption.DownloadCurrentVersion),
+                                            ) {
+                                                dismissOptions()
+                                                try {
+                                                    Timber.tag("UpdateScreen").d("Redownload URL: $currentDownloadUrl")
+                                                    UpdateDownloadManager.startDownload(
+                                                        context = context,
+                                                        apkUrl = currentDownloadUrl,
+                                                        version = currentVersionStr
+                                                    )
+                                                    Updater.fetchCurrentChangelog()
+                                                } catch (e: Exception) {
+                                                    Timber.tag("UpdateScreen").e(e, "Error fetching update")
+                                                    Toaster.w(R.string.updates_not_available_yet)
                                                 }
                                             }
-                                        }
-                                    )
+                                        )
+                                        menu.add(
+                                            DropdownMenu.Item(
+                                                R.drawable.trash,
+                                                R.string.recovery_clear_cache,
+                                                colors = colorsFor(UpdaterSettingsOption.ClearCache),
+                                                enabled = downloadState !is UpdateDownloadManager.DownloadState.Starting &&
+                                                    downloadState !is UpdateDownloadManager.DownloadState.Downloading,
+                                            ) {
+                                                dismissOptions()
+                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                    val cleared = clearUpdateCache(context)
+                                                    withContext(NzikDispatchers.UI) {
+                                                        if (cleared) Toaster.s(R.string.updates_cache_cleared)
+                                                        else Toaster.e(R.string.updates_cache_clear_failed)
+                                                    }
+                                                }
+                                            }
+                                        )
+                                    }
                                     menu.Draw()
                                 }
 
@@ -674,7 +704,7 @@ private fun UpdateScreenContent(navController: NavController) {
                                                 style = typography().xs.copy(color = colorPalette().textSecondary)
                                             )
                                         }
-                                    } else if (Updater.githubRelease != null) {
+                                    } else if (release != null) {
                                         Box(
                                             modifier = Modifier
                                                 .size(64.dp)
@@ -742,14 +772,22 @@ private fun UpdateScreenContent(navController: NavController) {
                                             style = typography().s.copy(color = colorPalette().textSecondary, textAlign = TextAlign.Center)
                                         )
                                     }
-                                    val lastCheckTime by rememberPreference(lastUpdateCheckKey, 0L)
-                                    val sdf = SimpleDateFormat("dd MMM HH:mm", Locale.getDefault())
-                                    val lastCheckStr = if (lastCheckTime > 0) sdf.format(Date(lastCheckTime)) else stringResource(R.string.updates_never_checked)
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    BasicText(
-                                        text = if (lastCheckTime > 0) stringResource(R.string.updates_last_check_format, lastCheckStr) else stringResource(R.string.updates_never_checked),
-                                        style = typography().xxs.secondary.copy(color = colorPalette().textSecondary.copy(alpha = 0.7f))
-                                    )
+                                    if (BuildConfig.IS_AUTOUPDATE) {
+                                        val lastCheckTime by rememberPreference(lastUpdateCheckKey, 0L)
+                                        val sdf = SimpleDateFormat("dd MMM HH:mm", Locale.getDefault())
+                                        val lastCheckStr = if (lastCheckTime > 0) sdf.format(Date(lastCheckTime)) else stringResource(R.string.updates_never_checked)
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        BasicText(
+                                            text = if (lastCheckTime > 0) stringResource(R.string.updates_last_check_format, lastCheckStr) else stringResource(R.string.updates_never_checked),
+                                            style = typography().xxs.secondary.copy(color = colorPalette().textSecondary.copy(alpha = 0.7f))
+                                        )
+                                    } else {
+                                        BasicText(
+                                            text = stringResource(R.string.updates_manual_update_install_source_message),
+                                            modifier = Modifier.padding(top = 8.dp),
+                                            style = typography().xxs.secondary.copy(textAlign = TextAlign.Center),
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -775,7 +813,7 @@ private fun UpdateScreenContent(navController: NavController) {
             }
         }
 
-        DialogPresence(target = apkPathToInstall.takeIf { showInstallWarningDialog }) { installationPath ->
+        DialogPresence(target = apkPathToInstall.takeIf { BuildConfig.IS_AUTOUPDATE && showInstallWarningDialog }) { installationPath ->
             ConfirmationDialog(
                 title = stringResource(R.string.updates_install_dialog_title),
                 text = stringResource(R.string.updates_install_confirmation_message),
@@ -822,6 +860,5 @@ private fun UpdateScreenContent(navController: NavController) {
 }
 
 /** Clears update APKs on the caller's data dispatcher. */
-internal suspend fun clearUpdateCache(context: Context) {
+internal suspend fun clearUpdateCache(context: Context): Boolean =
     UpdateDownloadManager.clearCache(context)
-}

@@ -44,8 +44,6 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
-import app.n_zik.android.BuildConfig
-import app.n_zik.android.components.settings.common.DEBUG_UPDATER_ACCESS_KEY
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.logs.CopyLogsDialog
@@ -139,17 +137,6 @@ fun MaintenanceSettingsCard(
             // the debug-dependent options while the switch is off)
             SettingsCardSectionDivider()
             CardCategoryLabel(stringResource(R.string.common_debug_title))
-            if (BuildConfig.DEBUG) {
-                var updaterLayoutAccess by rememberPreference(DEBUG_UPDATER_ACCESS_KEY, false)
-                OtherSwitchSettingEntry(
-                    modifier = Modifier.settingsSearchTarget("embedded.maintenance.debug_updater_layout_access"),
-                    title = stringResource(R.string.settings_debug_updater_preview_label),
-                    text = stringResource(R.string.settings_debug_updater_preview_description),
-                    isChecked = updaterLayoutAccess,
-                    onCheckedChange = { updaterLayoutAccess = it },
-                    icon = R.drawable.refresh,
-                )
-            }
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.maintenance.enable_log_debug"),
                 title = stringResource(R.string.maintenance_debug_logging_title),

@@ -3,9 +3,6 @@ package app.n_zik.android.updater.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import app.n_zik.android.components.glass.extendGlassPastScreenEdge
-import app.n_zik.android.components.glass.GlassScreenEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -27,13 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.glass.GlassMaterialContainerScope
-import app.n_zik.android.components.glass.LocalGlassBackdrop
-import app.n_zik.android.components.glass.glassMaterial
-import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.LocalGlassContainerBackdrop
-import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.GlassScope
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.LocalGlassScope
@@ -162,55 +153,5 @@ private fun UpdaterPressFeedback(
             indication = if (source == null) LocalIndication.current else null,
             onClick = onClick,
         ))
-    }
-}
-
-/** Fixed settings action pane; its only rim at the bottom sits outside the window. */
-@Composable
-internal fun UpdaterBottomPanel(
-    modifier: Modifier = Modifier,
-    backdrop: app.n_zik.android.components.glass.backdrop.Backdrop? = null,
-    drawSurface: Boolean = true,
-    content: @Composable androidx.compose.foundation.layout.BoxScope.() -> Unit,
-) {
-    if (!drawSurface) {
-        val source = backdrop ?: LocalGlassContainerBackdrop.current ?: LocalGlassBackdrop.current
-        CompositionLocalProvider(
-            LocalGlassContainerBackdrop provides source,
-            LocalGlassMaterialSource provides source,
-        ) {
-            Box(modifier, content = content)
-        }
-        return
-    }
-    val shape = app.n_zik.android.components.navigation.nav.bottomNavigationBarShape(uiRoundnessShape())
-    val settings = rememberGlassSettings()
-    if (settings.usesGlassMaterial(GlassArea.SettingsCards)) {
-        GlassMaterialContainerScope(Modifier, materialSource = backdrop ?: LocalGlassBackdrop.current, material = { exported ->
-            Modifier.glassMaterial(
-                settings = settings.forArea(GlassArea.SettingsCards), shape = shape,
-                ownBackdrop = backdrop, filmColor = colorPalette().background0,
-                exportedBackdrop = exported, drawShadow = false,
-            )
-        }) { skin ->
-            Box(Modifier.fillMaxWidth()) {
-                // Record/export only the pane, leaving button springs outside its clip.
-                Box(Modifier.matchParentSize().extendGlassPastScreenEdge(GlassScreenEdge.Bottom).then(skin))
-                CompositionLocalProvider(LocalGlassMaterialSource provides LocalGlassContainerBackdrop.current) {
-                    Box(modifier, content = content)
-                }
-            }
-        }
-        return
-    }
-    SettingsCardSurface(
-        modifier = Modifier.fillMaxWidth().extendGlassPastScreenEdge(GlassScreenEdge.Bottom),
-        shape = shape,
-        containerColor = colorPalette().background0,
-        backgroundColor = colorPalette().background0,
-        shadowColor = Color.Transparent,
-        shadowElevation = 0.dp,
-    ) {
-        Box(modifier, content = content)
     }
 }

@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.test.onRoot
 import androidx.compose.foundation.ScrollState
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
+import app.n_zik.android.components.settings.common.SettingsBottomPanel
 import app.n_zik.android.components.glass.backdrop.backdrops.layerBackdrop
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -79,9 +80,10 @@ class UpdaterGlassComponentsTest {
         assertTrue(!settings.copy(enabled = false).usesSingleUpdaterDownloadSurface())
     }
 
-    @Test fun `a standalone install action leaves the surrounding footer clear`() {
+    @Test fun `install and update actions share the same surrounding footer`() {
         val settings = GlassSettings(enabled = true, film = .65f, blur = 0f, rim = 0f, depth = 0f)
         var installs = 0
+        val installReady = mutableStateOf(false)
         compose.setContent {
             val shape = RoundedCornerShape(12.dp)
             val source = rememberCanvasBackdrop { drawRect(Color.Blue) }
@@ -93,14 +95,13 @@ class UpdaterGlassComponentsTest {
             ) {
                 UpdaterGlassScope {
                     Box(Modifier.size(180.dp, 90.dp).background(Color.Blue)) {
-                        UpdaterBottomPanel(
+                        SettingsBottomPanel(
                             modifier = Modifier.size(180.dp, 90.dp).testTag("install-footer"),
                             backdrop = source,
-                            drawSurface = false,
                         ) {
                             UpdaterCard(drawSurface = false) {
                                 UpdaterActionCard(onClick = { installs++ }, modifier = Modifier.size(92.dp, 48.dp)) {
-                                    Text("Install")
+                                    Text(if (installReady.value) "Install" else "Check update")
                                 }
                             }
                         }
@@ -108,11 +109,14 @@ class UpdaterGlassComponentsTest {
                 }
             }
         }
-        val footer = compose.onNodeWithTag("install-footer")
-        val pixels = footer.captureToImage().toPixelMap()
-        val remainingSurface = pixels[pixels.width - 15, pixels.height / 2]
-        assertEquals(0f, remainingSurface.red, .02f)
-        assertEquals(1f, remainingSurface.blue, .02f)
+        fun footerColor(): Color {
+            val bounds = compose.onNodeWithTag("install-footer").fetchSemanticsNode().boundsInRoot
+            val pixels = compose.onRoot().captureToImage().toPixelMap()
+            return pixels[bounds.right.toInt() - 15, bounds.center.y.toInt()]
+        }
+        val beforeInstall = footerColor()
+        compose.runOnIdle { installReady.value = true }
+        assertEquals(beforeInstall, footerColor())
         compose.onNodeWithText("Install").performClick()
         compose.runOnIdle { assertEquals(1, installs) }
     }
@@ -184,7 +188,7 @@ class UpdaterGlassComponentsTest {
             ) {
                 UpdaterGlassScope {
                     Box(Modifier.size(300.dp, 120.dp)) {
-                        UpdaterBottomPanel(Modifier.size(300.dp, 120.dp).testTag("footer.parent"), source) {
+                        SettingsBottomPanel(Modifier.size(300.dp, 120.dp).testTag("footer.parent"), source) {
                             CompositionLocalProvider(LocalGlassPreviewSettings provides neutral) {
                                 UpdaterActionCard(onClick = {}, modifier = Modifier.size(80.dp, 48.dp).testTag("footer.action"),
                                     colors = CardDefaults.cardColors(containerColor = Color.Transparent)) {}
@@ -251,7 +255,7 @@ class UpdaterGlassComponentsTest {
                 UpdaterGlassScope {
                     GlassRippleProvider(settings) {
                         Scaffold(Modifier.width(320.dp).height(480.dp), bottomBar = {
-                            UpdaterBottomPanel(Modifier.fillMaxWidth().height(64.dp).testTag("pane"), backdrop) { }
+                            SettingsBottomPanel(Modifier.fillMaxWidth().height(64.dp).testTag("pane"), backdrop) { }
                         }) { padding ->
                             // Like UpdateScreen: Scaffold padding is INSIDE verticalScroll.
                             Column(Modifier.fillMaxSize().testTag("list").layerBackdrop(backdrop)
@@ -335,7 +339,7 @@ class UpdaterGlassComponentsTest {
                                 onClick = { translations++ }, onLongClick = { languageSelections++ },
                                 modifier = Modifier.size(40.dp).testTag("translate"),
                             ) { Text("T") }
-                            UpdaterBottomPanel(Modifier.fillMaxWidth().height(48.dp).testTag("footer")) { }
+                            SettingsBottomPanel(Modifier.fillMaxWidth().height(48.dp).testTag("footer")) { }
                             ChangelogCard("Added:\n- New feature", "Ajout:\n- Nouveaute", ColorPaletteMode.Dark)
                         }
                     }
