@@ -21,17 +21,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.components.glass.PageButton as Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,7 +51,9 @@ import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
@@ -59,12 +65,15 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** Manages the PC bridge, pairing and connected devices. */
 @Composable
 fun BridgeServerScreen(
     navController: NavController,
     miniPlayer: @Composable () -> Unit = {},
+    settingsTarget: String = "",
 ) {
     val context = LocalContext.current
     val state by BridgeServerController.state.collectAsStateWithLifecycle()
@@ -77,6 +86,23 @@ fun BridgeServerScreen(
             initialValue = BridgeServerController.currentPairedDevices,
             context = NzikDispatchers.DATA,
         )
+    val listState = rememberLazyListState()
+    val targetRegistry = remember { SettingsTargetRegistry() }
+    val target = BridgeAutoStopTarget.entries.firstOrNull { it.id == settingsTarget }
+    val running = state as? BridgeState.Running
+    val connected = activeDevice.takeIf { running != null }
+    val autoStopIndex = 3 + (if (connected != null) 1 else 0) + (if (running != null) 1 else 0)
+    var targetHandled by rememberSaveable(settingsTarget) { mutableStateOf(false) }
+    LaunchedEffect(target, autoStopIndex) {
+        if (target == null || targetHandled) return@LaunchedEffect
+        listState.scrollToItem(autoStopIndex)
+        val requester = withTimeoutOrNull(1500) {
+            snapshotFlow { targetRegistry.targets[target.id] }.first { it != null }
+        } ?: return@LaunchedEffect
+        requester.bringIntoView()
+        targetHandled = true
+        targetRegistry.blink(target.id)
+    }
     LaunchedEffect(Unit) { BridgeServerController.loadDeviceStore(context) }
     LaunchedEffect(Unit) { BridgeServerController.loadAutoStopSettings(context) }
     LaunchedEffect(Unit) {
@@ -127,6 +153,7 @@ fun BridgeServerScreen(
     ) { _ ->
         Box(modifier = Modifier.fillMaxSize()) {
             LazyColumn(
+                state = listState,
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = bottomContentSpacer)),
             ) {
@@ -145,7 +172,6 @@ fun BridgeServerScreen(
                         textAlign = TextAlign.Center,
                     )
                 }
-                val connected = activeDevice.takeIf { state is BridgeState.Running }
                 if (connected != null) {
                     item(key = "connected", contentType = "card") {
                         ConnectedPcCard(connected)
@@ -162,14 +188,15 @@ fun BridgeServerScreen(
                 item(key = "battery", contentType = "card") {
                     BatteryOptimizationWarning()
                 }
-                val running = state as? BridgeState.Running
                 if (running != null) {
                     item(key = "pair", contentType = "card") {
                         PairPcCard(running = running, code = pairingCode)
                     }
                 }
                 item(key = "autoStop", contentType = "card") {
-                    AutoStopCard(autoStopSettings)
+                    CompositionLocalProvider(LocalSettingsTargets provides targetRegistry.takeIf { target != null }) {
+                        AutoStopCard(autoStopSettings)
+                    }
                 }
                 item(key = "devices", contentType = "card") {
                     PairedDevicesCard(pairedDevices)

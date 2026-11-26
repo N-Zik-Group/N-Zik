@@ -900,3 +900,7 @@ Quick Picks and sort menus:
 Menu subpages:
 - fix(menu): align nested picker layouts and information navigation
   - Keep List and Grid selection flows consistent and label navigation actions.
+
+PC server and history search:
+- fix(settings): target PC server and history options from search
+  - Open the real control and highlight the matching option without modifying it.

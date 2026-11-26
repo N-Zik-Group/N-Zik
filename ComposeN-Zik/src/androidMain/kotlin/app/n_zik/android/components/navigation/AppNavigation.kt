@@ -93,6 +93,7 @@ import androidx.navigation.navArgument
 import app.n_zik.android.components.settings.appearance.preview.CREATOR_PROFILE_TARGET_ARGUMENT
 import app.n_zik.android.components.settings.appearance.preview.THEME_STORE_CREATOR_TAB
 import app.n_zik.android.components.settings.appearance.preview.ThemeStoreCreatorTarget
+import app.n_zik.android.components.ui.screens.bridge.BridgeSettingsTargetArgument
 import app.n_zik.android.components.settings.appearance.preview.ThemeStoreSection
 import app.n_zik.android.components.settings.common.UPDATER_SETTINGS_TARGET_ARGUMENT
 import androidx.compose.foundation.layout.WindowInsets
@@ -735,10 +736,17 @@ fun AppNavigation(
             app.n_zik.android.components.settings.appearance.preview.ThemeSubmissionPage(navController, miniPlayer, themeId)
         }
 
-        chromeComposable(route = NavRoutes.bridgeServer.name) {
+        chromeComposable(
+            route = "${NavRoutes.bridgeServer.name}?$BridgeSettingsTargetArgument={$BridgeSettingsTargetArgument}",
+            arguments = listOf(navArgument(BridgeSettingsTargetArgument) {
+                type = NavType.StringType
+                defaultValue = ""
+            }),
+        ) { entry ->
             BridgeServerScreen(
                 navController = navController,
                 miniPlayer = miniPlayer,
+                settingsTarget = entry.arguments?.getString(BridgeSettingsTargetArgument).orEmpty(),
             )
         }
 

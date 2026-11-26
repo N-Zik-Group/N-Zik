@@ -36,6 +36,7 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.utils.isIgnoringBatteryOptimizations
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
@@ -51,6 +52,13 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 
 private const val TAG = "BridgeManageUi"
+
+internal const val BridgeSettingsTargetArgument = "target"
+
+internal enum class BridgeAutoStopTarget(val id: String, val labelRes: Int) {
+    NoClient("network.bridge_server.auto_stop_no_client", R.string.bridge_auto_stop_no_client),
+    Inactivity("network.bridge_server.auto_stop_inactivity", R.string.bridge_auto_stop_inactivity),
+}
 
 /** "Connected PC" card of "Manage server": the PC holding the session and Disconnect, which closes its session with `4001 KICKED` without revoking it (contract §6.4) — no confirmation. */
 @Composable
@@ -118,13 +126,13 @@ internal fun AutoStopCard(settings: AutoStopSettings?) {
         content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 AutoStopEntry(
-                    title = stringResource(R.string.bridge_auto_stop_no_client),
+                    target = BridgeAutoStopTarget.NoClient,
                     icon = R.drawable.devices,
                     minutes = settings?.noClientMinutes,
                     onSelected = { BridgeServerController.setAutoStopNoClient(context, it) },
                 )
                 AutoStopEntry(
-                    title = stringResource(R.string.bridge_auto_stop_inactivity),
+                    target = BridgeAutoStopTarget.Inactivity,
                     icon = R.drawable.sleep,
                     minutes = settings?.inactivityMinutes,
                     onSelected = { BridgeServerController.setAutoStopInactivity(context, it) },
@@ -137,18 +145,20 @@ internal fun AutoStopCard(settings: AutoStopSettings?) {
 /** One auto-stop delay: entry showing the current value, dialog offering Never/5/15/30/60 min. */
 @Composable
 private fun AutoStopEntry(
-    title: String,
+    target: BridgeAutoStopTarget,
     icon: Int,
     minutes: Int?,
     onSelected: (Int) -> Unit,
 ) {
     var showDialog by remember { mutableStateOf(false) }
+    val title = stringResource(target.labelRes)
     val never = stringResource(R.string.bridge_auto_stop_never)
     val valueText: @Composable (Int) -> String = { value ->
         if (value == AutoStopSettings.NEVER) never else stringResource(R.string.bridge_auto_stop_minutes, value)
     }
 
     OtherSettingsEntry(
+        modifier = Modifier.settingsSearchTarget(target.id),
         title = title,
         text = if (minutes != null) valueText(minutes) else "",
         icon = icon,

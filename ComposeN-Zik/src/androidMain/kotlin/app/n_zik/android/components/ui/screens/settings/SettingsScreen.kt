@@ -72,6 +72,10 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val innerNavController = rememberNavController()
+    fun navigateToSetting(route: String) {
+        val controller = if (route.substringBefore('?') == NavRoutes.bridgeServer.name) navController else innerNavController
+        controller.navigate(route)
+    }
     RevealScaffoldOnNavigation(innerNavController)
     val settingsBackNavigation = LocalSettingsBackNavigation.current
     val backOwner = remember { Any() }
@@ -155,7 +159,7 @@ fun SettingsScreen(
                         innerNavController.navigate(settingsTabRoute(tab, cardFocus))
                     },
                     onEntrySelected = { result ->
-                        innerNavController.navigate(result.destinationRoute(context))
+                        navigateToSetting(result.destinationRoute(context))
                     },
                     onOrganizedCardSelected = { card ->
                         innerNavController.navigate(card.categoryRoute(context))
@@ -175,7 +179,7 @@ fun SettingsScreen(
                     navController = navController,
                     target = entry.arguments?.getString("target").orEmpty(),
                     parentTarget = entry.arguments?.getString("parent").orEmpty(),
-                    onSearchResultNavigate = { route -> innerNavController.navigate(route) },
+                    onSearchResultNavigate = ::navigateToSetting,
                 )
             }
             composable(

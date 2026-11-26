@@ -1,5 +1,7 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+
 import androidx.annotation.PluralsRes
 import app.n_zik.android.R
 import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDialogs
@@ -17,6 +19,7 @@ data class SettingsEntryTarget(
     val paletteTitleRes: Int? = null,
     val groupTitleRes: Int? = null,
     @PluralsRes val countedLabelRes: Int? = null,
+    val labelFormatRes: Int? = null,
 )
 
 private fun paletteEntry(id: String, labelRes: Int, paletteTitleRes: Int, keywordRes: List<Int> = emptyList()) =
@@ -361,6 +364,10 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("network.quality.image_quality_format", 6, R.string.settings_network_quality_title, R.string.settings_network_image_quality_label, listOf(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_medium, R.string.audio_quality_format_low)),
     SettingsEntryTarget("network.settings_reset.settings_reset", 6, R.string.settings_reset, R.string.settings_reset, listOf(R.string.settings_restore_default_settings)),
     SettingsEntryTarget("network.bridge_server.bridge_server", 6, R.string.bridge_server, R.string.bridge_server, listOf(R.string.bridge_server_description)),
+    SettingsEntryTarget(BridgeAutoStopTarget.NoClient.id, 6, R.string.bridge_server, BridgeAutoStopTarget.NoClient.labelRes,
+        listOf(R.string.bridge_auto_stop, R.string.bridge_auto_stop_description), groupTitleRes = R.string.bridge_auto_stop),
+    SettingsEntryTarget(BridgeAutoStopTarget.Inactivity.id, 6, R.string.bridge_server, BridgeAutoStopTarget.Inactivity.labelRes,
+        listOf(R.string.bridge_auto_stop, R.string.bridge_auto_stop_inactivity_hint), groupTitleRes = R.string.bridge_auto_stop),
     SettingsEntryTarget("other.on_device.section", 4, R.string.storage_breakdown_title, R.string.library_on_device_title),
     SettingsEntryTarget("other.on_device.enabled", 4, R.string.storage_breakdown_title, R.string.settings_local_music_enabled_title, listOf(R.string.settings_local_music_enabled_description)),
     SettingsEntryTarget("other.on_device.summary", 4, R.string.storage_breakdown_title, R.string.settings_local_music_summary_title, listOf(R.string.settings_local_music_summary_description)),

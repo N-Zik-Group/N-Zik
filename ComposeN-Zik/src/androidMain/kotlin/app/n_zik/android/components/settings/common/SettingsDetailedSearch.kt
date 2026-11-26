@@ -18,8 +18,11 @@ import app.n_zik.android.components.settings.ui.GlassSearchParent
 import app.n_zik.android.components.settings.ui.GlassSectionGroupTitles
 import app.n_zik.android.components.settings.ui.glassSearchOption
 import app.n_zik.android.components.settings.ui.isGlassSearchLabelSupported
+import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+import app.n_zik.android.components.ui.screens.bridge.BridgeSettingsTargetArgument
 import app.n_zik.android.extensions.pip.supportsPictureInPicture
 import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.updater.models.UpdateEndpoints
 import app.n_zik.android.utils.isAtLeastAndroid12
 import app.n_zik.android.utils.isAtLeastAndroid13
@@ -142,7 +145,7 @@ internal class SettingsEntrySearchIndex(
                 normalizedSettingsText(aboutAuthorSearchLabel(::resource)),
                 normalizedSettingsText(UpdateEndpoints.REAL_OWNER),
             ).distinct() else listOfNotNull(
-                normalizedResource(entry.labelRes),
+                if (entry.labelFormatRes != null) normalizedSettingsText(entry.searchLabel(::resource)) else normalizedResource(entry.labelRes),
                 buttonField?.let { normalizedSettingsText(it.title(::resource)) },
                 buttonField?.let { normalizedSettingsText(it.title(::resource, separator = " ")) },
             ).distinct()
@@ -273,6 +276,9 @@ fun SettingsEntryTarget.locationDescription(context: Context, searchCategoryId: 
 /** Uses the same destination for global and category results, including dedicated settings pages. */
 fun SettingsEntryTarget.destinationRoute(context: Context, searchCategoryId: String? = null): String {
     if (id.startsWith("glass.")) return "$SETTINGS_GLASS_ROUTE?target=${Uri.encode(id)}"
+    if (BridgeAutoStopTarget.entries.any { it.id == id }) {
+        return "${NavRoutes.bridgeServer.name}?$BridgeSettingsTargetArgument=${Uri.encode(id)}"
+    }
     val card = parentCard(searchCategoryId)
     val parent = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
     return "settingsCategory/${card.categoryId()}?target=${Uri.encode(id)}&parent=$parent"
@@ -282,8 +288,13 @@ fun SettingsEntryTarget.destinationRoute(context: Context, searchCategoryId: Str
 fun SettingsEntryTarget.searchResultTitle(context: Context): String {
     if (labelRes == R.string.settings_reset) return parentCard().displayTitle(context)
     if (id == AboutAuthorSettingsTarget) return aboutAuthorSearchLabel(context::getString)
-    val label = DiscordButtonField.forTarget(id)?.title(context::getString) ?: context.getString(labelRes)
+    val label = DiscordButtonField.forTarget(id)?.title(context::getString) ?: searchLabel(context::getString)
     return searchScopeTitleRes()?.let { "${context.getString(it)} › $label" } ?: label
+}
+
+private fun SettingsEntryTarget.searchLabel(resolveString: (Int) -> String): String {
+    val label = resolveString(labelRes)
+    return labelFormatRes?.let { resolveString(it).format(label) } ?: label
 }
 
 private fun SettingsEntryTarget.searchScopeTitleRes(): Int? =

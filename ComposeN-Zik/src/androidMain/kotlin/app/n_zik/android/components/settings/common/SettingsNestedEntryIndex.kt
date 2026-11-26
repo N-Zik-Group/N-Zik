@@ -25,6 +25,7 @@ import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialo
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
 import app.n_zik.android.components.dialog.settings.customToolbarSettingsDialogs
 import app.n_zik.android.components.settings.privacy.PermissionUsageDialog
+import app.n_zik.android.components.search.SearchHistoryPageDialog
 
 private data class NestedDialogRegistration(
     val dialogId: String,
@@ -58,6 +59,7 @@ private val nestedDialogRegistrations = listOf(
     NestedDialogRegistration("PlayerActionBarSettingsDialog", "appearance.player_action_bar.player_action_bar_buttons", PlayerActionBarSettingsDialog::searchOptions, PlayerActionBarSettingsDialog),
     NestedDialogRegistration("MiniPlayerButtonsSettingsDialog", "appearance.timeline_and_controls.miniplayer_buttons_config", MiniPlayerButtonsSettingsDialog::searchOptions, MiniPlayerButtonsSettingsDialog),
     NestedDialogRegistration("PermissionUsageDialog", "privacy.permissions.open", PermissionUsageDialog::searchOptions, PermissionUsageDialog),
+    NestedDialogRegistration("SearchHistoryPageDialog", "data.history.search_history_per_page", SearchHistoryPageDialog::searchOptions, SearchHistoryPageDialog),
 ) + customToolbarSettingsDialogs.map { dialog ->
     NestedDialogRegistration(dialog.dialogId, dialog.entryId, dialog::searchOptions, dialog)
 }
@@ -73,6 +75,7 @@ val SettingsNestedEntryTargets: List<SettingsEntryTarget> by lazy {
                 tab = opener.tab,
                 cardTitleRes = opener.cardTitleRes,
                 labelRes = option.labelRes,
+                labelFormatRes = option.labelFormatRes,
                 keywordRes = listOfNotNull(option.descriptionRes),
                 nestedDestination = SettingsNestedDestination(
                     openerId = opener.id,
