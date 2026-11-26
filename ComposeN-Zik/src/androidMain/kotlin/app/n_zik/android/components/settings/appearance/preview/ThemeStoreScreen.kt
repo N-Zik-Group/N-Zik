@@ -951,7 +951,11 @@ private fun ThemeStoreCreator(
                 if (target != visibleTarget) {
                     SettingsDescription(stringResource(R.string.theme_store_creator_action_sign_in_required))
                 }
-                GitHubAccountCard(horizontalPadding = 0.dp, showAppInstallation = true)
+                GitHubAccountCard(
+                    horizontalPadding = 0.dp,
+                    showAppInstallation = true,
+                    installationModifier = creatorTargetModifier(visibleTarget, ThemeStoreCreatorTarget.GitHubInstallation),
+                )
             }
         }
         CreatorProfileSettingsEntry(onEditCreator, modifier = creatorTargetModifier(visibleTarget, ThemeStoreCreatorTarget.Profile)) {

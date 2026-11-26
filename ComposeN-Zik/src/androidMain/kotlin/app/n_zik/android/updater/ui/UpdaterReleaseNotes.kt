@@ -71,6 +71,7 @@ internal fun ColumnScope.UpdaterReleaseNotes(
     changelogTranslationTarget: Language?,
     onToggleTranslation: () -> Unit,
     onChooseTranslationLanguage: () -> Unit,
+    headerModifier: Modifier = Modifier,
 ) {
     LaunchedEffect(isReinstalling, hasUpdate) {
         if (isReinstalling || !hasUpdate) {
@@ -128,7 +129,7 @@ internal fun ColumnScope.UpdaterReleaseNotes(
                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        modifier = headerModifier.padding(bottom = 16.dp)
                     ) {
                         LeadingIconBadge(
                             iconRes = R.drawable.sparkles,

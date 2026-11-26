@@ -39,7 +39,7 @@ import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
@@ -78,7 +78,10 @@ fun GeneralPlaybackCard(
         icon = R.drawable.play_forward,
         visible = visible,
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_group_automatic_playback))
+            CardCategoryLabel(
+                stringResource(R.string.settings_group_automatic_playback),
+                Modifier.settingsSearchTarget("general.playback.section.automatic"),
+            )
             if (isAtLeastAndroid6) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("general.app_behavior.resume_playback"),
@@ -123,7 +126,7 @@ fun GeneralPlaybackCard(
                 icon = R.drawable.alert_circle
             )
 
-            SettingsCardSectionHeading(R.string.settings_group_track_transitions)
+            SearchableSettingsSectionHeading(R.string.settings_group_track_transitions, "general.playback.section.transitions")
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.pause_between_songs"),
@@ -192,7 +195,7 @@ fun GeneralPlaybackCard(
                 }
             }
 
-            SettingsCardSectionHeading(R.string.settings_group_track_navigation)
+            SearchableSettingsSectionHeading(R.string.settings_group_track_navigation, "general.playback.section.navigation")
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.jump_previous"),
@@ -221,7 +224,7 @@ fun GeneralPlaybackCard(
                 }
             }
 
-            SettingsCardSectionHeading(R.string.settings_group_playback_exclusions)
+            SearchableSettingsSectionHeading(R.string.settings_group_playback_exclusions, "general.playback.section.exclusions")
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.playback.exclude_songs_with_duration_limit"),

@@ -50,6 +50,10 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget(
         SettingsResetPlaybackTarget, 7, R.string.settings_reset, R.string.settings_reset_playback_description,
     ),
+    SettingsEntryTarget("general.playback.section.automatic", 0, R.string.common_playback_section_title, R.string.settings_group_automatic_playback),
+    SettingsEntryTarget("general.playback.section.transitions", 0, R.string.common_playback_section_title, R.string.settings_group_track_transitions),
+    SettingsEntryTarget("general.playback.section.navigation", 0, R.string.common_playback_section_title, R.string.settings_group_track_navigation),
+    SettingsEntryTarget("general.playback.section.exclusions", 0, R.string.common_playback_section_title, R.string.settings_group_playback_exclusions),
     SettingsEntryTarget("general.app_behavior.resume_playback", 0, R.string.common_playback_section_title, R.string.settings_playback_resume_on_connection_label, listOf(R.string.settings_playback_resume_on_connection_description), groupTitleRes = R.string.settings_group_automatic_playback),
     SettingsEntryTarget("general.player_controls.player_pause_on_volume_zero", 0, R.string.common_playback_section_title, R.string.player_pause_on_volume_zero, listOf(R.string.settings_playback_pause_at_zero_volume_description), groupTitleRes = R.string.settings_group_automatic_playback),
     SettingsEntryTarget("general.player_controls.pause_on_headphone_disconnect", 0, R.string.common_playback_section_title, R.string.settings_playback_pause_on_headphone_disconnect_label, listOf(R.string.settings_playback_pause_on_headphone_disconnect_description), groupTitleRes = R.string.settings_group_automatic_playback),

@@ -1004,3 +1004,7 @@ Menus:
 Menus:
 - fix(menu): keep the audio retry sheet in the selected layout
   - Render device discovery status in List or Grid as configured.
+
+Settings:
+- fix(settings): target updater and service settings explicitly
+  - Route Changelog, Creator GitHub installation and service subgroups to their settings positions.

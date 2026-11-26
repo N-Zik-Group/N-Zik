@@ -10,7 +10,7 @@
 package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.annotation.DrawableRes
@@ -152,7 +152,10 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         icon = R.drawable.people,
         description = stringResource(R.string.listen_together_settings_description),
         content = {
-            CardCategoryLabel(stringResource(R.string.settings_group_room_connection))
+            CardCategoryLabel(
+                stringResource(R.string.settings_group_room_connection),
+                Modifier.settingsSearchTarget("embedded.listen_together.section.connection"),
+            )
         // Optional deep link to the Listen Together screen (wired by the Accounts
         // tab, spec-customizable-burger-menu goal B); first row of the card.
         onOpenScreen?.let { onOpen ->
@@ -192,7 +195,10 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             },
         )
 
-        SettingsCardSectionHeading(R.string.settings_group_room_controls)
+        SearchableSettingsSectionHeading(
+            R.string.settings_group_room_controls,
+            "embedded.listen_together.section.controls",
+        )
 
         // Auto-approve join requests
         OtherSwitchSettingEntry(
@@ -274,7 +280,10 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             },
         )
 
-        SettingsCardSectionHeading(R.string.settings_group_connection_diagnostics)
+        SearchableSettingsSectionHeading(
+            R.string.settings_group_connection_diagnostics,
+            "embedded.listen_together.section.diagnostics",
+        )
 
         // Connection logs
         OtherSettingsEntry(

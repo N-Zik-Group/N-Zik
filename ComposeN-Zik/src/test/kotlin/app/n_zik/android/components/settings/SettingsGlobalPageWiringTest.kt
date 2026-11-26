@@ -529,7 +529,9 @@ class SettingsGlobalPageWiringTest {
         val notesTitle = context.getString(R.string.updates_changelog_title, "123")
         assertTrue(searchSettingsPageItems(context, notesTitle.substringBefore("123").trim()).any { it == SettingsUpdateItem })
         val changelog = context.getString(R.string.updates_changelog_search_label)
-        assertTrue(searchSettingsPageItems(context, changelog).any { it == SettingsUpdateItem })
+        val changelogResult = searchSettingsPageItems(context, changelog).single { it.isUpdaterSettingsItem() }
+        assertEquals(R.string.updates_changelog_search_label, changelogResult.labelRes)
+        assertEquals("${NavRoutes.updater.name}?settingsTarget=changelog", changelogResult.route)
         val translation = context.getString(R.string.common_translation_title)
         val updaterTranslation = searchSettingsPageItems(context, translation).single { it.isUpdaterSettingsItem() }
         assertEquals("${NavRoutes.updater.name}?settingsTarget=translation", updaterTranslation.route)

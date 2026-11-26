@@ -26,7 +26,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
+import app.n_zik.android.components.settings.common.UPDATER_CHANGELOG_TARGET
 import app.n_zik.android.components.settings.common.UPDATER_OPEN_OPTIONS_TARGET
 import app.n_zik.android.components.settings.common.UpdaterSettingsOption
 import app.n_zik.android.components.settings.common.SettingsBottomPanel
@@ -51,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -796,7 +800,21 @@ private fun UpdateScreenContent(navController: NavController, settingsTarget: St
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                val changelogRequester = remember { BringIntoViewRequester() }
+                var changelogPlaced by remember { mutableStateOf(false) }
+                var changelogTargetHandled by rememberSaveable(settingsTarget) { mutableStateOf(false) }
+                val targetChangelog = settingsTarget == UPDATER_CHANGELOG_TARGET && !changelogTargetHandled
+                LaunchedEffect(targetChangelog, changelogPlaced) {
+                    if (targetChangelog && changelogPlaced) {
+                        changelogRequester.bringIntoView()
+                        changelogTargetHandled = true
+                    }
+                }
                 UpdaterReleaseNotes(
+                    headerModifier = if (targetChangelog) Modifier
+                        .bringIntoViewRequester(changelogRequester)
+                        .onGloballyPositioned { changelogPlaced = it.size.height > 0 }
+                    else Modifier,
                     isReinstalling = downloadState !is UpdateDownloadManager.DownloadState.Idle &&
                         UpdateDownloadManager.downloadingVersion == currentVersion,
                     hasUpdate = hasUpdate,

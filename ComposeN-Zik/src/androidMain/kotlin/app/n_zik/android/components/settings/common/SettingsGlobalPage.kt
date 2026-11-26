@@ -397,7 +397,8 @@ private fun settingsPageSearchLocation(item: SettingsPageItem): String {
     if (item.isThemeStoreCreatorPage()) {
         val targetKey = item.route?.let(Uri::parse)?.getQueryParameter("target")
         val group = when (ThemeStoreCreatorTarget.entries.firstOrNull { it.routeKey == targetKey }) {
-            ThemeStoreCreatorTarget.PublishingAccess -> R.string.theme_store_group_publishing_access
+            ThemeStoreCreatorTarget.PublishingAccess, ThemeStoreCreatorTarget.GitHubInstallation ->
+                R.string.theme_store_group_publishing_access
             ThemeStoreCreatorTarget.Profile -> R.string.theme_store_creator_profile
             ThemeStoreCreatorTarget.PublicInformation, ThemeStoreCreatorTarget.PublishProfile ->
                 R.string.theme_store_edit_creator
@@ -415,6 +416,8 @@ private fun settingsPageSearchLocation(item: SettingsPageItem): String {
     return when {
         item == SettingsGlassItem || item == SettingsThemeStoreItem ->
             "$root › ${stringResource(R.string.settings_category_interface)}"
+        item.isUpdaterSettingsItem() && item.labelRes == R.string.updates_changelog_search_label ->
+            "$root › ${stringResource(R.string.common_action_update)}"
         item.isUpdaterSettingsItem() && item != SettingsUpdateItem ->
             "$root › ${stringResource(R.string.common_action_update)} › ${stringResource(R.string.common_menu_label)}"
         else -> root

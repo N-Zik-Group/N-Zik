@@ -15,7 +15,8 @@ import app.n_zik.android.R
 import app.n_zik.android.enums.NavRoutes
 
 internal enum class ThemeStoreCreatorTarget(val routeKey: String, vararg val labels: Int) {
-    PublishingAccess("access", R.string.theme_store_group_publishing_access, R.string.github_app_installation),
+    PublishingAccess("access", R.string.theme_store_group_publishing_access),
+    GitHubInstallation("github-installation", R.string.github_app_installation),
     Profile("profile", R.string.theme_store_edit_creator, R.string.theme_store_creator_profile),
     PublicInformation("public-information", R.string.theme_store_creator_identity),
     PublishProfile("publish-profile", R.string.theme_store_creator_publish),
@@ -36,6 +37,7 @@ internal fun creatorProfileSettingsRoute(target: ThemeStoreCreatorTarget): Strin
     "${NavRoutes.themeStoreCreatorSettings.name}?$CREATOR_PROFILE_TARGET_ARGUMENT=${target.routeKey}"
 
 internal fun ThemeStoreCreatorTarget?.visibleTarget(hasCreatorAccount: Boolean): ThemeStoreCreatorTarget? = when (this) {
+    ThemeStoreCreatorTarget.GitHubInstallation,
     ThemeStoreCreatorTarget.Profile,
     ThemeStoreCreatorTarget.PublicInformation,
     ThemeStoreCreatorTarget.PublishProfile,

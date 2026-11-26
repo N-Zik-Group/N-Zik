@@ -54,6 +54,7 @@ val SettingsUpdateItem = SettingsPageItem(
 
 internal const val UPDATER_SETTINGS_TARGET_ARGUMENT = "settingsTarget"
 internal const val UPDATER_OPEN_OPTIONS_TARGET = "options"
+internal const val UPDATER_CHANGELOG_TARGET = "changelog"
 
 internal enum class UpdaterSettingsOption(val routeKey: String, val labelRes: Int) {
     Translation("translation", R.string.common_translation_title),
@@ -223,7 +224,6 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.settings_languages_title, R.string.settings_app_language_label)),
     SettingsCardRegistryEntry(0, R.string.common_playback_section_title, R.drawable.play_forward,
         keywordRes = listOf(
-            R.string.settings_group_automatic_playback, R.string.settings_group_track_transitions, R.string.settings_group_track_navigation, R.string.settings_group_playback_exclusions,
             R.string.settings_playback_resume_on_connection_label, R.string.settings_playback_resume_on_connection_description, R.string.settings_playback_skip_on_error_label, R.string.settings_playback_skip_on_error_description, R.string.player_pause_on_volume_zero, R.string.settings_playback_pause_at_zero_volume_description, R.string.settings_playback_pause_on_headphone_disconnect_label,
             R.string.common_playback_section_title, R.string.settings_playback_previous_restart_threshold_label, R.string.settings_playback_previous_restart_threshold_description,
             R.string.settings_playback_duration_limit_label, R.string.common_option_disabled,
@@ -526,7 +526,6 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         )),
     SettingsCardRegistryEntry(5, R.string.listen_together_title, R.drawable.people, focusId = "listentogether",
         keywordRes = listOf(
-            R.string.settings_group_room_connection, R.string.settings_group_room_controls, R.string.settings_group_connection_diagnostics,
             R.string.listen_together_title, R.string.listen_together_server_url, R.string.listen_together_username,
             R.string.listen_together_auto_approval_joins, R.string.listen_together_auto_approval_suggestions,
             R.string.listen_together_sync_volume, R.string.listen_together_history,
@@ -662,6 +661,15 @@ fun searchSettingsPageItems(context: Context, query: String): List<SettingsPageI
     val storeTitle = normalizedSettingsText(context.getString(SettingsThemeStoreItem.labelRes))
     return settingsSearchDestinations.mapNotNull { item ->
         if (item == SettingsUpdateItem) {
+            val updateTitle = normalizedSettingsText(context.getString(item.labelRes))
+            val updaterQuery = needle.removePrefix("$updateTitle ").removeSuffix(" $updateTitle")
+            val changelogLabel = normalizedSettingsText(context.getString(R.string.updates_changelog_search_label))
+            if (updaterQuery.isNotEmpty() && changelogLabel.contains(updaterQuery)) {
+                return@mapNotNull item.copy(
+                    labelRes = R.string.updates_changelog_search_label,
+                    route = "${item.route}?$UPDATER_SETTINGS_TARGET_ARGUMENT=$UPDATER_CHANGELOG_TARGET",
+                )
+            }
             val option = updaterSettingsOptionForQuery(context, needle)
             if (option != null) {
                 return@mapNotNull item.copy(

@@ -414,6 +414,7 @@ internal fun GitHubAccountCard(
     horizontalPadding: Dp? = null,
     showAppInstallation: Boolean = false,
     shimmer: Boolean = false,
+    installationModifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
@@ -485,7 +486,7 @@ internal fun GitHubAccountCard(
             },
         )
         if (showAppInstallation && connectedLogin != null) OtherSettingsEntry(
-            modifier = Modifier.settingsSearchTarget(GITHUB_SETTINGS_APP_INSTALLATION_TARGET),
+            modifier = installationModifier.settingsSearchTarget(GITHUB_SETTINGS_APP_INSTALLATION_TARGET),
             title = stringResource(R.string.github_app_installation),
             text = stringResource(R.string.github_app_installation_description),
             icon = R.drawable.github_icon,
