@@ -66,13 +66,15 @@ internal fun UiFontCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.settings_use_font_type.settings_use_font_type"),
                         title = stringResource(R.string.settings_use_font_type),
-                        text = stringResource(R.string.interface_font_type_description),
-                        selectedValueText = fontType.name,
+                        text = stringResource(if (useSystemFont) R.string.settings_font_use_system_description
+                            else R.string.interface_font_type_description),
+                        selectedValueText = fontType.name.takeUnless { useSystemFont },
                         icon = R.drawable.text,
+                        isEnabled = !useSystemFont,
                         onClick = { showFontDialog = true }
                     )
                 }
-                DialogPresence(visible = showFontDialog) {
+                DialogPresence(visible = showFontDialog && !useSystemFont) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.settings_use_font_type),
                         selectedValue = fontType,

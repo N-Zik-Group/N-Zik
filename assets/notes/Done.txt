@@ -904,3 +904,7 @@ Menu subpages:
 PC server and history search:
 - fix(settings): target PC server and history options from search
   - Open the real control and highlight the matching option without modifying it.
+
+System font settings:
+- fix(settings): reflect the active system font
+  - Keep the saved custom typeface available after disabling the system font.
