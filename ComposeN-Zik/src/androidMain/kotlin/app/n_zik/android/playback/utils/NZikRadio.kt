@@ -9,6 +9,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -172,9 +173,11 @@ class NZikRadio(
             stopRadio(showToast = false)
         }
 
-        // Play song immediately
-        if (binder.player.currentMediaItem?.mediaId != mediaItem.mediaId) {
-            binder.player.forcePlay(mediaItem)
+        val player = binder.player
+        if (player.currentMediaItem?.mediaId != mediaItem.mediaId) {
+            player.forcePlay(mediaItem)
+        } else if (isExplicit && !player.playWhenReady) {
+            Util.handlePlayButtonAction(player)
         }
 
         fetchAndInject(

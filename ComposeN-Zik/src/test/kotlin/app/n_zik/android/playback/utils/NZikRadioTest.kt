@@ -282,6 +282,23 @@ class NZikRadioTest {
         coEvery { Innertube.nextPage(videoId = videoId, playlistId = playlistId) } returns null
     }
 
+    @Test
+    fun `starting radio from the paused current track resumes that track`() {
+        setupState(autoFillEnabled = false, discoverEnabled = false)
+        setupFetchHarness()
+        val seed = mediaItem("A")
+        stubQueue(mutableListOf(seed))
+        stubRadioFetch("A", "PL_resume", listOf("R"))
+        every { mockPlayer.currentMediaItem } returns seed
+        every { mockPlayer.playbackState } returns Player.STATE_READY
+        every { mockPlayer.playWhenReady } returns false
+        every { mockPlayer.isCommandAvailable(Player.COMMAND_PLAY_PAUSE) } returns true
+
+        nZikRadio.startRadio(seed, isExplicit = true)
+
+        verify(exactly = 1) { mockPlayer.play() }
+    }
+
     // --- MATRIX CASES ---
 
     // 1: ON, ON, ON -> Radio started (Discoveries only)

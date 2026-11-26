@@ -453,3 +453,8 @@ Updater:
 - fix(updater): point disabled builds to their install source
   - Explain that manual updates should come from the provider that installed N-Zik.
   - Replace the outdated GitHub-specific string and alias with a new default resource, removing the obsolete localized key.
+
+Radio:
+- fix(radio): resume the paused current track on explicit start
+  - Reuse Media3 play handling when the selected radio seed is already the current track.
+  - Preserve silent autofill behavior and cover a paused seed in NZikRadioTest.
