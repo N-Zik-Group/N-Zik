@@ -442,3 +442,9 @@ Library and playback:
 - fix(artists): restrict YouTube artist badges to verified subscription imports
 - fix(playback): retain the selected album edition in playback and Android Auto
 - fix(search): align the online and local search tabs and history header
+
+Playback menus:
+- fix(menu): respect disabled playback controls
+  - Read the active profile bass boost preference while the playback menu is open.
+  - Disable gain editing and long-press reset in both list and grid when the associated effect is off.
+  - Keep gain input precision consistent across the two layouts and cover disabled interactions in PlaybackSettingsMenuDefaultsTest.

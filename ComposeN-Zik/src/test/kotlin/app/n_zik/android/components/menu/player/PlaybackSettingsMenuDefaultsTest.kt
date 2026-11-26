@@ -6,7 +6,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -124,6 +127,34 @@ class PlaybackSettingsMenuDefaultsTest {
         compose.onNodeWithText(title).performClick()
         compose.onNodeWithText(context.getString(R.string.common_action_reset)).performClick()
         assertReset()
+    }
+
+    @Test
+    fun `disabled list gain ignores a long press on reset`() {
+        seedCustomGain()
+        context.preferences.edit().putBoolean(volumeNormalizationKey, false).commit()
+        show(MenuStyle.List)
+        val titleBounds = compose.onNodeWithText(title).performScrollTo().fetchSemanticsNode().boundsInRoot
+        compose.onNode(
+            SemanticsMatcher.keyIsDefined(SemanticsProperties.Disabled) and
+                SemanticsMatcher("disabled reset icon beside the loudness label") { node ->
+                    node.boundsInRoot.right <= titleBounds.left &&
+                        kotlin.math.abs(node.boundsInRoot.center.y - titleBounds.center.y) < 2f
+                },
+            useUnmergedTree = true,
+        ).performTouchInput { longClick() }
+        assertEquals(-8f, context.preferences.getFloat(loudnessBaseGainKey, Float.NaN), 0f)
+    }
+
+    @Test
+    fun `disabled grid gain does not open editing or reset`() {
+        seedCustomGain()
+        context.preferences.edit().putBoolean(volumeNormalizationKey, false).commit()
+        show(MenuStyle.Grid)
+        scrollGridToGain()
+        compose.onNodeWithText(title).assertIsNotEnabled().performTouchInput { click() }
+        compose.onNodeWithText(context.getString(R.string.common_action_reset)).assertDoesNotExist()
+        assertEquals(-8f, context.preferences.getFloat(loudnessBaseGainKey, Float.NaN), 0f)
     }
 
     private fun seedCustomGain() {

@@ -50,9 +50,9 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.utils.setGlobalVolume
-import app.n_zik.android.isBassBoostEnabled
 import app.n_zik.android.typography
 import app.n_zik.android.utils.bassboostLevelKey
+import app.n_zik.android.utils.bassboostEnabledKey
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.blurStrengthKey
@@ -127,6 +127,7 @@ class PlaybackSettingsMenu private constructor(
         }
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
+        val bassBoostEnabled by rememberPreference(bassboostEnabledKey, false)
         val volumeNormalization by rememberPreference(volumeNormalizationKey, false)
         var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5f)
         var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
@@ -275,7 +276,7 @@ class PlaybackSettingsMenu private constructor(
                 defaultValue = 0f,
                 drawValuePoints = true,
                 onReset = { bassBoost = 0f },
-                isEnabled = isBassBoostEnabled()
+                isEnabled = bassBoostEnabled
             )
 
             // Loudness Base Gain
@@ -331,6 +332,7 @@ class PlaybackSettingsMenu private constructor(
         var playbackDuration by rememberPreference(playbackDurationKey, 0f)
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
+        val bassBoostEnabled by rememberPreference(bassboostEnabledKey, false)
         val volumeNormalization by rememberPreference(volumeNormalizationKey, false)
         var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5f)
         var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
@@ -497,7 +499,7 @@ class PlaybackSettingsMenu private constructor(
                     defaultValue = 0f,
                     drawValuePoints = true,
                     onReset = { bassBoost = 0f },
-                    isEnabled = isBassBoostEnabled()
+                    isEnabled = bassBoostEnabled
                 )
             }
 
@@ -507,7 +509,7 @@ class PlaybackSettingsMenu private constructor(
                     icon = R.drawable.volume_up,
                     value = tempLoudnessGain,
                     toDisplay = { stringResource(R.string.player_decibels_value, it) },
-                    onValueChange = { tempLoudnessGain = kotlin.math.round(it * 100f) / 100f },
+                    onValueChange = { tempLoudnessGain = it },
                     onSlideComplete = { loudnessBaseGain = tempLoudnessGain },
                     valueRange = -20f..20f,
                     onReset = {
@@ -527,7 +529,7 @@ class PlaybackSettingsMenu private constructor(
                     icon = R.drawable.volume_up,
                     value = tempVolumeBoost,
                     toDisplay = { stringResource(R.string.player_decibels_value, it) },
-                    onValueChange = { tempVolumeBoost = kotlin.math.round(it * 100f) / 100f },
+                    onValueChange = { tempVolumeBoost = it },
                     onSlideComplete = { volumeBoostLevel = tempVolumeBoost },
                     valueRange = -30f..30f,
                     onReset = {
@@ -618,6 +620,7 @@ class PlaybackSettingsMenu private constructor(
                     )
                     .clip(uiRoundnessShape())
                     .combinedClickable(
+                        enabled = isEnabled,
                         onLongClick = onReset,
                         onClick = {}
                     ),
@@ -653,8 +656,9 @@ class PlaybackSettingsMenu private constructor(
 
             SliderControl(
                 state = value,
-                onSlide = { if (isEnabled) onValueChange(it) },
-                onSlideComplete = onSlideComplete,
+                onSlide = onValueChange,
+                onSlideComplete = { if (isEnabled) onSlideComplete() },
+                isEnabled = isEnabled,
                 toDisplay = displayValue,
                 range = valueRange,
                 stepSize = stepSize,
@@ -681,9 +685,9 @@ class PlaybackSettingsMenu private constructor(
         defaultValue: Float? = null,
         drawValuePoints: Boolean = false
     ) {
-        var isShowingDialog by remember { mutableStateOf(false) }
+        var isShowingDialog by remember(isEnabled) { mutableStateOf(false) }
 
-        DialogPresence(visible = isShowingDialog) {
+        DialogPresence(visible = isShowingDialog && isEnabled) {
             SliderDialog(
                 title = title,
                 icon = icon,
@@ -692,9 +696,9 @@ class PlaybackSettingsMenu private constructor(
                 stepSize = stepSize,
                 defaultValue = defaultValue,
                 drawValuePoints = drawValuePoints,
-                onValueChange = onValueChange,
-                onSlideComplete = onSlideComplete,
-                onReset = onReset,
+                onValueChange = { if (isEnabled) onValueChange(it) },
+                onSlideComplete = { if (isEnabled) onSlideComplete() },
+                onReset = { if (isEnabled) onReset() },
                 toDisplay = toDisplay,
                 onDismiss = { isShowingDialog = false }
             )
@@ -704,6 +708,7 @@ class PlaybackSettingsMenu private constructor(
             text = title,
             icon = { SettingIcon(icon) },
             subtitle = toDisplay(value),
+            enabled = isEnabled,
             onClick = { isShowingDialog = true },
             trailingContent = {
                 Icon(
