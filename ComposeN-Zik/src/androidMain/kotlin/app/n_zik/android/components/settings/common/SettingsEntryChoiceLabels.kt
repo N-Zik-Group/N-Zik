@@ -1,8 +1,12 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.listentogether.ListenTogetherServers
 import java.net.Proxy
+import java.time.DayOfWeek
+import java.time.format.TextStyle
 import java.util.Locale
 import app.n_zik.android.components.settings.other.proxyModeLabel
+import app.n_zik.android.core.backup.ui.AutoBackupRetentionOptions
 import app.n_zik.android.utils.minutesLabel
 import app.n_zik.android.utils.secondsLabel
 
@@ -121,6 +125,12 @@ internal fun settingsEntryChoiceLabels(
         "appearance.player_behavior_and_visuals.songs_number_to_show" to SongsNumber.entries.map { it.name },
         "general.playback.min_listening_time" to ExoPlayerMinTimeForEvent.entries.map { secondsLabel(it.asSeconds, locale) },
         "other.proxy.proxy_mode" to Proxy.Type.values().map { proxyModeLabel(it, resolveString) },
+        "other.proxy.settings_region_override" to resources(R.string.network_proxy_region_auto),
+        "embedded.listen_together.listen_together_server_url" to
+            ListenTogetherServers.servers.flatMap { server ->
+                val location = resolveString(server.locationRes)
+                listOf(server.name, location, "${server.name} - $location")
+            },
         "accounts.sync_data_with_ytm_account.sync_direction" to SyncDirection.entries.map { resolveString(it.stringResource) },
         "network.quality.audio_quality_format" to
             resources(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_low),
@@ -156,6 +166,12 @@ internal fun settingsEntryChoiceLabels(
             MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.common_limit_unlimited_label) else it.name },
         "general.queue_management.max_songs_in_queue_android_auto" to
             MaxSongs.entries.map { if (it == MaxSongs.Unlimited) resolveString(R.string.common_limit_unlimited_label) else it.name },
+        "embedded.auto_backup.auto_backup_max_backups" to AutoBackupRetentionOptions.map {
+            if (it == -1) resolveString(R.string.common_limit_unlimited_label) else it.toString()
+        },
+        "embedded.auto_backup.auto_backup_schedule_day_of_week" to DayOfWeek.values().map {
+            it.getDisplayName(TextStyle.FULL_STANDALONE, locale)
+        },
         "data.cache.image_cache_max_size" to CoilDiskCacheMaxSize.entries.map { cacheLabel(it.name) },
         "data.cache.song_cache_max_size" to ExoPlayerDiskCacheMaxSize.entries.map { cacheLabel(it.name) },
         "data.cache.song_download_max_size" to ExoPlayerDiskDownloadCacheMaxSize.entries.map { cacheLabel(it.name) },

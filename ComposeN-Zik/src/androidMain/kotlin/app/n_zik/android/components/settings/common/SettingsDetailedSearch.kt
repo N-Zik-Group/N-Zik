@@ -5,12 +5,27 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import java.lang.ref.WeakReference
-import java.text.Normalizer
-import java.util.Locale
+import app.n_zik.android.components.search.normalizeSearchText
+import app.n_zik.android.components.search.filterSearchHistory
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.accounts.DiscordButtonField
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
+import app.n_zik.android.components.settings.appearance.PlayerSongSwipeSetting
+import app.n_zik.android.components.settings.isLastFmSettingsAvailable
+import app.n_zik.android.components.settings.data.storageCleanupSearchLabels
 import app.n_zik.android.components.settings.ui.GlassSearchOptions
 import app.n_zik.android.components.settings.ui.GlassSearchParent
+import app.n_zik.android.components.settings.ui.GlassSectionGroupTitles
 import app.n_zik.android.components.settings.ui.glassSearchOption
+import app.n_zik.android.components.settings.ui.isGlassSearchLabelSupported
+import app.n_zik.android.extensions.pip.supportsPictureInPicture
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.updater.models.UpdateEndpoints
+import app.n_zik.android.utils.isAtLeastAndroid12
+import app.n_zik.android.utils.isAtLeastAndroid13
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.utils.preferences
 
 val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
     val entriesByCard = (SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets +
@@ -30,31 +45,74 @@ val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
     }
 }
 
-private val combiningMarks = Regex("\\p{M}+")
-private val settingsWhitespace = Regex("\\s+")
+private val settingsSearchSeparators = Regex("[&/／＆›]+")
+private val settingsCountedLabelNumber = Regex("(?<!\\p{Nd})\\p{Nd}{1,4}(?!\\p{Nd})")
 
-internal fun normalizedSettingsText(text: String): String = Normalizer.normalize(text, Normalizer.Form.NFD)
-    .replace(combiningMarks, "").lowercase(Locale.ROOT).trim().replace(settingsWhitespace, " ")
+internal fun normalizedSettingsText(text: String): String =
+    normalizeSearchText(text.replace(settingsSearchSeparators, " "))
+
+/** Matches reversed terms and word prefixes without combining terms from unrelated labels. */
+internal fun matchesSettingsTerms(words: Set<String>, queryTerms: List<String>): Boolean {
+    if (queryTerms.size < 2 || words.size < queryTerms.size) return false
+    val remaining = words.toMutableSet()
+    return queryTerms.all { term ->
+        val word = if (term in remaining) term else
+            remaining.firstOrNull { term.length >= 2 && it.startsWith(term) }
+        word != null && remaining.remove(word)
+    }
+}
+
+internal fun filterSettingsSearchHistory(queries: List<String>, input: String): List<String> =
+    filterSearchHistory(queries, input, ::normalizedSettingsText)
 
 /** Searches a configuration-specific index without resolving resources on each keystroke. */
-fun searchSettingsEntries(context: Context, query: String): List<SettingsEntryTarget> {
+fun searchSettingsEntries(context: Context, query: String): List<SettingsEntryTarget> =
+    searchSettingsEntries(context, query, isYouTubeSyncBuild())
+
+internal fun searchSettingsEntries(
+    context: Context,
+    query: String,
+    youtubeSyncSupported: Boolean,
+    lastFmSupported: Boolean = isLastFmSettingsAvailable(),
+): List<SettingsEntryTarget> {
     if (query.isBlank()) return emptyList()
-    return settingsEntrySearchIndex(context.resources).search(query)
+    val resources = context.resources
+    val activeSwipeSetting = PlayerSongSwipeSetting.forLayout(
+        context.preferences.getEnum(playerTypeKey, PlayerType.Essential),
+        resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+    )
+    return settingsEntrySearchIndex(resources).search(query) { id, count ->
+        resources.getQuantityString(id, count, count)
+    }.filter { result ->
+        when {
+            !youtubeSyncSupported && result.requiresYouTubeSyncBuild() -> false
+            !lastFmSupported && result.cardTitleRes == R.string.settings_lastfm_title -> false
+            result.id.startsWith("general.picture_in_picture.") &&
+                result.id != "general.picture_in_picture.settings_enable_pip" -> supportsPictureInPicture(context)
+            result.cardTitleRes == R.string.glass_effect_title -> isGlassSearchLabelSupported(context, result.labelRes)
+            PlayerSongSwipeSetting.entries.any { it.target == result.id } -> result.id == activeSwipeSetting.target
+            else -> true
+        }
+    }
 }
 
 internal class SettingsEntrySearchIndex(
     entries: List<SettingsEntryTarget>,
     descriptions: Map<String, Int>,
     choiceLabels: ((Int) -> String) -> Map<String, List<String>> = { emptyMap() },
+    scopeTitles: (SettingsEntryTarget) -> List<Int> = { listOfNotNull(it.searchScopeTitleRes()) },
     resolveString: (Int) -> String,
 ) {
     private data class IndexedEntry(
         val target: SettingsEntryTarget,
-        val label: String,
+        val labels: List<String>,
+        val labelTerms: List<Set<String>>,
         val keywords: List<String>,
         val choices: List<String>,
+        val scopes: List<String>,
+        val scopeTerms: List<Set<String>>,
         val qualifiedLabels: List<String>,
-        val qualifiedTerms: Set<String>,
+        val qualifiedTerms: List<Set<String>>,
     )
 
     private val entries: List<IndexedEntry>
@@ -66,36 +124,63 @@ internal class SettingsEntrySearchIndex(
         fun normalizedResource(id: Int) = normalizedStrings.getOrPut(id) { normalizedSettingsText(resource(id)) }
         val choices = choiceLabels(::resource)
         this.entries = entries.map { entry ->
-            val label = normalizedResource(entry.labelRes)
-            val scope = entry.searchScopeTitleRes()?.let(::normalizedResource)
+            val buttonField = DiscordButtonField.forTarget(entry.id)
+            val labels = if (entry.id == AboutAuthorSettingsTarget) listOf(
+                normalizedSettingsText(aboutAuthorSearchLabel(::resource)),
+                normalizedSettingsText(UpdateEndpoints.REAL_OWNER),
+            ).distinct() else listOfNotNull(
+                normalizedResource(entry.labelRes),
+                buttonField?.let { normalizedSettingsText(it.title(::resource)) },
+                buttonField?.let { normalizedSettingsText(it.title(::resource, separator = " ")) },
+            ).distinct()
+            val scopes = scopeTitles(entry).map(::normalizedResource).filter { it.isNotEmpty() && it !in labels }.distinct()
+            val indexedChoices = if (entry.id.startsWith("glass.")) {
+                glassSearchOption(entry.id)?.choiceRes.orEmpty().map(::normalizedResource)
+            } else {
+                choices[entry.id].orEmpty().map(::normalizedSettingsText)
+            }
             IndexedEntry(
                 entry,
-                label,
-                (entry.keywordRes + listOfNotNull(descriptions[entry.id])).map(::normalizedResource),
-                choices[entry.id].orEmpty().map(::normalizedSettingsText).distinct(),
-                scope?.let { listOf("$it $label", "$label $it", "$it › $label") }.orEmpty(),
-                scope?.let { "$it $label".split(' ').toSet() }.orEmpty(),
+                labels,
+                labels.map { it.split(' ').toSet() },
+                (entry.keywordRes + listOfNotNull(descriptions[entry.id]) + storageCleanupSearchLabels(entry.id))
+                    .map(::normalizedResource),
+                indexedChoices.distinct(),
+                scopes,
+                scopes.map { it.split(' ').toSet() },
+                scopes.flatMap { scope -> labels.flatMap { listOf("$scope $it", "$it $scope") } },
+                scopes.flatMap { scope -> labels.map { "$scope $it".split(' ').toSet() } },
             )
         }
     }
 
-    fun search(query: String): List<SettingsEntryTarget> {
+    fun search(query: String, resolveCountedLabel: ((Int, Int) -> String)? = null): List<SettingsEntryTarget> {
         val needle = normalizedSettingsText(query)
         if (needle.isEmpty()) return emptyList()
-        val tokens = needle.split(' ')
+        val tokens = needle.split(' ').sortedByDescending(String::length)
+        val count = settingsCountedLabelNumber.find(needle)?.value?.takeUnless { it == needle }?.toIntOrNull()
         // Keep the original four ranks; available choices are a lower-priority fallback.
         val matches = Array(5) { mutableListOf<SettingsEntryTarget>() }
         entries.forEach { entry ->
-            val label = entry.label
+            val labels = entry.labels
+            val countedLabel = if (count != null && resolveCountedLabel != null) {
+                entry.target.countedLabelRes?.let { normalizedSettingsText(resolveCountedLabel(it, count)) }
+            } else null
             val score = when {
-                label == needle -> 0
-                label.startsWith(needle) -> 1
-                label.contains(needle) -> 2
-                entry.qualifiedLabels.any { it.contains(needle) } -> 3
-                tokens.size > 1 && entry.qualifiedTerms.containsAll(tokens) -> 3
-                entry.keywords.any { it.contains(needle) || "$label $it" == needle } -> 3
+                needle in labels || countedLabel == needle -> 0
+                labels.any { it.startsWith(needle) } || countedLabel?.startsWith(needle) == true -> 1
+                labels.any { it.contains(needle) } || entry.labelTerms.any { matchesSettingsTerms(it, tokens) } -> 2
+                tokens.size > 1 && entry.scopes.none { it.contains(needle) } &&
+                    entry.scopeTerms.none { matchesSettingsTerms(it, tokens) } &&
+                    (entry.qualifiedLabels.any { it.contains(needle) } || entry.qualifiedTerms.any { matchesSettingsTerms(it, tokens) }) -> 3
+                entry.keywords.any { keyword -> keyword.contains(needle) || labels.any { "$it $keyword" == needle } } -> 3
                 entry.choices.any { choice ->
-                    choice.contains(needle) || tokens.all { label.contains(it) || choice.contains(it) }
+                    choice.contains(needle) || labels.any { label -> tokens.all { label.contains(it) || choice.contains(it) } } ||
+                        (entry.target.cardTitleRes == R.string.glass_effect_title && entry.scopeTerms.any { scope ->
+                            tokens.any { it in scope && !choice.contains(it) } &&
+                                tokens.any { it !in scope && choice.contains(it) } &&
+                                tokens.all { it in scope || choice.contains(it) }
+                        })
                 } -> 4
                 else -> return@forEach
             }
@@ -116,10 +201,21 @@ internal fun settingsEntrySearchIndex(resources: Resources): SettingsEntrySearch
         return previous
     }
     return SettingsEntrySearchIndex(
-        AllSettingsEntryTargets,
+        AllSettingsEntryTargets.filter {
+            when (it.id) {
+                "general.app_behavior.close_app_with_back_button" -> isAtLeastAndroid13
+                "general.picture_in_picture.settings_enable_pip_auto" -> isAtLeastAndroid12
+                else -> true
+            }
+        },
         SettingsEntryDescriptions,
-        { resolve -> settingsEntryChoiceLabels(resolve, resources.configuration.locales[0]) { id, count -> resources.getQuantityString(id, count, count) } },
-        resources::getString,
+        choiceLabels = { resolve ->
+            settingsEntryChoiceLabels(resolve, resources.configuration.locales[0]) { id, count ->
+                resources.getQuantityString(id, count, count)
+            }
+        },
+        scopeTitles = SettingsEntryTarget::qualifiedSearchTitleResources,
+        resolveString = resources::getString,
     ).also {
         cachedResources = WeakReference(resources)
         // Resources mutates its Configuration in place when the app language changes.
@@ -129,18 +225,32 @@ internal fun settingsEntrySearchIndex(resources: Resources): SettingsEntrySearch
 }
 
 /** Resolves the card containing an exact search target. */
-fun SettingsEntryTarget.parentCard(): SettingsCardRegistryEntry =
-    if (id.startsWith("glass.")) GlassSearchParent else
-        SettingsCards.first { it.tab == tab && it.titleRes == cardTitleRes }
+fun SettingsEntryTarget.parentCard(searchCategoryId: String? = null): SettingsCardRegistryEntry = when {
+    id.startsWith("glass.") -> GlassSearchParent
+    id == SettingsResetDownloadsTarget && searchCategoryId == "system" ->
+        SettingsCards.first { it.tab == tab && it.titleRes == R.string.settings_reset }
+    else -> SettingsCards.first { it.tab == tab && it.titleRes == cardTitleRes }
+}
 
 /** Localized location shown before navigation, using the same parent and subgroup as routing. */
-fun SettingsEntryTarget.locationDescription(context: Context): String {
-    val card = parentCard()
+fun SettingsEntryTarget.locationDescription(context: Context, searchCategoryId: String? = null): String {
+    val card = parentCard(searchCategoryId)
     val category = OrganizedSettingsCategories.first { it.id == card.categoryId() }
+    val glassSection = glassSearchOption(id)?.sectionTitle
     val nested = nestedDestination
     val opener = nested?.let { destination -> AllSettingsEntryTargets.firstOrNull { it.id == destination.openerId } }
+    if ((id == SettingsResetDownloadsTarget && category.id == "system") ||
+        id in setOf(SettingsResetAllTarget, SettingsResetChooserTarget, SettingsResetGlassTarget,
+            SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget)
+    ) {
+        return listOf(R.string.settings_title, R.string.settings_category_system, R.string.settings_reset)
+            .joinToString(" › ", transform = context::getString)
+    }
     return listOfNotNull(context.getString(R.string.settings_title), context.getString(category.labelRes).takeUnless { id.startsWith("glass.") }, card.displayTitle(context),
-        glassSearchOption(id)?.let { context.getString(it.sectionTitle) },
+        card.groupTitleRes?.let(context::getString),
+        glassSection?.let(GlassSectionGroupTitles::get)?.let(context::getString),
+        glassSection?.let(context::getString),
+        groupTitleRes?.let(context::getString),
         paletteTitleRes?.let(context::getString),
         opener?.let { context.getString(it.labelRes) },
         nested?.sectionTitleRes?.let(context::getString))
@@ -148,22 +258,43 @@ fun SettingsEntryTarget.locationDescription(context: Context): String {
 }
 
 /** Uses the same destination for global and category results, including dedicated settings pages. */
-fun SettingsEntryTarget.destinationRoute(context: Context): String {
+fun SettingsEntryTarget.destinationRoute(context: Context, searchCategoryId: String? = null): String {
     if (id.startsWith("glass.")) return "$SETTINGS_GLASS_ROUTE?target=${Uri.encode(id)}"
-    val card = parentCard()
+    val card = parentCard(searchCategoryId)
     val parent = Uri.encode(settingsCardTargetId(context, card.tab, card.titleRes))
     return "settingsCategory/${card.categoryId()}?target=${Uri.encode(id)}&parent=$parent"
 }
 
 /** Qualifies labels shared by multiple search targets. */
 fun SettingsEntryTarget.searchResultTitle(context: Context): String {
-    val label = context.getString(labelRes)
+    if (labelRes == R.string.settings_reset) return parentCard().displayTitle(context)
+    if (id == AboutAuthorSettingsTarget) return aboutAuthorSearchLabel(context::getString)
+    val label = DiscordButtonField.forTarget(id)?.title(context::getString) ?: context.getString(labelRes)
     return searchScopeTitleRes()?.let { "${context.getString(it)} › $label" } ?: label
 }
 
 private fun SettingsEntryTarget.searchScopeTitleRes(): Int? =
     when {
         id.startsWith("glass.") -> R.string.glass_effect_title
+        id == SettingsResetListenTogetherTarget || id == SettingsResetPlaybackTarget -> R.string.settings_reset
         labelRes == R.string.github_app_installation -> R.string.common_brand_github
-        else -> paletteTitleRes
+        else -> paletteTitleRes ?: nestedDestination?.sectionTitleRes
     }
+
+private fun SettingsEntryTarget.qualifiedSearchTitleResources(): List<Int> {
+    val card = parentCard()
+    val opener = nestedDestination?.openerId?.let { id -> settingsEntriesById[id] }
+    val glassSectionTitle = glassSearchOption(id)?.sectionTitle
+    return listOfNotNull(
+        searchScopeTitleRes(),
+        card.titleRes,
+        card.groupTitleRes,
+        groupTitleRes,
+        glassSectionTitle,
+        glassSectionTitle?.let(GlassSectionGroupTitles::get),
+        opener?.labelRes,
+        nestedDestination?.sectionTitleRes,
+    ).distinct()
+}
+
+private val settingsEntriesById by lazy { AllSettingsEntryTargets.associateBy { it.id } }

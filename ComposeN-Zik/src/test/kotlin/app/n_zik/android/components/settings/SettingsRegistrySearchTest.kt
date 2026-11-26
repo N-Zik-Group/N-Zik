@@ -3,6 +3,7 @@ package app.n_zik.android.components.settings
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.R
@@ -15,17 +16,36 @@ import app.n_zik.android.components.settings.common.SettingsCards
 import app.n_zik.android.components.settings.common.SettingsPageGroups
 import app.n_zik.android.components.settings.common.SettingsPageItems
 import app.n_zik.android.components.settings.common.SettingsUpdateItem
+import app.n_zik.android.components.settings.common.UpdaterSettingsOption
+import app.n_zik.android.components.settings.common.updaterSettingsOptionForQuery
+import app.n_zik.android.components.settings.common.RewindNotificationSectionTarget
+import app.n_zik.android.components.settings.common.RewindPlaylistSectionTarget
+import app.n_zik.android.components.settings.common.duplicatesCategoryResult
 import app.n_zik.android.components.settings.common.SettingsGlassItem
+import app.n_zik.android.components.settings.common.SettingsThemeStoreCreatorItem
 import app.n_zik.android.components.settings.common.SettingsThemeStoreItem
 import app.n_zik.android.components.settings.common.SETTINGS_GLASS_ROUTE
 import app.n_zik.android.components.settings.common.SETTINGS_THEME_STORE_ROUTE
 import app.n_zik.android.components.settings.common.isGlassSettingsLink
+import app.n_zik.android.components.settings.common.hasAutoUpdate
+import app.n_zik.android.components.settings.common.isThemeStoreCreatorPage
+import app.n_zik.android.components.settings.common.searchSettingsCardResults
 import app.n_zik.android.components.settings.common.searchSettingsCards
+import app.n_zik.android.components.settings.common.SettingsResetListenTogetherTarget
+import app.n_zik.android.components.settings.common.destinationRoute
+import app.n_zik.android.components.settings.common.SettingsEntryTarget
 import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.searchSettingsPageItems
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.appearance.PlayerSongSwipeSetting
+import app.n_zik.android.components.settings.ui.GlassSearchOptions
 import app.n_zik.android.components.settings.ui.glassDestinationKeywordResources
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.listentogether.ListenTogetherServers
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.putEnum
 import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -57,6 +77,61 @@ class SettingsRegistrySearchTest {
                 .filter { it.parentCard().categoryId() == "youtube" }
             assertTrue("$query should find the corresponding entry on the YouTube page", inYouTubePage.any { it.labelRes == title })
         }
+    }
+
+    @Test
+    fun unsupportedYouTubeSyncDetailsAreHiddenButTheMasterStaysDiscoverable() {
+        val english = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.ENGLISH) },
+        )
+        mapOf(
+            R.string.sync_status_detail to R.string.sync_data_with_ytm_account,
+            R.string.sync_channels to R.string.sync_imported_playlists_automatic_title,
+            R.string.sync_import_history to R.string.sync_import_from_youtube,
+            R.string.sync_push_song_like to R.string.sync_push_to_youtube,
+        ).forEach { (label, card) ->
+            val query = english.getString(label)
+            fun matchesSyncRow(entry: SettingsEntryTarget) = entry.labelRes == label && entry.cardTitleRes == card
+            assertTrue(query, searchSettingsEntries(english, query, youtubeSyncSupported = true).any(::matchesSyncRow))
+            assertTrue(query, searchSettingsCards(english, query, youtubeSyncSupported = true).any { it.titleRes == card })
+            assertTrue(query, searchSettingsEntries(english, query, youtubeSyncSupported = false).none(::matchesSyncRow))
+            if (card != R.string.sync_data_with_ytm_account) {
+                assertTrue(query, searchSettingsCards(english, query, youtubeSyncSupported = false).none { it.titleRes == card })
+            }
+        }
+
+        val master = english.getString(R.string.sync_data_with_ytm_account)
+        assertTrue(searchSettingsEntries(english, master, youtubeSyncSupported = false)
+            .any { it.labelRes == R.string.sync_data_with_ytm_account })
+        assertTrue(searchSettingsCards(english, master, youtubeSyncSupported = false)
+            .any { it.titleRes == R.string.sync_data_with_ytm_account })
+    }
+
+    @Test
+    fun lastFmSearchOnlyIndexesBuildsWithBothCredentials() {
+        val title = context.getString(R.string.settings_lastfm_title)
+        val query = context.getString(R.string.lastfm_enable_scrobbling)
+        for ((key, secret) in listOf("test-key" to "test-secret", "" to "test-secret", "test-key" to "")) {
+            val available = isLastFmSettingsAvailable(key, secret)
+            assertEquals(key.isNotBlank() && secret.isNotBlank(), available)
+            assertEquals(available, searchSettingsCardResults(context, title, lastFmSupported = available)
+                .any { it.titleRes == R.string.settings_lastfm_title })
+            assertEquals(available, searchSettingsEntries(context, query, youtubeSyncSupported = true, lastFmSupported = available)
+                .any { it.id == "embedded.lastfm.lastfm_enable_scrobbling" && it.parentCard().categoryId() == "services" })
+        }
+    }
+
+    @Test
+    fun deviceWideListenTogetherResetIsSearchableUnderSystem() {
+        val query = "${context.getString(R.string.settings_reset)} ${context.getString(R.string.listen_together_title)}"
+        val target = searchSettingsEntries(context, query).single { it.id == SettingsResetListenTogetherTarget }
+        assertTrue(target.destinationRoute(context).startsWith("settingsCategory/system?"))
+    }
+
+    @Test
+    fun glassChoiceLabelsDoNotGetTheHigherKeywordRank() {
+        assertTrue(GlassSearchOptions.any { it.choiceRes.isNotEmpty() })
+        assertTrue(GlassSearchOptions.all { option -> option.choiceRes.none(option.target.keywordRes::contains) })
     }
 
     @Test
@@ -96,6 +171,32 @@ class SettingsRegistrySearchTest {
     }
 
     @Test
+    @Config(sdk = [32])
+    fun glassSearchHidesRefractionOnDevicesWithBlurOnly() {
+        val refraction = context.getString(R.string.glass_effect_refraction_depth)
+        val blur = context.getString(R.string.glass_effect_frost)
+
+        assertTrue(searchSettingsEntries(context, refraction).none { it.id == "glass.refractionDepth" })
+        assertTrue(SettingsGlassItem !in searchSettingsPageItems(context, refraction))
+        assertTrue(searchSettingsEntries(context, blur).any { it.id == "glass.blur" })
+    }
+
+    @Test
+    fun glassModeSearchMatchesItsDestinationGroupInEitherOrder() {
+        val mode = context.getString(R.string.glass_effect_mode_contour_only)
+        val group = context.getString(R.string.glass_effect_destination_navigation)
+        fun modeResults(query: String) = searchSettingsEntries(context, query)
+            .filter { it.id.startsWith("glass.") }.map { it.id }
+
+        val row = context.getString(R.string.glass_effect_navigation_bars)
+        for (scope in listOf(group, row)) {
+            val modeFirst = modeResults("$mode $scope")
+            assertTrue(modeFirst.isNotEmpty())
+            assertEquals(modeFirst, modeResults("$scope $mode"))
+        }
+    }
+
+    @Test
     fun everyVisibleGlassDestinationAndRoleFindsTheDedicatedPage() {
         listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
             val localized = context.createConfigurationContext(
@@ -118,6 +219,68 @@ class SettingsRegistrySearchTest {
             val results = searchSettingsPageItems(english, query)
             assertEquals(query, listOf(SettingsGlassItem), results)
             assertEquals(SETTINGS_GLASS_ROUTE, results.single().route)
+        }
+    }
+
+    @Test
+    fun creatorActionsFindTheCreatorTabInBothEnglishAndFrench() {
+        assertTrue(SettingsThemeStoreCreatorItem !in SettingsPageItems)
+        assertEquals("${NavRoutes.themeStore.name}?tab=creator", SettingsThemeStoreCreatorItem.route)
+        listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
+            val localized = context.createConfigurationContext(
+                Configuration(context.resources.configuration).apply { setLocale(locale) },
+            )
+            val store = localized.getString(SettingsThemeStoreItem.labelRes)
+            val creator = localized.getString(SettingsThemeStoreCreatorItem.labelRes)
+            listOf(
+                "$store $creator",
+                "$creator › $store",
+            ).forEach { query ->
+                assertTrue("$locale: $query", SettingsThemeStoreCreatorItem in searchSettingsPageItems(localized, query))
+            }
+            mapOf(
+                R.string.theme_store_creator_profile to "profile",
+                R.string.theme_store_edit_creator to "profile",
+                R.string.theme_store_creator_identity to "public-information",
+                R.string.theme_store_creator_publish to "publish-profile",
+                R.string.theme_store_creator_publish_theme to "publish",
+                R.string.theme_store_creator_submissions to "submissions",
+                R.string.theme_store_create_local to "create-local",
+                R.string.theme_store_edit_local to "edit-local",
+                R.string.theme_store_local_themes to "create-local",
+                R.string.theme_store_creator_my_themes to "my-themes",
+            ).forEach { (label, target) ->
+                val query = localized.getString(label)
+                val result = searchSettingsPageItems(localized, query).single { it.isThemeStoreCreatorPage() }
+                assertEquals("$locale: $query", "${SettingsThemeStoreCreatorItem.route}&target=$target", result.route)
+                assertEquals("$locale: $query", label, result.labelRes)
+            }
+            assertTrue(
+                SettingsThemeStoreCreatorItem !in searchSettingsPageItems(localized, store),
+            )
+        }
+        val french = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.FRENCH) },
+        )
+        assertTrue(searchSettingsPageItems(french, "profil auteur").any { it.isThemeStoreCreatorPage() })
+    }
+
+    @Test
+    fun updaterSearchMatchesDisplayedStatusesAndInstalledVersion() {
+        val english = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.ENGLISH) },
+        )
+        val automaticCheck = english.getString(R.string.updates_automatic_check_title)
+        val betaUpdates = english.getString(R.string.updates_beta_enabled_label)
+        val redownload = english.getString(R.string.updates_action_download_current_version)
+        val automaticStates = listOf(R.string.common_state_on, R.string.updates_check_mode_ask, R.string.common_state_off)
+        val queries = automaticStates.map { "$automaticCheck: ${english.getString(it)}" to UpdaterSettingsOption.AutomaticCheck } +
+            listOf(R.string.common_state_on, R.string.common_state_off).map {
+                "$betaUpdates: ${english.getString(it)}" to UpdaterSettingsOption.BetaUpdates
+            } + ("$redownload (1.18.3)" to UpdaterSettingsOption.DownloadCurrentVersion)
+        queries.forEach { (query, target) ->
+            assertEquals(query, target, updaterSettingsOptionForQuery(english, query, autoUpdate = true, versionName = "1.18.3"))
+            assertEquals(query, null, updaterSettingsOptionForQuery(english, query, autoUpdate = false, versionName = "1.18.3"))
         }
     }
 
@@ -190,9 +353,9 @@ class SettingsRegistrySearchTest {
         val results = searchSettingsPageItems(context, "update")
         assertEquals(listOf(SettingsUpdateItem), results)
 
-        // Case-insensitive; all three of the Update item's keywords match.
-        assertEquals(listOf(SettingsUpdateItem), searchSettingsPageItems(context, "CHECK UPDATE"))
-        assertEquals(listOf(SettingsUpdateItem), searchSettingsPageItems(context, "update available"))
+        val actionResults = if (hasAutoUpdate()) listOf(SettingsUpdateItem) else emptyList()
+        assertEquals(actionResults, searchSettingsPageItems(context, "CHECK UPDATE"))
+        assertEquals(actionResults, searchSettingsPageItems(context, "update available"))
 
         // Category labels are not part of the item-level index.
         assertTrue(searchSettingsPageItems(context, context.getString(R.string.about_title)).isEmpty())
@@ -201,6 +364,63 @@ class SettingsRegistrySearchTest {
         assertTrue(searchSettingsPageItems(context, "").isEmpty())
         assertTrue(searchSettingsPageItems(context, "   ").isEmpty())
         assertTrue(searchSettingsPageItems(context, "zzz_no_match").isEmpty())
+    }
+
+    @Test
+    fun displayedProxyAndServerChoicesFindTheExactSettings() {
+        val regionChoice = context.getString(R.string.network_proxy_region_auto)
+        val server = ListenTogetherServers.servers.first()
+        val serverChoice = "${server.name} - ${context.getString(server.locationRes)}"
+        assertTrue(searchSettingsEntries(context, regionChoice).any { it.id == "other.proxy.settings_region_override" })
+        assertTrue(searchSettingsEntries(context, serverChoice).any { it.id == "embedded.listen_together.listen_together_server_url" })
+    }
+
+    @Test
+    fun rewindSectionTitlesFindTheirOwnTargets() {
+        val sections = mapOf(
+            R.string.rewind_settings_playlists_title to RewindPlaylistSectionTarget,
+            R.string.rewind_settings_notifications to RewindNotificationSectionTarget,
+        )
+        sections.forEach { (label, target) ->
+            val query = context.getString(label)
+            val result = searchSettingsEntries(context, query).single { it.id == target }
+            assertTrue(result.destinationRoute(context).startsWith("settingsCategory/rewind?target=$target"))
+        }
+    }
+
+    @Test
+    fun theSearchKeepsDistinctCardsAndCoalescesUnqualifiedCategoryLabels() {
+        val categories = OrganizedSettingsCategories.filter { it.id in setOf("playback", "downloads", "about") }
+        categories.forEach { category ->
+            val exactCard = cardsForCategory(category.id).single { it.titleRes == category.labelRes }
+            assertTrue(exactCard.duplicatesCategoryResult(context, categories))
+            assertTrue(cardsForCategory(category.id).filter { it != exactCard }.none { it.duplicatesCategoryResult(context, categories) })
+        }
+    }
+
+    @Test
+    fun onlyTheSwipeDirectionOfferedByTheCurrentLayoutIsSearchable() {
+        val config = Configuration(context.resources.configuration)
+        listOf(Configuration.ORIENTATION_PORTRAIT, Configuration.ORIENTATION_LANDSCAPE).forEach { orientation ->
+            config.orientation = orientation
+            val screen = context.createConfigurationContext(config)
+            listOf(PlayerType.Essential, PlayerType.Modern).forEach { layout ->
+                screen.preferences.edit { putEnum(playerTypeKey, layout) }
+                try {
+                    val visible = if (layout == PlayerType.Modern && orientation == Configuration.ORIENTATION_PORTRAIT) {
+                        PlayerSongSwipeSetting.Vertical
+                    } else {
+                        PlayerSongSwipeSetting.Horizontal
+                    }
+                    PlayerSongSwipeSetting.entries.forEach { setting ->
+                        val matches = searchSettingsEntries(screen, screen.getString(setting.labelRes))
+                        assertEquals(setting == visible, matches.any { it.id == setting.target })
+                    }
+                } finally {
+                    screen.preferences.edit { remove(playerTypeKey) }
+                }
+            }
+        }
     }
 
     @Test

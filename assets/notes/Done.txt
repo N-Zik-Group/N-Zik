@@ -740,3 +740,7 @@ Settings reset scopes:
 Appearance settings layout:
 - fix(settings): align appearance controls and their conditions
   - Group player appearance controls, populate matching search values and preserve category boundaries.
+
+Settings search index:
+- fix(settings): index displayed options and actionable destinations
+  - Match visible settings, current values and reset scopes while preserving source resource fallback.

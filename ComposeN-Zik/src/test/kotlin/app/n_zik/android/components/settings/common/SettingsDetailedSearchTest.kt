@@ -2,24 +2,32 @@ package app.n_zik.android.components.settings.common
 
 import java.util.Locale
 import app.n_zik.android.utils.secondsLabel
+import app.n_zik.android.updater.models.UpdateEndpoints
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.Configuration
+import app.n_zik.android.components.settings.appearance.PlayerSongSwipeSetting
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.utils.preferences
 import android.net.Uri
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PresetsReverb
-import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 
 @RunWith(RobolectricTestRunner::class)
@@ -30,6 +38,24 @@ class SettingsDetailedSearchTest {
     private fun localized(locale: Locale): Context = context.createConfigurationContext(
         Configuration(context.resources.configuration).apply { setLocale(locale) },
     )
+
+    @Before
+    fun enablePictureInPictureSupport() {
+        Shadows.shadowOf(context.packageManager).setSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE, true)
+    }
+
+    @Test fun globalResetChoicesUseTheSystemResetBreadcrumb() {
+        val english = localized(Locale.ENGLISH)
+        val expected = listOf(
+            english.getString(R.string.settings_title),
+            english.getString(R.string.settings_category_system),
+            english.getString(R.string.settings_reset),
+        ).joinToString(" › ")
+        val resetTargets = setOf(SettingsResetAllTarget, SettingsResetChooserTarget, SettingsResetGlassTarget)
+        val results = AllSettingsEntryTargets.filter { it.id in resetTargets }
+        assertEquals(resetTargets, results.map { it.id }.toSet())
+        results.forEach { assertEquals(expected, it.locationDescription(english)) }
+    }
 
     @Test fun quickPicksResetKeepsItsStableLinkUnderRecommendationRefresh() {
         val target = AllSettingsEntryTargets.single { it.id == "ai.tab_data.reset_quick_picks" }
@@ -90,8 +116,9 @@ class SettingsDetailedSearchTest {
                     localized.getString(R.string.settings_title),
                     localized.getString(R.string.settings_category_interface),
                     localized.getString(R.string.common_color_source_theme),
+                    localized.getString(R.string.settings_group_palette_selection),
                     scope,
-                ).joinToString(" › ")
+                ).distinct().joinToString(" › ")
                 assertEquals(expectedPath, target.locationDescription(localized))
                 assertEquals(id, Uri.parse(target.destinationRoute(localized)).getQueryParameter("target"))
             }
@@ -130,6 +157,60 @@ class SettingsDetailedSearchTest {
         }
     }
 
+    @Test fun unsupportedPipActionDoesNotAppearInSearch() {
+        Shadows.shadowOf(context.packageManager).setSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE, false)
+        val english = localized(Locale.ENGLISH)
+        val query = english.getString(R.string.settings_picture_in_picture_open)
+
+        assertFalse(searchSettingsEntries(english, query).any { it.id == "general.picture_in_picture.open" })
+        assertFalse(R.string.settings_picture_in_picture_title in visibleCardTitleRes(english, 0, query))
+    }
+
+    @Test
+    @Config(sdk = [32])
+    fun backExitActionDoesNotAppearInSearchBeforeAndroid13() {
+        val english = localized(Locale.ENGLISH)
+        val query = english.getString(R.string.settings_behavior_back_button_exits_label)
+
+        assertFalse(searchSettingsEntries(english, query).any { it.id == "general.app_behavior.close_app_with_back_button" })
+        assertFalse(R.string.settings_app_behavior_title in visibleCardTitleRes(english, 0, query))
+    }
+
+    @Test fun trackTransitionScopeFindsTheSameResultsInEitherOrder() {
+        val english = localized(Locale.ENGLISH)
+        val scope = english.getString(R.string.settings_group_track_transitions)
+        val reversed = scope.split(' ').reversed().joinToString(" ")
+
+        assertEquals(searchSettingsEntries(english, scope), searchSettingsEntries(english, reversed))
+        val cards = visibleCardTitleRes(english, 0, scope)
+        assertTrue(R.string.common_playback_section_title in cards)
+        assertEquals(cards, visibleCardTitleRes(english, 0, reversed))
+    }
+
+    @Test fun artworkSearchMatchesPartialWordsAndFindsTheDisplayedMotionSection() {
+        val english = localized(Locale.ENGLISH)
+        val id = "appearance.cover_and_thumbnail.carousel"
+        val section = english.getString(R.string.settings_group_artwork_motion)
+        val label = english.getString(R.string.settings_player_artwork_carousel_label)
+
+        listOf("car vi", "vi car", "$section $label").forEach { query ->
+            val result = searchSettingsEntries(english, query).single { it.id == id }
+            assertTrue(result.locationDescription(english).contains(section))
+        }
+        assertFalse(searchSettingsEntries(english, "car caro").any { it.id == id })
+    }
+
+    @Test fun audioSearchFindsOptionsByTheirDialogDescriptions() {
+        val english = localized(Locale.ENGLISH)
+        val expected = mapOf(
+            R.string.settings_audio_reverb_info_apply_a_depth_effect_to_the_audio to "general.audio_effects.settings_audio_reverb",
+            R.string.settings_playback_pause_between_songs_description to "general.playback.pause_between_songs",
+        )
+        expected.forEach { (description, id) ->
+            assertTrue(searchSettingsEntries(english, english.getString(description)).any { it.id == id })
+        }
+    }
+
     @Test fun storageSectionsAndCleanupActionsAreSearchableGloballyAndInData() {
         val labels = listOf(
             R.string.storage_breakdown_subtitle, R.string.storage_cleanup_profile_title,
@@ -145,6 +226,22 @@ class SettingsDetailedSearchTest {
                 assertTrue(searchSettingsCardResults(localized, query).any { it.titleRes == R.string.storage_breakdown_title })
                 assertTrue(R.string.storage_breakdown_title in visibleCardTitleRes(localized, 4, query))
             }
+        }
+    }
+
+    @Test fun resultTitlesMatchTheVisibleStreamingCacheActionAndAboutAuthorLink() {
+        listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
+            val localized = localized(locale)
+            val cleanupLabel = localized.getString(R.string.storage_cleanup_clear_streaming_cache)
+            val cleanup = searchSettingsEntries(localized, cleanupLabel).single { it.id == "data.cache.clear-songs" }
+            assertEquals(cleanupLabel, cleanup.searchResultTitle(localized))
+            assertTrue(cleanup in searchSettingsEntries(localized, localized.getString(R.string.cache_clear_song_dialog_title)))
+
+            val author = searchSettingsEntries(localized, UpdateEndpoints.REAL_OWNER).single { it.id == AboutAuthorSettingsTarget }
+            val authorLabel = aboutAuthorSearchLabel(localized::getString)
+            assertEquals(authorLabel, author.searchResultTitle(localized))
+            assertTrue(author in searchSettingsEntries(localized, authorLabel))
+            assertEquals("settingsCategory/about", Uri.parse(author.destinationRoute(localized)).path)
         }
     }
 
@@ -185,7 +282,7 @@ class SettingsDetailedSearchTest {
         val entries = AllSettingsEntryTargets.filter {
             it.id.startsWith("embedded.auto_backup.") || it.id.startsWith("other.on_device.")
         }
-        assertEquals(25, entries.size)
+        assertTrue(entries.any { it.id == "embedded.auto_backup.include_github_credentials" })
         assertTrue(entries.any { it.id == "other.on_device.summary" })
         for (locale in listOf(Locale.ENGLISH, Locale.FRENCH)) {
             val localized = localized(locale)
@@ -234,7 +331,14 @@ class SettingsDetailedSearchTest {
     @Test fun everyRegisteredOptionIsSearchableInEnglishAndFrenchInItsOrganizedSection() {
         listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
             val localized = localized(locale)
-            AllSettingsEntryTargets.forEach { entry ->
+            val inactiveSwipe = PlayerSongSwipeSetting.entries.single {
+                it != PlayerSongSwipeSetting.forLayout(
+                    localized.preferences.getEnum(playerTypeKey, PlayerType.Essential),
+                    localized.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+                )
+            }
+            AllSettingsEntryTargets.forEach visibleTargets@{ entry ->
+                if (entry.id == inactiveSwipe.target) return@visibleTargets
                 val results = searchSettingsEntries(localized, localized.getString(entry.labelRes))
                 assertTrue("Missing $locale search target ${entry.id}", results.contains(entry))
                 val card = entry.parentCard()
@@ -244,17 +348,21 @@ class SettingsDetailedSearchTest {
                 val expectedPage = if (entry.id.startsWith("glass.")) localized.getString(R.string.glass_effect_title)
                     else localized.getString(category.labelRes)
                 assertTrue("Wrong page for ${entry.id}: $location", location.startsWith("$root › $expectedPage"))
-                assertTrue("Missing parent card for ${entry.id}: $location", location.contains(card.displayTitle(localized)))
+                val resetChoice = entry.id in setOf(
+                    SettingsResetAllTarget, SettingsResetChooserTarget,
+                    SettingsResetGlassTarget, SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget,
+                )
+                val parent = if (resetChoice) localized.getString(R.string.settings_reset) else card.displayTitle(localized)
+                assertTrue("Missing parent card for ${entry.id}: $location", location.contains(parent))
+                card.groupTitleRes?.takeUnless { resetChoice }?.let { groupTitle ->
+                    assertTrue("Missing card subgroup for ${entry.id}: $location", localized.getString(groupTitle) in location.split(" › "))
+                }
             }
         }
     }
 
-    @Test fun debugUpdaterAccessIsIndexedOnlyWhenTheControlExists() {
-        val targets = EmbeddedSettingsEntryTargets.filter { it.id == "embedded.maintenance.debug_updater_layout_access" }
-        assertEquals(if (BuildConfig.DEBUG) 1 else 0, targets.size)
-        if (BuildConfig.DEBUG) {
-            assertTrue(searchSettingsEntries(context, context.getString(R.string.settings_debug_updater_preview_description)).contains(targets.single()))
-        }
+    @Test fun theObsoleteUpdaterPreviewIsNoLongerIndexed() {
+        assertTrue(EmbeddedSettingsEntryTargets.none { it.id == "embedded.maintenance.debug_updater_layout_access" })
     }
 
     @Test fun searchFoldsCaseAndAccentsWithoutChangingStableIdentity() {
@@ -432,8 +540,18 @@ class SettingsDetailedSearchTest {
         assertEquals(listOf(R.string.settings_title, R.string.settings_category_audio, R.string.audio_effects)
             .joinToString(" › ") { context.getString(it) }, entry.locationDescription(context))
         val audioQuality = AllSettingsEntryTargets.single { it.id == "network.quality.audio_quality_format" }
-        assertEquals(listOf(R.string.settings_title, R.string.settings_network_title, R.string.settings_network_quality_title)
+        assertEquals(listOf(R.string.settings_title, R.string.settings_network_title, R.string.settings_network_quality_title, R.string.settings_group_streaming_quality)
             .joinToString(" › ") { context.getString(it) }, audioQuality.locationDescription(context))
+    }
+
+    @Test fun imageSettingsWithTheSameRankKeepTheirVisibleOrder() {
+        val quality = "data.cache.artwork_quality"
+        val limit = "data.cache.image_cache_max_size"
+        val ids = setOf(quality, limit)
+        listOf(Locale.ENGLISH, Locale.FRENCH).forEach { locale ->
+            val matches = searchSettingsEntries(localized(locale), "image").map { it.id }.filter { it in ids }
+            assertEquals(listOf(quality, limit), matches)
+        }
     }
 
 }

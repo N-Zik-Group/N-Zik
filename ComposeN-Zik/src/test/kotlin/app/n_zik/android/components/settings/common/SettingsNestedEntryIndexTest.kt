@@ -10,6 +10,10 @@ import app.n_zik.android.components.dialog.settings.DockToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.LocalPlaylistSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.buildHomeTabDefs
 import app.n_zik.android.components.dialog.settings.buildShortcutDefs
+import app.n_zik.android.components.navigation.dock.artistDockTabs
+import app.n_zik.android.components.navigation.dock.searchDockTabs
+import app.n_zik.android.components.navigation.dock.searchResultDockTabs
+import app.n_zik.android.components.navigation.dock.statisticsDockTabs
 import app.n_zik.android.utils.preferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -29,7 +33,7 @@ class SettingsNestedEntryIndexTest {
         val before = context.preferences.all.toMap()
         assertTrue(SettingsNestedEntryTargets.isNotEmpty())
         assertEquals(SettingsNestedEntryTargets.size, SettingsNestedEntryTargets.map { it.id }.toSet().size)
-        assertEquals(28, SettingsNestedEntryTargets.map { requireNotNull(it.nestedDestination).dialogId }.toSet().size)
+        assertEquals(29, SettingsNestedEntryTargets.map { requireNotNull(it.nestedDestination).dialogId }.toSet().size)
         assertFalse(AllSettingsEntryTargets.any { it.id == "ui.toolbar.history" })
         SettingsNestedEntryTargets.forEach { entry ->
             val destination = requireNotNull(entry.nestedDestination)
@@ -56,10 +60,23 @@ class SettingsNestedEntryIndexTest {
         assertEquals(buildShortcutDefs().keys, shortcutEntries.map { requireNotNull(it.nestedDestination).itemId }.toSet())
         val homeEntries = SettingsNestedEntryTargets.filter { it.nestedDestination?.dialogId == "HomeTabsSettingsDialog" }
         assertEquals(buildHomeTabDefs().keys, homeEntries.map { requireNotNull(it.nestedDestination).itemId }.toSet())
-        val dock = DockToolbarSettingsDialog.searchOptions().associate { it.labelRes to it.itemId }
+        val dock = DockToolbarSettingsDialog.searchOptions().associate { it.itemId to it.labelRes }
         buildHomeTabDefs().values.forEach { definition ->
-            assertEquals(context.resources.getResourceEntryName(definition.iconRes), dock.getValue(definition.labelRes))
+            assertEquals(definition.labelRes, dock.getValue(context.resources.getResourceEntryName(definition.iconRes)))
         }
+    }
+
+    @Test fun expandedDockOrderIndexesAllMultiTabScreensAndExcludesStandalonePages() {
+        val homeIds = buildHomeTabDefs().values.map { context.resources.getResourceEntryName(it.iconRes) }
+        val otherTabs = searchDockTabs + searchResultDockTabs + statisticsDockTabs + artistDockTabs
+        otherTabs.forEach { assertEquals(it.id, context.resources.getResourceEntryName(it.iconRes)) }
+        val actual = SettingsNestedEntryTargets.filter { it.nestedDestination?.dialogId == "DockToolbarSettingsDialog" }
+        assertEquals((homeIds + otherTabs.map { it.id }).distinct(), actual.map { it.nestedDestination?.itemId })
+        assertFalse(actual.any { it.labelRes == R.string.bridge_server })
+        val video = context.getString(R.string.search_videos_title)
+        assertTrue(searchSettingsEntries(context, video).any {
+            it.nestedDestination?.dialogId == "DockToolbarSettingsDialog" && it.nestedDestination.itemId == "video"
+        })
     }
 
     @Test fun playerTabsAndQueueToolbarTargetsOpenFromTheAppearanceActionBarCard() {
@@ -86,5 +103,13 @@ class SettingsNestedEntryIndexTest {
         assertEquals(setOf("ui.home_tabs_settings.quick_picks", "ai.quick_picks.quick_picks_content"), groups.keys)
         assertEquals(groups.values.first().map { it.labelRes }, groups.values.last().map { it.labelRes })
         assertEquals(setOf("interface", "ai"), targets.map { it.parentCard().categoryId() }.toSet())
+    }
+
+    @Test fun topPlayerActionSearchFindsChoicesSharedWithTheBottomTab() {
+        val query = context.getString(R.string.player_position_top_label) + " " +
+            context.getString(R.string.settings_player_action_bar_download_visible_label)
+        val results = searchSettingsEntries(context, query)
+        assertTrue(results.any { it.nestedDestination?.itemId == "top.action.download" })
+        assertFalse(results.any { it.nestedDestination?.itemId == "download" })
     }
 }

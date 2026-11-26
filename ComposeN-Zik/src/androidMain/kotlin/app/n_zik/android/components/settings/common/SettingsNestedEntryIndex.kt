@@ -24,6 +24,7 @@ import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDia
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
 import app.n_zik.android.components.dialog.settings.customToolbarSettingsDialogs
+import app.n_zik.android.components.settings.privacy.PermissionUsageDialog
 
 private data class NestedDialogRegistration(
     val dialogId: String,
@@ -56,13 +57,14 @@ private val nestedDialogRegistrations = listOf(
     NestedDialogRegistration("BurgerMenuSettingsDialog", "embedded.burger.burger_menu", BurgerMenuSettingsDialog::searchOptions, BurgerMenuSettingsDialog),
     NestedDialogRegistration("PlayerActionBarSettingsDialog", "appearance.player_action_bar.player_action_bar_buttons", PlayerActionBarSettingsDialog::searchOptions, PlayerActionBarSettingsDialog),
     NestedDialogRegistration("MiniPlayerButtonsSettingsDialog", "appearance.timeline_and_controls.miniplayer_buttons_config", MiniPlayerButtonsSettingsDialog::searchOptions, MiniPlayerButtonsSettingsDialog),
+    NestedDialogRegistration("PermissionUsageDialog", "privacy.permissions.open", PermissionUsageDialog::searchOptions, PermissionUsageDialog),
 ) + customToolbarSettingsDialogs.map { dialog ->
     NestedDialogRegistration(dialog.dialogId, dialog.entryId, dialog::searchOptions, dialog)
 }
 
 /** Dialog options derive their IDs, resources and availability from the actual configuration source. */
 val SettingsNestedEntryTargets: List<SettingsEntryTarget> by lazy {
-    val openers = (SettingsEntryTargets + EmbeddedSettingsEntryTargets).associateBy { it.id }
+    val openers = (SettingsEntryTargets + EmbeddedSettingsEntryTargets + PrivacySettingsEntryTargets).associateBy { it.id }
     nestedDialogRegistrations.flatMap { registration ->
         val opener = openers.getValue(registration.openerId)
         registration.options().map { option ->

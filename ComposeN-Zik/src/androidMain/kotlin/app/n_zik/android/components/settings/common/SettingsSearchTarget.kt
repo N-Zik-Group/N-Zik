@@ -36,6 +36,7 @@ internal class SettingsTargetRegistry {
     var nestedTarget by mutableStateOf<SettingsEntryTarget?>(null)
     var storageProfileTarget by mutableStateOf<ProfileStorageIdentity?>(null)
     var storageEntryTarget by mutableStateOf<String?>(null)
+    var storageCleanupOpened by mutableStateOf(false)
     private var pulseGeneration = 0
 
     suspend fun blink(id: String) {

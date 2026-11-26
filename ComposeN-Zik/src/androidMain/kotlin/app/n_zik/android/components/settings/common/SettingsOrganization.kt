@@ -1,6 +1,8 @@
 package app.n_zik.android.components.settings.common
 
+import android.content.Context
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.accounts.discordSettingsCardTitle
 
 const val SETTINGS_THEME_STORE_ROUTE = "settingsThemeStore"
 const val SETTINGS_GLASS_ROUTE = "settingsGlass"
@@ -31,6 +33,24 @@ val OrganizedSettingsCategories = listOf(
     SettingsCategory("maintenance", R.string.settings_category_maintenance, R.drawable.extension, 7, R.string.settings_page_maintenance_description),
     SettingsCategory("system", R.string.settings_category_system, R.drawable.settings, 7, R.string.settings_page_system_description),
 )
+
+internal fun searchSettingsCategories(context: Context, query: String): List<SettingsCategory> {
+    val needle = normalizedSettingsText(query)
+    if (needle.isEmpty()) return emptyList()
+    val terms = needle.split(' ').sortedByDescending(String::length)
+    return OrganizedSettingsCategories.filter { category ->
+        val title = normalizedSettingsText(context.getString(category.labelRes))
+        title.contains(needle) || matchesSettingsTerms(title.split(' ').toSet(), terms) ||
+            normalizedSettingsText(context.getString(category.descriptionRes)).contains(needle)
+    }
+}
+
+internal fun ambiguousSettingsCategoryIds(
+    context: Context,
+    categories: List<SettingsCategory> = OrganizedSettingsCategories,
+): Set<String> = categories
+    .groupBy { normalizedSettingsText(context.getString(it.labelRes)) }
+    .values.filter { it.size > 1 }.flatten().map { it.id }.toSet()
 
 fun SettingsCardRegistryEntry.categoryId(): String = when {
     titleRes == R.string.settings_reset -> "system"
@@ -78,7 +98,10 @@ internal val OrganizedSettingsCards by lazy {
     OrganizedSettingsCategories.flatMap { cardsForCategory(it.id) }
 }
 
-fun SettingsCardRegistryEntry.displayTitle(context: android.content.Context): String =
-    if (titleRes == R.string.settings_reset)
-        context.getString(R.string.settings_reset_scope, context.getString(SettingsCategories.first { it.tab == tab }.labelRes))
-    else context.getString(titleRes)
+fun SettingsCardRegistryEntry.displayTitle(context: Context): String = when (titleRes) {
+    R.string.settings_reset -> context.getString(
+        R.string.settings_reset_scope, context.getString(SettingsCategories.first { it.tab == tab }.labelRes),
+    )
+    R.string.settings_discord_title -> discordSettingsCardTitle(context::getString)
+    else -> context.getString(titleRes)
+}

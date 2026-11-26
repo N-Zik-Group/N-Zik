@@ -5,9 +5,16 @@ import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDia
 import app.n_zik.android.components.dialog.settings.interfaceToolbarSettingsDialogs
 
 import android.content.Context
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
+import app.n_zik.android.components.settings.appearance.preview.THEME_STORE_CREATOR_TAB
+import app.n_zik.android.components.settings.appearance.preview.ThemeStoreCreatorTarget
 import app.n_zik.android.components.settings.ui.glassDestinationKeywordResources
+import app.n_zik.android.components.settings.ui.isGlassSearchLabelSupported
+import app.n_zik.android.updater.services.Updater
+import app.n_zik.android.utils.isAtLeastAndroid12
 
 /** Global row for a category, compatibility tab or dedicated route; descriptions feed search. */
 data class SettingsPageItem(
@@ -34,8 +41,78 @@ val SettingsUpdateItem = SettingsPageItem(
     descriptionRes = R.string.settings_global_update_description,
     group = SETTINGS_GROUP_ABOUT_UPDATE,
     route = NavRoutes.updater.name,
-    keywordRes = listOf(R.string.common_action_update, R.string.updates_action_check, R.string.updates_available),
+    keywordRes = listOf(
+        R.string.common_action_update,
+        R.string.updates_changelog_title,
+        R.string.updates_changelog_search_label,
+        R.string.updates_action_check,
+        R.string.updates_available,
+        R.string.updates_automatic_check_title,
+        R.string.updates_beta_enabled_label,
+    ),
 )
+
+internal const val UPDATER_SETTINGS_TARGET_ARGUMENT = "settingsTarget"
+internal const val UPDATER_OPEN_OPTIONS_TARGET = "options"
+
+internal enum class UpdaterSettingsOption(val routeKey: String, val labelRes: Int) {
+    Translation("translation", R.string.common_translation_title),
+    AutomaticCheck("automatic-check", R.string.updates_automatic_check_title),
+    DownloadCurrentVersion("download-current-version", R.string.updates_action_download_current_version),
+    ClearCache("clear-cache", R.string.recovery_clear_cache),
+    BetaUpdates("beta-updates", R.string.updates_beta_enabled_label);
+
+    fun labelWithValue(label: String, value: String): String = when (this) {
+        DownloadCurrentVersion -> "$label ($value)"
+        else -> "$label: $value"
+    }
+}
+
+internal fun updaterSettingsOptionForQuery(
+    context: Context,
+    query: String,
+    autoUpdate: Boolean = hasAutoUpdate(),
+    versionName: String = BuildConfig.VERSION_NAME,
+): UpdaterSettingsOption? {
+    val title = normalizedSettingsText(context.getString(SettingsUpdateItem.labelRes))
+    val normalizedQuery = normalizedSettingsText(query)
+    if (normalizedQuery.isEmpty() || normalizedQuery == title) return null
+    val optionQuery = normalizedQuery.removePrefix("$title ").removeSuffix(" $title")
+    val options = UpdaterSettingsOption.entries.filter {
+        when (it) {
+            UpdaterSettingsOption.Translation -> true
+            UpdaterSettingsOption.BetaUpdates -> autoUpdate && Updater.supportsBetaUpdatePreference(versionName)
+            else -> autoUpdate
+        }
+    }.associateWith { context.getString(it.labelRes) }
+    options.entries.firstOrNull { (option, label) ->
+        val values = when (option) {
+            UpdaterSettingsOption.AutomaticCheck ->
+                listOf(R.string.common_state_on, R.string.updates_check_mode_ask, R.string.common_state_off).map(context::getString)
+            UpdaterSettingsOption.BetaUpdates ->
+                listOf(R.string.common_state_on, R.string.common_state_off).map(context::getString)
+            UpdaterSettingsOption.DownloadCurrentVersion -> listOf(versionName)
+            else -> emptyList()
+        }
+        normalizedSettingsText(label) == optionQuery ||
+            values.any { value -> normalizedSettingsText(option.labelWithValue(label, value)) == optionQuery }
+    }?.let { return it.key }
+    val automaticCheck = UpdaterSettingsOption.AutomaticCheck
+    val automaticLabel = options[automaticCheck]?.let(::normalizedSettingsText)
+    if (automaticLabel != null && listOf(R.string.common_state_on, R.string.updates_check_mode_ask, R.string.common_state_off).any { state ->
+            val value = normalizedSettingsText(context.getString(state))
+            val qualifier = optionQuery.removePrefix("$value ").removeSuffix(" $value")
+            optionQuery == value || (qualifier != optionQuery && automaticLabel.contains(qualifier))
+        }) return automaticCheck
+    return options.entries.singleOrNull { normalizedSettingsText(it.value).contains(optionQuery) }?.key
+}
+
+internal fun SettingsPageItem.isUpdaterSettingsItem(): Boolean =
+    route?.substringBefore('?') == NavRoutes.updater.name
+
+internal fun SettingsPageItem.hasPrioritySearchMatch(context: Context, normalizedQuery: String): Boolean =
+    normalizedSettingsText(context.getString(labelRes)) == normalizedQuery &&
+        !(isUpdaterSettingsItem() && labelRes == UpdaterSettingsOption.ClearCache.labelRes)
 
 /** Dedicated Glass destination in the same Global group as Theme and Interface. */
 val SettingsGlassItem = SettingsPageItem(
@@ -65,6 +142,31 @@ val SettingsThemeStoreItem = SettingsPageItem(
     R.string.theme_store_preview_description,
     group = 3,
     route = SETTINGS_THEME_STORE_ROUTE,
+)
+
+internal val SettingsThemeStoreCreatorItem = SettingsPageItem(
+    labelRes = R.string.theme_store_creator,
+    iconRes = R.drawable.person,
+    descriptionRes = R.string.theme_store_publish_description,
+    group = SettingsThemeStoreItem.group,
+    route = "${NavRoutes.themeStore.name}?tab=$THEME_STORE_CREATOR_TAB",
+    keywordRes = listOf(
+        R.string.theme_store_creator_profile,
+        R.string.theme_store_edit_creator,
+        R.string.theme_store_creator_identity,
+        R.string.theme_store_creator_publish,
+        R.string.theme_store_creator_publish_theme,
+        R.string.theme_store_creator_edit_theme,
+        R.string.theme_store_creator_submissions,
+        R.string.theme_store_group_publishing_access,
+        R.string.theme_store_group_theme_publication,
+        R.string.theme_store_group_review_status,
+        R.string.theme_store_group_local_editing,
+        R.string.theme_store_creator_my_themes,
+        R.string.theme_store_local_themes,
+        R.string.theme_store_create_local,
+        R.string.theme_store_edit_local,
+    ),
 )
 
 val SettingsCategories: List<SettingsPageItem> = listOf(
@@ -99,6 +201,11 @@ val SettingsPageItems: List<SettingsPageItem> = OrganizedSettingsCategories.map 
         else -> listOf(item)
     }
 }
+
+internal fun SettingsPageItem.isThemeStoreCreatorPage(): Boolean =
+    route?.startsWith("${NavRoutes.themeStore.name}?tab=$THEME_STORE_CREATOR_TAB") == true
+
+private val settingsSearchDestinations = SettingsPageItems.filter { it.route != null } + SettingsThemeStoreCreatorItem
 
 /** Searchable card with its legacy tab, focus target and keyword resources. */
 data class SettingsCardRegistryEntry(
@@ -139,8 +246,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         )),
     SettingsCardRegistryEntry(0, R.string.settings_app_behavior_title, R.drawable.settings, groupTitleRes = R.string.settings_group_app_navigation_behavior,
         keywordRes = listOf(
-            R.string.settings_app_behavior_title, R.string.settings_behavior_back_button_exits_label,
-            R.string.settings_behavior_back_button_exits_description,
+            R.string.settings_app_behavior_title,
             R.string.settings_player_stop_on_task_removal_label, R.string.settings_player_stop_on_task_removal_description,
         )),
     SettingsCardRegistryEntry(0, R.string.audio_effects, R.drawable.sound_effect,
@@ -161,10 +267,10 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(0, R.string.settings_picture_in_picture_title, R.drawable.video, groupTitleRes = R.string.settings_group_floating_video, focusId = "pip",
         keywordRes = listOf(
             R.string.settings_picture_in_picture_title, R.string.settings_enable_pip, R.string.settings_pip_module,
-            R.string.settings_picture_in_picture_artwork_module_label, R.string.settings_enable_pip_auto,
-            R.string.settings_picture_in_picture_android_12_auto_description,
-            R.string.modules_open, R.string.settings_picture_in_picture_open, R.string.navigation_action_picture_in_picture,
-        )),
+            R.string.settings_picture_in_picture_artwork_module_label,
+        ) + if (isAtLeastAndroid12) {
+            listOf(R.string.settings_enable_pip_auto, R.string.settings_picture_in_picture_android_12_auto_description)
+        } else emptyList()),
     SettingsCardRegistryEntry(0, R.string.settings_launcher_shortcuts_title, R.drawable.shortcut_rescue, groupTitleRes = R.string.settings_group_home_screen_shortcuts,
         keywordRes = listOf(R.string.settings_launcher_shortcuts_title)),
     SettingsCardRegistryEntry(0, R.string.settings_reset, R.drawable.refresh, groupTitleRes = R.string.settings_group_restore_defaults,
@@ -315,8 +421,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.settings_group_rewind_summaries, R.string.settings_group_rewind_playlist_creation, R.string.settings_group_rewind_alerts,
             R.string.rewind_settings_title, R.string.modules_open, R.string.rewind_settings_monthly,
             R.string.rewind_settings_yearly, R.string.rewind_settings_global, R.string.rewind_background_music_title,
-            R.string.rewind_settings_playlists_title, R.string.rewind_settings_playlists_monthly, R.string.rewind_settings_playlists_yearly,
-            R.string.rewind_settings_notifications, R.string.rewind_settings_monthly_notification,
+            R.string.rewind_settings_playlists_monthly, R.string.rewind_settings_playlists_yearly,
+            R.string.rewind_settings_monthly_notification,
             R.string.rewind_settings_playlists_monthly_notification, R.string.rewind_settings_yearly_notification,
             R.string.rewind_settings_playlists_yearly_notification,
         )),
@@ -408,6 +514,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(5, R.string.settings_discord_title, R.drawable.logo_discord,
         keywordRes = listOf(
             R.string.settings_group_service_connection, R.string.settings_group_presence, R.string.discord_preview_title,
+            R.string.discord_advanced_group_identity, R.string.discord_advanced_group_lines, R.string.discord_advanced_group_images,
+            R.string.discord_advanced_group_progress, R.string.discord_advanced_group_buttons, R.string.discord_advanced_group_connection,
             R.string.settings_discord_title, R.string.updates_build_beta_label, R.string.discord_enable_rich_presence,
             R.string.discord_advanced_mode, R.string.discord_activity_type, R.string.discord_advanced_name,
             R.string.discord_advanced_details, R.string.discord_advanced_state, R.string.discord_advanced_pause,
@@ -433,6 +541,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.github_account_description,
             R.string.github_app_installation,
             R.string.github_app_installation_description,
+            R.string.github_account_background_checks,
+            R.string.github_account_background_checks_description,
         )),
     // Tab 6 - Network
     SettingsCardRegistryEntry(6, R.string.settings_network_quality_title, R.drawable.headphones, groupTitleRes = R.string.settings_group_streaming_quality,
@@ -469,7 +579,8 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.modules_title, R.string.modules_ffmpeg, R.string.modules_ffmpeg_description)),
     SettingsCardRegistryEntry(7, R.string.maintenance_title, R.drawable.shield_checkmark, focusId = "maintenance",
         keywordRes = listOf(
-            R.string.maintenance_title, R.string.settings_group_maintenance_tools, R.string.maintenance_open, R.string.maintenance_debug_logging_title,
+            R.string.maintenance_title, R.string.settings_group_maintenance_tools, R.string.maintenance_live_subsystems,
+            R.string.maintenance_open, R.string.maintenance_debug_logging_title,
             R.string.settings_logging_error_file_description, R.string.logs_action_export,
             R.string.logs_export_debug_description,
         )),
@@ -492,17 +603,43 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         keywordRes = listOf(R.string.settings_section_contributors_title, R.string.about_credits_title, R.string.about_credits_open)),
 )
 
+private val youtubeSyncDetailCards = setOf(
+    R.string.sync_imported_playlists_automatic_title,
+    R.string.sync_import_from_youtube,
+    R.string.sync_push_to_youtube,
+)
+private const val YouTubeSyncMasterId = "accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"
+
+internal fun SettingsEntryTarget.requiresYouTubeSyncBuild(): Boolean =
+    cardTitleRes in youtubeSyncDetailCards ||
+        (cardTitleRes == R.string.sync_data_with_ytm_account && id != YouTubeSyncMasterId)
+
+internal fun SettingsCardRegistryEntry.requiresYouTubeSyncBuild(): Boolean = titleRes in youtubeSyncDetailCards
+
+internal val YouTubeSyncMasterKeywords = listOf(
+    R.string.settings_youtube_library_sync_content_description,
+    R.string.account_youtube_sync_build_required,
+    R.string.account_youtube_sync_browse_required,
+)
+
 /**
  * Global settings search at the card level: normalized substring matches on the
  * card title and its keywords. Blank query returns no card results (the global
  * page then shows the 9 categories instead).
  */
-fun searchSettingsCards(context: Context, query: String): List<SettingsCardRegistryEntry> {
+fun searchSettingsCards(context: Context, query: String): List<SettingsCardRegistryEntry> =
+    searchSettingsCards(context, query, isYouTubeSyncBuild())
+
+internal fun searchSettingsCards(
+    context: Context,
+    query: String,
+    youtubeSyncSupported: Boolean,
+): List<SettingsCardRegistryEntry> {
     val needle = normalizedSettingsText(query)
     if (needle.isEmpty()) return emptyList()
-    val entryMatches = searchSettingsEntries(context, query).map { it.tab to it.cardTitleRes }.toSet()
+    val entryMatches = searchSettingsEntries(context, query, youtubeSyncSupported).map { it.tab to it.cardTitleRes }.toSet()
     return OrganizedSettingsCards.filter { card ->
-        (card.tab to card.titleRes) in entryMatches || card.matchesSearch(context, needle)
+        (card.tab to card.titleRes) in entryMatches || card.matchesSearch(context, needle, youtubeSyncSupported)
     }
 }
 
@@ -521,11 +658,51 @@ fun visibleCardTitleRes(context: Context, tab: Int, query: String): Set<Int> {
 fun searchSettingsPageItems(context: Context, query: String): List<SettingsPageItem> {
     val needle = normalizedSettingsText(query)
     if (needle.isEmpty()) return emptyList()
-    return SettingsPageItems.filter { item ->
-        item.route != null && (
-            normalizedSettingsText(context.getString(item.labelRes)).contains(needle) ||
-                normalizedSettingsText(context.getString(item.descriptionRes)).contains(needle) ||
-                item.keywordRes.any { normalizedSettingsText(context.getString(it)).contains(needle) }
-            )
+    val queryTerms = needle.split(' ').sortedByDescending(String::length)
+    val storeTitle = normalizedSettingsText(context.getString(SettingsThemeStoreItem.labelRes))
+    return settingsSearchDestinations.mapNotNull { item ->
+        if (item == SettingsUpdateItem) {
+            val option = updaterSettingsOptionForQuery(context, needle)
+            if (option != null) {
+                return@mapNotNull item.copy(
+                    labelRes = option.labelRes,
+                    route = "${item.route}?$UPDATER_SETTINGS_TARGET_ARGUMENT=${option.routeKey}",
+                )
+            }
+        }
+        if (item == SettingsThemeStoreCreatorItem) {
+            if (needle == storeTitle) return@mapNotNull null
+            val creatorTitle = normalizedSettingsText(context.getString(item.labelRes))
+            if (needle == creatorTitle) return@mapNotNull item
+            val creatorQuery = needle.removePrefix("$storeTitle ").removeSuffix(" $storeTitle")
+            if (creatorQuery == creatorTitle) return@mapNotNull item
+            val exact = ThemeStoreCreatorTarget.entries.firstNotNullOfOrNull { target ->
+                target.labels.firstOrNull { normalizedSettingsText(context.getString(it)) == creatorQuery }
+                    ?.let { target to it }
+            }
+            val specific = exact ?: ThemeStoreCreatorTarget.entries.filter { target ->
+                target.labels.any { normalizedSettingsText(context.getString(it)).contains(creatorQuery) }
+            }.singleOrNull()?.let { target -> target to target.labels.first() }
+            if (specific != null) {
+                val (target, label) = specific
+                return@mapNotNull item.copy(labelRes = label, route = "${item.route}&target=${target.routeKey}")
+            }
+            if (queryTerms.size > 1 && ("$storeTitle $creatorTitle".contains(needle) || "$creatorTitle $storeTitle".contains(needle))) {
+                return@mapNotNull item
+            }
+        }
+        (listOf(item.labelRes, item.descriptionRes) + item.keywordRes).any { resource ->
+            if (item == SettingsUpdateItem && !hasAutoUpdate() &&
+                resource != item.labelRes && resource != R.string.updates_changelog_title &&
+                resource != R.string.updates_changelog_search_label
+            ) return@any false
+            if (resource == R.string.updates_beta_enabled_label &&
+                (!hasAutoUpdate() || !Updater.supportsBetaUpdatePreference(BuildConfig.VERSION_NAME))) return@any false
+            val text = normalizedSettingsText(context.getString(resource))
+            val matches = text.contains(needle) ||
+                matchesSettingsTerms(text.split(' ').toSet(), queryTerms) ||
+                (item == SettingsThemeStoreCreatorItem && queryTerms.size > 1 && queryTerms.all(text::contains))
+            matches && (item != SettingsGlassItem || isGlassSearchLabelSupported(context, resource))
+        }.takeIf { it }?.let { item }
     }
 }
