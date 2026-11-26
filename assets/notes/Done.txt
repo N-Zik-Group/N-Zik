@@ -752,3 +752,7 @@ Settings search results:
 Updater menu and changelog:
 - fix(updater): open changelogs on builds with disabled updates
   - Keep translation available and let Back leave an active download running.
+
+Theme Store settings:
+- fix(theme-store): open the requested Creator action from settings search
+  - Reveal the right section or editor and explain account prerequisites.

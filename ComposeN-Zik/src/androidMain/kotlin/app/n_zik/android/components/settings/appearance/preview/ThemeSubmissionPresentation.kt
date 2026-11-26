@@ -62,7 +62,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.updater.models.UpdateEndpoints
-import app.n_zik.android.updater.ui.UpdaterBottomPanel
+import app.n_zik.android.components.settings.common.SettingsBottomPanel
 
 @Composable
 internal fun ThemeSubmissionLoading(padding: PaddingValues, dismiss: () -> Unit) {
@@ -203,7 +203,7 @@ internal fun SubmissionFooter(
     CompositionLocalProvider(
         LocalIndependentGlassBackdrop provides LocalIndependentGlassBackdrop.current.takeIf { backdrop == null },
     ) {
-        UpdaterBottomPanel(
+        SettingsBottomPanel(
             backdrop = backdrop,
             modifier = Modifier.fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.navigationBars.only(WindowInsetsSides.Bottom))

@@ -22,7 +22,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import androidx.compose.material3.Icon
@@ -44,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -67,6 +70,9 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogButtonPlacement
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.glass.PageIconButton
+import app.n_zik.android.components.glass.GlassFloatingActions
+import app.n_zik.android.components.glass.glassFloatingActionContent
+import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.components.settings.accounts.GitHubAccount
 import app.n_zik.android.components.settings.accounts.rememberGitHubPublicationAuthorization
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -78,6 +84,7 @@ import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsScrollToTop
 import app.n_zik.android.components.ui.UiButton
 import app.n_zik.android.components.ui.UiTextButton
 import app.n_zik.android.core.utils.Toaster
@@ -222,11 +229,31 @@ internal fun ThemeStoreDetailScreen(
                 }
             } else if (selected != null) {
                 key(profileId, selected.themeId, selected.revision) {
-                    ThemeStoreDetailContent(selected, catalog, library, downloads, retry, padding, profileId, lastSync, localPackage, builtIn, onRemoved = ::leaveDetail, onRevision = { target ->
-                        navController.navigate("${NavRoutes.themeStoreDetail.name}/${selected.themeId}/$target")
-                    }) {
+                    val scroll = rememberLazyListState()
+                    val floatingBackdrop = rememberGlassFloatingActionBackdrop()
+                    ThemeStoreDetailContent(
+                        theme = selected,
+                        catalog = catalog,
+                        library = library,
+                        downloads = downloads,
+                        retry = retry,
+                        padding = padding,
+                        profileId = profileId,
+                        lastSync = lastSync,
+                        localPackage = localPackage,
+                        builtIn = builtIn,
+                        scroll = scroll,
+                        modifier = Modifier.glassFloatingActionContent(floatingBackdrop),
+                        onRemoved = ::leaveDetail,
+                        onRevision = { target ->
+                            navController.navigate("${NavRoutes.themeStoreDetail.name}/${selected.themeId}/$target")
+                        },
+                    ) {
                         if (offline) Toaster.e(R.string.theme_store_offline_unavailable)
                         else navController.navigate("${NavRoutes.themeStoreCreator.name}/${selected.author.githubId}")
+                    }
+                    GlassFloatingActions(floatingBackdrop) {
+                        SettingsScrollToTop(scroll, modifier = Modifier.testTag("themeStore.detail.scrollToTop"))
                     }
                 }
             } else {
@@ -263,6 +290,8 @@ private fun ThemeStoreDetailContent(
     lastSync: Long?,
     localPackage: Boolean,
     builtIn: SavedTheme?,
+    scroll: LazyListState,
+    modifier: Modifier,
     onRemoved: () -> Unit,
     onRevision: (Int) -> Unit,
     onOpenCreator: () -> Unit,
@@ -420,7 +449,8 @@ private fun ThemeStoreDetailContent(
         null -> Unit
     }
     LazyColumn(
-        modifier = Modifier.fillMaxSize(),
+        state = scroll,
+        modifier = modifier.fillMaxSize(),
         contentPadding = padding,
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {

@@ -62,7 +62,7 @@ internal fun CreatorSubmissionsCard(refreshVersion: Int) {
         if (!offline) {
             try {
                 value = creatorSubmissions(id, login, GitHubAccount.tokenFor(context, id))
-                notifyCreatorDecisions(context, id, value.orEmpty())
+                if (GitHubAccount.backgroundChecksEnabled(context)) notifyCreatorDecisions(context, id, value.orEmpty())
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {

@@ -107,6 +107,7 @@ internal fun hasCreatorPublicationChanges(
 internal fun CreatorProfileSettingsEntry(
     onClick: () -> Unit,
     shimmer: Boolean = false,
+    modifier: Modifier = Modifier,
     themeEntries: @Composable () -> Unit,
 ) {
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
@@ -117,6 +118,7 @@ internal fun CreatorProfileSettingsEntry(
         groupTitleRes = R.string.theme_store_creator_identity,
         content = {
             OtherSettingsEntry(
+                modifier = modifier,
                 title = stringResource(R.string.theme_store_edit_creator),
                 text = stringResource(if (login == null) R.string.theme_store_creator_sign_in else R.string.theme_store_creator_draft),
                 icon = R.drawable.person,
@@ -133,7 +135,11 @@ internal fun CreatorProfileSettingsEntry(
 }
 
 @Composable
-internal fun CreatorProfileSettings(navController: NavController, miniPlayer: @Composable () -> Unit) {
+internal fun CreatorProfileSettings(
+    navController: NavController,
+    miniPlayer: @Composable () -> Unit,
+    target: ThemeStoreCreatorTarget? = null,
+) {
     val context = LocalContext.current
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
     val id = remember(login) { GitHubAccount.userId(context) }
@@ -157,14 +163,14 @@ internal fun CreatorProfileSettings(navController: NavController, miniPlayer: @C
             if (id == null || handle == null) {
                 SettingsDescription(stringResource(R.string.theme_store_creator_sign_in))
             } else {
-                key(id) { CreatorProfileEditor(id, handle) { navController.popBackStack() } }
+                key(id) { CreatorProfileEditor(id, handle, target) { navController.popBackStack() } }
             }
         }
     }
 }
 
 @Composable
-private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
+private fun CreatorProfileEditor(id: Long, login: String, target: ThemeStoreCreatorTarget?, onSaved: () -> Unit) {
     val context = LocalContext.current
     val shimmer = forceLoadingShimmerPreview()
     val offline by OfflineMode.rememberEnabled()
@@ -356,6 +362,7 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     )
     SettingsSectionCard(
         title = stringResource(R.string.theme_store_creator_identity),
+        modifier = creatorTargetModifier(target, ThemeStoreCreatorTarget.PublicInformation),
         icon = R.drawable.person,
         horizontalPadding = 0.dp,
         bottomSpacing = 0.dp,
@@ -416,7 +423,8 @@ private fun CreatorProfileEditor(id: Long, login: String, onSaved: () -> Unit) {
     )
     val authPending by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     PageButton(
-        modifier = Modifier.fillMaxWidth().padding(top = 20.dp).storeLoadingContent(shimmer),
+        modifier = creatorTargetModifier(target, ThemeStoreCreatorTarget.PublishProfile)
+            .fillMaxWidth().padding(top = 20.dp).storeLoadingContent(shimmer),
         enabled = !shimmer && !offline && !packaging && !authPending && displayName.isNotBlank() && hasPublicationChanges,
         onClick = { confirmPublish = true },
     ) { Text(stringResource(R.string.theme_store_creator_publish)) }
