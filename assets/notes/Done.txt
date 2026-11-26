@@ -568,3 +568,7 @@ Backup settings:
 Storage settings search:
 - fix(settings): show the selected storage profile during measurement
   - Keep the intended cache and profile controls available while sizes load.
+
+Playlist widget:
+- fix(widget): filter unplayable local quick picks
+  - Keep labels and the published selection aligned after filtering.

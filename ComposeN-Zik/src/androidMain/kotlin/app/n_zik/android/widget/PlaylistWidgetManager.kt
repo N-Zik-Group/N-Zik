@@ -31,6 +31,7 @@ import app.n_zik.android.MainActivity
 import app.n_zik.android.R
 import app.n_zik.android.components.player.ArtworkColorSnapshot
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 object PlaylistWidgetManager {
@@ -48,14 +49,17 @@ object PlaylistWidgetManager {
 
     internal suspend fun getQuickPicks(context: Context, accentArgb: Int): List<QuickPick> = withContext(NzikDispatchers.DATA) {
         val selection = PlaylistQuickPickSource.shared.load(context)
+        val playableSelection = selection.filterNot { (target) ->
+            target is PlaylistQuickPickSource.Target.Track && target.song.isLocal
+        }
         val cached = quickPickCache
         if (cached != null && cached.selection === selection) {
             return@withContext cached.picks.mapIndexed { index, pick ->
-                if (selection[index].target == PlaylistQuickPickSource.Target.Favorites)
+                if (playableSelection[index].target == PlaylistQuickPickSource.Target.Favorites)
                     pick.copy(artworkBitmap = getLikedBitmap(context, accentArgb)) else pick
             }
         }
-        val picks = selection.map { entry ->
+        val picks = playableSelection.map { entry ->
             val (destination, requestCode) = when (val target = entry.target) {
                 PlaylistQuickPickSource.Target.Favorites -> "nzik://app/playFavorites" to "Favorites".hashCode()
                 is PlaylistQuickPickSource.Target.Playlist -> "nzik://app/localPlaylist/${target.id}" to target.id.hashCode()
