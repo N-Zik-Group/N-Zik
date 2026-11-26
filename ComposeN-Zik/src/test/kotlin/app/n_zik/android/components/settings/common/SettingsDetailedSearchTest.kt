@@ -57,6 +57,18 @@ class SettingsDetailedSearchTest {
         results.forEach { assertEquals(expected, it.locationDescription(english)) }
     }
 
+    @Test fun sectionHeadingsRouteToTheirOwnTargetAndQualifyChildBreadcrumbs() {
+        val english = localized(Locale.ENGLISH)
+        val group = english.getString(R.string.settings_group_audio_levels)
+        val section = searchSettingsEntries(english, group).first()
+        assertEquals("general.audio_effects.section.audio_levels", section.id)
+        assertEquals(section.id, Uri.parse(section.destinationRoute(english)).getQueryParameter("target"))
+
+        val row = searchSettingsEntries(english, english.getString(R.string.settings_audio_loudness_normalization_label))
+            .first()
+        assertTrue(row.locationDescription(english).endsWith(" › $group"))
+    }
+
     @Test fun quickPicksResetKeepsItsStableLinkUnderRecommendationRefresh() {
         val target = AllSettingsEntryTargets.single { it.id == "ai.tab_data.reset_quick_picks" }
         assertEquals("ai", target.parentCard().categoryId())

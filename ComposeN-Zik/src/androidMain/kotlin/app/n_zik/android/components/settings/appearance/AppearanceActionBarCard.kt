@@ -19,7 +19,7 @@ import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettin
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -122,7 +122,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                     )
                 }
 
-                if (showCustomization && showAppearance) SettingsCardSectionHeading(R.string.settings_group_action_appearance)
+                if (showCustomization && showAppearance) SearchableSettingsSectionHeading(R.string.settings_group_action_appearance, "appearance.player_action_bar.section.appearance")
 
                 if (showBackground) OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("appearance.player_action_bar.action_bar_transparent_background"),
@@ -163,7 +163,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                     onCheckedChange = { topPadding = it },
                 )
 
-                if (showQueue && (showCustomization || showAppearance)) SettingsCardSectionHeading(R.string.settings_group_queue_preview)
+                if (showQueue && (showCustomization || showAppearance)) SearchableSettingsSectionHeading(R.string.settings_group_queue_preview, "appearance.player_action_bar.section.queue_preview")
 
                 if (showQueuePreview) OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.show_next_songs_in_player"),

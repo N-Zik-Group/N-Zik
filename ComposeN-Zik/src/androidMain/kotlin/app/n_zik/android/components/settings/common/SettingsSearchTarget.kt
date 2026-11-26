@@ -2,7 +2,9 @@ package app.n_zik.android.components.settings.common
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
@@ -80,6 +82,14 @@ internal fun SettingsDialogSearchScope(dialog: Dialog, content: @Composable () -
     }
     CompositionLocalProvider(LocalSettingsTargets provides registry.takeIf { ownsRequest }) {
         content()
+    }
+}
+
+/** Reuses the native section heading while exposing its own search destination. */
+@Composable
+internal fun SearchableSettingsSectionHeading(@StringRes title: Int, id: String) {
+    Column(Modifier.settingsSearchTarget(id)) {
+        SettingsCardSectionHeading(title)
     }
 }
 

@@ -2,7 +2,7 @@ package app.n_zik.android.components.settings.general
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.annotation.OptIn
 import androidx.compose.animation.AnimatedVisibility
@@ -129,7 +129,7 @@ fun GeneralAudioEffectsCard(
                 }
             }
 
-            SettingsCardSectionHeading(R.string.settings_group_audio_levels)
+            SearchableSettingsSectionHeading(R.string.settings_group_audio_levels, "general.audio_effects.section.audio_levels")
 
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.loudness_normalization"),
@@ -229,7 +229,7 @@ fun GeneralAudioEffectsCard(
                 }
             }
 
-            SettingsCardSectionHeading(R.string.settings_group_sound_effects)
+            SearchableSettingsSectionHeading(R.string.settings_group_sound_effects, "general.audio_effects.section.sound_effects")
 
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("general.audio_effects.equalizer"),

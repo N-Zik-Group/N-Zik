@@ -2,7 +2,7 @@ package app.n_zik.android.components.settings.appearance
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.CardCategoryLabel
-import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
+import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -137,7 +137,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                     )
                 }
 
-            if (search.inputValue.isBlank()) SettingsCardSectionHeading(R.string.settings_group_lyrics_appearance)
+            if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_lyrics_appearance, "appearance.txt_lyrics.section.appearance")
 
             if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(
                     search.inputValue,

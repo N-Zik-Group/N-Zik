@@ -976,3 +976,7 @@ Settings:
 Settings:
 - fix(settings): show the effective automatic audio quality policy
   - Describe metered audio separately from detected artwork quality.
+
+Settings:
+- fix(settings): route search to the matching card subsection
+  - Add exact targets and breadcrumbs for audio, queue, player actions and lyrics groups.
