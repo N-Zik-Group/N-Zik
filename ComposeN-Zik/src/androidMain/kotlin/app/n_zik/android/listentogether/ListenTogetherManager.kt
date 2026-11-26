@@ -77,7 +77,14 @@ class ListenTogetherManager(
      * change through [setSyncHostVolumeEnabled] — both UI call sites go through it.
      */
     val syncHostVolumeEnabled =
-        MutableStateFlow(DataStoreUtils.getBoolean(context, PREF_SYNC_HOST_VOLUME, true))
+        MutableStateFlow(readSyncHostVolumePreference())
+
+    internal fun refreshSyncHostVolumePreference() {
+        syncHostVolumeEnabled.value = readSyncHostVolumePreference()
+    }
+
+    private fun readSyncHostVolumePreference(): Boolean =
+        DataStoreUtils.getBoolean(context, PREF_SYNC_HOST_VOLUME, true)
 
     fun setSyncHostVolumeEnabled(enabled: Boolean) {
         syncHostVolumeEnabled.value = enabled

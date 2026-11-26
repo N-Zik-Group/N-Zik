@@ -728,3 +728,7 @@ Quick Picks metadata:
 Track information:
 - fix(info): keep artist navigation aligned with current track credits
   - Load metadata off the UI thread and route valid artist links directly.
+
+Listen Together settings and menu:
+- fix(listen-together): expose option state and refresh host volume settings
+  - Show toggled menu actions and recalculate effective host volume preferences.
