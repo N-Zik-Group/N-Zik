@@ -1406,7 +1406,7 @@ class ListenTogetherManager(
     /**
      * Suggest the given track to the host (guest only)
      */
-    fun suggestTrack(track: TrackInfo) = client.suggestTrack(track)
+    fun suggestTrack(track: TrackInfo): Boolean = client.suggestTrack(track)
 
     /**
      * Approve a suggestion (host only)
