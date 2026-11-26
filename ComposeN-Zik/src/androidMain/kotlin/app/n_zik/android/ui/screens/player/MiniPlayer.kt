@@ -5,10 +5,13 @@ import app.n_zik.android.components.settings.appearance.preview.LocalThemePrevie
 import app.n_zik.android.components.player.rememberMiniPlayerProgress
 
 
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.song.songArtistDisplayLabel
+import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.displayTrackTitle
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
-import app.n_zik.android.utils.artistTextWithFallback
-import app.n_zik.android.utils.titleWithFallback
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
@@ -105,7 +108,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.enums.BackgroundProgress
@@ -251,6 +253,14 @@ fun MiniPlayer(
     }
 
     val mediaItem = nullableMediaItem ?: return
+    val songId = mediaItem.mediaId.substringAfterLast('/')
+    val songIds = remember(songId) { listOf(songId) }
+    val storedSong = rememberSongRowMetadata(songIds).value[songId]
+    val storedCredits = rememberSongRowArtistCredits(songIds).value[songId].orEmpty()
+    val song = storedSong ?: remember(mediaItem, songId) { mediaItem.asSong.copy(id = songId) }
+    val displayTitle = displayTrackTitle(song.title) ?: displayTrackTitle(mediaItem.mediaMetadata.title?.toString())
+        ?: stringResource(R.string.metadata_unknown_title)
+    val displayArtist = songArtistDisplayLabel(song, storedCredits, mediaItem)
     val artworkUrl = rememberGlassArtwork(player)?.takeIf { it.mediaId == mediaItem.mediaId }?.uri
         ?: mediaItem.mediaMetadata.artworkUri?.toString()
 
@@ -657,7 +667,7 @@ fun MiniPlayer(
                             passive = true,
                         )
                     BasicText(
-                        text = cleanPrefix( mediaItem.titleWithFallback() ),
+                        text = displayTitle,
                         style = typography().xxs.semiBold,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -667,7 +677,7 @@ fun MiniPlayer(
                 }
 
                 BasicText(
-                    text = cleanPrefix( mediaItem.artistTextWithFallback() ),
+                    text = displayArtist,
                     style = typography().xxs.semiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

@@ -301,6 +301,7 @@ fun SwipeablePlaylistItem(
     downloadedStateMediaParam: DownloadedStateMedia? = null,
     swipeLeftActionParam: PlaylistSwipeAction? = null,
     swipeRightActionParam: PlaylistSwipeAction? = null,
+    modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -379,6 +380,7 @@ fun SwipeablePlaylistItem(
     val swipeRighCallback = getActionCallback(playlistSwipeRightAction)
 
     SwipeableContent(
+        modifier = modifier,
         swipeToLeftIcon =  playlistSwipeLeftAction.getStateIcon(
             songLikeState,
             downloadState,

@@ -836,3 +836,7 @@ Queue display:
 Player information and controls:
 - fix(player): keep control and information transitions aligned
   - Use current track metadata and coordinate contrast and navigation affordances.
+
+Player surfaces:
+- fix(player): synchronize player actions and gestures across surfaces
+  - Keep the full and compact players aligned with the active playback source.

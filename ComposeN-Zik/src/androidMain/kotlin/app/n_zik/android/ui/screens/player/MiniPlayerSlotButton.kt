@@ -48,6 +48,7 @@ import app.n_zik.android.enums.QueueLoopType
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.playback.services.AudioOutputManager
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.seekPreviousIfAvailable
 import app.n_zik.android.ui.components.MenuState
@@ -227,13 +228,15 @@ internal fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Share -> {
+            val shareItem = mediaItem?.takeUnless { it.isLocal }
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
                 icon = R.drawable.share_social,
                 color = controlsColorText,
+                enabled = shareItem != null,
                 onClick = {
-                    mediaItem?.let { item ->
+                    shareItem?.let { item ->
                         val intent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
                             putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/watch?v=${item.mediaId}")
@@ -242,7 +245,8 @@ internal fun MiniPlayerSlotButton(
                     }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
-                rotationAngle = rotationAngle
+                rotationAngle = rotationAngle,
+                alpha = if (shareItem != null) 1f else 0.38f,
             )
         }
         MiniPlayerButton.Radio -> {

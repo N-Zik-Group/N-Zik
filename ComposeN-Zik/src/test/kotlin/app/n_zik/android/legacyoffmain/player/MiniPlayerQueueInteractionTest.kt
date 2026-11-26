@@ -105,6 +105,8 @@ class MiniPlayerQueueInteractionTest {
         Dependencies.init(application)
         val songs = mockk<SongTable>()
         every { songs.likeState(any()) } returns flowOf(null)
+        every { songs.findByIds(any()) } returns flowOf(emptyList())
+        every { songs.findArtistCredits(any()) } returns flowOf(emptyList())
         mockkObject(Database)
         every { Database.songTable } returns songs
         every { binder.player } returns player

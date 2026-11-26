@@ -72,8 +72,6 @@ import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.utils.PlayerTrackLinks
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.playerTrackLinks
-import app.n_zik.android.utils.artistTextWithFallback
-import app.n_zik.android.utils.titleWithFallback
 
 import app.n_zik.android.components.dialog.common.SleepTimerDialog
 import android.annotation.SuppressLint
@@ -244,7 +242,6 @@ import app.n_zik.android.enums.QueueType
 import app.n_zik.android.enums.SwipeAnimationNoThumbnail
 import app.n_zik.android.enums.ThumbnailCoverType
 import app.n_zik.android.enums.ThumbnailType
-import app.n_zik.android.models.ui.toUiMedia
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.extensions.nextvisualizer.views.NextVisualizer
 import app.n_zik.android.components.menu.player.PlayerMenu
@@ -276,7 +273,6 @@ import app.n_zik.android.components.player.playerStandaloneLyricsVisible
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.expandedplayerKey
 import app.n_zik.android.utils.fadingedgeKey
-import app.n_zik.android.utils.isExplicit
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.mediaItems
 import app.n_zik.android.utils.noblurKey
@@ -400,6 +396,7 @@ fun Player(
     val queueDurationExpanded by rememberPreference( queueDurationExpandedKey, true )
     val statsExpanded by rememberPreference( statsExpandedKey, true )
     var showthumbnail by rememberPreference( showthumbnailKey, true )
+    val lyricsShownOnCover = showthumbnail && showlyricsthumbnail
     val showButtonPlayerMenu by rememberPreference( showButtonPlayerMenuKey, false )
     val showTotalTimeQueue by rememberPreference( showTotalTimeQueueKey, true )
     val backgroundProgress by rememberPreference( backgroundProgressKey, BackgroundProgress.MiniPlayer )
@@ -656,6 +653,10 @@ fun Player(
             override fun onTimelineChanged(timeline: Timeline, reason: Int) {
                 mediaItems = timeline.mediaItems
                 queueTimeline = timeline
+                val current = player.currentMediaItem
+                if (current != null && current !== nullableMediaItem && current.mediaId == nullableMediaItem?.mediaId) {
+                    nullableMediaItem = current
+                }
             }
             override fun onPlayerError(playbackException: PlaybackException) {
                 playerError = playbackException
@@ -758,7 +759,7 @@ fun Player(
     val showLandscapeArtworkColumn = showInlineVideo || !isLandscape ||
         playerLandscapeArtworkColumnVisible(playerType, thumbnailType, expandedplayer, showthumbnail)
     val coverOverlayPolicy = playerCoverOverlayPolicy(
-        lyricsOnCover = showlyricsthumbnail && showthumbnail && showLandscapeArtworkColumn,
+        lyricsOnCover = lyricsShownOnCover && showLandscapeArtworkColumn,
         visualizerOnCover = showvisthumbnail && showthumbnail && showLandscapeArtworkColumn,
     )
     val coverArtworkVisible = playerCoverArtworkVisible(
@@ -1193,7 +1194,7 @@ fun Player(
                 }
             },
             onDoubleClick = {
-                if (!showlyricsthumbnail && !showvisthumbnail) showthumbnail = !showthumbnail
+                if (!lyricsShownOnCover && !showvisthumbnail) showthumbnail = !showthumbnail
             },
             onLongClick = {
                 blurAdjuster.isActive = showthumbnail || (isShowingLyrics && !isShowingVisualizer) || !noblur
@@ -1226,7 +1227,7 @@ fun Player(
                         }
                     },
                     onDoubleClick = {
-                        if (!showlyricsthumbnail && !showvisthumbnail)
+                        if (!lyricsShownOnCover && !showvisthumbnail)
                             showthumbnail = !showthumbnail
                     },
                     onLongClick = {
@@ -1447,8 +1448,9 @@ fun Player(
                         )
                     }
                     .padding(all = playerThumbnailPadding(if (isLandscape) thumbnailSizeLDp else thumbnailSizeDp, isLandscape))
-                    .thumbnailpause(
-                        shouldBePlaying = shouldBePlaying
+                    .then(
+                        if (playerType == PlayerType.Essential) Modifier.thumbnailpause(shouldBePlaying)
+                        else Modifier
                     )
 
             )
@@ -1772,7 +1774,7 @@ fun Player(
                                                     }
                                                 },
                                                 onDoubleClick = {
-                                                    if (!showlyricsthumbnail && !showvisthumbnail)
+                                                    if (!lyricsShownOnCover && !showvisthumbnail)
                                                         showthumbnail = !showthumbnail
                                                 },
                                                 onLongClick = {
@@ -2190,7 +2192,7 @@ fun Player(
                                                            }
                                                        },
                                                        onDoubleClick = {
-                                                           if (!showlyricsthumbnail && !showvisthumbnail)
+                                                           if (!lyricsShownOnCover && !showvisthumbnail)
                                                                showthumbnail = !showthumbnail
                                                        },
                                                        onLongClick = {
@@ -2221,14 +2223,8 @@ fun Player(
                                             timelineExpanded = timelineExpanded,
                                             controlsExpanded = controlsExpanded,
                                             isShowingLyrics = isShowingLyrics,
-                                            media = remember(mediaItem.mediaId, durationState.value) {
-                                                mediaItem.toUiMedia(durationState.value)
-                                            },
-                                            mediaId = mediaItem.mediaId,
-                                            title = displayItem.titleWithFallback(),
-                                            artist = cleanPrefix(displayItem.artistTextWithFallback()),
-                                            artistIds = displayLinks.artists,
-                                            albumId = displayLinks.albumId,
+                                            mediaItem = displayItem,
+                                            links = displayLinks,
                                             shouldBePlaying = shouldBePlaying,
                                             isBuffering = isBuffering,
                                             position = { positionAndDurationState.value.first },
@@ -2237,7 +2233,6 @@ fun Player(
                                                 .padding(vertical = 4.dp)
                                                 .fillMaxWidth(),
                                             onBlurScaleChange = { blurAdjuster.strength = it },
-                                            isExplicit = displayItem.isExplicit,
                                             dynamicColorPalette = backgroundPalette.copy(accent = artworkAccent.value)
                                         )
                                     }
@@ -2265,7 +2260,7 @@ fun Player(
                 playerCoverArtworkVisible(showthumbnail, isShowingLyrics, coverOverlayPolicy.lyricsOnCover,
                     isShowingVisualizer, coverOverlayPolicy.visualizerOnCover), playerType)
             val weightedPortraitInformation = playerPortraitUsesWeightedInformation(
-                expandedplayer, isShowingStandaloneLyrics, playerType, carousel, showlyricsthumbnail)
+                expandedplayer, isShowingStandaloneLyrics, playerType, carousel, lyricsShownOnCover)
             PlayerGlassBudgetLayout(
                 enabled = false,
                 expandedCarousel = expandedplayer && carousel && playerType == PlayerType.Modern,
