@@ -700,3 +700,7 @@ Track and player menus:
 Collection track pagination:
 - fix(playlist): wait for complete content before bulk actions
   - Deduplicate paginated tracks and keep partial results away from bulk mutations.
+
+Album menus:
+- fix(menu): keep album actions scoped to the selected edition
+  - Use the artist credits, tracks and source identity of the displayed album.
