@@ -136,9 +136,8 @@ import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.utils.saveProfileLastUsed
 import app.n_zik.android.utils.setDefaultPalette
 import app.n_zik.android.utils.shouldRecreateActivity
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.requests.playlistPage
-import app.n_zik.innertube.requests.song
+import app.n_zik.android.intents.remoteAlbumLinkRoute
+import app.n_zik.android.intents.resolveRemoteTrackLink
 
 @UnstableApi
 class MainActivity :
@@ -594,9 +593,7 @@ class MainActivity :
             is LibraryLinkDestination.Invite -> openListenTogetherInvite(navController, destination.roomCode)
             is LibraryLinkDestination.Route -> navController.navigate(destination.route)
             is LibraryLinkDestination.RemoteAlbum -> {
-                val albumId = Innertube.playlistPage(browseId = destination.playlistBrowseId)
-                    ?.getOrNull()?.songsPage?.items?.firstOrNull()?.album?.endpoint?.browseId
-                if (albumId != null) navController.navigate("${NavRoutes.album.name}/$albumId")
+                navController.navigate(remoteAlbumLinkRoute(destination.playlistBrowseId))
             }
             LibraryLinkDestination.Favorites -> {
                 val mediaItems = withContext(NzikDispatchers.DATA) {
@@ -608,12 +605,12 @@ class MainActivity :
                 }
             }
             is LibraryLinkDestination.Video -> {
-                val song = Innertube.song(destination.id)?.getOrNull() ?: return
-                val validBinder = snapshotFlow { binder }.filterNotNull().first()
-                if (song.explicit && preferences.getBoolean(parentalControlEnabledKey, false)) {
+                val track = withContext(NzikDispatchers.DATA) { resolveRemoteTrackLink(destination.id) } ?: return
+                if (track.explicit != false && preferences.getBoolean(parentalControlEnabledKey, false)) {
                     Toaster.w(R.string.parental_control_is_enabled)
                 } else {
-                    validBinder.player.forcePlay(song.asMediaItem)
+                    val validBinder = snapshotFlow { binder }.filterNotNull().first()
+                    validBinder.player.forcePlay(track.item)
                 }
             }
             LibraryLinkDestination.Unsupported -> Unit
