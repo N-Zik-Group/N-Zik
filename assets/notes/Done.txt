@@ -864,3 +864,7 @@ Settings reset locale dispatch:
 Picture-in-picture search:
 - fix(settings): index the displayed picture-in-picture description
   - Search the same copy that appears on the player settings card.
+
+Player settings menu affordances:
+- fix(menu): clarify player settings actions and reset controls
+  - Label custom lyrics size and remove duplicate or ineffective actions.

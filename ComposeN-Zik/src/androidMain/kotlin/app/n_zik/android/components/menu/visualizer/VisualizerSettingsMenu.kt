@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.ui.toggles.Switch
@@ -33,7 +31,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.text.style.TextAlign
 import app.n_zik.android.core.utils.Toaster
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.enums.MenuStyle
@@ -58,7 +55,6 @@ import app.n_zik.android.utils.visualizerWhiteColorOptionKey
 import app.n_zik.android.utils.visualizerCustomColorKey
 import enums.VisualizerWhiteColorOption
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showVisualizerButtonsKey
 import app.n_zik.android.utils.showVisualizerStateKey
 import app.n_zik.android.utils.showvisthumbnailKey
@@ -67,7 +63,6 @@ import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
-import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -120,9 +115,6 @@ class VisualizerSettingsMenu private constructor(
 
         @Composable
         fun settingsContent() {
-            // Section Title for General settings
-            SectionTitle(stringResource(R.string.visualizer_title))
-
             // Colors Option
             EnumSettingEntry(
                 title = stringResource(R.string.visualizer_color_source),
@@ -211,10 +203,6 @@ class VisualizerSettingsMenu private constructor(
         }
 
         fun LazyGridScope.settingsGridContent() {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.visualizer_title))
-            }
-
             item {
                 EnumSettingEntry(
                     title = stringResource(R.string.visualizer_color_source),
@@ -349,20 +337,6 @@ class VisualizerSettingsMenu private constructor(
                 modifier = Modifier.size(18.dp)
             )
         }
-    }
-
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 4.dp)
-        )
     }
 
     @Composable

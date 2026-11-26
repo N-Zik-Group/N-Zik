@@ -235,10 +235,6 @@ class PlaybackSettingsMenu private constructor(
                 valueRange = 0f..1f,
                 displayValue = { percentLabel((it * 100).toInt()) },
                 stepSize = 0f,
-                onReset = {
-                    playbackDeviceVolume = getDeviceVolume(context)
-                    setDeviceVolume(context, playbackDeviceVolume)
-                }
             )
 
             // Section: Player Effects
@@ -458,10 +454,6 @@ class PlaybackSettingsMenu private constructor(
                     },
                     valueRange = 0f..1f,
                     stepSize = 0f,
-                    onReset = {
-                        playbackDeviceVolume = getDeviceVolume(context)
-                        setDeviceVolume(context, playbackDeviceVolume)
-                    }
                 )
             }
 
@@ -597,7 +589,7 @@ class PlaybackSettingsMenu private constructor(
         onSlideComplete: () -> Unit = {},
         valueRange: ClosedFloatingPointRange<Float>,
         displayValue: @Composable (Float) -> String,
-        onReset: () -> Unit,
+        onReset: (() -> Unit)? = null,
         isEnabled: Boolean = true,
         stepSize: Float = 0.1f,
         defaultValue: Float? = null,
@@ -619,17 +611,21 @@ class PlaybackSettingsMenu private constructor(
                         shape = uiRoundnessShape()
                     )
                     .clip(uiRoundnessShape())
-                    .combinedClickable(
-                        enabled = isEnabled,
-                        onLongClick = onReset,
-                        onClick = {}
+                    .then(
+                        if (onReset == null) Modifier else Modifier.combinedClickable(
+                            enabled = isEnabled,
+                            onClickLabel = stringResource(R.string.common_action_reset),
+                            onLongClickLabel = stringResource(R.string.common_action_reset),
+                            onClick = onReset,
+                            onLongClick = onReset,
+                        )
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     painter = painterResource(icon),
                     tint = colorPalette().accent,
-                    contentDescription = null,
+                    contentDescription = title.takeIf { onReset != null },
                     modifier = Modifier.size(18.dp)
                 )
             }
@@ -679,7 +675,7 @@ class PlaybackSettingsMenu private constructor(
         onValueChange: (Float) -> Unit,
         onSlideComplete: () -> Unit = {},
         valueRange: ClosedFloatingPointRange<Float>,
-        onReset: () -> Unit,
+        onReset: (() -> Unit)? = null,
         isEnabled: Boolean = true,
         stepSize: Float = 0.1f,
         defaultValue: Float? = null,
@@ -698,7 +694,7 @@ class PlaybackSettingsMenu private constructor(
                 drawValuePoints = drawValuePoints,
                 onValueChange = { if (isEnabled) onValueChange(it) },
                 onSlideComplete = { if (isEnabled) onSlideComplete() },
-                onReset = { if (isEnabled) onReset() },
+                onReset = onReset?.let { reset -> { if (isEnabled) reset() } },
                 toDisplay = toDisplay,
                 onDismiss = { isShowingDialog = false }
             )
@@ -732,7 +728,7 @@ class PlaybackSettingsMenu private constructor(
         drawValuePoints: Boolean = false,
         onValueChange: (Float) -> Unit,
         onSlideComplete: () -> Unit = {},
-        onReset: () -> Unit,
+        onReset: (() -> Unit)? = null,
         toDisplay: @Composable (Float) -> String = { it.toInt().toString() },
         onDismiss: () -> Unit
     ) {
@@ -744,16 +740,18 @@ class PlaybackSettingsMenu private constructor(
             horizontalAlignment = Alignment.Start,
             footer = {
                 ButtonRow(
-                    buttons = listOf(
-                        DialogButton(
-                            text = stringResource(R.string.common_action_reset),
-                            icon = R.drawable.refresh,
-                            textColor = colorPalette().textSecondary,
-                            onClick = {
-                                onReset()
-                                onDismiss()
-                            }
-                        ),
+                    buttons = listOfNotNull(
+                        onReset?.let { reset ->
+                            DialogButton(
+                                text = stringResource(R.string.common_action_reset),
+                                icon = R.drawable.refresh,
+                                textColor = colorPalette().textSecondary,
+                                onClick = {
+                                    reset()
+                                    onDismiss()
+                                }
+                            )
+                        },
                         DialogButton(
                             text = stringResource(R.string.common_action_close),
                             icon = R.drawable.checkmark,

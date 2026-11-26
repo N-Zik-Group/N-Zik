@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
@@ -286,13 +287,16 @@ internal fun LyricsSettingsMenu.LyricsFontSizeEntry(
                         .size(NativeIconActionSize)
                         .clip(uiRoundnessShape())
                         .iconBadgeBackground(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
-                        .clickable(onClick = onShowLyricsSizeDialog),
+                        .clickable(
+                            role = Role.Button,
+                            onClick = onShowLyricsSizeDialog,
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.text),
                         tint = iconBadgeGlyphColor(colorPalette().accent),
-                        contentDescription = null,
+                        contentDescription = stringResource(R.string.lyrics_size),
                         modifier = Modifier.size(18.dp)
                     )
                 }
