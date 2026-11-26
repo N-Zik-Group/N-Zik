@@ -8,6 +8,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.test.isEditable
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.verticalScroll
@@ -33,19 +34,27 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.NavigationBarPosition
+import app.n_zik.android.enums.NotificationButtons
+import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.navigationBarPositionKey
+import app.n_zik.android.utils.playerTypeKey
+import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
+import app.n_zik.android.utils.showthumbnailKey
+import app.n_zik.android.utils.thumbnailpauseKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import io.mockk.every
@@ -107,6 +116,75 @@ class AppearanceSettingsWiringTest {
         composeRule.onNodeWithTag("appearance.card.notification", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("appearance.card.presets", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNodeWithTag("appearance.card.reset", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test fun notificationActionShowsOneRestartControlWhenThePlayerIsUnavailable() {
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    AppearanceSettingsContent(
+                        search = Search(initialVisible = false),
+                        navController = mockk(relaxed = true),
+                        selectedCards = setOf(R.string.settings_section_notification_player_title),
+                    )
+                }
+            }
+        }
+        composeRule.onNodeWithText(context.getString(R.string.player_notification_first_action)).performClick()
+        composeRule.onNodeWithText(context.getString(NotificationButtons.Shuffle.textId)).performClick()
+        val restart = context.getString(R.string.settings_player_action_restart_service)
+        composeRule.onAllNodesWithText(restart).assertCountEquals(1)
+        composeRule.onNodeWithText(restart).assertIsNotEnabled()
+        composeRule.onNodeWithText(context.getString(R.string.player_restart_service_unavailable_message)).assertExists()
+    }
+
+    @Test fun openingModernAppearancePreservesWhetherEssentialShrinksPausedArtwork() {
+        context.preferences.edit()
+            .putString(playerTypeKey, PlayerType.Modern.name)
+            .putBoolean(thumbnailpauseKey, true)
+            .commit()
+        show()
+        composeRule.runOnIdle {
+            assertEquals(true, context.preferences.getBoolean(thumbnailpauseKey, false))
+        }
+    }
+
+    @Test fun hiddenCoverPreservesLyricsChoiceAndShowsFullscreenSettings() {
+        context.preferences.edit()
+            .putString(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor.name)
+            .putBoolean(showthumbnailKey, false)
+            .putBoolean(showlyricsthumbnailKey, true)
+            .commit()
+        show()
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_lyrics_artwork_visible_label)).assertCountEquals(0)
+        composeRule.onAllNodesWithText(context.getString(R.string.settings_section_fullscreen_lyrics_title)).assertCountEquals(1)
+        composeRule.runOnIdle {
+            assertEquals(true, context.preferences.getBoolean(showlyricsthumbnailKey, false))
+        }
+    }
+
+    @Test fun changingBackgroundRestoresCoverFromSearchTargetPage() {
+        context.preferences.edit()
+            .putString(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor.name)
+            .putBoolean(showthumbnailKey, false)
+            .commit()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides SettingsTargetRegistry()) {
+                AppearanceSettingsContent(
+                    search = Search(initialVisible = false),
+                    navController = mockk(relaxed = true),
+                    selectedCards = setOf(R.string.settings_player_background_section_title),
+                )
+            }
+        }
+        composeRule.runOnIdle { assertEquals(false, context.preferences.getBoolean(showthumbnailKey, true)) }
+        composeRule.onNodeWithTag("settings.target.appearance.colors_and_background.background_colors", useUnmergedTree = true)
+            .performClick()
+        composeRule.onNodeWithText(context.getString(R.string.common_color_source_artwork)).performClick()
+        composeRule.runOnIdle {
+            assertEquals(PlayerBackgroundColors.CoverColor.name, context.preferences.getString(playerBackgroundColorsKey, null))
+            assertEquals(true, context.preferences.getBoolean(showthumbnailKey, false))
+        }
     }
 
     @Test fun actionBarKeepsQueuePreviewAndItsDependentRowsWithQueueGestures() {

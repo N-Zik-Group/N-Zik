@@ -736,3 +736,7 @@ Listen Together settings and menu:
 Settings reset scopes:
 - fix(settings): isolate resets and preserve protected downloads
   - Restore playback and download defaults by scope and retain user data where required.
+
+Appearance settings layout:
+- fix(settings): align appearance controls and their conditions
+  - Group player appearance controls, populate matching search values and preserve category boundaries.

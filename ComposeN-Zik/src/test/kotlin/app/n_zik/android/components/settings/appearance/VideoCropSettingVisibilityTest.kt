@@ -3,15 +3,20 @@ package app.n_zik.android.components.settings.appearance
 import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
@@ -75,7 +80,11 @@ class VideoCropSettingVisibilityTest {
             }
             CompositionLocalProvider(LocalConfiguration provides configuration, LocalSettingsTargets provides targets,
                 LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape)) {
-                key(revision.value) { AppearanceCoverCard(Search(initialVisible = true, inputState = query)) }
+                key(revision.value) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        AppearanceCoverCard(Search(initialVisible = true, inputState = query))
+                    }
+                }
             }
         }
         for (player in PlayerType.entries) for (background in PlayerBackgroundColors.entries) for (wide in listOf(false, true)) {
@@ -85,7 +94,7 @@ class VideoCropSettingVisibilityTest {
                 landscape.value = wide
                 revision.value++
             }
-            compose.onNodeWithTag(tag).assertIsDisplayed()
+            compose.onNodeWithTag(tag).performScrollTo().assertIsDisplayed()
         }
         // The card itself must also survive a direct search for the crop setting.
         compose.runOnIdle {
@@ -93,7 +102,7 @@ class VideoCropSettingVisibilityTest {
             context.preferences.edit().putBoolean(cropVideoThumbnailsKey, true).commit()
             revision.value++
         }
-        compose.onNodeWithTag(tag).assertIsDisplayed().performClick()
+        compose.onNodeWithTag(tag).performScrollTo().assertIsDisplayed().performClick()
         compose.runOnIdle { assertFalse(context.preferences.getBoolean(cropVideoThumbnailsKey, true)) }
     }
 }

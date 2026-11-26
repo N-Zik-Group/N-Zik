@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.appearance
 
-import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -75,7 +74,6 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                         valueText = { it.text },
                     )
                 }
-                RestartPlayerService(restartService, onRestart = { restartService = false })
             }
 
                     }

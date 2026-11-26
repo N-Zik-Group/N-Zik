@@ -4,8 +4,6 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -15,7 +13,6 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -23,9 +20,7 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
 @Composable
-internal fun AppearanceResetCard(search: Search, restartState: MutableState<Boolean>) {
-
-    var restartService by restartState
+internal fun AppearanceResetCard(search: Search, onRestartRequired: () -> Unit) {
     val searchCtx_Reset = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_Reset,
@@ -47,7 +42,7 @@ internal fun AppearanceResetCard(search: Search, restartState: MutableState<Bool
                                 icon = R.drawable.refresh,
                                 onClick = {
                                     applyAppearanceDefaults(context)
-                                    restartService = true
+                                    onRestartRequired()
                                     Toaster.done()
                                 }
                             )

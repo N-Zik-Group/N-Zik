@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.appearance
 
 import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.LocalSettingsResetRestart
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -27,8 +28,6 @@ import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.AnimatedGradient
-import app.n_zik.android.enums.PlayerBackgroundColors
-import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.components.dialog.settings.PlayerActionBarSettingsDialog
 import app.n_zik.android.components.dialog.settings.MiniPlayerButtonsSettingsDialog
 import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDialogs
@@ -37,7 +36,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.SearchHistorySection
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsSourceFooter
@@ -46,12 +45,7 @@ import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
-import app.n_zik.android.utils.playerBackgroundColorsKey
-import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.showlyricsthumbnailKey
-import app.n_zik.android.utils.showthumbnailKey
-import app.n_zik.android.utils.thumbnailpauseKey
 import app.n_zik.android.components.tab.Search
 import androidx.compose.runtime.LaunchedEffect
 import app.n_zik.android.components.settings.common.SettingsDescription
@@ -71,7 +65,7 @@ fun AppearanceSettings(
     val context = LocalContext.current
 
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_APPEARANCE, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -105,6 +99,7 @@ fun AppearanceSettings(
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_APPEARANCE, it)
@@ -135,29 +130,12 @@ internal fun AppearanceSettingsContent(
     search: Search,
     navController: NavController,
     selectedCards: Set<Int>? = null,
-    normalizePreferences: Boolean = true,
     cardModifier: @Composable (Int) -> Modifier = { Modifier },
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
-    var playerBackgroundColors by rememberPreference(
-        playerBackgroundColorsKey,
-        PlayerBackgroundColors.AnimatedGradient
-    )
-    var thumbnailpause by rememberPreference(thumbnailpauseKey, true)
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val restartState = rememberSaveable { mutableStateOf(false) }
     var restartService by restartState
-    if (normalizePreferences && (selectedCards == null || R.string.player_presets_and_layout in selectedCards || R.string.settings_player_artwork_section_title in selectedCards)) {
-    if (playerBackgroundColors != PlayerBackgroundColors.BlurredCoverColor)
-        showthumbnail = true
-    if (!showthumbnail) {showlyricsthumbnail = false}
-    if (playerType == PlayerType.Modern) {
-        thumbnailpause = false
-
-    }
-    }
+    val onResetRestartRequired = LocalSettingsResetRestart.current
     PlayerActionBarSettingsDialog.Render()
     appearanceToolbarSettingsDialogs.forEach { it.Render() }
     MiniPlayerButtonsSettingsDialog.Render()
@@ -209,11 +187,13 @@ internal fun AppearanceSettingsContent(
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
-                AppearanceResetCard(search, restartState)
+                AppearanceResetCard(search, onResetRestartRequired ?: { restartService = true })
             }
         }
     }
-    SettingsCardSlot(SettingsSourceFooter) {
-        RestartPlayerService(restartService, onRestart = { restartService = false })
+    if (onResetRestartRequired == null) {
+        SettingsCardSlot(SettingsSourceFooter) {
+            RestartPlayerService(restartService, onRestart = { restartService = false })
+        }
     }
 }

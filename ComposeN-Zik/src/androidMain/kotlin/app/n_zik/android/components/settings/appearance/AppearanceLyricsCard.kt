@@ -29,6 +29,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.showBackgroundLyricsKey
 import app.n_zik.android.utils.showLyricsStateKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
+import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.thumbnailTapEnabledKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
@@ -49,6 +50,7 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @Composable
 internal fun AppearanceLyricsCard(search: Search) {
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
+    val showthumbnail by rememberPreference(showthumbnailKey, true)
     var thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
     var clickLyricsText by rememberPreference(clickOnLyricsTextKey, true)
     var lyricsColor by rememberPreference(lyricsColorKey, LyricsColor.White)
@@ -142,7 +144,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                     true
                 )
             )
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(search.inputValue, true)) {
+                if (showthumbnail && (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_artwork_visible_label).contains(search.inputValue, true))) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_lyrics_thumbnail"),
                         icon = R.drawable.image,
@@ -153,7 +155,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                     )
                 }
 
-            if (showlyricsthumbnail)
+            if (showthumbnail && showlyricsthumbnail)
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(
                         search.inputValue,
                         true

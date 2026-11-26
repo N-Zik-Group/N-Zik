@@ -77,7 +77,7 @@ internal fun AppearanceFullscreenLyricsCard(search: Search) {
     var actionExpanded by rememberPreference(actionExpandedKey, true)
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
     val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.settings_section_fullscreen_lyrics_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_title_artist_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_controls_visible_label).contains(search.inputValue, true) || stringResource(R.string.lyrics_fullscreen_technical_info_title).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_action_bar_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(search.inputValue, true)
-    if (!showlyricsthumbnail) {
+    if (!showthumbnail || !showlyricsthumbnail) {
 AnimatedVisibility(
                     visible = searchCtx_2,
                     enter = settingsCardEnter,

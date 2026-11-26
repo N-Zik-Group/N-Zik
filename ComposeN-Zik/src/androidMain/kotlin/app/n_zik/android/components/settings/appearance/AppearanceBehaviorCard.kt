@@ -47,6 +47,47 @@ import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 
+private const val PlayerBehaviorTarget = "appearance.player_behavior_and_visuals"
+
+internal enum class PlayerSongSwipeSetting(val target: String, val labelRes: Int, val descriptionRes: Int) {
+    Horizontal(
+        "$PlayerBehaviorTarget.disable_horizontal_swipe",
+        R.string.settings_player_disable_horizontal_swipe_label,
+        R.string.settings_player_disable_song_swipe_label,
+    ),
+    Vertical(
+        "$PlayerBehaviorTarget.disable_vertical_swipe",
+        R.string.settings_player_disable_vertical_song_swipe_label,
+        R.string.settings_player_vertical_swipe_expansion_description,
+    );
+
+    companion object {
+        fun forLayout(playerType: PlayerType, isLandscape: Boolean): PlayerSongSwipeSetting =
+            if (playerType == PlayerType.Modern && !isLandscape) Vertical else Horizontal
+    }
+}
+
+internal fun appearanceBehaviorSearchFallback(target: String, hasTarget: (String) -> Boolean): String? {
+    val candidates = when (target) {
+        "$PlayerBehaviorTarget.disable_vertical_swipe" -> listOf("$PlayerBehaviorTarget.disable_horizontal_swipe")
+        "$PlayerBehaviorTarget.disable_horizontal_swipe" -> listOf("$PlayerBehaviorTarget.disable_vertical_swipe")
+        "$PlayerBehaviorTarget.player_swipe_sensitivity" -> listOf(
+            "$PlayerBehaviorTarget.disable_vertical_swipe", "$PlayerBehaviorTarget.disable_horizontal_swipe",
+        )
+        "$PlayerBehaviorTarget.color_custom" -> listOf(
+            "$PlayerBehaviorTarget.visualizer_white_color_option", "$PlayerBehaviorTarget.visualizer",
+        )
+        "$PlayerBehaviorTarget.black_background_for_visualizer" -> listOf(
+            "$PlayerBehaviorTarget.showvisthumbnail", "$PlayerBehaviorTarget.visualizer",
+        )
+        "$PlayerBehaviorTarget.save_visualizer_state", "$PlayerBehaviorTarget.visualizer_white_color_option",
+        "$PlayerBehaviorTarget.visualizer_line_thickness", "$PlayerBehaviorTarget.showvisthumbnail",
+        "$PlayerBehaviorTarget.show_visualizer_buttons" -> listOf("$PlayerBehaviorTarget.visualizer")
+        else -> return null
+    }
+    return candidates.firstOrNull(hasTarget)
+}
+
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
 @Composable
@@ -75,7 +116,8 @@ internal fun AppearanceBehaviorCard(search: Search) {
     var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
     var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
     var showVisualizerButtons by rememberPreference(showVisualizerButtonsKey, true)
-    var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
+    val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
+    val swipeSetting = PlayerSongSwipeSetting.forLayout(playerType, isLandscape)
     var showVisualizerStateKey by rememberPreference(showVisualizerStateKey, false)
     val searchCtx_0_5 = search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_description).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true) || stringResource(R.string.visualizer_title).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.visualizer_microphone_permission_message).contains(search.inputValue, true)
     AnimatedVisibility(
@@ -89,17 +131,12 @@ internal fun AppearanceBehaviorCard(search: Search) {
             icon = R.drawable.equalizer,
             content = {
                 if (search.inputValue.isBlank()) CardCategoryLabel(stringResource(R.string.settings_group_player_gestures))
-            if (search.inputValue.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_disable_horizontal_swipe_label else R.string.settings_player_disable_vertical_song_swipe_label).contains(
-                    search.inputValue,
-                    true
-                )
-            )
-                if (search.inputValue.isBlank() || stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_disable_vertical_song_swipe_label else R.string.settings_player_disable_horizontal_swipe_label).contains(search.inputValue, true)) {
+                if (search.inputValue.isBlank() || stringResource(swipeSetting.labelRes).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget(if (playerType == PlayerType.Modern && !isLandscape) "appearance.player_behavior_and_visuals.disable_vertical_swipe" else "appearance.player_behavior_and_visuals.disable_horizontal_swipe"),
+                        modifier = Modifier.settingsSearchTarget(swipeSetting.target),
                         icon = R.drawable.sync,
-                        title = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_disable_vertical_song_swipe_label else R.string.settings_player_disable_horizontal_swipe_label),
-                        text = stringResource(if (playerType == PlayerType.Modern && !isLandscape) R.string.settings_player_vertical_swipe_expansion_description else R.string.settings_player_disable_song_swipe_label),
+                        title = stringResource(swipeSetting.labelRes),
+                        text = stringResource(swipeSetting.descriptionRes),
                         isChecked = disablePlayerHorizontalSwipe,
                         onCheckedChange = { disablePlayerHorizontalSwipe = it }
                     )

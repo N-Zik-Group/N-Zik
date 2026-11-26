@@ -26,6 +26,7 @@ import app.n_zik.android.utils.shakeSensitivityThemeKey
 import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.rotatingAlbumCoverKey
 import app.n_zik.android.utils.textoutlineKey
 import app.n_zik.android.components.tab.Search
@@ -51,6 +52,7 @@ internal fun AppearanceColorsCard(search: Search) {
         playerBackgroundColorsKey,
         PlayerBackgroundColors.AnimatedGradient
     )
+    var showthumbnail by rememberPreference(showthumbnailKey, true)
     var playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     var animatedGradient by rememberPreference(
         animatedGradientKey,
@@ -83,6 +85,9 @@ internal fun AppearanceColorsCard(search: Search) {
                         title = stringResource(R.string.settings_player_background_colors_label),
                         selectedValue = playerBackgroundColors,
                         onValueSelected = {
+                            if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor &&
+                                it != PlayerBackgroundColors.BlurredCoverColor
+                            ) showthumbnail = true
                             playerBackgroundColors = it
                         },
                         valueText = { playerBackgroundColorLabel(it, context::getString) }
