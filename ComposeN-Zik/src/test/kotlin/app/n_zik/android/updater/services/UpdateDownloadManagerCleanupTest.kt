@@ -3,7 +3,6 @@ package app.n_zik.android.updater.services
 import android.content.Context
 import app.n_zik.android.updater.ui.clearUpdateCache
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -63,7 +62,7 @@ class UpdateDownloadManagerCleanupTest {
     @Test
     fun `clearUpdateCache purges the update cache exactly once off the caller thread`() = runBlocking {
         mockkObject(UpdateDownloadManager)
-        every { UpdateDownloadManager.clearCache(any<Context>()) } just Runs
+        every { UpdateDownloadManager.clearCache(any<Context>()) } returns true
         val context = mockk<Context>()
 
         val callerThreadName = Thread.currentThread().name

@@ -12,6 +12,7 @@ import android.os.Environment
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.FileProvider
+import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.core.notifications.ensureAppNotificationChannel
 import app.n_zik.android.core.network.client.NetworkClientFactory
@@ -64,7 +65,10 @@ object UpdateDownloadManager {
      * Starts downloading the APK from the given URL.
      * Progress is reported through [downloadState].
      */
+    @Synchronized
     fun startDownload(context: Context, apkUrl: String, version: String) {
+        if (!BuildConfig.IS_AUTOUPDATE) return
+
         // Cancel any existing download
         cancelDownload(context)
 
@@ -275,6 +279,8 @@ object UpdateDownloadManager {
      * Triggers the Android package installer for the downloaded APK.
      */
     fun installApk(context: Context, filePath: String) {
+        if (!BuildConfig.IS_AUTOUPDATE) return
+
         try {
             val file = File(filePath)
             if (!file.exists()) {
@@ -296,23 +302,29 @@ object UpdateDownloadManager {
     /**
      * Clears all downloaded APKs from the cache directory.
      */
-    fun clearCache(context: Context) {
-        cleanupTempFiles(context)
+    @Synchronized
+    fun clearCache(context: Context): Boolean {
+        if (downloadJob?.isActive == true || _downloadState.value is DownloadState.Starting ||
+            _downloadState.value is DownloadState.Downloading
+        ) return false
+        if (!cleanupTempFiles(context)) return false
         downloadingVersion = null
         _downloadState.value = DownloadState.Idle
+        return true
     }
 
-    private fun cleanupTempFiles(context: Context) {
+    private fun cleanupTempFiles(context: Context): Boolean =
         try {
             val downloadDir = File(
                 context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS),
                 "nzik_updates"
             )
             cleanupUpdateDir(downloadDir)
+            !downloadDir.exists() || downloadDir.listFiles()?.isEmpty() == true
         } catch (e: Exception) {
             Timber.tag("UpdateDownloadManager").e(e, "Failed to cleanup temp files")
+            false
         }
-    }
 
     /** File-based core of [cleanupTempFiles], separated so it can be unit-tested with temp dirs. */
     internal fun cleanupUpdateDir(downloadDir: File): Int {

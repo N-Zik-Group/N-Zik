@@ -496,3 +496,7 @@ MusicBrainz proxy:
 Theme Store catalog search:
 - fix(theme-store): match author handles and canonical Unicode
   - Accept names copied from the catalog and preserve existing tag filters.
+
+Updater download safeguards:
+- fix(updater): guard downloads and serialize cache cleanup
+  - Keep active transfers intact and block installation on builds without automatic updates.
