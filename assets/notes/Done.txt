@@ -1020,3 +1020,7 @@ Menus:
 Menus:
 - fix(menu): harmonize playlist destination pickers
   - Use library sorting, add items when creating a playlist, and close the player when opening a destination.
+
+Menus:
+- fix(menu): remove the empty header and share filter feedback
+  - Fit the overflow handle to its content and use the app feedback in the search filter.

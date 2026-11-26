@@ -49,7 +49,7 @@ class EllipsisMenuComponent private constructor(
 
     @Composable
     override fun ListMenu() {
-        ListMenu.Menu(title = "") {
+        ListMenu.Menu {
             buttons().forEach {
                 if( it is MenuIcon)
                     it.ListMenuItem()
@@ -59,7 +59,7 @@ class EllipsisMenuComponent private constructor(
 
     @Composable
     override fun GridMenu() {
-        GridMenu.Menu(title = "") {
+        GridMenu.Menu {
             items( buttons(), Button::hashCode ) {
                 if( it is MenuIcon)
                     it.GridMenuItem()

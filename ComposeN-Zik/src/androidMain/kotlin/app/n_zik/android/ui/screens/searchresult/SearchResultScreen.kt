@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
@@ -44,6 +45,7 @@ import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.typography
 import androidx.compose.material3.Icon
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.glass.PageButtonFeedback
 import app.n_zik.android.components.menu.GlassDropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
@@ -139,32 +141,35 @@ fun SearchResultScreen(
                         ) {
                             ContentType.entries.forEach { type ->
                                 val selected = type == filterContentType
-                                DropdownMenuItem(
-                                    modifier = menuSelectionSemantics(selected),
-                                    text = { Text(type.textName, color = colorPalette().text) },
-                                    leadingIcon = {
-                                        Icon(
-                                            painter = painterResource(id = type.icon),
-                                            contentDescription = null,
-                                            tint = colorPalette().text
-                                        )
-                                    },
-                                    trailingIcon = {
-                                        RadioButton(
-                                            selected = selected,
-                                            onClick = null,
-                                            modifier = Modifier.size(20.dp),
-                                            colors = RadioButtonDefaults.colors(
-                                                selectedColor = colorPalette().accent,
-                                                unselectedColor = colorPalette().textSecondary,
-                                            ),
-                                        )
-                                    },
-                                    onClick = {
-                                        onFilterContentTypeChanged(type)
-                                        showFilterMenu.value = false
-                                    }
-                                )
+                                PageButtonFeedback(false, true, RectangleShape, null) { feedback, source ->
+                                    DropdownMenuItem(
+                                        modifier = feedback.then(menuSelectionSemantics(selected)),
+                                        interactionSource = source,
+                                        text = { Text(type.textName, color = colorPalette().text) },
+                                        leadingIcon = {
+                                            Icon(
+                                                painter = painterResource(id = type.icon),
+                                                contentDescription = null,
+                                                tint = colorPalette().text
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            RadioButton(
+                                                selected = selected,
+                                                onClick = null,
+                                                modifier = Modifier.size(20.dp),
+                                                colors = RadioButtonDefaults.colors(
+                                                    selectedColor = colorPalette().accent,
+                                                    unselectedColor = colorPalette().textSecondary,
+                                                ),
+                                            )
+                                        },
+                                        onClick = {
+                                            onFilterContentTypeChanged(type)
+                                            showFilterMenu.value = false
+                                        }
+                                    )
+                                }
                             }
                         }
                     }
