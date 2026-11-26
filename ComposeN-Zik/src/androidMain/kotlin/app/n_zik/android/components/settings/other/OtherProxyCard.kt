@@ -15,6 +15,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.utils.isProxyEnabledKey
@@ -259,4 +260,7 @@ internal fun OtherProxyCard(search: Search) {
 
 @Composable
 private fun Proxy.Type.displayLabel(): String =
-    if (this == Proxy.Type.DIRECT) stringResource(R.string.network_proxy_mode_direct) else name
+    proxyModeLabel(this, LocalResources.current::getString)
+
+internal fun proxyModeLabel(mode: Proxy.Type, resolveString: (Int) -> String): String =
+    if (mode == Proxy.Type.DIRECT) resolveString(R.string.network_proxy_mode_direct) else mode.name

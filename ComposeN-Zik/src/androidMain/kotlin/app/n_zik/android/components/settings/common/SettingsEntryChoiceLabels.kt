@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.common
 
 import java.net.Proxy
 import java.util.Locale
+import app.n_zik.android.components.settings.other.proxyModeLabel
 import app.n_zik.android.utils.minutesLabel
 import app.n_zik.android.utils.secondsLabel
 
@@ -119,7 +120,7 @@ internal fun settingsEntryChoiceLabels(
         "ui.settings_use_font_type.settings_use_font_type" to FontType.entries.map { it.name },
         "appearance.player_behavior_and_visuals.songs_number_to_show" to SongsNumber.entries.map { it.name },
         "general.playback.min_listening_time" to ExoPlayerMinTimeForEvent.entries.map { secondsLabel(it.asSeconds, locale) },
-        "other.proxy.proxy_mode" to Proxy.Type.values().map { it.name },
+        "other.proxy.proxy_mode" to Proxy.Type.values().map { proxyModeLabel(it, resolveString) },
         "accounts.sync_data_with_ytm_account.sync_direction" to SyncDirection.entries.map { resolveString(it.stringResource) },
         "network.quality.audio_quality_format" to
             resources(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_low),

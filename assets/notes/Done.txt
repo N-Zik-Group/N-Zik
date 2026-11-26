@@ -463,3 +463,8 @@ Menus:
 - fix(menu): refresh actions while the dropdown stays open
   - Render the current list and action callbacks when offline mode changes the open hamburger menu.
   - Keep its scroll position and cover the action update in DropdownClosedBoundaryTest.
+
+Settings search:
+- fix(settings): index the displayed proxy connection type
+  - Reuse the proxy selector label for global and category search.
+  - Cover a localized DIRECT choice and the source resource fallback.
