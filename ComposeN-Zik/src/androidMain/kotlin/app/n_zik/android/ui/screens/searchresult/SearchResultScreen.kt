@@ -46,7 +46,10 @@ import androidx.compose.material3.Icon
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GlassDropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
+import app.n_zik.android.components.menu.menuSelectionSemantics
 import app.n_zik.android.enums.ContentType
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
@@ -135,13 +138,26 @@ fun SearchResultScreen(
                             shape = uiRoundnessShape()
                         ) {
                             ContentType.entries.forEach { type ->
+                                val selected = type == filterContentType
                                 DropdownMenuItem(
+                                    modifier = menuSelectionSemantics(selected),
                                     text = { Text(type.textName, color = colorPalette().text) },
                                     leadingIcon = {
                                         Icon(
                                             painter = painterResource(id = type.icon),
                                             contentDescription = null,
                                             tint = colorPalette().text
+                                        )
+                                    },
+                                    trailingIcon = {
+                                        RadioButton(
+                                            selected = selected,
+                                            onClick = null,
+                                            modifier = Modifier.size(20.dp),
+                                            colors = RadioButtonDefaults.colors(
+                                                selectedColor = colorPalette().accent,
+                                                unselectedColor = colorPalette().textSecondary,
+                                            ),
                                         )
                                     },
                                     onClick = {

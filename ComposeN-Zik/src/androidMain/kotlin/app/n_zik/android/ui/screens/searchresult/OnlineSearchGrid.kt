@@ -67,6 +67,7 @@ import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
@@ -114,15 +115,39 @@ fun OnlineSearchGrid(
     }
     val storedRows by rememberSongRowMetadata(trackIds)
     val linkedCredits by rememberSongRowArtistCredits(trackIds)
+    val menuLabel = stringResource(R.string.common_menu_label)
 
     val itemContent: @Composable LazyGridItemScope.(Innertube.Item) -> Unit = { item ->
+        val route = when (item) {
+            is Innertube.AlbumItem -> "${NavRoutes.album.name}/${item.key}"
+            is Innertube.ArtistItem -> "${NavRoutes.artist.name}/${item.key}"
+            is Innertube.PlaylistItem -> onlinePlaylistRoute(item.key)
+            else -> null
+        }
+        val cardActions = if (route == null) Modifier else Modifier
+            .clip(uiRoundnessShape())
+            .combinedClickable(
+                onClick = { navController.navigate(route) },
+                onLongClickLabel = menuLabel,
+                onLongClick = {
+                    menuState.display {
+                        when (item) {
+                            is Innertube.AlbumItem -> OnlineAlbumItemMenu(navController, item).MenuComponent()
+                            is Innertube.ArtistItem -> OnlineArtistItemMenu(navController, item).MenuComponent()
+                            is Innertube.PlaylistItem -> OnlinePlaylistItemMenu(navController, item).MenuComponent()
+                            else -> Unit
+                        }
+                    }
+                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                },
+            )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(
                 vertical = Dimensions.itemsVerticalPadding,
                 horizontal = 0.dp
-            )
+            ).then(cardActions)
         ) {
             when (item) {
                 is Innertube.SongItem -> {
@@ -196,21 +221,7 @@ fun OnlineSearchGrid(
                         thumbnailSizeDp = thumbnailSizeDp,
                         alternative = true,
                         showInfo = false,
-                        modifier = Modifier
-                            .clip(uiRoundnessShape()).combinedClickable(
-                                onClick = {
-                                    navController.navigate("${NavRoutes.album.name}/${item.key}")
-                                },
-                                onLongClick = {
-                                    menuState.display {
-                                        OnlineAlbumItemMenu(
-                                            navController = navController,
-                                            album = item
-                                        ).MenuComponent()
-                                    }
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                }
-                            ),
+                        modifier = Modifier.clip(uiRoundnessShape()),
                         disableScrollingText = disableScrollingText
                     )
                 }
@@ -225,22 +236,7 @@ fun OnlineSearchGrid(
                         showName = false,
                         showInfo = false,
                         isYoutubePlaylist = true,
-                        modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
-                            onClick = {
-                                when (tabIndex) {
-                                    4, 5, 6 -> navController.navigate(onlinePlaylistRoute(item.key))
-                                }
-                            },
-                            onLongClick = {
-                                menuState.display {
-                                    OnlinePlaylistItemMenu(
-                                        navController = navController,
-                                        playlist = item
-                                    ).MenuComponent()
-                                }
-                                hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                            }
-                        ),
+                        modifier = Modifier.clip(uiRoundnessShape()),
                         disableScrollingText = disableScrollingText
                     )
                 }
@@ -252,18 +248,7 @@ fun OnlineSearchGrid(
                         thumbnailSizeDp = thumbnailSizeDp,
                         alternative = true,
                         showName = false,
-                        modifier = Modifier
-                            .clip(uiRoundnessShape()).combinedClickable(
-                                onClick = {
-                                    navController.navigate("${NavRoutes.artist.name}/${item.key}")
-                                },
-                                onLongClick = {
-                                    menuState.display {
-                                        OnlineArtistItemMenu(navController = navController, artist = item).MenuComponent()
-                                    }
-                                    hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                }
-                            ),
+                        modifier = Modifier.clip(uiRoundnessShape()),
                         disableScrollingText = disableScrollingText
                     )
                 }

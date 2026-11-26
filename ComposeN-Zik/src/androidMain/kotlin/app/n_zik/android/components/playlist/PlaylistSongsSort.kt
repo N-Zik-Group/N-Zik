@@ -49,8 +49,6 @@ class PlaylistSongsSort private constructor(
     override fun getEnumConstants(): List<PlaylistSongSortBy> =
         super.getEnumConstants().filter { it != PlaylistSongSortBy.RewindTop || isRewind }
 
-    override fun onLongClick() { /* Does nothing */ }
-
     @Composable
     override fun ToolBarButton() {
         super.ToolBarButton()
@@ -60,7 +58,7 @@ class PlaylistSongsSort private constructor(
             style = typography().s.semiBold,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.clip(uiRoundnessShape()).clickable { super.onLongClick() }
+            modifier = Modifier.clip(uiRoundnessShape()).clickable(onClick = ::onLongClick)
         )
     }
 }

@@ -960,3 +960,7 @@ Settings:
 Settings:
 - fix(settings): label the interface shortcuts card
   - Give the Theme Store and Glass shortcuts a standard card heading.
+
+Menus:
+- fix(menu): complete search and playlist menu interactions
+  - Expose collection menus over the whole card, mark the active filter, and open sorting from the playlist sort arrow.
