@@ -139,6 +139,7 @@ import app.n_zik.android.utils.autoSyncToolbutton
 import app.n_zik.android.utils.autosyncArtistsKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.filterByKey
+import app.n_zik.android.utils.YouTubeArtistProvenance
 import app.n_zik.android.utils.importYTMSubscribedChannels
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
@@ -273,9 +274,8 @@ fun HomeArtists(
         if (!showFavoritesArtist && artistType == ArtistsType.Favorites) artistType = ArtistsType.Library
     }
 
-    if (!isYouTubeSyncEnabled()) {
-        filterBy = FilterBy.All
-    }
+    val showYouTubeOrigin by YouTubeArtistProvenance.showOrigin.collectAsStateWithLifecycle()
+    val sourceFilter = if (showYouTubeOrigin) filterBy else FilterBy.All
 
     val context = LocalContext.current
     val preview = LocalThemePreview.current
@@ -321,13 +321,13 @@ fun HomeArtists(
         }
     }
     val groups = eligibleDeviceGroups
-    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, artistType, filterBy, groups) {
+    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, artistType, sourceFilter, groups) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, artistType, filterBy, groups) {
+    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, artistType, sourceFilter, groups) {
         if (!searchDataReady || !groupsReady) return@LaunchedEffect
         val type = artistType
-        val source = filterBy
+        val source = sourceFilter
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
             candidates.filter { item ->
@@ -430,12 +430,14 @@ fun HomeArtists(
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
     val doAutoSync by rememberPreference(autosyncArtistsKey, false)
-    var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
-
-
-    LaunchedEffect(justSynced, doAutoSync) {
-        if (preview == null && !justSynced && importYTMSubscribedChannels())
-                justSynced = true
+    val artistImportEnabled by YouTubeArtistProvenance.canImport.collectAsStateWithLifecycle()
+    var justSynced by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(artistImportEnabled, doAutoSync, preview) {
+        if (!artistImportEnabled) {
+            justSynced = false
+        } else if (preview == null && doAutoSync && !justSynced && importYTMSubscribedChannels()) {
+            justSynced = true
+        }
     }
 
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
@@ -526,7 +528,7 @@ fun HomeArtists(
                         )
                     }
                     AnimatedVisibility(
-                        visible = artistType != ArtistsType.OnDevice && isYouTubeSyncEnabled(),
+                        visible = artistType != ArtistsType.OnDevice && showYouTubeOrigin,
                         enter = fadeIn(animationSpec = tween(200)) + expandVertically(animationSpec = tween(200)),
                         exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
                     ) {
@@ -688,11 +690,11 @@ fun HomeArtists(
                                             }
                                         },
                                         onLongClick = {
-                                            menuState.display { LocalArtistItemMenu(artist = artist).MenuComponent() }
+                                            menuState.display { LocalArtistItemMenu(navController = navController, artist = artist).MenuComponent() }
                                         }
                                     ),
                                     disableScrollingText = disableScrollingText,
-                                    isYoutubeArtist = artist.isYoutubeArtist,
+                                    isYoutubeArtist = showYouTubeOrigin && artist.isYoutubeArtist,
                                     thumbnailOverlay = {
                                         if( itemSelector.isActive ) {
                                             key(itemSelector.size) {

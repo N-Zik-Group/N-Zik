@@ -175,7 +175,6 @@ fun ArtistScreen(
                                     name = online.artist.title,
                                     thumbnailUrl = online.artist.thumbnail?.url,
                                     timestamp = now,
-                                    isYoutubeArtist = false,
                                     position = -1
                                 )
                                 if (inserted == -1L) {
@@ -184,7 +183,6 @@ fun ArtistScreen(
                                         id = browseId,
                                         name = PropUtils.retainIfModified(current?.name, online.artist.title),
                                         thumbnailUrl = PropUtils.retainIfModified(current?.thumbnailUrl, online.artist.thumbnail?.url),
-                                        isYoutubeArtist = current?.isYoutubeArtist == true,
                                         position = current?.position ?: -1
                                     )
                                 }
