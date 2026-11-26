@@ -708,3 +708,7 @@ Album menus:
 Playlist menus:
 - fix(menu): share playlist owner and source actions across layouts
   - Use verified owner metadata and handle failed external links without losing the menu.
+
+Live proxy preference:
+- fix(network): apply proxy changes to MusicBrainz immediately
+  - Update the independent MusicBrainz client when network preferences change.

@@ -86,6 +86,7 @@ import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.widget.NZikWidgetManager
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.Innertube.proxy
+import app.n_zik.android.musicbrainz.MBNetwork
 import app.n_zik.innertube.utils.ProxyPreferenceItem
 import app.n_zik.innertube.utils.ProxyPreferences
 import app.n_zik.innertube.utils.getProxy
@@ -161,6 +162,7 @@ internal fun MainActivity.mainActivityPreferenceChanges(
                     cacheDir = NetworkClientFactory.profileCacheDirectory(this@mainActivityPreferenceChanges)
                 )
                 Innertube.proxy = proxy
+                MBNetwork.proxy = proxy
             }
 
             dynamicThemeRespectBrightnessKey -> {
