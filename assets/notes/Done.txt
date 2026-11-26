@@ -632,3 +632,7 @@ Playlist membership and import:
 Browse ID editing:
 - fix(metadata): resolve manual changes across library destinations
   - Keep edited source IDs and names available in navigation, with guarded search and saves.
+
+Playlist deletion:
+- fix(playlist): report local and YouTube deletion outcomes
+  - Respect profile ownership and sync direction when deleting a linked playlist.
