@@ -724,3 +724,7 @@ Album insights:
 Quick Picks metadata:
 - fix(quick-picks): refresh displayed track credits from the library
   - Use current artist and duration data when rendering recommendation rows.
+
+Track information:
+- fix(info): keep artist navigation aligned with current track credits
+  - Load metadata off the UI thread and route valid artist links directly.

@@ -35,7 +35,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
+import app.n_zik.android.LOCAL_KEY_PREFIX
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
@@ -47,120 +51,80 @@ import app.n_zik.android.components.menu.info.InformationMenuSurface
 import app.n_zik.android.components.menu.info.InformationStatsCard
 import app.n_zik.android.components.menu.info.informationMenuBodyColor
 import app.n_zik.android.components.menu.info.informationMenuHeaderColor
+import app.n_zik.android.components.menu.navigateToMenuEntity
+import app.n_zik.android.components.song.TrackMetadataSearch
+import app.n_zik.android.components.song.isArtistIdForSong
+import app.n_zik.android.components.song.openTrackMetadataSearch
 import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.VideoOrSongInfo
-import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.songInfo
-import app.n_zik.innertube.utils.from
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
-import app.n_zik.android.models.Artist
-import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.models.Info
+import app.n_zik.android.utils.ARTIST_LINKED_NAMES_EXTRA
+import app.n_zik.android.utils.artistLinksWithStoredFallback
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.splitArtistNames
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.trackBrowseIdOrigin
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import androidx.compose.ui.text.font.FontStyle
 
-/** Issue #606 M12+M13 — result bundle for [loadVideoOrSongInfo], mirroring the two Compose state variables (`info`, `finalArtists`) that `LaunchedEffect(videoId)` used to assign as it went, interleaved with every network/DB call below. */
 internal data class VideoOrSongInfoResult(
     val info: VideoOrSongInfo?,
     val finalArtists: List<Pair<String, String>>,
 )
 
-/**
- * Issue #606 M12 (`Innertube.songInfo`, `Innertube.searchPage`) + M13
- * (`Database.artistTable.findBySongId`/`findByName` inside a loop) -- `VideoOrSongInfoScreen`'s
- * `LaunchedEffect(videoId)` used to run this entire sequential network+DB block inline, on whatever
- * dispatcher that effect resumes on (Main). Extracted here verbatim (only the two former Compose
- * `var`s become local `var`s so the function has a single entry/exit point) so the composable can
- * dispatch it in one `withContext(NzikDispatchers.DATA)` call and so it is unit-testable without
- * instantiating the composable. `internal` (not `private`) purely so
- * `VideoOrSongInfoScreenLoadOffMainTest` can call it directly -- it adds no new public legacy API.
- */
-internal suspend fun loadVideoOrSongInfo(videoId: String, songArtist: String): VideoOrSongInfoResult {
-    var info: VideoOrSongInfo? = null
-    var finalArtists: List<Pair<String, String>> = emptyList()
+internal suspend fun loadVideoOrSongInfo(
+    videoId: String,
+    songArtist: String,
+    source: MediaItem? = null,
+): VideoOrSongInfoResult {
+    val local = LOCAL_KEY_PREFIX in videoId
+    val info = if (local) null else runCatching {
+        Innertube.songInfo(videoId)?.getOrThrow()
+    }.onFailure { error ->
+        if (error is CancellationException) throw error
+        Timber.tag("VideoOrSongInfoScreen").w(error, "Could not load information for %s", videoId)
+    }.getOrNull()
+    val stored = runCatching {
+        Database.artistTable.findBySongIdDirect(videoId).map { Info(it.id, it.name) }
+    }.onFailure { error ->
+        if (error is CancellationException) throw error
+        Timber.tag("VideoOrSongInfoScreen").w(error, "Could not load artist credits for %s", videoId)
+    }.getOrDefault(emptyList())
 
-    try {
-        val result = Innertube.songInfo(videoId)
-        if (result != null && result.isSuccess) {
-            info = result.getOrNull()
-        }
-    } catch (e: Exception) {
-        Timber.tag("VideoOrSongInfoScreen").e(e, "exception")
+    val editedArtist = songArtist.startsWith(MODIFIED_PREFIX, ignoreCase = true)
+    val credits = if (editedArtist || source == null) stored else {
+        val preferences = appContext().preferences
+        source.artistLinksWithStoredFallback(stored) { preferences.trackBrowseIdOrigin(videoId, it) }
     }
-
-    // Fetch artists from database
-    try {
-        val dbArtists = Database.artistTable.findBySongId(videoId).first()
-        if (dbArtists.isNotEmpty()) {
-            finalArtists = dbArtists.map { it.id to (it.name ?: "") }
-        } else if (songArtist.isNotBlank()) {
-            // Parse songArtist - handle "," and "&" separators, then deduplicate
-            val parsed = songArtist
-                .splitArtistNames()
-                .distinctBy { it.lowercase() }
-            val artistsWithIds = mutableListOf<Pair<String, String>>()
-            for (name in parsed) {
-                // Try database first
-                var artistId = try {
-                    Database.artistTable.findByName(name).first()?.id
-                } catch (e: Exception) { null }
-
-                // If not in database, search online
-                if (artistId == null) {
-                    try {
-                        val searchResult = Innertube.searchPage<Innertube.ArtistItem>(
-                            query = name, params = Innertube.SearchFilter.Artist.value,
-                            fromMusicShelfRendererContent = { content -> Innertube.ArtistItem.from(content) }
-                        )?.getOrNull()
-                        val foundArtist = searchResult?.items?.firstOrNull()
-                        if (foundArtist != null) {
-                            artistId = foundArtist.key
-                            // Save to database
-                            Database.artistTable.insertIgnore(
-                                Artist(id = artistId, name = foundArtist.info?.name ?: name)
-                            )
-                            Database.songArtistMapTable.insertIgnore(
-                                SongArtistMap(songId = videoId, artistId = artistId)
-                            )
-                        }
-                    } catch (e: Exception) { /* Silently fail */ }
-                }
-
-                artistsWithIds.add((artistId ?: "") to name)
-            }
-            finalArtists = artistsWithIds
-        } else {
-            val apiAuthor = info?.author?.takeIf { it.isNotBlank() }
-            val apiAuthorId = info?.authorId
-            if (apiAuthor != null && apiAuthorId != null) {
-                finalArtists = listOf(apiAuthorId to apiAuthor)
-            }
-        }
-    } catch (e: Exception) {
-        // Fallback
-        val apiAuthor = info?.author?.takeIf { it.isNotBlank() }
-        val apiAuthorId = info?.authorId
-        if (apiAuthor != null && apiAuthorId != null) {
-            finalArtists = listOf(apiAuthorId to apiAuthor)
-        }
+    val linked = credits.mapNotNull { credit ->
+        val name = credit.name?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+        if (!isArtistIdForSong(credit.id, local)) return@mapNotNull null
+        credit.id to name
+    }.distinctBy { it.first }
+    val sourceNames = source?.mediaMetadata?.extras?.getStringArrayList("artistNames").orEmpty()
+    val sourceLinkedNames = source?.mediaMetadata?.extras?.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA).orEmpty()
+    val names = when {
+        !editedArtist && sourceNames.isNotEmpty() -> sourceNames
+        songArtist.isNotBlank() -> cleanPrefix(songArtist).splitArtistNames()
+        linked.isEmpty() -> listOfNotNull(info?.author?.takeIf(String::isNotBlank))
+        else -> emptyList()
     }
-
-    // Final deduplication by artist name (case-insensitive)
-    // Keep the entry with a non-empty ID if possible
-    finalArtists = finalArtists
-        .groupBy { it.second.lowercase() }
-        .map { (_, group) ->
-            group.firstOrNull { it.first.isNotBlank() } ?: group.first()
+    val unlinked = names.distinctBy { it.lowercase() }
+        .filterNot { name ->
+            (!editedArtist && linked.isNotEmpty() && sourceLinkedNames.any { it.equals(name, ignoreCase = true) }) ||
+                linked.any { (_, linkedName) -> cleanPrefix(linkedName).equals(name, ignoreCase = true) }
         }
-
-    return VideoOrSongInfoResult(info, finalArtists)
+        .map { "" to it }
+    return VideoOrSongInfoResult(info, linked + unlinked)
 }
 
 @Composable
@@ -172,20 +136,23 @@ fun VideoOrSongInfoScreen(
     albumId: String = "",
     albumTitle: String = "",
     navController: NavController? = null,
+    source: MediaItem? = null,
     onNavigateUp: () -> Unit,
     onClose: () -> Unit,
+    onEntityNavigation: () -> Unit = {},
     onPlay: (() -> Unit)? = null
 ) {
     if (videoId.isBlank()) return
 
-    var info by remember(videoId, songArtist) { mutableStateOf<VideoOrSongInfo?>(null) }
-    var isLoading by remember(videoId, songArtist) { mutableStateOf(true) }
-    var finalArtists by remember(videoId, songArtist) { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    val menuState = LocalMenuState.current
+    var info by remember(videoId, songArtist, source) { mutableStateOf<VideoOrSongInfo?>(null) }
+    var isLoading by remember(videoId, songArtist, source) { mutableStateOf(true) }
+    var finalArtists by remember(videoId, songArtist, source) { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
 
-    LaunchedEffect(videoId, songArtist) {
+    LaunchedEffect(videoId, songArtist, source) {
         isLoading = true
         val result = withContext(NzikDispatchers.DATA) {
-            loadVideoOrSongInfo(videoId, songArtist)
+            loadVideoOrSongInfo(videoId, songArtist, source)
         }
         info = result.info
         finalArtists = result.finalArtists
@@ -194,9 +161,10 @@ fun VideoOrSongInfoScreen(
 
     val shimmer = isLoading || forceLoadingShimmerPreview()
     val artists = if (isLoading) {
-        songArtist.splitArtistNames().distinctBy { it.lowercase() }.map { "" to it }
+        cleanPrefix(songArtist).splitArtistNames().distinctBy { it.lowercase() }.map { "" to it }
     } else finalArtists
-    val displayTitle = info?.title?.takeIf { it.isNotBlank() } ?: songTitle
+    val displayTitle = if (songTitle.startsWith(MODIFIED_PREFIX, ignoreCase = true)) cleanPrefix(songTitle)
+        else info?.title?.takeIf(String::isNotBlank) ?: songTitle
     val displayThumbnail = songThumbnailUrl.takeIf { it.isNotBlank() }
 
     InformationMenuSurface(
@@ -266,8 +234,18 @@ fun VideoOrSongInfoScreen(
                         InfoRow(
                             label = stringResource(R.string.library_artists_title),
                             value = artistName,
-                            showArrow = artistId.isNotBlank(),
-                            onClick = { navController?.navigate("${NavRoutes.artist.name}/$artistId") },
+                            showArrow = navController != null && !isLoading,
+                            onClick = {
+                                if (navController != null) {
+                                    if (artistId.isNotBlank()) {
+                                        navigateToMenuEntity(navController, menuState, NavRoutes.artist, artistId)
+                                        onEntityNavigation()
+                                    } else if (openTrackMetadataSearch(navController, artistName, TrackMetadataSearch.Artist)) {
+                                        onClose()
+                                        onEntityNavigation()
+                                    }
+                                }
+                            },
                         )
                     }
 
@@ -277,9 +255,12 @@ fun VideoOrSongInfoScreen(
                         InfoRow(
                             label = stringResource(R.string.library_sort_album),
                             value = albumTitle.takeIf { it.isNotBlank() } ?: stringResource(R.string.library_sort_album),
-                            showArrow = true,
+                            showArrow = navController != null,
                             onClick = {
-                                navController?.navigate("${NavRoutes.album.name}/$albumId")
+                                if (navController != null) {
+                                    navigateToMenuEntity(navController, menuState, NavRoutes.album, albumId)
+                                    onEntityNavigation()
+                                }
                             }
                         )
                     }
