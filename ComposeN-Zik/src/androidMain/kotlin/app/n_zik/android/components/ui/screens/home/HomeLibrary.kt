@@ -1,6 +1,9 @@
 @file:Suppress("OPT_IN_USAGE", "OPT_IN_USAGE_ERROR")
 package app.n_zik.android.components.ui.screens.home
 
+import app.n_zik.android.components.playlist.launchLocalPlaylistDeletion
+import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
+
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
@@ -62,12 +65,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.size
-import androidx.annotation.DrawableRes
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
@@ -84,14 +85,15 @@ import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 
-import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActions
 import app.n_zik.android.components.glass.glassFloatingActionContent
@@ -146,7 +148,6 @@ import app.n_zik.android.utils.homeLibraryOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
-import app.n_zik.android.utils.semiBold
 import org.json.JSONArray
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
@@ -195,25 +196,8 @@ import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 
 
-@Composable
-internal fun HomeLibraryFilterIcon(@DrawableRes icon: Int) {
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .iconBadgeBackground(
-                color = colorPalette().accent.copy(alpha = 0.1f),
-                shape = uiRoundnessShape()
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(icon),
-            tint = colorPalette().accent,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp)
-        )
-    }
-}
+internal fun Modifier.playlistSelectionSemantics(isSelected: Boolean?): Modifier =
+    if (isSelected == null) this else semantics { selected = isSelected }
 
 @ExperimentalMaterial3Api
 @UnstableApi
@@ -438,22 +422,24 @@ fun HomeLibrary(
         load
     }
     val shuffle = SongShuffler.deferred(action::snapshot)
-    val playNext = PlayNext {
-        val load = action.snapshot() ?: return@PlayNext
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
-            binder?.player?.addNextOffMain(mediaItems, context)
-            itemSelector.isActive = false
+    fun queueSelection(playNext: Boolean) {
+        val player = binder?.player ?: return
+        val load = action.snapshot() ?: return
+        val endSelection = itemSelector.captureSelectionCompletion()
+        val menuKey = menuState.transitionKey
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            val items = withContext(NzikDispatchers.DATA) { load()?.map { it.asMediaItem } ?: emptyList() }
+            val queued = if (playNext) player.addNextOffMain(items, context)
+                else player.enqueueOffMain(items, context)
+            if (queued) {
+                endSelection()
+                if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+            }
         }
     }
-    val enqueue = Enqueue {
-        val load = action.snapshot() ?: return@Enqueue
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
-            binder?.player?.enqueueOffMain(mediaItems, context)
-            itemSelector.isActive = false
-        }
-    }
+
+    val playNext = PlayNext(dismissOnClick = false) { queueSelection(playNext = true) }
+    val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
         captureMediaItems = {
@@ -667,20 +653,13 @@ fun HomeLibrary(
                         ConfirmationDialog(
                             title = stringResource(R.string.playlist_delete_multiple_dialog_title),
                             confirmText = stringResource(R.string.common_action_delete),
-                            text = text,
+                            text = playlistDeletionConfirmationText(text, itemsToDelete.map { it.playlist }),
                             onDismiss = { showDeleteConfirmDialog = false },
                             onConfirm = {
                                 showDeleteConfirmDialog = false
                                 if (itemSelector.isActive != hasSelection) return@ConfirmationDialog
-                                val currentTargets = actionTargets()
-                                if (hasSelection && currentTargets.isEmpty()) return@ConfirmationDialog
-                                coroutineScope.launch(NzikDispatchers.DATA) {
-                                    Database.asyncTransaction {
-                                        currentTargets.forEach { preview ->
-                                            playlistTable.delete(preview.playlist)
-                                        }
-                                    }
-                                    withContext(NzikDispatchers.UI) { itemSelector.isActive = false }
+                                launchLocalPlaylistDeletion(context, itemsToDelete.map { it.playlist }) {
+                                    if (itemSelector.isActive == hasSelection) itemSelector.isActive = false
                                 }
                             }
                         )
@@ -811,6 +790,9 @@ fun HomeLibrary(
                                     }
                                 }
 
+                                val selected = if (itemSelector.isActive) {
+                                    itemSelector.isSelected(preview) { it.playlist.id }
+                                } else null
                                 PlaylistItem(
                                     playlist = preview,
                                     thumbnailSizeDp = itemSize.size.dp,
@@ -819,11 +801,12 @@ fun HomeLibrary(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .clip(uiRoundnessShape())
+                                        .playlistSelectionSemantics(selected)
                                         .combinedClickable(
                                             enabled = gridReady,
                                             onClick = {
-                                                if( itemSelector.isActive ) {
-                                                itemSelector.toggle(preview) { it.playlist.id }
+                                                if (itemSelector.isActive) {
+                                                    itemSelector.toggle(preview) { it.playlist.id }
                                                 } else {
                                                     search.hideIfEmpty()
                                                     if (playlistType == PlaylistsType.OnDevice) {
@@ -852,20 +835,17 @@ fun HomeLibrary(
                                         ) {
                                             OnDeviceCoverBadge(Modifier.align(Alignment.TopEnd).zIndex(3f))
                                         }
-                                        if( itemSelector.isActive ) {
-                                            key(itemSelector.size) {
-                                                val checked = itemSelector.isSelected(preview) { it.playlist.id }
-                                                Icon(
-                                                    painter = painterResource(if (checked) R.drawable.checked_filled else R.drawable.unchecked_outline),
-                                                    contentDescription = null,
-                                                    tint = if (checked) colorPalette().accent else colorPalette().text,
-                                                    modifier = Modifier
-                                                        .padding(4.dp)
-                                                        .size(24.dp)
-                                                        .align(Alignment.TopStart)
-                                                        .zIndex(2f)
-                                                )
-                                            }
+                                        if (selected != null) {
+                                            Icon(
+                                                painter = painterResource(if (selected) R.drawable.checked_filled else R.drawable.unchecked_outline),
+                                                contentDescription = null,
+                                                tint = if (selected) colorPalette().accent else colorPalette().text,
+                                                modifier = Modifier
+                                                    .padding(4.dp)
+                                                    .size(24.dp)
+                                                    .align(Alignment.TopStart)
+                                                    .zIndex(2f)
+                                            )
                                         } else if (sort.sortBy == PlaylistSortBy.SongCount) {
                                             Box(
                                                 modifier = Modifier

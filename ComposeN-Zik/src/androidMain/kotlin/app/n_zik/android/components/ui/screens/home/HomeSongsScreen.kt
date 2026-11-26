@@ -120,6 +120,7 @@ import app.n_zik.android.core.utils.Toaster
 import org.json.JSONArray
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -479,24 +480,26 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         isRecommendationsLoading = { isRecommendationsLoading },
         onToggleRecommendation = { isRecommendationEnabled = !isRecommendationEnabled }
     )
-    val playNext = PlayNext {
-        val songsToAdd = getSongs().toList()
-        if (itemSelector.isActive && songsToAdd.isEmpty()) return@PlayNext
-        itemSelector.isActive = false
-        coroutineScope.launch {
-            val mediaItems = withContext( NzikDispatchers.DATA ) { songsToAdd.map( Song::asMediaItem ) }
-            binder?.player?.addNextOffMain( mediaItems, appContext() )
+    val queueMenuState = LocalMenuState.current
+    fun queueSelection(playNext: Boolean) {
+        val player = binder?.player ?: return
+        val songs = getSongs().toList()
+        if (songs.isEmpty()) return
+        val endSelection = itemSelector.captureSelectionCompletion()
+        val menuKey = queueMenuState.transitionKey
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            val items = withContext(NzikDispatchers.DATA) { songs.map(Song::asMediaItem) }
+            val queued = if (playNext) player.addNextOffMain(items, context)
+                else player.enqueueOffMain(items, context)
+            if (queued) {
+                endSelection()
+                if (queueMenuState.isCurrentMenu(menuKey)) queueMenuState.hide()
+            }
         }
     }
-    val enqueue = Enqueue {
-        val songsToAdd = getSongs().toList()
-        if (itemSelector.isActive && songsToAdd.isEmpty()) return@Enqueue
-        itemSelector.isActive = false
-        coroutineScope.launch {
-            val mediaItems = withContext( NzikDispatchers.DATA ) { songsToAdd.map( Song::asMediaItem ) }
-            binder?.player?.enqueueOffMain( mediaItems, appContext() )
-        }
-    }
+
+    val playNext = PlayNext(dismissOnClick = false) { queueSelection(playNext = true) }
+    val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
     val addToFavorite = LikeComponent(::getSongs)
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
@@ -546,6 +549,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         override fun onLongClick() {
             coroutineScope.launch(NzikDispatchers.DATA) { removeYTMLikedSongs() }
         }
+        override val menuLongClick: (() -> Unit) get() = ::onLongClick
     }
 
     val localMatchButton = remember {
@@ -821,13 +825,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                     ),
                                     onClick = {
                                         menuState.display {
-                                            FilterMenu(
-                                                title = stringResource(R.string.library_filter_by_title),
-                                                onDismiss = menuState::hide,
-                                                onAll = { filterBy = FilterBy.All },
-                                                onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },
-                                                onLocal = { filterBy = FilterBy.Local }
-                                            )
+                                            FilterMenu(selected = filterBy) { selected ->
+                                                filterBy = selected
+                                                menuState.hide()
+                                            }
                                         }
                                     }
                                 )

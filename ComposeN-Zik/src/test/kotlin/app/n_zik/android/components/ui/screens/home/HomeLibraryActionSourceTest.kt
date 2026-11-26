@@ -1,9 +1,22 @@
 package app.n_zik.android.components.ui.screens.home
 
 import android.app.Application
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import app.n_zik.android.models.Song
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -19,6 +32,23 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class HomeLibraryActionSourceTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test fun `playlist tile exposes selection only while selecting`() {
+        val selection = mutableStateOf<Boolean?>(null)
+        compose.setContent {
+            Box(
+                Modifier.size(48.dp).testTag("playlist")
+                    .playlistSelectionSemantics(selection.value)
+                    .clickable { selection.value = selection.value?.not() },
+            )
+        }
+        val tile = compose.onNodeWithTag("playlist")
+        tile.assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
+        compose.runOnIdle { selection.value = false }
+        tile.assertIsNotSelected()
+        tile.performClick()
+        tile.assertIsSelected()
+    }
 
     // runBlocking bridges retained playback callbacks to synchronous JUnit assertions.
     @Test fun `retained toolbar resolves current targets once only when invoked`() = runBlocking {

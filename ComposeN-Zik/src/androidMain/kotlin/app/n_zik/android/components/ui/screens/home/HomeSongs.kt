@@ -107,6 +107,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.bridge.library.SongRecommendations
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.rememberSongRowArtistCredits
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.items.SongItemPlaceholder
@@ -598,6 +599,7 @@ fun HomeSongs(
     )
 
     val songIds = remember(baseSongs) { baseSongs.map(Song::id) }
+    val artistCredits by rememberSongRowArtistCredits(songIds)
     val cachedSongIds by rememberSongRowCache(songIds)
     val showPlaylistIndicator by rememberPreference(playlistindicatorKey, false)
     val playlistStatesMap by remember(songIds, preview, showPlaylistIndicator) {
@@ -680,6 +682,7 @@ fun HomeSongs(
                                     isLiked = song.rowLikeState(),
                                     observeLikeState = false,
                                     observeStoredMetadata = false,
+                                    artistCredits = artistCredits[song.id].orEmpty(),
                                     inPlaylist = playlistStatesMap[song.id] == true,
                                     itemSelector = itemSelector,
                                     navController = navController,

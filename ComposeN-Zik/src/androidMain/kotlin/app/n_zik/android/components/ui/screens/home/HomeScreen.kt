@@ -29,6 +29,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.NavController
 import app.n_zik.android.R
 import app.n_zik.android.enums.HomeScreenTabs
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.models.toUiMood
@@ -393,7 +394,7 @@ fun HomeScreen(
                             navController.navigate(route = "${NavRoutes.artist.name}/$it")
                         },
                         onPlaylistClick = {
-                            navController.navigate(route = "${NavRoutes.playlist.name}/$it")
+                            navController.navigate(route = onlinePlaylistRoute(it))
                         },
                         onSearchClick = {
                             navController.navigate(NavRoutes.search.name)

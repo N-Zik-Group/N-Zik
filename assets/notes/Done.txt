@@ -816,3 +816,7 @@ Album and artist details:
 Playlist destination menus:
 - fix(menu): unify playlist pickers across list and grid
   - Preserve local destinations, source IDs, lock states and navigation through menu openings.
+
+Library screens:
+- fix(library): keep source-aware actions and selection consistent
+  - Use fixed layout and accessible selection in the home categories.

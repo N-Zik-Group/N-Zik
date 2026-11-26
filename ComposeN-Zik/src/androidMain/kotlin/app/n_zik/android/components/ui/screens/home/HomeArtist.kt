@@ -84,6 +84,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.utils.from
@@ -369,22 +370,24 @@ fun HomeArtists(
         load
     }
     val shuffle = SongShuffler.deferred(action::snapshot)
-    val playNext = PlayNext {
-        val load = action.snapshot() ?: return@PlayNext
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
-            binder?.player?.addNextOffMain(mediaItems, context)
-            itemSelector.isActive = false
+    fun queueSelection(playNext: Boolean) {
+        val player = binder?.player ?: return
+        val load = action.snapshot() ?: return
+        val endSelection = itemSelector.captureSelectionCompletion()
+        val menuKey = menuState.transitionKey
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+            val items = withContext(NzikDispatchers.DATA) { load()?.map { it.asMediaItem } ?: emptyList() }
+            val queued = if (playNext) player.addNextOffMain(items, context)
+                else player.enqueueOffMain(items, context)
+            if (queued) {
+                endSelection()
+                if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+            }
         }
     }
-    val enqueue = Enqueue {
-        val load = action.snapshot() ?: return@Enqueue
-        coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.MEDIA) { load()?.map { it.asMediaItem } } ?: return@launch
-            binder?.player?.enqueueOffMain(mediaItems, context)
-            itemSelector.isActive = false
-        }
-    }
+
+    val playNext = PlayNext(dismissOnClick = false) { queueSelection(playNext = true) }
+    val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
         captureMediaItems = {
@@ -560,13 +563,10 @@ fun HomeArtists(
                                 ),
                                 onClick = {
                                     menuState.display {
-                                        FilterMenu(
-                                            title = stringResource(R.string.library_filter_by_title),
-                                            onDismiss = menuState::hide,
-                                            onAll = { filterBy = FilterBy.All },
-                                            onYoutubeLibrary = { filterBy = FilterBy.YoutubeLibrary },
-                                            onLocal = { filterBy = FilterBy.Local }
-                                        )
+                                        FilterMenu(selected = filterBy) { selected ->
+                                            filterBy = selected
+                                            menuState.hide()
+                                        }
                                     }
                                 }
                             )
