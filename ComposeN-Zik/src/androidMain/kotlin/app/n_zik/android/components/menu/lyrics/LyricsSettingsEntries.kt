@@ -22,7 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -74,7 +74,8 @@ internal fun SectionTitle(title: String) {
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp, horizontal = PressFeedbackHorizontalInset)
+            .padding(vertical = 12.dp)
+            .menuSectionHorizontalAlignment()
     )
 }
 

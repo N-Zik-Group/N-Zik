@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 
 import app.n_zik.android.utils.conditional
@@ -122,11 +124,15 @@ object ListMenu {
                             clip(topShape)
                         }
                         .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp)
                         .padding(top = MenuConstants.LIST_CONTENT_TOP_PADDING.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    content()
+                    CompositionLocalProvider(
+                        LocalListMenuRowOutset provides
+                            (MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp - PressFeedbackHorizontalInset),
+                        content = { content() },
+                    )
                     Spacer(modifier = Modifier.height(100.dp))
                 }
             }
@@ -148,15 +154,17 @@ object ListMenu {
         val alpha = if (enabled) 1f else 0.5f
         val isScrollingTextDisabled by rememberPreference( disableScrollingTextKey, false )
         val shape = uiRoundnessShape()
+        val outset = LocalListMenuRowOutset.current
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy( 12.dp ),
-            modifier = modifier
+            modifier = Modifier.listMenuRowOutset(outset)
+                .then(modifier)
                 .fillMaxWidth()
                 .clip(shape)
-                .menuEntryClick(shape, enabled && !loading, onClick, onLongClick)
-                .padding( vertical = 10.dp )
+                .menuEntryClick(shape, enabled && !loading, onClick, onLongClick, insetFeedback = false)
+                .padding(vertical = 10.dp, horizontal = outset)
         ) {
             icon()
 

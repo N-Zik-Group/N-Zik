@@ -31,7 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
+import app.n_zik.android.components.menu.menuSectionHorizontalAlignment
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -473,7 +473,8 @@ class OnlineArtistItemMenu private constructor(
             ),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = PressFeedbackHorizontalInset)
+                .padding(vertical = 12.dp)
+                .menuSectionHorizontalAlignment()
         )
     }
 }

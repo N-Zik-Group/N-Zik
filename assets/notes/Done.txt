@@ -932,3 +932,7 @@ Playlist badge accessibility:
 Settings:
 - fix(settings): restore the original card feedback layout
   - Restore the original placement and shape of row feedback in settings cards.
+
+Menus:
+- fix(menu): align list feedback around its contents
+  - Keep the 8 dp sheet inset and position section captions at the leading edge of the feedback.
