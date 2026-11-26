@@ -916,3 +916,7 @@ Menu feedback spacing:
 Menu section alignment:
 - fix(menu): align section labels to the ripple edge
   - Keep entry icons, text and hit targets in their existing positions.
+
+Settings feedback spacing:
+- fix(settings): align category labels with inset row feedback
+  - Preserve card padding and keep switches accessible across the whole row.

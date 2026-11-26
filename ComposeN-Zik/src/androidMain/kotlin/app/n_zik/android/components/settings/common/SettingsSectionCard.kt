@@ -57,6 +57,7 @@ import app.n_zik.android.R
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 
 internal val LocalSettingsCardGroupTitle = staticCompositionLocalOf<Int?> { null }
 
@@ -342,7 +343,7 @@ internal fun CardCategoryLabel(label: String, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .semantics { heading() }
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = 8.dp, horizontal = PressFeedbackHorizontalInset),
     )
 }
 
