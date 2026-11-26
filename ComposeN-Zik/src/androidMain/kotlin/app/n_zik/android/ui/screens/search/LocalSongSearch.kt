@@ -114,7 +114,7 @@ fun LocalSongSearch(
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     val forceShimmer = forceLoadingShimmerPreview()
     val queryPending = queryResults?.first != textFieldValue.text
-    val items = queryResults?.takeIf { !queryPending }?.second.orEmpty()
+    val items = queryResults?.second.orEmpty()
     val noSearchResults = textFieldValue.text.isNotBlank() && !queryPending && !forceShimmer && items.isEmpty()
     SearchEmptyFeedback(textFieldValue.text, noSearchResults, queryPending || forceShimmer)
 
@@ -224,6 +224,7 @@ fun LocalSongSearch(
                     SearchHistorySection(
                         visible = !forceShimmer && historyVisible,
                         queries = historyMatches,
+                        allQueries = history.value,
                         onQueryClick = { onTextFieldValueChanged(TextFieldValue(it)); recordSearchQuery(it) },
                         onQueryDelete = {
                             history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_LOCAL, it)
@@ -235,7 +236,7 @@ fun LocalSongSearch(
                 }
 
 
-                if ((forceShimmer && items.isEmpty()) || (queryPending && textFieldValue.text.isNotBlank())) {
+                if ((forceShimmer && items.isEmpty()) || (queryPending && items.isEmpty() && textFieldValue.text.isNotBlank())) {
                     item(key = "search_song_loading") { SongItemPlaceholders(count = 4) }
                 } else if (noSearchResults) {
                     item(key = "search_no_results") {
@@ -259,14 +260,19 @@ fun LocalSongSearch(
                             modifier = Modifier
                                 .clip(uiRoundnessShape()),
                             onLongClick = {
-                                menuState.display {
+                                if (!queryPending) menuState.display {
                                     SongItemMenu(
                                         navController = navController,
                                         song = song
                                     ).MenuComponent()
                                 }
                             },
-                            onClick = { recordSearchQuery(); binder?.startRadio( song ) }
+                            onClick = {
+                                if (!queryPending) {
+                                    recordSearchQuery()
+                                    binder?.startRadio(song)
+                                }
+                            }
                         )
                     }
                 }

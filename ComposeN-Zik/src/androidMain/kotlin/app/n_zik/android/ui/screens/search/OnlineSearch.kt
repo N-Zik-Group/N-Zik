@@ -1,7 +1,5 @@
 package app.n_zik.android.ui.screens.search
 
-import app.n_zik.android.components.search.searchResultOpacity
-import app.n_zik.android.components.search.rememberSearchResultOpacity
 import app.n_zik.android.components.glass.glassGlobalIndication
 
 import androidx.compose.ui.unit.Dp
@@ -75,6 +73,7 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.UnifiedSearchBar
 import app.n_zik.android.components.settings.common.SettingsSearchBarPadding
 import app.n_zik.android.components.search.rememberSearchHistory
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.SearchDisplayOrder
 import app.n_zik.android.typography
@@ -147,22 +146,24 @@ fun OnlineSearch(
         history.value = SearchHistoryStore.record( context.preferences, SearchHistoryStore.PAGE_ONLINE, query )
     }
 
-    //var suggestionsResult by persist<Result<List<String>?>?>("search/online/suggestionsResult")
-    var suggestionsResult by remember(textFieldValue.text) {
-        mutableStateOf<Result<Innertube.SearchSuggestions>?>(null)
+    val suggestionQuery = textFieldValue.text
+    var suggestionResponse by remember {
+        mutableStateOf<Pair<String, Result<Innertube.SearchSuggestions>?>?>(null)
     }
-
-    LaunchedEffect(textFieldValue.text) {
-        if (textFieldValue.text.isNotBlank()) {
-            delay(200)
-            suggestionsResult = withContext(NzikDispatchers.DATA) {
-                Innertube.searchSuggestionsWithItems(input = textFieldValue.text)
-            }
+    LaunchedEffect(suggestionQuery) {
+        if (suggestionQuery.isBlank()) {
+            suggestionResponse = null
         } else {
-            // The query was cleared (X bubble): drop the previous query's
-            // suggestions so the history is shown again, not stale results
-            suggestionsResult = null
+            delay(200)
+            val result = withContext(NzikDispatchers.DATA) {
+                Innertube.searchSuggestionsWithItems(input = suggestionQuery)
+            }
+            suggestionResponse = suggestionQuery to result
         }
+    }
+    val suggestionsPending = suggestionQuery.isNotBlank() && suggestionResponse?.first != suggestionQuery
+    val suggestionsResult = suggestionResponse?.second?.takeIf {
+        suggestionQuery.isNotBlank() && (!suggestionsPending || it.isSuccess)
     }
 
     /*
@@ -179,8 +180,8 @@ fun OnlineSearch(
     */
 
     val forceShimmer = forceLoadingShimmerPreview()
-    val suggestionsPending = suggestionsResult == null && textFieldValue.text.isNotBlank()
-    val resultOpacity = rememberSearchResultOpacity(!forceShimmer && !suggestionsPending)
+    val showSuggestionPlaceholders = suggestionsPending &&
+        suggestionsResult?.getOrNull()?.hasContent() != true
     SearchEmptyFeedback(
         query = textFieldValue.text,
         empty = suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty(),
@@ -204,6 +205,7 @@ fun OnlineSearch(
         SearchHistorySection(
             visible = historyMatches.isNotEmpty(),
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { query ->
                 recordOnlineQuery(query)
                 onSearch(query)
@@ -267,7 +269,7 @@ fun OnlineSearch(
                     )
                 }
             }
-            if (forceShimmer || suggestionsPending) {
+            if (forceShimmer || showSuggestionPlaceholders) {
                 if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
                     item(key = "search_history", contentType = "history") { searchHistoryContent() }
                 }
@@ -280,13 +282,13 @@ fun OnlineSearch(
                         )
                     }
                     suggestions?.recommendedSong?.let { song ->
-                        item(key = "search_recommended_song", contentType = "song") {
+                        item(key = "search_recommended_song:${song.key}", contentType = "song") {
                             val model = song.asMediaItem.asSong
                             SongItemPlaceholder(title = model.cleanTitle(), artist = model.cleanArtistsText())
                         }
                     }
                     suggestions?.recommendedAlbum?.let { album ->
-                        item(key = "search_recommended_album", contentType = "album") {
+                        item(key = "search_recommended_album:${album.key}", contentType = "album") {
                             val metadata = buildList {
                                 album.authors?.let { add(cleanPrefix(it.artistEntryNames().joinToString(", "))) }
                                 album.year?.let(::add)
@@ -300,7 +302,7 @@ fun OnlineSearch(
                         }
                     }
                     suggestions?.recommendedArtist?.let { artist ->
-                        item(key = "search_recommended_artist", contentType = "artist") {
+                        item(key = "search_recommended_artist:${artist.key}", contentType = "artist") {
                             ArtistItemPlaceholder(
                                 thumbnailSizeDp = songThumbnailSizeDp,
                                 title = artist.title,
@@ -310,14 +312,14 @@ fun OnlineSearch(
                         }
                     }
                     suggestions?.recommendedPlaylist?.let { playlist ->
-                        item(key = "search_recommended_playlist", contentType = "playlist") {
+                        item(key = "search_recommended_playlist:${playlist.key}", contentType = "playlist") {
                             PlaylistItemPlaceholder(songThumbnailSizeDp,
                                 showTitle = playlist.info?.name != null, showChannel = playlist.channel?.name != null,
                                 title = playlist.title, channel = playlist.channel?.name)
                         }
                     }
                     suggestions?.recommendedVideo?.let { video ->
-                        item(key = "search_recommended_video", contentType = "video") {
+                        item(key = "search_recommended_video:${video.key}", contentType = "video") {
                             VideoItemPlaceholder(songThumbnailSizeDp, songThumbnailSizeDp, video = video)
                         }
                     }
@@ -352,35 +354,37 @@ fun OnlineSearch(
             suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
                 item(key = "search_suggestions_title", contentType = "section_title") {
                     TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
-                        modifier = Modifier.searchResultOpacity(resultOpacity).padding(start = 24.dp)
+                        modifier = Modifier.animateItem().padding(start = 24.dp)
                     )
                 }
 
-                suggestions.recommendedSong.let {
-                    item(key = "search_recommended_song", contentType = "song") {
-                        it?.asMediaItem?.let { mediaItem ->
-                            SongItem(
-                                song = mediaItem.asSong,
-                                navController = navController,
-                                modifier = Modifier.searchResultOpacity(resultOpacity)
-                                    .clip(uiRoundnessShape()),
-                                onClick = {
+                suggestions.recommendedSong?.asMediaItem?.let { mediaItem ->
+                    item(key = "search_recommended_song:${mediaItem.mediaId}", contentType = "song") {
+                        SongItem(
+                            song = mediaItem.asSong,
+                            sourceMediaItem = { mediaItem },
+                            navController = navController,
+                            modifier = Modifier.animateItem()
+                                .clip(uiRoundnessShape()),
+                            onClick = {
+                                if (!suggestionsPending) {
                                     recordOnlineQuery()
                                     binder?.player?.forcePlay(mediaItem)
                                 }
-                            )
-                        }
+                            }
+                        )
                     }
                 }
                 suggestions.recommendedAlbum?.let { album ->
-                    item(key = "search_recommended_album", contentType = "album") {
+                    item(key = "search_recommended_album:${album.key}", contentType = "album") {
                         AlbumItem(
                             yearCentered = false,
                             album = album,
                             thumbnailSizePx = songThumbnailSizePx,
                             thumbnailSizeDp = songThumbnailSizeDp,
-                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                            modifier = Modifier.animateItem()
                                 .clip(uiRoundnessShape()).combinedClickable(
+                                    enabled = !suggestionsPending,
                                     onLongClick = {
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         menuState.display {
@@ -400,13 +404,14 @@ fun OnlineSearch(
                     }
                 }
                 suggestions.recommendedArtist?.let { artist ->
-                    item(key = "search_recommended_artist", contentType = "artist") {
+                    item(key = "search_recommended_artist:${artist.key}", contentType = "artist") {
                         ArtistItem(
                             artist = artist,
                             thumbnailSizePx = songThumbnailSizePx,
                             thumbnailSizeDp = songThumbnailSizeDp,
-                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                            modifier = Modifier.animateItem()
                                 .clip(uiRoundnessShape()).combinedClickable(
+                                    enabled = !suggestionsPending,
                                     onLongClick = {
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         menuState.display {
@@ -426,13 +431,14 @@ fun OnlineSearch(
                     }
                 }
                 suggestions.recommendedPlaylist?.let { playlist ->
-                    item(key = "search_recommended_playlist", contentType = "playlist") {
+                    item(key = "search_recommended_playlist:${playlist.key}", contentType = "playlist") {
                         PlaylistItem(
                             playlist = playlist,
                             thumbnailSizePx = songThumbnailSizePx,
                             thumbnailSizeDp = songThumbnailSizeDp,
-                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                            modifier = Modifier.animateItem()
                                 .clip(uiRoundnessShape()).combinedClickable(
+                                    enabled = !suggestionsPending,
                                     onLongClick = {
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         menuState.display {
@@ -444,7 +450,7 @@ fun OnlineSearch(
                                     },
                                     onClick = {
                                         recordOnlineQuery()
-                                        navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
+                                        navController.navigate(route = onlinePlaylistRoute(playlist.key))
                                     }
                                 ),
                             disableScrollingText = disableScrollingText
@@ -452,19 +458,20 @@ fun OnlineSearch(
                     }
                 }
                 suggestions.recommendedVideo?.let { video ->
-                    item(key = "search_recommended_video", contentType = "video") {
+                    item(key = "search_recommended_video:${video.key}", contentType = "video") {
                         VideoItem(
                             video = video,
                             thumbnailHeightDp = songThumbnailSizeDp,
                             thumbnailWidthDp = songThumbnailSizeDp,
-                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                            modifier = Modifier.animateItem()
                                 .clip(uiRoundnessShape()).combinedClickable(
+                                    enabled = !suggestionsPending,
                                     onLongClick = {
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                         menuState.display {
                                             VideoItemMenu(
                                                 navController = navController,
-                                                song = video.asMediaItem.asSong
+                                                mediaItem = video.asMediaItem
                                             ).MenuComponent()
                                         }
                                     },
@@ -496,7 +503,7 @@ fun OnlineSearch(
                     }
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.searchResultOpacity(resultOpacity)
+                        modifier = Modifier.animateItem()
                             .clip(uiRoundnessShape()).clickable (
                                 onClick = {
                                     recordOnlineQuery(query)

@@ -840,3 +840,7 @@ Player information and controls:
 Player surfaces:
 - fix(player): synchronize player actions and gestures across surfaces
   - Keep the full and compact players aligned with the active playback source.
+
+Search result transitions:
+- fix(search): keep results stable during filtering and navigation
+  - Preserve row positions and actions while asynchronous searches update.

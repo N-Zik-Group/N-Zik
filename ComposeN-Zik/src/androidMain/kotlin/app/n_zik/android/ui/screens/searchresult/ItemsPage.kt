@@ -208,7 +208,7 @@ fun <T : Innertube.Item> ItemsPage(
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val forceShimmer = forceLoadingShimmerPreview()
 
-    val lazyListState = key(tag, searchQuery, filterContentType) { rememberLazyListState() }
+    val lazyListState = key(tag, searchQuery) { rememberLazyListState() }
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val pageState = key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
@@ -308,7 +308,7 @@ fun <T : Innertube.Item> ItemsPage(
                 key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
             ) { item ->
                 if (forceShimmer) itemPlaceholderContent(item)
-                else SearchResultContent(resultOpacity) { itemContent(item) }
+                else SearchResultContent(resultOpacity, if (searchQuery == null) Modifier else Modifier.animateItem(fadeInSpec = null)) { itemContent(item) }
             }
 
             if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {
@@ -364,7 +364,7 @@ fun <T : Innertube.Item> ItemsGridPage(
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(LocalContext.current)
     val forceShimmer = forceLoadingShimmerPreview()
 
-    val lazyGridState = key(tag, searchQuery, filterContentType) { rememberLazyGridState() }
+    val lazyGridState = key(tag, searchQuery) { rememberLazyGridState() }
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
 
     val pageState = key(tag, searchQuery) { persist<Innertube.ItemsPage<T>?>(tag) }
@@ -467,7 +467,7 @@ fun <T : Innertube.Item> ItemsGridPage(
                 key = { item -> "${item::class.simpleName}_${item.key.ifEmpty { System.identityHashCode(item) }}" },
             ) { item ->
                 if (forceShimmer) itemPlaceholderContent(item)
-                else SearchResultContent(resultOpacity) { itemContent(item) }
+                else SearchResultContent(resultOpacity, if (searchQuery == null) Modifier else Modifier.animateItem(fadeInSpec = null)) { itemContent(item) }
             }
 
             if (itemsPage != null && visibleItems.isEmpty() && itemsPage?.continuation == null) {

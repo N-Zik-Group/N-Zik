@@ -120,6 +120,7 @@ import java.util.Date
 import java.util.Locale
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.LocalDownloadStatesMap
+import app.n_zik.android.components.rememberSongRowArtistCredits
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.enums.DownloadedStateMedia
@@ -313,6 +314,7 @@ fun HistoryList(
         onlineHistorySections.flatMap { (_, songs) -> songs.map { it.mediaId } }.distinct()
     }
     val storedOnlineHistorySongs by rememberSongRowMetadata(onlineHistoryIds)
+    val onlineHistoryCredits by rememberSongRowArtistCredits(onlineHistoryIds)
     val filteredHistorySections = remember(onlineHistorySections, storedOnlineHistorySongs, query) {
         onlineHistorySections.map { (title, songs) ->
             title to songs.filter { mediaItem ->
@@ -404,6 +406,7 @@ fun HistoryList(
             SearchHistorySection(
                 visible = search.isFocused && historyMatches.isNotEmpty(),
                 queries = historyMatches,
+                allQueries = savedSearches.value,
                 onQueryClick = { search.input = TextFieldValue(it); recordHistoryQuery(it); search.isFocused = false },
                 onQueryDelete = {
                     savedSearches.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_HISTORY, it)
@@ -584,6 +587,7 @@ fun HistoryList(
                                 }
                                 Box(
                                     modifier = Modifier
+                                        .animateItem()
                                         .fillMaxWidth()
                                         .graphicsLayer { alpha = searchFocus.contentAlpha }
                                 ) {
@@ -639,6 +643,7 @@ fun HistoryList(
                                 }
                                 Box(
                                     modifier = Modifier
+                                        .animateItem()
                                         .fillMaxWidth()
                                         .graphicsLayer { alpha = searchFocus.contentAlpha }
                                 ) {
@@ -655,11 +660,14 @@ fun HistoryList(
                                         swipeLeftActionParam = playlistSwipeLeftAction,
                                         swipeRightActionParam = playlistSwipeRightAction
                                     ) {
+                                        val historySong = resolveSongDisplayMetadata(
+                                            mediaItem.asSong, storedOnlineHistorySongs[mediaItem.mediaId],
+                                        )
                                         SongItem(
-                                            song = resolveSongDisplayMetadata(
-                                                mediaItem.asSong, storedOnlineHistorySongs[mediaItem.mediaId],
-                                            ),
+                                            song = historySong,
                                             observeStoredMetadata = false,
+                                            artistCredits = onlineHistoryCredits[historySong.id].orEmpty(),
+                                            sourceMediaItem = { mediaItem },
                                             isLiked = likeStatesMap[mediaItem.asSong.id],
                                             inPlaylist = playlistStatesMap[mediaItem.asSong.id],
                                             navController = navController,
@@ -673,7 +681,8 @@ fun HistoryList(
                                                 menuState.display {
                                                     SongItemMenu(
                                                         navController = navController,
-                                                        song = mediaItem.asSong
+                                                        song = historySong,
+                                                        sourceMediaItem = { mediaItem },
                                                     ).MenuComponent()
                                                 }
                                             }

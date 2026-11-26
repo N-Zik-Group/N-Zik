@@ -366,7 +366,8 @@ fun MoodList(
                                                         menuState.display {
                                                             SongItemMenu(
                                                                 navController = navController,
-                                                                song = childItem.asMediaItem.asSong ?: Song.makePlaceholder("")
+                                                                song = childItem.asMediaItem.asSong,
+                                                                sourceMediaItem = { childItem.asMediaItem },
                                                             ).MenuComponent()
                                                         }
                                                     }
@@ -407,7 +408,7 @@ fun MoodList(
                                                             menuState.display {
                                                                 VideoItemMenu(
                                                                     navController = navController,
-                                                                    song = childItem.asMediaItem.asSong ?: Song.makePlaceholder("")
+                                                                    mediaItem = childItem.asMediaItem
                                                                 ).MenuComponent()
                                                             }
                                                         }

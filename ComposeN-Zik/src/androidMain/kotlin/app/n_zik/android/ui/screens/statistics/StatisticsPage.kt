@@ -64,6 +64,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.MaxStatisticsItems
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.StatisticsCategory
 import app.n_zik.android.enums.StatisticsType
@@ -454,7 +455,7 @@ fun StatisticsPage(
                                     },
                                     onLongClick = {
                                         menuState.display {
-                                            LocalArtistItemMenu(artist = artists[it]).MenuComponent()
+                                            LocalArtistItemMenu(navController = navController, artist = artists[it]).MenuComponent()
                                         }
                                     }
                                 ),
@@ -649,7 +650,7 @@ fun StatisticsPage(
                                         val pBrowseId: String = cleanPrefix(playlists[it].playlist.browseId ?: "")
                                         val route: String =
                                             if ( pBrowseId.isNotEmpty() )
-                                                "${NavRoutes.playlist.name}/$pBrowseId"
+                                                onlinePlaylistRoute(pBrowseId)
                                             else
                                                 "${NavRoutes.localPlaylist.name}/$playlistId"
 

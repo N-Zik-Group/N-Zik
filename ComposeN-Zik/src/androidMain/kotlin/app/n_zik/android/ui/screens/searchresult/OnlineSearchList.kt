@@ -35,6 +35,7 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.searchPageContinuation
 import app.n_zik.innertube.utils.from
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.ContentType
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.thumbnailShape
@@ -46,7 +47,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.BookmarkStateManager
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.utils.addNext
@@ -70,6 +70,10 @@ import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.items.VideoItem
 import app.n_zik.android.ui.items.ItemArtworkPlaceholder
 import app.n_zik.android.ui.items.VideoItemPlaceholder
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
+import app.n_zik.android.components.song.songArtistDisplayLabel
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -163,6 +167,14 @@ fun OnlineSearchList(
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
+    val trackIds = remember(loadedItems.value) {
+        loadedItems.value.mapNotNull { item ->
+            if (item is Innertube.SongItem || item is Innertube.VideoItem) item.key else null
+        }
+    }
+    val storedRows by rememberSongRowMetadata(trackIds)
+    val linkedCredits by rememberSongRowArtistCredits(trackIds)
+
     val itemContent: @Composable LazyItemScope.(Innertube.Item) -> Unit = { item ->
         when (item) {
             is Innertube.SongItem -> {
@@ -184,7 +196,10 @@ fun OnlineSearchList(
                     swipeRightActionParam = playlistSwipeRightAction
                 ) {
                     SongItem(
-                        song = item.asSong,
+                        song = resolveSongDisplayMetadata(item.asSong, storedRows[item.key]),
+                        observeStoredMetadata = false,
+                        artistCredits = linkedCredits[item.key].orEmpty(),
+                        sourceMediaItem = { item.asMediaItem },
                         navController = navController,
                         modifier = Modifier,
                         onClick = {
@@ -205,8 +220,12 @@ fun OnlineSearchList(
                     swipeLeftActionParam = playlistSwipeLeftAction,
                     swipeRightActionParam = playlistSwipeRightAction
                 ) {
+                    val source = remember(item) { item.asMediaItem }
+                    val videoSong = resolveSongDisplayMetadata(source.asSong, storedRows[item.key])
                     VideoItem(
                         video = item,
+                        titleOverride = videoSong.cleanTitle(),
+                        uploaderOverride = songArtistDisplayLabel(videoSong, linkedCredits[videoSong.id].orEmpty(), source),
                         thumbnailWidthDp = 128.dp,
                         thumbnailHeightDp = 72.dp,
                         likeState = videoLikeState,
@@ -217,7 +236,7 @@ fun OnlineSearchList(
                                     menuState.display {
                                         VideoItemMenu(
                                             navController = navController,
-                                            song = item.asMediaItem.asSong ?: Song.makePlaceholder("")
+                                            mediaItem = item.asMediaItem
                                         ).MenuComponent()
                                     }
                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -248,8 +267,7 @@ fun OnlineSearchList(
                                 when (tabIndex) {
                                     1 -> navController.navigate("${NavRoutes.album.name}/${item.key}")
                                     2 -> navController.navigate("${NavRoutes.artist.name}/${item.key}")
-                                    4, 5 -> navController.navigate("${NavRoutes.playlist.name}/${item.key}")
-                                    6 -> navController.navigate("${NavRoutes.podcast.name}/${item.key}")
+                                    4, 5, 6 -> navController.navigate(onlinePlaylistRoute(item.key))
                                 }
                             },
                             onLongClick = {

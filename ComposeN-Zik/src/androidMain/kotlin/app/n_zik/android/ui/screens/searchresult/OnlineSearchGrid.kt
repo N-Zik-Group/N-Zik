@@ -31,10 +31,10 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.searchPageContinuation
 import app.n_zik.innertube.utils.from
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.ContentType
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
 import app.n_zik.android.utils.addNext
@@ -54,6 +54,10 @@ import app.n_zik.android.ui.items.ItemContainer
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.ui.items.VideoItemPlaceholder
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
+import app.n_zik.android.components.song.songArtistDisplayLabel
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.video.VideoItemMenu
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
@@ -63,6 +67,7 @@ import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
@@ -100,6 +105,16 @@ fun OnlineSearchGrid(
     val menuState = LocalMenuState.current
     val hapticFeedback = LocalHapticFeedback.current
 
+    val loadedItems = remember { androidx.compose.runtime.mutableStateOf<List<Innertube.Item>>(emptyList()) }
+
+    val trackIds = remember(loadedItems.value) {
+        loadedItems.value.mapNotNull { item ->
+            if (item is Innertube.SongItem || item is Innertube.VideoItem) item.key else null
+        }
+    }
+    val storedRows by rememberSongRowMetadata(trackIds)
+    val linkedCredits by rememberSongRowArtistCredits(trackIds)
+
     val itemContent: @Composable LazyGridItemScope.(Innertube.Item) -> Unit = { item ->
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,7 +140,10 @@ fun OnlineSearchGrid(
                         onEnqueue = { binder?.player?.enqueue(item.asMediaItem) }
                     ) {
                         SongItem(
-                            song = item.asSong,
+                            song = resolveSongDisplayMetadata(item.asSong, storedRows[item.key]),
+                            observeStoredMetadata = false,
+                            artistCredits = linkedCredits[item.key].orEmpty(),
+                            sourceMediaItem = { item.asMediaItem },
                             navController = navController,
                             modifier = Modifier,
                             onClick = {
@@ -141,8 +159,12 @@ fun OnlineSearchGrid(
                         onDownload = { Toaster.w(R.string.search_video_download_unsupported_message) },
                         onEnqueue = { binder?.player?.enqueue(item.asMediaItem) }
                     ) {
+                        val source = remember(item) { item.asMediaItem }
+                        val videoSong = resolveSongDisplayMetadata(source.asSong, storedRows[item.key])
                         VideoItem(
                             video = item,
+                            titleOverride = videoSong.cleanTitle(),
+                            uploaderOverride = songArtistDisplayLabel(videoSong, linkedCredits[videoSong.id].orEmpty(), source),
                             thumbnailWidthDp = 128.dp,
                             thumbnailHeightDp = 72.dp,
                             modifier = Modifier
@@ -152,7 +174,7 @@ fun OnlineSearchGrid(
                                         menuState.display {
                                             VideoItemMenu(
                                                 navController = navController,
-                                                song = item.asMediaItem.asSong ?: Song.makePlaceholder("")
+                                                mediaItem = item.asMediaItem
                                             ).MenuComponent()
                                         }
                                         hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -206,8 +228,7 @@ fun OnlineSearchGrid(
                         modifier = Modifier.clip(uiRoundnessShape()).combinedClickable(
                             onClick = {
                                 when (tabIndex) {
-                                    4, 5 -> navController.navigate("${NavRoutes.playlist.name}/${item.key}")
-                                    6 -> navController.navigate("${NavRoutes.podcast.name}/${item.key}")
+                                    4, 5, 6 -> navController.navigate(onlinePlaylistRoute(item.key))
                                 }
                             },
                             onLongClick = {
@@ -289,6 +310,7 @@ fun OnlineSearchGrid(
         },
         headerContent = headerContent,
         itemContent = { itemContent(it) },
+        loadedItemsState = loadedItems,
         itemPlaceholderContent = { item ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
