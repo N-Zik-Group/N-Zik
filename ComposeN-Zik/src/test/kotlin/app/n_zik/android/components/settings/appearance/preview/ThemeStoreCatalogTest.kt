@@ -82,6 +82,28 @@ class ThemeStoreCatalogTest {
     }
 
     @Test
+    fun displayedAuthorHandleFindsItsThemesAndRespectsOtherFilters() {
+        assertEquals("Indigo", storeAuthorSearchTerm(" @Indigo "))
+        assertEquals(listOf(night), catalog.filterStoreThemes(" @INDIGO ", "dark"))
+        assertEquals(emptyList<StoreTheme>(), catalog.filterStoreThemes("@Indigo", "artwork"))
+        assertEquals(catalog, catalog.filterStoreThemes(" @ ", null))
+        assertEquals(listOf(waves, night), catalog.filterStoreThemes("@", "dark"))
+        val title = blur.copy(title = "@Artwork")
+        assertEquals(listOf(title), (catalog + title).filterStoreThemes("@Artwork", null))
+    }
+
+    @Test
+    fun searchMatchesCanonicalUnicodeWithoutChangingTitlesOrNames() {
+        val composed = night.copy(title = "Café")
+        val decomposed = night.copy(title = "Cafe\u0301")
+        val titles = listOf(composed, decomposed, night.copy(title = "Cafe"))
+        assertEquals(listOf(composed, decomposed), titles.filterStoreThemes(" CAFE\u0301 ", "dark"))
+        assertEquals(listOf(composed, decomposed), titles.filterStoreThemes("Café", null))
+        assertTrue("Créateur Café".matchesStoreSearchTerm(storeAuthorSearchTerm("@CAFE\u0301")))
+        assertEquals("Cafe\u0301", decomposed.title)
+    }
+
+    @Test
     fun defaultAppearanceExportsAsPortableDocument() {
         val appearance = parseThemeAppearance(encodeThemeAppearance(emptyMap<String, String>(), emptyMap<String, String>()))
         assertEquals(ThemeCategory.entries.toSet(), appearance.keys)

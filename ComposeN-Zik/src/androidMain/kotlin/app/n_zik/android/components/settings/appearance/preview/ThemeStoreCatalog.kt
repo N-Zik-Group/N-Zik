@@ -5,6 +5,7 @@ import app.n_zik.android.BuildConfig
 import java.io.File
 import java.io.InputStream
 import java.security.MessageDigest
+import java.text.Normalizer
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runInterruptible
@@ -171,11 +172,22 @@ internal fun Iterable<String>.canonicalStoreTags(): List<String> =
 internal fun List<StoreTheme>.mostRecentlyPublishedFirst(): List<StoreTheme> =
     asReversed().sortedByDescending(StoreTheme::publishedOn)
 
+internal fun storeSearchTerm(query: String): String = Normalizer.normalize(query.trim(), Normalizer.Form.NFC)
+
+internal fun storeAuthorSearchTerm(query: String): String = storeSearchTerm(query).removePrefix("@")
+
+internal fun storeExploreSearchTerm(query: String): String = storeSearchTerm(query).takeUnless { it == "@" }.orEmpty()
+
+internal fun String.matchesStoreSearchTerm(term: String): Boolean =
+    Normalizer.normalize(this, Normalizer.Form.NFC).contains(term, ignoreCase = true)
+
 internal fun List<StoreTheme>.filterStoreThemes(query: String, tag: String?): List<StoreTheme> {
-    val term = query.trim()
+    val term = storeExploreSearchTerm(query)
+    val authorTerm = storeAuthorSearchTerm(term)
     return filter { theme ->
         (tag == null || canonicalStoreTag(tag) in theme.tags.canonicalStoreTags()) &&
-            (theme.title.contains(term, ignoreCase = true) || theme.author.login.contains(term, ignoreCase = true))
+            (theme.title.matchesStoreSearchTerm(term) ||
+                (authorTerm.isNotEmpty() && theme.author.login.matchesStoreSearchTerm(authorTerm)))
     }
 }
 

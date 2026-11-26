@@ -492,3 +492,7 @@ Metadata editor:
 MusicBrainz proxy:
 - fix(musicbrainz): refresh the client after proxy changes
   - Keep existing responses readable until in-flight requests complete.
+
+Theme Store catalog search:
+- fix(theme-store): match author handles and canonical Unicode
+  - Accept names copied from the catalog and preserve existing tag filters.
