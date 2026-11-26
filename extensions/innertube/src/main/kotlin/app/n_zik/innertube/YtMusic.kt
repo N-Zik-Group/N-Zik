@@ -6,8 +6,10 @@ import app.n_zik.innertube.utils.InnertubeLogger
 import app.n_zik.innertube.models.BrowseEndpoint
 import app.n_zik.innertube.models.BrowseResponse
 import app.n_zik.innertube.models.CreatePlaylistResponse
+import app.n_zik.innertube.models.MusicResponsiveHeaderRenderer
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.models.MusicShelfRenderer
+import app.n_zik.innertube.models.Runs
 import app.n_zik.innertube.models.SectionListRenderer
 import app.n_zik.innertube.models.getContinuation
 import app.n_zik.innertube.models.oddElements
@@ -330,6 +332,26 @@ object YtMusic {
         InnertubeLogger.e("YtMusic", "getPlaylist error", it)
     }
 
+    internal fun playlistChannel(header: Runs?): Innertube.Info<NavigationEndpoint.Endpoint.Browse>? =
+        header?.runs.orEmpty().mapNotNull { run ->
+            val endpoint = run.navigationEndpoint?.browseEndpoint ?: return@mapNotNull null
+            val browseId = endpoint.browseId?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+            val pageType = endpoint.type
+            val name = run.text?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+            if (pageType == "MUSIC_PAGE_TYPE_ARTIST" ||
+                browseId.startsWith("UC") && (pageType == null || pageType == "MUSIC_PAGE_TYPE_USER_CHANNEL")
+            ) Innertube.Info(name, endpoint) else null
+        }.distinctBy { it.endpoint?.browseId }.singleOrNull()
+
+    internal fun playlistChannel(header: MusicResponsiveHeaderRenderer): Innertube.Info<NavigationEndpoint.Endpoint.Browse>? {
+        val owner = header.facepile?.avatarStackViewModel
+        val endpoint = owner?.rendererContext?.commandContext?.onTap?.innertubeCommand
+        val ownerRun = Runs.Run(text = owner?.text?.content, navigationEndpoint = endpoint)
+        return playlistChannel(Runs(listOf(ownerRun)))
+            ?: playlistChannel(header.straplineTextOne)
+            ?: playlistChannel(header.subtitle)
+    }
+
     private fun getPlaylistPreviousMode(playlistId: String, response: BrowseResponse): PlaylistPage {
         val header = response.header?.musicDetailHeaderRenderer ?:
             response.header?.musicEditablePlaylistDetailHeaderRenderer?.header?.musicDetailHeaderRenderer
@@ -360,7 +382,7 @@ object YtMusic {
                 ),
                 songCount = 0, //header.secondSubtitle.runs?.firstOrNull()?.text,
                 thumbnail = header.thumbnail.croppedSquareThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
-                channel = null,
+                channel = playlistChannel(header.subtitle),
                 isEditable = editable,
 //                playEndpoint = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
 //                    ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
@@ -415,7 +437,7 @@ object YtMusic {
                 ),
                 songCount = 0,//header.secondSubtitle?.runs?.firstOrNull()?.text,
                 thumbnail = response.background?.musicThumbnailRenderer?.thumbnail?.thumbnails?.getBestQuality(),
-                channel = null,
+                channel = playlistChannel(header),
                 isEditable = isEditable,
 //                playEndpoint = header.buttons.getOrNull(1)?.musicPlayButtonRenderer
 //                    ?.playNavigationEndpoint?.watchEndpoint,
