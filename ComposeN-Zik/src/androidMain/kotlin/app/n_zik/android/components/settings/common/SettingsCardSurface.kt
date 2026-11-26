@@ -52,7 +52,7 @@ internal fun SettingsCardContent(
     val outset = (padding - PressFeedbackHorizontalInset).coerceAtLeast(0.dp)
     CompositionLocalProvider(LocalSettingsCardRowOutset provides outset) {
         Column(
-            Modifier.padding(horizontal = padding, vertical = padding.coerceAtMost(PressFeedbackHorizontalInset)),
+            Modifier.padding(horizontal = padding, vertical = padding.coerceAtMost(8.dp)),
             content = content,
         )
     }

@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.offset
 import app.n_zik.android.components.glass.GlassHighlightIndication
 import app.n_zik.android.uiRoundnessShape
 
-internal val PressFeedbackHorizontalInset = 8.dp
+internal val PressFeedbackHorizontalInset = 6.dp
 
 /** Lets a row use part of its parent's gutter without changing the space it occupies. */
 internal fun Modifier.horizontalLayoutOutset(outset: Dp): Modifier =

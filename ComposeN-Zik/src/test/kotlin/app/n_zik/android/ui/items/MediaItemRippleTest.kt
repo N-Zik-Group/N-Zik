@@ -58,7 +58,8 @@ class MediaItemRippleTest {
         val pixels = item.captureToImage().toPixelMap()
         val centerY = pixels.height / 2
         assertEquals(Color.Blue, pixels[0, centerY])
-        assertEquals(Color.Blue, pixels[pixels.width / 16, centerY])
+        assertEquals(Color.Blue, pixels[pixels.width / 20, centerY])
+        assertEquals(Color.Red, pixels[pixels.width / 14, centerY])
         assertEquals(Color.Red, pixels[pixels.width / 2, centerY])
         assertEquals(Color.Blue, pixels[pixels.width - 1, centerY])
 

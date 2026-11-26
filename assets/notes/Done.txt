@@ -1076,3 +1076,7 @@ Settings:
 Settings:
 - fix(settings): match row insets to the menu geometry
   - Align the icon slots, trailing controls and section labels with the menu content while retaining the feedback margin.
+
+Interface:
+- style(ui): use a six dp inset for row feedback
+  - Share the 6 dp horizontal feedback inset across media rows, menus, settings and the active queue row.
