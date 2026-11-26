@@ -107,6 +107,7 @@
     <string name="lyrics_karaoke">Карауке (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Уважение позиции агента</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">Караук не найден на %1$s, показывая синхронизированный с %2$s</string>
+    <string name="lyrics_karaoke_upgrade_hint">Караокек заменит его, если он найден.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">караоке-тексты</string>
     <string name="lyrics_mode_synchronized_label">синхронизированные тексты</string>
