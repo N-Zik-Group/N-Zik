@@ -28,6 +28,7 @@ Cam katkıları: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / B
 💾 <b>Çevrimdışı, Meta Veri ve Gizlilik</b>
 - Parçalar ve listeler için akıllı önbellekleme/indirme, seçilebilir indirme kalitesi
 - Tam meta verili FFmpeg dışa aktarımı, 32 bit x86 hariç
+- Automatic metadata repair looks up missing artist credits and album links during online playback. Startup checks remove stale links, merge verified duplicate artists, and align saved artist names.
 - Uygulama içi meta veri düzenleyici (AAC/Opus, kapak resmi)
 - Yerel dinleme istatistikleri ve geçmişi
 - Özel aralıklı ve saklama süreli otomatik yedekleme
