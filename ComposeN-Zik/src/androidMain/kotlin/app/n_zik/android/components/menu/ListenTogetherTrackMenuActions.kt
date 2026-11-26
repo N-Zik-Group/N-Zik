@@ -9,6 +9,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherMenu
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.RoomRole
 import app.n_zik.android.listentogether.TrackInfo
@@ -59,7 +60,7 @@ internal fun rememberListenTogetherTrackMenuActions(song: Song, menuState: MenuS
                     currentManager.role.value != RoomRole.GUEST
                 ) return
                 val duration = song.durationText?.let(::durationTextToMillis)?.takeIf { it > 0 } ?: 180_000L
-                currentManager.suggestTrack(
+                val sent = currentManager.suggestTrack(
                     TrackInfo(
                         id = song.id,
                         title = song.cleanTitle(),
@@ -68,7 +69,8 @@ internal fun rememberListenTogetherTrackMenuActions(song: Song, menuState: MenuS
                         thumbnail = song.thumbnailUrl.orEmpty(),
                     ),
                 )
-                menuState.hide()
+                if (sent) menuState.hide()
+                else Toaster.w(R.string.listen_together_connection_lost)
             }
         }
     }

@@ -1122,18 +1122,18 @@ class ListenTogetherClient(
         private fun sendMessage(
             type: String,
             payload: MessageLite?,
-        ) {
-            try {
-                val data = codec.encode(type, payload)
-                log(LogLevel.DEBUG, R.string.listen_together_log_event_sending_message, logDetail(R.string.listen_together_log_detail_protobuf_type, type))
+        ): Boolean = try {
+            val data = codec.encode(type, payload)
+            log(LogLevel.DEBUG, R.string.listen_together_log_event_sending_message, logDetail(R.string.listen_together_log_detail_protobuf_type, type))
 
-                val success = webSocket?.send(okio.ByteString.of(*data)) ?: false
-                if (!success) {
-                    log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_send_message, type)
-                }
-            } catch (e: Exception) {
-                log(LogLevel.ERROR, R.string.listen_together_log_event_error_encoding_message, logDetail(R.string.listen_together_log_detail_type_error, type, e.message))
+            val success = webSocket?.send(okio.ByteString.of(*data)) == true
+            if (!success) {
+                log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_send_message, type)
             }
+            success
+        } catch (e: Exception) {
+            log(LogLevel.ERROR, R.string.listen_together_log_event_error_encoding_message, logDetail(R.string.listen_together_log_detail_type_error, type, e.message))
+            false
         }
 
         private fun sendMessageNoPayload(type: String) {
@@ -1305,17 +1305,19 @@ class ListenTogetherClient(
         /**
          * Suggest a track to the host (guest only)
          */
-        fun suggestTrack(trackInfo: TrackInfo) {
+        fun suggestTrack(trackInfo: TrackInfo): Boolean {
             if (!isInRoom) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_cannot_suggest_track, logDetail(R.string.listen_together_log_detail_not_in_room))
-                return
+                return false
             }
             if (_role.value == RoomRole.HOST) {
                 log(LogLevel.WARNING, R.string.listen_together_log_event_host_should_not_suggest_tracks)
-                return
+                return false
             }
-            sendMessage(MessageTypes.SUGGEST_TRACK, SuggestTrackPayload(trackInfo))
-            Toaster.i(R.string.listen_together_suggestion_sent)
+            if (_connectionState.value != ConnectionState.CONNECTED) return false
+            val sent = sendMessage(MessageTypes.SUGGEST_TRACK, SuggestTrackPayload(trackInfo))
+            if (sent) Toaster.i(R.string.listen_together_suggestion_sent)
+            return sent
         }
 
         /**

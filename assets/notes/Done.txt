@@ -1048,3 +1048,7 @@ Settings:
 Menus:
 - fix(menu): enforce playlist destination rules after selection
   - Honor local-only destinations and count only new distinct tracks before the YouTube limit check.
+
+Menus:
+- fix(menu): report failed room suggestions accurately
+  - Only dismiss after the connected socket accepts the suggestion.
