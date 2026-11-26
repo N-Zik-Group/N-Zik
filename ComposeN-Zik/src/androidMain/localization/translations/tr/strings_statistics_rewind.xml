@@ -206,7 +206,7 @@
     <string name="rewind_playlist_notification_title">%1$s geri sarma çalma listeniz hazır</string>
     <string name="rewind_settings_enabled">Geri Sarmayı Etkinleştir</string>
     <string name="rewind_settings_enabled_description">Geri sarma özelliğinin tamamını (menü öğesi, hatırlatıcılar ve çalma listeleri) etkinleştirin veya devre dışı bırakın.</string>
-    <string name="rewind_settings_disabled_message">Rewind is disabled. Open Privacy settings to turn it back on.</string>
+    <string name="rewind_settings_disabled_message">Geri Sarma özelliği devre dışıdır. Bu özelliği yeniden etkinleştirmek için Gizlilik ayarlarını açın.</string>
     <string name="rewind_settings_global">Tüm zamanlara geri sarma</string>
     <string name="rewind_settings_global_description">Geri Sarma ana sayfasında tüm zamanların özetini göster.</string>
     <string name="rewind_settings_monthly">Aylık geri sarma</string>
