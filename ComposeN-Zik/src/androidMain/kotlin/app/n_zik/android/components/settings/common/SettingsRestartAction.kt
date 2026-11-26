@@ -1,14 +1,17 @@
 package app.n_zik.android.components.settings.common
 
 import androidx.annotation.OptIn
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,7 +31,12 @@ import app.n_zik.android.typography
 @Composable
 internal fun RestartPlayerService(restartService: Boolean, onRestart: () -> Unit) {
     val binder = LocalPlayerServiceBinder.current
-    SettingsRestartAction(restartService) {
+    SettingsRestartAction(
+        visible = restartService,
+        description = if (binder == null) R.string.player_restart_service_unavailable_message
+        else R.string.player_restart_required_message,
+        enabled = binder != null,
+    ) {
         val connectedBinder = binder ?: return@SettingsRestartAction
         connectedBinder.restartForegroundOrStop()
         onRestart()
@@ -39,7 +47,11 @@ internal fun RestartPlayerService(restartService: Boolean, onRestart: () -> Unit
 @Composable
 internal fun RestartActivity(restart: Boolean, onRestart: () -> Unit) {
     var restartRequested by rememberPreference(restartActivityKey, false)
-    SettingsRestartAction(restart) {
+    SettingsRestartAction(
+        visible = restart,
+        description = R.string.settings_restart_required_message,
+        action = R.string.settings_app_action_restart,
+    ) {
         restartRequested = !restartRequested
         onRestart()
         Toaster.done()
@@ -47,23 +59,35 @@ internal fun RestartActivity(restart: Boolean, onRestart: () -> Unit) {
 }
 
 @Composable
-private fun SettingsRestartAction(visible: Boolean, onClick: () -> Unit) {
+private fun SettingsRestartAction(
+    visible: Boolean,
+    @StringRes description: Int = R.string.player_restart_required_message,
+    @StringRes action: Int = R.string.settings_player_action_restart_service,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
     AnimatedVisibility(visible = visible) {
-        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        val palette = colorPalette()
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             SettingsDescription(
-                text = stringResource(R.string.player_restart_required_message),
+                text = stringResource(description),
                 important = true,
                 modifier = Modifier.weight(2f),
             )
             GlassCustomChip(
-                color = colorPalette().primaryButton,
+                color = palette.primaryButton,
+                enabled = enabled,
                 onClick = onClick,
-                modifier = Modifier.weight(1f).padding(end = 24.dp),
+                modifier = Modifier.weight(1f),
             ) { button ->
                 BasicText(
-                    text = stringResource(R.string.settings_player_action_restart_service),
+                    text = stringResource(action),
                     style = typography().xxs.medium,
-                    modifier = button.padding(horizontal = 16.dp, vertical = 8.dp),
+                    modifier = button.padding(horizontal = 12.dp, vertical = 8.dp),
                 )
             }
         }
