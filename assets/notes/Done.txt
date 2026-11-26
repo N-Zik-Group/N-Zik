@@ -640,3 +640,7 @@ Playlist deletion:
 Playlist picker labels:
 - fix(playlist): expose destination search and episode counts
   - Match picker entries by source metadata and show the correct item count.
+
+Local playlist creation:
+- fix(playlist): allow local-only destinations in playlist creation
+  - Keep the created playlist identity available to the caller.

@@ -30,7 +30,6 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getSyncDirection
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.syncDirectionKey
 import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CoroutineScope
@@ -42,12 +41,16 @@ class NewPlaylistDialog private constructor(
     valueState: MutableState<TextFieldValue>,
     private val coroutineScope: CoroutineScope,
     private val suggestedNamePrefix: String,
+    private val localOnly: Boolean,
     private val onPlaylistCreated: (Playlist) -> Unit = {}
 ): TextInputDialog(InputDialogConstraints.ALL, focusOnOpen = true), MenuIcon, Descriptive {
 
     companion object {
         @Composable
-        operator fun invoke(onPlaylistCreated: (Playlist) -> Unit = {}): NewPlaylistDialog {
+        operator fun invoke(
+            localOnly: Boolean = false,
+            onPlaylistCreated: (Playlist) -> Unit = {},
+        ): NewPlaylistDialog {
             val coroutineScope = rememberCoroutineScope()
             return NewPlaylistDialog(
                 remember { mutableStateOf(false) },
@@ -56,6 +59,7 @@ class NewPlaylistDialog private constructor(
                 },
                 coroutineScope,
                 stringResource(R.string.playlist_action_create),
+                localOnly,
                 onPlaylistCreated
             )
         }
@@ -101,7 +105,7 @@ class NewPlaylistDialog private constructor(
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
 
-        if (isYouTubeSyncEnabled()) {
+        if (!localOnly && isYouTubeSyncEnabled()) {
             val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
             val syncDirection = getSyncDirection()
             if (pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
