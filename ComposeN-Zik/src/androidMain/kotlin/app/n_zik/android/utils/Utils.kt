@@ -570,6 +570,7 @@ suspend fun downloadSyncedLyrics( song: Song ) {
     }
 }
 
+private const val MAX_YOUTUBE_PLAYLIST_SONGS = 5_000
 private val playlistAddMutex = Mutex()
 
 internal fun shouldPushPlaylistChanges(syncEnabled: Boolean, canPush: Boolean, pushPlaylists: Boolean): Boolean =
@@ -623,6 +624,10 @@ internal suspend fun addPlaylistItemsFromMenu(
         val existingIds = Database.songPlaylistMapTable.songIdsInPlaylist(playlistId).toHashSet()
         val pending = items.filterNot { it.asSong.id in existingIds }
         if (pending.isEmpty()) return@withLock PlaylistAddResult.AlreadyPresent
+        if (pending.size > MAX_YOUTUBE_PLAYLIST_SONGS - existingIds.size) {
+            Toaster.e(R.string.playlist_youtube_song_limit_message)
+            return@withLock null
+        }
         var confirmedCount = 0
         val resources = appTextResources()
         val progressInterval = 50

@@ -1044,3 +1044,7 @@ Playback:
 Settings:
 - fix(settings): reduce horizontal card content padding
   - Use a 12 dp content gutter while preserving the 8 dp press feedback margin.
+
+Menus:
+- fix(menu): enforce playlist destination rules after selection
+  - Honor local-only destinations and count only new distinct tracks before the YouTube limit check.

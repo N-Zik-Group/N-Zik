@@ -893,23 +893,17 @@ fun PlaylistSongList(
                                                             },
                                                             onAddToPlaylist = { preview ->
                                                                 val target = preview.playlist
-                                                                if (target.isYoutubePlaylist && isYouTubeSyncEnabled() &&
-                                                                    songs.size + preview.songCount > 5000
-                                                                ) {
-                                                                    Toaster.e(R.string.playlist_youtube_song_limit_message)
-                                                                } else {
-                                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                                        try {
-                                                                            val result = addPlaylistItemsFromMenu(target, songs)
-                                                                            if (result != null) {
-                                                                                withContext(NzikDispatchers.UI) { reportPlaylistAddResult(result) }
-                                                                            }
-                                                                        } catch (cancelled: CancellationException) {
-                                                                            throw cancelled
-                                                                        } catch (error: Exception) {
-                                                                            Timber.tag("PlaylistSongList").e(error, "Could not add playlist songs")
-                                                                            Toaster.e(R.string.common_load_failed)
+                                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                                    try {
+                                                                        val result = addPlaylistItemsFromMenu(target, songs)
+                                                                        if (result != null) {
+                                                                            withContext(NzikDispatchers.UI) { reportPlaylistAddResult(result) }
                                                                         }
+                                                                    } catch (cancelled: CancellationException) {
+                                                                        throw cancelled
+                                                                    } catch (error: Exception) {
+                                                                        Timber.tag("PlaylistSongList").e(error, "Could not add playlist songs")
+                                                                        Toaster.e(R.string.common_load_failed)
                                                                     }
                                                                 }
                                                             },

@@ -430,6 +430,7 @@ fun HomeLibrary(
             Timber.tag("HomeLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
+        localDestinationsOnly = playlistType == PlaylistsType.OnDevice,
     )
     val exportDialog = ExportSongsToCSVDialog.deferred(
         "Library",
