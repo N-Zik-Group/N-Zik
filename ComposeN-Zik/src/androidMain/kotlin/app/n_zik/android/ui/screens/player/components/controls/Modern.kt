@@ -34,6 +34,7 @@ import androidx.compose.material3.ripple
 import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -85,7 +86,6 @@ import app.n_zik.android.utils.playerControlsTypeKey
 import app.n_zik.android.utils.playerInfoShowIconsKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
-import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.textCopyToClipboard
 import app.n_zik.android.utils.textoutlineKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -95,6 +95,8 @@ import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.enums.PlayerControlsColors
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import app.n_zik.android.utils.playerControlsColorsKey
 import app.n_zik.android.components.player.playerTransportAction
 import app.n_zik.android.components.player.playerTransportFeedback
@@ -109,6 +111,11 @@ import app.n_zik.android.components.player.playerFavoriteIcon
 import app.n_zik.android.components.player.PlayerInformationFavoriteBackdrop
 import app.n_zik.android.components.player.PlayerInfoGlassRail
 import app.n_zik.android.utils.splitArtistNames
+import app.n_zik.android.utils.playerTrackName
+import app.n_zik.android.components.song.TrackMetadataSearch
+import app.n_zik.android.components.song.isArtistIdForSong
+import app.n_zik.android.components.song.openTrackMetadataSearch
+import app.n_zik.android.components.song.trackAlbumSearchQuery
 import app.n_zik.android.components.player.PlayerTransportRibbedSurface
 import app.n_zik.android.components.player.playerTransportPlayShape
 import app.n_zik.android.components.player.playerTransportNativeFill
@@ -140,6 +147,13 @@ import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 
 
+private data class PlayerInfoGlyphs(
+    val album: Int,
+    val artist: Int,
+    val albumLinked: Boolean,
+    val artistLinked: Boolean,
+)
+
 @UnstableApi
 @ExperimentalFoundationApi
 @Composable
@@ -155,21 +169,65 @@ fun InfoAlbumAndArtistModern(
     isExplicit: Boolean,
     artist: String?,
     onCollapse: () -> Unit,
-    disableScrollingText: Boolean = false
+    disableScrollingText: Boolean = false,
+    albumTitle: String? = player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.mediaMetadata?.albumTitle?.toString(),
+    albumPending: Boolean = false,
+    artistsPending: Boolean = false,
 ) {
     val glassTextFeedback = rememberGlassSettings().enabled
     val sampleNativeText = !glassTextFeedback && LocalPlayerArtworkUnderControls.current
     val (measureTitle, titleSurface) = rememberPlayerControlBackdrop(sampleNativeText, Color.Transparent, measureText = true)
     val (measureArtist, artistSurface) = rememberPlayerControlBackdrop(sampleNativeText, Color.Transparent, measureText = true)
-    val titleColor = playerTrackLabelColor(albumId != null, titleSurface)
-    val artistColor = playerTrackLabelColor(albumId != null, artistSurface)
+    val linkedAlbumId = albumId?.takeIf(String::isNotBlank)
+    val linkedArtists = remember(artistIds, media.isLocal) {
+        artistIds.orEmpty().filter { isArtistIdForSong(it.id, media.isLocal) }
+    }
+    val titleColor = playerTrackLabelColor(linkedAlbumId != null, titleSurface)
+    val artistColor = playerTrackLabelColor(linkedArtists.isNotEmpty(), artistSurface)
 
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
-    var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var selectedArtists by remember { mutableStateOf<List<Info>?>(null) }
+    var selectedArtists by remember(mediaId, linkedArtists) { mutableStateOf<List<Info>?>(null) }
     val playerInfoShowIcon by rememberPreference(playerInfoShowIconsKey, true)
-    val currentMediaItem = player.currentMediaItem
     val displayedArtistCount = remember(artist) { artist.splitArtistNames().size }
+    val unknownArtist = stringResource(R.string.metadata_unknown_artist)
+    val unknownTitle = stringResource(R.string.metadata_unknown_title)
+    val artistQuery = playerTrackName(artist, unknownArtist, "Unknown Artist")
+    val knownTitle = playerTrackName(title, unknownTitle, "Unknown Title")
+    val knownAlbum = playerTrackName(albumTitle, "Unknown Album", "Unknown Album")
+    val resolvedGlyphs = if (albumPending || artistsPending) null else PlayerInfoGlyphs(
+        album = if (knownAlbum == null && knownTitle == null) R.drawable.unknown else R.drawable.album,
+        artist = when {
+            artistQuery == null -> R.drawable.unknown
+            displayedArtistCount > 1 || linkedArtists.size > 1 -> R.drawable.people
+            else -> R.drawable.person
+        },
+        albumLinked = linkedAlbumId != null,
+        artistLinked = linkedArtists.isNotEmpty(),
+    )
+    var presentedGlyphs by remember { mutableStateOf(resolvedGlyphs) }
+    val visibleGlyphs = resolvedGlyphs ?: presentedGlyphs
+    if (resolvedGlyphs != null) SideEffect { presentedGlyphs = resolvedGlyphs }
+    val albumActionLabel = stringResource(R.string.library_albums_title)
+    val artistActionLabel = stringResource(R.string.library_artists_title)
+    val albumQuery = trackAlbumSearchQuery(knownAlbum, knownTitle, artistQuery)
+    val openAlbum: () -> Unit = {
+        if (linkedAlbumId != null) {
+            navController.navigate("${NavRoutes.album.name}/$linkedAlbumId")
+            onCollapse()
+        } else if (!albumPending && openTrackMetadataSearch(navController, albumQuery, TrackMetadataSearch.Album)) {
+            onCollapse()
+        }
+    }
+    val openArtist: () -> Unit = {
+        when (linkedArtists.size) {
+            0 -> if (!artistsPending && openTrackMetadataSearch(navController, artistQuery, TrackMetadataSearch.Artist)) onCollapse()
+            1 -> {
+                navController.navigate("${NavRoutes.artist.name}/${linkedArtists.single().id}")
+                onCollapse()
+            }
+            else -> selectedArtists = linkedArtists
+        }
+    }
 
     PlayerInfoGlassRail(iconsVisible = playerInfoShowIcon) {
     PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
@@ -189,20 +247,15 @@ fun InfoAlbumAndArtistModern(
 
             if (playerInfoShowIcon) {
                 PlayerInfoIconButton(
-                    icon = if (title == stringResource(R.string.metadata_unknown_title) || title == "Unknown Title")
-                        R.drawable.unknown else R.drawable.album,
+                    icon = visibleGlyphs?.album,
+                    linked = visibleGlyphs?.albumLinked == true,
                     color = colorPalette().text,
-                    enabled = albumId != null,
-                    onClick = {
-                        if (albumId != null) {
-                            //onGoToAlbum(albumId)
-                            navController.navigate(route = "${NavRoutes.album.name}/${albumId}")
-                            //layoutState.collapseSoft()
-                            onCollapse()
-                        }
-                    },
+                    inactiveColor = colorPalette().textDisabled,
+                    enabled = resolvedGlyphs != null && (linkedAlbumId != null || albumQuery != null),
+                    onClick = openAlbum,
                     modifier = Modifier
                         .size(26.dp)
+                        .semantics { contentDescription = albumActionLabel }
                         .albumIconBounds()
                 )
 
@@ -216,12 +269,7 @@ fun InfoAlbumAndArtistModern(
                 .clip(uiRoundnessShape()).combinedClickable (
                     indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                     interactionSource = remember { MutableInteractionSource() },
-                    onClick = {
-                        if (albumId != null) {
-                            navController.navigate(route = "${NavRoutes.album.name}/${albumId}")
-                            onCollapse()
-                        }
-                    },
+                    onClick = openAlbum,
                     onLongClick = {
                         textCopyToClipboard(cleanPrefix(title ?: ""), context = appContext())
                     }
@@ -280,9 +328,9 @@ fun InfoAlbumAndArtistModern(
                     dislikedColor = favoritePalette.red,
                     icon = playerFavoriteIcon(likedAt),
                     onClick = {
-                        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                            currentMediaItem?.let {
-                                YouTubeSync.rotateSongLikeState(appContext(), it)
+                        player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { item ->
+                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                YouTubeSync.rotateSongLikeState(appContext(), item)
                             }
                         }
                     },
@@ -314,10 +362,8 @@ fun InfoAlbumAndArtistModern(
                 onDismiss = { selectedArtists = null },
                 values = artists,
                 onValueSelected = {
-                    //onGoToArtist(it)
                     navController.navigate(route = "${NavRoutes.artist.name}/${it}")
                     selectedArtists = null
-                    //layoutState.collapseSoft()
                     onCollapse()
                 }
             )
@@ -326,26 +372,16 @@ fun InfoAlbumAndArtistModern(
 
         if (playerInfoShowIcon) {
             PlayerInfoIconButton(
-                icon = when {
-                    artist == stringResource(R.string.metadata_unknown_artist) || artist == "Unknown Artist" -> R.drawable.unknown
-                    displayedArtistCount > 1 -> R.drawable.people
-                    else -> R.drawable.person
-                },
+                icon = visibleGlyphs?.artist,
+                linked = visibleGlyphs?.artistLinked == true,
                 color = colorPalette().text,
-                enabled = !artistIds.isNullOrEmpty(),
-                onClick = {
-                    if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
-                        selectedArtists = artistIds
-                    if (artistIds?.isNotEmpty() == true && artistIds.size == 1) {
-                        //onGoToArtist( artistIds[0].id )
-                        navController.navigate(route = "${NavRoutes.artist.name}/${artistIds[0].id}")
-                        //layoutState.collapseSoft()
-                        onCollapse()
-                    }
-                },
+                inactiveColor = colorPalette().textDisabled,
+                enabled = resolvedGlyphs != null && (linkedArtists.isNotEmpty() || artistQuery != null),
+                onClick = openArtist,
                 modifier = Modifier
                     .size(24.dp)
                     .padding(start = 2.dp)
+                    .semantics { contentDescription = artistActionLabel }
                     .artistIconBounds()
             )
 
@@ -359,14 +395,7 @@ fun InfoAlbumAndArtistModern(
             .clip(uiRoundnessShape()).combinedClickable (
                 indication = if (glassTextFeedback) LocalIndication.current else ripple(bounded = true),
                 interactionSource = remember { MutableInteractionSource() },
-                onClick = {
-                    if (artistIds?.isNotEmpty() == true && artistIds.size > 1)
-                        selectedArtists = artistIds
-                    if (artistIds?.isNotEmpty() == true && artistIds.size == 1) {
-                        navController.navigate(route = "${NavRoutes.artist.name}/${artistIds[0].id}")
-                        onCollapse()
-                    }
-                },
+                onClick = openArtist,
                 onLongClick = {
                     textCopyToClipboard(artist ?: "", context = appContext())
                 }

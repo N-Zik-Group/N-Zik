@@ -58,7 +58,7 @@ import app.n_zik.android.enums.PlayerTimelineSize
 import app.n_zik.android.enums.PlayerTimelineType
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.ThumbnailType
-import app.n_zik.android.models.ui.UiMedia
+import app.n_zik.android.utils.PlayerTrackLinks
 import app.n_zik.android.ui.screens.player.Controls
 import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.ui.screens.player.Thumbnail
@@ -282,7 +282,6 @@ class PlayerPortraitArtworkLayoutTest {
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("portrait-cover", "Panel title", "Panel artist", 246_000L, true)
         var measuredNaturalLower = 0
         preferences.edit().putFloat(thumbnailSizeDpKey, 100f)
             .putString(thumbnailTypeKey, ThumbnailType.Modern.name)
@@ -316,10 +315,9 @@ class PlayerPortraitArtworkLayoutTest {
                                 above = { Spacer(Modifier.height(10.dp)) }, controls = {
                                     Controls(navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                         expandedplayer = expanded.value, titleExpanded = true, timelineExpanded = true,
-                                        controlsExpanded = true, isShowingLyrics = false, media = media, mediaId = media.id,
-                                        title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                                        controlsExpanded = true, isShowingLyrics = false, mediaItem = item, links = PlayerTrackLinks(null, emptyList()),
                                         shouldBePlaying = false, isBuffering = false, position = { 2_000L }, duration = { 246_000L },
-                                        isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                                        dynamicColorPalette = DefaultDarkColorPalette,
                                         modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth())
                                 }, below = {
                                 val toolbarLayout = rememberPlayerActionToolbarLayout(GlassSettings(enabled = glass.value))
@@ -382,7 +380,6 @@ class PlayerPortraitArtworkLayoutTest {
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("visible-controls", "Panel title", "Panel artist", 246_000L, true)
         preferences.edit().putFloat(thumbnailSizeDpKey, 100f)
             .putString(playerTypeKey, PlayerType.Essential.name)
             .putString(playerInfoTypeKey, PlayerInfoType.Modern.name)
@@ -412,10 +409,9 @@ class PlayerPortraitArtworkLayoutTest {
                                 above = { Spacer(Modifier.height(10.dp)) }, controls = {
                                     Controls(navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                         expandedplayer = expanded.value, titleExpanded = true, timelineExpanded = true,
-                                        controlsExpanded = true, isShowingLyrics = false, media = media, mediaId = media.id,
-                                        title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                                        controlsExpanded = true, isShowingLyrics = false, mediaItem = item, links = PlayerTrackLinks(null, emptyList()),
                                         shouldBePlaying = false, isBuffering = false, position = { 2_000L }, duration = { 246_000L },
-                                        isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                                        dynamicColorPalette = DefaultDarkColorPalette,
                                         modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth())
                                 }, below = {
                                     val toolbarLayout = rememberPlayerActionToolbarLayout(GlassSettings(enabled = glass.value))

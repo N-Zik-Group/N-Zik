@@ -35,7 +35,9 @@ import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.enums.PlayerTimelineSize
 import app.n_zik.android.enums.PlayerTimelineType
 import app.n_zik.android.enums.PlayerType
-import app.n_zik.android.models.ui.UiMedia
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import app.n_zik.android.utils.PlayerTrackLinks
 import app.n_zik.android.ui.screens.player.Controls
 import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.ui.styling.Appearance
@@ -152,7 +154,8 @@ class PlayerPresetSceneGeometryTest {
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
-        val media = UiMedia("preset-scene", "Preset title", "Preset artist", 246_000L, true)
+        val media = MediaItem.Builder().setMediaId("preset-scene")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Preset title").setArtist("Preset artist").build()).build()
         val priority = playerPortraitPrioritizesArtwork(true, type)
         val weighted = playerPortraitUsesWeightedInformation(expanded, false, type, false, false)
         compose.setContent { AppearanceProvider {
@@ -175,10 +178,9 @@ class PlayerPresetSceneGeometryTest {
                                 above = { Spacer(Modifier.height(10.dp)) }, controls = {
                                     Controls(navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                         expandedplayer = expanded, titleExpanded = true, timelineExpanded = true,
-                                        controlsExpanded = true, isShowingLyrics = false, media = media, mediaId = media.id,
-                                        title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                                        controlsExpanded = true, isShowingLyrics = false, mediaItem = media, links = PlayerTrackLinks(null, emptyList()),
                                         shouldBePlaying = false, isBuffering = false, position = { 2_000L },
-                                        duration = { 246_000L }, isExplicit = false,
+                                        duration = { 246_000L },
                                         dynamicColorPalette = DefaultDarkColorPalette,
                                         modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth())
                                 }, below = {

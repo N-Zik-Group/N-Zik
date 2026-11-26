@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.R
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassGroupPressMotion
@@ -98,20 +100,24 @@ private fun Modifier.playerInfoRailMotion(motion: PlayerInfoRailMotion?): Modifi
 @Composable
 fun PlayerInfoIconButton(
     onClick: () -> Unit,
-    @DrawableRes icon: Int,
+    @DrawableRes icon: Int?,
     color: Color,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     settings: GlassSettings = rememberGlassSettings(GlassScope.PlayerInformation),
+    adjustGlyphContrast: Boolean = true,
+    inactiveColor: Color? = null,
+    linked: Boolean = true,
 ) {
     val settings = settings.inScope(GlassScope.PlayerInformation)
     val interaction = remember { MutableInteractionSource() }
     val shape = uiRoundnessShape()
     val groupMotion = LocalGlassGroupPressMotion.current
     val railMotion = LocalPlayerInfoRailMotion.current
-    val film = LocalPlayerInfoIconFilm.current
-    val glyphColor = if (film == null) color else surfaceGlyphColor(color, plate = film)
-    val glyphTint = remember(glyphColor) { ColorFilter.tint(glyphColor) }
+    val film by rememberUpdatedState(LocalPlayerInfoIconFilm.current)
+    val activeTint by rememberUpdatedState(color)
+    val inactiveTint by rememberUpdatedState(inactiveColor)
+    val adjustContrast by rememberUpdatedState(adjustGlyphContrast)
     BoxWithConstraints(modifier, contentAlignment = Alignment.Center) {
         val glyphWidth = maxWidth
         val glyphHeight = maxHeight
@@ -133,16 +139,24 @@ fun PlayerInfoIconButton(
                 indication = if (settings.enabled) null else ripple(bounded = true),
                 enabled = enabled, onClick = onClick), contentAlignment = Alignment.Center) {
             Crossfade(
-                targetState = icon,
+                targetState = icon?.let { it to (linked && it != R.drawable.unknown) },
                 animationSpec = tween(400),
                 modifier = Modifier.requiredSize(glyphWidth, glyphHeight).graphicsLayer {
                     scaleX = if (settings.enabled) .85f else 1f
                     scaleY = if (settings.enabled) .85f else 1f
                 },
                 label = "playerInfoGlyph",
-            ) { glyph ->
-                Image(painterResource(glyph), null, colorFilter = glyphTint,
-                    modifier = Modifier.fillMaxSize().testTag("player.infoIcon.glyph.$glyph"))
+            ) { target ->
+                if (target != null) {
+                    val (glyph, active) = target
+                    val inactive = inactiveTint?.takeUnless { active }
+                    val plate = film
+                    val displayedColor = inactive ?: if (plate == null || !adjustContrast) activeTint
+                    else surfaceGlyphColor(activeTint, plate = plate)
+                    val glyphTint = remember(displayedColor) { ColorFilter.tint(displayedColor) }
+                    Image(painterResource(glyph), null, colorFilter = glyphTint,
+                        modifier = Modifier.fillMaxSize().testTag("player.infoIcon.glyph.$glyph"))
+                }
             }
         }
     }

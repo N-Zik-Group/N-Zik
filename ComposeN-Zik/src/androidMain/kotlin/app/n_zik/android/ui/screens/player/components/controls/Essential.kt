@@ -171,10 +171,9 @@ fun InfoAlbumAndArtistEssential(
 
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var selectedArtists by remember { mutableStateOf<List<Info>?>(null) }
+    var selectedArtists by remember(mediaId, artistIds) { mutableStateOf<List<Info>?>(null) }
     var textoutline by rememberPreference(textoutlineKey, false)
     val buttonState by rememberPreference(buttonStateKey, ButtonState.Idle)
-    val currentMediaItem = player.currentMediaItem
 
     PlayerInformationFavoriteBackdrop(playerControlsType == PlayerControlsType.Modern) { titleBackdrop, favoriteBackdrop ->
     Row(
@@ -295,9 +294,9 @@ fun InfoAlbumAndArtistEssential(
                     dislikedColor = favoritePalette.red,
                     icon = playerFavoriteIcon(likedAt),
                     onClick = {
-                        NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                            currentMediaItem?.let {
-                                YouTubeSync.rotateSongLikeState(appContext(), it)
+                        player.currentMediaItem?.takeIf { it.mediaId == mediaId }?.let { item ->
+                            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                YouTubeSync.rotateSongLikeState(appContext(), item)
                             }
                         }
                     },

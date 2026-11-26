@@ -120,6 +120,81 @@ class PlayerInfoGlassRailTest {
         next.assertExists()
     }
 
+    @Test fun `staggered and replaced tracks publish album and artist glyphs together`() {
+        val trackId = mutableStateOf("linked-track")
+        val albumPending = mutableStateOf(true)
+        val artistsPending = mutableStateOf(true)
+        val player = mockk<Player>(relaxed = true)
+        val nav = mockk<NavController>(relaxed = true)
+        every { player.currentMediaItem } returns null
+        preferences.edit().putBoolean(playerInfoShowIconsKey, true).commit()
+        compose.setContent {
+            AppearanceProvider {
+                val id = trackId.value
+                val linked = id == "linked-track"
+                val title = "Title".takeIf { id != "another-track" }
+                val artist = "Artist".takeIf { id != "another-track" }
+                InfoAlbumAndArtistModern(
+                    player = player,
+                    navController = nav,
+                    albumId = "LOCAL_ALBUM_DEVICE_album".takeIf { linked },
+                    media = UiMedia(id, "Title", "Artist", 0L, true),
+                    mediaId = id,
+                    title = title,
+                    likedAt = null,
+                    artistIds = listOf(Info("LOCAL_ARTIST_DEVICE_artist", "Artist")).takeIf { linked },
+                    isExplicit = false,
+                    artist = artist,
+                    onCollapse = {},
+                    albumPending = albumPending.value && !linked,
+                    artistsPending = artistsPending.value && !linked,
+                )
+            }
+        }
+        val album = compose.onNodeWithTag("player.infoIcon.glyph.${R.drawable.album}", useUnmergedTree = true)
+        val artist = compose.onNodeWithTag("player.infoIcon.glyph.${R.drawable.person}", useUnmergedTree = true)
+        val unknown = compose.onAllNodes(hasTestTag("player.infoIcon.glyph.${R.drawable.unknown}"), useUnmergedTree = true)
+        album.assertExists()
+        artist.assertExists()
+        compose.mainClock.autoAdvance = false
+        fun updateTrack(update: () -> Unit) {
+            compose.runOnIdle {
+                update()
+                androidx.compose.runtime.snapshots.Snapshot.sendApplyNotifications()
+            }
+            compose.mainClock.advanceTimeByFrame()
+        }
+        updateTrack { trackId.value = "pending-track" }
+        updateTrack { albumPending.value = false }
+        compose.mainClock.advanceTimeBy(480)
+        album.assertExists()
+        artist.assertExists()
+        unknown.assertCountEquals(0)
+        updateTrack { trackId.value = "linked-track" }
+        compose.mainClock.advanceTimeBy(64)
+        album.assertExists()
+        artist.assertExists()
+        unknown.assertCountEquals(0)
+        updateTrack {
+            trackId.value = "another-track"
+            albumPending.value = true
+            artistsPending.value = false
+        }
+        compose.mainClock.advanceTimeBy(480)
+        album.assertExists()
+        artist.assertExists()
+        unknown.assertCountEquals(0)
+        updateTrack { albumPending.value = false }
+        compose.mainClock.advanceTimeBy(160)
+        album.assertExists()
+        artist.assertExists()
+        unknown.assertCountEquals(2)
+        compose.mainClock.advanceTimeBy(400)
+        album.assertDoesNotExist()
+        artist.assertDoesNotExist()
+        unknown.assertCountEquals(2)
+    }
+
     @Test fun `resolving an album link leaves its Glass glyph visually stable`() {
         val hasAlbumLink = mutableStateOf(false)
         compose.setContent {
@@ -149,6 +224,35 @@ class PlayerInfoGlassRailTest {
                 assertEquals(before[x, y], after[x, y])
             }
         }
+    }
+
+    @Test fun `unlinked glyph stays inactive and follows changes of the inactive palette`() {
+        val activeColor = mutableStateOf(Color.Cyan)
+        val inactiveColor = mutableStateOf(Color.Magenta)
+        compose.setContent {
+            AppearanceProvider {
+                PlayerInfoIconButton(
+                    onClick = {},
+                    icon = R.drawable.unknown,
+                    color = activeColor.value,
+                    inactiveColor = inactiveColor.value,
+                    modifier = Modifier.size(26.dp),
+                    settings = GlassSettings(enabled = false),
+                )
+            }
+        }
+        val glyph = compose.onNodeWithTag("player.infoIcon.glyph.${R.drawable.unknown}", useUnmergedTree = true)
+        fun hasTint(expected: Color): Boolean {
+            val pixels = glyph.captureToImage().toPixelMap()
+            return (0 until pixels.height).any { y ->
+                (0 until pixels.width).any { x -> pixels[x, y] == expected }
+            }
+        }
+        assertTrue(hasTint(Color.Magenta))
+        compose.runOnIdle { activeColor.value = Color.Yellow }
+        assertTrue(hasTint(Color.Magenta))
+        compose.runOnIdle { inactiveColor.value = Color.Green }
+        assertTrue(hasTint(Color.Green))
     }
 
     @Test fun `standalone information feedback can expand beyond its resting canvas when material is disabled`() {
@@ -313,9 +417,9 @@ class PlayerInfoGlassRailTest {
             AppearanceProvider {
                 Box(Modifier.requiredWidth(width.value).testTag("infoWidth")) {
                     InfoAlbumAndArtistModern(player = binder.player, navController = nav,
-                        media = UiMedia("id", "Title", "Artist", 0L, true), albumId = "album",
+                        media = UiMedia("id", "Title", "Artist", 0L, true), albumId = "LOCAL_ALBUM_DEVICE_album",
                         mediaId = "id", title = "Title", likedAt = null,
-                        artistIds = listOf(Info("artist", "Artist")), isExplicit = false,
+                        artistIds = listOf(Info("LOCAL_ARTIST_DEVICE_artist", "Artist")), isExplicit = false,
                         artist = "Artist", onCollapse = { collapses++ }, disableScrollingText = true)
                 }
             }

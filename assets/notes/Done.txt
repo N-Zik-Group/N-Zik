@@ -832,3 +832,7 @@ Shared dialog controls:
 Queue display:
 - fix(queue): refresh displayed credits and preserve source actions
   - Use the represented queue entry for track menu metadata and navigation.
+
+Player information and controls:
+- fix(player): keep control and information transitions aligned
+  - Use current track metadata and coordinate contrast and navigation affordances.

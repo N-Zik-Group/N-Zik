@@ -5,8 +5,10 @@ import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.components.player.PlayerInformationGlassBlock
 import app.n_zik.android.components.player.PlayerInformationGlassRegion
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
-import app.n_zik.android.utils.artistTextWithFallback
-import app.n_zik.android.utils.titleWithFallback
+import app.n_zik.android.utils.PlayerTrackLinks
+import app.n_zik.android.utils.alignInfosToDisplayOrder
+import app.n_zik.android.utils.resolveTrackArtistName
+import app.n_zik.android.utils.resolvePlayerTrackName
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -30,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
@@ -46,15 +50,13 @@ import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
-import app.n_zik.android.cleanPrefix
+import app.n_zik.android.R
 import app.n_zik.android.enums.ButtonState
 import app.n_zik.android.enums.PlayerControlsType
 import app.n_zik.android.enums.PlayerInfoType
 import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.enums.PlayerTimelineSize
 import app.n_zik.android.enums.PlayerType
-import app.n_zik.android.models.Info
-import app.n_zik.android.models.ui.UiMedia
 import app.n_zik.android.models.ui.toUiMedia
 import app.n_zik.android.ui.screens.player.components.controls.InfoAlbumAndArtistEssential
 import app.n_zik.android.ui.screens.player.components.controls.InfoAlbumAndArtistModern
@@ -85,8 +87,9 @@ import app.n_zik.android.ui.styling.ColorPalette
 @ExperimentalFoundationApi
 @UnstableApi
 @ExperimentalTextApi
+@SuppressLint("SuspiciousIndentation")
 @Composable
-fun Controls(
+internal fun Controls(
     navController: NavController,
     onCollapse: () -> Unit,
     onBlurScaleChange: (Float) -> Unit,
@@ -96,70 +99,11 @@ fun Controls(
     controlsExpanded: Boolean,
     isShowingLyrics: Boolean,
     mediaItem: MediaItem,
-    artistIds: List<Info>?,
-    albumId: String?,
+    links: PlayerTrackLinks,
     shouldBePlaying: Boolean,
     isBuffering: Boolean,
     position: () -> Long,
     duration: () -> Long,
-    dynamicColorPalette: ColorPalette,
-    modifier: Modifier = Modifier
-) = Controls(
-    navController = navController,
-    onCollapse = onCollapse,
-    onBlurScaleChange = onBlurScaleChange,
-    expandedplayer = expandedplayer,
-    titleExpanded = titleExpanded,
-    timelineExpanded = timelineExpanded,
-    controlsExpanded = controlsExpanded,
-    isShowingLyrics = isShowingLyrics,
-    media = remember(mediaItem.mediaId, duration()) {
-        mediaItem.toUiMedia(duration())
-    },
-    mediaId = mediaItem.mediaId,
-    // titleWithFallback: the legacy raw-title line rendered a blank title (and never
-    // triggered the player's "unknown" icon) for tracks without a title tag.
-
-    // Same metadata→DB→localized-placeholder contract as the artist line below.
-    title = mediaItem.titleWithFallback(),
-    artist = cleanPrefix( mediaItem.artistTextWithFallback() ),
-    artistIds = artistIds,
-    albumId = albumId,
-    shouldBePlaying = shouldBePlaying,
-    isBuffering = isBuffering,
-    position = position,
-    duration = duration,
-    isExplicit = mediaItem.isExplicit,
-    dynamicColorPalette = dynamicColorPalette,
-    modifier = modifier
-)
-
-@ExperimentalTextApi
-@SuppressLint("SuspiciousIndentation")
-@ExperimentalFoundationApi
-@ExperimentalAnimationApi
-@UnstableApi
-@Composable
-fun Controls(
-    navController: NavController,
-    onCollapse: () -> Unit,
-    onBlurScaleChange: (Float) -> Unit,
-    expandedplayer: Boolean,
-    titleExpanded: Boolean,
-    timelineExpanded: Boolean,
-    controlsExpanded: Boolean,
-    isShowingLyrics: Boolean,
-    media: UiMedia,
-    mediaId: String,
-    title: String?,
-    artist: String?,
-    artistIds: List<Info>?,
-    albumId: String?,
-    shouldBePlaying: Boolean,
-    isBuffering: Boolean,
-    position: () -> Long,
-    duration: () -> Long,
-    isExplicit: Boolean,
     dynamicColorPalette: ColorPalette,
     modifier: Modifier = Modifier
 ) {
@@ -167,12 +111,26 @@ fun Controls(
     val binder = LocalPlayerServiceBinder.current
     val player = preview?.player ?: binder?.player ?: return
 
-    val currentSong by remember(mediaId, preview) {
-        if (preview != null) kotlinx.coroutines.flow.flowOf(ThemePreviewDemo.songs.firstOrNull { it.id == mediaId })
-        else Database.songTable
-                .findById( mediaId )
-                .distinctUntilChanged()
-    }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+    val mediaId = mediaItem.mediaId
+    val currentSong = key(mediaId, preview) {
+        val songId = mediaId.substringAfterLast('/')
+        remember {
+            if (preview != null) kotlinx.coroutines.flow.flowOf(ThemePreviewDemo.songs.firstOrNull { it.id == songId })
+            else Database.songTable.findById(songId).distinctUntilChanged()
+        }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA).value
+    }
+    val metadata = mediaItem.mediaMetadata
+    val unknownTitle = stringResource(R.string.metadata_unknown_title)
+    val unknownArtist = stringResource(R.string.metadata_unknown_artist)
+    val title = resolvePlayerTrackName(metadata.title?.toString(), currentSong?.title, unknownTitle, "Unknown Title")
+        ?: unknownTitle
+    val artist = resolveTrackArtistName(metadata.artist?.toString(), currentSong?.artistsText, links.artists, unknownArtist)
+        ?: unknownArtist
+    val artistIds = remember(links.artists, artist) { alignInfosToDisplayOrder(links.artists, artist) }
+    val albumId = links.albumId
+    val albumTitle = metadata.albumTitle?.toString()
+    val media = mediaItem.toUiMedia(duration()).copy(title = title, artist = artist)
+    val isExplicit = mediaItem.isExplicit
 
     var disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
@@ -236,7 +194,10 @@ fun Controls(
                                 disableScrollingText = disableScrollingText,
                                 artist = artist,
                                 artistIds = artistIds,
-                                isExplicit = isExplicit
+                                isExplicit = isExplicit,
+                                albumTitle = albumTitle,
+                                albumPending = links.albumPending,
+                                artistsPending = links.artistsPending,
                             )
                         }
 
@@ -340,7 +301,10 @@ fun Controls(
                             disableScrollingText = disableScrollingText,
                             artist = artist,
                             artistIds = artistIds,
-                            isExplicit = isExplicit
+                            isExplicit = isExplicit,
+                            albumTitle = albumTitle,
+                            albumPending = links.albumPending,
+                            artistsPending = links.artistsPending,
                         )
                     }
 
@@ -457,7 +421,10 @@ fun Controls(
                         disableScrollingText = disableScrollingText,
                         artist = artist,
                         artistIds = artistIds,
-                        isExplicit = isExplicit
+                        isExplicit = isExplicit,
+                        albumTitle = albumTitle,
+                        albumPending = links.albumPending,
+                        artistsPending = links.artistsPending,
                     )
                 }
 

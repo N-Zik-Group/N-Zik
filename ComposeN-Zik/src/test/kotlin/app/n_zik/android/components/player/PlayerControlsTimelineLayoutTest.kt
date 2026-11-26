@@ -47,7 +47,9 @@ import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.LocalPlayerSheetState
-import app.n_zik.android.models.ui.UiMedia
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import app.n_zik.android.utils.PlayerTrackLinks
 import app.n_zik.android.ui.screens.player.PlayerSheetState
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.PlayerInfoType
@@ -187,7 +189,8 @@ class PlayerControlsTimelineLayoutTest {
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("short-panel", "Panel title", "Panel artist", 120_000L, true)
+        val media = MediaItem.Builder().setMediaId("short-panel")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Panel title").setArtist("Panel artist").build()).build()
         compose.setContent { AppearanceProvider {
             CompositionLocalProvider(LocalPlayerServiceBinder provides binder, LocalPlayerSheetState provides sheet,
                 LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() }) {
@@ -197,10 +200,8 @@ class PlayerControlsTimelineLayoutTest {
                     app.n_zik.android.ui.screens.player.Controls(
                         navController = nav, onCollapse = {}, onBlurScaleChange = {},
                         expandedplayer = false, titleExpanded = false, timelineExpanded = false,
-                        controlsExpanded = false, isShowingLyrics = false, media = media,
-                        mediaId = media.id, title = "Panel title", artist = "Panel artist",
-                        artistIds = null, albumId = null, shouldBePlaying = false, isBuffering = false,
-                        position = { 30_000L }, duration = { 120_000L }, isExplicit = false,
+                        controlsExpanded = false, isShowingLyrics = false, mediaItem = media, links = PlayerTrackLinks(null, emptyList()), shouldBePlaying = false, isBuffering = false,
+                        position = { 30_000L }, duration = { 120_000L },
                         dynamicColorPalette = DefaultDarkColorPalette,
                         modifier = if (playerType.value == PlayerType.Essential)
                             Modifier.padding(vertical = 8.dp).fillMaxHeight().weight(1f).testTag("short.controls")
@@ -276,7 +277,8 @@ class PlayerControlsTimelineLayoutTest {
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("centered-panel", "Panel title", "Panel artist", 120_000L, true)
+        val media = MediaItem.Builder().setMediaId("centered-panel")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Panel title").setArtist("Panel artist").build()).build()
         compose.setContent { AppearanceProvider {
             val configuration = Configuration(LocalConfiguration.current).apply {
                 orientation = if (portraitLayout.value) Configuration.ORIENTATION_PORTRAIT
@@ -294,10 +296,9 @@ class PlayerControlsTimelineLayoutTest {
                         app.n_zik.android.ui.screens.player.Controls(
                             navController = nav, onCollapse = {}, onBlurScaleChange = {},
                             expandedplayer = false, titleExpanded = false, timelineExpanded = false,
-                            controlsExpanded = false, isShowingLyrics = false, media = media, mediaId = media.id,
-                            title = "Panel title", artist = "Panel artist", artistIds = null, albumId = null,
+                            controlsExpanded = false, isShowingLyrics = false, mediaItem = media, links = PlayerTrackLinks(null, emptyList()),
                             shouldBePlaying = false, isBuffering = false, position = { 30_000L }, duration = { 120_000L },
-                            isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                            dynamicColorPalette = DefaultDarkColorPalette,
                             modifier = if (currentPortrait) Modifier.fillMaxWidth()
                                 else Modifier.fillMaxHeight().weight(1f),
                         )
@@ -450,7 +451,8 @@ class PlayerControlsTimelineLayoutTest {
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("budget-parity", "Panel title", "Panel artist", 120_000L, true)
+        val media = MediaItem.Builder().setMediaId("budget-parity")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Panel title").setArtist("Panel artist").build()).build()
         compose.setContent { AppearanceProvider {
             CompositionLocalProvider(LocalPlayerServiceBinder provides binder, LocalPlayerSheetState provides sheet,
                 LocalPlayerTransportGeometry provides remember { PlayerTransportGeometry() }) {
@@ -481,10 +483,9 @@ class PlayerControlsTimelineLayoutTest {
                                         app.n_zik.android.ui.screens.player.Controls(
                                             navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                             expandedplayer = false, titleExpanded = false, timelineExpanded = false,
-                                            controlsExpanded = false, isShowingLyrics = false, media = media, mediaId = media.id,
-                                            title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                                            controlsExpanded = false, isShowingLyrics = false, mediaItem = media, links = PlayerTrackLinks(null, emptyList()),
                                             shouldBePlaying = false, isBuffering = false, position = { 30_000L }, duration = { 120_000L },
-                                            isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                                            dynamicColorPalette = DefaultDarkColorPalette,
                                             modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth())
                                     }
                                 }, below = {
@@ -660,7 +661,8 @@ class PlayerControlsTimelineLayoutTest {
         val sheet = mockk<PlayerSheetState>(relaxed = true)
         every { sheet.progress } returns 1f
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("expanded-essential", "Panel title", "Panel artist", 246_000L, true)
+        val media = MediaItem.Builder().setMediaId("expanded-essential")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Panel title").setArtist("Panel artist").build()).build()
         val cache = mockk<Cache>(relaxed = true)
         every { binder.downloadCache } returns cache
         every { binder.cache } returns cache
@@ -708,10 +710,9 @@ class PlayerControlsTimelineLayoutTest {
                                         app.n_zik.android.ui.screens.player.Controls(
                                             navController = nav, onCollapse = {}, onBlurScaleChange = {},
                                             expandedplayer = expanded.value, titleExpanded = true, timelineExpanded = true,
-                                            controlsExpanded = true, isShowingLyrics = false, media = media, mediaId = media.id,
-                                            title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                                            controlsExpanded = true, isShowingLyrics = false, mediaItem = media, links = PlayerTrackLinks(null, emptyList()),
                                             shouldBePlaying = false, isBuffering = false, position = { 2_000L }, duration = { 246_000L },
-                                            isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                                            dynamicColorPalette = DefaultDarkColorPalette,
                                             modifier = Modifier.padding(vertical = 4.dp).fillMaxWidth())
                                     }
                                 }, below = {
@@ -815,7 +816,8 @@ class PlayerControlsTimelineLayoutTest {
         val showTimeline = mutableStateOf(true)
         val showControls = mutableStateOf(true)
         val nav = mockk<androidx.navigation.NavController>(relaxed = true)
-        val media = UiMedia("compact-swap", "Panel title", "Panel artist", 120_000L, true)
+        val media = MediaItem.Builder().setMediaId("compact-swap")
+            .setMediaMetadata(MediaMetadata.Builder().setTitle("Panel title").setArtist("Panel artist").build()).build()
         preferences.edit().putBoolean(app.n_zik.android.utils.showlyricsthumbnailKey, false)
             .putString(app.n_zik.android.utils.playerTimelineTypeKey,
                 app.n_zik.android.enums.PlayerTimelineType.Default.name).commit()
@@ -826,10 +828,9 @@ class PlayerControlsTimelineLayoutTest {
                     app.n_zik.android.ui.screens.player.Controls(
                         navController = nav, onCollapse = {}, onBlurScaleChange = {},
                         expandedplayer = !lyrics.value, titleExpanded = true, timelineExpanded = showTimeline.value,
-                        controlsExpanded = showControls.value, isShowingLyrics = lyrics.value, media = media,
-                        mediaId = media.id, title = media.title, artist = media.artist, artistIds = null, albumId = null,
+                        controlsExpanded = showControls.value, isShowingLyrics = lyrics.value, mediaItem = media, links = PlayerTrackLinks(null, emptyList()),
                         shouldBePlaying = false, isBuffering = false, position = { 30_000L }, duration = { 120_000L },
-                        isExplicit = false, dynamicColorPalette = DefaultDarkColorPalette,
+                        dynamicColorPalette = DefaultDarkColorPalette,
                     )
                 }
             }
