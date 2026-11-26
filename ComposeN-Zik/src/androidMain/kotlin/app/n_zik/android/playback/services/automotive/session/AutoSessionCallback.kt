@@ -56,6 +56,7 @@ import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.withPlaybackAlbum
 import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.core.database.Database
@@ -813,6 +814,7 @@ class AutoSessionCallback(
 
         var queryList = emptyList<Song>()
         var startIdx = startIndex
+        var selectedAlbumId: String? = null
         runCatching {
             var songId = ""
             val mediaId = mediaItems.first().mediaId
@@ -881,6 +883,7 @@ class AutoSessionCallback(
                         Timber.tag("AutoSessionCallback").w("Unresolvable album selection: mediaId=%s", mediaId)
                     } else {
                         songId = selection.songId
+                        selectedAlbumId = selection.containerId
                         // Phone parity (re-negotiation 2026-10-01 « suit l'app »): the tap
                         // selection queue mirrors the unfiltered album detail list.
                         queryList = database.songAlbumMapTable.allSongsOf(selection.containerId).first()
@@ -909,7 +912,13 @@ class AutoSessionCallback(
             queryList = emptyList()
             startIdx = 0
         }
-        return MediaSession.MediaItemsWithStartPosition(queryList.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, startIdx, startPositionMs)
+        val albumId = selectedAlbumId
+        val albumTitle = albumId?.let { database.albumTable.findByIdDirect(it)?.cleanTitle() }
+        val queue = queryList.map { song ->
+            val item = CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal)
+            if (albumId != null) item.withPlaybackAlbum(albumId, albumTitle) else item
+        }
+        return MediaSession.MediaItemsWithStartPosition(queue, startIdx, startPositionMs)
     }
 
     /** Resolves local, generated or online playlist songs for legacy selection IDs. */

@@ -17,6 +17,7 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.enums.DurationInMinutes
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import app.n_zik.android.core.utils.Toaster
@@ -26,6 +27,8 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.utils.Shuffler
 import kotlinx.coroutines.withContext
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.models.Album
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.upsertSongInfo
 import app.n_zik.android.playback.services.launchStoredDurationSelection
 import android.os.Bundle
@@ -148,9 +151,16 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
         // This ensures the UI shows the correct artist names + browse IDs without delaying playback.
         val targetItem = cleanedMediaItems.getOrNull(newIndex)
         if (targetItem != null) {
-            val videoId = targetItem.mediaId.substringAfter("/").ifBlank { targetItem.mediaId }
-            // Pre-fetch synchronously so the search online completes before we read the DB.
-            runCatching { upsertSongInfo(videoId) }
+            val videoId = targetItem.mediaId.substringAfterLast('/')
+            val explicitAlbumId = targetItem.mediaMetadata.extras?.getString("albumId")?.takeIf(String::isNotBlank)
+            val exactTrackAlbum = if (targetItem.isLocal) null else try {
+                upsertSongInfo(videoId, explicitAlbumId)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                Timber.tag("PlayerPrefetch").w(error, "Metadata prefetch failed for $videoId")
+                null
+            }
             // Now read the DB to populate the MediaItem.
             val enrichedItem = runCatching {
                 val dbSong = Database
@@ -158,28 +168,36 @@ fun Player.forcePlayAtIndex(mediaItems: List<MediaItem>, mediaItemIndex: Int) {
                 if (dbSong != null) {
                     val dbArtists = Database
                         .artistTable.findBySongIdDirect(videoId)
-                    val dbAlbum = Database
-                        .albumTable.findBySongIdDirect(videoId)
-                        val existing = targetItem.mediaMetadata
-                        val artistNames = ArrayList<String>().apply { addAll(dbArtists.mapNotNull { it.name }) }
-                        val artistIds = ArrayList<String>().apply { addAll(dbArtists.map { it.id }) }
-                        val bundle = (existing.extras ?: Bundle()).apply {
-                            putStringArrayList("artistNames", artistNames)
-                            putStringArrayList("artistIds", artistIds)
-                            dbAlbum?.id?.let { putString("albumId", it) }
+                    val existing = targetItem.mediaMetadata
+                    val storedAlbums = if (targetItem.isLocal || explicitAlbumId != null) emptyList()
+                        else Database.songAlbumMapTable.findAlbumsOfDirect(videoId)
+                    val resolvedAlbumId = if (targetItem.isLocal) explicitAlbumId else
+                        selectOnlinePlaybackAlbumId(explicitAlbumId, exactTrackAlbum?.id, storedAlbums.map(Album::id))
+                    val resolvedAlbumTitle = if (resolvedAlbumId == explicitAlbumId) {
+                        existing.albumTitle?.toString()
+                    } else {
+                        storedAlbums.firstOrNull { it.id == resolvedAlbumId }?.title
+                            ?: exactTrackAlbum?.takeIf { it.id == resolvedAlbumId }?.title
+                    }
+                    val extras = (existing.extras?.let(::Bundle) ?: Bundle()).apply {
+                        if (getStringArrayList("artistIds").isNullOrEmpty()) {
+                            if (getStringArrayList("artistNames").isNullOrEmpty()) {
+                                putStringArrayList("artistNames", ArrayList(dbArtists.mapNotNull { it.name }))
+                            }
+                            putStringArrayList("artistIds", ArrayList(dbArtists.map { it.id }))
+                            putStringArrayList(ARTIST_LINKED_NAMES_EXTRA, ArrayList(dbArtists.map { it.name.orEmpty() }))
                         }
-                        targetItem.buildUpon()
-                            .setMediaMetadata(
-                                existing.buildUpon()
-                                    .setArtist(
-                                        if (dbSong.artistsText.isNullOrBlank()) existing.artist?.toString()
-                                        else cleanPrefix(dbSong.artistsText)
-                                    )
-                                    .setExtras(bundle)
-                                    .build()
-                            )
-                            .build()
-                    } else null
+                    }
+                    val artist = if (dbSong.artistsText.isNullOrBlank() || existing.extras?.getBoolean("isArtistModified") == true) {
+                        existing.artist
+                    } else {
+                        cleanPrefix(dbSong.artistsText)
+                    }
+                    val enriched = targetItem.buildUpon().setMediaMetadata(
+                        existing.buildUpon().setArtist(artist).setExtras(extras).build()
+                    ).build()
+                    resolvedAlbumId?.let { enriched.withPlaybackAlbum(it, resolvedAlbumTitle) } ?: enriched
+                } else null
             }.getOrNull()
             if (enrichedItem != null) {
                 Timber.tag("PlayerPrefetch").d("Prefetch success! Enriched metadata for: $videoId")

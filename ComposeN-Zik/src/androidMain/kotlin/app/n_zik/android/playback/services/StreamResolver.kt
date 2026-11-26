@@ -59,6 +59,7 @@ import app.n_zik.android.models.SongAlbumMap
 import app.n_zik.android.MODIFIED_PREFIX
 import java.util.concurrent.ConcurrentHashMap
 import app.n_zik.android.core.utils.PropUtils
+import app.n_zik.android.utils.selectOnlinePlaybackAlbumId
 import app.n_zik.innertube.YtMusic
 import android.database.sqlite.SQLiteConstraintException
 
@@ -208,8 +209,8 @@ internal var upsertSongInfoNetworkCheck: () -> Boolean =
 internal var fetchFormatIfMissingNetworkCheck: () -> Boolean =
     { NetworkQualityHelper.isNetworkConnected(appContext()) }
 
-suspend fun upsertSongInfo(videoId: String) {
-    if (videoId == justInserted) return
+internal suspend fun upsertSongInfo(videoId: String, preferredAlbumId: String? = null): Album? {
+    if (videoId == justInserted) return null
     // S5 (offline gate, 2026-10-22): pure network work (Innertube nextPage) — skipped
     // while offline so no call site can launch DNS-failing calls. The guard lives in the
 //
@@ -217,21 +218,25 @@ suspend fun upsertSongInfo(videoId: String) {
     // (READ-ONLY) is a call site no wrapper can cover; the next online playback re-runs it.
     if (!upsertSongInfoNetworkCheck()) {
         Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo skipped for $videoId: no network")
-        return
+        return null
     }
     if (!fetchingSongInfos.add(videoId)) {
         Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo already in progress for $videoId, skipping duplicate.")
-        return
+        return null
     }
 
+    var exactTrackAlbum: Album? = null
     try {
         Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: calling Innertube.nextPage for $videoId")
         Innertube.nextPage(videoId = videoId)?.fold(
             onSuccess = { nextPage ->
-            val songItem = nextPage.itemsPage?.items?.firstOrNull()
+            val songItem = nextPage.itemsPage?.items?.firstOrNull { it.info?.endpoint?.videoId == videoId }
             if (songItem == null) {
-                Timber.tag(STREAM_RESOLVER_TAG).w("upsertSongInfo: nextPage returned empty itemsPage for $videoId")
+                Timber.tag(STREAM_RESOLVER_TAG).w("upsertSongInfo: nextPage did not contain $videoId")
                 return@fold
+            }
+            exactTrackAlbum = songItem.album?.let { album ->
+                album.endpoint?.browseId?.takeIf(String::isNotBlank)?.let { Album(id = it, title = album.name) }
             }
             Timber.tag(STREAM_RESOLVER_TAG).d("upsertSongInfo: got songItem '${songItem.info?.name}' for $videoId")
             Database.upsert(songItem)
@@ -239,12 +244,12 @@ suspend fun upsertSongInfo(videoId: String) {
 
             // Read IDs from DB (retry up to 3 times if empty)
             var artistIdsFromDb = emptyList<Artist>()
-            var albumFromDb: Album? = null
+            var storedAlbums = emptyList<Album>()
             for (attempt in 1..3) {
                 kotlinx.coroutines.delay(3000L * attempt)
                 artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
-                albumFromDb = Database.songAlbumMapTable.findAlbumOf(videoId).firstOrNull()
-                if (artistIdsFromDb.isNotEmpty() || albumFromDb != null) break
+                storedAlbums = Database.songAlbumMapTable.findAlbumsOf(videoId).firstOrNull().orEmpty()
+                if (artistIdsFromDb.isNotEmpty() || storedAlbums.isNotEmpty()) break
                 // First attempt only: the queue brought no artist (the video case —
                 // a video's byline channel is never a YTM artist) and no link
 //
@@ -267,12 +272,12 @@ suspend fun upsertSongInfo(videoId: String) {
 //
                     // re-read the IDs before continuing the retry loop.
                     artistIdsFromDb = Database.songArtistMapTable.findArtistsOf(videoId).firstOrNull().orEmpty()
-                    albumFromDb = Database.songAlbumMapTable.findAlbumOf(videoId).firstOrNull()
-                    if (artistIdsFromDb.isNotEmpty() || albumFromDb != null) break
+                    storedAlbums = Database.songAlbumMapTable.findAlbumsOf(videoId).firstOrNull().orEmpty()
+                    if (artistIdsFromDb.isNotEmpty() || storedAlbums.isNotEmpty()) break
                 }
                 Timber.tag(STREAM_RESOLVER_TAG).d("[IDs] attempt $attempt/3: no artist/album IDs for $videoId, retrying...")
             }
-            if (artistIdsFromDb.isEmpty() && albumFromDb == null) {
+            if (artistIdsFromDb.isEmpty() && storedAlbums.isEmpty() && exactTrackAlbum == null) {
                 Timber.tag(STREAM_RESOLVER_TAG).w("[IDs] No artist/album IDs for $videoId after 3 retries, skipping.")
             }
 
@@ -330,8 +335,8 @@ suspend fun upsertSongInfo(videoId: String) {
                 }
             }
 
-            // Album cache — use browseId from DB (navigation)
-            val albumId = albumFromDb?.id
+            val albumId = selectOnlinePlaybackAlbumId(preferredAlbumId, exactTrackAlbum?.id, storedAlbums.map(Album::id))
+                ?.takeUnless { it.startsWith("LOCAL_ALBUM_") }
 
             if (!albumId.isNullOrBlank()) {
                 val dbAlbum = Database.albumTable.findByIdDirect(albumId)
@@ -373,6 +378,7 @@ suspend fun upsertSongInfo(videoId: String) {
     } finally {
         fetchingSongInfos.remove(videoId)
     }
+    return exactTrackAlbum
 }
 
 /**

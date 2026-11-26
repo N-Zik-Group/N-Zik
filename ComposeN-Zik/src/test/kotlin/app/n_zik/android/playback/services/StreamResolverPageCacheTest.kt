@@ -13,8 +13,6 @@ import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import io.mockk.coVerify
 import io.mockk.coEvery
-import io.mockk.coEvery
-import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -135,7 +133,7 @@ class StreamResolverPageCacheTest {
         Result.success(page)
 
     /** A watch-next response whose single item points at [videoId]. */
-    private fun stubNextPage(videoId: String) {
+    private fun stubNextPage(videoId: String, requestVideoId: String = videoId) {
         val nextPage = Innertube.NextPage(
             itemsPage = Innertube.ItemsPage(
                 items = listOf(songItem(videoId, "Some track")),
@@ -143,9 +141,18 @@ class StreamResolverPageCacheTest {
             ),
             playlistId = null
         )
-        coEvery { Innertube.nextPage(videoId = videoId) } returns nextPageResult(Result.success(nextPage))
+        coEvery { Innertube.nextPage(videoId = requestVideoId) } returns nextPageResult(Result.success(nextPage))
     }
 
+    @Test
+    fun queueWithoutTheRequestedVideoDoesNotWriteAnotherTrack() = runBlocking {
+        val videoId = "albumTarget"
+        stubNextPage("otherSong01", requestVideoId = videoId)
+
+        assertEquals(null, upsertSongInfo(videoId))
+        coVerify(exactly = 0) { Database.upsert(any<Innertube.SongItem>()) }
+    }
+
     private fun songItem(videoId: String, title: String) =
         Innertube.SongItem(
             info = Innertube.Info(
@@ -217,7 +224,7 @@ class StreamResolverPageCacheTest {
         )
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(listOf(stored))
-        every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(null)
+        every { songAlbumMapTable.findAlbumsOf(videoId) } returns flowOf(emptyList())
         coEvery { artistTable.findByIdDirect(artistId) } returns stored
         coEvery { Innertube.artistPage(browseId = artistId) } returns
             artistPageResult(Result.success(artistPage(name = null, thumbnailUrl = null)))
@@ -250,7 +257,7 @@ class StreamResolverPageCacheTest {
         )
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(listOf(stored))
-        every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(null)
+        every { songAlbumMapTable.findAlbumsOf(videoId) } returns flowOf(emptyList())
         coEvery { artistTable.findByIdDirect(artistId) } returns stored
         coEvery { Innertube.artistPage(browseId = artistId) } returns
             artistPageResult(Result.success(artistPage(name = "Tanger", thumbnailUrl = "https://fetched/thumb")))
@@ -279,7 +286,7 @@ class StreamResolverPageCacheTest {
         )
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(emptyList())
-        every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(stored)
+        every { songAlbumMapTable.findAlbumsOf(videoId) } returns flowOf(listOf(stored))
         coEvery { albumTable.findByIdDirect(albumId) } returns stored
         // Empty album page: no title, no thumbnail, no authors, no year —
         // but a non-empty track list (a zero-song page is a no-op, not an
@@ -324,7 +331,7 @@ class StreamResolverPageCacheTest {
         )
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(emptyList())
-        every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(stored)
+        every { songAlbumMapTable.findAlbumsOf(videoId) } returns flowOf(listOf(stored))
         coEvery { albumTable.findByIdDirect(albumId) } returns stored
         coEvery { YtMusic.getAlbum(albumId, true) } returns getAlbumResult(
             albumPage(
@@ -367,7 +374,7 @@ class StreamResolverPageCacheTest {
         upsertSongInfoNetworkCheck = { true }
         stubNextPage(videoId)
         every { songArtistMapTable.findArtistsOf(videoId) } returns flowOf(emptyList())
-        every { songAlbumMapTable.findAlbumOf(videoId) } returns flowOf(null)
+        every { songAlbumMapTable.findAlbumsOf(videoId) } returns flowOf(emptyList())
         upsertSongInfo(videoId)
         coVerify(timeout = 15_000) { Innertube.nextPage(videoId = videoId) }
     }

@@ -73,8 +73,9 @@ class ForcePlayAtIndexDispatchTest {
         // Main-dispatched playback start, so its caller thread is the join point for the body.
         mockkStatic("app.n_zik.android.playback.services.StreamResolverKt")
         var bodyThread: String? = null
-        coEvery { upsertSongInfo(any()) } answers {
+        coEvery { upsertSongInfo(any(), any()) } answers {
             bodyThread = Thread.currentThread().name
+            null
         }
 
         // The pre-fetch DB read goes through the mocked SongTable (findByIdDirect returns null),
