@@ -532,3 +532,7 @@ Podcast links:
 Updater availability:
 - fix(updater): skip release checks on unsupported builds
   - Use the same build capability check for background and forced checks.
+
+Selection completion:
+- test(selection): cover deferred completion after switching selections
+  - Keep a newer selection active when a previous action finishes.
