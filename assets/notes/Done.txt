@@ -972,3 +972,7 @@ Settings:
 Settings:
 - fix(settings): show the restart needed by storage reset
   - Prompt for an app restart when reset schedules a cache migration.
+
+Settings:
+- fix(settings): show the effective automatic audio quality policy
+  - Describe metered audio separately from detected artwork quality.

@@ -7,13 +7,12 @@ import app.n_zik.android.R
 import app.n_zik.android.components.settings.DownloadQualityEntry
 import app.n_zik.android.components.settings.UpdateDownloadsButton
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.n_zik.android.core.coil.ImageCacheFactory
 
 @UnstableApi
 @Composable
 internal fun NetworkDownloadQualityCard(
     query: String,
-    networkQuality: ImageCacheFactory.NetworkQuality,
+    connectionMetered: Boolean,
     onRestartRequired: (Boolean) -> Unit,
 ) {
     SettingsSectionCard(
@@ -21,7 +20,7 @@ internal fun NetworkDownloadQualityCard(
         icon = R.drawable.audio_quality,
         content = {
             if (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true)) {
-                DownloadQualityEntry(automaticQualityText = automaticQualityStatusText(networkQuality), onQualityChanged = { onRestartRequired(true) })
+                DownloadQualityEntry(automaticQualityText = automaticAudioQualityStatusText(connectionMetered), onQualityChanged = { onRestartRequired(true) })
                 UpdateDownloadsButton()
             }
         },

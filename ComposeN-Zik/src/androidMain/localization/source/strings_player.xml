@@ -16,6 +16,7 @@
     <string name="audio_output_this_phone_label">This phone</string>
     <string name="audio_output_title">Audio output</string>
     <string name="audio_output_wired_headphones_label">Wired headphones</string>
+    <string name="audio_quality_auto_effective_fmt">Automatic (%1$s)</string>
     <string name="audio_quality_auto_fmt">Auto (Detected: %1$s)</string>
     <string name="audio_quality_automatic">Automatic</string>
     <string name="audio_quality_format">Audio Quality</string>

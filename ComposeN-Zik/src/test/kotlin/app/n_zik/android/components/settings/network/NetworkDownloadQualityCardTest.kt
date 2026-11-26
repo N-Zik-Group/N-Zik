@@ -120,7 +120,7 @@ class NetworkDownloadQualityCardTest {
     @Test fun `thematic network quality excludes download controls`() {
         content {
             NetworkQualityCard("", remember { mutableStateOf(false) },
-                remember { mutableStateOf(false) }, ImageCacheFactory.NetworkQuality.LOW,
+                remember { mutableStateOf(false) }, ImageCacheFactory.NetworkQuality.LOW, connectionMetered = false,
                 includeDownloadQuality = false) {}
         }
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_format)).assertExists()
@@ -147,7 +147,7 @@ class NetworkDownloadQualityCardTest {
         content {
             NetworkQualityCard(context.getString(R.string.downloads_quality_format),
                 remember { mutableStateOf(false) }, remember { mutableStateOf(false) },
-                ImageCacheFactory.NetworkQuality.LOW) {}
+                ImageCacheFactory.NetworkQuality.LOW, connectionMetered = false) {}
         }
         composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).assertExists()
@@ -157,7 +157,7 @@ class NetworkDownloadQualityCardTest {
         val before = context.preferences.all.toMap()
         var restartRequests = 0
         content {
-            NetworkDownloadQualityCard("", ImageCacheFactory.NetworkQuality.LOW) { restartRequests++ }
+            NetworkDownloadQualityCard("", connectionMetered = false) { restartRequests++ }
         }
         composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).assertExists()
@@ -167,20 +167,30 @@ class NetworkDownloadQualityCardTest {
         assertEquals(0, restartRequests)
     }
 
-    @Test fun `network automatic values follow detected quality without writing preferences`() {
+    @Test fun `automatic audio follows metering while automatic artwork follows network quality`() {
         val quality = mutableStateOf(ImageCacheFactory.NetworkQuality.LOW)
+        val metered = mutableStateOf(false)
         val before = context.preferences.all.toMap()
         content {
             NetworkQualityCard("", remember { mutableStateOf(false) },
-                remember { mutableStateOf(false) }, quality.value, includeDownloadQuality = false) {}
+                remember { mutableStateOf(false) }, quality.value, metered.value, includeDownloadQuality = false) {}
         }
         val lowText = currentValue(context.getString(R.string.audio_quality_auto_fmt, context.getString(R.string.network_quality_low)))
         val highText = currentValue(context.getString(R.string.audio_quality_auto_fmt, context.getString(R.string.network_quality_high)))
-        composeRule.onAllNodesWithText(lowText).assertCountEquals(2)
-        composeRule.runOnIdle { quality.value = ImageCacheFactory.NetworkQuality.HIGH }
-        awaitTextCount(highText, count = 2)
-        composeRule.onAllNodesWithText(highText).assertCountEquals(2)
+        val audioAuto = currentValue(context.getString(R.string.audio_quality_automatic))
+        val audioAutoLow = currentValue(context.getString(R.string.audio_quality_auto_effective_fmt,
+            context.getString(R.string.audio_quality_format_low)))
+        composeRule.onAllNodesWithText(lowText).assertCountEquals(1)
+        composeRule.onNodeWithText(audioAuto).assertExists()
+        composeRule.runOnIdle {
+            quality.value = ImageCacheFactory.NetworkQuality.HIGH
+            metered.value = true
+        }
+        awaitTextCount(highText)
+        awaitTextCount(audioAutoLow)
+        composeRule.onAllNodesWithText(highText).assertCountEquals(1)
         composeRule.onAllNodesWithText(lowText).assertCountEquals(0)
+        composeRule.onNodeWithText(audioAuto).assertDoesNotExist()
         assertEquals(before, context.preferences.all)
     }
 
@@ -191,7 +201,7 @@ class NetworkDownloadQualityCardTest {
             .apply()
         content {
             NetworkQualityCard("", remember { mutableStateOf(false) },
-                remember { mutableStateOf(false) }, ImageCacheFactory.NetworkQuality.LOW,
+                remember { mutableStateOf(false) }, ImageCacheFactory.NetworkQuality.LOW, connectionMetered = false,
                 includeDownloadQuality = false) {}
         }
         composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_format_high))).assertExists()
@@ -203,10 +213,10 @@ class NetworkDownloadQualityCardTest {
     @Test fun `download automatic status shares its selector and selection retains restart action`() {
         var restartRequests = 0
         content {
-            NetworkDownloadQualityCard("", ImageCacheFactory.NetworkQuality.MEDIUM) { restartRequests++ }
+            NetworkDownloadQualityCard("", connectionMetered = true) { restartRequests++ }
         }
-        composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_auto_fmt,
-            context.getString(R.string.network_quality_medium)))).assertExists()
+        composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_auto_effective_fmt,
+            context.getString(R.string.audio_quality_format_low)))).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format))
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
         awaitTextCount(context.getString(R.string.audio_quality_automatic))

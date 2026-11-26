@@ -29,6 +29,7 @@ internal fun NetworkQualityCard(
     audioDialog: MutableState<Boolean>,
     imageDialog: MutableState<Boolean>,
     networkQuality: ImageCacheFactory.NetworkQuality,
+    connectionMetered: Boolean,
     includeDownloadQuality: Boolean = true,
     onRestartRequired: (Boolean) -> Unit,
 ) {
@@ -48,7 +49,7 @@ internal fun NetworkQualityCard(
                     title = stringResource(R.string.audio_quality_format),
                     text = stringResource(R.string.network_stream_audio_quality_description),
                     selectedValueText = when (audioQualityFormat) {
-                        AudioQualityFormat.Auto -> automaticQualityStatusText(networkQuality)
+                        AudioQualityFormat.Auto -> automaticAudioQualityStatusText(connectionMetered)
                         AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
                         AudioQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
                     },
@@ -63,7 +64,7 @@ internal fun NetworkQualityCard(
                     title = stringResource(R.string.settings_network_image_quality_label),
                     text = stringResource(R.string.network_artwork_quality_description),
                     selectedValueText = when (imageQualityFormat) {
-                        ImageQualityFormat.Auto -> automaticQualityStatusText(networkQuality)
+                        ImageQualityFormat.Auto -> automaticArtworkQualityStatusText(networkQuality)
                         ImageQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
                         ImageQualityFormat.Medium -> stringResource(R.string.audio_quality_format_medium)
                         ImageQualityFormat.Low -> stringResource(R.string.audio_quality_format_low)
@@ -74,7 +75,7 @@ internal fun NetworkQualityCard(
             }
 
             if (includeDownloadQuality && (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true))) {
-                DownloadQualityEntry(automaticQualityText = automaticQualityStatusText(networkQuality), onQualityChanged = { onRestartRequired(true) })
+                DownloadQualityEntry(automaticQualityText = automaticAudioQualityStatusText(connectionMetered), onQualityChanged = { onRestartRequired(true) })
                 UpdateDownloadsButton()
             }
 

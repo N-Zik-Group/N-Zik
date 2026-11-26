@@ -14,6 +14,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.produceState
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.utils.isConnectionMetered
+import app.n_zik.android.utils.isConnectionMeteredEnabledKey
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableFloatStateOf
@@ -155,27 +157,32 @@ internal fun NetworkSettingsContent(
     val onResetRestartRequired = LocalSettingsResetRestart.current
     val audioDialog = rememberSaveable { mutableStateOf(false) }
     val imageDialog = rememberSaveable { mutableStateOf(false) }
-    val networkQuality by produceState(initialValue = ImageCacheFactory.getCurrentNetworkQuality()) {
+    val context = LocalContext.current
+    val forceMetered by rememberPreference(isConnectionMeteredEnabledKey, false)
+    val initialQuality = remember(context) { ImageCacheFactory.getCurrentNetworkQuality() to context.isConnectionMetered() }
+    val qualityStatus by produceState(initialQuality, forceMetered) {
         while (true) {
-            value = ImageCacheFactory.getCurrentNetworkQuality()
+            value = ImageCacheFactory.getCurrentNetworkQuality() to context.isConnectionMetered()
             delay(5000)
         }
     }
+    val (networkQuality, connectionMetered) = qualityStatus
 
     cardsContainer {
         if (selectedCards == null) {
-            SettingsCardSlot(R.string.network_status, modifier = { cardModifier(R.string.network_status) }) { NetworkStatusCard(networkQuality) }
+            SettingsCardSlot(R.string.network_status, modifier = { cardModifier(R.string.network_status) }) { NetworkStatusCard(networkQuality, connectionMetered) }
         }
         if (selectedCards == null || R.string.settings_network_quality_title in selectedCards) {
             SettingsCardSlot(R.string.settings_network_quality_title, modifier = { cardModifier(R.string.settings_network_quality_title) }) {
                 NetworkQualityCard(search.inputValue, audioDialog, imageDialog,
                     networkQuality = networkQuality,
+                    connectionMetered = connectionMetered,
                     includeDownloadQuality = selectedCards == null) { restartService = it }
             }
         }
         if (selectedCards != null && R.string.settings_download_quality in selectedCards) {
             SettingsCardSlot(R.string.settings_download_quality, modifier = { cardModifier(R.string.settings_download_quality) }) {
-                NetworkDownloadQualityCard(search.inputValue, networkQuality) { restartService = it }
+                NetworkDownloadQualityCard(search.inputValue, connectionMetered) { restartService = it }
             }
         }
         if (selectedCards == null || R.string.network_settings in selectedCards) {

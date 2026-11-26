@@ -18,7 +18,7 @@ import app.n_zik.android.components.settings.common.OtherInfoSettingsEntry
 import androidx.compose.runtime.getValue
 
 @Composable
-internal fun automaticQualityStatusText(networkQuality: ImageCacheFactory.NetworkQuality): String {
+internal fun automaticArtworkQualityStatusText(networkQuality: ImageCacheFactory.NetworkQuality): String {
     val detectedText = stringResource(when (networkQuality) {
         ImageCacheFactory.NetworkQuality.LOW -> R.string.network_quality_low
         ImageCacheFactory.NetworkQuality.MEDIUM -> R.string.network_quality_medium
@@ -28,8 +28,17 @@ internal fun automaticQualityStatusText(networkQuality: ImageCacheFactory.Networ
 }
 
 @Composable
+internal fun automaticAudioQualityStatusText(connectionMetered: Boolean): String =
+    if (connectionMetered) {
+        stringResource(R.string.audio_quality_auto_effective_fmt, stringResource(R.string.audio_quality_format_low))
+    } else {
+        stringResource(R.string.audio_quality_automatic)
+    }
+
+@Composable
 internal fun NetworkStatusCard(
     networkQuality: ImageCacheFactory.NetworkQuality,
+    connectionMetered: Boolean,
     titleRes: Int = R.string.network_status,
     iconRes: Int = R.drawable.network,
 ) {
@@ -67,7 +76,7 @@ internal fun NetworkStatusCard(
             )
 
             val audioStatusText = if (audioQualityFormat == AudioQualityFormat.Auto) {
-                stringResource(R.string.audio_quality_auto_fmt, detectedText)
+                automaticAudioQualityStatusText(connectionMetered)
             } else {
                 when(audioQualityFormat) {
                     AudioQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
@@ -85,7 +94,7 @@ internal fun NetworkStatusCard(
             )
 
             val downloadStatusText = if (downloadQualityFormat == DownloadQualityFormat.Auto) {
-                stringResource(R.string.audio_quality_auto_fmt, detectedText)
+                automaticAudioQualityStatusText(connectionMetered)
             } else {
                 when(downloadQualityFormat) {
                     DownloadQualityFormat.High -> stringResource(R.string.audio_quality_format_high)
