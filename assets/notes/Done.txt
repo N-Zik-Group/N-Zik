@@ -940,3 +940,7 @@ Menus:
 Menus:
 - fix(menu): keep Listen Together actions in sync with room roles
   - Update both menu layouts as the session role changes and check the role before submitting a suggestion.
+
+Menus:
+- fix(menu): support grid layout in the lyrics track picker
+  - Keep the search field and results usable in Grid menu mode.

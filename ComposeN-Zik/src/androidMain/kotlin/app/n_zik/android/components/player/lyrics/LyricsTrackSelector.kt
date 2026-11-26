@@ -4,9 +4,13 @@ import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.items
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
@@ -33,8 +37,12 @@ import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberPreference
 import app.n_zik.lrclib.LrcLib
 import app.n_zik.lrclib.models.Track
 import kotlinx.coroutines.CancellationException
@@ -143,13 +151,15 @@ internal fun LyricsTrackSelector(
         }
     }
 
-    ListMenu.Menu(title = stringResource(R.string.lyrics_title)) {
+    val style by rememberPreference(menuStyleKey, MenuStyle.List)
+    val menuTitle = stringResource(R.string.lyrics_title)
+    val searchFields: @Composable () -> Unit = {
         ListMenu.Entry(
             text = stringResource(R.string.common_action_cancel),
             icon = { SettingIcon(R.drawable.chevron_back) },
             onClick = menuState::pop,
         )
-        Row {
+        Row(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = title,
                 onValueChange = { title = it },
@@ -185,6 +195,8 @@ internal fun LyricsTrackSelector(
                     .align(Alignment.CenterVertically),
             )
         }
+    }
+    val searchStatus: @Composable () -> Unit = {
         if (loading) {
             repeat(4) {
                 ListMenu.Entry(text = "", icon = { SettingIcon(R.drawable.text) }, loading = true)
@@ -198,22 +210,54 @@ internal fun LyricsTrackSelector(
                 modifier = Modifier.padding(12.dp),
             )
         }
-        tracks.forEach { track ->
-            ListMenu.Entry(
-                text = "${track.artistName} - ${track.trackName}",
-                icon = { SettingIcon(R.drawable.text) },
-                subtitle = "(${stringResource(R.string.library_sort_duration)} ${
-                    track.duration.seconds.toComponents { minutes, seconds, _ ->
-                        "$minutes:${seconds.toString().padStart(2, '0')}"
-                    }
-                } ${stringResource(R.string.player_statistics_media_id_label)} ${track.id})",
-                onClick = {
-                    pickedLyrics(mediaId, track, lyricsType)?.let { row ->
-                        Database.asyncTransaction { lyricsTable.upsert(row) }
-                    }
-                    menuState.hide()
-                },
-            )
+    }
+    val selectTrack: (Track) -> Unit = { track ->
+        pickedLyrics(mediaId, track, lyricsType)?.let { row ->
+            Database.asyncTransaction { lyricsTable.upsert(row) }
+        }
+        menuState.hide()
+    }
+
+    if (style == MenuStyle.List) {
+        ListMenu.Menu(title = menuTitle) {
+            searchFields()
+            searchStatus()
+            tracks.forEach { track ->
+                ListMenu.Entry(
+                    text = "${track.artistName} - ${track.trackName}",
+                    icon = { SettingIcon(R.drawable.text) },
+                    subtitle = trackSubtitle(track),
+                    onClick = { selectTrack(track) },
+                )
+            }
+        }
+    } else {
+        GridMenu.Menu(title = menuTitle) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    searchFields()
+                    searchStatus()
+                }
+            }
+            items(tracks) { track ->
+                GridMenu.Entry(
+                    text = "${track.artistName} - ${track.trackName}",
+                    icon = { SettingIcon(R.drawable.text) },
+                    iconHasOwnBackground = true,
+                    subtitle = trackSubtitle(track),
+                    onClick = { selectTrack(track) },
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun trackSubtitle(track: Track): String {
+    val duration = track.duration.seconds.toComponents { minutes, seconds, _ ->
+        "$minutes:${seconds.toString().padStart(2, '0')}"
+    }
+    val durationLabel = stringResource(R.string.library_sort_duration)
+    val idLabel = stringResource(R.string.player_statistics_media_id_label)
+    return "($durationLabel $duration $idLabel ${track.id})"
 }
