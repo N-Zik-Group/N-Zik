@@ -49,6 +49,7 @@ fun BurgerMenuItem(
             onShortTap()
             onConsume()
         },
+        onLongClickLabel = stringResource(R.string.settings_title),
         onLongClick = onLongTap,
     ) { rowModifier ->
         Row(

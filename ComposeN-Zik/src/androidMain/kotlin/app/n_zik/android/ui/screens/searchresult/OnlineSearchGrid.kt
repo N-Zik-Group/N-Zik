@@ -195,6 +195,7 @@ fun OnlineSearchGrid(
                             modifier = Modifier
                                 .background(colorPalette().background0)
                                 .clip(uiRoundnessShape()).combinedClickable(
+                                    onLongClickLabel = menuLabel,
                                     onLongClick = {
                                         menuState.display {
                                             VideoItemMenu(

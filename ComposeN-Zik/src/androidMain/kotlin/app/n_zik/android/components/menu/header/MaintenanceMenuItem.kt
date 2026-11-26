@@ -47,6 +47,7 @@ fun MaintenanceMenuItem(
             onOpen()
             onConsume()
         },
+        onLongClickLabel = stringResource(R.string.settings_title),
         onLongClick = onLongClick,
     ) { rowModifier ->
         Row(

@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import app.n_zik.innertube.Innertube
@@ -174,6 +175,7 @@ fun OnlineSearchList(
     }
     val storedRows by rememberSongRowMetadata(trackIds)
     val linkedCredits by rememberSongRowArtistCredits(trackIds)
+    val menuLabel = stringResource(R.string.common_menu_label)
 
     val itemContent: @Composable LazyItemScope.(Innertube.Item) -> Unit = { item ->
         when (item) {
@@ -232,6 +234,7 @@ fun OnlineSearchList(
                         modifier = Modifier
                             .background(colorPalette().background0)
                             .clip(uiRoundnessShape()).combinedClickable(
+                                onLongClickLabel = menuLabel,
                                 onLongClick = {
                                     menuState.display {
                                         VideoItemMenu(
@@ -270,6 +273,7 @@ fun OnlineSearchList(
                                     4, 5, 6 -> navController.navigate(onlinePlaylistRoute(item.key))
                                 }
                             },
+                            onLongClickLabel = menuLabel,
                             onLongClick = {
                                 if (item is Innertube.AlbumItem) {
                                     menuState.display {

@@ -110,6 +110,7 @@ class DropdownMenu(
 internal fun DropdownMenuRowFeedback(
     modifier: Modifier,
     onClick: () -> Unit,
+    onLongClickLabel: String,
     onLongClick: () -> Unit,
     content: @Composable (Modifier) -> Unit,
 ) {
@@ -119,6 +120,7 @@ internal fun DropdownMenuRowFeedback(
                 interactionSource = source,
                 indication = if (source == null) LocalIndication.current else null,
                 onClick = onClick,
+                onLongClickLabel = onLongClickLabel,
                 onLongClick = onLongClick,
             )
         )

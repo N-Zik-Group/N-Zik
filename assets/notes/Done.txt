@@ -1052,3 +1052,7 @@ Menus:
 Menus:
 - fix(menu): report failed room suggestions accurately
   - Only dismiss after the connected socket accepts the suggestion.
+
+Menus:
+- fix(menu): label secondary menu actions for accessibility
+  - Name the long press in the burger and online search results.

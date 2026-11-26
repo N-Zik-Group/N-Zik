@@ -50,6 +50,7 @@ fun ExtensionsMenuItem(
             onOpen()
             onConsume()
         },
+        onLongClickLabel = stringResource(R.string.settings_title),
         onLongClick = onLongClick,
     ) { rowModifier ->
         Row(
