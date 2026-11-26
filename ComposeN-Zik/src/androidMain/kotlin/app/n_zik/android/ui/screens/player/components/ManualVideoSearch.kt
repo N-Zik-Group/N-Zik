@@ -164,7 +164,7 @@ private fun ManualVideoSearch(
                         video = result,
                         thumbnailWidthDp = 128.dp,
                         thumbnailHeightDp = 72.dp,
-                        modifier = Modifier.clip(uiRoundnessShape()).clickable(enabled = binder != null && !guestLocked) {
+                        modifier = Modifier.animateItem().clip(uiRoundnessShape()).clickable(enabled = binder != null && !guestLocked) {
                             val playerBinder = binder ?: return@clickable
                             playerBinder.stopRadio()
                             playerBinder.player.forcePlay(result.asMediaItem)

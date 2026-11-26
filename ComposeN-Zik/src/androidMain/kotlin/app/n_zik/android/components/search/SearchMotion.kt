@@ -48,6 +48,10 @@ internal fun Modifier.searchResultOpacity(opacity: State<Float>): Modifier =
     }
 
 @Composable
-internal fun SearchResultContent(opacity: State<Float>, content: @Composable () -> Unit) {
-    Box(Modifier.searchResultOpacity(opacity)) { content() }
+internal fun SearchResultContent(
+    opacity: State<Float>,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Box(modifier.searchResultOpacity(opacity)) { content() }
 }

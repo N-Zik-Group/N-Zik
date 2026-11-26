@@ -544,3 +544,7 @@ History sort:
 Appearance and interface defaults:
 - fix(settings): reset player and interface preferences independently
   - Keep customizations outside the selected reset scope.
+
+Search movement:
+- fix(search): retain screen layout through result transitions
+  - Support filtered-result opacity on caller layout and animate manual video rows.

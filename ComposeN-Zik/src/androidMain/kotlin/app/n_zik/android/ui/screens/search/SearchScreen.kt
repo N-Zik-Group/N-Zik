@@ -64,12 +64,13 @@ fun SearchScreen(
     onSearch: (String) -> Unit,
     onViewPlaylist: (String) -> Unit,
     onDismiss: (() -> Unit)? = null,
+    startWithLocalSearch: Boolean = false,
 ) {
     val preview = LocalThemePreview.current
     val saveableStateHolder = rememberSaveableStateHolder()
 
     val selectedTab = rememberSaveable {
-        mutableStateOf(if (preview == null) 0 else 1)
+        mutableStateOf(if (startWithLocalSearch || preview != null) 1 else 0)
     }
     val (tabIndex, onTabChanged) = selectedTab
 
