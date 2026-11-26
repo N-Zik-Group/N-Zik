@@ -504,3 +504,7 @@ Updater download safeguards:
 Picture-in-picture support:
 - fix(pip): resolve system support from the supplied context
   - Defer the process context lookup until it is needed.
+
+Profile storage:
+- fix(profile): guard cold shortcut selection against stale storage
+  - Validate the target under the same lock used for profile storage changes.

@@ -3,6 +3,7 @@ package app.n_zik.android.core.profiles
 import android.content.Context
 import android.os.Build
 import android.system.Os
+import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.isProfileIdSafe
@@ -35,10 +36,14 @@ internal fun bindSelectedProcessStorageProfile(context: Context): String =
 
 /** A launcher shortcut can select another profile in-place only before startup claims one. */
 internal fun selectColdStorageProfile(context: Context, id: String): Boolean =
-    synchronized(profileSelectionLock) {
-        if (processStorageProfile != null) return@synchronized false
-        setActiveProfile(id, context)
-        true
+    DatabaseRestoreJournal.withProfileStorageMutation(context) {
+        synchronized(profileSelectionLock) {
+            if (processStorageProfile != null || profileStorageIdentity(context, id) == null) {
+                return@synchronized false
+            }
+            setActiveProfile(id, context)
+            true
+        }
     }
 
 internal fun isProcessStorageProfile(context: Context, id: String): Boolean =
