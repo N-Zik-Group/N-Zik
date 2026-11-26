@@ -872,3 +872,7 @@ Player settings menu affordances:
 Listen Together account display:
 - fix(listen-together): refresh the username after room submission
   - Use the saved username for later forms within the same menu.
+
+Accessible player settings triggers:
+- fix(menu): label the lyrics and visualizer settings buttons
+  - Expose the same label in Normal and Glass.

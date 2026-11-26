@@ -777,6 +777,7 @@ fun LyricsScreen(
                     IconButton(
                         icon = R.drawable.settings,
                         color = DefaultDarkColorPalette.text,
+                        contentDescription = stringResource(R.string.settings_title),
                         modifier = Modifier.padding(all = 4.dp),
                         iconSize = 24.dp,
                         contentPadding = 6.dp,

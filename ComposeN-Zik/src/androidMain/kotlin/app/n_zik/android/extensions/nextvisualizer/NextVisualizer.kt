@@ -344,6 +344,7 @@ fun NextVisualizer(sceneBackground: Color = Color.Transparent, onCover: Boolean?
                             },
                             icon = R.drawable.settings,
                             color = colorPalette().text,
+                            contentDescription = stringResource(R.string.settings_title),
                             modifier = Modifier.size(32.dp)
                         )
                     }
