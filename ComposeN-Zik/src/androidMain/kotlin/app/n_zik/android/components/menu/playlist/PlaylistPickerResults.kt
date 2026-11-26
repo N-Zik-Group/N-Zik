@@ -30,6 +30,7 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
+import app.n_zik.android.components.search.SearchNoResults
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
@@ -157,6 +158,14 @@ private fun PlaylistPickerRetryIcon() {
 
 @Composable
 private fun PlaylistPickerEmptyFeedback(query: String, empty: Boolean) {
-    SearchEmptyFeedback(query = query, empty = empty)
-    if (query.isNotBlank() && empty) SearchEmptySpace(Modifier.height(160.dp))
+    if (!empty) return
+    if (query.isBlank()) {
+        SearchNoResults(
+            text = stringResource(R.string.common_empty_items),
+            modifier = Modifier.height(72.dp),
+        )
+    } else {
+        SearchEmptyFeedback(query = query, empty = true)
+        SearchEmptySpace(Modifier.height(160.dp))
+    }
 }
