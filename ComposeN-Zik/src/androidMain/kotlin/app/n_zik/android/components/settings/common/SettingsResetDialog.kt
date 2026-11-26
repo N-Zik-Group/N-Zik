@@ -189,10 +189,10 @@ internal fun SettingsResetCard(
                         val label = resetScopeLabel(tab)
                         OtherSettingsEntry(
                             title = stringResource(label),
-                            text = if (tab == LISTEN_TOGETHER_RESET_SCOPE || tab == DOWNLOAD_RESET_SCOPE || tab == PLAYBACK_RESET_SCOPE) {
-                                stringResource(R.string.settings_restore_default_settings)
-                            } else {
-                                stringResource(R.string.settings_reset_scope, stringResource(label))
+                            text = when (tab) {
+                                LISTEN_TOGETHER_RESET_SCOPE -> stringResource(R.string.settings_reset_listen_together_preservation_notice)
+                                DOWNLOAD_RESET_SCOPE, PLAYBACK_RESET_SCOPE -> stringResource(R.string.settings_restore_default_settings)
+                                else -> stringResource(R.string.settings_reset_scope, stringResource(label))
                             },
                             icon = R.drawable.refresh,
                             modifier = Modifier.testTag("settings.reset.scope.$tab"),
@@ -202,7 +202,8 @@ internal fun SettingsResetCard(
                 } else if (scope == ALL_RESET_SCOPE) {
                     Text(
                         text = stringResource(R.string.settings_reset_all_confirmation) + "\n\n" +
-                            stringResource(R.string.settings_reset_profile_scope_notice),
+                            stringResource(R.string.settings_reset_profile_scope_notice) + "\n\n" +
+                            stringResource(R.string.settings_reset_listen_together_preservation_notice),
                         color = colorPalette().text,
                         style = typography().xs,
                         modifier = Modifier.testTag("settings.reset.all.confirmation"),
@@ -221,7 +222,7 @@ internal fun SettingsResetCard(
                 } else if (scope == LISTEN_TOGETHER_RESET_SCOPE) {
                     OtherSettingsEntry(
                         title = stringResource(R.string.settings_reset),
-                        text = stringResource(R.string.settings_restore_default_settings),
+                        text = stringResource(R.string.settings_reset_listen_together_preservation_notice),
                         icon = R.drawable.refresh,
                         modifier = Modifier.testTag("settings.reset.listenTogether.action"),
                         onClick = {

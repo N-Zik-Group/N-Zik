@@ -1008,3 +1008,7 @@ Menus:
 Settings:
 - fix(settings): target updater and service settings explicitly
   - Route Changelog, Creator GitHub installation and service subgroups to their settings positions.
+
+Settings:
+- fix(settings): describe retained room settings on reset
+  - Explain that the room name, custom server and blocked users are kept.
