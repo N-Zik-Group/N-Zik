@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.media3.common.MediaItem
 import app.n_zik.android.core.database.ArtistMappingReconcile
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.trackBrowseIdOrigin
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Info
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.R
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.components.song.isArtistIdForSong
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.playback.services.isLocal
@@ -105,6 +107,7 @@ internal fun resolveTrackArtistName(
 }
 
 internal const val ARTIST_LINKED_NAMES_EXTRA = "artistLinkedNames"
+internal const val DERIVED_PLAYBACK_ALBUM_EXTRA = "derivedPlaybackAlbum"
 
 internal data class MediaItemArtistLinks(val entries: List<Info>, val complete: Boolean)
 
@@ -126,41 +129,54 @@ internal fun readMediaItemArtistLinks(
 
 @Composable
 fun MediaItem.artistIdsWithFallback(initialArtists: List<Info> = emptyList()): List<Info> {
+    val preferences = LocalContext.current.preferences
+    val songId = mediaId.substringAfterLast('/')
+    val dbArtists by remember(mediaId) {
+        Database.artistTable.findBySongId(songId)
+            .map { artists -> artists.map { Info(it.id, it.name) } }
+    }.collectAsStateWithLifecycle(initialValue = initialArtists, context = NzikDispatchers.DATA)
+    return alignInfosToDisplayOrder(
+        artistLinksWithStoredFallback(dbArtists) { preferences.trackBrowseIdOrigin(songId, it) },
+        artistTextWithFallback(),
+    )
+}
+
+internal fun MediaItem.artistLinksWithStoredFallback(
+    storedArtists: List<Info>,
+    originalId: (String) -> String?,
+): List<Info> = artistLinksWithStoredFallback(storedArtists, { it == null }, originalId)
+
+private fun MediaItem.artistLinksWithStoredFallback(
+    storedArtists: List<Info>,
+    isMissingName: (String?) -> Boolean,
+    originalId: (String) -> String?,
+): List<Info> {
     val extras = mediaMetadata.extras
-    val metadataLinks = readMediaItemArtistLinks(
+    val credits = readMediaItemArtistLinks(
         extras?.getStringArrayList("artistIds").orEmpty(),
         extras?.getStringArrayList("artistNames").orEmpty(),
         extras?.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA),
-    ).entries.filterNot { isDeviceArtistId(it.id) }
-    val dbArtists by remember(mediaId) {
-        Database.artistTable.findBySongId(mediaId.substringAfterLast('/'))
-            .map { artists -> artists.map { Info(it.id, it.name) } }
-    }.collectAsStateWithLifecycle(initialValue = initialArtists, context = NzikDispatchers.DATA)
-    val infos = if (!isLocal && metadataLinks.isNotEmpty()) {
-        val preferences = LocalContext.current.preferences
-        val resolvedLinks = metadataLinks.map { link ->
-            val edited = dbArtists.singleOrNull { stored ->
-                ArtistMappingReconcile.isOverrideOf(stored.id, link.id) {
-                    preferences.getString("old_browse_id_${stored.id}", null)
-                }
+    )
+    val metadataLinks = credits.entries.filterNot { isDeviceArtistId(it.id) }
+    val infos = if (!isLocal && storedArtists.isNotEmpty()) {
+        val resolvedLinks = metadataLinks.mapNotNull { link ->
+            val edited = storedArtists.singleOrNull { stored ->
+                ArtistMappingReconcile.isOverrideOf(stored.id, link.id) { originalId(stored.id) }
             }
-            val stored = dbArtists.firstOrNull { it.id == link.id }
+            val stored = storedArtists.firstOrNull { it.id == link.id }
             when {
                 edited != null -> edited
-                stored != null && (link.name == null || stored.name?.startsWith(MODIFIED_PREFIX) == true) -> stored
-                else -> link
+                stored != null && (isMissingName(stored.name) || usableTrackArtistName(stored.name) == null) -> link
+                else -> stored
             }
         }
-        (resolvedLinks + dbArtists.filter { it.id.startsWith(MODIFIED_PREFIX) }).distinctBy(Info::id)
+        (resolvedLinks + storedArtists).distinctBy(Info::id)
+    } else if (!isLocal) {
+        metadataLinks
     } else {
-        dbArtists
+        storedArtists
     }
-    // The links (and the extras built from them) carry no display order: SQLite
-    // returns them in an arbitrary order, so the profile-photo pager used to
-//
-    // disagree with the artist text shown in the player. Follow the displayed
-    // text order instead (see alignInfosToDisplayOrder for the doubt rule).
-    return alignInfosToDisplayOrder(infos.filter { isDeviceArtistId(it.id) == isLocal }, artistTextWithFallback())
+    return infos.filter { isDeviceArtistId(it.id) == isLocal && !isGenericReleaseChannel(it.name) }
 }
 
 /**
@@ -200,9 +216,12 @@ internal fun alignInfosToDisplayOrder(infos: List<Info>, displayText: String?): 
     return ordered
 }
 
-internal fun MediaItem.withPlaybackAlbum(albumId: String, albumTitle: String?): MediaItem {
+internal fun MediaItem.withPlaybackAlbum(albumId: String, albumTitle: String?, derived: Boolean = false): MediaItem {
     val metadata = mediaMetadata
-    val extras = (metadata.extras?.let(::Bundle) ?: Bundle()).apply { putString("albumId", albumId) }
+    val extras = (metadata.extras?.let(::Bundle) ?: Bundle()).apply {
+        putString("albumId", albumId)
+        putBoolean(DERIVED_PLAYBACK_ALBUM_EXTRA, derived)
+    }
     val albumMetadata = metadata.buildUpon()
         .setAlbumTitle(albumTitle?.takeIf(String::isNotBlank) ?: metadata.albumTitle)
         .setExtras(extras)
@@ -241,35 +260,75 @@ internal fun editedPlaybackAlbumFor(
 
 @Composable
 fun MediaItem.albumIdWithFallback(initialAlbumId: String? = null): String? {
-    val explicitId = mediaMetadata.extras?.getString("albumId")?.takeIf(::isOnlinePlaybackAlbumId)
     val preferences = LocalContext.current.preferences
+    val songId = mediaId.substringAfterLast('/')
     val storedAlbums by remember(mediaId, preferences) {
-        Database.songAlbumMapTable.findAlbumsOf(mediaId.substringAfterLast('/'))
+        Database.songAlbumMapTable.findAlbumsOf(songId)
     }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    return playbackAlbumId(storedAlbums, initialAlbumId) { preferences.trackBrowseIdOrigin(songId, it) }
+}
+
+internal fun MediaItem.playbackAlbumId(
+    storedAlbums: List<Album>?,
+    initialAlbumId: String?,
+    originalId: (String) -> String?,
+): String? {
+    val explicitId = mediaMetadata.extras?.getString("albumId")?.takeIf(::isOnlinePlaybackAlbumId)
     val albums = storedAlbums ?: return explicitId.takeUnless { isLocal } ?: initialAlbumId
     if (isLocal) return albums.firstOrNull { isDeviceAlbumId(it.id) }?.id
 
+    if (mediaMetadata.extras?.getBoolean(DERIVED_PLAYBACK_ALBUM_EXTRA) == true) {
+        return selectOnlinePlaybackAlbumId(null, null, albums.map(Album::id)) ?: explicitId
+    }
     val edited = explicitId?.let { id ->
-        editedPlaybackAlbumFor(id, albums) { preferences.getString("old_browse_id_$it", null) }
+        editedPlaybackAlbumFor(id, albums, originalId)
     }
     return edited?.id ?: selectOnlinePlaybackAlbumId(explicitId, null, albums.map(Album::id))
 }
 
-internal data class PlayerTrackLinks(val albumId: String?, val artists: List<Info>)
+internal data class PlayerTrackLinks(
+    val albumId: String?,
+    val artists: List<Info>,
+    val albumPending: Boolean = false,
+    val artistsPending: Boolean = false,
+)
 
 /** Re-use known links for this track until the current metadata or database read replaces them. */
 @Composable
 internal fun MediaItem.playerTrackLinks(cache: LruCache<String, PlayerTrackLinks>): PlayerTrackLinks = key(mediaId, cache) {
     val lastKnown = remember { cache.get(mediaId) }
+    val preferences = LocalContext.current.preferences
+    val songId = mediaId.substringAfterLast('/')
+    val storedAlbums by remember(songId) {
+        Database.songAlbumMapTable.findAlbumsOf(songId)
+    }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    val storedArtists = rememberPlayerStoredArtists(songId)
+    val originalId: (String) -> String? = { preferences.trackBrowseIdOrigin(songId, it) }
+    val unknownArtist = stringResource(R.string.metadata_unknown_artist)
+    val albumId = playbackAlbumId(storedAlbums, lastKnown?.albumId, originalId)
+    val artists = artistLinksWithStoredFallback(
+        storedArtists ?: lastKnown?.artists.orEmpty(),
+        { playerTrackName(it, unknownArtist, "Unknown Artist") == null },
+        originalId,
+    ).filter { isArtistIdForSong(it.id, isLocal) }
     val links = PlayerTrackLinks(
-        albumIdWithFallback(lastKnown?.albumId),
-        artistIdsWithFallback(lastKnown?.artists.orEmpty()),
+        albumId = albumId,
+        artists = artists,
+        albumPending = storedAlbums == null && albumId == null,
+        artistsPending = storedArtists == null && artists.isEmpty(),
     )
     SideEffect {
         if (links.albumId == null && links.artists.isEmpty()) cache.remove(mediaId)
         else cache.put(mediaId, links)
     }
     links
+}
+
+@Composable
+internal fun rememberPlayerStoredArtists(songId: String): List<Info>? = key(songId) {
+    remember {
+        Database.artistTable.findBySongId(songId).map { artists -> artists.map { Info(it.id, it.name) } }
+    }.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA).value
 }
 
 /** Pure album-title resolution shared by the Composable preview fallback below: metadata first, then the DB record; fork prefixes ("e:", "modified:", "pinned:", the "🅴 " marker, ...) are stripped from both sources (same contract as [artistTextOrDb] / [titleOrDb]); a blank or literal "null" is treated as missing, and the result `null` means "unknown" (the caller applies its own localized fallback). */

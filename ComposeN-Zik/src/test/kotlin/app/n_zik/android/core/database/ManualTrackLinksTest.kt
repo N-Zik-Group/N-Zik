@@ -112,4 +112,127 @@ class ManualTrackLinksTest {
         assertNull(db.songTable.findByIdDirect(track.id))
         assertNull(db.songTable.findByIdDirect(local.id))
     }
+
+    @Test
+    fun `selecting the same edited ID keeps the entities and track mappings`() = runTest {
+        val album = Album("modified:MPRE_selected", title = "Selected")
+        val artist = Artist("modified:UC_selected", name = "Selected")
+        Database.mapIgnore(album, track)
+        Database.mapIgnore(artist, track)
+
+        assertTrue(Database.updateAlbumId(album.id, album.id))
+        assertTrue(Database.updateArtistId(artist.id, artist.id))
+
+        assertEquals(listOf(album), db.songAlbumMapTable.findAlbumsOfDirect(track.id))
+        assertEquals(listOf(artist), db.songArtistMapTable.findArtistsOfDirect(track.id))
+    }
+
+    @Test
+    fun `rebinding existing IDs merges overlapping links and keeps the target track position`() = runTest {
+        val sourceAlbum = Album("MPRE_original")
+        val targetAlbum = Album("MPRE_selected")
+        val sourceArtist = Artist("UC_original")
+        val targetArtist = Artist("UC_selected")
+        Database.mapIgnore(sourceAlbum, track, position = 5)
+        Database.mapIgnore(sourceAlbum, otherTrack, position = 2)
+        Database.mapIgnore(targetAlbum, track, position = 1)
+        Database.mapIgnore(sourceArtist, track, otherTrack)
+        Database.mapIgnore(targetArtist, track)
+
+        assertTrue(Database.updateAlbumId(sourceAlbum.id, targetAlbum.id))
+        assertTrue(Database.updateArtistId(sourceArtist.id, targetArtist.id))
+
+        assertNull(db.albumTable.findByIdDirect(sourceAlbum.id))
+        assertNull(db.artistTable.findByIdDirect(sourceArtist.id))
+        assertEquals(listOf(track.id, otherTrack.id), db.songAlbumMapTable.allSongsOfDirect(targetAlbum.id).map(Song::id))
+        assertEquals(listOf(targetArtist), db.songArtistMapTable.findArtistsOfDirect(track.id))
+        assertEquals(listOf(targetArtist), db.songArtistMapTable.findArtistsOfDirect(otherTrack.id))
+    }
+
+    @Test
+    fun `two origins cannot merge into the same modified target`() = runTest {
+        val album = Album("MPRE_original")
+        val modifiedAlbum = Album("modified:MPRE_target")
+        val artist = Artist("UC_original")
+        val modifiedArtist = Artist("modified:UC_target")
+        Database.mapIgnore(album, track)
+        Database.mapIgnore(modifiedAlbum, otherTrack)
+        Database.mapIgnore(artist, track)
+        Database.mapIgnore(modifiedArtist, otherTrack)
+
+        assertFalse(Database.updateAlbumId(album.id, modifiedAlbum.id))
+        assertFalse(Database.updateArtistId(artist.id, modifiedArtist.id))
+        assertEquals(listOf(album), db.songAlbumMapTable.findAlbumsOfDirect(track.id))
+        assertEquals(listOf(modifiedAlbum), db.songAlbumMapTable.findAlbumsOfDirect(otherTrack.id))
+        assertEquals(listOf(artist), db.songArtistMapTable.findArtistsOfDirect(track.id))
+        assertEquals(listOf(modifiedArtist), db.songArtistMapTable.findArtistsOfDirect(otherTrack.id))
+    }
+
+    @Test
+    fun `track edits only rebind verified associations and can link a selected target otherwise`() = runTest {
+        val originalAlbum = Album("MPRE_suggested")
+        val originalArtist = Artist("UC_suggested")
+        val selectedAlbum = Album("modified:MPRE_selected", title = "Selected")
+        val selectedArtist = Artist("modified:UC_selected", name = "Selected")
+        Database.mapIgnore(originalAlbum, otherTrack)
+        Database.mapIgnore(originalArtist, otherTrack)
+
+        assertFalse(Database.updateAlbumId(originalAlbum.id, selectedAlbum.id, originalAlbum, track.id))
+        assertFalse(Database.updateArtistId(originalArtist.id, selectedArtist.id, originalArtist, track.id))
+        assertNull(db.albumTable.findByIdDirect(selectedAlbum.id))
+        assertNull(db.artistTable.findByIdDirect(selectedArtist.id))
+
+        assertTrue(Database.linkTrackAlbumManually(track, selectedAlbum))
+        assertTrue(Database.linkTrackArtistManually(track, selectedArtist))
+        assertEquals(listOf(selectedAlbum), db.songAlbumMapTable.findAlbumsOfDirect(track.id))
+        assertEquals(listOf(selectedArtist), db.songArtistMapTable.findArtistsOfDirect(track.id))
+        assertEquals(listOf(originalAlbum), db.songAlbumMapTable.findAlbumsOfDirect(otherTrack.id))
+        assertEquals(listOf(originalArtist), db.songArtistMapTable.findArtistsOfDirect(otherTrack.id))
+    }
+
+    @Test
+    fun `replacing shared links changes only the selected track and preserves stored edits`() = runTest {
+        val oldAlbum = Album("MPRE_old", "Old album")
+        val oldArtist = Artist("UC_old", "Old artist")
+        val selectedAlbum = Album("modified:MPRE_new", "modified:Custom album")
+        val selectedArtist = Artist("modified:UC_new", "modified:Custom artist")
+        val compAlbum = Album("MPRE_compilation", "Compilation")
+        val coArtist = Artist("UC_feature", "Featured artist")
+        Database.mapIgnore(oldAlbum, track, position = 7)
+        Database.mapIgnore(oldAlbum, otherTrack, position = 2)
+        Database.mapIgnore(oldArtist, track, otherTrack)
+        Database.mapIgnore(compAlbum, track)
+        Database.mapIgnore(coArtist, track)
+        Database.mapIgnore(selectedAlbum, otherTrack)
+        Database.mapIgnore(selectedArtist, otherTrack)
+
+        assertTrue(Database.linkTrackAlbumManually(track, selectedAlbum.copy(title = "Search result"), oldAlbum.id))
+        assertTrue(Database.linkTrackArtistManually(track, selectedArtist.copy(name = "Search result"), oldArtist.id))
+
+        assertEquals(setOf(selectedAlbum, compAlbum), db.songAlbumMapTable.findAlbumsOfDirect(track.id).toSet())
+        assertEquals(setOf(selectedArtist, coArtist), db.songArtistMapTable.findArtistsOfDirect(track.id).toSet())
+        assertEquals(setOf(oldAlbum, selectedAlbum), db.songAlbumMapTable.findAlbumsOfDirect(otherTrack.id).toSet())
+        assertEquals(setOf(oldArtist, selectedArtist), db.songArtistMapTable.findArtistsOfDirect(otherTrack.id).toSet())
+        assertEquals(7, db.songAlbumMapTable.findPairPosition(track.id, selectedAlbum.id))
+        assertEquals(2, db.songAlbumMapTable.findPairPosition(otherTrack.id, oldAlbum.id))
+    }
+
+    @Test
+    fun `resetting to the original ID leaves the shared manual entity and its other links`() = runTest {
+        val album = Album("MPRE_original")
+        val artist = Artist("UC_original")
+        val editedAlbum = Album("modified:MPRE_changed")
+        val editedArtist = Artist("modified:UC_changed")
+        Database.mapIgnore(editedAlbum, track)
+        Database.mapIgnore(editedAlbum, otherTrack)
+        Database.mapIgnore(editedArtist, track, otherTrack)
+
+        assertTrue(Database.linkTrackAlbumManually(track, album, editedAlbum.id))
+        assertTrue(Database.linkTrackArtistManually(track, artist, editedArtist.id))
+
+        assertEquals(listOf(album), db.songAlbumMapTable.findAlbumsOfDirect(track.id))
+        assertEquals(listOf(artist), db.songArtistMapTable.findArtistsOfDirect(track.id))
+        assertEquals(listOf(editedAlbum), db.songAlbumMapTable.findAlbumsOfDirect(otherTrack.id))
+        assertEquals(listOf(editedArtist), db.songArtistMapTable.findArtistsOfDirect(otherTrack.id))
+    }
 }

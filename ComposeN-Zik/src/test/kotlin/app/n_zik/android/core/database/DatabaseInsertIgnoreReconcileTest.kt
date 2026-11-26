@@ -12,7 +12,6 @@ import app.n_zik.android.utils.asSong
 import io.mockk.coEvery
 import io.mockk.coVerifyOrder
 import io.mockk.coVerify
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -110,6 +109,19 @@ class DatabaseInsertIgnoreReconcileTest {
     }
 
     @Test
+    fun queueSnapshotWithUnknownDurationPreservesResolvedDuration() = runBlocking<Unit> {
+        val stored = existingSong().copy(durationText = "3:48")
+        coEvery { songTable.findByIdDirect("s1") } returns stored
+        coEvery { Database.insertIgnore(any(), true, any(), false) } coAnswers { callOriginal() }
+        mockkStatic("app.n_zik.android.utils.UtilsKt")
+        every { any<MediaItem>().asSong } returns stored.copy(durationText = "0")
+
+        Database.insertIgnore(MediaItem.Builder().setMediaId("s1").build(), true, null, false)
+
+        coVerify { songTable.upsert(match<Song> { it.durationText == "3:48" }) }
+    }
+
+    @Test
     fun trackMediaMetadataPreservesTheAlbumsAuthorsAndUserTitle() = runBlocking<Unit> {
         val albums = mockk<AlbumTable>(relaxed = true)
         val mappings = mockk<SongAlbumMapTable>(relaxed = true)
@@ -160,7 +172,7 @@ class DatabaseInsertIgnoreReconcileTest {
         Database.insertIgnore(item, autoFix = false)
 
         coVerify(exactly = 0) { mapTable.deleteBySongId("s1") }
-        coVerify(exactly = 2) { mapTable.insertIgnore(any<SongArtistMap>()) }
+        coVerify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
     }
 
     @Test
@@ -295,7 +307,7 @@ class DatabaseInsertIgnoreReconcileTest {
     }
 
     @Test
-    fun reinsertWithNamesOnlyAlignsArtistsTextToMappedNames() = runBlocking<Unit> {
+    fun reinsertWithNamesOnlyDoesNotLinkAHomonymOrOverwriteAValidByline() = runBlocking<Unit> {
         val upserted = mutableListOf<Song>()
         coEvery { songTable.upsert(any<Song>()) } coAnswers { upserted += firstArg<Song>() }
         coEvery { songTable.findByIdDirect("s1") } returns existingSongWithArtists("稲葉曇")
@@ -304,9 +316,9 @@ class DatabaseInsertIgnoreReconcileTest {
 
         Database.insertIgnore(item, autoFix = false)
 
-        assertEquals("Inabakumori", upserted.last().artistsText)
+        assertEquals("稲葉曇", upserted.last().artistsText)
         coVerify(exactly = 0) { mapTable.deleteBySongId("s1") }
-        coVerify(exactly = 1) { mapTable.insertIgnore(any<SongArtistMap>()) }
+        coVerify(exactly = 0) { mapTable.insertIgnore(any<SongArtistMap>()) }
     }
 
     @Test

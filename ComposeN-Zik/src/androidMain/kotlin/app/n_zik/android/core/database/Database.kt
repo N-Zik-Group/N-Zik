@@ -1,6 +1,9 @@
 package app.n_zik.android.core.database
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.models.Info
+import app.n_zik.android.utils.usableTrackArtistName
+import app.n_zik.android.utils.resolveTrackArtistName
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.playlist.PlaylistInsertionPreferences
 import app.n_zik.android.utils.playlist.PlaylistInsertionPosition
@@ -24,9 +27,7 @@ import androidx.room.TypeConverters
 import androidx.room.withTransaction
 import androidx.sqlite.db.SimpleSQLiteQuery
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.albumPage
-import app.n_zik.innertube.utils.from
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.models.Album
@@ -42,9 +43,9 @@ import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.models.SortedSongPlaylistMap
 import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.ARTIST_LINKED_NAMES_EXTRA
 import app.n_zik.android.utils.readMediaItemArtistLinks
-import app.n_zik.android.utils.preferences
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -203,7 +204,7 @@ object Database {
         ),
         SongAlbumMapTable::class.java to setOf(
             "upsert", "clear", "clearGhostMaps", "map",
-            "clearConflictingPairs", "updateSongId", "updateAlbumId", "deleteBySongId",
+            "clearConflictingPairs", "updateSongId", "updateAlbumId", "deleteBySongId", "deletePairDirect",
         ),
         SongArtistMapTable::class.java to setOf(
             "insertIgnore", "clearGhostMaps", "clearConflictingPairs", "updateSongId",
@@ -332,160 +333,61 @@ object Database {
         val song = songItem.asSong
         if (song.id.startsWith(LOCAL_KEY_PREFIX)) return
 
-        // Phase 1: Read existing data from DB (no lock held)
-        val dbSong = songTable.findByIdDirect(song.id)
+        val authorEntries = ArtistMappingReconcile.parseAuthorEntries(songItem.authors, includeIdOnly = true)
+        val artistNames = authorEntries.mapNotNull { usableTrackArtistName(it.first) }
 
-        // One author entry = one artist: the channel's browseId is the identity
-        // and the row name converges to the channel page name (background fetch,
-//
-        // retainIfModified). Entry names are kept whole: the previous split of a
-        // single entry's display name (parseArtists: "Bigflo & OLi" -> "Bigflo" +
-//
-        // "OLi") lost the browseId, failed the completeness check below, and fell
-//
-        // back to the add-only path with one online search + junk row per split
-        // part on every playback (device captures 2026-09-26: added=2 -> dropped=2 loop).
-        val artistEntries = ArtistMappingReconcile.parseAuthorEntries(songItem.authors, includeIdOnly = true)
-        val artistNames = artistEntries.mapNotNull { it.first.takeIf(String::isNotBlank) }
-        val artistDataList = mutableListOf<Triple<String, String?, Artist?>>() // name -> browseId -> existing DB artist
-
-        for ((artistName, browseId) in artistEntries) {
-            if (browseId != null && isDeviceArtistId(browseId)) continue
-            if (browseId != null) {
-                // The row name is owned by the channel page: an existing row keeps
-                // its stored name (page name or user-modified), a new row starts
-//
-                // from the entry name and converges to the page name at the next
-                // background fetch.
-                val artist = artistTable.findByIdDirect(browseId)
-                    ?: artistName.takeIf(String::isNotBlank)?.let { Artist(id = browseId, name = it) }
-                    ?: continue
-                artistDataList.add(Triple(artistName, browseId, artist))
-            } else {
-                val dbArtistByName = uniqueOnlineArtistByName(artistName)
-                artistDataList.add(Triple(artistName, null, dbArtistByName))
-            }
-        }
-
-
-        // Phase 2: Network calls (NO lock held)
-        val artistsToUpsert = mutableListOf<Artist>()
-        val artistsToMap = mutableListOf<Artist>()
-        for ((artistName, browseId, existingArtist) in artistDataList) {
-            if (existingArtist != null) {
-                if (browseId == null) {
-                    // No channel identity: keep syncing the row name from the fresh
-                    // YTM response (previous behavior for name-only rows).
-                    val retainedName = PropUtils.retainIfModified(existingArtist.name, artistName)
-                    if (existingArtist.name != retainedName) {
-                        val updatedArtist = existingArtist.copy(name = retainedName)
-                        artistsToUpsert.add(updatedArtist)
-                        artistsToMap.add(updatedArtist)
-                    } else {
-                        artistsToMap.add(existingArtist)
-                    }
-                } else {
-                    // Channel row: the stored name is the page name (or a
-                    // user-modified name) - the raw entry name must not clobber it.
-                    artistsToMap.add(existingArtist)
-                }
-            } else {
-                try {
-                    val searchResult: Innertube.ItemsPage<Innertube.ArtistItem>? =
-                        Innertube.searchPage<Innertube.ArtistItem>(
-                            query = artistName,
-                            params = Innertube.SearchFilter.Artist.value
-                        ) { content -> Innertube.ArtistItem.from(content) }?.getOrNull()
-
-                    val foundArtist = uniqueArtistSearchMatch(artistName, searchResult)
-                    if (foundArtist != null && foundArtist.key != null) {
-                        val newArtist = Artist(
-                            id = foundArtist.key,
-                            name = foundArtist.info?.name ?: artistName
-                        )
-                        artistsToUpsert.add(newArtist)
-                        artistsToMap.add(newArtist)
-                    }
-                } catch (error: Exception) {
-                    Timber.tag("Database").w("Unable to prepare artist mapping (%s)", error.javaClass.simpleName)
-                }
-            }
-        }
-
-        // Phase 3: Write all to DB in a single transaction (brief lock)
         transaction {
-            // Upsert song
+            val dbSong = songTable.findByIdDirect(song.id)
+            val storedArtists = if (dbSong == null) emptyList() else artistTable.findBySongIdDirect(song.id)
+            val customLinks = storedArtists.filter(::isManuallyEditedArtistLink)
+            val credits = authorEntries.map { (name, browseId) ->
+                val artist = browseId?.takeUnless { it.isBlank() || isDeviceArtistId(it) }?.let { id ->
+                    manualArtistOverrideFor(song.id, id, customLinks) ?: artistTable.findByIdDirect(id)
+                        ?: usableTrackArtistName(name)?.let { Artist(id = id, name = it) }
+                }
+                (usableTrackArtistName(artist?.name) ?: usableTrackArtistName(name)) to artist
+            }
+            val incomingArtistText = credits.mapNotNull { it.first }.joinToString(", ").takeIf(String::isNotBlank)
+            val incomingArtists = credits.mapNotNull { it.second }
+            val complete = ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors) &&
+                credits.all { it.second != null }
             val finalTitle = when {
                 song.title.isNullOrBlank() && !dbSong?.title.isNullOrBlank() -> dbSong.title
                 else -> PropUtils.retainIfModified(dbSong?.title, song.title)
             }
-            // The stored artist list follows the resolved names: the row name when
-            // the channel row exists (table of truth), the entry name for new rows
-//
-            // (they converge to the page name at the next background fetch). The
-//
-            // split join ("Bigflo, OLi") used to feed the in-app "two artists" view.
-            // A storage marker must never be copied into a display copy: a renamed
-//
-            // row is stored as "modified:X" on the row only, so clean each existing
-//
-            // row name before the join — otherwise every playback re-embeds the
-            // prefix mid-string in a natural copy, which retainIfModified below
-//
-            // cannot cut (it only protects custom copies).
-            // A row name that cleans down to empty (a bare storage marker) is
-//
-            // dropped instead of leaving an empty slot ("A, , B") in the join.
-            val fetchedArtistsText = artistDataList
-                .map { entry -> entry.third?.name?.let { cleanPrefix(it).trim() } ?: entry.first }
-                .filter { it.isNotBlank() }
-                .joinToString(", ")
-                .takeIf { it.isNotBlank() }
-            val finalArtistsText = when {
-                fetchedArtistsText.isNullOrBlank() && !dbSong?.artistsText.isNullOrBlank() -> dbSong.artistsText
-                else -> PropUtils.retainIfModified(dbSong?.artistsText, fetchedArtistsText)
+            val storedText = dbSong?.artistsText
+            val resolvedArtistsText = if (complete) {
+                incomingArtistText
+            } else {
+                val linked = (storedArtists + incomingArtists).distinctBy(Artist::id)
+                    .filterNot { isDeviceArtistId(it.id) }.map { Info(it.id, it.name) }
+                resolveTrackArtistName(storedText, incomingArtistText, linked, "Unknown Artist")
             }
+            val finalArtistsText = PropUtils.retainIfModified(storedText, resolvedArtistsText ?: storedText)
             val finalSong = Song(
                 id = song.id,
                 title = finalTitle.orEmpty(),
                 artistsText = finalArtistsText ?: "",
-                durationText = PropUtils.retainIfModified(dbSong?.durationText, song.durationText),
+                durationText = PropUtils.retainIfModified(
+                    dbSong?.durationText,
+                    song.durationText?.takeIf { durationTextToMillis(it) > 0 } ?: dbSong?.durationText,
+                ),
                 thumbnailUrl = PropUtils.retainIfModified(dbSong?.thumbnailUrl, song.thumbnailUrl),
                 likedAt = dbSong?.likedAt,
                 totalPlayTimeMs = dbSong?.totalPlayTimeMs ?: 0,
-                position = dbSong?.position ?: -1
-            )
+                position = dbSong?.position ?: -1,
+                isYoutubeSong = dbSong?.isYoutubeSong ?: song.isYoutubeSong,
+            ).apply { playCount = dbSong?.playCount ?: song.playCount }
             if (dbSong != finalSong) {
                 songTable.upsert(finalSong)
             }
 
-            // Upsert artists
-            if (artistsToUpsert.isNotEmpty()) {
-                artistTable.upsert(artistsToUpsert)
-            }
-            // Reconcile the artist mapping from this fresh YTM response when it is
-            // complete (every parsed artist is backed by a browse ID): the map must
-//
-            // reflect the latest playback context, not the union of every context
-            // ever seen. A names-only/partial list keeps the legacy add-only path.
-            if (ArtistMappingReconcile.isCompleteAuthorList(artistNames, songItem.authors)) {
+            if (complete) {
                 logReconcileDrops(songArtistMapTable, artistTable, song.id, finalSong.title)
-                val reconcileArtists = artistDataList.mapNotNull { it.third }
-                val dropped = reconcileArtistLinks( song.id, reconcileArtists )
-                Timber.tag("Database").d(
-                    "upsert RECONCILE song=%s dropped=%d latestList=%d artists",
-                    song.id, dropped, artistNames.size
-                )
+                val dropped = reconcileArtistLinks(song.id, incomingArtists)
+                Timber.tag("Database").d("Artist credits reconciled for %s (%d previous links)", song.id, dropped)
             } else {
-                // Only path that leaves stale links behind: an incomplete author list must
-                // never erase the mapping it cannot rewrite, so legacy add-only keeps the
-//
-                // previous context's rows — the startup sweep used to catch them silently.
-                Timber.tag("Database").d(
-                    "upsert ADD-ONLY song=%s names=%d authors=%d added=%d (stale links may remain until the next reconcile)",
-                    song.id, artistNames.size, songItem.authors?.size ?: 0, artistsToMap.size
-                )
-                artistsToMap.forEach { mapIgnore(it, song) }
+                incomingArtists.distinctBy(Artist::id).forEach { mapIgnore(it, finalSong) }
             }
 
             // Upsert album
@@ -568,7 +470,7 @@ object Database {
         if (artists.isNotEmpty() && onlineArtists.isEmpty()) return 0
         val customLinks = artistTable.findBySongIdDirect(songId).filter(::isManuallyEditedArtistLink)
         val applyArtists = onlineArtists.filter { candidate ->
-            manualArtistOverrideFor(candidate.id, customLinks) == null
+            manualArtistOverrideFor(songId, candidate.id, customLinks) == null
         }
         val dropped = songArtistMapTable.deleteBySongId( songId )
         artistTable.upsert(applyArtists)
@@ -596,8 +498,7 @@ object Database {
         return songAlbumMapTable.findAlbumsOfDirect(songId).singleOrNull { album ->
             isUserEditedPlaybackAlbumId(album.id) && (
                 album.id == "$MODIFIED_PREFIX$incomingAlbumId" ||
-                    (Dependencies.isInitialized &&
-                        appContext().preferences.getString("old_browse_id_${album.id}", null) == incomingAlbumId)
+                    trackBrowseIdOrigin(songId, album.id) == incomingAlbumId
                 )
         }
     }
@@ -611,7 +512,12 @@ object Database {
         insertIgnore(mediaItem, autoFix, null)
 
     @OptIn(UnstableApi::class)
-    internal suspend fun insertIgnore(mediaItem: MediaItem, autoFix: Boolean, preparedArtwork: Map<String?, String?>?) {
+    internal suspend fun insertIgnore(
+        mediaItem: MediaItem,
+        autoFix: Boolean,
+        preparedArtwork: Map<String?, String?>?,
+        reconcileExistingIdentity: Boolean = true,
+    ) {
         val cleanSongId = mediaItem.mediaId.split("/").lastOrNull() ?: mediaItem.mediaId
         val newSong = mediaItem.asSong
         val dbSong = songTable.findByIdDirect(cleanSongId)
@@ -619,17 +525,20 @@ object Database {
         val mergedSong = if (dbSong != null) {
             val newTitle = newSong.title
             val finalTitle = when {
+                !reconcileExistingIdentity && dbSong.title.isNotBlank() -> dbSong.title
                 newTitle.isNullOrBlank() && !dbSong.title.isNullOrBlank() -> dbSong.title
                 else -> PropUtils.retainIfModified(dbSong.title, newTitle)
             }
             val newArtistsText = newSong.artistsText
             val finalArtistsText = when {
-                newArtistsText.isNullOrBlank() && !dbSong.artistsText.isNullOrBlank() -> dbSong.artistsText
-                else -> PropUtils.retainIfModified(dbSong.artistsText, newArtistsText)
+                usableTrackArtistName(dbSong.artistsText) != null -> dbSong.artistsText
+                else -> PropUtils.retainIfModified(dbSong.artistsText, usableTrackArtistName(newArtistsText))
             }
             val newDurationText = newSong.durationText
+            val storedDuration = dbSong.durationText?.takeIf { durationTextToMillis(it) > 0 }
             val finalDurationText = when {
-                newDurationText.isNullOrBlank() && !dbSong.durationText.isNullOrBlank() -> dbSong.durationText
+                storedDuration != null && (!reconcileExistingIdentity ||
+                    newDurationText == null || durationTextToMillis(newDurationText) <= 0) -> storedDuration
                 else -> newDurationText
             }
 
@@ -641,11 +550,14 @@ object Database {
                 thumbnailUrl = artwork.songThumbnailWithExisting(dbSong.thumbnailUrl),
                 likedAt = dbSong.likedAt,
                 totalPlayTimeMs = dbSong.totalPlayTimeMs,
-                position = dbSong.position
-            )
+                position = dbSong.position,
+                isYoutubeSong = dbSong.isYoutubeSong,
+            ).apply { playCount = dbSong.playCount }
         } else newSong.copy(thumbnailUrl = artwork.songThumbnail)
         songTable.upsert(mergedSong)
         if (cleanSongId.startsWith(LOCAL_KEY_PREFIX)) return
+        // Playback snapshots may have been queued before a committed relink.
+        if (!reconcileExistingIdentity && dbSong != null && dbSong.title.isNotBlank()) return
 
         val albumId = mediaItem.mediaMetadata.extras?.getString("albumId")?.takeUnless(::isDeviceAlbumId)
         if (albumId != null && findEditedAlbumLink(cleanSongId, albumId) == null) {
@@ -704,10 +616,13 @@ object Database {
         // Insert artist
         val extras = mediaItem.mediaMetadata.extras
         val artistsNames = extras?.getStringArrayList("artistNames").orEmpty()
-        val artistLinks = readMediaItemArtistLinks(
+        val parsedCredits = readMediaItemArtistLinks(
             extras?.getStringArrayList("artistIds").orEmpty(),
             artistsNames,
             extras?.getStringArrayList(ARTIST_LINKED_NAMES_EXTRA),
+        )
+        val artistLinks = parsedCredits.copy(
+            complete = parsedCredits.complete && parsedCredits.entries.all { usableTrackArtistName(it.name) != null },
         )
 
         // Names of the artist rows the mapping below actually points to - the alignment
@@ -729,79 +644,36 @@ object Database {
             val mappedIds = mutableSetOf<String>()
             for ((id, name) in artistLinks.entries) {
                 if (isDeviceArtistId(id)) continue
-                val artist = manualArtistOverrideFor(id, customLinks)
+                val artist = manualArtistOverrideFor(cleanSongId, id, customLinks)
                     ?: artistTable.findByIdDirect(id)
-                    ?: name?.let {
+                    ?: usableTrackArtistName(name)?.let {
                         Artist(id, it).also { newArtist -> artistTable.insertIgnore(newArtist) }
                     }
                     ?: continue
                 if (mappedIds.add(artist.id)) {
                     songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, artist.id))
-                    if (artistLinks.complete) (artist.name ?: name)?.let(resolvedArtistNames::add)
+                    if (artistLinks.complete) {
+                        (usableTrackArtistName(artist.name) ?: usableTrackArtistName(name))?.let(resolvedArtistNames::add)
+                    }
                 }
             }
             if (artistLinks.complete) {
                 for (artist in customLinks) {
                     if (mappedIds.add(artist.id)) {
                         songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, artist.id))
-                        artist.name?.let(resolvedArtistNames::add)
-                    }
-                }
-            }
-        } else if (artistsNames.isNotEmpty()) {
-            resolvedArtistNames += artistsNames
-            // No browse IDs but we have names: try database by name first
-            artistsNames.forEach { name ->
-                val existingArtist = uniqueOnlineArtistByName(name)
-                if (existingArtist != null) {
-                    val mappedArtist = manualArtistOverrideFor(existingArtist.id, customLinks) ?: existingArtist
-                    songArtistMapTable.insertIgnore(SongArtistMap(cleanSongId, mappedArtist.id))
-                } else if (autoFix) {
-                    // Search online for the artist in background (non-blocking)
-                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                        try {
-                            val searchResult: Innertube.ItemsPage<Innertube.ArtistItem>? =
-                                Innertube.searchPage<Innertube.ArtistItem>(
-                                    query = name,
-                                    params = Innertube.SearchFilter.Artist.value
-                                ) { content -> Innertube.ArtistItem.from(content) }?.getOrNull()
-
-                            val foundArtist = uniqueArtistSearchMatch(name, searchResult)
-                            if (foundArtist != null && foundArtist.key != null) {
-                                transaction {
-                                    mapIgnore(Artist(id = foundArtist.key, name = foundArtist.info?.name ?: name), mergedSong)
-                                }
-                            }
-                        } catch (error: Exception) {
-                            Timber.tag("Database").w("Unable to insert artist mapping (%s)", error.javaClass.simpleName)
-                        }
+                        usableTrackArtistName(artist.name)?.let(resolvedArtistNames::add)
                     }
                 }
             }
         }
 
-        // Single source of truth for the artist display: once the mapping has been
-        // (re)written from this context's author list, align artistsText to the names of
-//
-        // the rows those links actually point to. The startup sweep (DbCleanup) judges
-        // links by name equality against artistsText, so the two must carry the same
-//
-        // names - aligning to the stored row names (not the raw context names, which can
-        // be a different spelling of the same row) is what breaks the
-//
-        // "map on play, drop on restart" loop. `modified:` values are never overwritten,
-        // and an already-aligned value skips the write.
-//
-        // Every resolved name is a STORAGE value (context extras raw from the prefetch,
-        // or the stored row name, which carries `modified:` when the row was pinned or
-//
-        // renamed): clean each one before the join, exactly like fetchedArtistsText
-        // above. cleanPrefix only cuts at the head, so an uncleaned row name embedded
-//
-        // here would survive mid-string in the natural copy and re-appear in the song
-//
-        // list right after each playback (the "after the stream it shows modified:X"
-        // bug - 3rd write path of the leak).
+        // Complete endpoint credits can replace a stale copy. Partial entries only
+        // repair a missing name, retaining the byline and the surviving associations.
+        if (resolvedArtistNames.isEmpty() && usableTrackArtistName(mergedSong.artistsText) == null) {
+            songArtistMapTable.findArtistsOfDirect(cleanSongId)
+                .filterNot { isDeviceArtistId(it.id) }
+                .mapNotNullTo(resolvedArtistNames) { usableTrackArtistName(it.name) }
+        }
         if (resolvedArtistNames.isNotEmpty()) {
             val alignedJoin = resolvedArtistNames
                 .map { cleanPrefix(it).trim() }
@@ -811,26 +683,15 @@ object Database {
                 .takeIf { it.isNotBlank() }
                 ?.let { PropUtils.retainIfModified(mergedSong.artistsText, it) }
             if (alignedArtistsText != null && alignedArtistsText != mergedSong.artistsText) {
-                songTable.upsert(mergedSong.copy(artistsText = alignedArtistsText))
+                songTable.upsert(mergedSong.copy(artistsText = alignedArtistsText).apply { playCount = mergedSong.playCount })
             }
         }
     }
 
-    private suspend fun uniqueOnlineArtistByName(name: String): Artist? =
-        artistTable.allByNameIgnoreCase(name).singleOrNull { !isDeviceArtistId(it.id) }
-
-    private fun uniqueArtistSearchMatch(
-        name: String,
-        results: Innertube.ItemsPage<Innertube.ArtistItem>?,
-    ): Innertube.ArtistItem? = results?.items.orEmpty().asSequence()
-        .filter { !it.key.isNullOrBlank() && it.info?.name?.equals(name, ignoreCase = true) == true }
-        .distinctBy { it.key }
-        .singleOrNull()
-
-    private fun manualArtistOverrideFor(id: String, linkedOverrides: List<Artist>): Artist? =
+    private fun manualArtistOverrideFor(songId: String, id: String, linkedOverrides: List<Artist>): Artist? =
         linkedOverrides.singleOrNull { artist ->
             (artist.id != id && artist.youtubeChannelId == id) || ArtistMappingReconcile.isOverrideOf(artist.id, id) {
-                if (Dependencies.isInitialized) appContext().preferences.getString("old_browse_id_${artist.id}", null) else null
+                trackBrowseIdOrigin(songId, artist.id)
             }
         }
 
@@ -889,7 +750,7 @@ object Database {
         compatibleSongs.forEach {
             if (!isManuallyEditedArtistLink(artist) && !isDeviceArtistId(artist.id)) {
                 val editedLinks = artistTable.findBySongIdDirect(it.id).filter(::isManuallyEditedArtistLink)
-                if (manualArtistOverrideFor(artist.id, editedLinks) != null) return@forEach
+                if (manualArtistOverrideFor(it.id, artist.id, editedLinks) != null) return@forEach
             }
             songTable.insertIgnore( it )
             songArtistMapTable.insertIgnore(
@@ -904,12 +765,18 @@ object Database {
 
     /** Ensures [playlist] and each [songs] entry exist, then maps them. */
     suspend fun mapIgnore( playlist: Playlist, vararg songs: Song ) {
-        if( songs.isEmpty() ) return
+        mapMissingPlaylistSongs(playlist, songs.asList())
+    }
+
+    /** Returns the number of mappings created by the normal playlist insertion path. */
+    internal suspend fun mapMissingPlaylistSongs(playlist: Playlist, songs: List<Song>): Int {
+        if (songs.isEmpty()) return 0
 
         val position = if (playlist.supportsInsertionPosition())
             PlaylistInsertionPreferences(appContext()).get(playlist.id)
         else PlaylistInsertionPosition.End
 
+        var insertedCount = 0
         transaction {
             // Autogenerated IDs become available only after inserting the playlist.
             val pId = if (playlist.id > 0) {
@@ -933,7 +800,9 @@ object Database {
                 songTable.insertIgnore(song)
                 songPlaylistMapTable.mapAtPosition(song.id, pId, firstPosition + index)
             }
+            insertedCount = newSongs.size
         }
+        return insertedCount
     }
 
     /** [mapIgnore] overload for [MediaItem]s. */
@@ -1102,22 +971,52 @@ object Database {
         return songTable.artistSongs(browseId)
     }
 
-    fun updateArtistId(oldId: String, newId: String, fallbackArtist: Artist? = null) = asyncTransaction {
-        val oldEntity = artistTable.findByIdDirect(oldId)
-            ?: fallbackArtist?.takeIf { it.id == oldId }
-            ?: return@asyncTransaction
-        artistTable.insertIgnore(oldEntity.copy(id = newId, isYoutubeArtist = false))
-        songArtistMapTable.updateArtistId(oldId, newId)
-        artistTable.deleteById(oldId)
+    internal suspend fun updateArtistId(
+        oldId: String,
+        newId: String,
+        fallbackArtist: Artist? = null,
+        requiredTrackId: String? = null,
+    ): Boolean = awaitWriteBatch {
+        var saved = false
+        transaction {
+            if (requiredTrackId != null && artistTable.findBySongIdDirect(requiredTrackId).none { it.id == oldId }) {
+                return@transaction
+            }
+            val stored = artistTable.findByIdDirect(oldId)
+            val source = stored ?: fallbackArtist?.takeIf { it.id == oldId } ?: return@transaction
+            if (oldId != newId) {
+                if (newId.startsWith(MODIFIED_PREFIX) && artistTable.findByIdDirect(newId) != null) return@transaction
+                artistTable.insertIgnore(source.copy(id = newId, isYoutubeArtist = false))
+                songArtistMapTable.updateArtistId(oldId, newId)
+                artistTable.deleteById(oldId)
+            }
+            saved = oldId != newId || stored != null
+        }
+        saved
     }
 
-    fun updateAlbumId(oldId: String, newId: String, fallbackAlbum: Album? = null) = asyncTransaction {
-        val oldEntity = albumTable.findByIdDirect(oldId)
-            ?: fallbackAlbum?.takeIf { it.id == oldId }
-            ?: return@asyncTransaction
-        albumTable.insertIgnore(oldEntity.copy(id = newId))
-        songAlbumMapTable.updateAlbumId(oldId, newId)
-        albumTable.deleteById(oldId)
+    internal suspend fun updateAlbumId(
+        oldId: String,
+        newId: String,
+        fallbackAlbum: Album? = null,
+        requiredTrackId: String? = null,
+    ): Boolean = awaitWriteBatch {
+        var saved = false
+        transaction {
+            if (requiredTrackId != null && songAlbumMapTable.findAlbumsOfDirect(requiredTrackId).none { it.id == oldId }) {
+                return@transaction
+            }
+            val stored = albumTable.findByIdDirect(oldId)
+            val source = stored ?: fallbackAlbum?.takeIf { it.id == oldId } ?: return@transaction
+            if (oldId != newId) {
+                if (newId.startsWith(MODIFIED_PREFIX) && albumTable.findByIdDirect(newId) != null) return@transaction
+                albumTable.insertIgnore(source.copy(id = newId))
+                songAlbumMapTable.updateAlbumId(oldId, newId)
+                albumTable.deleteById(oldId)
+            }
+            saved = oldId != newId || stored != null
+        }
+        saved
     }
 }
 

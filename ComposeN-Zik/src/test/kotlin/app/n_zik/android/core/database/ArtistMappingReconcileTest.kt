@@ -111,6 +111,15 @@ class ArtistMappingReconcileTest {
     }
 
     @Test
+    fun theGenericReleaseChannelIsNotAnArtistCredit() {
+        val channel = author("Release - Topic", "UCn2CVAANgY7BaYxo77-Evcg")
+        val credited = author("Justice", "UCcJLC91v0A0iD-CMUWdZkig")
+        assertEquals(emptyList<Pair<String, String?>>(), ArtistMappingReconcile.parseAuthorEntries(listOf(channel)))
+        assertEquals(listOf("Justice" to "UCcJLC91v0A0iD-CMUWdZkig"),
+            ArtistMappingReconcile.parseAuthorEntries(listOf(channel, credited)))
+    }
+
+    @Test
     fun parseAuthorEntriesKeepsNullBrowseIdWhenTheEntryHasNoEndpoint() {
         val parsed = ArtistMappingReconcile.parseAuthorEntries(listOf(author("LocalArtist")))
         assertEquals(listOf("LocalArtist" to null), parsed)

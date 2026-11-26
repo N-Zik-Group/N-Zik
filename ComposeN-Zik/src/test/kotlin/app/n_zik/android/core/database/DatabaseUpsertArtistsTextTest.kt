@@ -160,4 +160,15 @@ class DatabaseUpsertArtistsTextTest {
 
         assertEquals("modified:Hatsune Miku (Custom)", db.songTable.findByIdDirect("s1")?.artistsText)
     }
+
+    @Test
+    fun upsertWithoutRemoteCreditsRepairsTheStoredTrackBylineFromItsExactLink() = runTest {
+        insertArtist("UCKxZPmezUMRaV0rkbQnrtxA", "Yung Lean")
+        db.songTable.upsert(Song.makePlaceholder("s1").copy(title = "Track", artistsText = "Grand Theft Auto VI"))
+        insertLink("s1", "UCKxZPmezUMRaV0rkbQnrtxA")
+
+        Database.upsert(songItem("s1", "Track", emptyList()))
+
+        assertEquals("Yung Lean", db.songTable.findByIdDirect("s1")?.artistsText)
+    }
 }

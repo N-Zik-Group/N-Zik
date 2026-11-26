@@ -3,9 +3,12 @@ package app.n_zik.android.core.database
 import android.database.SQLException
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Embedded
 import androidx.room.Insert
+import androidx.room.Junction
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Relation
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import androidx.room.Upsert
@@ -13,13 +16,31 @@ import androidx.room.Transaction
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.enums.SongSortBy
 import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Album
+import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.models.SongArtistMap
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.durationToMillis
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
+
+data class SongArtistCredit(val songId: String, val artistId: String, val name: String?)
+
+data class PlaybackTrackRow(
+    @Embedded val song: Song,
+    @Relation(
+        parentColumn = "id", entityColumn = "id",
+        associateBy = Junction(SongArtistMap::class, parentColumn = "songId", entityColumn = "artistId"),
+    ) val artists: List<Artist>,
+    @Relation(
+        parentColumn = "id", entityColumn = "id",
+        associateBy = Junction(SongAlbumMap::class, parentColumn = "songId", entityColumn = "albumId"),
+    ) val albums: List<Album>,
+)
 
 @Dao
 @RewriteQueriesToDropUnusedColumns
@@ -136,6 +157,19 @@ interface SongTable {
     @Query("SELECT DISTINCT * FROM Song WHERE id IN (:songIds)")
     fun findByIds(songIds: List<String>): Flow<List<Song>>
 
+    @Transaction
+    @Query("SELECT * FROM Song WHERE id IN (:songIds)")
+    fun observePlaybackTracks(songIds: List<String>): Flow<List<PlaybackTrackRow>>
+
+    /** Observes artist credits for a batch of exact track IDs. */
+    @Query("""
+        SELECT M.songId, M.artistId, A.name
+        FROM SongArtistMap M JOIN Artist A ON A.id = M.artistId
+        WHERE M.songId IN (:songIds)
+        ORDER BY M.songId, A.ROWID
+    """)
+    fun findArtistCredits(songIds: List<String>): Flow<List<SongArtistCredit>>
+
     @Query("SELECT COUNT(*) FROM Song WHERE id = :songId")
     suspend fun countById( songId: String ): Int
 
@@ -179,6 +213,9 @@ interface SongTable {
 
     @Query("UPDATE Song SET id = :newId WHERE id = :oldId")
     suspend fun updateId(oldId: String, newId: String): Int
+
+    @Query("UPDATE Song SET durationText = :duration WHERE id = :id AND durationText IS :expected")
+    suspend fun updateDurationIfUnchanged(id: String, expected: String?, duration: String)
 
     /** Inserts [song], replacing the existing row's columns when its primary key already exists. */
     @Upsert

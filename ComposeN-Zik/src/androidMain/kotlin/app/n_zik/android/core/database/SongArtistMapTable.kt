@@ -109,7 +109,7 @@ interface SongArtistMapTable {
     @Query("UPDATE SongArtistMap SET songId = :newId WHERE songId = :oldId")
     suspend fun updateSongId(oldId: String, newId: String)
 
-    @Query("UPDATE SongArtistMap SET artistId = :newId WHERE artistId = :oldId")
+    @Query("UPDATE OR IGNORE SongArtistMap SET artistId = :newId WHERE artistId = :oldId")
     suspend fun updateArtistId(oldId: String, newId: String)
 
     /** Delete the (song, :newId) links of every song that also holds a (song, :oldId) link, so a following [updateArtistId] cannot violate the (songId, artistId) primary key for songs already linked to the target. */

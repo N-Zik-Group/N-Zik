@@ -600,3 +600,7 @@ Podcast creator metadata:
 Playlist picker navigation:
 - fix(navigation): keep the current playlist entry in destination pickers
   - Share routing between the reusable destination selectors.
+
+Track identity and navigation:
+- fix(metadata): preserve verified and manually edited track credits
+  - Reconcile artist and album credits in storage and reuse them in track menu navigation.

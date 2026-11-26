@@ -185,7 +185,8 @@ interface SongAlbumMapTable {
     @Query("UPDATE SongAlbumMap SET songId = :newId WHERE songId = :oldId")
     suspend fun updateSongId(oldId: String, newId: String)
 
-    @Query("UPDATE SongAlbumMap SET albumId = :newId WHERE albumId = :oldId")
+    // The target's existing position wins when this song is already linked to both albums.
+    @Query("UPDATE OR IGNORE SongAlbumMap SET albumId = :newId WHERE albumId = :oldId")
     suspend fun updateAlbumId(oldId: String, newId: String)
 
     /**
@@ -196,6 +197,12 @@ interface SongAlbumMapTable {
      */
     @Query("DELETE FROM SongAlbumMap WHERE songId = :songId")
     suspend fun deleteBySongId(songId: String): Int
+
+    @Query("SELECT position FROM SongAlbumMap WHERE songId = :songId AND albumId = :albumId")
+    suspend fun findPairPosition(songId: String, albumId: String): Int?
+
+    @Query("DELETE FROM SongAlbumMap WHERE songId = :songId AND albumId = :albumId")
+    suspend fun deletePairDirect(songId: String, albumId: String): Int
 
     /**
      * Read-only, for the PC bridge (contract §1.1 `Album.trackCount`).

@@ -1,6 +1,7 @@
 package app.n_zik.android.core.database
 
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.utils.isGenericReleaseChannel
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.ArtistConjunctions
 import app.n_zik.innertube.models.NavigationEndpoint
@@ -50,7 +51,7 @@ object ArtistMappingReconcile {
                 val id = author.endpoint?.browseId?.takeIf(String::isNotBlank)
                 return@mapNotNull if (includeIdOnly && id != null) "" to id else null
             }
-            if (name.matches(SEPARATOR_ONLY_REGEX)) return@mapNotNull null
+            if (name.matches(SEPARATOR_ONLY_REGEX) || isGenericReleaseChannel(name)) return@mapNotNull null
             if (ArtistConjunctions.conjunctions.any { name.equals(it, ignoreCase = true) }) return@mapNotNull null
             name to author.endpoint?.browseId
         }
