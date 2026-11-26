@@ -39,7 +39,8 @@ internal fun UiFontCard(search: Search) {
     fun matches(vararg values: String) = values.any { normalizedSettingsText(it).contains(query) }
 
     val showGroup = matches(title, groupTitle)
-    val showFontType = showGroup || matches(stringResource(R.string.interface_font_type_description))
+    val showFontType = showGroup || matches(stringResource(R.string.interface_font_type_description)) ||
+        FontType.entries.any { matches(it.name) }
     val showSystemFont = showGroup || matches(
         stringResource(R.string.settings_font_use_system_label),
         stringResource(R.string.settings_font_use_system_description),

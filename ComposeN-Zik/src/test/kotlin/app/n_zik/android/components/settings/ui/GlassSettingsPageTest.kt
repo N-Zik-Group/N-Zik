@@ -17,6 +17,7 @@ import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.node.DelegatableNode
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
@@ -34,12 +35,14 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasAnySibling
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTestTag
@@ -50,6 +53,7 @@ import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -155,6 +159,49 @@ class GlassSettingsPageTest {
         store.setProfile(GlassQuality.Performance)
     }
 
+    @Test fun `standalone Glass stays active when the outgoing settings page leaves the shared host`() {
+        val host = GlassMenuHostState()
+        val outgoing = mutableStateOf(true)
+        val incoming = mutableStateOf(false)
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalGlassMenuHost provides host,
+            ) {
+                Box {
+                    if (outgoing.value) GlassSettingsPage()
+                    if (incoming.value) GlassSettingsPage()
+                }
+            }
+        }
+        composeRule.runOnIdle {
+            assertTrue(host.standaloneSettings)
+            incoming.value = true
+        }
+        composeRule.runOnIdle { outgoing.value = false }
+        composeRule.runOnIdle {
+            assertTrue(host.standaloneSettings)
+            incoming.value = false
+        }
+        composeRule.runOnIdle { assertFalse(host.standaloneSettings) }
+    }
+
+    @Test fun `scrolling up from distant Glass controls offers a return to search`() {
+        composeRule.mainClock.autoAdvance = false
+        showPage()
+        val list = composeRule.onNodeWithTag("settings.glass.controls")
+        val arrow = composeRule.onNode(hasAnyAncestor(hasTestTag("settings.glass.scrollToTop")) and hasClickAction())
+        list.performScrollToKey("destination.Pages")
+        composeRule.mainClock.advanceTimeBy(600)
+        list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, -150f) }
+        pumpSearchUntil { runCatching { arrow.assertIsDisplayed() }.isSuccess }
+        arrow.performClick()
+        pumpSearchUntil {
+            runCatching { composeRule.onNodeWithTag("settings.glass.search").assertIsDisplayed() }.isSuccess
+        }
+    }
+
     @Test fun `switch destination search target reveals all four persistent modes`() {
         showPage(target = "glass.destination.Shared.Switches")
         composeRule.onNodeWithTag("settings.glass.mode.Switches").performScrollTo().performClick()
@@ -251,6 +298,28 @@ class GlassSettingsPageTest {
         assertSearchRevealsMode("glass.destination.Onboarding.SettingsCards", "Onboarding.SettingsCards")
     }
 
+    @Test fun `restoring a Glass destination keeps its current scroll without replaying the search`() {
+        val target = "glass.destination.Onboarding.SettingsCards"
+        val restoration = StateRestorationTester(composeRule)
+        composeRule.mainClock.autoAdvance = false
+        showPage(target = target, restoration = restoration)
+        val targetRow = composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true)
+        pumpSearchUntil {
+            runCatching { targetRow.assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true)) }.isSuccess
+        }
+        val search = composeRule.onNodeWithTag("settings.glass.search")
+        composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("header")
+        search.assertIsDisplayed()
+
+        restoration.emulateSavedInstanceStateRestore()
+        repeat(10) {
+            composeRule.mainClock.advanceTimeBy(350)
+            Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(350))
+            composeRule.waitForIdle()
+        }
+        search.assertIsDisplayed()
+    }
+
     @Test fun `search opens the exact loading indicator selector`() {
         val row = glassDestinationRows(GlassDestinationGroup.Shared).single { it.area == GlassArea.LoadingIndicators }
         assertSearchRevealsMode(row.searchId, row.area.name)
@@ -330,7 +399,7 @@ class GlassSettingsPageTest {
         pumpSearchUntil { messages.isNotEmpty() }
         assertEquals(listOf(context.getString(R.string.search_no_results_message)), messages)
         search.performTextReplacement("")
-        composeRule.onNodeWithTag("settings.glass.master").assertIsDisplayed()
+        composeRule.onNodeWithTag("settings.glass.master").assertIsNotDisplayed()
     }
 
     @Test fun `page search highlights rendering quality when refraction is unavailable`() {
@@ -524,8 +593,9 @@ class GlassSettingsPageTest {
         headerInset: Dp = 0.dp,
         target: String = "",
         onSearchMessage: ((String) -> Unit)? = null,
+        restoration: StateRestorationTester? = null,
     ) {
-        composeRule.setContent {
+        val content: @Composable () -> Unit = {
             CompositionLocalProvider(
                 LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalAppearance provides appearance,
@@ -537,6 +607,7 @@ class GlassSettingsPageTest {
                 if (onboarding) OnboardingGlassScreen(onComplete = {}) else GlassSettingsPage(target = target)
             }
         }
+        if (restoration != null) restoration.setContent(content) else composeRule.setContent(content)
     }
 
     /** Matches the activity's onboarding scene: AppNavigation has not installed its page backdrop. */
@@ -587,18 +658,18 @@ class GlassSettingsPageTest {
         scrollControlsToText(label)
         composeRule.onNodeWithText(label).performClick()
         composeRule.onNodeWithTag("glassDialogOverlay").assertIsDisplayed()
-        composeRule.onNode(hasSetTextAction()).performTextReplacement("0.263")
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("26.3")
         composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         composeRule.waitForIdle()
         assertEquals(.263f, GlassStore(context).read().film, .0001f)
         composeRule.onNodeWithText(label).performClick()
-        composeRule.onNode(hasSetTextAction()).assertTextEquals("0.263")
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("26.3")
         composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         composeRule.waitForIdle()
         composeRule.runOnIdle { GlassStore(context).setFloat(glassFilmKey, .418f) }
         composeRule.waitForIdle()
         composeRule.onNodeWithText(label).performClick()
-        composeRule.onNode(hasSetTextAction()).assertTextEquals("0.418")
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("41.8")
     }
 
     @Test fun `onboarding area choices save independently and update after an external store write`() {
@@ -877,7 +948,7 @@ class GlassSettingsPageTest {
         val filmLabel = context.getString(R.string.glass_effect_film)
         scrollControlsToText(filmLabel)
         composeRule.onNodeWithText(filmLabel).performClick()
-        composeRule.onNode(hasSetTextAction()).performTextReplacement("0.85")
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("85")
         composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         composeRule.waitForIdle()
         val updated = pixels(true)
@@ -903,11 +974,11 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("readability")
         scrollControlsToText(dialogLabel)
         composeRule.onNodeWithText(dialogLabel).performClick()
-        composeRule.onNode(hasSetTextAction()).performTextReplacement("0.2")
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("20")
         composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         scrollControlsToText(menuLabel)
         composeRule.onNodeWithText(menuLabel).performClick()
-        composeRule.onNode(hasSetTextAction()).performTextReplacement("0.8")
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("80")
         composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
         composeRule.waitForIdle()
         assertEquals(.2f, store.read().dialogDimming, .001f)
@@ -1061,9 +1132,9 @@ class GlassSettingsPageTest {
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("colour")
         scrollControlsToText(context.getString(R.string.glass_effect_film))
         composeRule.onNodeWithText(context.getString(R.string.glass_effect_film)).performClick()
-        composeRule.onNode(hasSetTextAction()).assertTextEquals("0.263")
+        composeRule.onNode(hasSetTextAction()).assertTextEquals("26.3")
         composeRule.onNodeWithText(context.getString(R.string.common_action_save)).performClick()
-        assertEquals(.263f, store.read().film)
+        assertEquals(.263f, store.read().film, .0001f)
         assertFalse(context.preferences.getBoolean(glassEnabledKey, false))
     }
 

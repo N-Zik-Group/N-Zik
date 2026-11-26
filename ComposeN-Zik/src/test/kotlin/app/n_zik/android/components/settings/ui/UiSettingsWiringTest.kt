@@ -166,6 +166,9 @@ class UiSettingsWiringTest {
         }
         composeRule.onNodeWithText(systemFont).assertExists()
         composeRule.onNodeWithText(padding).assertDoesNotExist()
+        composeRule.runOnIdle { query.value = TextFieldValue(FontType.Rubik.name) }
+        composeRule.onNodeWithText(context.getString(R.string.interface_font_type_description)).assertExists()
+        composeRule.onNodeWithText(systemFont).assertDoesNotExist()
     }
 
     @Test fun selectedContentDoesNotNestThePageShell() {

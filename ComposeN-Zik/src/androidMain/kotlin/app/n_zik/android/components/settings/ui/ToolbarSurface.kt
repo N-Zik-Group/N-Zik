@@ -23,6 +23,7 @@ internal enum class ToolbarAction(val id: String, val label: Int, val icon: Int)
     SELECT("select", R.string.common_action_select, R.drawable.checked_filled),
     CHANGE_TITLE("changeTitle", R.string.metadata_action_change_title, R.drawable.title_edit),
     CHANGE_ARTISTS("changeArtists", R.string.metadata_action_change_artists, R.drawable.artists_edit),
+    CHANGE_PLAYLIST_BROWSE_ID("changePlaylistBrowseId", R.string.metadata_playlist_action_change_browse_id, R.drawable.title_edit),
     CHANGE_COVER("changeCover", R.string.metadata_action_change_cover, R.drawable.cover_edit),
     PLAY_NEXT("playNext", R.string.player_action_play_next, R.drawable.play_skip_forward),
     ENQUEUE("enqueue", R.string.player_action_enqueue, R.drawable.enqueue),
@@ -67,18 +68,20 @@ internal enum class ToolbarSurface(
         ToolbarAction.ADD_TO_PLAYLIST,
     )),
     ARTIST_OVERVIEW("artistOverview", R.string.artist_overview_title, listOf(
-        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.SHUFFLE, ToolbarAction.RADIO, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
-        ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
+        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.RADIO, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
+        ToolbarAction.FAVORITES, ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
     )),
     ARTIST_LIBRARY("artistLibrary", R.string.library_title, listOf(
-        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.SHUFFLE, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
-        ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
+        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
+        ToolbarAction.FAVORITES, ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
     )),
     ARTIST_DEVICE("artistDevice", R.string.library_on_device_title, listOf(
         ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.SHUFFLE, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
         ToolbarAction.ADD_TO_PLAYLIST,
     )),
-    ONLINE_PLAYLIST("onlinePlaylist", R.string.settings_toolbar_online_playlist, onlinePlaylistActions),
+    ONLINE_PLAYLIST("onlinePlaylist", R.string.settings_toolbar_online_playlist, onlinePlaylistActions + listOf(
+        ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID,
+    )),
     PODCAST("podcast", R.string.settings_toolbar_online_podcast, onlinePlaylistActions),
     HEADER("header", R.string.settings_toolbar_global_header,
         listOf(ToolbarAction.NOTIFICATIONS, ToolbarAction.SEARCH, ToolbarAction.PROFILE_MENU), locked = setOf(ToolbarAction.PROFILE_MENU)),

@@ -78,7 +78,7 @@ private fun InteractionSlider(@StringRes title: Int, @StringRes description: Int
         title = stringResource(title), text = stringResource(description),
         state = value, range = range, icon = icon,
         stepSize = 0f, toDisplay = { percentLabel((it * 100).roundToInt()) },
-        inputValueText = Float::toString, onSlide = onChange,
+        inputScale = 100f, onSlide = onChange,
         modifier = Modifier.testTag("settings.glass.$tag").settingsSearchTarget("glass.$tag"),
     )
 }

@@ -51,12 +51,13 @@ import app.n_zik.android.components.dialog.settings.LocalPlaylistSortSettingsDia
 import app.n_zik.android.components.dialog.settings.LocalPlaylistToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.interfaceToolbarSettingsDialogs
 import app.n_zik.android.components.dialog.settings.QuickPicksContentSettingsDialog
-import app.n_zik.android.components.search.filterSearchHistory
+import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.settings.BurgerMenuSettingsCard
 import app.n_zik.android.components.settings.common.SettingsCardSlot
+import app.n_zik.android.components.settings.common.InterfaceSettingsShortcuts
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -65,21 +66,27 @@ import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
 import app.n_zik.android.components.settings.common.settingsSearchTitle
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
+import app.n_zik.android.components.settings.common.SettingsGlassItem
+import app.n_zik.android.components.settings.common.SettingsThemeStoreItem
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.R
 
 /** Interface settings orchestration; cards own their preferences and actions. */
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
-@Suppress("UNUSED_PARAMETER") // Kept for the existing navigation call contract.
 @Composable
-fun UiSettings(navController: NavController, focus: String = "") {
+fun UiSettings(
+    navController: NavController,
+    focus: String = "",
+    onOpenGlass: () -> Unit = { navController.navigate("${NavRoutes.settings.name}?tab=1&focus=glass") },
+) {
     val search = Search(initialVisible = true)
     val searchFocus = rememberSettingsSearchFocus(search.isFocused, search.inputValue.isBlank())
     val context = LocalContext.current
     val isHistoryPaused by rememberPreference(pauseSearchHistoryKey, false)
     val history = rememberSearchHistory(SearchHistoryStore.PAGE_SETTINGS_UI, isHistoryPaused)
-    val historyMatches = filterSearchHistory(history.value, search.inputValue)
+    val historyMatches = filterSettingsSearchHistory(history.value, search.inputValue)
     val historyVisible = search.isFocused && historyMatches.isNotEmpty()
 
     fun recordSearchQuery(query: String = search.inputValue) {
@@ -128,6 +135,7 @@ fun UiSettings(navController: NavController, focus: String = "") {
         SearchHistorySection(
             visible = historyVisible,
             queries = historyMatches,
+            allQueries = history.value,
             onQueryClick = { search.input = TextFieldValue(it); recordSearchQuery(it); search.isFocused = false },
             onQueryDelete = {
                 history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_SETTINGS_UI, it)
@@ -138,6 +146,15 @@ fun UiSettings(navController: NavController, focus: String = "") {
         )
 
         val hasSearchResults = search.inputValue.isBlank() || visibleCardTitleRes(context, 1, search.inputValue).isNotEmpty()
+        if (search.inputValue.isBlank()) {
+            InterfaceSettingsShortcuts { item ->
+                when (item) {
+                    SettingsGlassItem -> onOpenGlass()
+                    SettingsThemeStoreItem -> navController.navigate(NavRoutes.themeStore.name)
+                    else -> Unit
+                }
+            }
+        }
         LaunchedEffect(hasSearchResults) {
             if (!hasSearchResults) scrollState.scrollTo(0)
         }

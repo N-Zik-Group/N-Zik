@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.settings.appearance.applyAppearanceDefaults
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.thumbnailSizeDpKey
@@ -36,7 +37,7 @@ class UiArtworkDefaultsTest {
         setActiveProfile("default", context)
     }
 
-    @Test fun `interface reset restores landscape inheritance for the mounted player and setting`() {
+    @Test fun `player reset restores landscape inheritance for the mounted player and setting`() {
         val preferences = context.preferences
         val untouched = context.getSharedPreferences("preferences_ui-artwork-other", Context.MODE_PRIVATE)
         untouched.edit().clear().putFloat(thumbnailSizeLDpKey, 45f).commit()
@@ -51,7 +52,7 @@ class UiArtworkDefaultsTest {
         compose.runOnIdle {
             assertEquals(20f, playerSize, 0f)
             assertEquals(20f, settingSize, 0f)
-            applyUiDefaults(context)
+            applyAppearanceDefaults(context)
         }
         compose.runOnIdle {
             assertEquals(90f, playerSize, 0f)

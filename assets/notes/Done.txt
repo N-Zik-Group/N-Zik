@@ -784,3 +784,7 @@ LrcLib search menu:
 Floating dock inventory:
 - fix(dock): list only destinations with configurable tabs
   - Share the live multi-tab inventory with the editor instead of retaining temporary entries.
+
+Interface and Glass settings:
+- fix(settings): align Glass and interface actions with search
+  - Keep navigation and scroll affordances consistent across appearance screens.
