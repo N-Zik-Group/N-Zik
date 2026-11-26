@@ -66,6 +66,9 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.core.database.BookmarkStateManager
@@ -260,6 +263,8 @@ fun QuickPicksGrid(
         quickPicksLoadingSlots(recommendations.size, isLoading || forcePlaceholder && songs.isEmpty(), initialSlots).count()
     val rows = if (slotCount > 0) QUICK_PICKS_GRID_ROWS else 1
     val songIds = remember(songs) { songs.map { it.id } }
+    val storedRows by rememberSongRowMetadata(songIds)
+    val linkedCredits by rememberSongRowArtistCredits(songIds)
     val likeStatesMap by remember(songIds) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(emptyMap()) else LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -322,7 +327,9 @@ fun QuickPicksGrid(
                     SongItemPlaceholder(title = song.title, artist = song.artistsText)
                 } else key(song.id) {
                     SongItem(
-                        song = song,
+                        song = resolveSongDisplayMetadata(song, storedRows[song.id]),
+                        observeStoredMetadata = false,
+                        artistCredits = linkedCredits[song.id].orEmpty(),
                         isLiked = likeStatesMap[song.id],
                         inPlaylist = playlistStatesMap[song.id],
                         navController = navController,
@@ -735,6 +742,8 @@ fun MyTopSection(
     val binder = LocalPlayerServiceBinder.current
 
     val songIds = remember(myTopSongs) { myTopSongs.map { it.id } }
+    val storedRows by rememberSongRowMetadata(songIds)
+    val linkedCredits by rememberSongRowArtistCredits(songIds)
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -761,7 +770,9 @@ fun MyTopSection(
                         contentType = { "song" }
                     ) { song ->
                         SongItem(
-                            song = song,
+                            song = resolveSongDisplayMetadata(song, storedRows[song.id]),
+                            observeStoredMetadata = false,
+                            artistCredits = linkedCredits[song.id].orEmpty(),
                             isLiked = likeStatesMap[song.id],
                             inPlaylist = playlistStatesMap[song.id],
                             navController = navController,

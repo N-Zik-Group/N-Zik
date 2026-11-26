@@ -65,6 +65,10 @@ import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.forcePlay
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.utils.semiBold
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
+import app.n_zik.android.components.song.songArtistDisplayLabel
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
 import app.n_zik.android.core.database.BookmarkStateManager
@@ -112,6 +116,11 @@ fun YtmSectionItems(
 ) {
     if (section.items.isNotEmpty() && section.items.firstOrNull()?.key != null) {
         val isSongOnly = section.items.all { item -> item is Innertube.SongItem }
+        val sectionSongIds = remember(section.items) {
+            section.items.filterIsInstance<Innertube.SongItem>().mapNotNull { it.key }
+        }
+        val storedRows by rememberSongRowMetadata(sectionSongIds)
+        val linkedCredits by rememberSongRowArtistCredits(sectionSongIds)
 
         Column {
             if (showTitle) {
@@ -125,7 +134,6 @@ fun YtmSectionItems(
 
             if (isSongOnly) {
                 val songItems = section.items.filterIsInstance<Innertube.SongItem>()
-                val sectionSongIds = remember(songItems) { songItems.mapNotNull { it.key } }
                 val sectionLikeStatesMap by remember(sectionSongIds) {
                     LikeStateManager.getLikeStates(sectionSongIds)
                 }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -175,7 +183,10 @@ fun YtmSectionItems(
                         }
                         val binder = LocalPlayerServiceBinder.current
                         SongItem(
-                            song = song ?: Song.makePlaceholder(""),
+                            song = resolveSongDisplayMetadata(song ?: Song.makePlaceholder(""), storedRows[item.key]),
+                            observeStoredMetadata = false,
+                            artistCredits = linkedCredits[item.key].orEmpty(),
+                            sourceMediaItem = { item.asMediaItem },
                             isLiked = sectionLikeStatesMap[item.key],
                             inPlaylist = sectionPlaylistStatesMap[item.key],
                             navController = navController,
@@ -241,11 +252,12 @@ fun YtmSectionItems(
                             is Innertube.SongItem -> {
                                 val binder = LocalPlayerServiceBinder.current
                                 val menuState = LocalMenuState.current
-                                val song = item.asSong ?: Song.makePlaceholder("")
+                                val mediaItem = remember(item) { item.asMediaItem }
+                                val song = resolveSongDisplayMetadata(item.asSong ?: Song.makePlaceholder(""), storedRows[item.key])
                                 AlbumItem(
                                     thumbnailUrl = item.thumbnail?.url,
-                                    title = item.info?.name,
-                                    authors = item.authors?.artistEntryNames()?.joinToString(", "),
+                                    title = song.cleanTitle(),
+                                    authors = songArtistDisplayLabel(song, linkedCredits[item.key].orEmpty(), mediaItem),
                                     year = null,
                                     thumbnailSizePx = albumThumbnailSizePx,
                                     thumbnailSizeDp = albumThumbnailSizeDp,
@@ -255,12 +267,11 @@ fun YtmSectionItems(
                                         .clip(uiRoundnessShape())
                                         .combinedClickable(
                                             onClick = {
-                                                val mediaItem = item.asMediaItem
                                                 binder?.stopRadio()
                                                 binder?.player?.forcePlay(mediaItem)
                                             },
                                             onLongClick = {
-                                                menuState.display { SongItemMenu(navController = navController, song = song).MenuComponent() }
+                                                menuState.display { SongItemMenu(navController = navController, song = song, sourceMediaItem = { mediaItem }).MenuComponent() }
                                             }
                                         ).animateItem(),
                                     disableScrollingText = disableScrollingText
@@ -344,7 +355,7 @@ fun YtmSectionItems(
                                                 binder?.stopRadio()
                                                 binder?.player?.forcePlay(item.asMediaItem)
                                             },
-                                            onLongClick = { menuState.display { VideoItemMenu(navController = navController, song = item.asSong).MenuComponent() } }
+                                            onLongClick = { menuState.display { VideoItemMenu(navController = navController, mediaItem = item.asMediaItem).MenuComponent() } }
                                         ).animateItem()
                                 )
                             }

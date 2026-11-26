@@ -46,6 +46,9 @@ import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.rememberSongRowArtistCredits
+import app.n_zik.android.components.rememberSongRowMetadata
+import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
@@ -209,6 +212,8 @@ fun ChartsSection(
                 chartsPageInit?.songs.orEmpty().let { songs ->
                     if (forcePlaceholder || songs.isNotEmpty()) {
                         val chartSongIds = remember(songs) { songs.mapNotNull { it.key } }
+                        val storedRows by rememberSongRowMetadata(chartSongIds)
+                        val linkedCredits by rememberSongRowArtistCredits(chartSongIds)
                         val chartLikeStatesMap by remember(chartSongIds) {
                             LikeStateManager.getLikeStates(chartSongIds)
                         }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -245,7 +250,10 @@ fun ChartsSection(
                             ) { index, song ->
                                 RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
                                     SongItem(
-                                        song = song.asSong ?: Song.makePlaceholder(""),
+                                        song = resolveSongDisplayMetadata(song.asSong ?: Song.makePlaceholder(""), storedRows[song.key]),
+                                        observeStoredMetadata = false,
+                                        artistCredits = linkedCredits[song.key].orEmpty(),
+                                        sourceMediaItem = { song.asMediaItem },
                                         isLiked = chartLikeStatesMap[song.key],
                                         inPlaylist = chartPlaylistStatesMap[song.key],
                                         navController = navController,

@@ -720,3 +720,7 @@ Settings footer chrome:
 Album insights:
 - fix(insights): use credits from the selected album edition
   - Cancel previous requests and prefer the published credit for the current album.
+
+Quick Picks metadata:
+- fix(quick-picks): refresh displayed track credits from the library
+  - Use current artist and duration data when rendering recommendation rows.
