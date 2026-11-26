@@ -3,6 +3,7 @@ package app.n_zik.android.extensions.pip
 import android.app.Activity
 import android.app.PictureInPictureParams
 import android.app.RemoteAction
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
@@ -44,9 +45,10 @@ import timber.log.Timber
 
 private fun logError(throwable: Throwable) = Timber.tag("PictureInPicture").e(throwable, "An error occurred")
 
-val isPipSupported = if (isAtLeastAndroid8)
-    appContext().packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
-else false
+val isPipSupported: Boolean by lazy { isAtLeastAndroid8 && supportsPictureInPicture(appContext()) }
+
+internal fun supportsPictureInPicture(context: Context): Boolean =
+    isAtLeastAndroid8 && context.packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 
 @Suppress("DEPRECATION")
 fun Activity.maybeEnterPip() = when {

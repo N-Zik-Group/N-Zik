@@ -500,3 +500,7 @@ Theme Store catalog search:
 Updater download safeguards:
 - fix(updater): guard downloads and serialize cache cleanup
   - Keep active transfers intact and block installation on builds without automatic updates.
+
+Picture-in-picture support:
+- fix(pip): resolve system support from the supplied context
+  - Defer the process context lookup until it is needed.
