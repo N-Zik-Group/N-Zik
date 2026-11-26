@@ -794,6 +794,7 @@ fun LyricsScreen(
                                         },
                                         onShowLyricsSizeDialog = { showLyricsSizeDialog = !showLyricsSizeDialog },
                                         onEditLyrics = { editLyricsDialog.onShortClick() },
+                                        canCopyLyrics = { !lyrics?.data.isNullOrBlank() },
                                         onCopyLyrics = { copyToClipboard = true },
                                         onSearchLyricsOnline = {
                                             val mediaMetadata = mediaMetadataProvider()

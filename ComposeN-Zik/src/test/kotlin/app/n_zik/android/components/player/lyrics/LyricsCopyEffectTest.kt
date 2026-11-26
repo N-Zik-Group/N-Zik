@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
 import android.app.Application
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import androidx.compose.runtime.getValue
@@ -74,6 +75,27 @@ class LyricsCopyEffectTest {
         assertEquals("lyrics", clipboardText())
         assertTrue(consumed >= 1)
         // The consumed trigger stays false: the LaunchedEffect restart is a no-op.
+        assertEquals(1, consumed)
+    }
+
+    @Test
+    fun `blank lyrics preserve the previous clipboard text`() {
+        var trigger by mutableStateOf(false)
+        var consumed = 0
+
+        composeRule.setContent {
+            LyricsCopyEffect(trigger, " ") {
+                trigger = false
+                consumed++
+            }
+        }
+        composeRule.runOnIdle {
+            clipboard.setPrimaryClip(ClipData.newPlainText("", "previous text"))
+            trigger = true
+        }
+        composeRule.waitForIdle()
+
+        assertEquals("previous text", clipboardText())
         assertEquals(1, consumed)
     }
 

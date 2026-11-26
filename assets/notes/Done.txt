@@ -1080,3 +1080,7 @@ Settings:
 Interface:
 - style(ui): use a six dp inset for row feedback
   - Share the 6 dp horizontal feedback inset across media rows, menus, settings and the active queue row.
+
+Menus:
+- fix(lyrics): disable copying when no lyrics are available
+  - Protect the clipboard from empty lyrics and keep the copy action unavailable until text exists.

@@ -72,6 +72,7 @@ class LyricsSettingsMenu private constructor(
     private val actualLyricsType: () -> LyricsType?,
     private val onShowLyricsSizeDialog: () -> Unit,
     private val onEditLyrics: () -> Unit,
+    private val canCopyLyrics: () -> Boolean,
     private val onCopyLyrics: () -> Unit,
     private val onSearchLyricsOnline: () -> Unit,
     private val onFetchLyricsAgain: () -> Unit,
@@ -91,6 +92,7 @@ class LyricsSettingsMenu private constructor(
             actualLyricsType: () -> LyricsType?,
             onShowLyricsSizeDialog: () -> Unit,
             onEditLyrics: () -> Unit,
+            canCopyLyrics: () -> Boolean,
             onCopyLyrics: () -> Unit,
             onSearchLyricsOnline: () -> Unit,
             onFetchLyricsAgain: () -> Unit,
@@ -105,6 +107,7 @@ class LyricsSettingsMenu private constructor(
                 actualLyricsType = actualLyricsType,
                 onShowLyricsSizeDialog = onShowLyricsSizeDialog,
                 onEditLyrics = onEditLyrics,
+                canCopyLyrics = canCopyLyrics,
                 onCopyLyrics = onCopyLyrics,
                 onSearchLyricsOnline = onSearchLyricsOnline,
                 onFetchLyricsAgain = onFetchLyricsAgain,
@@ -460,7 +463,9 @@ class LyricsSettingsMenu private constructor(
             ActionSettingEntry(
                 title = stringResource(R.string.lyrics_action_copy),
                 icon = R.drawable.copy,
+                enabled = canCopyLyrics(),
                 onClick = {
+                    if (!canCopyLyrics()) return@ActionSettingEntry
                     menuState.hide()
                     onCopyLyrics()
                 }
@@ -853,7 +858,9 @@ class LyricsSettingsMenu private constructor(
                 ActionSettingEntry(
                     title = stringResource(R.string.lyrics_action_copy),
                     icon = R.drawable.copy,
+                    enabled = canCopyLyrics(),
                     onClick = {
+                        if (!canCopyLyrics()) return@ActionSettingEntry
                         menuState.hide()
                         onCopyLyrics()
                     }

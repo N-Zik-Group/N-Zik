@@ -23,7 +23,7 @@ internal fun LyricsCopyEffect(
     val context = LocalContext.current
     LaunchedEffect(copyTrigger) {
         if (copyTrigger) {
-            text?.let { textCopyToClipboard(it, context) }
+            text?.takeIf(String::isNotBlank)?.let { textCopyToClipboard(it, context) }
             onConsumed()
         }
     }
