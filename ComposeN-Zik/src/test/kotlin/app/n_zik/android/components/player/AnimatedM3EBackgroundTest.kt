@@ -1,5 +1,6 @@
 package app.n_zik.android.components.player
 
+import androidx.media3.common.Player
 import kotlin.random.Random
 
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -13,6 +14,14 @@ import app.n_zik.android.enums.AnimatedGradient
 
 class AnimatedM3EBackgroundTest {
     private val theme = AnimatedGradient.M3EMorphingTheme
+
+    @Test
+    fun `buffering retracts unpinned shapes even when playback is requested`() {
+        assertTrue(m3ePlaybackIsActive(Player.STATE_READY, isPlaying = true))
+        assertFalse(m3ePlaybackIsActive(Player.STATE_READY, isPlaying = false))
+        assertFalse(m3ePlaybackIsActive(Player.STATE_BUFFERING, isPlaying = true))
+        assertTrue(m3eTrackRetractionTarget(alwaysShowShapes = true) > 0f)
+    }
 
     @Test
     fun `reveal waits for current cover after skip retraction completes`() {

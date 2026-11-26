@@ -326,6 +326,7 @@ import app.n_zik.android.components.player.PlayerCoverFrame
 import app.n_zik.android.components.player.PlayerCoverIdentity
 import app.n_zik.android.components.player.rememberPlayerCoverIdentity
 import app.n_zik.android.components.player.PlayerM3EOccurrences
+import app.n_zik.android.components.player.m3ePlaybackIsActive
 import app.n_zik.android.components.player.ReportFirstPresentedPlayerCover
 import app.n_zik.android.components.player.ReportPresentedPlayerCover
 import androidx.compose.ui.graphics.painter.Painter
@@ -1325,7 +1326,7 @@ fun Player(
             targetFluidColors = targetFluidColors,
             artworkPaint = artworkPaint,
             isActuallyPlaying = { isActuallyPlaying },
-            shouldPlayM3E = { shouldBePlaying },
+            shouldPlayM3E = { m3ePlaybackIsActive(playbackState, isActuallyPlaying) },
             coverSwatches = coverSwatches,
             coverGradientColor = ::coverGradientColor,
             m3eOccurrences = m3eOccurrences,

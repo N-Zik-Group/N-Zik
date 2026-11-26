@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path as ComposePath
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.compose.ui.graphics.asComposePath
 import androidx.graphics.shapes.CornerRounding
@@ -62,6 +63,9 @@ private const val M3E_TRACK_RETRACTION_MS = 230
 private const val M3E_POSITION_COLUMNS = 5
 private const val M3E_POSITION_ROWS = 4
 private const val M3E_SHAPE_COUNT = M3E_POSITION_COLUMNS * M3E_POSITION_ROWS
+
+internal fun m3ePlaybackIsActive(playbackState: Int, isPlaying: Boolean): Boolean =
+    playbackState == Player.STATE_READY && isPlaying
 
 internal fun m3eTrackRetractionTarget(alwaysShowShapes: Boolean): Float =
     if (alwaysShowShapes) M3E_RETRACTED_SCALE * M3E_RETRACTED_SCALE else 0f
