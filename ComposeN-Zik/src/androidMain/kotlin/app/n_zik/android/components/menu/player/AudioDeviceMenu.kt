@@ -186,6 +186,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
         coroutineScope.launch(NzikDispatchers.DATA) {
             loadDevices(context, service?.preferredDeviceId, currentIsCarProjectionActive, onSuccess = { devices ->
                 audioDevices = devices
+                errorMessage = null
                 currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
                 maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                 isLoading = false

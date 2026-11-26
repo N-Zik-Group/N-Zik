@@ -796,3 +796,7 @@ Configurable menu and action bars:
 Navigation and settings hosts:
 - fix(navigation): preserve settings routes and refreshed library destinations
   - Route settings search and explicit profile or library navigation through the owning host.
+
+Audio Device recovery:
+- fix(menu): clear stale audio output errors after refresh
+  - Return to the current device list when discovery succeeds again.
