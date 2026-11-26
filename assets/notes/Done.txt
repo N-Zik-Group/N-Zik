@@ -884,3 +884,7 @@ Reset completion thread:
 Media item ripple:
 - fix(ui): inset media item feedback without changing hit targets
   - Keep the item geometry and use a four dp horizontal margin in Normal and Glass.
+
+Media item ripple margin:
+- fix(ui): use an eight dp media ripple inset
+  - Preserve item spacing and full click bounds.

@@ -69,7 +69,7 @@ internal class InsetMediaItemFeedback(
 
     override fun ContentDrawScope.draw() {
         drawContent()
-        val margin = 4.dp.toPx().coerceAtMost(size.width / 4f)
+        val margin = 8.dp.toPx().coerceAtMost(size.width / 4f)
         val clip = Path().apply {
             val feedbackSize = Size(size.width - 2 * margin, size.height)
             addOutline(shape.createOutline(feedbackSize, layoutDirection, this@draw))
