@@ -410,13 +410,13 @@ class PlayerQueueProcessingTest {
     }
 
     @Test
-    fun `unknown tracks do not leave a partial total or turn an unresolved queue into zero`() = runBlocking {
+    fun `unknown tracks do not prevent summing the available durations`() = runBlocking {
         // JUnit's synchronous API bridges to the production suspend calculation.
         val known = window("known", media("known", "Known length", durationMs = 170_000L))
         val invalid = window("invalid", media("invalid", "Invalid duration", duration = "5:91"))
         val missing = window("missing", media("missing", "Missing duration", durationMs = 0L))
-        assertEquals(PlayerQueueDuration.Unavailable, playerQueueDuration(timeline(known, invalid, missing)) { ids ->
-            assertEquals(listOf("invalid", "missing"), ids)
+        assertEquals(PlayerQueueDuration.AtLeast(230_000L), playerQueueDuration(timeline(missing, invalid, known)) { ids ->
+            assertEquals(listOf("missing", "invalid"), ids)
             listOf(Song.makePlaceholder("invalid").copy(durationText = "1:00"))
         })
         assertEquals(PlayerQueueDuration.Unavailable, playerQueueDuration(timeline(missing)) { emptyList() })

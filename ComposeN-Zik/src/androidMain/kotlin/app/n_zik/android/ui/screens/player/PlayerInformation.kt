@@ -133,8 +133,11 @@ internal fun PlayerQueueDurationInformation(totalPlayTimes: PlayerQueueDuration,
                             width = 1f,
                         )
                     } else {
-                        val durationText = (totalPlayTimes as? PlayerQueueDuration.Known)
-                            ?.let { " ${formatAsTime(it.milliseconds)}" } ?: " —"
+                        val durationText = when (totalPlayTimes) {
+                            is PlayerQueueDuration.Known -> " ${formatAsTime(totalPlayTimes.milliseconds)}"
+                            is PlayerQueueDuration.AtLeast -> " ${formatAsTime(totalPlayTimes.milliseconds)}+"
+                            else -> " —"
+                        }
                         BasicText(
                             text = durationText,
                             style = typography().xxs.semiBold.merge(

@@ -1028,3 +1028,7 @@ Menus:
 Menus:
 - fix(menu): align room submenus in list and grid
   - Keep section guidance and an explicit return action in room management.
+
+Playback:
+- fix(player): show available queue duration when some tracks are unknown
+  - Display a lower bound for partially known queues and the exact total once all lengths are known.

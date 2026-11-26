@@ -201,6 +201,7 @@ internal sealed interface PlayerQueueDuration {
     data object Loading : PlayerQueueDuration
     data object Unavailable : PlayerQueueDuration
     data class Known(val milliseconds: Long) : PlayerQueueDuration
+    data class AtLeast(val milliseconds: Long) : PlayerQueueDuration
 }
 
 @OptIn(UnstableApi::class)
@@ -226,16 +227,24 @@ internal suspend fun playerQueueDuration(
             total += length
         }
     }
+    var incomplete = false
     if (missing.isNotEmpty()) {
         for (item in enrichAutoQueueDurations(missing, findSongs)) {
             currentCoroutineContext().ensureActive()
             val length = item.mediaMetadata.durationMs?.takeIf { it > 0 }
-                ?: return@withContext PlayerQueueDuration.Unavailable
+            if (length == null) {
+                incomplete = true
+                continue
+            }
             if (length > Long.MAX_VALUE - total) return@withContext PlayerQueueDuration.Unavailable
             total += length
         }
     }
-    PlayerQueueDuration.Known(total)
+    when {
+        !incomplete -> PlayerQueueDuration.Known(total)
+        total > 0L -> PlayerQueueDuration.AtLeast(total)
+        else -> PlayerQueueDuration.Unavailable
+    }
 }
 
 @Composable
