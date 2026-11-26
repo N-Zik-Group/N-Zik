@@ -22,6 +22,7 @@ import androidx.compose.ui.util.fastFirstOrNull
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.n_zik.android.updater.models.CheckUpdateState
 import app.n_zik.android.ui.components.themed.SecondaryTextButton
 import app.n_zik.android.components.settings.common.EnumValueSelectorSettingsEntry
@@ -99,6 +100,9 @@ object Updater {
         return suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED64 ||
             suffix == UpdaterConstants.SUFFIX_CHAR_MINIFIED32
     }
+
+    internal fun supportsBetaUpdatePreference(version: String): Boolean =
+        !isMinifiedFamily(version) && !isDevFamily(version)
 
     /**
      * Returns true for the beta build family — the "beta64"/"beta32"
@@ -660,12 +664,14 @@ object Updater {
         checkBetaUpdates: Boolean = false,
         showDialog: Boolean = true
     ) = NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+        if (!hasAutoUpdate()) return@launch
+
         // Update the last check timestamp at the beginning
         appContext().preferences.edit()
             .putLong(lastUpdateCheckKey, System.currentTimeMillis())
             .apply()
             
-        if (!isForced && (!BuildConfig.IS_AUTOUPDATE || NewUpdateAvailableDialog.isCancelled)) return@launch
+        if (!isForced && NewUpdateAvailableDialog.isCancelled) return@launch
 
         try {
             if (!::build.isInitialized || isForced) {

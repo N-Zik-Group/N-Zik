@@ -528,3 +528,7 @@ Last.fm metadata:
 Podcast links:
 - fix(links): derive YouTube Music URLs from podcast browse IDs
   - Preserve playlist-backed podcast identities when opening externally.
+
+Updater availability:
+- fix(updater): skip release checks on unsupported builds
+  - Use the same build capability check for background and forced checks.

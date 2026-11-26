@@ -6,12 +6,19 @@ import app.n_zik.android.BuildConfig
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.dialog.updater.NewUpdateAvailableDialog
+import app.n_zik.android.components.settings.common.hasAutoUpdate
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.updater.models.GithubRelease
+import app.n_zik.android.utils.lastUpdateCheckKey
+import app.n_zik.android.utils.preferences
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
+import io.mockk.verify
+import kotlinx.coroutines.runBlocking
 import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -60,17 +67,32 @@ class UpdaterFetchStateTest {
         httpClient = mockk()
         mockkObject(NetworkClientFactory)
         every { NetworkClientFactory.getClient() } returns httpClient
+        mockkStatic(::hasAutoUpdate)
+        every { hasAutoUpdate() } returns true
         NewUpdateAvailableDialog.isCancelled = false
     }
 
     @After
     fun tearDown() {
         unmockkObject(NetworkClientFactory)
+        unmockkStatic(::hasAutoUpdate)
         Updater.githubRelease = null
         Updater.latestChangelog = null
         NewUpdateAvailableDialog.isCancelled = false
     }
 
+    @Test
+    fun `unsupported build ignores forced release checks`() {
+        every { hasAutoUpdate() } returns false
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        context.preferences.edit().putLong(lastUpdateCheckKey, 42L).commit()
+
+        runBlocking { Updater.checkForUpdate(isForced = true, checkBetaUpdates = true).join() }
+
+        assertEquals(42L, context.preferences.getLong(lastUpdateCheckKey, 0L))
+        verify(exactly = 0) { NetworkClientFactory.getClient() }
+    }
+
     @Test
     fun `a failed fetch clears a previously published release`() {
         Updater.githubRelease = release("v8.5.0")
