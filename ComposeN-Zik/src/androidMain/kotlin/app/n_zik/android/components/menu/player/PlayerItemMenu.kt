@@ -7,20 +7,17 @@ import android.media.audiofx.AudioEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -47,7 +44,6 @@ import timber.log.Timber
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.MenuStyle
-import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerTimelineType
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
@@ -523,6 +519,7 @@ class PlayerItemMenu private constructor(
             navController = navController,
             songId = snapshot.songId,
             localDestinationsOnly = song.isLocal,
+            onOpenPlaylist = onClosePlayer,
             mediaItems = { _ -> listOf(currentMediaItem) },
             onFailure = { throwable, preview ->
                 Timber.tag("PlayerItemMenu").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")

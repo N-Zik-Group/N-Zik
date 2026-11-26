@@ -51,8 +51,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
 import app.n_zik.android.enums.NavRoutes
-import app.n_zik.android.enums.PlaylistSortBy
-import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.typography
@@ -61,8 +59,6 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.menuStyleKey
-import app.n_zik.android.utils.playlistSortByKey
-import app.n_zik.android.utils.playlistSortOrderKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.tab.Search
@@ -192,9 +188,7 @@ fun PlaylistsItemMenu(
         ) { currentIsViewingPlaylists ->
             if (currentIsViewingPlaylists) {
                 val online = isNetworkConnected(LocalContext.current)
-                val sortBy by rememberPreference(playlistSortByKey, PlaylistSortBy.DateAdded)
-                val sortOrder by rememberPreference(playlistSortOrderKey, SortOrder.Descending)
-                val playlistRead = rememberPlaylistPickerRead(sortBy, sortOrder)
+                val playlistRead = rememberPlaylistPickerRead()
                 val playlistPreviews = playlistRead.previews
 
                 val (pinnedPlaylists, youtubePlaylists, unpinnedPlaylists) = playlistPickerSections(playlistPreviews, online)

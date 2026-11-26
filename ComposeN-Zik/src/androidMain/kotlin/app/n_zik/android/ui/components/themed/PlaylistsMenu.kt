@@ -2,6 +2,7 @@ package app.n_zik.android.ui.components.themed
 
 import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
 import app.n_zik.android.components.menu.playlist.PlaylistPickerRead
+import app.n_zik.android.components.menu.playlist.playlistPickerGridFeedback
 import app.n_zik.android.components.menu.playlist.matchesPickerQuery
 import app.n_zik.android.components.menu.playlist.menuItemCount
 import app.n_zik.android.components.menu.playlist.rememberPlaylistPickerRead
@@ -56,8 +57,6 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.enums.MenuStyle
-import app.n_zik.android.enums.PlaylistSortBy
-import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.models.PlaylistPreview
@@ -145,9 +144,7 @@ internal fun PlaylistPickerMenu(
     } else {
         GridMenu.Menu {
             item(span = { GridItemSpan(maxLineSpan) }) { Column(content = header) }
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Column { PlaylistPickerFeedback(playlistRead, query, empty) }
-            }
+            playlistPickerGridFeedback(playlistRead, query, empty)
             matchingGroups.forEach { (label, matches) ->
                 if (matches.isNotEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) { heading(label) }
@@ -272,6 +269,7 @@ class PlaylistsMenu private constructor(
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>,
     private val localDestinationsOnly: Boolean = false,
+    private val onOpenPlaylist: () -> Unit = {},
 ): MenuIcon, Descriptive, Menu {
 
     private class AddRequest(
@@ -289,6 +287,7 @@ class PlaylistsMenu private constructor(
             finalAction: (PlaylistPreview) -> Unit,
             songId: String? = null,
             localDestinationsOnly: Boolean = false,
+            onOpenPlaylist: () -> Unit = {},
         ) = PlaylistsMenu(
             navController,
             songId,
@@ -297,6 +296,7 @@ class PlaylistsMenu private constructor(
             LocalMenuState.current,
             rememberPreference( menuStyleKey, MenuStyle.List ),
             localDestinationsOnly = localDestinationsOnly,
+            onOpenPlaylist = onOpenPlaylist,
         )
 
         @Composable
@@ -404,6 +404,7 @@ class PlaylistsMenu private constructor(
                     onClick = {
                         openPlaylistPickerDestination(playlist.id, null, menuState::hide) { id ->
                             navigateToPickedPlaylist(navController, id)
+                            onOpenPlaylist()
                         }
                     },
                     modifier = Modifier.size( 24.dp )
@@ -434,7 +435,7 @@ class PlaylistsMenu private constructor(
 
     @Composable
     private fun PlaylistPicker(request: AddRequest) {
-        val playlistRead = rememberPlaylistPickerRead(PlaylistSortBy.Name, SortOrder.Ascending)
+        val playlistRead = rememberPlaylistPickerRead()
         val online = isNetworkConnected(LocalContext.current)
         val sections = playlistPickerSections(playlistRead.previews, online)
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
@@ -445,7 +446,16 @@ class PlaylistsMenu private constructor(
             R.string.library_playlists_title to sections.local,
         )
 
-        val newPlaylistButton = NewPlaylistDialog(localOnly = localDestinationsOnly)
+        val menuKey = menuState.transitionKey
+        fun add(preview: PlaylistPreview) {
+            if (!menuState.isCurrentMenu(menuKey)) return
+            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                addToPlaylist(preview, request, menuKey)
+            }
+        }
+        val newPlaylistButton = NewPlaylistDialog(localOnly = localDestinationsOnly) { playlist ->
+            add(PlaylistPreview(playlist, 0))
+        }
         newPlaylistButton.Render()
 
         PlaylistPickerMenu(
@@ -498,10 +508,7 @@ class PlaylistsMenu private constructor(
             },
             entry = { _, preview ->
                 PlaylistCard(preview, preview.playlist.id in songPlaylistIds) {
-                    val menuKey = menuState.transitionKey
-                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                        addToPlaylist(preview, request, menuKey)
-                    }
+                    add(preview)
                 }
             },
         )

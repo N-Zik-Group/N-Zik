@@ -4,11 +4,8 @@ import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
 import app.n_zik.android.components.menu.playlist.matchesPickerQuery
 import app.n_zik.android.components.menu.playlist.menuItemCount
 import app.n_zik.android.components.menu.playlist.rememberPlaylistPickerRead
-import kotlinx.coroutines.flow.first
 
 
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import app.n_zik.android.ui.components.themed.PlaylistPickerLockIcon
 import app.n_zik.android.ui.components.themed.PlaylistPickerEntry
 import app.n_zik.android.ui.components.themed.PlaylistPickerMenu
@@ -27,9 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -55,14 +50,12 @@ import app.n_zik.android.core.rewind.RewindPlaylists
 
 import app.n_zik.android.context
 import app.n_zik.android.enums.MenuStyle
-import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.utils.addPlaylistItemsFromMenu
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.normalizedSongId
-import app.n_zik.android.utils.rememberEqualizerLauncher
 import app.n_zik.android.utils.rememberPreference
 
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -71,7 +64,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
-import java.util.UUID
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.components.search.SearchHeaderVisibility
@@ -90,20 +82,15 @@ import app.n_zik.android.utils.semiBold
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
-import app.n_zik.android.enums.PlaylistSortBy
-import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.utils.Preference
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.ui.Alignment
 import app.n_zik.android.MONTHLY_PREFIX
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.components.tab.Search
-import androidx.compose.ui.unit.times
 
 @Composable
 fun SettingIcon(@DrawableRes icon: Int) {
@@ -232,9 +219,7 @@ fun AddToPlaylistItemMenu(
 
     newPlaylistDialog.Render()
 
-    val sortBy by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.SongCount)
-    val sortOrder by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER.key, SortOrder.Ascending)
-    val playlistRead = rememberPlaylistPickerRead(sortBy, sortOrder)
+    val playlistRead = rememberPlaylistPickerRead()
     val playlistPreviews = playlistRead.previews
 
     val playlistIds = rememberSongPlaylistIds(mediaItem.normalizedSongId)
@@ -386,9 +371,7 @@ fun AddToPlaylistArtistSongsMenu(
 
     newPlaylistDialog.Render()
 
-    val sortBy by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.SongCount)
-    val sortOrder by rememberPreference(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER.key, SortOrder.Ascending)
-    val playlistRead = rememberPlaylistPickerRead(sortBy, sortOrder)
+    val playlistRead = rememberPlaylistPickerRead()
     val playlistPreviews = playlistRead.previews
 
     val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }

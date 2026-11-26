@@ -1,9 +1,14 @@
 package app.n_zik.android.components.menu.playlist
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,17 +26,17 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
-import app.n_zik.android.enums.PlaylistSortBy
-import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.shimmerEffect
 import kotlinx.coroutines.CancellationException
@@ -68,7 +73,9 @@ internal class PlaylistPickerRead(
 }
 
 @Composable
-internal fun rememberPlaylistPickerRead(sortBy: PlaylistSortBy, sortOrder: SortOrder): PlaylistPickerRead {
+internal fun rememberPlaylistPickerRead(): PlaylistPickerRead {
+    val sortBy by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY)
+    val sortOrder by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER)
     var retry by remember { mutableIntStateOf(0) }
     val results = remember(sortBy, sortOrder, retry) {
         playlistPickerResults(Database.playlistTable.sortPreviews(sortBy, sortOrder))
@@ -98,17 +105,58 @@ internal fun PlaylistPickerFeedback(read: PlaylistPickerRead, query: String, emp
         result.isFailure -> ListMenu.Entry(
             text = stringResource(R.string.common_load_failed),
             subtitle = stringResource(R.string.common_action_retry),
-            icon = {
-                Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) {
-                    Icon(painterResource(R.drawable.refresh), contentDescription = null, tint = colorPalette().accent,
-                        modifier = Modifier.size(18.dp))
-                }
-            },
+            icon = { PlaylistPickerRetryIcon() },
             onClick = read.retry,
         )
         else -> {
-            SearchEmptyFeedback(query = query, empty = empty)
-            if (query.isNotBlank() && empty) SearchEmptySpace(Modifier.height(160.dp))
+            PlaylistPickerEmptyFeedback(query, empty)
         }
     }
+}
+
+internal fun LazyGridScope.playlistPickerGridFeedback(read: PlaylistPickerRead, query: String, empty: Boolean) {
+    val result = read.result
+    when {
+        result == null -> items(3) {
+            Column(
+                modifier = Modifier.padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Spacer(Modifier.size(32.dp).clip(uiRoundnessShape()).shimmerEffect())
+                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.fillMaxWidth(.65f).height(12.dp).clip(uiRoundnessShape()).shimmerEffect())
+                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.fillMaxWidth(.4f).height(10.dp).clip(uiRoundnessShape()).shimmerEffect())
+            }
+        }
+        result.isFailure -> item {
+            GridMenu.Entry(
+                text = stringResource(R.string.common_load_failed),
+                subtitle = stringResource(R.string.common_action_retry),
+                icon = { PlaylistPickerRetryIcon() },
+                onClick = read.retry,
+            )
+        }
+        empty -> item(span = { GridItemSpan(maxLineSpan) }) {
+            Column { PlaylistPickerEmptyFeedback(query, empty) }
+        }
+    }
+}
+
+@Composable
+private fun PlaylistPickerRetryIcon() {
+    Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) {
+        Icon(
+            painterResource(R.drawable.refresh),
+            contentDescription = null,
+            tint = colorPalette().accent,
+            modifier = Modifier.size(18.dp),
+        )
+    }
+}
+
+@Composable
+private fun PlaylistPickerEmptyFeedback(query: String, empty: Boolean) {
+    SearchEmptyFeedback(query = query, empty = empty)
+    if (query.isNotBlank() && empty) SearchEmptySpace(Modifier.height(160.dp))
 }

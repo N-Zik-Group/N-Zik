@@ -1016,3 +1016,7 @@ Settings:
 Menus:
 - fix(menu): import all playlist pages and keep local CSV available offline
   - Load the complete YouTube collection before saving and leave file imports available without a network.
+
+Menus:
+- fix(menu): harmonize playlist destination pickers
+  - Use library sorting, add items when creating a playlist, and close the player when opening a destination.
