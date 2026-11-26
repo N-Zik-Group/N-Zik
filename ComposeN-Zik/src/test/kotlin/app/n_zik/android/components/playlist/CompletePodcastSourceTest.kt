@@ -21,8 +21,12 @@ class CompletePodcastSourceTest {
     private fun continuations(token: String?) = token?.let {
         """, "continuations":[{"nextContinuationData":{"continuation":"$it"}}]"""
     }.orEmpty()
-    private fun initial(token: String? = "next", playedText: String? = null) = json.decodeFromString<BrowsePodcastsResponse0624>(
-        """{"contents":{"twoColumnBrowseResultsRenderer":{"tabs":[{"tabRenderer":{"content":{"sectionListRenderer":{"contents":[{"musicResponsiveHeaderRenderer":{"title":{"runs":[{"text":"Podcast"}]},"straplineTextOne":{"runs":[{"text":"Host"}]},"description":{"musicDescriptionShelfRenderer":{"description":{"runs":[{"text":"A podcast"}]}}}}}]}}}}],"secondaryContents":{"sectionListRenderer":{"contents":[{"musicShelfRenderer":{"contents":[${episode("first", playedText)}]${continuations(token)}}}]}}}}}"""
+    private fun initial(
+        token: String? = "next",
+        playedText: String? = null,
+        creator: String = """{"text":"Host"}""",
+    ) = json.decodeFromString<BrowsePodcastsResponse0624>(
+        """{"contents":{"twoColumnBrowseResultsRenderer":{"tabs":[{"tabRenderer":{"content":{"sectionListRenderer":{"contents":[{"musicResponsiveHeaderRenderer":{"title":{"runs":[{"text":"Podcast"}]},"straplineTextOne":{"runs":[${creator}]},"description":{"musicDescriptionShelfRenderer":{"description":{"runs":[{"text":"A podcast"}]}}}}}]}}}}],"secondaryContents":{"sectionListRenderer":{"contents":[{"musicShelfRenderer":{"contents":[${episode("first", playedText)}]${continuations(token)}}}]}}}}}"""
     )
     private fun next(token: String? = null, playedText: String? = null) = json.decodeFromString<BrowsePodcastsResponse0624>(
         """{"continuationContents":{"musicShelfContinuation":{"contents":[${episode("second", playedText)}]${continuations(token)}}}}"""
@@ -61,6 +65,21 @@ class CompletePodcastSourceTest {
         }
         assertEquals(listOf(id to null, null to "next"), requests)
         assertEquals(listOf("first", "second"), episodes.map { it.videoId })
+    }
+
+    @Test fun `creator identity survives with or without a browse endpoint`() = runBlocking {
+        val exact = """{"text":"Host","navigationEndpoint":{"browseEndpoint":{"browseId":"UCHost"}}}"""
+        val named = """{"text":"Host"}"""
+        for ((creator, author, channel) in listOf(
+            Triple(exact, "Host", "UCHost"), Triple(named, "Host", null), Triple("", null, null),
+        )) {
+            val page = loadCompletePodcastPage(id) { _, token ->
+                if (token == null) initial(creator = creator) else next()
+            }
+            assertEquals(author, page.owner?.name)
+            assertEquals(channel, page.owner?.endpoint?.browseId)
+            assertEquals(listOf("first", "second"), page.listEpisode.map { it.videoId })
+        }
     }
 
     @Test fun `episode counts update after each shelf without publishing a partial page`() = runBlocking {

@@ -59,7 +59,10 @@ internal suspend fun loadCompletePodcastPage(
         ?.contents?.firstOrNull()?.musicResponsiveHeaderRenderer) { "Missing podcast header" }
     val title = requireNotNull(header.title?.runs?.firstOrNull()?.text)
     require(title.isNotBlank()) { "Missing podcast title" }
-    val author = header.straplineTextOne?.runs?.firstOrNull()?.text.orEmpty()
+    val creator = header.straplineTextOne?.runs.orEmpty().firstOrNull { !it.text.isNullOrBlank() }
+    val author = creator?.text
+    val authorBrowseId = creator?.navigationEndpoint?.browseEndpoint?.browseID
+        ?.takeIf { it.startsWith("UC") && it.length > 2 }
     val shelf = requireNotNull(renderer.secondaryContents?.sectionListRenderer?.contents
         ?.firstOrNull()?.musicShelfRenderer) { "Missing podcast shelf" }
     val episodes = parsePodcastData(requireNotNull(shelf.contents), author).toMutableList()
@@ -84,6 +87,7 @@ internal suspend fun loadCompletePodcastPage(
     return Innertube.Podcast(
         title = title,
         author = author,
+        authorBrowseId = authorBrowseId,
         authorThumbnail = header.straplineThumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails
             ?.maxByOrNull { (it.width ?: 0) * (it.height ?: 0) }?.url,
         thumbnail = response.background?.musicThumbnailRenderer?.thumbnail?.thumbnails.orEmpty().map {

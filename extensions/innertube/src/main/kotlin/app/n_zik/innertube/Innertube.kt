@@ -707,8 +707,14 @@ object Innertube {
         val authorThumbnail: String?,
         val thumbnail: List<Thumbnail>,
         val description: String?,
-        val listEpisode: List<EpisodeItem>
+        val listEpisode: List<EpisodeItem>,
+        val authorBrowseId: String? = null,
     ) {
+        val owner: Info<NavigationEndpoint.Endpoint.Browse>?
+            get() = author?.takeIf(String::isNotBlank)?.let { name ->
+                Info(name, authorBrowseId?.let { NavigationEndpoint.Endpoint.Browse(browseId = it) })
+            }
+
         data class EpisodeItem(
             val title: String,
             val author: String?,

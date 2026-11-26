@@ -25,12 +25,12 @@ suspend fun Innertube.podcastPage(browseId: String) = runCatching {
         response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
             ?.musicResponsiveHeaderRenderer?.title?.runs?.firstOrNull()?.text
-    val author =
-        response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-            ?.musicResponsiveHeaderRenderer?.let {
-                it.straplineTextOne?.runs?.firstOrNull()?.text ?: ""
-            }
+    val creator = response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+        ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
+        ?.musicResponsiveHeaderRenderer?.straplineTextOne?.runs.orEmpty().firstOrNull { !it.text.isNullOrBlank() }
+    val author = creator?.text
+    val authorBrowseId = creator?.navigationEndpoint?.browseEndpoint?.browseID
+        ?.takeIf { it.startsWith("UC") && it.length > 2 }
     val authorThumbnail =
         response.contents?.twoColumnBrowseResultsRenderer?.tabs?.firstOrNull()
             ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
@@ -91,6 +91,7 @@ suspend fun Innertube.podcastPage(browseId: String) = runCatching {
     Innertube.Podcast(
         title = title ?: "",
         author = author,
+        authorBrowseId = authorBrowseId,
         authorThumbnail = authorThumbnail,
         thumbnail = thumbnail ?: emptyList(),
         description = description ?: "",
@@ -156,7 +157,7 @@ fun parseContinuationPodcastEpisodes(
     listContent: List<MusicShelfContinuation.Content>?,
     author: String?,
 ): List<Innertube.Podcast.EpisodeItem> {
-    if (listContent == null || author == null) {
+    if (listContent == null) {
         return emptyList()
     } else {
         val listEpisode: ArrayList<Innertube.Podcast.EpisodeItem> = arrayListOf()
