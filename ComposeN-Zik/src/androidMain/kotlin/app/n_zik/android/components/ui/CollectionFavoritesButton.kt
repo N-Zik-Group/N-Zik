@@ -41,7 +41,7 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 internal enum class CollectionFavoritesKind {
-    Playlist, Album, Podcast, Queue,
+    Playlist, Album, Artist, Podcast, Queue,
 }
 
 /** Builds an inline or overflow toolbar action from complete collection membership. */
@@ -188,6 +188,9 @@ private fun CollectionFavoritesDialog(
         CollectionFavoritesKind.Album ->
             if (change.like) R.plurals.library_collection_favorites_add_album_tracks
             else R.plurals.library_collection_favorites_remove_album_tracks
+        CollectionFavoritesKind.Artist ->
+            if (change.like) R.plurals.library_collection_favorites_add_artist_tracks
+            else R.plurals.library_collection_favorites_remove_artist_tracks
         CollectionFavoritesKind.Queue ->
             if (change.like) R.plurals.library_collection_favorites_add_queue_tracks
             else R.plurals.library_collection_favorites_remove_queue_tracks

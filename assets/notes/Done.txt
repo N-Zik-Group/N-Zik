@@ -676,3 +676,7 @@ Playback service integration:
 Playback surfaces:
 - fix(playback): propagate track identity to retained playback surfaces
   - Use updated credits in persistent queue, widget and bridge views.
+
+Favorites and bookmarks:
+- fix(library): keep menu favorite states and sync consistent
+  - Use the persisted state and profile owner for likes, dislikes and bookmark labels.
