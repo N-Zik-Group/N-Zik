@@ -6,6 +6,7 @@ import app.n_zik.android.core.network.utils.isNetworkAvailable
 import app.n_zik.android.R
 import app.n_zik.android.utils.albumTitleOrDb
 import app.n_zik.android.utils.artistTextOrDb
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.utils.isExplicit
 import app.n_zik.android.core.utils.Toaster
@@ -749,6 +750,7 @@ class DiscordPresenceManager(
             // tooltips render from this info, so they stay consistent with the activity lines.
             albumName = mediaItem.albumTitleOrDb().takeIf { it.isNotBlank() && it != "null" },
             songId = mediaItem.mediaId,
+            isLocal = mediaItem.isLocal,
         )
     }
 

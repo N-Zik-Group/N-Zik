@@ -13,6 +13,7 @@ data class DiscordMediaInfo(
     val artist: String,
     val albumName: String?,
     val songId: String,
+    val isLocal: Boolean = false,
 )
 
 /**
@@ -171,10 +172,10 @@ object DiscordActivityBuilder {
     private fun renderedName(activityName: String, info: DiscordMediaInfo, str: DiscordStrings): String =
         if (activityName.isBlank()) str.nameFallback else render(activityName, info, str)
 
-    private fun normalButtons(info: DiscordMediaInfo, str: DiscordStrings): List<Button> = listOf(
-        Button(label = str.buttonGetNZik, url = URL_N_ZIK_GITHUB),
-        Button(label = str.buttonListenYtmusic, url = "$URL_YOUTUBE_WATCH${info.songId}"),
-    )
+    private fun normalButtons(info: DiscordMediaInfo, str: DiscordStrings): List<Button> = buildList {
+        add(Button(label = str.buttonGetNZik, url = URL_N_ZIK_GITHUB))
+        if (!info.isLocal) add(Button(label = str.buttonListenYtmusic, url = "$URL_YOUTUBE_WATCH${info.songId}"))
+    }
 
     private fun advancedButtons(s: DiscordAdvancedSettings, info: DiscordMediaInfo, str: DiscordStrings): List<Button> {
         val buttons = mutableListOf<Button>()
@@ -190,6 +191,6 @@ object DiscordActivityBuilder {
                 url = render(s.button2Url.ifEmpty { DEFAULT_BUTTON2_URL }, info, str),
             )
         }
-        return buttons
+        return if (info.isLocal) buttons.filterNot { it.url.startsWith(URL_YOUTUBE_WATCH) } else buttons
     }
 }

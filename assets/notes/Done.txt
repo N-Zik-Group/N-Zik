@@ -616,3 +616,7 @@ Metadata lookup messages:
 Track row metadata:
 - fix(library): show refreshed artist credits in track rows
   - Resolve metadata shared with playback and expose multiselection state to accessibility.
+
+Discord presence links:
+- fix(discord): keep presence links aligned with playable item types
+  - Use the current playback identity for supported external actions.
