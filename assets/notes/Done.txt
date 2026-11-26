@@ -808,3 +808,7 @@ Settings search availability:
 Search history presentation:
 - fix(search): preserve history and animate the matching rows
   - Maintain per-page choices and clear the full history when requested.
+
+Album and artist details:
+- fix(library): keep detail actions bound to current tracks
+  - Preserve exact sources and reflect current metadata across detail sections.

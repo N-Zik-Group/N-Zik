@@ -366,7 +366,7 @@ private fun OnDeviceGroupScreen(
                     }
                 }
             }
-            if (isLoading || visibleTracks.isNotEmpty()) item(key = "action_buttons") {
+            item(key = "action_buttons") {
                 val actions = mapOf(
                     ToolbarControl.SEARCH to search,
                     ToolbarControl.SHUFFLE to itemSelector.guard(shuffle, ::hasSelection),
@@ -378,6 +378,7 @@ private fun OnDeviceGroupScreen(
                 val surface = if (isArtist) ToolbarSurface.ARTIST_DEVICE else ToolbarSurface.ALBUM_DEVICE
                 val visible = surface.visibleActions()
                 val buttons = visible.mapNotNull(actions::get)
+                val hasTargets = hasSelection()
                 CollectionButtonToolbar(
                     bookmark = {
                         when {
@@ -394,7 +395,14 @@ private fun OnDeviceGroupScreen(
                             else -> bookmark?.ToolBarButton()
                         }
                     },
-                    buttons = if (isLoading) buttons.map { it.disabledWhileLoading() } else buttons,
+                    buttons = buttons.map { action ->
+                        val unavailable = when (action) {
+                            search -> false
+                            itemSelector -> !itemSelector.isActive && matchingTracks.isEmpty()
+                            else -> !hasTargets
+                        }
+                        if (isLoading || unavailable) action.disabledWhileLoading() else action
+                    },
                     showBookmark = bookmark != null || (isLoading && isArtist),
                     bookmarkWidth = if (isArtist) 100.dp else GlassStandaloneActionSize,
                     modifier = if (isArtist) Modifier.padding(top = 12.dp, bottom = 8.dp)

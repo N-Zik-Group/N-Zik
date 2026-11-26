@@ -96,6 +96,9 @@ import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.artist.artistStatisticsText
 import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
+import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.settings.ui.ordered
@@ -220,6 +223,16 @@ fun ArtistLocalSongs(
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val favoriteTargets = actionSongs()
+    val favorites = rememberCollectionFavoritesButton(
+        mediaItems = remember(favoriteTargets) { favoriteTargets.map(Song::asMediaItem) },
+        kind = CollectionFavoritesKind.Artist,
+        enabled = songs != null && !forceShimmer,
+        collectionKey = browseId,
+        likeStates = likeStatesMap,
+    )
+    // Header, actions, search and summary precede the song rows.
+    val locator = Locator(lazyListState, listItemOffset = 4) { visibleSongs }
     val playlistStatesMap by remember(songIds) {
         PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -294,6 +307,7 @@ fun ArtistLocalSongs(
             val removeDownloadTargets = remoteTargets.filter { it.id in downloadsMapState }
             val actions = mapOf(
                 ToolbarControl.SEARCH to search,
+                ToolbarControl.LOCATE to locator,
                 ToolbarControl.DOWNLOAD to artistLibraryToolbarAction(ToolbarControl.DOWNLOAD, enabled = downloadTargets.isNotEmpty()) {
                     pendingDownload = ArtistDownloadRequest(downloadTargets, remove = false)
                 },
@@ -336,6 +350,7 @@ fun ArtistLocalSongs(
                     }
                 },
                 ToolbarControl.SELECT to itemSelector,
+                ToolbarControl.FAVORITES to favorites,
                 ToolbarControl.ADD_TO_PLAYLIST to artistLibraryToolbarAction(
                     ToolbarControl.ADD_TO_PLAYLIST,
                     enabled = hasTargets,
@@ -391,8 +406,7 @@ fun ArtistLocalSongs(
                     return@itemsIndexed
                 }
                 Box(
-                    Modifier
-                        .fillMaxWidth()
+                    Modifier.animateItem().fillMaxWidth()
                 ) {
                     SwipeablePlaylistItem(
                         mediaItem = song.asMediaItem,
@@ -412,7 +426,6 @@ fun ArtistLocalSongs(
                             isLiked = likeStatesMap[song.id],
                             inPlaylist = playlistStatesMap[song.id],
                             navController = navController,
-                            modifier = Modifier.animateItem(),
                             itemSelector = itemSelector,
 
                             onClick = {

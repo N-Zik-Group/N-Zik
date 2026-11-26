@@ -51,6 +51,7 @@ import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.musicbrainz.InfoAndCommunity
 import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.components.navigation.dock.artistDockTabs
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
@@ -266,11 +267,8 @@ fun ArtistScreen(
         topInsetHandledByContent = true,
         topContentInsetProvider = topContentInset,
         navBarContent = { item ->
-            if (offlineMode)
-                item(1, stringResource(R.string.library_title), R.drawable.library)
-            else {
-                item(0, stringResource(R.string.artist_overview_title), R.drawable.artist)
-                item(1, stringResource(R.string.library_title), R.drawable.library)
+            artistDockTabs.forEachIndexed { index, tab ->
+                if (!offlineMode || index == 1) item(index, stringResource(tab.labelRes), tab.iconRes)
             }
         }
     ) { currentTabIndex ->
@@ -281,15 +279,15 @@ fun ArtistScreen(
             val listState = rememberLazyListState()
             when (artistScreenTabIndex(offlineMode, currentTabIndex)) {
                 0 -> {
-                    if (artistPage != null) {
+                    if (artistPage != null && (localArtistResolved || preview != null)) {
                         ArtistOverview(
                             navController, localArtist, artistPage, thumbnailPainter,
                             mbSyncing, { mbSyncing = it },
                             mbPausedSeconds, { mbPausedSeconds = it }, contentPadding, listState
                         )
-                    } else if (!isOnline) {
+                    } else if (artistPage == null && !isOnline) {
                         CollectionPageStatus(contentPadding) { OfflineContent() }
-                    } else if (artistFetchFailed) {
+                    } else if (artistPage == null && artistFetchFailed) {
                         CollectionPageStatus(contentPadding) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(stringResource(R.string.common_load_failed))
@@ -365,11 +363,13 @@ private fun ArtistLoadingContent(
                     val visible = ToolbarSurface.ARTIST_OVERVIEW.visibleActions()
                     val actions = mapOf(
                         ToolbarControl.SEARCH to artistLibraryToolbarAction(ToolbarControl.SEARCH),
+                        ToolbarControl.LOCATE to artistLibraryToolbarAction(ToolbarControl.LOCATE),
                         ToolbarControl.SHUFFLE to SongShuffler { emptyList() },
                         ToolbarControl.PLAY_NEXT to PlayNext {},
                         ToolbarControl.ENQUEUE to Enqueue {},
                         ToolbarControl.RADIO to Radio { emptyList() },
                         ToolbarControl.SELECT to ItemSelector<Song>(),
+                        ToolbarControl.FAVORITES to artistLibraryToolbarAction(ToolbarControl.FAVORITES),
                         ToolbarControl.ADD_TO_PLAYLIST to artistLibraryToolbarAction(ToolbarControl.ADD_TO_PLAYLIST),
                         ToolbarControl.DOWNLOAD to DownloadAllSongsDialog { emptyList() },
                         ToolbarControl.DELETE_DOWNLOADS to DeleteAllDownloadedSongsDialog { emptyList() },

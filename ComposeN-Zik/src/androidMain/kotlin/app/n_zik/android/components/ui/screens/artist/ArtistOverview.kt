@@ -1,6 +1,7 @@
 // Adapted from RiPlay (GPL-3.0, license checked at upstream revision f69d6760bd09b29e18591cdc1339d3dd8b6bdf55).
 package app.n_zik.android.components.ui.screens.artist
 
+import androidx.compose.animation.animateContentSize
 import java.util.Locale
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -84,8 +85,11 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.shuffleButtonIconRes
 import app.n_zik.android.components.tab.ItemSelector
+import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.song.resolveSongDisplayMetadata
@@ -104,6 +108,7 @@ import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.components.navigation.onlinePlaylistRoute
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.enums.NavRoutes
@@ -228,6 +233,22 @@ internal fun ArtistOverview(
                 visibleItemsBySection[section].orEmpty().isNotEmpty()
         }
     }
+    val locator = Locator.forList(lazyListState) { mediaId ->
+        if (mediaId == null) -1 else artistOverviewSongListIndex(
+            mediaId = mediaId,
+            hasInformation = query.isBlank(),
+            sections = visibleSections.map { section ->
+                val rows = visibleItemsBySection.getValue(section)
+                val carouselCount = listOf(
+                    rows.any { it is Innertube.AlbumItem },
+                    rows.any { it is Innertube.ArtistItem },
+                    rows.any { it is Innertube.PlaylistItem },
+                    rows.any { it is Innertube.VideoItem },
+                ).count { it }
+                visibleSongsBySection.getValue(section).map(Song::id) to carouselCount
+            },
+        )
+    }
     SearchEmptyFeedback(query, visibleSections.isEmpty(), loading = forceShimmer)
     val itemSelector = ItemSelector<Song>()
     val scope = rememberCoroutineScope()
@@ -238,10 +259,10 @@ internal fun ArtistOverview(
     val followButton = localArtist?.let { artist -> FollowButton { artist } }
     val isPreview = LocalThemePreview.current != null
     val followAction: @Composable () -> Unit = {
-        if (isPreview) {
-            ArtistFollowButton(likeState = null, onClick = {})
+        if (isPreview || followButton == null) {
+            ArtistFollowButton(likeState = null, onClick = {}, enabled = isPreview)
         } else {
-            followButton?.ToolBarButton()
+            followButton.ToolBarButton()
         }
     }
     val shuffler = object : MenuIcon, Descriptive {
@@ -348,6 +369,14 @@ internal fun ArtistOverview(
     val likeStatesMap by remember(songIds) {
         LikeStateManager.getLikeStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+    val favoriteTargets = getSongs()
+    val favorites = rememberCollectionFavoritesButton(
+        mediaItems = remember(favoriteTargets) { favoriteTargets.map(Song::asMediaItem) },
+        kind = CollectionFavoritesKind.Artist,
+        enabled = !forceShimmer && !isPreview,
+        collectionKey = artistPage.artist.key,
+        likeStates = likeStatesMap,
+    )
     val playlistStatesMap by remember(songIds) {
         PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -410,7 +439,7 @@ internal fun ArtistOverview(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 8.dp),
                             ) {
-                                if (ToolbarControl.FOLLOW in visible && (followButton != null || isPreview)) followAction()
+                                if (ToolbarControl.FOLLOW in visible) followAction()
                                 Box(Modifier.size(176.dp, 40.dp),
                                     contentAlignment = Alignment.Center) {
                                     InlineCircularLoader(
@@ -422,11 +451,13 @@ internal fun ArtistOverview(
                         } else {
                             val actions = mapOf(
                                 ToolbarControl.SEARCH to search,
+                                ToolbarControl.LOCATE to locator,
                                 ToolbarControl.SHUFFLE to itemSelector.guard(shuffler, ::hasSelection),
                                 ToolbarControl.PLAY_NEXT to itemSelector.guard(playNext, ::hasSelection),
                                 ToolbarControl.ENQUEUE to itemSelector.guard(enqueue, ::hasSelection),
                                 ToolbarControl.RADIO to itemSelector.guard(radio) { radio.active || hasSelection() },
                                 ToolbarControl.SELECT to itemSelector,
+                                ToolbarControl.FAVORITES to favorites,
                                 ToolbarControl.ADD_TO_PLAYLIST to itemSelector.guard(addToPlaylist, ::hasSelection),
                                 ToolbarControl.DOWNLOAD to itemSelector.guard(downloadAllDialog, ::hasSelection),
                                 ToolbarControl.DELETE_DOWNLOADS to itemSelector.guard(deleteAllDownloadsDialog, ::hasSelection),
@@ -434,7 +465,7 @@ internal fun ArtistOverview(
                             CollectionButtonToolbar(
                                 bookmark = followAction,
                                 buttons = visible.mapNotNull(actions::get),
-                                showBookmark = followButton != null || isPreview,
+                                showBookmark = ToolbarControl.FOLLOW in visible,
                                 bookmarkWidth = 100.dp,
                                 modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
                             )
@@ -447,7 +478,7 @@ internal fun ArtistOverview(
                 }
                 if (query.isBlank()) item("info_and_community") {
                     InfoAndCommunity(
-                        modifier = Modifier.animateItem(),
+                        modifier = Modifier.animateItem(placementSpec = null).animateContentSize(),
                         rating = localArtist?.rating,
                         ratingVotes = localArtist?.ratingVotes,
                         year = localArtist?.beginYear?.toString(),
@@ -661,6 +692,7 @@ internal fun ArtistOverview(
                             }
                             SwipeablePlaylistItem(
                                 mediaItem = song.asMediaItem,
+                                modifier = Modifier.animateItem(),
                                 onPlayNext = {
                                     binder?.player?.addNext(song.asMediaItem)
                                 }
@@ -673,7 +705,7 @@ internal fun ArtistOverview(
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     showThumbnail = true,
-                                    modifier = Modifier.animateItem().background(colorPalette().background0),
+                                    modifier = Modifier.background(colorPalette().background0),
                                     onClick = {
                                         if (!itemSelector.isActive) {
                                             binder?.stopRadio()
@@ -743,7 +775,7 @@ internal fun ArtistOverview(
                                     thumbnailSizeDp = albumThumbnailSizeDp,
                                     disableScrollingText = disableScrollingText,
                                     modifier = Modifier.animateItem().clip(uiRoundnessShape()).combinedClickable(
-                                        onClick = { navController.navigate("${NavRoutes.playlist.name}/${playlist.key}") },
+                                        onClick = { navController.navigate(onlinePlaylistRoute(playlist.key)) },
                                         onLongClick = {
                                             hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
                                             menuState.display {
@@ -786,7 +818,7 @@ internal fun ArtistOverview(
                                             menuState.display {
                                                 VideoItemMenu(
                                                     navController = navController,
-                                                    song = video.asMediaItem.asSong
+                                                    mediaItem = video.asMediaItem
                                                 ).MenuComponent()
                                             }
                                         },

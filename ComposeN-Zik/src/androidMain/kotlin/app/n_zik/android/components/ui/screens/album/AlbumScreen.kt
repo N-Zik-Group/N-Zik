@@ -1,6 +1,9 @@
 // Adapted from RiPlay (GPL-3.0, license checked at upstream revision f69d6760bd09b29e18591cdc1339d3dd8b6bdf55).
 package app.n_zik.android.components.ui.screens.album
 
+import androidx.compose.animation.animateContentSize
+import android.net.Uri
+
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.appTextResources
@@ -81,7 +84,6 @@ import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
@@ -130,7 +132,7 @@ import app.n_zik.android.ui.styling.px
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.align
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.asSong
+import app.n_zik.android.utils.withPlaybackAlbum
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.conditional
@@ -160,6 +162,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.album.AlbumModifier
+import app.n_zik.android.components.menu.album.toAlbumCreditArtists
 import app.n_zik.android.components.dialog.album.ChangeAlbumCoverDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
@@ -287,8 +290,9 @@ fun AlbumScreen(
 
     var alternatives by persistList<Innertube.AlbumItem>("album/$browseId/alternatives")
     var description by rememberSaveable { mutableStateOf("") }
+    var albumArtistId by rememberSaveable(browseId) { mutableStateOf<String?>(null) }
     var loadedSongsCount by remember(browseId) { mutableIntStateOf(0) }
-    var songLoadResult by remember(browseId, preview) { mutableStateOf<Result<Unit>?>(null) }
+    var songLoadResult by remember(browseId, preview) { mutableStateOf<Result<Boolean>?>(null) }
     LaunchedEffect(browseId, preview) {
         if (preview != null) return@LaunchedEffect
         val cleanedBrowseId = browseId.removePrefix(MODIFIED_PREFIX)
@@ -300,7 +304,8 @@ fun AlbumScreen(
         }
             .mapCatching { online ->
                 val onlineAlbum = online.album
-                val authorsText: String? = onlineAlbum.authors.artistEntryNames().joinToString(", ")
+                val authorsText = onlineAlbum.authors.artistEntryNames().joinToString(", ").takeIf(String::isNotBlank)
+                val canonicalArtistId = onlineAlbum.authors.toAlbumCreditArtists().singleOrNull()?.id
 
                 Database.awaitWriteBatch {
                     transaction {
@@ -324,7 +329,7 @@ fun AlbumScreen(
                                 title = PropUtils.retainIfModified(current?.title, onlineAlbum.title),
                                 thumbnailUrl = PropUtils.retainIfModified(current?.thumbnailUrl, onlineAlbum.thumbnail?.url),
                                 year = onlineAlbum.year ?: current?.year,
-                                authorsText = PropUtils.retainIfModified(current?.authorsText, authorsText),
+                                authorsText = PropUtils.retainIfModified(current?.authorsText, authorsText ?: current?.authorsText),
                                 shareUrl = online.url,
                                 isYoutubeAlbum = current?.isYoutubeAlbum == true,
                                 position = current?.position ?: -1,
@@ -359,8 +364,10 @@ fun AlbumScreen(
                     }
                 }
 
+                albumArtistId = canonicalArtistId
                 alternatives = online.otherVersions
                 description = online.description ?: ""
+                online.songs.isNotEmpty()
             }
             .onFailure { error ->
                 if (error is CancellationException) throw error
@@ -480,8 +487,10 @@ fun AlbumScreen(
                         alternatives = alternatives,
                         description = description,
                         loadedSongsCount = loadedSongsCount,
+                        albumArtistId = albumArtistId,
                         songsLoading = preview == null && songLoadResult == null,
                         songsLoadFailed = songLoadResult?.isFailure == true,
+                        expectsTracks = songLoadResult?.getOrNull() == true,
                         mbSyncing = mbSyncing,
                         onMbSyncingChange = { mbSyncing = it },
                         mbPausedSeconds = mbPausedSeconds,
@@ -528,6 +537,8 @@ fun AlbumDetails(
     onSettingsClick: () -> Unit,
     songsLoading: Boolean = false,
     songsLoadFailed: Boolean = false,
+    expectsTracks: Boolean = false,
+    albumArtistId: String? = null,
 ) {
     PersistMapCleanup("album/$browseId/songs")
 
@@ -546,13 +557,20 @@ fun AlbumDetails(
         else Database.songAlbumMapTable
             .allSongsOf(browseId)
             .distinctUntilChanged()
-    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    }.collectAsStateWithLifecycle<List<Song>?>(initialValue = null, context = NzikDispatchers.DATA)
 
     val items = remember(rawItems, parentalControlEnabled) {
-        rawItems.filter { !parentalControlEnabled || it.title.startsWith(EXPLICIT_PREFIX, true) != true }
+        rawItems.orEmpty().filter { !parentalControlEnabled || it.title.startsWith(EXPLICIT_PREFIX, true) != true }
     }
     val forceSongPlaceholders = forceLoadingShimmerPreview()
-    val initialSongsLoading = songsLoading && items.isEmpty()
+    val songsPublished = !rawItems.isNullOrEmpty()
+    var hasPublishedSongs by remember(browseId, preview) { mutableStateOf(false) }
+    LaunchedEffect(songsPublished) {
+        if (songsPublished) hasPublishedSongs = true
+    }
+    // Room may publish the first tracks after the fetch completes.
+    val initialSongsLoading = rawItems == null ||
+        (!songsPublished && !hasPublishedSongs && (songsLoading || expectsTracks))
 
     val itemSelector = ItemSelector<Song>()
     val search = Search.detail()
@@ -567,12 +585,13 @@ fun AlbumDetails(
     SearchEmptyFeedback(
         query = query,
         empty = visibleTracks.isEmpty() && visibleAlternatives.isEmpty(),
-        loading = songsLoading || forceSongPlaceholders,
+        loading = songsLoading || initialSongsLoading || forceSongPlaceholders,
     )
 
     fun getSongs() = itemSelector.actionTargets(visibleSongs, Song::id, Song::id, selectionOrder = true)
     fun hasSelection() = getSongs().isNotEmpty()
-    fun getMediaItems() = getSongs().map(Song::asMediaItem)
+    fun albumMediaItem(song: Song) = song.asMediaItem.withPlaybackAlbum(browseId, album?.cleanTitle())
+    fun getMediaItems() = getSongs().map(::albumMediaItem)
 
     val bookmark = AlbumBookmark(browseId)
     val albumSongIds = remember(items) { items.map(Song::id) }
@@ -590,16 +609,14 @@ fun AlbumDetails(
 
     val deleteAllDownloadsDialog = DeleteAllDownloadedSongsDialog(::getSongs)
     val downloadALlDialog = DownloadAllSongsDialog(::getSongs)
-    val shuffle = SongShuffler {
-        getMediaItems().map(MediaItem::asSong)
-    }
-    val radio = Radio(::getSongs)
+    val shuffle = SongShuffler.fromMediaItems(::getMediaItems)
+    val radio = Radio.fromMediaItem { getSongs().randomOrNull()?.let(::albumMediaItem) }
     val locator = Locator(lazyListState, listItemOffset = ALBUM_SONGS_HEADER_ITEMS) { visibleSongs }
     val playNext = PlayNext {
         val songsToAdd = getSongs().ifEmpty { return@PlayNext }
         itemSelector.isActive = false
         coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(Song::asMediaItem) }
+            val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(::albumMediaItem) }
             binder?.player?.addNextOffMain(mediaItems, appContext())
         }
     }
@@ -607,7 +624,7 @@ fun AlbumDetails(
         val songsToAdd = getSongs().ifEmpty { return@Enqueue }
         itemSelector.isActive = false
         coroutineScope.launch {
-            val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(Song::asMediaItem) }
+            val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(::albumMediaItem) }
             binder?.player?.enqueueOffMain(mediaItems, appContext())
         }
     }
@@ -800,16 +817,16 @@ fun AlbumDetails(
                             Column { search.SearchBar(this, barPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) }
                         }
 
-                        if (!initialSongsLoading && query.isBlank()) item("info_and_community") {
+                        if (query.isBlank()) item("info_and_community") {
                             InfoAndCommunity(
-                                modifier = Modifier.animateItem(),
+                                modifier = Modifier.animateItem(placementSpec = null).animateContentSize(),
                                 rating = album?.rating,
                                 ratingVotes = album?.ratingVotes,
                                 year = album?.year,
                                 countryCode = null,
                                 keywords = album?.keywords,
                                 links = album?.links,
-                                bio = album?.wikipediaInfo ?: description,
+                                bio = album?.wikipediaInfo ?: album?.description ?: description,
                                 translate = translate,
                                 translator = translator,
                                 languageDestination = languageDestination,
@@ -817,6 +834,7 @@ fun AlbumDetails(
                                 lastSyncFailed = album?.mbLastFetch != null && album?.genres == null,
                                 pausedForSeconds = mbPausedSeconds,
                                 isSyncing = mbSyncing,
+                                isLoading = initialSongsLoading,
                                 onResyncClick = {
                                     album?.id?.let { id ->
                                         coroutineScope.launch(NzikDispatchers.DATA) {
@@ -839,7 +857,13 @@ fun AlbumDetails(
                                     }
                                 },
                                 onInsightsClick = {
-                                    navController.navigate("$ALBUM_INSIGHTS_ROUTE/$browseId")
+                                    val path = "$ALBUM_INSIGHTS_ROUTE/${Uri.encode(browseId)}"
+                                    val artistId = albumArtistId?.takeUnless {
+                                        album?.authorsText?.startsWith(MODIFIED_PREFIX, true) == true
+                                    }
+                                    navController.navigate(
+                                        if (artistId != null) "$path?artistId=${Uri.encode(artistId)}" else path
+                                    )
                                 }
                             )
                         }
@@ -868,9 +892,10 @@ fun AlbumDetails(
                             }
 
                             SwipeablePlaylistItem(
-                                mediaItem = song.asMediaItem,
+                                mediaItem = albumMediaItem(song),
+                                modifier = Modifier.animateItem(),
                                 onPlayNext = {
-                                    binder?.player?.addNext(song.asMediaItem)
+                                    binder?.player?.addNext(albumMediaItem(song))
                                 },
                                 downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
                                 downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
@@ -883,8 +908,9 @@ fun AlbumDetails(
                                     inPlaylist = playlistStatesMap[song.id],
                                     itemSelector = itemSelector,
                                     navController = navController,
+                                    playbackAlbumId = browseId,
+                                    playbackAlbumTitle = album?.cleanTitle(),
                                     showThumbnail = false,
-                                    modifier = Modifier.animateItem(),
 
                                     thumbnailOverlay = {
                                         BasicText(
@@ -905,7 +931,7 @@ fun AlbumDetails(
                                     onClick = {
                                         binder?.stopRadio()
                                         binder?.player?.forcePlayAtIndex(
-                                            visibleSongs.map(Song::asMediaItem),
+                                            visibleSongs.map(::albumMediaItem),
                                             visibleIndex,
                                         )
                                     }
