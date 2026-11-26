@@ -473,7 +473,10 @@ fun Queue(
             LazyColumn(
                 state = lazyListState,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding = WindowInsets(bottom = Dimensions.bottomSpacer + queueToolbarBottomInset()).asPaddingValues(),
+                contentPadding = WindowInsets(
+                    top = 8.dp,
+                    bottom = Dimensions.bottomSpacer + queueToolbarBottomInset(),
+                ).asPaddingValues(),
                 modifier = Modifier.fillMaxSize()
                                    .glassQueueListBackdrop(lazyListState)
                                    .glassQueueListBackground(queueBackground, queueGlassSettings)

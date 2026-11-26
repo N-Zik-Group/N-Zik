@@ -11,12 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.toArgb
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberLayerBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCombinedBackdrop
 import app.n_zik.android.components.glass.backdrop.backdrops.LayerBackdrop
 import app.n_zik.android.components.glass.backdrop.Backdrop
+import app.n_zik.android.components.ui.HorizontallyInsetShape
 import timber.log.Timber
 
 /** Builds the native row input without sampling its containing page. */
@@ -41,8 +43,8 @@ internal fun Modifier.glassNowPlayingRow(
 ): Modifier {
     val base = background(backgroundColor)
     val queueBackdrop = LocalQueueRowBackdrop.current
-    if (LocalNativeQueueRows.current && queueBackdrop == null) return base.background(highlightColor)
-    if (!settings.usesGlassMaterial(GlassArea.NowPlaying)) return base.background(highlightColor)
+    if (LocalNativeQueueRows.current && queueBackdrop == null) return base.background(highlightColor, shape)
+    if (!settings.usesGlassMaterial(GlassArea.NowPlaying)) return base.background(highlightColor, shape)
         .glassAreaContour(settings, GlassArea.NowPlaying, shape)
 
     val artworkColor = LocalGlassArtworkColor.current
@@ -88,6 +90,7 @@ internal fun GlassSongRowSurface(
     content: @Composable (Modifier) -> Unit,
 ) {
     val exported = rememberLayerBackdrop()
+    val highlightShape = remember(shape) { HorizontallyInsetShape(shape) }
     val queueCapture = rememberQueueRowSceneCapture(content)
     val parent = LocalGlassContainerBackdrop.current
     val material = useNowPlayingMaterial && highlightColor != null &&
@@ -100,7 +103,7 @@ internal fun GlassSongRowSurface(
     val nativeSurface = rememberCanvasBackdrop {
         // These are the exact same flat fills painted by the native row below.
         if (paintBackground) drawRect(backgroundColor)
-        if (highlightColor != null) drawRect(highlightColor)
+        if (highlightColor != null) drawOutline(highlightShape.createOutline(size, layoutDirection, this), highlightColor)
     }
     val nativeUnderlay = if (paintBackground && backgroundColor.alpha >= 1f) null
         else LocalQueueRowBackdrop.current ?: parent
@@ -110,11 +113,11 @@ internal fun GlassSongRowSurface(
     val queueUnderlay = LocalQueueRowBackdrop.current
     val sceneBackdrop = if (material && queueUnderlay != null) queueCapture?.source(queueUnderlay) else null
     val surface = if (useNowPlayingMaterial && highlightColor != null) {
-        Modifier.glassNowPlayingRow(backgroundColor, highlightColor, shape, settings,
+        Modifier.glassNowPlayingRow(backgroundColor, highlightColor, highlightShape, settings,
             exportedBackdrop = exported, sceneBackdrop = sceneBackdrop)
     } else {
         (if (paintBackground) Modifier.background(backgroundColor) else Modifier)
-            .then(if (highlightColor != null) Modifier.background(highlightColor) else Modifier)
+            .then(if (highlightColor != null) Modifier.background(highlightColor, highlightShape) else Modifier)
     }
     val materialSource = if (sceneBackdrop != null) {
         remember(exported) { RenderedMaterialBackdrop(exported) }

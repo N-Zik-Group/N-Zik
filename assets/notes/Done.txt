@@ -920,3 +920,7 @@ Menu section alignment:
 Settings feedback spacing:
 - fix(settings): align category labels with inset row feedback
   - Preserve card padding and keep switches accessible across the whole row.
+
+Queue row spacing:
+- fix(queue): inset the active track highlight and add top spacing
+  - Keep the row contents and interactions in their existing positions.
