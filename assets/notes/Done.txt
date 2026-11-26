@@ -564,3 +564,7 @@ Sort shortcuts:
 Backup settings:
 - fix(settings): expose searchable auto-backup controls
   - Share retention choices with search and target the GitHub credentials switch.
+
+Storage settings search:
+- fix(settings): show the selected storage profile during measurement
+  - Keep the intended cache and profile controls available while sizes load.

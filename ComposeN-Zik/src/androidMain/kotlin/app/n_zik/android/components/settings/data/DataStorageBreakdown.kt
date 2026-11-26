@@ -93,6 +93,8 @@ import app.n_zik.android.typography
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.profileDisplayName
+import app.n_zik.android.utils.resolveProfileDisplayName
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.shimmerEffect
 
@@ -252,12 +254,21 @@ internal fun DataStorageCard(
     val pageEntryTargets = remember(context, pageQuery) {
         if (pageQuery.isBlank()) emptySet() else searchSettingsEntries(context, pageQuery).map { it.id }.toSet()
     }
-    val selected = breakdown?.profiles?.firstOrNull {
-        it.identity.id == selectedId && it.identity.generation == selectedGeneration
-    }
+    // Search already verified its profile. Keep the matching tab and controls available
+    // while disk measurement runs, without treating the pending profile as measured.
+    val profiles = breakdown?.profiles.orEmpty()
+    val profileTabs = breakdown?.profiles?.map { it.identity to it.label } ?: searchProfile?.let { profile ->
+        val label = resolveProfileDisplayName(
+            profile.id, context.profileDisplayName(profile.id), stringResource(R.string.profile_base_name),
+        )
+        listOf(profile to label)
+    }.orEmpty()
+    val cacheTarget = profileTabs.firstOrNull { (identity) ->
+        identity.id == selectedId && identity.generation == selectedGeneration
+    }?.first
+    val selected = profiles.firstOrNull { it.identity == cacheTarget }
     val additionalVolumes = breakdown?.otherVolumes.orEmpty().filter { it.hasAppFilesFor(selected?.identity) }
-    val summaryScope = StorageSummaryScope(breakdown != null, selected?.identity)
-    val cacheTarget = selected?.identity
+    val summaryScope = StorageSummaryScope(breakdown != null, cacheTarget)
     LaunchedEffect(searchProfile) {
         if (searchProfile != null) {
             selectedId = searchProfile.id
@@ -321,15 +332,14 @@ internal fun DataStorageCard(
                 }
             },
             content = {
-                val profiles = breakdown?.profiles.orEmpty()
                 val storageInset = 16.dp
                 Box(Modifier.fillMaxWidth().padding(horizontal = storageInset)) {
                     SettingsDialogTabRow(
-                        labels = listOf(stringResource(R.string.storage_breakdown_tab_total)) + profiles.map { it.label },
-                        selectedTabIndex = profiles.indexOfFirst { it.identity == selected?.identity } + 1,
+                        labels = listOf(stringResource(R.string.storage_breakdown_tab_total)) + profileTabs.map { it.second },
+                        selectedTabIndex = profileTabs.indexOfFirst { it.first == cacheTarget } + 1,
                         containerTestTag = "data.storage.tabs",
                         onTabSelected = { index ->
-                            val identity = profiles.getOrNull(index - 1)?.identity
+                            val identity = profileTabs.getOrNull(index - 1)?.first
                             selectedId = identity?.id
                             selectedGeneration = identity?.generation
                         },
