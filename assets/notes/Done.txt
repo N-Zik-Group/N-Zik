@@ -856,3 +856,7 @@ Menu entry semantics:
 Listen Together pending state:
 - fix(listen-together): retain pending room state across menu pages
   - Keep observation active while opening logs and offer participant actions only to the host.
+
+Settings reset locale dispatch:
+- fix(settings): reset app locales on the main thread
+  - Apply locale changes after the protected reset writes finish.

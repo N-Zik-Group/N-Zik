@@ -59,7 +59,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.putEnum
 
 /** Restores General settings without touching saved queue contents or account data. */
-internal fun applyGeneralDefaults(context: Context) {
+internal fun applyGeneralDefaults(context: Context, resetLocales: Boolean = true) {
     context.preferences.edit {
         applyPlaybackQueueDefaults()
         putEnum(languageAppKey, Languages.System)
@@ -81,10 +81,14 @@ internal fun applyGeneralDefaults(context: Context) {
         putBoolean(enablePictureInPictureAutoKey, false)
         putEnum(pipModuleKey, PipModule.Cover)
     }
+    if (resetLocales) resetGeneralApplicationLocales()
+    AppShortcutsSettingsDialog.reset(context)
+}
+
+internal fun resetGeneralApplicationLocales() {
     if (shouldRecreateActivity(Database.isClosed) && !AppCompatDelegate.getApplicationLocales().isEmpty) {
         AppCompatDelegate.setApplicationLocales(LocaleListCompat.getEmptyLocaleList())
     }
-    AppShortcutsSettingsDialog.reset(context)
 }
 
 /** Restores the three cards shown under Playback without changing other categories. */

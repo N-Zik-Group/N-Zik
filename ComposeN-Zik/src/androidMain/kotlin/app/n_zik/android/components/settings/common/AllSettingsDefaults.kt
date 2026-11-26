@@ -17,6 +17,7 @@ import app.n_zik.android.components.settings.ai.applyAiDefaults
 import app.n_zik.android.components.settings.appearance.applyAppearanceDefaults
 import app.n_zik.android.components.settings.data.applyDataDefaults
 import app.n_zik.android.components.settings.general.applyGeneralDefaults
+import app.n_zik.android.components.settings.general.resetGeneralApplicationLocales
 import app.n_zik.android.components.settings.network.applyNetworkDefaults
 import app.n_zik.android.components.settings.network.applyDownloadDefaults
 import app.n_zik.android.components.settings.other.applyOtherDefaults
@@ -39,12 +40,17 @@ internal suspend fun applyAllSettingsDefaults(
                 true
             }
         }
-        if (applied && getActiveProfile(context) == profileId) onSettingsApplied()
+        if (applied) withContext(NzikDispatchers.UI) {
+            if (getActiveProfile(context) == profileId) {
+                resetGeneralApplicationLocales()
+                onSettingsApplied()
+            }
+        }
         applied
     }
 
 private fun applyRemainingSettingsDefaults(context: Context) {
-    applyGeneralDefaults(context)
+    applyGeneralDefaults(context, resetLocales = false)
     applyUiDefaults(context)
     applyAppearanceDefaults(context)
     applyAiDefaults(context)
