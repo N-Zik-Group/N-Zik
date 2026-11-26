@@ -458,3 +458,8 @@ Radio:
 - fix(radio): resume the paused current track on explicit start
   - Reuse Media3 play handling when the selected radio seed is already the current track.
   - Preserve silent autofill behavior and cover a paused seed in NZikRadioTest.
+
+Menus:
+- fix(menu): refresh actions while the dropdown stays open
+  - Render the current list and action callbacks when offline mode changes the open hamburger menu.
+  - Keep its scroll position and cover the action update in DropdownClosedBoundaryTest.

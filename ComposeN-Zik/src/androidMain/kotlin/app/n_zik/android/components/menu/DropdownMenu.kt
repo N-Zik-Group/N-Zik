@@ -7,7 +7,6 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -30,20 +29,18 @@ class DropdownMenu(
     val onDismissRequest: () -> Unit
 ) {
 
-    private val _components: MutableList<@Composable () -> Unit> = mutableListOf()
+    private val components = mutableListOf<@Composable () -> Unit>()
 
     @Composable
-    fun components() = remember { _components }
+    fun add( item: Item) = components.add { item.Draw() }
 
     @Composable
-    fun add( item: Item) = _components.add { item.Draw() }
-
-    @Composable
-    fun add( component: @Composable () -> Unit) = _components.add( component )
+    fun add( component: @Composable () -> Unit) = components.add( component )
 
     @Composable
     fun Draw() {
         val shape = uiRoundnessShape()
+        val items = components.toList()
         GlassDropdownMenu(
             expanded = expanded,
             onDismissRequest = onDismissRequest,
@@ -51,7 +48,7 @@ class DropdownMenu(
             modifier = modifier,
             shape = shape,
             trigger = trigger ?: LocalGlassMenuTrigger.current,
-            content = { components().forEach { it() } }
+            content = { items.forEach { it() } }
         )
     }
 

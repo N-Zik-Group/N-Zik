@@ -12,6 +12,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,6 +24,7 @@ import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -35,6 +37,8 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.R
+import app.n_zik.android.components.menu.DropdownMenu
 import app.n_zik.android.components.menu.GlassDropdownMenu
 import app.n_zik.android.components.menu.dropdownContainerColor
 import app.n_zik.android.enums.ColorPaletteMode
@@ -124,6 +128,44 @@ class DropdownClosedBoundaryTest {
     @Test @Config(sdk = [33])
     fun `long shared dropdown above keyboard keeps its final action reachable`() =
         assertLastActionReachable(shared = true, keyboard = true)
+
+    @Test fun `an open dropdown refreshes actions and callbacks while keeping its scroll position`() {
+        val online = mutableStateOf(true)
+        val invocations = mutableListOf<String>()
+        compose.setContent {
+            Fixture(shared = true, quality = GlassQuality.Performance) { host ->
+                Box(Modifier.fillMaxSize()) {
+                    val trigger = remember { GlassMenuTriggerState() }
+                    Box(Modifier.absoluteOffset(240.dp, 440.dp)) {
+                        GlassMenuTrigger(trigger, RoundedCornerShape(24.dp)) { Box(Modifier.size(48.dp)) }
+                        val menu = DropdownMenu(expanded = true, trigger = trigger, onDismissRequest = {})
+                        repeat(29) { index ->
+                            menu.add { DropdownMenuItem(text = { Text("Action $index") }, onClick = {}) }
+                        }
+                        val source = if (online.value) "online" else "offline"
+                        menu.add(DropdownMenu.Item(
+                            iconId = R.drawable.open,
+                            customText = "Last permanent action",
+                            onClick = { invocations += source },
+                        ))
+                        if (online.value) {
+                            menu.add { DropdownMenuItem(text = { Text("Network action") }, onClick = {}) }
+                        }
+                        menu.Draw()
+                    }
+                    GlassOverlayHost(host)
+                }
+            }
+        }
+        compose.waitForIdle()
+        compose.onNodeWithText("Network action").assertExists()
+        val action = compose.onNodeWithText("Last permanent action")
+        action.performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { online.value = false }
+        compose.onNodeWithText("Network action").assertDoesNotExist()
+        action.assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(listOf("offline"), invocations) }
+    }
 
     private fun assertLastActionReachable(shared: Boolean, keyboard: Boolean) {
         var view: View? = null
