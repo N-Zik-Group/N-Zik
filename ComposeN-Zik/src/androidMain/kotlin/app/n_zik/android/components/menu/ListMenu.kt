@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
+import app.n_zik.android.components.ui.horizontalLayoutOutset
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 
 import app.n_zik.android.utils.conditional
@@ -159,7 +160,7 @@ object ListMenu {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy( 12.dp ),
-            modifier = Modifier.listMenuRowOutset(outset)
+            modifier = Modifier.horizontalLayoutOutset(outset)
                 .then(modifier)
                 .fillMaxWidth()
                 .clip(shape)

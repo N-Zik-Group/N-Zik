@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.components.ui.horizontalLayoutOutset
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import android.net.Uri
@@ -317,14 +318,16 @@ private fun SettingsProfileShortcut(
     onItemSelected: (SettingsPageItem) -> Unit,
 ) {
     val face = LocalHeaderProfileFace.current ?: rememberHeaderProfileFace()
+    val outset = LocalSettingsCardRowOutset.current
     Row(
         modifier = Modifier
+            .horizontalLayoutOutset(outset)
             .fillMaxWidth()
             .clip(uiRoundnessShape())
             .clickable(role = Role.Button) { onItemSelected(profiles) }
             .testTag("settings_global_profile_open")
-            .padding(start = 10.dp, end = 12.dp, top = 14.dp, bottom = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .padding(horizontal = 12.dp + outset, vertical = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         ProfileCardAvatar(face, GlassArea.Images, Modifier.clearAndSetSemantics {})

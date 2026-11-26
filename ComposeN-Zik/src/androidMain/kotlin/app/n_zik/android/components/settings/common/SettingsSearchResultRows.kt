@@ -130,7 +130,7 @@ internal fun SettingsResultCard(
             shadowColor = colorPalette().accent.copy(alpha = 0.2f),
             shadowElevation = 4.dp
         ) {
-            Column(modifier = Modifier.padding(contentPadding)) {
+            SettingsCardContent(padding = contentPadding) {
                 content()
             }
         }

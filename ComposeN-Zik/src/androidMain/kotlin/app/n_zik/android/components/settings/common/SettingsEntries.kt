@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.components.ui.horizontalLayoutOutset
 import androidx.compose.ui.draw.rotate
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
@@ -219,8 +220,9 @@ fun OtherSwitchSettingEntry(
     modifier: Modifier = Modifier,
     iconTint: Color = colorPalette().accent,
 ) {
+    val outset = LocalSettingsCardRowOutset.current
     Surface(
-        modifier = modifier
+        modifier = Modifier.horizontalLayoutOutset(outset).then(modifier)
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
@@ -235,7 +237,7 @@ fun OtherSwitchSettingEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(horizontal = 12.dp + outset, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -333,14 +335,15 @@ fun SettingsEntry(
     } else {
         Modifier.toggleable(checked, enabled = isEnabled, role = Role.Switch, onValueChange = { onClick() })
     }
+    val outset = LocalSettingsCardRowOutset.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = Modifier.horizontalLayoutOutset(outset).then(modifier)
             .clip(uiRoundnessShape())
             .then(action)
             .alpha(if (isEnabled) 1f else 0.5f)
-            .padding(all = 12.dp)
+            .padding(horizontal = 12.dp + outset, vertical = 12.dp)
             .fillMaxWidth()
     ) {
         Column(
@@ -596,8 +599,9 @@ fun OtherSettingsEntry(
     descriptionLoading: Boolean = false,
 ) {
     val clickable = isEnabled && !shimmer && !selectedValueLoading
+    val outset = LocalSettingsCardRowOutset.current
     Surface(
-        modifier = modifier
+        modifier = Modifier.horizontalLayoutOutset(outset).then(modifier)
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
@@ -613,7 +617,7 @@ fun OtherSettingsEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(horizontal = 12.dp + outset, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -814,8 +818,9 @@ fun CacheSettingsEntry(
     modifier: Modifier = Modifier,
     selectedValueText: String? = null
 ) {
+    val outset = LocalSettingsCardRowOutset.current
     Surface(
-        modifier = modifier
+        modifier = Modifier.horizontalLayoutOutset(outset).then(modifier)
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
@@ -829,7 +834,7 @@ fun CacheSettingsEntry(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(horizontal = 12.dp + outset, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -910,15 +915,16 @@ fun ModernSettingsEntry(
         ).value
     }
 
+    val outset = LocalSettingsCardRowOutset.current
     Row(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = Modifier.horizontalLayoutOutset(outset).then(modifier)
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape())
             .clickable(onClick = onClick)
-            .padding(12.dp)
+            .padding(horizontal = 12.dp + outset, vertical = 12.dp)
             ) {
                 Box(
                     modifier = Modifier

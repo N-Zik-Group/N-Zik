@@ -23,17 +23,30 @@ import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DelegatingNode
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import app.n_zik.android.components.glass.GlassHighlightIndication
 import app.n_zik.android.uiRoundnessShape
 
 internal val PressFeedbackHorizontalInset = 8.dp
+
+/** Lets a row use part of its parent's gutter without changing the space it occupies. */
+internal fun Modifier.horizontalLayoutOutset(outset: Dp): Modifier =
+    if (outset == 0.dp) this else layout { measurable, constraints ->
+        val side = outset.roundToPx()
+        val child = measurable.measure(constraints.offset(horizontal = side * 2))
+        layout(constraints.constrainWidth(child.width - side * 2), child.height) {
+            child.placeRelative(-side, 0)
+        }
+    }
 
 /** Clips only the feedback while clicks and content keep the full entry bounds. */
 @Composable

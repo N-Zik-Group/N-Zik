@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.components.ui.horizontalLayoutOutset
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -127,9 +128,7 @@ fun SettingsSectionCard(
                     shadowColor = colorPalette().accent.copy(alpha = 0.2f),
                     shadowElevation = 4.dp
                 ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
+                    SettingsCardContent {
                         // Clip only the empty click/ripple skin. A header's 32dp icon
                         // sits at x=0; clipping its Row to the taller expanded header's
                         // corner would cut the icon even though its own badge is round.
@@ -138,6 +137,7 @@ fun SettingsSectionCard(
                             if (onHeaderClick != null) semanticsOnClick { onHeaderClick(); true }
                         }) {
                             if (onHeaderClick != null) Box(Modifier.matchParentSize()
+                                .horizontalLayoutOutset(LocalSettingsCardRowOutset.current)
                                 .clearAndSetSemantics { }.clip(uiRoundnessShape())
                                 .clickable(onClick = onHeaderClick))
                             Row(
@@ -342,7 +342,7 @@ internal fun CardCategoryLabel(label: String, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxWidth()
             .semantics { heading() }
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = 8.dp, horizontal = 12.dp),
     )
 }
 

@@ -8,10 +8,12 @@ import app.n_zik.android.components.glass.usesGlassContour
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -34,6 +36,20 @@ import app.n_zik.android.components.glass.GlassArtworkContent
 import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.forArea
 import app.n_zik.android.components.glass.glassFilmColor
+import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
+
+internal val LocalSettingsCardRowOutset = staticCompositionLocalOf { 0.dp }
+
+@Composable
+internal fun SettingsCardContent(
+    padding: Dp = 16.dp,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val outset = (padding - PressFeedbackHorizontalInset).coerceAtLeast(0.dp)
+    CompositionLocalProvider(LocalSettingsCardRowOutset provides outset) {
+        Column(Modifier.padding(padding), content = content)
+    }
+}
 
 /** Uses one Glass surface, retaining the original native card when its material is disabled. */
 @Composable
