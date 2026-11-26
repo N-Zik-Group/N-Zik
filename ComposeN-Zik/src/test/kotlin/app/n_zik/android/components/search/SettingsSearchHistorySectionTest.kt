@@ -56,10 +56,12 @@ class SettingsSearchHistorySectionTest {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 Column {
                     if (mounted.value) {
-                        val matches = filterSearchHistory(listOf("Saved query", "Another query"), query.value)
+                        val savedQueries = listOf("Saved query", "Another query")
+                        val matches = filterSearchHistory(savedQueries, query.value)
                         SearchHistorySection(
                             visible = visible.value && matches.isNotEmpty(),
                             queries = matches,
+                            allQueries = savedQueries,
                             onQueryClick = {},
                             onQueryDelete = {},
                             onQueryDeleteAll = {},
@@ -107,8 +109,11 @@ class SettingsSearchHistorySectionTest {
         assertEquals(expandedTop, contentTop(), 1f)
 
         composeRule.runOnIdle { query.value = "saved" }
+        advanceFrames(80)
+        val filteringTop = contentTop()
         advanceFrames(300)
         val filteredTop = contentTop()
+        assertTrue("Filtering repositions subsequent content progressively", filteringTop > filteredTop && filteringTop < expandedTop)
         assertTrue("Only matching rows remain", filteredTop > 0f && filteredTop < expandedTop)
         composeRule.runOnIdle { query.value = "missing" }
         advanceFrames(80)

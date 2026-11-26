@@ -804,3 +804,7 @@ Audio Device recovery:
 Settings search availability:
 - fix(settings): hide portrait-only player options in landscape
   - Filter both card and setting matches and verify reset scope navigation.
+
+Search history presentation:
+- fix(search): preserve history and animate the matching rows
+  - Maintain per-page choices and clear the full history when requested.

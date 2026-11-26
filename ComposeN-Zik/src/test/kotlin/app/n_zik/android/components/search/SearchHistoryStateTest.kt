@@ -38,4 +38,25 @@ class SearchHistoryStateTest {
         composeRule.runOnIdle { SearchHistoryStore.clearAll(prefs) }
         composeRule.runOnIdle { assertEquals(emptyList<String>(), queries.value) }
     }
+
+    @Test
+    fun inheritedTabChoiceUpdatesMountedCategoryHistory() {
+        val prefs = ApplicationProvider.getApplicationContext<Context>().preferences
+        val page = SearchHistoryStore.categoryPage("downloads")
+        val legacyKey = SearchHistoryStore.enabledKey(SearchHistoryStore.PAGE_SETTINGS_NETWORK)
+        prefs.edit().clear().commit()
+        SearchHistoryStore.record(prefs, page, "Retained query")
+        lateinit var queries: State<List<String>>
+        composeRule.setContent { queries = rememberSearchHistory(page) }
+        composeRule.runOnIdle {
+            assertEquals(listOf("Retained query"), queries.value)
+            prefs.edit().putBoolean(legacyKey, false).apply()
+        }
+        composeRule.runOnIdle {
+            assertEquals(emptyList<String>(), queries.value)
+            assertEquals(listOf("Retained query"), SearchHistoryStore.all(prefs, page))
+            prefs.edit().putBoolean(SearchHistoryStore.enabledKey(page), true).apply()
+        }
+        composeRule.runOnIdle { assertEquals(listOf("Retained query"), queries.value) }
+    }
 }
