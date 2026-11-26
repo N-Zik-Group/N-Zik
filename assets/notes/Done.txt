@@ -680,3 +680,7 @@ Playback surfaces:
 Favorites and bookmarks:
 - fix(library): keep menu favorite states and sync consistent
   - Use the persisted state and profile owner for likes, dislikes and bookmark labels.
+
+Shared menu and toolbar actions:
+- refactor(menu): share track and navigation actions across surfaces
+  - Retain complete media items and route toolbar actions through the same handlers.

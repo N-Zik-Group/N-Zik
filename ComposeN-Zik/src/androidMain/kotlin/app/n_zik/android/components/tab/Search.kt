@@ -177,6 +177,7 @@ class Search private constructor(
     fun SearchBar(
         columnScope: ColumnScope,
         barPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        placeholderRes: Int = R.string.search_title,
         onSearch: () -> Unit = {},
     ) {
         // Auto focus on search bar when it's visible
@@ -189,13 +190,17 @@ class Search private constructor(
         val collapseDelay = if (motion) SearchMotionDurationMillis else 0
         visibility.targetState = isVisible
         val isFirstRun = remember { mutableStateOf(true) }
-        LaunchedEffect( input ) {
+        LaunchedEffect(input.text) {
             if (isFirstRun.value) {
                 isFirstRun.value = false
                 return@LaunchedEffect
             }
-            lazyListState?.scrollToItem( 0, 0 )
-            lazyGridState?.scrollToItem( 0, 0 )
+            lazyListState?.takeIf { it.firstVisibleItemIndex > 0 || it.firstVisibleItemScrollOffset > 0 }?.let {
+                if (motion) it.animateScrollToItem(0) else it.scrollToItem(0)
+            }
+            lazyGridState?.takeIf { it.firstVisibleItemIndex > 0 || it.firstVisibleItemScrollOffset > 0 }?.let {
+                if (motion) it.animateScrollToItem(0) else it.scrollToItem(0)
+            }
         }
 
         // Reserve animated height without clipping the bubbles' downward travel.
@@ -235,7 +240,7 @@ class Search private constructor(
                         UnifiedSearchBar(
                             input = input,
                             onInputChanged = { input = it },
-                            placeholderRes = R.string.search_title,
+                            placeholderRes = placeholderRes,
                             baseSurface = colorPalette().background1,
                             onClear = {
                                 input = TextFieldValue("")

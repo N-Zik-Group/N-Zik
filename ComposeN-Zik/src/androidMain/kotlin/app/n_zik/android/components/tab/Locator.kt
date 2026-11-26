@@ -16,10 +16,13 @@ import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.currentMediaItemIdAsState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -28,6 +31,7 @@ import timber.log.Timber
 class Locator private constructor(
     firstColorState: MutableState<Boolean>,
     private val binder: PlayerServiceModern.Binder?,
+    private val menuState: MenuState,
     private val scrollableState: ScrollableState,
     private val findIndex: (String?) -> Int,
     private val coroutineScope: CoroutineScope,
@@ -51,8 +55,12 @@ class Locator private constructor(
         }
 
         @Composable
+        internal fun forList(scrollableState: LazyListState, findVisibleIndex: (String?) -> Int): Locator =
+            create(scrollableState, 0, findVisibleIndex)
+
+        @Composable
         internal fun forQueue(scrollableState: LazyListState, findVisibleIndex: () -> Int): Locator =
-            create(scrollableState, 0) { findVisibleIndex() }
+            forList(scrollableState) { findVisibleIndex() }
 
         @Composable
         private fun create(
@@ -61,14 +69,16 @@ class Locator private constructor(
             findIndex: (String?) -> Int,
         ): Locator {
             val binder = LocalPlayerServiceBinder.current
-            val mediaItem = binder?.player?.currentMediaItem
+            val player = binder?.player
+            val mediaId = player?.currentMediaItemIdAsState(player)?.value
             val coroutineScope = rememberCoroutineScope()
 
             return Locator(
-                firstColorState = remember( mediaItem ) {
-                    mutableStateOf(mediaItem != null)
+                firstColorState = remember(mediaId) {
+                    mutableStateOf(mediaId != null)
                 },
                 binder = binder,
+                menuState = LocalMenuState.current,
                 scrollableState = scrollableState,
                 findIndex = findIndex,
                 coroutineScope = coroutineScope,
@@ -95,13 +105,15 @@ class Locator private constructor(
 
             if( songIndex == -1 )
                 Toaster.i( R.string.player_current_song_not_in_list )
-            else
+            else {
+                if (menuState.isDisplayed) menuState.hide()
                 coroutineScope.launch {
                     when( scrollableState ) {
                         is LazyListState -> scrollableState.scrollToItem(songIndex + listItemOffset)
                         is LazyGridState -> scrollableState.scrollToItem(songIndex)
                     }
                 }
+            }
         } else
             Toaster.i( R.string.player_no_current_song )
     }

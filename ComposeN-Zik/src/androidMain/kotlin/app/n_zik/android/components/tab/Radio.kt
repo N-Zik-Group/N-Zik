@@ -3,6 +3,7 @@ package app.n_zik.android.components.tab
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.components.radioButtonIconRes
@@ -13,12 +14,13 @@ import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.utils.asMediaItem
 
 @UnstableApi
 class Radio private constructor(
     binder: PlayerServiceModern.Binder?,
     menuState: MenuState,
-    songs: () -> List<Song>
+    pickSeed: () -> MediaItem?
 ): StatefulMenuIcon(
     menuState = menuState,
     messageId = R.string.radio_action_start,
@@ -27,7 +29,7 @@ class Radio private constructor(
     readTitle = { binder?.radioActionTextRes ?: R.string.radio_action_start },
     performAction = {
         if (binder?.stopActiveRadio() != true) {
-            songs().randomOrNull()?.let { binder?.startRadio(it, isExplicit = true) }
+            pickSeed()?.let { binder?.startRadio(it, isExplicit = true) }
         }
     },
     closeMenuAfterAction = true,
@@ -36,11 +38,11 @@ class Radio private constructor(
     companion object {
         @Composable
         operator fun invoke( songs: () -> List<Song> ): Radio =
-            Radio(
-                LocalPlayerServiceBinder.current,
-                LocalMenuState.current,
-                songs
-            )
+            Radio(LocalPlayerServiceBinder.current, LocalMenuState.current) { songs().randomOrNull()?.asMediaItem }
+
+        @Composable
+        internal fun fromMediaItem(pickSeed: () -> MediaItem?): Radio =
+            Radio(LocalPlayerServiceBinder.current, LocalMenuState.current, pickSeed)
     }
 
     // Guest lock (spec-listen-together-guest-lock-hardening): the radio is a host-owned stateful

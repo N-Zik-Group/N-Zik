@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.res.stringResource
+import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.components.shuffleButtonIconRes
@@ -34,7 +35,12 @@ class SongShuffler private constructor(
         operator fun invoke( songs: () -> List<Song> ) =
             SongShuffler(LocalPlayerServiceBinder.current, LocalMenuState.current) { binder ->
                 playShuffled(binder, songs())
-                binder.triggerShuffleOkFlash()
+            }
+
+        @Composable
+        internal fun fromMediaItems(items: () -> List<MediaItem>) =
+            SongShuffler(LocalPlayerServiceBinder.current, LocalMenuState.current) { binder ->
+                Shuffler.play(binder, items(), onQueueApplied = binder::triggerShuffleOkFlash)
             }
 
         @Composable
@@ -57,7 +63,6 @@ class SongShuffler private constructor(
                 if (load != null) scope.launch {
                     val songs = load() ?: return@launch
                     playShuffled(binder, songs)
-                    binder.triggerShuffleOkFlash()
                 }
             }
         }
@@ -70,7 +75,7 @@ class SongShuffler private constructor(
                 Toaster.i( R.string.player_shuffle_empty_message )
                 return
             }
-            Shuffler.play( binder, songs )
+            Shuffler.play(binder, songs, onQueueApplied = binder::triggerShuffleOkFlash)
         }
     }
 
@@ -83,6 +88,7 @@ class SongShuffler private constructor(
         get() = stringResource( R.string.player_action_shuffle )
 
     override fun onShortClick() {
+        if (!Shuffler.canStart()) return
         onShuffle(binder ?: return)
         menuState?.hide()
     }

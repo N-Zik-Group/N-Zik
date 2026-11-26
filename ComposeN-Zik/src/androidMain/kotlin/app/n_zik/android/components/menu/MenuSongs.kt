@@ -8,10 +8,21 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
+
+internal fun MenuIcon.withMenuClick(onClick: () -> Unit): MenuIcon = object : MenuIcon by this {
+    override fun onShortClick() = onClick()
+
+    @Composable
+    override fun ListMenuItem() = super<MenuIcon>.ListMenuItem()
+
+    @Composable
+    override fun GridMenuItem() = super<MenuIcon>.GridMenuItem()
+}
 
 /** Observes song metadata even when the provider collection has never been saved locally. */
 @Composable
