@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -91,6 +92,14 @@ private val slotLabels = listOf(
 
 private val topActions = listOf(ToolbarAction.COLLAPSE_PLAYER, ToolbarAction.AUDIO_VIDEO, ToolbarAction.MENU)
 
+private fun topSlotChoices(buttonDefs: Map<String, ButtonDef>): Map<String, Int> = buildMap {
+    put(emptyPlayerActionBarTopSlot, R.string.common_option_none)
+    topActions.forEach { put(it.id, it.label) }
+    defaultPlayerActionBarOrder.forEach { id ->
+        if (id !in this) put(id, buttonDefs.getValue(id).labelRes)
+    }
+}
+
 internal fun canAssignPlayerTopSlot(slots: List<String>, index: Int, action: String): Boolean =
     action == emptyPlayerActionBarTopSlot || slots[index] == action || action !in slots
 
@@ -102,14 +111,16 @@ internal fun assignPlayerTopSlot(slots: List<String>, index: Int, action: String
 object PlayerActionBarSettingsDialog : ContentFramedDialog {
 
     /** Exact searchable options from the same definitions used by this dialog. */
-    internal fun searchOptions(): List<SettingsNestedOption> =
-        slotLabels.mapIndexed { index, label ->
+    internal fun searchOptions(): List<SettingsNestedOption> {
+        val buttonDefs = buildButtonDefs()
+        return slotLabels.mapIndexed { index, label ->
             SettingsNestedOption("top.slot.$index", label, 0, R.string.player_position_top_label)
-        } + topActions.map { action ->
-            SettingsNestedOption("top.action.${action.id}", action.label, 0, R.string.player_position_top_label)
-        } + buildButtonDefs().values.map {
+        } + topSlotChoices(buttonDefs).map { (id, label) ->
+            SettingsNestedOption("top.action.$id", label, 0, R.string.player_position_top_label)
+        } + buttonDefs.values.map {
             SettingsNestedOption(it.id, it.labelRes, 1, R.string.player_position_bottom_label)
         }
+    }
 
 
     override val dialogTitle: String
@@ -134,13 +145,17 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
         var workingSlots by remember(prefs) { mutableStateOf(readPlayerActionBarTopSlots(prefs)) }
         var topEdited by remember(prefs) { mutableStateOf(false) }
         var openSlot by remember(prefs) { mutableStateOf<Int?>(null) }
-        val topLabels = topActions.associate { it.id to it.label } +
-            buttonDefs.mapValues { it.value.labelRes }.filterKeys { key -> topActions.none { it.id == key } } +
-            (emptyPlayerActionBarTopSlot to R.string.common_option_none)
+        val topLabels = remember(buttonDefs) { topSlotChoices(buttonDefs) }
         val nestedTarget = LocalSettingsTargets.current?.nestedTarget
         val nestedItemId = nestedTarget?.nestedDestination?.itemId
         val targetAction = nestedItemId?.takeIf { it.startsWith("top.action.") }?.removePrefix("top.action.")
-        val targetSlot = targetAction?.let { action -> workingSlots.indexOf(action).takeIf { it >= 0 } ?: 0 }
+        val targetSlot = targetAction?.let { action -> workingSlots.indexOf(action).takeIf { it >= 0 } }
+        LaunchedEffect(nestedTarget?.id) {
+            if (targetAction != null && targetSlot == null) {
+                openSlot = workingSlots.indexOf(emptyPlayerActionBarTopSlot).takeIf { it >= 0 }
+                    ?: workingSlots.indices.firstOrNull { canAssignPlayerTopSlot(workingSlots, it, targetAction) }
+            }
+        }
 
         val initial = remember {
             val orderSerialized = prefs.getString(playerActionBarButtonOrderKey, "") ?: ""
@@ -259,14 +274,17 @@ object PlayerActionBarSettingsDialog : ContentFramedDialog {
             },
         )
         DialogPresence(target = openSlot) { index ->
-            val options = listOf(emptyPlayerActionBarTopSlot) + topActions.map(ToolbarAction::id) +
-                defaultPlayerActionBarOrder.filterNot { id -> topActions.any { it.id == id } }
             ValueSelectorDialog(
                 onDismiss = { openSlot = null },
                 title = stringResource(slotLabels[index]),
                 selectedValue = workingSlots[index],
-                values = options.filter { canAssignPlayerTopSlot(workingSlots, index, it) },
+                values = topLabels.keys.filter { canAssignPlayerTopSlot(workingSlots, index, it) },
                 valueText = { stringResource(topLabels.getValue(it)) },
+                valueModifier = { action ->
+                    if (action == targetAction && targetSlot == null && nestedTarget != null) {
+                        Modifier.settingsSearchTarget(nestedTarget.id)
+                    } else Modifier
+                },
                 onValueSelected = { action ->
                     val updated = assignPlayerTopSlot(workingSlots, index, action)
                     if (updated != workingSlots) {

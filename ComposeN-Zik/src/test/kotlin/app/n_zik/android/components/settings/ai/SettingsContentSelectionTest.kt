@@ -16,10 +16,13 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.enableQuickPicksPageKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
+import app.n_zik.android.components.settings.common.LocalSettingsCardSlots
+import app.n_zik.android.components.settings.common.SettingsCardSlots
 import app.n_zik.android.components.settings.other.OtherSettingsContent
 import app.n_zik.android.components.tab.Search
 import io.mockk.mockk
@@ -35,6 +38,37 @@ import org.robolectric.annotation.Config
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 class SettingsContentSelectionTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test fun reenabledQuickPicksReturnsToItsOriginalCardPosition() {
+        val context: Context = ApplicationProvider.getApplicationContext()
+        setActiveProfile("default", context)
+        context.preferences.edit().putBoolean(enableQuickPicksPageKey, true).commit()
+        val expected = listOf(
+            R.string.settings_section_quick_picks_visibility_title,
+            R.string.recommendations_title,
+            R.string.rewind_settings_title,
+            R.string.playlist_top,
+        )
+        val slots = SettingsCardSlots()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalSettingsCardSlots provides slots) {
+                AIRecommendationSettingsContent(
+                    search = Search(initialVisible = true),
+                    navController = mockk(relaxed = true),
+                    selectedCards = expected.toSet(),
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            assertEquals(expected, slots.titles.toList())
+            context.preferences.edit().putBoolean(enableQuickPicksPageKey, false).commit()
+        }
+        composeRule.runOnIdle {
+            assertEquals(expected - R.string.recommendations_title, slots.titles.toList())
+            context.preferences.edit().putBoolean(enableQuickPicksPageKey, true).commit()
+        }
+        composeRule.runOnIdle { assertEquals(expected, slots.titles.toList()) }
+    }
 
     @Test fun mixedContentHostsComposeOnlySelectedCardsWithoutApplyingTheirResets() {
         val context: Context = ApplicationProvider.getApplicationContext()

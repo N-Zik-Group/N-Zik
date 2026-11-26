@@ -788,3 +788,7 @@ Floating dock inventory:
 Interface and Glass settings:
 - fix(settings): align Glass and interface actions with search
   - Keep navigation and scroll affordances consistent across appearance screens.
+
+Configurable menu and action bars:
+- fix(settings): target individual toolbar and menu controls
+  - Index reorder and visibility actions without making fixed actions editable.

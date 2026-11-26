@@ -135,13 +135,13 @@ class CustomToolbarSettingsTest {
         val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("artist-library-order", Context.MODE_PRIVATE)
         val surface = ToolbarSurface.ARTIST_LIBRARY
         assertEquals(
-            listOf("follow", "search", "shuffle", "playNext", "enqueue", "select", "addToPlaylist", "download", "deleteDownloads"),
+            listOf("follow", "search", "locate", "shuffle", "playNext", "enqueue", "select", "favorites", "addToPlaylist", "download", "deleteDownloads"),
             surface.readVisibleActions(prefs).map(ToolbarAction::id),
         )
         prefs.edit().putString(surface.orderKey, """["download","enqueue","shuffle"]""")
             .putBoolean(surface.visibilityKey(ToolbarAction.DOWNLOAD), false).apply()
         assertEquals(
-            listOf("follow", "enqueue", "shuffle", "search", "playNext", "select", "addToPlaylist", "deleteDownloads"),
+            listOf("follow", "enqueue", "shuffle", "search", "locate", "playNext", "select", "favorites", "addToPlaylist", "deleteDownloads"),
             surface.readVisibleActions(prefs).map(ToolbarAction::id),
         )
     }

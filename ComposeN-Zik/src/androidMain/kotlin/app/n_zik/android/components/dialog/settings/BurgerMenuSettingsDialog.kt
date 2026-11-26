@@ -7,11 +7,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SettingsNestedOption
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.settings.ui.ToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.settings.ui.visibleActions
@@ -35,8 +38,12 @@ import timber.log.Timber
  */
 object BurgerMenuSettingsDialog : ContentFramedDialog {
 
+    private const val addSeparatorOptionId = "addSeparator"
+
     /** Exact searchable options from the same definitions used by this dialog. */
-    internal fun searchOptions(): List<SettingsNestedOption> = allItemIds.map { SettingsNestedOption(if (it == "separator") "separator#1" else it, searchLabelResources.getValue(it)) }
+    internal fun searchOptions(): List<SettingsNestedOption> =
+        allItemIds.map { SettingsNestedOption(if (it == "separator") "separator#1" else it, searchLabelResources.getValue(it)) } +
+            SettingsNestedOption(addSeparatorOptionId, R.string.settings_navigation_menu_action_add_separator)
 
     private val searchLabelResources = mapOf(
         "history" to R.string.library_history_title,
@@ -158,6 +165,8 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         // logical id, so all instances share one switch. The footer button multiplies
         // the instances and disables at the cap.
         val separatorCount = workingOrder.count { it == "separator" }
+        val addSeparatorTarget = LocalSettingsTargets.current?.nestedTarget
+            ?.takeIf { it.nestedDestination?.itemId == addSeparatorOptionId }
         val keys = rowKeys(workingOrder)
         val items = workingOrder.mapIndexedNotNull { index, id ->
             itemSpec(
@@ -179,6 +188,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
             extraFooterButton = DialogButton(
                 text = stringResource(R.string.settings_navigation_menu_action_add_separator),
                 enabled = separatorCount < DataStoreUtils.MAX_BURGER_MENU_SEPARATORS,
+                modifier = if (addSeparatorTarget != null) Modifier.settingsSearchTarget(addSeparatorTarget.id) else Modifier,
                 onClick = {
                     // A fresh list reference: mutating in place would not invalidate the state
                     workingOrder = (workingOrder + "separator").toMutableList()
