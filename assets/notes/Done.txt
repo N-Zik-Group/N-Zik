@@ -984,3 +984,7 @@ Settings:
 Menus:
 - fix(menu): align the remaining picker and sheet headings
   - Align headings with their icon column in maintenance, rooms, and playlist pickers.
+
+Build:
+- fix(ui): import the shared layout modifier type
+  - Keep the shared row feedback layout available to menus and settings.
