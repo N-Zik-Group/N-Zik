@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.os.Looper
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
@@ -122,6 +123,7 @@ class AllSettingsDefaultsTest {
             repeat(2) {
                 applyAllSettingsDefaults(context) {
                     callbacks++
+                    assertEquals(Looper.getMainLooper(), Looper.myLooper())
                     assertEquals(true, context.preferences.getBoolean("pauseOnHeadphoneDisconnect", false))
                     assertEquals("BottomFloating", context.preferences.getString("navigationBarPosition", null))
                     assertEquals("System", context.preferences.getString("colorPaletteMode", null))

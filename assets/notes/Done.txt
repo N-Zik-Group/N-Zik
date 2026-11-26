@@ -876,3 +876,7 @@ Listen Together account display:
 Accessible player settings triggers:
 - fix(menu): label the lyrics and visualizer settings buttons
   - Expose the same label in Normal and Glass.
+
+Reset completion thread:
+- test(settings): verify reset completion on Android main
+  - Use the main immediate dispatcher for locale and completion work.

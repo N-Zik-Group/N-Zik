@@ -40,7 +40,7 @@ internal suspend fun applyAllSettingsDefaults(
                 true
             }
         }
-        if (applied) withContext(NzikDispatchers.UI) {
+        if (applied) withContext(NzikDispatchers.UI.immediate) {
             if (getActiveProfile(context) == profileId) {
                 resetGeneralApplicationLocales()
                 onSettingsApplied()
