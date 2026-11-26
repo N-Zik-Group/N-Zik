@@ -520,3 +520,7 @@ Shared menu actions:
 Menu navigation guards:
 - fix(menu): keep current destinations and invalidate stale actions
   - Use unique sheet transitions and support deferred dismissal for queue actions.
+
+Last.fm metadata:
+- fix(lastfm): refresh track credits before reporting playback
+  - Serialize now-playing requests and snapshot metadata before submitting a scrobble.

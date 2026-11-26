@@ -18,6 +18,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import timber.log.Timber
 import kotlin.math.min
 
@@ -99,9 +101,11 @@ class LastFmScrobbleManager(
     @Volatile
     private var destroyed = false
 
-    private var cachedArtist: String? = null
-    private var cachedTitle: String? = null
-    private var cachedAlbum: String? = null
+    private val nowPlayingLock = Mutex()
+    @Volatile
+    private var nowPlayingItem: MediaItem? = null
+
+    private data class TrackMetadata(val artist: String, val title: String, val album: String?)
 
     init {
         config = readConfig()
@@ -178,6 +182,21 @@ class LastFmScrobbleManager(
         } else {
             if (phase == Phase.Active) pauseTimer()
         }
+    }
+
+    /** Refreshes a track in place while the original scrobble timer keeps running. */
+    @Synchronized
+    fun onTrackMetadataChanged(mediaItem: MediaItem) {
+        val previous = trackedItem ?: return
+        if (destroyed || mediaItem.mediaId != trackedMediaId || previous === mediaItem) return
+        trackedItem = mediaItem
+        if (nowPlayingItem == null || !config.nowPlayingEnabled ||
+            (previous.mediaMetadata.title == mediaItem.mediaMetadata.title &&
+                previous.mediaMetadata.artist == mediaItem.mediaMetadata.artist &&
+                previous.mediaMetadata.albumTitle == mediaItem.mediaMetadata.albumTitle)
+        ) return
+        val generation = jobGeneration
+        externalScope.launch { publishNowPlaying(generation) }
     }
 
     /**
@@ -264,9 +283,7 @@ class LastFmScrobbleManager(
         isCurrentlyPlaying = false
         trackedItem = null
         trackedDurationMs = 0L
-        cachedArtist = null
-        cachedTitle = null
-        cachedAlbum = null
+        nowPlayingItem = null
     }
 
     private fun startTrack(mediaItem: MediaItem, duration: Long, resume: Boolean) {
@@ -296,26 +313,10 @@ class LastFmScrobbleManager(
         jobGeneration++
         val gen = jobGeneration
         trackJob = externalScope.launch {
-            val artist = cachedArtist ?: mediaItem.artistTextOrDb()
-            val title = cachedTitle ?: mediaItem.titleOrDb()
-            val album = cachedAlbum ?: mediaItem.albumTitleOrDb()
-            if (gen != jobGeneration || mediaId != trackedMediaId || destroyed) return@launch
-            if (artist.isBlank() || title.isBlank()) {
-                // Empty metadata (no metadata + no DB row): nothing to send
-                phase = Phase.Done
-                return@launch
-            }
-            cachedArtist = artist
-            cachedTitle = title
-            cachedAlbum = album
-
             if (!resume && config.nowPlayingEnabled) {
-                LastFm.updateNowPlaying(artist, title, album, durationSeconds()).onFailure { e ->
-                    Timber.tag(TAG).w(e, "Now Playing failed for '$title' by '$artist'")
-                    handleFailure(e)
-                }
-                if (gen != jobGeneration || mediaId != trackedMediaId || destroyed) return@launch
+                publishNowPlaying(gen)
             }
+            if (gen != jobGeneration || mediaId != trackedMediaId || destroyed) return@launch
 
             if (!config.scrobbleEnabled) {
                 // Scrobbling disabled: no timer, no scrobble
@@ -325,9 +326,49 @@ class LastFmScrobbleManager(
 
             if (resume) timerStartedAt = clock()
             delay(remainingMs)
-            if (gen != jobGeneration || mediaId != trackedMediaId || destroyed) return@launch
-            phase = Phase.Done
-            sendScrobble(artist, title, album)
+            while (gen == jobGeneration && mediaId == trackedMediaId && !destroyed) {
+                val item = trackedItem ?: return@launch
+                val metadata = item.readTrackMetadata()
+                val submission = synchronized(this@LastFmScrobbleManager) {
+                    if (gen != jobGeneration || destroyed) return@launch
+                    if (item !== trackedItem) null else {
+                        phase = Phase.Done
+                        trackStartedAtEpochSeconds to durationSeconds()
+                    }
+                } ?: continue
+                if (metadata != null) externalScope.launch { sendScrobble(metadata, submission.first, submission.second) }
+                return@launch
+            }
+        }
+    }
+
+    private suspend fun MediaItem.readTrackMetadata(): TrackMetadata? {
+        val artist = artistTextOrDb()
+        val title = titleOrDb()
+        if (artist.isBlank() || title.isBlank()) return null
+        return TrackMetadata(artist, title, albumTitleOrDb())
+    }
+
+    private suspend fun publishNowPlaying(generation: Long) = nowPlayingLock.withLock {
+        while (generation == jobGeneration && !destroyed && config.nowPlayingEnabled) {
+            val item = trackedItem ?: return@withLock
+            if (item === nowPlayingItem) return@withLock
+            val metadata = item.readTrackMetadata()
+            val duration = synchronized(this@LastFmScrobbleManager) {
+                if (generation != jobGeneration || destroyed) return@withLock
+                if (item !== trackedItem) null else {
+                    if (metadata == null) return@withLock
+                    nowPlayingItem = item
+                    durationSeconds()
+                }
+            } ?: continue
+            if (metadata != null) {
+                LastFm.updateNowPlaying(metadata.artist, metadata.title, metadata.album, duration).onFailure { error ->
+                    Timber.tag(TAG).w(error, "Now Playing failed for '${metadata.title}' by '${metadata.artist}'")
+                    handleFailure(error)
+                }
+            }
+            return@withLock
         }
     }
 
@@ -341,17 +382,14 @@ class LastFmScrobbleManager(
         phase = Phase.Paused
     }
 
-    private fun sendScrobble(artist: String, title: String, album: String?) {
-        externalScope.launch {
-            LastFm.scrobble(artist, title, trackStartedAtEpochSeconds, album, durationSeconds())
-                .onSuccess {
-                    Timber.tag(TAG).d("Scrobbled '$title' by '$artist'")
-                }
-                .onFailure { e ->
-                    Timber.tag(TAG).e(e, "Scrobble failed for '$title' by '$artist'")
-                    handleFailure(e)
-                }
-        }
+    private suspend fun sendScrobble(metadata: TrackMetadata, timestamp: Long, duration: Long) {
+        val (artist, title, album) = metadata
+        LastFm.scrobble(artist, title, timestamp, album, duration)
+            .onSuccess { Timber.tag(TAG).d("Scrobbled '$title' by '$artist'") }
+            .onFailure { e ->
+                Timber.tag(TAG).e(e, "Scrobble failed for '$title' by '$artist'")
+                handleFailure(e)
+            }
     }
 
     /**
