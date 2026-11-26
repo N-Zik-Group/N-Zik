@@ -28,6 +28,7 @@ Glazen credits: Square / Convx Project (GPL-3.0); Kyant0 AndroidLiquidGlass / Ac
 💾 <b>Offline, Metadata & Privacy</b>
 - Slimme caching en downloads voor tracks en afspeellijsten, met selecteerbare downloadkwaliteit
 - FFmpeg-export met volledige metadata, behalve op 32-bit x86
+- Automatische metadata reparatie zoekt op ontbrekende artiest credits en album links tijdens het online afspelen. Opstart controleert het verwijderen van verouderde links, het samenvoegen van geverifieerde dubbele kunstenaars en het uitlijnen van opgeslagen artiestnamen.
 - In-app metadata editor (AAC/Opus, cover kunst)
 - Lokale luisterstatistieken en geschiedenis
 -Automatische back-up met aangepaste intervallen en retentie
