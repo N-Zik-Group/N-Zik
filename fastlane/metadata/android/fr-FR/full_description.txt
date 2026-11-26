@@ -28,7 +28,7 @@ Crédits Glass : Square / Convx Project (GPL-3.0) ; Kyant0 AndroidLiquidGlass / 
 💾 <b>Hors ligne, métadonnées et confidentialité</b>
 - Cache intelligent et téléchargements pistes/playlist, qualité au choix
 - Exportation via FFmpeg avec toutes les métadonnées (téléchargeables lors de la première utilisation ; indisponible sur les appareils x86 32 bits)
-- La réparation automatique des métadonnées recherche les crédits d'artistes et les liens d'albums manquants lors de la lecture en ligne. Les contrôles de démarrage suppriment les liens obsolètes, fusionnent les artistes en double vérifiés et alignent les noms d'artistes enregistrés.
+- La correction automatique des métadonnées recherche les informations manquantes concernant les artistes et les liens vers les albums lors de la lecture en ligne. Les vérifications de démarrage suppriment les liens obsolètes, fusionnent les artistes en double dont l'identité a été vérifiée et harmonisent les noms d'artistes enregistrés.
 - Éditeur de métadonnées intégré (AAC/Opus, pochette)
 - Statistiques d'écoute et historiques locaux
 - Sauvegarde auto, intervalles et rétention personnalisés
