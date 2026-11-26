@@ -347,7 +347,7 @@ fun HistoryList(
                     title = stringResource(R.string.library_history_title),
                     iconId = R.drawable.history,
                     enabled = false,
-                    showIcon = false,
+                    showIcon = true,
                     modifier = Modifier,
                     onClick = {}
                 )

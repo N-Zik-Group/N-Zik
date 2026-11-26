@@ -4,9 +4,6 @@ import app.n_zik.android.components.search.searchResultOpacity
 import app.n_zik.android.components.search.rememberSearchResultOpacity
 import app.n_zik.android.components.glass.glassGlobalIndication
 
-import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import app.n_zik.android.components.navigation.TopOverlayContentPadding
-import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import androidx.compose.ui.unit.Dp
 
 import app.n_zik.android.components.search.SearchSuggestionEditAction
@@ -27,11 +24,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -46,9 +41,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.FocusRequester
@@ -78,6 +73,7 @@ import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.components.settings.common.SettingsSearchBarPadding
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.SearchDisplayOrder
@@ -85,7 +81,6 @@ import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
-import app.n_zik.android.ui.components.themed.Header
 import app.n_zik.android.components.menu.album.OnlineAlbumItemMenu
 import app.n_zik.android.components.menu.artist.OnlineArtistItemMenu
 import app.n_zik.android.components.menu.playlist.OnlinePlaylistItemMenu
@@ -144,7 +139,6 @@ fun OnlineSearch(
 
     // Opening the online tab should land the user in the search (keyboard up)
     val barFocusRequester = remember { FocusRequester() }
-    LaunchedEffect( Unit ) { barFocusRequester.requestFocus() }
 
     // Record only explicit submissions; fetching suggestions never persists input.
     fun recordOnlineQuery(input: String = textFieldValue.text) {
@@ -198,6 +192,14 @@ fun OnlineSearch(
     val coroutineScope = rememberCoroutineScope()
 
     val lazyListState = rememberLazyListState()
+    suspend fun focusSearchBar() {
+        lazyListState.scrollToItem(0)
+        withFrameNanos { }
+        barFocusRequester.requestFocus()
+    }
+
+    LaunchedEffect(Unit) { focusSearchBar() }
+
     val searchHistoryContent: @Composable () -> Unit = {
         SearchHistorySection(
             visible = historyMatches.isNotEmpty(),
@@ -214,8 +216,7 @@ fun OnlineSearch(
             },
             onQueryEdit = { query ->
                 onTextFieldValueChanged(TextFieldValue(query, selection = TextRange(query.length)))
-                barFocusRequester.requestFocus()
-                coroutineScope.launch { lazyListState.animateScrollToItem(0) }
+                coroutineScope.launch { focusSearchBar() }
             },
             shimmer = forceShimmer,
         )
@@ -240,20 +241,15 @@ fun OnlineSearch(
             .fillMaxHeight()
             .fillMaxWidth()
     ) {
-        Column(
+        LazyColumn(
+            state = lazyListState,
+            contentPadding = rememberSearchTabContentPadding(topContentInsetProvider),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(TopOverlayContentPadding(topContentInsetProvider))
+                .fillMaxSize()
         ) {
-            // 16dp horizontal on the bar only: the list below stays
-            // full-width so the rows touch the screen edges
-            Header(
-                modifier = Modifier
-                    .zIndex(1f)
-                    .padding(LocalSideRailContentInsets.current.asPaddingValues())
-                    .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                    .fillMaxWidth(),
-                titleContent = {
+            item(key = "search_controls", contentType = "search_controls") {
+                Column {
+                    SearchTabHeader(R.string.search_online, R.drawable.globe)
                     UnifiedSearchBar(
                         input = textFieldValue,
                         onInputChanged = onTextFieldValueChanged,
@@ -263,307 +259,293 @@ fun OnlineSearch(
                         onSearch = {
                             if (textFieldValue.text.isNotEmpty()) {
                                 recordOnlineQuery()
-                                onSearch( textFieldValue.text )
+                                onSearch(textFieldValue.text)
                             }
                         },
                         focusRequester = barFocusRequester,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(SettingsSearchBarPadding),
                     )
-                },
-                actionsContent = {},
-            )
-
-            Spacer(
-                modifier = Modifier
-                    .height(16.dp)
-            )
-
-            LazyColumn(
-                state = lazyListState,
-                contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                if (forceShimmer || suggestionsPending) {
-                    if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
-                        item(key = "search_history", contentType = "history") { searchHistoryContent() }
-                    }
-                    val suggestions = suggestionsResult?.getOrNull()
-                    if (suggestionsPending || suggestions?.hasContent() == true) {
-                        item(key = "search_suggestions_title", contentType = "section_title") {
-                            TitleMiniSection(
-                                title = stringResource(R.string.search_suggestions_title),
-                                modifier = Modifier.padding(start = 24.dp),
-                            )
-                        }
-                        suggestions?.recommendedSong?.let { song ->
-                            item(key = "search_recommended_song", contentType = "song") {
-                                val model = song.asMediaItem.asSong
-                                SongItemPlaceholder(title = model.cleanTitle(), artist = model.cleanArtistsText())
-                            }
-                        }
-                        suggestions?.recommendedAlbum?.let { album ->
-                            item(key = "search_recommended_album", contentType = "album") {
-                                val metadata = buildList {
-                                    album.authors?.let { add(cleanPrefix(it.artistEntryNames().joinToString(", "))) }
-                                    album.year?.let(::add)
-                                }
-                                AlbumItemPlaceholder(
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    title = cleanPrefix(album.title.orEmpty()),
-                                    metadata = metadata,
-                                    metadataLines = metadata.size,
-                                )
-                            }
-                        }
-                        suggestions?.recommendedArtist?.let { artist ->
-                            item(key = "search_recommended_artist", contentType = "artist") {
-                                ArtistItemPlaceholder(
-                                    thumbnailSizeDp = songThumbnailSizeDp,
-                                    title = artist.title,
-                                    subscribers = artist.subscribersCountText,
-                                    showSubscribers = artist.subscribersCountText != null,
-                                )
-                            }
-                        }
-                        suggestions?.recommendedPlaylist?.let { playlist ->
-                            item(key = "search_recommended_playlist", contentType = "playlist") {
-                                PlaylistItemPlaceholder(songThumbnailSizeDp,
-                                    showTitle = playlist.info?.name != null, showChannel = playlist.channel?.name != null,
-                                    title = playlist.title, channel = playlist.channel?.name)
-                            }
-                        }
-                        suggestions?.recommendedVideo?.let { video ->
-                            item(key = "search_recommended_video", contentType = "video") {
-                                VideoItemPlaceholder(songThumbnailSizeDp, songThumbnailSizeDp, video = video)
-                            }
-                        }
-                        val queries = suggestions?.queries.orEmpty().distinct()
-                        items(
-                            if (suggestionsPending) 4 else queries.size,
-                            key = { index -> queries.getOrNull(index)?.let { "search_query:$it" } ?: "suggestion-loading-$index" },
-                            contentType = { "search_query" },
-                        ) { index ->
-                            SearchQuerySuggestionPlaceholder(queries.getOrNull(index))
-                        }
-                    }
-                    if (searchDisplayOrder == SearchDisplayOrder.SuggestionsFirst) {
-                        item(key = "search_history", contentType = "history") { searchHistoryContent() }
-                    }
-                    return@LazyColumn
                 }
-                if (suggestionsResult?.isFailure == true && historyMatches.isEmpty()) {
-                    item(key = "search_suggestions_error", contentType = "empty") {
-                        SearchNoResults(fillRemainingViewport = true, text = stringResource(R.string.common_load_failed))
-                    }
-                    return@LazyColumn
-                }
-                if (textFieldValue.text.isNotBlank() && suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty()) {
-                    item(key = "search_no_results", contentType = "empty") {
-                        SearchEmptySpace(fillRemainingViewport = true)
-                    }
-                }
+            }
+            if (forceShimmer || suggestionsPending) {
                 if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
                     item(key = "search_history", contentType = "history") { searchHistoryContent() }
                 }
-                suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
+                val suggestions = suggestionsResult?.getOrNull()
+                if (suggestionsPending || suggestions?.hasContent() == true) {
                     item(key = "search_suggestions_title", contentType = "section_title") {
-                        TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
-                            modifier = Modifier.searchResultOpacity(resultOpacity).padding(start = 24.dp)
+                        TitleMiniSection(
+                            title = stringResource(R.string.search_suggestions_title),
+                            modifier = Modifier.padding(start = 24.dp),
                         )
                     }
-
-                    suggestions.recommendedSong.let {
+                    suggestions?.recommendedSong?.let { song ->
                         item(key = "search_recommended_song", contentType = "song") {
-                            it?.asMediaItem?.let { mediaItem ->
-                                SongItem(
-                                    song = mediaItem.asSong,
-                                    navController = navController,
-                                    modifier = Modifier.searchResultOpacity(resultOpacity)
-                                        .clip(uiRoundnessShape()),
-                                    onClick = {
-                                        recordOnlineQuery()
-                                        binder?.player?.forcePlay(mediaItem)
-                                    }
-                                )
-                            }
+                            val model = song.asMediaItem.asSong
+                            SongItemPlaceholder(title = model.cleanTitle(), artist = model.cleanArtistsText())
                         }
                     }
-                    suggestions.recommendedAlbum?.let { album ->
+                    suggestions?.recommendedAlbum?.let { album ->
                         item(key = "search_recommended_album", contentType = "album") {
-                            AlbumItem(
-                                yearCentered = false,
-                                album = album,
-                                thumbnailSizePx = songThumbnailSizePx,
+                            val metadata = buildList {
+                                album.authors?.let { add(cleanPrefix(it.artistEntryNames().joinToString(", "))) }
+                                album.year?.let(::add)
+                            }
+                            AlbumItemPlaceholder(
                                 thumbnailSizeDp = songThumbnailSizeDp,
-                                modifier = Modifier.searchResultOpacity(resultOpacity)
-                                    .clip(uiRoundnessShape()).combinedClickable(
-                                        onLongClick = {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            menuState.display {
-                                                OnlineAlbumItemMenu(
-                                                    navController = navController,
-                                                    album = album
-                                                ).MenuComponent()
-                                            }
-                                        },
-                                        onClick = {
-                                            recordOnlineQuery()
-                                            navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
+                                title = cleanPrefix(album.title.orEmpty()),
+                                metadata = metadata,
+                                metadataLines = metadata.size,
                             )
                         }
                     }
-                    suggestions.recommendedArtist?.let { artist ->
+                    suggestions?.recommendedArtist?.let { artist ->
                         item(key = "search_recommended_artist", contentType = "artist") {
-                            ArtistItem(
-                                artist = artist,
-                                thumbnailSizePx = songThumbnailSizePx,
+                            ArtistItemPlaceholder(
                                 thumbnailSizeDp = songThumbnailSizeDp,
-                                modifier = Modifier.searchResultOpacity(resultOpacity)
-                                    .clip(uiRoundnessShape()).combinedClickable(
-                                        onLongClick = {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            menuState.display {
-                                                OnlineArtistItemMenu(
-                                                    navController = navController,
-                                                    artist = artist
-                                                ).MenuComponent()
-                                            }
-                                        },
-                                        onClick = {
-                                            recordOnlineQuery()
-                                            navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
+                                title = artist.title,
+                                subscribers = artist.subscribersCountText,
+                                showSubscribers = artist.subscribersCountText != null,
                             )
                         }
                     }
-                    suggestions.recommendedPlaylist?.let { playlist ->
+                    suggestions?.recommendedPlaylist?.let { playlist ->
                         item(key = "search_recommended_playlist", contentType = "playlist") {
-                            PlaylistItem(
-                                playlist = playlist,
-                                thumbnailSizePx = songThumbnailSizePx,
-                                thumbnailSizeDp = songThumbnailSizeDp,
-                                modifier = Modifier.searchResultOpacity(resultOpacity)
-                                    .clip(uiRoundnessShape()).combinedClickable(
-                                        onLongClick = {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            menuState.display {
-                                                OnlinePlaylistItemMenu(
-                                                    navController = navController,
-                                                    playlist = playlist
-                                                ).MenuComponent()
-                                            }
-                                        },
-                                        onClick = {
-                                            recordOnlineQuery()
-                                            navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
-                            )
+                            PlaylistItemPlaceholder(songThumbnailSizeDp,
+                                showTitle = playlist.info?.name != null, showChannel = playlist.channel?.name != null,
+                                title = playlist.title, channel = playlist.channel?.name)
                         }
                     }
-                    suggestions.recommendedVideo?.let { video ->
+                    suggestions?.recommendedVideo?.let { video ->
                         item(key = "search_recommended_video", contentType = "video") {
-                            VideoItem(
-                                video = video,
-                                thumbnailHeightDp = songThumbnailSizeDp,
-                                thumbnailWidthDp = songThumbnailSizeDp,
-                                modifier = Modifier.searchResultOpacity(resultOpacity)
-                                    .clip(uiRoundnessShape()).combinedClickable(
-                                        onLongClick = {
-                                            hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            menuState.display {
-                                                VideoItemMenu(
-                                                    navController = navController,
-                                                    song = video.asMediaItem.asSong
-                                                ).MenuComponent()
-                                            }
-                                        },
-                                        onClick = {
-                                            recordOnlineQuery()
-                                            binder?.player?.forcePlay(video.asMediaItem)
-                                        }
-                                    ),
-                                disableScrollingText = disableScrollingText
-                            )
+                            VideoItemPlaceholder(songThumbnailSizeDp, songThumbnailSizeDp, video = video)
                         }
                     }
-
+                    val queries = suggestions?.queries.orEmpty().distinct()
                     items(
-                        items = suggestions.queries.distinct(),
-                        key = { "search_query:$it" },
+                        if (suggestionsPending) 4 else queries.size,
+                        key = { index -> queries.getOrNull(index)?.let { "search_query:$it" } ?: "suggestion-loading-$index" },
                         contentType = { "search_query" },
-                    ) { query ->
-                        val editQuery: () -> Unit = {
-                            onTextFieldValueChanged(
-                                TextFieldValue(
-                                    text = query,
-                                    selection = TextRange(query.length)
-                                )
-                            )
-                            coroutineScope.launch {
-                                lazyListState.animateScrollToItem(0)
-                            }
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.searchResultOpacity(resultOpacity)
-                                .clip(uiRoundnessShape()).clickable (
-                                    onClick = {
-                                        recordOnlineQuery(query)
-                                        onSearch(query)
-                                    }
-                                )
-                                .fillMaxWidth()
-                                .padding(horizontal = 24.dp)
-                                .padding(all = 16.dp)
-                        ) {
-                            Spacer(
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .size(20.dp)
-                            )
-
-                            BasicText(
-                                text = query,
-                                style = typography().s.secondary,
-                                modifier = Modifier
-                                    .padding(horizontal = 8.dp)
-                                    .weight(1f)
-                            )
-
-                            SearchSuggestionEditAction(onClick = editQuery) {
-                                Image(
-                                    painter = painterResource(R.drawable.pencil),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(colorPalette().textDisabled),
-                                    modifier = Modifier
-                                        .size(HeaderNativeActionIconSize)
-                                )
-                            }
-                        }
-                    }
-                } ?: suggestionsResult?.exceptionOrNull()?.let {
-                    item(key = "search_suggestions_error", contentType = "error") {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ) {
-                            TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
-                                modifier = Modifier.padding(start = 24.dp)
-                            )
-                        }
+                    ) { index ->
+                        SearchQuerySuggestionPlaceholder(queries.getOrNull(index))
                     }
                 }
                 if (searchDisplayOrder == SearchDisplayOrder.SuggestionsFirst) {
                     item(key = "search_history", contentType = "history") { searchHistoryContent() }
                 }
+                return@LazyColumn
+            }
+            if (suggestionsResult?.isFailure == true && historyMatches.isEmpty()) {
+                item(key = "search_suggestions_error", contentType = "empty") {
+                    SearchNoResults(fillRemainingViewport = true, text = stringResource(R.string.common_load_failed))
+                }
+                return@LazyColumn
+            }
+            if (textFieldValue.text.isNotBlank() && suggestionsResult?.getOrNull()?.hasContent() == false && historyMatches.isEmpty()) {
+                item(key = "search_no_results", contentType = "empty") {
+                    SearchEmptySpace(fillRemainingViewport = true)
+                }
+            }
+            if (searchDisplayOrder == SearchDisplayOrder.SavedSearchesFirst) {
+                item(key = "search_history", contentType = "history") { searchHistoryContent() }
+            }
+            suggestionsResult?.getOrNull()?.takeIf { it.hasContent() }?.let { suggestions ->
+                item(key = "search_suggestions_title", contentType = "section_title") {
+                    TitleMiniSection(title = stringResource(R.string.search_suggestions_title),
+                        modifier = Modifier.searchResultOpacity(resultOpacity).padding(start = 24.dp)
+                    )
+                }
+
+                suggestions.recommendedSong.let {
+                    item(key = "search_recommended_song", contentType = "song") {
+                        it?.asMediaItem?.let { mediaItem ->
+                            SongItem(
+                                song = mediaItem.asSong,
+                                navController = navController,
+                                modifier = Modifier.searchResultOpacity(resultOpacity)
+                                    .clip(uiRoundnessShape()),
+                                onClick = {
+                                    recordOnlineQuery()
+                                    binder?.player?.forcePlay(mediaItem)
+                                }
+                            )
+                        }
+                    }
+                }
+                suggestions.recommendedAlbum?.let { album ->
+                    item(key = "search_recommended_album", contentType = "album") {
+                        AlbumItem(
+                            yearCentered = false,
+                            album = album,
+                            thumbnailSizePx = songThumbnailSizePx,
+                            thumbnailSizeDp = songThumbnailSizeDp,
+                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onLongClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.display {
+                                            OnlineAlbumItemMenu(
+                                                navController = navController,
+                                                album = album
+                                            ).MenuComponent()
+                                        }
+                                    },
+                                    onClick = {
+                                        recordOnlineQuery()
+                                        navController.navigate(route = "${NavRoutes.album.name}/${album.key}")
+                                    }
+                                ),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
+                }
+                suggestions.recommendedArtist?.let { artist ->
+                    item(key = "search_recommended_artist", contentType = "artist") {
+                        ArtistItem(
+                            artist = artist,
+                            thumbnailSizePx = songThumbnailSizePx,
+                            thumbnailSizeDp = songThumbnailSizeDp,
+                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onLongClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.display {
+                                            OnlineArtistItemMenu(
+                                                navController = navController,
+                                                artist = artist
+                                            ).MenuComponent()
+                                        }
+                                    },
+                                    onClick = {
+                                        recordOnlineQuery()
+                                        navController.navigate(route = "${NavRoutes.artist.name}/${artist.key}")
+                                    }
+                                ),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
+                }
+                suggestions.recommendedPlaylist?.let { playlist ->
+                    item(key = "search_recommended_playlist", contentType = "playlist") {
+                        PlaylistItem(
+                            playlist = playlist,
+                            thumbnailSizePx = songThumbnailSizePx,
+                            thumbnailSizeDp = songThumbnailSizeDp,
+                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onLongClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.display {
+                                            OnlinePlaylistItemMenu(
+                                                navController = navController,
+                                                playlist = playlist
+                                            ).MenuComponent()
+                                        }
+                                    },
+                                    onClick = {
+                                        recordOnlineQuery()
+                                        navController.navigate(route = "${NavRoutes.playlist.name}/${playlist.key}")
+                                    }
+                                ),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
+                }
+                suggestions.recommendedVideo?.let { video ->
+                    item(key = "search_recommended_video", contentType = "video") {
+                        VideoItem(
+                            video = video,
+                            thumbnailHeightDp = songThumbnailSizeDp,
+                            thumbnailWidthDp = songThumbnailSizeDp,
+                            modifier = Modifier.searchResultOpacity(resultOpacity)
+                                .clip(uiRoundnessShape()).combinedClickable(
+                                    onLongClick = {
+                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        menuState.display {
+                                            VideoItemMenu(
+                                                navController = navController,
+                                                song = video.asMediaItem.asSong
+                                            ).MenuComponent()
+                                        }
+                                    },
+                                    onClick = {
+                                        recordOnlineQuery()
+                                        binder?.player?.forcePlay(video.asMediaItem)
+                                    }
+                                ),
+                            disableScrollingText = disableScrollingText
+                        )
+                    }
+                }
+
+                items(
+                    items = suggestions.queries.distinct(),
+                    key = { "search_query:$it" },
+                    contentType = { "search_query" },
+                ) { query ->
+                    val editQuery: () -> Unit = {
+                        onTextFieldValueChanged(
+                            TextFieldValue(
+                                text = query,
+                                selection = TextRange(query.length)
+                            )
+                        )
+                        coroutineScope.launch {
+                            lazyListState.animateScrollToItem(0)
+                        }
+                    }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.searchResultOpacity(resultOpacity)
+                            .clip(uiRoundnessShape()).clickable (
+                                onClick = {
+                                    recordOnlineQuery(query)
+                                    onSearch(query)
+                                }
+                            )
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            .padding(all = 16.dp)
+                    ) {
+                        Spacer(
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .size(20.dp)
+                        )
+
+                        BasicText(
+                            text = query,
+                            style = typography().s.secondary,
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .weight(1f)
+                        )
+
+                        SearchSuggestionEditAction(onClick = editQuery) {
+                            Image(
+                                painter = painterResource(R.drawable.pencil),
+                                contentDescription = null,
+                                colorFilter = ColorFilter.tint(colorPalette().textDisabled),
+                                modifier = Modifier
+                                    .size(HeaderNativeActionIconSize)
+                            )
+                        }
+                    }
+                }
+            } ?: suggestionsResult?.exceptionOrNull()?.let {
+                item(key = "search_suggestions_error", contentType = "error") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        TitleMiniSection(title = stringResource(R.string.search_suggestions_empty_message),
+                            modifier = Modifier.padding(start = 24.dp)
+                        )
+                    }
+                }
+            }
+            if (searchDisplayOrder == SearchDisplayOrder.SuggestionsFirst) {
+                item(key = "search_history", contentType = "history") { searchHistoryContent() }
             }
         }
 

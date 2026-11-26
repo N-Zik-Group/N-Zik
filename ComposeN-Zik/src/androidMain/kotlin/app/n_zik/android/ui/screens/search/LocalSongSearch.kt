@@ -2,9 +2,6 @@ package app.n_zik.android.ui.screens.search
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
-import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import app.n_zik.android.components.navigation.TopOverlayContentPadding
-import app.n_zik.android.components.navigation.LocalSideRailContentInsets
 import androidx.compose.ui.unit.Dp
 
 import androidx.compose.ui.draw.clip
@@ -18,11 +15,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -35,8 +30,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -50,7 +45,6 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
-import app.n_zik.android.ui.components.themed.Header
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.components.search.SearchBarBubble
 import app.n_zik.android.components.search.filterSearchHistory
@@ -60,6 +54,7 @@ import app.n_zik.android.components.search.SearchResultsViewport
 import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.components.settings.common.SettingsSearchBarPadding
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContentVisibility
@@ -199,20 +194,17 @@ fun LocalSongSearch(
             .fillMaxWidth()
     ) {
         CompositionLocalProvider(LocalDownloadStatesMap provides downloadStatesMap) {
-            Column(
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = rememberSearchTabContentPadding(topContentInsetProvider),
+                // The wipe (below) is applied per song item so the search
+                // history section stays visible while the results fade
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(TopOverlayContentPadding(topContentInsetProvider))
+                    .fillMaxSize()
             ) {
-                // 16dp horizontal on the bar only: the list below stays
-                // full-width so the rows touch the screen edges
-                Header(
-                    modifier = Modifier
-                        .zIndex(1f)
-                        .padding(LocalSideRailContentInsets.current.asPaddingValues())
-                        .padding(top = 16.dp, start = 16.dp, end = 16.dp)
-                        .fillMaxWidth(),
-                    titleContent = {
+                item(key = "search_controls", contentType = "search_controls") {
+                    Column {
+                        SearchTabHeader(R.string.library_title, R.drawable.library)
                         UnifiedSearchBar(
                             input = textFieldValue,
                             onInputChanged = onTextFieldValueChanged,
@@ -224,83 +216,58 @@ fun LocalSongSearch(
                                 barFocused = focused
                                 Timber.tag(TAG).d("search bar focused=$focused")
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    },
-                    actionsContent = {},
-                )
-
-                Spacer(
-                    modifier = Modifier
-                        .height(16.dp)
-                )
-
-                LazyColumn(
-                    state = lazyListState,
-                    contentPadding = rememberPageChromeContentPadding(topInsetProvider = { 0.dp }),
-                    // The wipe (below) is applied per song item so the search
-                    // history section stays visible while the results fade
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    // Search history (this tab's own store): tapping a row
-                    // runs a local search on it, the trash deletes one entry
-                    // (long press: all of them). Nothing collapses above the
-                    // bar on this screen, so "bar at the top" is reached as
-                    // soon as the bar is focused. The block slides down out
-                    // of the bar's bottom edge (the expanding top-anchored
-                    // clip masks anything above the bar), so it reads as
-                    // emerging from the bar while the content below is pushed
-                    // down; the exit shrinks back into the bar
-                    item(key = "search_history") {
-                        SearchHistorySection(
-                            visible = !forceShimmer && historyVisible,
-                            queries = historyMatches,
-                            onQueryClick = { onTextFieldValueChanged(TextFieldValue(it)); recordSearchQuery(it) },
-                            onQueryDelete = {
-                                history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_LOCAL, it)
-                            },
-                            onQueryDeleteAll = {
-                                history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_LOCAL)
-                            },
+                            modifier = Modifier.fillMaxWidth().padding(SettingsSearchBarPadding),
                         )
                     }
+                }
+                item(key = "search_history") {
+                    SearchHistorySection(
+                        visible = !forceShimmer && historyVisible,
+                        queries = historyMatches,
+                        onQueryClick = { onTextFieldValueChanged(TextFieldValue(it)); recordSearchQuery(it) },
+                        onQueryDelete = {
+                            history.value = SearchHistoryStore.delete(context.preferences, SearchHistoryStore.PAGE_LOCAL, it)
+                        },
+                        onQueryDeleteAll = {
+                            history.value = SearchHistoryStore.deleteAll(context.preferences, SearchHistoryStore.PAGE_LOCAL)
+                        },
+                    )
+                }
 
 
-                    if ((forceShimmer && items.isEmpty()) || (queryPending && textFieldValue.text.isNotBlank())) {
-                        item(key = "search_song_loading") { SongItemPlaceholders(count = 4) }
-                    } else if (noSearchResults) {
-                        item(key = "search_no_results") {
-                            SearchEmptySpace(fillRemainingViewport = true)
-                        }
+                if ((forceShimmer && items.isEmpty()) || (queryPending && textFieldValue.text.isNotBlank())) {
+                    item(key = "search_song_loading") { SongItemPlaceholders(count = 4) }
+                } else if (noSearchResults) {
+                    item(key = "search_no_results") {
+                        SearchEmptySpace(fillRemainingViewport = true)
                     }
-                    items(
-                        items = items,
-                        key = Song::id,
-                    ) { song ->
-                        if (forceShimmer) {
-                            SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
-                            return@items
-                        }
-                        Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha, retainSpace = true).animateItem()) {
-                            SongItem(
-                                song = song,
-                                isLiked = likeStatesMap[song.id],
-                                inPlaylist = playlistStatesMap[song.id],
-                                navController = navController,
-                                modifier = Modifier
-                                    .clip(uiRoundnessShape()),
-                                onLongClick = {
-                                    menuState.display {
-                                        SongItemMenu(
-                                            navController = navController,
-                                            song = song
-                                        ).MenuComponent()
-                                    }
-                                },
-                                onClick = { recordSearchQuery(); binder?.startRadio( song ) }
-                            )
-                        }
+                }
+                items(
+                    items = items,
+                    key = Song::id,
+                ) { song ->
+                    if (forceShimmer) {
+                        SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
+                        return@items
+                    }
+                    Column(Modifier.settingsSearchContentVisibility(searchFocus.contentAlpha, retainSpace = true).animateItem()) {
+                        SongItem(
+                            song = song,
+                            isLiked = likeStatesMap[song.id],
+                            inPlaylist = playlistStatesMap[song.id],
+                            navController = navController,
+                            modifier = Modifier
+                                .clip(uiRoundnessShape()),
+                            onLongClick = {
+                                menuState.display {
+                                    SongItemMenu(
+                                        navController = navController,
+                                        song = song
+                                    ).MenuComponent()
+                                }
+                            },
+                            onClick = { recordSearchQuery(); binder?.startRadio( song ) }
+                        )
                     }
                 }
             }
