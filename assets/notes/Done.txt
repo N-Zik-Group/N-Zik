@@ -688,3 +688,7 @@ Shared menu and toolbar actions:
 External menu links:
 - fix(menu): recover when a link has no Android handler
   - Keep the selector open for retry and preserve playback on failure.
+
+Artist menus:
+- fix(menu): align artist actions with their source
+  - Show appropriate playback, bookmark and navigation actions for local and online artists.

@@ -1,13 +1,13 @@
 package app.n_zik.android.components.menu.artist
 
 import android.content.Intent
+import app.n_zik.android.MODIFIED_PREFIX
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -32,13 +32,16 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
+import androidx.navigation.NavController
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.models.Artist
+import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Button
@@ -46,7 +49,6 @@ import app.n_zik.android.ui.components.tab.toolbar.Clickable
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
@@ -77,19 +79,25 @@ import app.n_zik.android.components.menu.EntityMenuSnapshot
 import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.MenuBookmarkBadge
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.OpenEntityMenuAction
+import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
+import app.n_zik.android.components.menu.withMenuClick
+import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 @UnstableApi
 @OptIn(ExperimentalFoundationApi::class)
 class LocalArtistItemMenu private constructor(
+    navController: NavController,
     artist: Artist,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>
@@ -100,14 +108,18 @@ class LocalArtistItemMenu private constructor(
 
     companion object {
         @Composable
-        operator fun invoke(artist: Artist): LocalArtistItemMenu =
+        operator fun invoke(navController: NavController, artist: Artist): LocalArtistItemMenu =
             LocalArtistItemMenu(
+                navController = navController,
                 artist = artist,
                 menuState = LocalMenuState.current,
                 styleState = rememberPreference(menuStyleKey, MenuStyle.List)
             )
     }
 
+    private val openArtist = OpenEntityMenuAction(
+        navController, menuState, NavRoutes.artist, snapshot.id, R.drawable.people, R.string.artist_action_open,
+    )
     lateinit var buttons: List<Button>
     override var menuStyle: MenuStyle by styleState
 
@@ -123,6 +135,9 @@ class LocalArtistItemMenu private constructor(
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
+
+        SectionTitle(stringResource(R.string.common_navigation_section_title))
+        openArtist.ListMenuItem()
     }
 
     @Composable
@@ -141,6 +156,11 @@ class LocalArtistItemMenu private constructor(
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            SectionTitle(stringResource(R.string.common_navigation_section_title))
+        }
+        item { openArtist.GridMenuItem() }
     }
 
     @Composable
@@ -195,21 +215,7 @@ class LocalArtistItemMenu private constructor(
                         )
                     }
 
-                    if (likeState != null)
-                        HeaderIconButton(
-                            onClick = {},
-                            icon = when(likeState) {
-                                false -> R.drawable.bookmark_slash
-                                else -> R.drawable.bookmark
-                            },
-                            color = when(likeState) {
-                                false -> colorPalette().red
-                                else -> colorPalette().favoritesIcon
-                            },
-                            iconSize = 12.dp,
-                            placementModifier = Modifier.align(Alignment.BottomStart)
-                                .absoluteOffset(x = (-8).dp)
-                        )
+                    likeState?.let { MenuBookmarkBadge(bookmarked = it) }
                 }
 
                 // Artist's information
@@ -256,6 +262,9 @@ class LocalArtistItemMenu private constructor(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     IconButton(
+                        contentDescription = menuLikeActionDescription(
+                            likeState, showDisliked.isEnabled, R.string.artist_action_follow, R.string.artist_action_unfollow,
+                        ),
                         icon = when(likeState) {
                             true -> R.drawable.bookmark
                             false -> R.drawable.bookmark_slash
@@ -312,20 +321,24 @@ class LocalArtistItemMenu private constructor(
                             .size(20.dp)
                     )
 
-                    IconButton(
-                        icon = R.drawable.share_social,
-                        color = colorPalette().text,
-                        onClick = {
-                            val intent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/channel/${artist.id}")
-                            }
-                            context.startActivity(Intent.createChooser(intent, null))
-                        },
-                        modifier = Modifier
-                            .padding(all = 4.dp)
-                            .size(20.dp)
-                    )
+                    val sourceId = artist.id.removePrefix(MODIFIED_PREFIX)
+                    if (sourceId.isNotBlank() && !sourceId.startsWith("LOCAL_")) {
+                        IconButton(
+                            icon = R.drawable.share_social,
+                            contentDescription = stringResource(R.string.player_mini_button_share),
+                            color = colorPalette().text,
+                            onClick = {
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, "https://music.youtube.com/channel/$sourceId")
+                                }
+                                context.startActivity(Intent.createChooser(intent, null))
+                            },
+                            modifier = Modifier
+                                .padding(all = 4.dp)
+                                .size(20.dp)
+                        )
+                    }
                 }
             }
 
@@ -341,20 +354,30 @@ class LocalArtistItemMenu private constructor(
         val changeId = ChangeArtistBrowseIdDialog(menuState = menuState) { artist }
 
         val binder = LocalPlayerServiceBinder.current
-        val mappedSongs by Database.artistSongs(artist.id).collectAsStateWithLifecycle(initialValue = emptyList(), context = NzikDispatchers.DATA)
+        val mappedSongs = remember(artist.id) { Database.artistSongs(artist.id) }
+            .collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA).value
 
         val deviceGroup = isDeviceArtistId(artist.id)
         val profile = getActiveProfile(LocalContext.current)
         val snapshot by remember(profile) { DeviceLibraryResults.forProfile(profile) }
             .collectAsStateWithLifecycle(DeviceLibraryResults.current(profile))
         val eligible = snapshot?.artistSongIds?.get(artist.id).orEmpty()
-        val songs = mappedSongs.filter { it.isLocal == deviceGroup && (!deviceGroup || it.id in eligible) }
+        val songsLoading = mappedSongs == null || (deviceGroup && snapshot == null)
+        val songs = mappedSongs.orEmpty().filter { it.isLocal == deviceGroup && (!deviceGroup || it.id in eligible) }
 
         val playAll = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = R.drawable.play
-            override val messageId: Int = R.string.artist_action_play_local_songs
+            override val messageId: Int = if (deviceGroup) {
+                R.string.artist_action_play_local_songs
+            } else {
+                R.string.artist_action_play_library_songs
+            }
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
+                if (songsLoading) {
+                    ToastRelay.loadingWarning()
+                    return
+                }
                 if (songs.isNotEmpty()) {
                     binder?.stopRadio()
                     binder?.player?.forcePlayAtIndex(songs.map { it.asMediaItem }, 0)
@@ -366,7 +389,10 @@ class LocalArtistItemMenu private constructor(
             override fun onLongClick() {}
         }
 
-        val shuffle = SongShuffler { songs }
+        val shuffleAction = SongShuffler { songs }
+        val shuffle = shuffleAction.withMenuClick {
+            if (songsLoading) ToastRelay.loadingWarning() else shuffleAction.onShortClick()
+        }
 
         buttons = mutableListOf<Button>().apply {
             add(playAll)
