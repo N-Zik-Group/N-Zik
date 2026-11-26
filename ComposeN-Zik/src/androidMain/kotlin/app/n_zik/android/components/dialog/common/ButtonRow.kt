@@ -57,6 +57,7 @@ data class DialogButton(
     val textColor: Color? = null,
     val placement: DialogButtonPlacement = DialogButtonPlacement.Auto,
     val wrapLabel: Boolean = false,
+    val modifier: Modifier = Modifier,
 )
 
 /** Shows full-width dialog actions with the same appearance as the fixed cancel button. */
@@ -184,6 +185,7 @@ private fun pillModifier(button: DialogButton, palette: ColorPalette, modifier: 
             pillColor(button, palette),
             shape = shape,
         )
+        .then(button.modifier)
         .clickable(interactionSource = source, indication = if (source != null) null else androidx.compose.foundation.LocalIndication.current,
             enabled = button.enabled && dialogInputEnabled) {
             if (presentation?.interactive != false) button.onClick()

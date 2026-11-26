@@ -25,11 +25,13 @@ fun PrimaryButton(
     @DrawableRes iconId: Int,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    contentDescription: String? = null,
 ) {
     if (GlassFloatingActionIcon(
             icon = painterResource(iconId), onClick = onClick,
             modifier = modifier, enabled = enabled,
             movable = true,
+            contentDescription = contentDescription,
             filmColor = surfaceColor(colorPalette().background2),
         )) return
     Box(
@@ -42,7 +44,7 @@ fun PrimaryButton(
     ) {
         Image(
             painter = painterResource(iconId),
-            contentDescription = null,
+            contentDescription = contentDescription,
             colorFilter = ColorFilter.tint(colorPalette().text),
             modifier = Modifier
                 .align(Alignment.Center)

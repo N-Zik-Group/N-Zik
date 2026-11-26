@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.components.themed
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.input.KeyboardType
 import app.n_zik.android.ui.components.tab.toolbar.Dialog
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
@@ -8,6 +9,8 @@ import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 interface IDialog: Dialog {
 
     var value: String
+    val keyboardType: KeyboardType get() = KeyboardType.Text
+    fun isValidInput(value: String): Boolean = true
     val placeholder: String
         @Composable
         get() = ""
@@ -33,6 +36,8 @@ interface IDialog: Dialog {
             title = dialogTitle,
             initialValue = value,
             placeholder = placeholder,
+            keyboardType = keyboardType,
+            isValid = ::isValidInput,
             onDismiss = ::onDismiss,
             onSetValue = ::onSet
         ).apply {

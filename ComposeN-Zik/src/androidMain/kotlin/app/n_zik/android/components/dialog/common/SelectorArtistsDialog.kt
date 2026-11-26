@@ -1,5 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
+import app.n_zik.android.utils.YouTubeArtistProvenance
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,7 +57,7 @@ import app.n_zik.android.components.theme.paletteDarkness
 
 /** Artist thumbnail pager using the shared title and dismissal bands. */
 @Composable
-inline fun SelectorArtistsDialog(
+internal inline fun SelectorArtistsDialog(
     noinline onDismiss: () -> Unit,
     title: String,
     values: List<Info>?,
@@ -78,6 +80,7 @@ inline fun SelectorArtistsDialog(
                 .background(Color.Transparent)
         ) {
             if (values != null) {
+                val showYouTubeOrigin by YouTubeArtistProvenance.showOrigin.collectAsStateWithLifecycle()
                 val pagerState = rememberPagerState(pageCount = { values.size })
 
                 Box {
@@ -118,7 +121,7 @@ inline fun SelectorArtistsDialog(
                                     )
                                     .align(Alignment.Center)
                             )
-                            if (artist?.isYoutubeArtist == true) {
+                            if (showYouTubeOrigin && artist?.isYoutubeArtist == true) {
                                 Image(
                                     painter = painterResource(R.drawable.ytmusic),
                                     colorFilter = ColorFilter.tint(
