@@ -107,6 +107,7 @@
     <string name="lyrics_karaoke">Karaoke (word-level)</string>
     <string name="lyrics_karaoke_respect_agent_position_label">Respect agent position</string>
     <string name="lyrics_karaoke_unavailable_synced_fallback_format">Karaoke not found on %1$s, showing synced from %2$s</string>
+    <string name="lyrics_karaoke_upgrade_hint">Karaoke will replace it if found.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke lyrics</string>
     <string name="lyrics_mode_synchronized_label">সিংক করা লিরিক</string>
