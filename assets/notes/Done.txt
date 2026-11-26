@@ -852,3 +852,7 @@ Menu and metadata regression coverage:
 Menu entry semantics:
 - fix(menu): expose toggle state and allow passive entries
   - Keep native menu controls usable by screen readers and retain precise visualizer input.
+
+Listen Together pending state:
+- fix(listen-together): retain pending room state across menu pages
+  - Keep observation active while opening logs and offer participant actions only to the host.

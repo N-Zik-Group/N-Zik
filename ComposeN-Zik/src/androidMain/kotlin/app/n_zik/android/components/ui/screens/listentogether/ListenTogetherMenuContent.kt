@@ -19,11 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -35,6 +30,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.menuToggleSemantics
 import app.n_zik.android.components.ui.InlineLoader
 import app.n_zik.android.components.ui.toggles.Switch
 import app.n_zik.android.listentogether.ConnectionState
@@ -157,7 +153,9 @@ internal fun ListLtMenuContent(content: LtMenuContent) {
                         if (user.isHost) palette.accent else palette.textSecondary,
                     )
                 },
-                onClick = { content.onUserClick(user.userId, user.username) },
+                onClick = if (content.isHost && user.userId != content.currentUserId) {
+                    { content.onUserClick(user.userId, user.username) }
+                } else null,
             )
         }
 
@@ -267,10 +265,7 @@ internal fun ListLtMenuContent(content: LtMenuContent) {
         subtitle = stringResource(R.string.listen_together_auto_approval_joins_description),
         icon = { SettingIcon(R.drawable.checkmark, palette.accent) },
         enabled = content.canEditApprovals,
-        modifier = Modifier.semantics {
-            role = Role.Switch
-            toggleableState = ToggleableState(content.autoApprovalJoins)
-        },
+        modifier = Modifier.menuToggleSemantics(content.autoApprovalJoins),
         trailingContent = { ToggleSwitch(content.autoApprovalJoins) },
         onClick = content.onToggleAutoApprovalJoins,
     )
@@ -279,10 +274,7 @@ internal fun ListLtMenuContent(content: LtMenuContent) {
         subtitle = stringResource(R.string.listen_together_auto_approval_suggestions_description),
         icon = { SettingIcon(R.drawable.musical_notes, palette.accent) },
         enabled = content.canEditApprovals,
-        modifier = Modifier.semantics {
-            role = Role.Switch
-            toggleableState = ToggleableState(content.autoApproveSuggestions)
-        },
+        modifier = Modifier.menuToggleSemantics(content.autoApproveSuggestions),
         trailingContent = { ToggleSwitch(content.autoApproveSuggestions) },
         onClick = content.onToggleAutoApproveSuggestions,
     )
@@ -290,10 +282,7 @@ internal fun ListLtMenuContent(content: LtMenuContent) {
         text = stringResource(R.string.listen_together_sync_volume),
         subtitle = stringResource(R.string.listen_together_sync_volume_description),
         icon = { SettingIcon(R.drawable.volume_up, palette.accent) },
-        modifier = Modifier.semantics {
-            role = Role.Switch
-            toggleableState = ToggleableState(content.syncHostVolume)
-        },
+        modifier = Modifier.menuToggleSemantics(content.syncHostVolume),
         trailingContent = { ToggleSwitch(content.syncHostVolume) },
         onClick = content.onToggleSyncVolume,
     )
@@ -301,10 +290,7 @@ internal fun ListLtMenuContent(content: LtMenuContent) {
         text = stringResource(R.string.listen_together_history),
         subtitle = stringResource(R.string.listen_together_history_description),
         icon = { SettingIcon(R.drawable.history, palette.accent) },
-        modifier = Modifier.semantics {
-            role = Role.Switch
-            toggleableState = ToggleableState(content.historyEnabled)
-        },
+        modifier = Modifier.menuToggleSemantics(content.historyEnabled),
         trailingContent = { ToggleSwitch(content.historyEnabled) },
         onClick = content.onToggleHistory,
     )
@@ -407,7 +393,9 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
                             if (user.isHost) palette.accent else palette.textSecondary,
                         )
                     },
-                    onClick = { content.onUserClick(user.userId, user.username) },
+                    onClick = if (content.isHost && user.userId != content.currentUserId) {
+                        { content.onUserClick(user.userId, user.username) }
+                    } else null,
                 )
             }
         }
@@ -548,10 +536,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
             text = stringResource(R.string.listen_together_auto_approval_joins),
             icon = { GridEntryIcon(R.drawable.checkmark, palette.accent) },
             enabled = content.canEditApprovals,
-            modifier = Modifier.semantics {
-                role = Role.Switch
-                toggleableState = ToggleableState(content.autoApprovalJoins)
-            },
+            modifier = Modifier.menuToggleSemantics(content.autoApprovalJoins),
             trailingContent = { ToggleSwitch(content.autoApprovalJoins) },
             onClick = content.onToggleAutoApprovalJoins,
         )
@@ -561,10 +546,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
             text = stringResource(R.string.listen_together_auto_approval_suggestions),
             icon = { GridEntryIcon(R.drawable.musical_notes, palette.accent) },
             enabled = content.canEditApprovals,
-            modifier = Modifier.semantics {
-                role = Role.Switch
-                toggleableState = ToggleableState(content.autoApproveSuggestions)
-            },
+            modifier = Modifier.menuToggleSemantics(content.autoApproveSuggestions),
             trailingContent = { ToggleSwitch(content.autoApproveSuggestions) },
             onClick = content.onToggleAutoApproveSuggestions,
         )
@@ -573,10 +555,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_sync_volume),
             icon = { GridEntryIcon(R.drawable.volume_up, palette.accent) },
-            modifier = Modifier.semantics {
-                role = Role.Switch
-                toggleableState = ToggleableState(content.syncHostVolume)
-            },
+            modifier = Modifier.menuToggleSemantics(content.syncHostVolume),
             trailingContent = { ToggleSwitch(content.syncHostVolume) },
             onClick = content.onToggleSyncVolume,
         )
@@ -585,10 +564,7 @@ internal fun LazyGridScope.GridLtMenuContent(content: LtMenuContent, palette: Co
         GridMenu.Entry(
             text = stringResource(R.string.listen_together_history),
             icon = { GridEntryIcon(R.drawable.history, palette.accent) },
-            modifier = Modifier.semantics {
-                role = Role.Switch
-                toggleableState = ToggleableState(content.historyEnabled)
-            },
+            modifier = Modifier.menuToggleSemantics(content.historyEnabled),
             trailingContent = { ToggleSwitch(content.historyEnabled) },
             onClick = content.onToggleHistory,
         )

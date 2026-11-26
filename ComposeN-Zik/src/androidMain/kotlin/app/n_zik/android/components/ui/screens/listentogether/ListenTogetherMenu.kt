@@ -3,7 +3,14 @@ package app.n_zik.android.components.ui.screens.listentogether
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import androidx.compose.foundation.layout.size
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +43,8 @@ import app.n_zik.android.utils.rememberPreference
 
 private const val TAG = "ListenTogetherMenu"
 
+private enum class RoomMenuPage { Room, Logs, BlockedUsers }
+
 /** Opens room controls and settings using the chosen menu style. */
 @Composable
 fun ListenTogetherMenu() {
@@ -62,6 +71,7 @@ fun ListenTogetherMenu() {
     var isCreatingRoom by rememberSaveable { mutableStateOf(false) }
     var isJoiningRoom by rememberSaveable { mutableStateOf(false) }
     var joinErrorMessage by rememberSaveable { mutableStateOf<String?>(null) }
+    var page by rememberSaveable { mutableStateOf(RoomMenuPage.Room) }
 
     var showCreateRoomSheet by rememberSaveable { mutableStateOf(false) }
     var showJoinRoomSheet by rememberSaveable { mutableStateOf(false) }
@@ -199,19 +209,8 @@ fun ListenTogetherMenu() {
                     showUsernameSheet = true
                 }
             },
-            onOpenLogs = {
-                menuState.display {
-                    ListenTogetherLogsMenu(logs = logs, onClear = { listenTogetherManager.clearLogs() })
-                }
-            },
-            onOpenBlockedUsers = {
-                menuState.display {
-                    ListenTogetherBlockedUsersMenu(
-                        blockedUsernames = blockedUsernames,
-                        onUnblock = { listenTogetherManager.unblockUser(it) },
-                    )
-                }
-            },
+            onOpenLogs = { page = RoomMenuPage.Logs },
+            onOpenBlockedUsers = { page = RoomMenuPage.BlockedUsers },
             onToggleAutoApprovalJoins = {
                 DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVAL, !autoApprovalJoins)
                 settingsVersion.value++
@@ -236,14 +235,35 @@ fun ListenTogetherMenu() {
 
     val palette = colorPalette()
 
-    if (menuStyle == MenuStyle.List) {
-        ListMenu.Menu(title = stringResource(R.string.listen_together_title)) {
-            ListLtMenuContent(content)
-        }
-    } else {
-        // Grid item lambdas own composition. The grid content builder runs outside it.
-        GridMenu.Menu(title = stringResource(R.string.listen_together_title)) {
-            GridLtMenuContent(content, palette)
+    BackHandler(enabled = menuState.isDisplayed && page != RoomMenuPage.Room) {
+        page = RoomMenuPage.Room
+    }
+    AnimatedContent(
+        targetState = page,
+        transitionSpec = {
+            slideInHorizontally(tween(250)) { it / 2 } + fadeIn(tween(250)) togetherWith
+                (slideOutHorizontally(tween(250)) { -it / 2 } + fadeOut(tween(250)))
+        },
+        label = "ListenTogetherMenuPage",
+    ) { target ->
+        when (target) {
+            RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
+                ListMenu.Menu(title = stringResource(R.string.listen_together_title)) {
+                    ListLtMenuContent(content)
+                }
+            } else {
+                GridMenu.Menu(title = stringResource(R.string.listen_together_title)) {
+                    GridLtMenuContent(content, palette)
+                }
+            }
+            RoomMenuPage.Logs -> ListenTogetherLogsMenu(
+                logs = logs,
+                onClear = { listenTogetherManager.clearLogs() },
+            )
+            RoomMenuPage.BlockedUsers -> ListenTogetherBlockedUsersMenu(
+                blockedUsernames = blockedUsernames,
+                onUnblock = { listenTogetherManager.unblockUser(it) },
+            )
         }
     }
 
