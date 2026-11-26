@@ -4,7 +4,6 @@ import app.n_zik.android.utils.percentLabel
 import android.content.Context
 import android.os.Build
 import android.text.format.Formatter
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +25,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -367,10 +367,18 @@ private fun MarketplaceModuleCard(
                 onClick = { onInfo(def) },
             )
 
+            if (!available) {
+                DisabledSettingsEntry(
+                    title = stringResource(R.string.modules_download),
+                    text = stringResource(R.string.modules_not_available_arch),
+                    icon = R.drawable.download,
+                )
+                return@SettingsSectionCard
+            }
             when (state) {
                 null -> OtherSettingsEntry(
                     title = stringResource(R.string.modules_download),
-                    text = if (available) "" else stringResource(R.string.modules_not_available_arch),
+                    text = "",
                     icon = R.drawable.download,
                     shimmer = true,
                     onClick = {},
@@ -378,7 +386,7 @@ private fun MarketplaceModuleCard(
 
                 ModuleState.NOT_DOWNLOADED -> OtherSettingsEntry(
                     title = stringResource(R.string.modules_download),
-                    text = if (available) "" else stringResource(R.string.modules_not_available_arch),
+                    text = "",
                     icon = R.drawable.download,
                     onClick = { scope.launch { manager.ensureReady(def) } },
                 )
@@ -449,8 +457,7 @@ fun rememberModuleUi(def: ModuleDefinition): ModuleUi {
 
 /**
  * Module card entry while a download or update is running (SongItem pattern):
- * the download icon becomes a live progress ring, the label carries the
- * progress percent when known, and tapping the row cancels the transfer.
+ * The download icon shows live progress and the cancel button stops the transfer.
  */
 @Composable
 private fun DownloadingSettingsEntry(
@@ -463,8 +470,7 @@ private fun DownloadingSettingsEntry(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
-            .clip(uiRoundnessShape())
-            .clickable(onClick = onCancel),
+            .clip(uiRoundnessShape()),
     ) {
         Row(
             modifier = Modifier
@@ -513,6 +519,9 @@ private fun DownloadingSettingsEntry(
                         style = typography().xs.copy(color = palette.textSecondary),
                     )
                 }
+            }
+            TextButton(onClick = onCancel) {
+                Text(stringResource(R.string.common_action_cancel))
             }
         }
     }

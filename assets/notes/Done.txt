@@ -1088,3 +1088,7 @@ Menus:
 Menus:
 - fix(queue): report when all requested tracks are excluded
   - Show one result when filters leave no track to play next or enqueue.
+
+Menus:
+- fix(extensions): expose supported download and cancel actions
+  - Hide impossible transfers on unsupported devices and label cancellation during a download.
