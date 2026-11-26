@@ -418,3 +418,13 @@ Other:
   - Remove runner timezone overrides without changing cron expressions; normalize dev release-day checks to UTC.
   - Migrate metric timestamps using the verified 735-record original UTC prefix and legacy local records, preserving download values.
   - Add an explicit-policy migration utility and production-reader regression coverage; 27 targeted CI tests pass.
+
+Playlist metadata:
+- fix(innertube): read playlist owners from YouTube Music headers
+  - Decode the owner name and channel endpoint from responsive playlist headers, including the avatar stack used by playlists such as The Weeknd Karaoke.
+  - Retain owner lookup in older header formats and reject ambiguous or unrelated links. Three focused parser tests pass.
+
+URL import:
+- fix(dialog): read the latest URL when pasting
+  - Read the clipboard directly when the Paste button is pressed, so the dialog can accept a new clipboard value after opening.
+  - Preserve the exact input sent to the import callback. The targeted dialog test covers clear, paste, import and cancel.
