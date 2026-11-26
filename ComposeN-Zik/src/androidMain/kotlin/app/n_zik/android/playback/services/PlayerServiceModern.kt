@@ -113,10 +113,11 @@ import app.n_zik.android.repository.QuickPicksRepository
 import app.n_zik.android.R
 
 import com.google.common.util.concurrent.MoreExecutors
+import app.n_zik.android.components.song.isArtistIdForSong
+import app.n_zik.android.utils.isGenericReleaseChannel
 import app.n_zik.innertube.Innertube
 import io.ktor.client.call.body
 import app.n_zik.innertube.models.NavigationEndpoint
-import app.n_zik.innertube.requests.nextPage
 import app.n_zik.android.MainActivity
 import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
@@ -128,6 +129,7 @@ import app.n_zik.android.enums.DurationInMilliseconds
 import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
 import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.enums.NotificationButtons
+import app.n_zik.android.enums.PauseBetweenSongs
 import app.n_zik.android.enums.PresetsReverb
 import app.n_zik.android.enums.QueueLoopType
 import app.n_zik.android.extensions.audiovolume.AudioVolumeObserver
@@ -164,14 +166,14 @@ import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.utils.SessionBitmapLoader
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.audioQualityFormatKey
+import app.n_zik.android.utils.durationTextToMillis
+import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.imageQualityFormatKey
 import app.n_zik.android.utils.audioReverbPresetKey
 import app.n_zik.android.utils.bassboostEnabledKey
 import app.n_zik.android.utils.bassboostLevelKey
 import app.n_zik.android.utils.broadCastPendingIntent
 import app.n_zik.android.utils.closebackgroundPlayerKey
-import app.n_zik.innertube.requests.searchPage
-import app.n_zik.innertube.utils.from
 import app.n_zik.android.utils.discordPersonalAccessTokenKey
 import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.exoPlayerCustomCacheKey
@@ -217,9 +219,11 @@ import app.n_zik.android.utils.shuffleQueue
 import app.n_zik.android.utils.volumeNormalizationKey
 import app.n_zik.android.utils.volumeBoostLevelKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.player.MenuQueueEdits
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -227,8 +231,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -261,6 +265,7 @@ import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.widget.MusicWidgetReceiver
 import app.n_zik.android.widget.TurntableWidgetReceiver
 import app.n_zik.android.utils.crossfadeEnabledKey
+import app.n_zik.android.utils.pauseBetweenSongsKey
 
 
 const val LOCAL_KEY_PREFIX = "local:"
@@ -309,6 +314,7 @@ class PlayerServiceModern : MediaLibraryService(),
     OnAudioVolumeChangedListener {
 
     private val coroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
+    private val trackBoundaryPause = TrackBoundaryPause(CoroutineScope(coroutineScope.coroutineContext + NzikDispatchers.UI))
     private lateinit var mediaSession: MediaLibrarySession
     private val playbackReady = CompletableDeferred<Unit>()
 
@@ -346,6 +352,10 @@ class PlayerServiceModern : MediaLibraryService(),
      * bridge [ListenTogetherPlayerBridge] (AD-4) — never by external callers.
      */
     private lateinit var guestGuardPlayer: ListenTogetherGuestGuardPlayer
+    private val menuQueueEdits = MenuQueueEdits(
+        currentPlayer = { if (::guestGuardPlayer.isInitialized && !isDestroying) guestGuardPlayer else null },
+        setShuffleOrder = { order -> player.setShuffleOrder(DefaultShuffleOrder(order, System.currentTimeMillis())) },
+    )
     private var guestGuardPlayerTarget: Player? = null
 
     /**
@@ -383,9 +393,11 @@ class PlayerServiceModern : MediaLibraryService(),
     private var volumeNormalizationJob: Job? = null
 
     private val encryptedPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        // Item 6: advanced Discord settings re-sync the live presence (no manager
-        // recreation — the module's 500 ms limit prevents spam).
-        if (key in discordAdvancedSettingKeys) {
+        if (key == isDiscordPresenceEnabledKey || key == discordPersonalAccessTokenKey) {
+            updateDiscordPresenceManager()
+        }
+        // A reset can remove advanced settings in the same edit that disables presence.
+        if (key in discordAdvancedSettingKeys && encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
             discordPresenceManager?.onAdvancedSettingsChanged()
         }
         if (isLastFmSetupKey(key)) {
@@ -427,9 +439,21 @@ class PlayerServiceModern : MediaLibraryService(),
     private val sleepTimer = PlaybackSleepTimer(coroutineScope)
     lateinit var nzikRadio: NZikRadio
 
-    val currentMediaItem = MutableStateFlow<MediaItem?>(null)
+    internal class CurrentMediaItem {
+        // Media3 equality excludes Bundle contents. Publish link-only changes too.
+        private class Snapshot(val item: MediaItem?)
+        private val state = MutableStateFlow(Snapshot(null))
+        val changes = state.map { it.item }
+        var value: MediaItem?
+            get() = state.value.item
+            set(item) {
+                if (item !== value) state.value = Snapshot(item)
+            }
+    }
 
-    private val currentSong = notificationSongStates(currentMediaItem) { songId ->
+    internal val currentMediaItem = CurrentMediaItem()
+
+    private val currentSong = notificationSongStates(currentMediaItem.changes) { songId ->
         Database.songTable.findById(songId)
     }.stateIn(coroutineScope, SharingStarted.Lazily, NotificationSongState(null, null))
 
@@ -677,7 +701,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 .apply {
                     addListener(this@PlayerServiceModern)
                     addAnalyticsListener(PlaybackStatsListener(false, this@PlayerServiceModern))
-                }
+                },
+            onTransportRequested = ::cancelTrackBoundaryPauseFor,
         )
         attachCrossfadeAudioDiagnostics(player)
         bindAudioEffectPlayer(player)
@@ -728,6 +753,7 @@ class PlayerServiceModern : MediaLibraryService(),
         } else {
             mediaSession = buildLibrarySession(sessionPlayer)
         }
+        bindPlaybackTrackIdentity(sessionPlayer)
 
         mediaLibrarySessionCallback.observeRepository(mediaSession)
         ResolvedSessionDuration.bind(coroutineScope, playerUpdateTrigger) { mediaSession.player }
@@ -744,6 +770,7 @@ class PlayerServiceModern : MediaLibraryService(),
         player.addListener(playbackDiagnosticsListener)
 
         player.repeatMode = preferences.getEnum(queueLoopTypeKey, QueueLoopType.Default).type
+        refreshTrackBoundaryPause()
 
         // Internal service init MUST bypass the guard (spine AD-7) — the raw player is used.
         player.playbackParameters = PlaybackParameters(
@@ -774,7 +801,9 @@ class PlayerServiceModern : MediaLibraryService(),
         guestLockObserverJob = coroutineScope.launch(NzikDispatchers.UI) {
             snapshotFlow { listenTogetherGuestLock.value }
                 .distinctUntilChanged()
-                .collect {
+                .collect { guestLocked ->
+                    if (guestLocked) trackBoundaryPause.cancel()
+                    refreshTrackBoundaryPause()
                     scheduleCrossfade()
                     updateDefaultNotification()
                     guestGuardPlayer.announceAvailableCommandsChanged()
@@ -854,17 +883,7 @@ class PlayerServiceModern : MediaLibraryService(),
             coroutineScope.launch(NzikDispatchers.UI) { runPeriodically(30_000) { maybeSavePlayerQueue() } }
         }
 
-        /** Discord presence */
-        if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
-            val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, "")
-            if (token?.isNotEmpty() == true) {
-                discordPresenceManager = DiscordPresenceManager(
-                    context = this,
-                    getToken = { token },
-                    getAdvancedSettings = { DiscordAdvancedSettings.read(encryptedPreferences) },
-                )
-            }
-        }
+        updateDiscordPresenceManager()
 
         /**
          * Last.fm scrobbling
@@ -885,6 +904,20 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
+    private fun bindPlaybackTrackIdentity(sessionPlayer: SessionArtworkPlayer) {
+        playbackIdentityJob?.cancel()
+        val profile = getActiveProfile(this)
+        if (Database.FILE_NAME != Database.fileNameForProfile(profile)) return
+        playbackIdentityJob = player.bindPlaybackIdentity(
+            scope = coroutineScope,
+            songs = Database.songTable,
+            ownsProfile = { getActiveProfile(this) == profile },
+            unknownArtist = { appTextResources().getString(R.string.metadata_unknown_artist) },
+            originalId = { preferences.getString("old_browse_id_$it", null) },
+            onCurrentItem = { item -> refreshCurrentTrackIdentity(item, sessionPlayer) },
+        )
+    }
+
     private fun buildLibrarySession(sessionPlayer: Player): MediaLibrarySession {
         val openPlayerSessionActivity = PendingIntent.getActivity(
             this,
@@ -900,6 +933,19 @@ class PlayerServiceModern : MediaLibraryService(),
             .setPeriodicPositionUpdateEnabled(false)
             .setSessionActivity(openPlayerSessionActivity)
             .build()
+    }
+
+    private fun updateDiscordPresenceManager() {
+        discordPresenceManager?.onStop()
+        discordPresenceManager = null
+        if (!encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) return
+        val token = encryptedPreferences.getString(discordPersonalAccessTokenKey, null)
+            ?.takeIf(String::isNotEmpty) ?: return
+        discordPresenceManager = DiscordPresenceManager(
+            context = this,
+            getToken = { token },
+            getAdvancedSettings = { DiscordAdvancedSettings.read(encryptedPreferences) },
+        )
     }
 
     /** Creates (or tears down) the LastFM scrobble manager based on the current settings: toggle ON + session key + API keys all required. */
@@ -982,10 +1028,16 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        if (!playWhenReady && reason == Player.PLAY_WHEN_READY_CHANGE_REASON_END_OF_MEDIA_ITEM) {
+            scheduleTrackBoundaryResume()
+        } else {
+            trackBoundaryPause.cancel()
+        }
         maybeSavePlayerQueue()
     }
 
     override fun onRepeatModeChanged(repeatMode: Int) {
+        refreshTrackBoundaryPause()
         scheduleCrossfade()
         updateDefaultNotification()
         preferences.edit {
@@ -1126,6 +1178,7 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onDestroy() {
         if (isDestroying) return
         isDestroying = true
+        trackBoundaryPause.cancel()
         pendingPlaybackStarts.clear()
         playbackReady.cancel()
         if (!playbackInitializationStarted) {
@@ -1139,18 +1192,16 @@ class PlayerServiceModern : MediaLibraryService(),
             Timber.tag("PlayerServiceModern").e(it, "Failed to capture queue during destruction")
         }
         isRunning = false
+        playbackIdentityJob?.cancel()
         sessionRebindRecoveryJob?.cancel()
         sessionRebindRecoveryJob = null
         closeAudioEffectSession()
         cancelCrossfadeAndReset()
         runCatching {
-            /**
-             * Discord presence cleanup
-             */
             if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
                 Toaster.i(R.string.discord_presence_closed)
-                discordPresenceManager?.onStop()
             }
+            discordPresenceManager?.onStop()
             /**
              * Last.fm scrobbling cleanup
              */
@@ -1240,12 +1291,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private var sessionPolicyJob: Job? = null
     private var sessionArtworkJob: Job? = null
+    private var playbackIdentityJob: Job? = null
     private var boundSessionPreferences: SharedPreferences? = null
     private val sessionProfileListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == activeProfileKey) {
+            menuQueueEdits.invalidate()
+            trackBoundaryPause.cancel()
             boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
             boundSessionPreferences = preferences
             boundSessionPreferences?.registerOnSharedPreferenceChangeListener(this)
+            refreshTrackBoundaryPause()
             refreshSessionAccess()
             refreshArtworkWidgets()
         }
@@ -1271,6 +1326,7 @@ class PlayerServiceModern : MediaLibraryService(),
                 mediaLibrarySessionCallback.refreshArtwork(mediaSession)
             }
             fullOfflineModeKey -> refreshSessionAccess()
+            pauseBetweenSongsKey, crossfadeEnabledKey -> refreshTrackBoundaryPause()
             // Issue #866 (gh-866): the discover state lives in this preference — NZikRadio
             // .toggleDiscover (in-app buttons, AA, notification), the settings toggle, and the
 //
@@ -1339,11 +1395,32 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     private fun publishCurrentMediaItem(mediaItem: MediaItem?) {
-        currentMediaItem.update { mediaItem }
+        currentMediaItem.value = mediaItem
         updateDownloadedState()
     }
 
+    private fun refreshCurrentTrackIdentity(item: MediaItem?, sessionPlayer: SessionArtworkPlayer? = null) {
+        val previous = currentMediaItem.value
+        if (item == null || item === previous || item.mediaId != previous?.mediaId) return
+        publishCurrentMediaItem(item)
+        sessionPlayer?.refreshTrackIdentity()
+        updateWidgets()
+        discordPresenceManager?.onPlayingStateChanged(
+            item,
+            player.isPlaying,
+            player.currentPosition,
+            player.duration,
+            System.currentTimeMillis(),
+            playbackSpeed = effectivePlaybackSpeed(),
+            getCurrentPosition = { player.currentPosition },
+            isPlayingProvider = { player.isPlaying },
+        )
+        lastFmScrobbleManager?.onTrackMetadataChanged(item)
+    }
+
     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+        trackBoundaryPause.cancel()
+        refreshTrackBoundaryPause()
         // P16 (2026-10-23): refresh the main-thread locality snapshot read by the load gate.
         currentMediaIsLocal = mediaItem?.isLocal == true
         if (!isInternalCrossfadeSeek && (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)) {
@@ -1413,7 +1490,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     // before StreamResolver can insert a blank placeholder for FK satisfaction.
                     val artwork = Database.prepareArtworkForInsert(item)
                     Database.transaction {
-                        insertIgnore(item, autoFix = true, preparedArtwork = artwork)
+                        insertIgnore(item, autoFix = true, preparedArtwork = artwork, reconcileExistingIdentity = false)
                     }
 
                     try {
@@ -1421,45 +1498,14 @@ class PlayerServiceModern : MediaLibraryService(),
                         // Skip local songs and invalid IDs
                         if (songId.startsWith("local:") || songId.length != 11) return@launch
                         
-                        val existingAlbum = Database.albumTable.findBySongIdDirect(songId)
-                        // Skip if album exists AND has a real YouTube album ID (valid Base64URL)
-                        val hasValidAlbum = existingAlbum?.id != null && existingAlbum.id.removePrefix(MODIFIED_PREFIX).let { it.length > 11 && it.matches("^[A-Za-z0-9_-]+\$".toRegex()) }
-                        if (hasValidAlbum) return@launch
-                        
-                        val dbSong = Database.songTable.findByIdDirect(songId) ?: return@launch
-                        Timber.tag("auto_fix").d("Song '%s' has no album, attempting background fix...", dbSong.title)
-                        
-                        // First try the official nextPage API (most reliable)
-                        val nextPageResult = Innertube.nextPage(videoId = songId)
-                            ?.getOrNull()
-                            ?.itemsPage
-                            ?.items
-                            ?.firstOrNull { it.key == songId }
-                        
-                        if (nextPageResult?.album?.endpoint?.browseId != null) {
-                            Timber.tag("auto_fix").d("nextPage found album '%s' for song", nextPageResult.album?.name)
-                            Database.upsert(nextPageResult)
-                            return@launch
-                        }
-                        
-                        // Fallback: search by title + artist
-                        val query = "${dbSong.cleanTitle()} ${dbSong.cleanArtistsText()}".trim()
-                        Timber.tag("auto_fix").d("Falling back to search: %s", query)
-                        
-                        val searchResult = Innertube.searchPage<Innertube.SongItem>(
-                            query = query, params = Innertube.SearchFilter.Song.value,
-                            fromMusicShelfRendererContent = { content -> Innertube.SongItem.from(content) }
-                        )?.getOrNull()
-                        
-                        // ONLY use exact ID match to avoid false positives
-                        val foundSong = searchResult?.items?.firstOrNull { it.key == songId }
-                        
-                        if (foundSong?.album?.endpoint?.browseId != null) {
-                            Timber.tag("auto_fix").d("Search found album '%s' for song", foundSong.album?.name)
-                            Database.upsert(foundSong)
-                        } else {
-                            Timber.tag("auto_fix").d("No album found for song '%s'", dbSong.title)
-                        }
+                        val albumId = item.mediaMetadata.extras?.getString("albumId")
+                        val hasAlbum = !albumId.isNullOrBlank() ||
+                            Database.albumTable.findBySongIdDirect(songId) != null
+                        val hasArtist = Database.artistTable.findBySongIdDirect(songId)
+                            .any { isArtistIdForSong(it.id, local = false) && !isGenericReleaseChannel(it.name) }
+                        if (!hasAlbum || !hasArtist) upsertSongInfo(songId, albumId)
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Exception) {
                         Timber.tag("auto_fix").e(e, "Error in background auto-fix")
                     }
@@ -1506,6 +1552,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onTimelineChanged(timeline: Timeline, reason: Int) {
+        refreshTrackBoundaryPause()
         scheduleCrossfade()
         if (reason == Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) {
             persistentQueue.onPlaylistChanged()
@@ -1522,6 +1569,7 @@ class PlayerServiceModern : MediaLibraryService(),
             shuffledIndices[0] = player.currentMediaItemIndex
             player.setShuffleOrder(DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis()))
         }
+        refreshTrackBoundaryPause()
         scheduleCrossfade()
     }
 
@@ -1695,6 +1743,7 @@ class PlayerServiceModern : MediaLibraryService(),
             !isNetworkConnected(applicationContext)
 
     override fun onPlayerError(error: PlaybackException) {
+        trackBoundaryPause.cancel()
         super.onPlayerError(error)
 
         // Extract meaningful error detail from the exception chain
@@ -1920,6 +1969,9 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onEvents(player: Player, events: Player.Events) {
+        if (events.contains(Player.EVENT_MEDIA_METADATA_CHANGED) && !events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION)) {
+            refreshCurrentTrackIdentity(player.currentMediaItem)
+        }
         if (events.containsAny(Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_PLAY_WHEN_READY_CHANGED)) {
             if (player.playbackState == Player.STATE_READY && player.playWhenReady && events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED)) {
                 Timber.tag("PlayerServiceModern").i("PLAYBACK OK - Streaming successfully [${player.currentMediaItem?.mediaMetadata?.title}]")
@@ -1927,6 +1979,12 @@ class PlayerServiceModern : MediaLibraryService(),
             if (!player.playWhenReady) {
                 waitingForNetwork.value = false
             }
+        }
+        if (player.playbackState == Player.STATE_READY && events.containsAny(
+                Player.EVENT_PLAYBACK_STATE_CHANGED, Player.EVENT_MEDIA_ITEM_TRANSITION,
+            )
+        ) {
+            persistMissingPlaybackDuration(player)
         }
         if (events.containsAny(
                 Player.EVENT_IS_PLAYING_CHANGED,
@@ -1937,6 +1995,26 @@ class PlayerServiceModern : MediaLibraryService(),
             )
         ) {
             updateWidgets()
+        }
+    }
+
+    private fun persistMissingPlaybackDuration(player: Player) {
+        val item = player.currentMediaItem ?: return
+        if (item.isLocal || ListenTogetherPlayerBridge.isListenTogetherItem(item) || player.isCurrentMediaItemLive) return
+        val declaredDuration = item.mediaMetadata.extras?.getString("durationText")
+        if (declaredDuration != null && durationTextToMillis(declaredDuration) > 0) return
+        val durationMs = player.duration
+        if (durationMs < 1000) return
+        val id = item.sessionArtistTrackId()
+        val profile = getActiveProfile(this)
+        coroutineScope.launch(NzikDispatchers.DATA) {
+            if (getActiveProfile(this@PlayerServiceModern) != profile ||
+                Database.FILE_NAME != Database.fileNameForProfile(profile)
+            ) return@launch
+            val songs = Database.songTable
+            val song = songs.findByIdDirect(id) ?: return@launch
+            if ((song.durationText?.let(::durationTextToMillis) ?: 0L) > 0L) return@launch
+            songs.updateDurationIfUnchanged(id, song.durationText, formatAsDuration(durationMs))
         }
     }
 
@@ -2457,6 +2535,7 @@ class PlayerServiceModern : MediaLibraryService(),
         )
 
         if (!isInternalCrossfadeSeek && (reason == Player.DISCONTINUITY_REASON_SEEK || reason == Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT || reason == Player.DISCONTINUITY_REASON_SKIP)) {
+            trackBoundaryPause.cancel()
             cancelCrossfadeAndReset()
         }
 
@@ -2519,7 +2598,7 @@ class PlayerServiceModern : MediaLibraryService(),
             }
         }
         coroutineScope.launch(NzikDispatchers.UI) {
-            combine(currentMediaItem, MyDownloadHelper.downloads) { item, downloads ->
+            combine(currentMediaItem.changes, MyDownloadHelper.downloads) { item, downloads ->
                 item?.mediaId to (downloads[item?.mediaId]?.state ?: Download.STATE_STOPPED)
             }.distinctUntilChanged().collect {
                 updateDownloadedState()
@@ -2776,34 +2855,36 @@ class PlayerServiceModern : MediaLibraryService(),
             nzikRadio.stopRadio(showToast = false)
         }
 
-        fun setPreferredAudioDevice(deviceId: Int?) {
-            // External UI entry point (audio device menu). This ExoPlayer-only API cannot be
-            // expressed on the Player facade, so the guest-lock fail-closed policy (AD-2) is
-            // applied here explicitly: a locked guest's switch is a no-op + throttled toast.
-            // Checked BEFORE any state write — preferredDeviceId feeds the audio-device menu,
-            // so a blocked guest must not mutate it (review finding).
+        @MainThread
+        internal fun captureMenuQueueEdit(): MenuQueueEdits.Request? = menuQueueEdits.capture()
+
+        @MainThread
+        internal fun onExplicitQueueClear() {
+            menuQueueEdits.invalidate()
+            stopRadio()
+        }
+
+        private val audioOutputSwitch = AudioOutputSwitch(
+            CoroutineScope(coroutineScope.coroutineContext + NzikDispatchers.UI),
+        ) { player }
+
+        @MainThread
+        fun setPreferredAudioDevice(deviceId: Int?): Boolean {
             if (listenTogetherGuestLock.value) {
                 guestGuardPlayer.reportBlockedOp()
-                return
+                return false
             }
-            preferredDeviceId = deviceId
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                val am = audioManager ?: (getSystemService(AUDIO_SERVICE) as? AudioManager) ?: return
-                // Always clear first to force ExoPlayer to re-evaluate — raw player: reachable
-                // only after the guest-lock check above (AD-2).
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false
+            val manager = audioManager ?: (getSystemService(AUDIO_SERVICE) as? AudioManager) ?: return false
+            val device = deviceId?.let { id ->
+                manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).firstOrNull { it.id == id } ?: return false
+            }
+            return audioOutputSwitch.apply {
+                // Clear the current device to force ExoPlayer to re-evaluate the route.
                 this@PlayerServiceModern.player.setPreferredAudioDevice(null)
-                if (deviceId != null) {
-                    val devices = am.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-                    val deviceInfo = devices.find { it.id == deviceId }
-                    if (deviceInfo != null) {
-                        Timber.tag("PlayerServiceModern").d("setPreferredAudioDevice: switching to id=$deviceId type=${deviceInfo.type} name=${deviceInfo.productName}")
-                        this@PlayerServiceModern.player.setPreferredAudioDevice(deviceInfo)
-                    } else {
-                        Timber.tag("PlayerServiceModern").w("setPreferredAudioDevice: deviceId=$deviceId NOT FOUND. Available: ${devices.map { "id=${it.id} type=${it.type} name=${it.productName}" }}")
-                    }
-                } else {
-                    Timber.tag("PlayerServiceModern").d("setPreferredAudioDevice: cleared (null)")
-                }
+                if (device != null) this@PlayerServiceModern.player.setPreferredAudioDevice(device)
+                preferredDeviceId = deviceId
+                true
             }
         }
 
@@ -2960,6 +3041,49 @@ class PlayerServiceModern : MediaLibraryService(),
     private val crossfadeEnabled: Boolean
         get() = preferences.getBoolean(crossfadeEnabledKey, false)
 
+    private fun configuredTrackPauseMs(): Long = trackBoundaryPauseMs(
+        configuredMs = preferences.getEnum(pauseBetweenSongsKey, PauseBetweenSongs.`0`).asMillis,
+        crossfadeEnabled = crossfadeEnabled,
+        guestLocked = listenTogetherGuestLock.value,
+    )
+
+    private fun nextTrackIndex(owner: Player): Int =
+        if (owner.repeatMode == Player.REPEAT_MODE_ONE) owner.currentMediaItemIndex else owner.nextMediaItemIndex
+
+    private fun refreshTrackBoundaryPause() {
+        if (isDestroying || !::player.isInitialized) return
+        val next = nextTrackIndex(player)
+        player.pauseAtEndOfMediaItems = configuredTrackPauseMs() > 0 && next in 0 until player.mediaItemCount
+    }
+
+    private fun trackBoundary(owner: Player): Pair<Any, Any>? {
+        val timeline = owner.currentTimeline
+        val current = owner.currentMediaItemIndex
+        val next = nextTrackIndex(owner)
+        if (current !in 0 until timeline.windowCount || next !in 0 until timeline.windowCount) return null
+        val window = Timeline.Window()
+        val currentUid = timeline.getWindow(current, window).uid
+        return currentUid to timeline.getWindow(next, window).uid
+    }
+
+    private fun scheduleTrackBoundaryResume() {
+        if (isDestroying || listenTogetherGuestLock.value) return
+        val owner = player
+        val boundary = trackBoundary(owner) ?: return
+        trackBoundaryPause.schedule(configuredTrackPauseMs()) {
+            if (player === owner && !isDestroying && !listenTogetherGuestLock.value &&
+                !owner.playWhenReady && owner.playbackState == Player.STATE_READY &&
+                owner.playerError == null && trackBoundary(owner) == boundary
+            ) {
+                owner.play()
+            }
+        }
+    }
+
+    private fun cancelTrackBoundaryPauseFor(owner: ExoPlayer) {
+        if (::player.isInitialized && player === owner) trackBoundaryPause.cancel()
+    }
+
     private val secondaryPlayerListener = object : Player.Listener {
         override fun onPlayerError(error: PlaybackException) {
             discardCrossfadePreparation()
@@ -3070,7 +3194,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 renderersFactory = createRendersFactory(),
                 handleAudioFocus = false,
             )
-                .build()
+                .build(),
+            onTransportRequested = ::cancelTrackBoundaryPauseFor,
         ).also { attachCrossfadeAudioDiagnostics(it) }
     }
 
@@ -3360,7 +3485,9 @@ class PlayerServiceModern : MediaLibraryService(),
             currentSeekCoalescer?.detach()
             guestGuardPlayer = createGuestGuardPlayer(target)
             notifyStoredDurationPlayerChanged()
-            mediaSession.player = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
+            val sessionPlayer = SessionArtworkPlayer(mediaLibrarySessionCallback.wrapPlayer(guestGuardPlayer))
+            mediaSession.player = sessionPlayer
+            bindPlaybackTrackIdentity(sessionPlayer)
             ResolvedSessionDuration.notifyResolved()
         }.onFailure {
             Timber.tag("PlayerServiceModern").e(it, "Failed to rebind MediaSession player")

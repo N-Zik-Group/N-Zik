@@ -20,13 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -41,19 +38,16 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.colorPalette
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
-import app.n_zik.android.enums.PauseBetweenSongs
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import timber.log.Timber
 import app.n_zik.android.typography
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.DURATION_INDICATOR_HEIGHT
 import app.n_zik.android.utils.formatAsDuration
-import app.n_zik.android.utils.pauseBetweenSongsKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showRemainingSongTimeKey
 import app.n_zik.android.utils.textoutlineKey
-import kotlinx.coroutines.delay
 import app.n_zik.android.utils.showSkipTimeButtonsKey
 
 /**
@@ -157,16 +151,6 @@ private fun OutlinedText( text: String, outlineColor: Color ) {
     )
 }
 
-/**
- * Remaining song time to display. While the stream is loading the player may report an
- * unknown duration (C.DURATION_UNSET = Long.MIN_VALUE, observed on Listen Together host
- * track changes); `duration - position` would overflow signed 64-bit and flash a huge
- * garbage value (2026-09-26). Returns -1 ("unknown", displayed as "--:--") when the
- * duration is not positive, otherwise the clamped remaining time.
- */
-internal fun timeRemainingOf(duration: Long, position: Long): Long =
-    if (duration <= 0) -1L else (duration - position).coerceAtLeast( 0 )
-
 @UnstableApi
 @Composable
 fun DurationIndicator(
@@ -182,7 +166,6 @@ fun DurationIndicator(
     // Issue #881 (gh-881), Phase 3.1: live skip base evaluated at tap time (GetSeekBar reads
     // the pending target / player position); defaults to the composed [position].
     seekBasePosition: () -> Long = { position },
-    livePosition: Long = position,
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -233,35 +216,7 @@ fun DurationIndicator(
                                    .height( DURATION_INDICATOR_HEIGHT.dp ),
                 contentAlignment = Alignment.Center
             ) {
-                val timeRemaining = timeRemainingOf(duration, livePosition)
-                var isPaused by remember { mutableStateOf(false) }
-
-                val pauseBetweenSongs by rememberPreference(pauseBetweenSongsKey, PauseBetweenSongs.`0`)
-                // Guest lock (spec-listen-together-guest-lock-hardening): the automatic
-                // pause→delay→play runs through the guarded facade, where it would register
-
-                // spurious guest play/pause intents (pause sets guestLocalPause, play fires a
-                // requestSync the guest never caused; a backgrounded app mid-delay can leave
-
-                // the flag stuck). In a room the host drives track transitions, so skip it.
-                if(pauseBetweenSongs != PauseBetweenSongs.`0` && !rememberListenTogetherGuestLock())
-                    LaunchedEffect(timeRemaining) {
-                        if(timeRemaining >= 0 && timeRemaining < 500) {
-                            isPaused = true
-                            player.pause()
-                            delay(pauseBetweenSongs.asMillis)
-                            player.play()
-                            isPaused = false
-                        }
-                    }
-
-                if(isPaused) return@Box
-
-                // Label sync (approved legacy fix): the displayed remaining time is derived
-                // from the SAME position as the elapsed label (incl. drag / held seek target)
-
-                // and floored on whole seconds, so both labels tick together. The precise
-                // poller value above only drives the pause-between-songs trigger.
+                // Use the same held seek position as the elapsed label so both tick together.
                 val toDisplay = remember( duration, scrubbingPosition, position ) {
                     val remaining = displayedTimeRemainingOf( duration, scrubbingPosition ?: position )
                     if (remaining < 0) "--:--" else formatAsDuration(remaining)

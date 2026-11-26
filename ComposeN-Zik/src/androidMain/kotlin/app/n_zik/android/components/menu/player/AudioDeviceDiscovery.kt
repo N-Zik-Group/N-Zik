@@ -207,7 +207,7 @@ internal fun loadDevices(
                 .thenBy { it.name }
             )
 
-            onSuccess(sortedDevices.distinctBy { it.name })
+            onSuccess(sortedDevices.distinctBy { it.deviceId })
         } else {
             loadDevicesLegacy(context, onSuccess)
         }

@@ -421,7 +421,6 @@ fun GetSeekBar(
             scrubbingPosition ?: pendingSeekTarget,
             scrubbingPosition ?: pendingSeekTarget ?: livePosition,
             duration(),
-            livePosition = livePosition,
             onSeekIssued = { holdSeekTarget(it) },
             seekBasePosition = {
                 skipBasePosition(

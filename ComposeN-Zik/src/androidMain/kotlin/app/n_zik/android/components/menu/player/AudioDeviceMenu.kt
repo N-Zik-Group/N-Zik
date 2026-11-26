@@ -61,6 +61,10 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -112,6 +116,11 @@ internal fun formatAudioDeviceBattery(context: Context, level: Int): String {
     val pattern = context.getString(R.string.audio_device_battery_format)
     val format = if (pattern.endsWith('%') && !pattern.endsWith("%%")) "$pattern%" else pattern
     return String.format(context.resources.configuration.locales[0], format, level)
+}
+
+internal fun Modifier.audioOptionSelection(isSelected: Boolean): Modifier = semantics {
+    selected = isSelected
+    role = Role.RadioButton
 }
 
 internal fun withBridgePcEntry(
@@ -168,28 +177,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val bridgePcSubtitle = stringResource(R.string.bridge_audio_output_pc_subtitle)
 
     fun selectBridgeOutput(output: AudioOutput) {
-        coroutineScope.launch {
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             if (!BridgeServerController.selectAudioOutput(output)) Toaster.w(R.string.bridge_audio_output_pc_unavailable)
-        }
-    }
-
-    val bluetoothLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        PermissionUsageJournal.result(context, PermissionFeature.AUDIO_DEVICES, Manifest.permission.BLUETOOTH_CONNECT, isGranted)
-        if (isGranted) {
-            coroutineScope.launch(NzikDispatchers.DATA) {
-                loadDevices(context, service?.preferredDeviceId, isCarProjectionActive, onSuccess = { devices ->
-                    audioDevices = devices
-                    isLoading = false
-                }, onError = { error ->
-                    errorMessage = error
-                    isLoading = false
-                })
-            }
-        } else {
-            errorMessage = context.getString(R.string.audio_output_bluetooth_permission_description)
-            isLoading = false
         }
     }
 
@@ -204,6 +193,33 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                 if (isLoading) errorMessage = error
                 isLoading = false
             })
+        }
+    }
+
+    val bluetoothLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        PermissionUsageJournal.result(context, PermissionFeature.AUDIO_DEVICES, Manifest.permission.BLUETOOTH_CONNECT, isGranted)
+        if (!isGranted) Toaster.w(R.string.audio_output_bluetooth_permission_description)
+        refreshDevices()
+    }
+
+    fun selectDevice(device: AudioDevice) {
+        if (device.type == AudioDeviceType.PC) {
+            selectBridgeOutput(AudioOutput.PC)
+            return
+        }
+        if (binder?.setPreferredAudioDevice(device.deviceId) != true) return
+        if (BridgeServerController.audioOutput.value == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
+        refreshDevices()
+        coroutineScope.launch {
+            repeat(12) {
+                delay(250)
+                if (!isUserDragging) {
+                    currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
+                    maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                }
+            }
         }
     }
 
@@ -322,6 +338,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             }
         } else {
             var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
+            val selectedRowBackground = Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
             val qualityOptions = listOf(
                 AudioQualityFormat.Auto to stringResource(R.string.audio_quality_automatic),
                 AudioQualityFormat.High to stringResource(R.string.audio_quality_format_high),
@@ -366,7 +383,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         }
                                     }
                                 },
-                                modifier = if (dev.isActive) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                                modifier = Modifier.audioOptionSelection(dev.isActive)
+                                    .then(if (dev.isActive) selectedRowBackground else Modifier),
                                 subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
                                 trailingContent = {
                                     AnimatedVisibility(
@@ -384,35 +402,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                         )
                                     }
                                 },
-                                onClick = {
-                                if (dev.type == AudioDeviceType.PC) {
-                                    selectBridgeOutput(AudioOutput.PC)
-                                    return@Entry
-                                }
-                                // A phone output while on the PC brings the sound back to the phone
-                                if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
-                                val wasPlaying = binder?.player?.isPlaying == true
-                                binder?.player?.pause()
-                                binder?.setPreferredAudioDevice(dev.deviceId)
-                                refreshDevices()
-                                coroutineScope.launch {
-                                    // Poll every 250ms for 3 seconds to catch the volume after hardware route switch
-                                    for (i in 1..12) {
-                                        kotlinx.coroutines.delay(250)
-                                        if (!isUserDragging) {
-                                            val newVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
-                                            val newMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                                            if (newVol != currentVolume || newMax != maxVolume) {
-                                                currentVolume = newVol
-                                                maxVolume = newMax
-                                            }
-                                        }
-                                        if (i == 4 && wasPlaying) {
-                                            binder?.player?.play()
-                                        }
-                                    }
-                                }
-                                }
+                                onClick = { selectDevice(dev) }
                             )
                     }
                     SectionTitle(stringResource(R.string.player_statistics_volume_label))
@@ -457,7 +447,8 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                     )
                                 }
                             },
-                            modifier = if (isSelected) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                            modifier = Modifier.audioOptionSelection(isSelected)
+                                .then(if (isSelected) selectedRowBackground else Modifier),
                             trailingContent = {
                                 if (isSelected) {
                                     RadioButton(
@@ -495,6 +486,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         GridMenu.Entry(
                             text = dev.name,
                             enabled = !isCarProjectionActive || dev.isActive,
+                            modifier = Modifier.audioOptionSelection(dev.isActive),
                             icon = {
                                 val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
                                 Box(
@@ -541,35 +533,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                     )
                                 }
                             },
-                            onClick = {
-                                if (dev.type == AudioDeviceType.PC) {
-                                    selectBridgeOutput(AudioOutput.PC)
-                                    return@Entry
-                                }
-                                // A phone output while on the PC brings the sound back to the phone
-                                if (bridgeOutput == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
-                                val wasPlaying = binder?.player?.isPlaying == true
-                                binder?.player?.pause()
-                                binder?.setPreferredAudioDevice(dev.deviceId)
-                                refreshDevices()
-                                coroutineScope.launch {
-                                    // Poll every 250ms for 3 seconds to catch the volume after hardware route switch
-                                    for (i in 1..12) {
-                                        kotlinx.coroutines.delay(250)
-                                        if (!isUserDragging) {
-                                            val newVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
-                                            val newMax = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-                                            if (newVol != currentVolume || newMax != maxVolume) {
-                                                currentVolume = newVol
-                                                maxVolume = newMax
-                                            }
-                                        }
-                                        if (i == 4 && wasPlaying) {
-                                            binder?.player?.play()
-                                        }
-                                    }
-                                }
-                            }
+                            onClick = { selectDevice(dev) }
                         )
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
@@ -605,6 +569,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         val isSelected = audioQualityFormat == format
                         GridMenu.Entry(
                             text = label,
+                            modifier = Modifier.audioOptionSelection(isSelected),
                             icon = {
                                 val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
                                 Box(

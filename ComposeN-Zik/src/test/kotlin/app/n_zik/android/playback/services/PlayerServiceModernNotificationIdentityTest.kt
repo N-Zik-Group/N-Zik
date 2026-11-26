@@ -88,7 +88,7 @@ class PlayerServiceModernNotificationIdentityTest {
         (field("coroutineScope").get(service) as CoroutineScope).cancel()
         field("coroutineScope").set(service, scope)
         field("crossfadeClockMs").set(service, { scheduler.currentTime })
-        field("currentSong").set(service, notificationSongStates(service.currentMediaItem) { id ->
+        field("currentSong").set(service, notificationSongStates(service.currentMediaItem.changes) { id ->
             rows.getOrPut(id) { MutableSharedFlow(extraBufferCapacity = 8) }
         }.stateIn(scope, SharingStarted.Lazily, NotificationSongState(null, null)))
         every { service.updateWidgets() } just Runs

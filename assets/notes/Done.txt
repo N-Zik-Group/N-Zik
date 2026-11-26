@@ -668,3 +668,7 @@ Android Auto metadata:
 Playback queue edits:
 - fix(queue): preserve playback when applying menu queue actions
   - Serialize delayed edits and respect shuffle, explicit clearing and Listen Together locks.
+
+Playback service integration:
+- fix(playback): coordinate output routing, metadata and track pauses
+  - Keep Bluetooth denial nonblocking, preserve distinct routes and handle track-boundary pauses away from the UI.
