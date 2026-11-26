@@ -170,7 +170,7 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
                     val prefix2 = getTabPrefix(tab)
                     val key = getSortOrderKey(tab)
                     (workingToggles[tab] ?: emptyMap()).forEach { (id, isChecked) -> edit.putBoolean("${prefix2}_sort_${id}_visible", isChecked) }
-                    edit.putString(key, serializeOrder((workingOrders[tab] ?: emptyList()).filter { id -> (workingToggles[tab] ?: emptyMap())[id] == true }))
+                    edit.putString(key, serializeOrder(workingOrders[tab].orEmpty()))
                 }
                 edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }

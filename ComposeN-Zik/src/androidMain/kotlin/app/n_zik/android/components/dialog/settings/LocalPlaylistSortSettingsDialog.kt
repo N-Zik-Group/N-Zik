@@ -137,7 +137,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
             onConfirm = {
                 val edit = prefs.edit()
                 workingToggles.forEach { (id, isChecked) -> edit.putBoolean("pl_sort_${id}_visible", isChecked) }
-                edit.putString(localPlaylistSortMenuOrderKey, serializeOrder(workingOrder.filter { id -> workingToggles[id] == true }))
+                edit.putString(localPlaylistSortMenuOrderKey, serializeOrder(workingOrder))
                 edit.apply(); Toaster.s(R.string.settings_preference_saved_message); hideDialog()
             }
         )

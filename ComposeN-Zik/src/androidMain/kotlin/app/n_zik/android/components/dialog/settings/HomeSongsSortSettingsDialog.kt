@@ -264,8 +264,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
                         edit.putBoolean("${tp}_sort_${id}_visible", isChecked)
                     }
 
-                    val finalOrder = order.filter { id -> toggles[id] == true }
-                    edit.putString(key, serializeOrder(finalOrder))
+                    edit.putString(key, serializeOrder(order))
                 }
                 edit.apply()
                 Toaster.s(R.string.settings_preference_saved_message); hideDialog()
