@@ -956,3 +956,7 @@ Menus:
 Settings:
 - fix(settings): align card feedback and section labels
   - Use the existing card gutter for feedback, keep content padding, and align the profile avatar and section labels.
+
+Settings:
+- fix(settings): label the interface shortcuts card
+  - Give the Theme Store and Glass shortcuts a standard card heading.
