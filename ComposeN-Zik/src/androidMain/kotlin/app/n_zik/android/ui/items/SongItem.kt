@@ -35,6 +35,7 @@ import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import app.n_zik.android.components.glass.GlassSongRowSurface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -450,6 +451,7 @@ fun SongItem(
                     if ( playlistindicator && isSongMappedToPlaylist ) {
                         IconButton(
                             icon = R.drawable.add_in_playlist,
+                            contentDescription = stringResource(R.string.playlist_action_add),
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {
@@ -504,6 +506,7 @@ fun SongItem(
                     if (playlistindicator && (songPlaylist > 0)) {
                         IconButton(
                             icon = R.drawable.add_in_playlist,
+                            contentDescription = stringResource(R.string.playlist_action_add),
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {},
@@ -549,6 +552,7 @@ fun SongItem(
                 if ( playlistindicator && isSongMappedToPlaylist ) {
                     IconButton(
                         icon = R.drawable.add_in_playlist,
+                        contentDescription = stringResource(R.string.playlist_action_add),
                         color = colorPalette().text,
                         enabled = true,
                         onClick = {

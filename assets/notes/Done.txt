@@ -924,3 +924,7 @@ Settings feedback spacing:
 Queue row spacing:
 - fix(queue): inset the active track highlight and add top spacing
   - Keep the row contents and interactions in their existing positions.
+
+Playlist badge accessibility:
+- fix(library): label playlist badges that open the picker
+  - Give each variant the existing Add to playlist label.
