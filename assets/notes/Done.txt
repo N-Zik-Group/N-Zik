@@ -800,3 +800,7 @@ Navigation and settings hosts:
 Audio Device recovery:
 - fix(menu): clear stale audio output errors after refresh
   - Return to the current device list when discovery succeeds again.
+
+Settings search availability:
+- fix(settings): hide portrait-only player options in landscape
+  - Filter both card and setting matches and verify reset scope navigation.

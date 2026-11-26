@@ -47,6 +47,17 @@ val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
 
 private val settingsSearchSeparators = Regex("[&/／＆›]+")
 private val settingsCountedLabelNumber = Regex("(?<!\\p{Nd})\\p{Nd}{1,4}(?!\\p{Nd})")
+internal val portraitOnlySettingsSearchLabels = setOf(
+    R.string.settings_lyrics_top_spacing_label,
+    R.string.player_top_spacing_description,
+    R.string.player_artwork_hidden_swipe_animation,
+    R.string.settings_transition_slide_vertical,
+    R.string.settings_transition_fade,
+    R.string.settings_transition_scale,
+    R.string.player_artwork_transition_circular,
+    R.string.settings_player_artwork_carousel_label,
+    R.string.settings_player_expanded_artwork_size_label,
+)
 
 internal fun normalizedSettingsText(text: String): String =
     normalizeSearchText(text.replace(settingsSearchSeparators, " "))
@@ -77,9 +88,10 @@ internal fun searchSettingsEntries(
 ): List<SettingsEntryTarget> {
     if (query.isBlank()) return emptyList()
     val resources = context.resources
+    val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val activeSwipeSetting = PlayerSongSwipeSetting.forLayout(
         context.preferences.getEnum(playerTypeKey, PlayerType.Essential),
-        resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+        isLandscape,
     )
     return settingsEntrySearchIndex(resources).search(query) { id, count ->
         resources.getQuantityString(id, count, count)
@@ -87,6 +99,7 @@ internal fun searchSettingsEntries(
         when {
             !youtubeSyncSupported && result.requiresYouTubeSyncBuild() -> false
             !lastFmSupported && result.cardTitleRes == R.string.settings_lastfm_title -> false
+            isLandscape && result.labelRes in portraitOnlySettingsSearchLabels -> false
             result.id.startsWith("general.picture_in_picture.") &&
                 result.id != "general.picture_in_picture.settings_enable_pip" -> supportsPictureInPicture(context)
             result.cardTitleRes == R.string.glass_effect_title -> isGlassSearchLabelSupported(context, result.labelRes)

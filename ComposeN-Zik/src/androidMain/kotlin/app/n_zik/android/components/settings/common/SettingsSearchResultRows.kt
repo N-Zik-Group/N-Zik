@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.common
 
 import android.content.Context
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -46,6 +47,7 @@ internal fun SettingsCardRegistryEntry.matchesSearch(
 ): Boolean {
     if (!youtubeSyncSupported && requiresYouTubeSyncBuild()) return false
     if (!lastFmSupported && titleRes == R.string.settings_lastfm_title) return false
+    val isLandscape = context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val orderedQueryTerms = normalizedQuery.split(' ').sortedByDescending(String::length)
     fun matches(label: String): Boolean {
         val text = normalizedSettingsText(label)
@@ -59,7 +61,7 @@ internal fun SettingsCardRegistryEntry.matchesSearch(
     }
     return matches(displayTitle(context)) ||
         groupTitleRes?.let { matches(context.getString(it)) } == true ||
-        keywords.any { matches(context.getString(it)) }
+        keywords.any { (!isLandscape || it !in portraitOnlySettingsSearchLabels) && matches(context.getString(it)) }
 }
 
 @Composable

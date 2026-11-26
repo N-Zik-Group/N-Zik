@@ -200,6 +200,39 @@ class SettingsDetailedSearchTest {
         assertFalse(searchSettingsEntries(english, "car caro").any { it.id == id })
     }
 
+    @Test fun portraitOnlyPlayerSettingsAndTheirCardMatchesAreHiddenInLandscape() {
+        fun oriented(orientationValue: Int): Context = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply {
+                setLocale(Locale.ENGLISH)
+                orientation = orientationValue
+            },
+        )
+        val portrait = oriented(Configuration.ORIENTATION_PORTRAIT)
+        val landscape = oriented(Configuration.ORIENTATION_LANDSCAPE)
+        val queriesByTarget = mapOf(
+            "appearance.player_behavior_and_visuals.blankspace" to listOf(
+                R.string.settings_lyrics_top_spacing_label,
+                R.string.player_top_spacing_description,
+            ),
+            "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" to listOf(
+                R.string.player_artwork_hidden_swipe_animation,
+                R.string.player_artwork_transition_circular,
+            ),
+            "appearance.cover_and_thumbnail.carousel" to listOf(R.string.settings_player_artwork_carousel_label),
+            "appearance.cover_and_thumbnail.carouselsize" to listOf(R.string.settings_player_expanded_artwork_size_label),
+        )
+        queriesByTarget.forEach { (targetId, queryResources) ->
+            val entry = AllSettingsEntryTargets.single { it.id == targetId }
+            queryResources.forEach { resource ->
+                val query = portrait.getString(resource)
+                assertTrue(targetId, entry in searchSettingsEntries(portrait, query))
+                assertFalse(targetId, entry in searchSettingsEntries(landscape, query))
+                assertTrue(targetId, entry.parentCard() in searchSettingsCardResults(portrait, query))
+                assertFalse(targetId, entry.parentCard() in searchSettingsCardResults(landscape, query))
+            }
+        }
+    }
+
     @Test fun audioSearchFindsOptionsByTheirDialogDescriptions() {
         val english = localized(Locale.ENGLISH)
         val expected = mapOf(

@@ -535,7 +535,12 @@ class SettingsCategoryPageTest {
         composeRule.onNodeWithTag("settings.reset.all.open").assertExists()
         composeRule.onNodeWithTag("settings.reset.scope.$DOWNLOAD_RESET_SCOPE").assertExists()
         composeRule.onNodeWithTag("settings.reset.scope.$LISTEN_TOGETHER_RESET_SCOPE").assertExists()
-        composeRule.onNodeWithTag("settings.reset.scope.$DOWNLOAD_RESET_SCOPE").performScrollTo().performClick()
+        composeRule.mainClock.autoAdvance = true
+        try {
+            composeRule.onNodeWithTag("settings.reset.scope.$DOWNLOAD_RESET_SCOPE").performScrollTo().performClick()
+        } finally {
+            composeRule.mainClock.autoAdvance = false
+        }
         pumpUntil("the System download reset action is visible") {
             runCatching { composeRule.onNodeWithTag("settings.reset.downloads.action").assertIsDisplayed() }.isSuccess
         }
