@@ -83,6 +83,7 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.PendingLibraryItemMenu
 import app.n_zik.android.components.menu.OpenEntityMenuAction
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.menuSheetSectionBackground
@@ -347,7 +348,7 @@ class OnlineArtistItemMenu private constructor(
         if (!ObserveMenuProfile(ownerProfile, menuState::hide)) return
         val browseId = rememberLibraryBrowseDestination(artist.key, LibraryBrowseKind.Artist)?.browseId
         if (browseId == null) {
-            MenuSheetSurface { MenuSheetDragHandle() }
+            PendingLibraryItemMenu()
             return
         }
         key(browseId) { ResolvedArtistMenu(browseId) }

@@ -996,3 +996,7 @@ Playback:
 Settings:
 - fix(settings): balance the vertical card gutters
   - Bring the top and bottom edges of settings cards closer to their side gutters.
+
+Menus:
+- fix(menu): stabilize online item sheets while identity resolves
+  - Keep the opening sheet anchors available during browse alias resolution.

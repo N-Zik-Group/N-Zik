@@ -9,11 +9,18 @@ import androidx.compose.foundation.background
 import app.n_zik.android.components.glass.GlassMaterialContainerColumn
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
@@ -22,6 +29,19 @@ import app.n_zik.android.topUiRoundnessShape
 
 /** A custom media header and its list/grid share one optical surface and outer rim. */
 internal val LocalMenuSheetSurface = staticCompositionLocalOf { false }
+
+/** Reserve the menu's sheet anchors while a saved browse alias is being resolved. */
+@Composable
+internal fun PendingLibraryItemMenu() {
+    val menuHeight = (LocalConfiguration.current.screenHeightDp * MenuConstants.CONTENT_HEIGHT_FRACTION).dp
+    MenuSheetSurface(Modifier.heightIn(min = menuHeight)) {
+        MenuSheetDragHandle()
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp).size(24.dp),
+            color = colorPalette().accent,
+        )
+    }
+}
 
 @Composable
 internal fun MenuSheetSurface(

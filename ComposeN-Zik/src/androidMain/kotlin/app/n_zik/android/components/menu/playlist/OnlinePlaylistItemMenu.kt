@@ -97,6 +97,7 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
+import app.n_zik.android.components.menu.PendingLibraryItemMenu
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.menu.openExternalMenuLink
@@ -414,7 +415,11 @@ class OnlinePlaylistItemMenu private constructor(
         val offlineMode by OfflineMode.rememberEnabled()
 
         val kind = if (isPodcastBrowseId(playlist.key)) LibraryBrowseKind.Podcast else LibraryBrowseKind.Playlist
-        val sourceId = rememberLibraryBrowseDestination(playlist.key, kind)?.browseId ?: return
+        val sourceId = rememberLibraryBrowseDestination(playlist.key, kind)?.browseId
+        if (sourceId == null) {
+            PendingLibraryItemMenu()
+            return
+        }
         val shareUrl = onlinePlaylistShareUrl(sourceId)
         val sourceChanged = sourceId != playlist.key
 
