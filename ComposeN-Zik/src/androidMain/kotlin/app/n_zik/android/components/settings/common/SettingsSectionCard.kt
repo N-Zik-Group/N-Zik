@@ -134,6 +134,7 @@ fun SettingsSectionCard(
                         // sits at x=0; clipping its Row to the taller expanded header's
                         // corner would cut the icon even though its own badge is round.
                         Box(Modifier.fillMaxWidth().then(headerModifier).semantics(mergeDescendants = true) {
+                            heading()
                             if (onHeaderClick != null) semanticsOnClick { onHeaderClick(); true }
                         }) {
                             if (onHeaderClick != null) Box(Modifier.matchParentSize()

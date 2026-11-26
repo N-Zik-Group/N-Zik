@@ -548,3 +548,7 @@ Appearance and interface defaults:
 Search movement:
 - fix(search): retain screen layout through result transitions
   - Support filtered-result opacity on caller layout and animate manual video rows.
+
+Settings accessibility:
+- fix(settings): expose card headings and invalid-input feedback
+  - Announce section structure and display a localized validation error.

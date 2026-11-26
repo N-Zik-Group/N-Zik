@@ -11,6 +11,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
 import app.n_zik.android.components.dialog.common.TextInputDialog
 
@@ -22,6 +24,8 @@ class SettingsInputDialog private constructor(
     constraint: String,
     override val allowEmpty: Boolean,
     private val isPassword: Boolean,
+    keyboardType: KeyboardType,
+    private val isValid: (String) -> Boolean,
     private val onDismiss: () -> Unit,
     private val onSetValue: (String) -> Unit
 ): TextInputDialog(constraint) {
@@ -35,6 +39,8 @@ class SettingsInputDialog private constructor(
             constraint: String = InputDialogConstraints.ALL,
             allowEmpty: Boolean = false,
             isPassword: Boolean = false,
+            keyboardType: KeyboardType = KeyboardType.Text,
+            isValid: (String) -> Boolean = { true },
             onDismiss: () -> Unit,
             onSetValue: (String) -> Unit
         ): SettingsInputDialog {
@@ -46,6 +52,8 @@ class SettingsInputDialog private constructor(
                 constraint,
                 allowEmpty,
                 isPassword,
+                keyboardType,
+                isValid,
                 onDismiss,
                 onSetValue
             )
@@ -56,7 +64,7 @@ class SettingsInputDialog private constructor(
     override val keyboardOption: KeyboardOptions = if (isPassword) {
         KeyboardOptions(keyboardType = KeyboardType.Password)
     } else {
-        KeyboardOptions.Default
+        KeyboardOptions(keyboardType = keyboardType)
     }
 
     override val visualTransformation: VisualTransformation = if (isPassword) {
@@ -81,6 +89,10 @@ class SettingsInputDialog private constructor(
     override fun onSet(newValue: String) {
         super.onSet(newValue)
         if (errorMessage.isNotEmpty()) return
+        if (!isValid(newValue)) {
+            errorMessage = appTextResources().getString(R.string.common_validation_invalid_input)
+            return
+        }
         onSetValue(newValue)
         hideDialog()
     }
