@@ -250,7 +250,11 @@ internal class SettingsEntrySearchIndex(
                     (entry.qualifiedLabels.any { it.contains(needle) } || entry.qualifiedTerms.any { matchesSettingsTerms(it, tokens) }) -> 3
                 entry.keywords.any { keyword -> keyword.contains(needle) || labels.any { "$it $keyword" == needle } } -> 3
                 (currentChoiceLabels[entry.target.id]?.map(::normalizedSettingsText) ?: entry.choices).any { choice ->
-                    choice.contains(needle) || labels.any { label -> tokens.all { label.contains(it) || choice.contains(it) } } ||
+                    fun matchesChoice(term: String): Boolean =
+                        if (entry.target.labelRes == R.string.backup_auto_custom_interval_value) choice == term
+                        else choice.contains(term)
+
+                    matchesChoice(needle) || labels.any { label -> tokens.all { label.contains(it) || matchesChoice(it) } } ||
                         (entry.target.cardTitleRes == R.string.glass_effect_title && entry.scopeTerms.any { scope ->
                             tokens.any { it in scope && !choice.contains(it) } &&
                                 tokens.any { it !in scope && choice.contains(it) } &&

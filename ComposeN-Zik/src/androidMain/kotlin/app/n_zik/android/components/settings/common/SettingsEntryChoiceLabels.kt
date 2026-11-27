@@ -9,6 +9,7 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 import app.n_zik.android.components.settings.other.proxyModeLabel
+import app.n_zik.android.core.backup.ui.AutoBackupCustomIntervalValueOptions
 import app.n_zik.android.core.backup.ui.AutoBackupIntervalLabels
 import app.n_zik.android.core.backup.ui.AutoBackupIntervalUnitLabels
 import app.n_zik.android.core.backup.ui.AutoBackupMonthlyDayOptions
@@ -184,6 +185,7 @@ internal fun settingsEntryChoiceLabels(
             if (it == -1) resolveString(R.string.common_limit_unlimited_label) else it.toString()
         },
         "embedded.auto_backup.auto_backup_interval" to AutoBackupIntervalLabels.values.map(resolveString),
+        "embedded.auto_backup.auto_backup_custom_interval_value" to AutoBackupCustomIntervalValueOptions.map(Int::toString),
         "embedded.auto_backup.auto_backup_custom_interval_unit" to AutoBackupIntervalUnitLabels.values.map(resolveString),
         "embedded.auto_backup.auto_backup_schedule_day_of_month" to AutoBackupMonthlyDayOptions.map(Int::toString),
         "embedded.auto_backup.auto_backup_schedule_time" to AutoBackupScheduleHours.map(::autoBackupScheduleHourLabel),

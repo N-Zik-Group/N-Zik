@@ -1772,3 +1772,7 @@ Playlists:
 Playlists:
 - fix(playlist): clean up unused export documents
   - Remove a newly created empty export document when the picker has no usable data and preserve existing bytes.
+
+Settings:
+- fix(settings): index exact backup retention values
+  - Share the available retention range with search and match the exact number entered.

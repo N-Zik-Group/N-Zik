@@ -89,6 +89,24 @@ class SettingsDetailedSearchTest {
         assertFalse(searchSettingsEntries(english, "$label 24:00").any { it.id == target })
     }
 
+    @Test fun customBackupIntervalSearchMatchesOnlyValuesOfferedByTheSelector() {
+        val english = localized(Locale.ENGLISH)
+        val label = english.getString(R.string.backup_auto_custom_interval_value)
+        val target = "embedded.auto_backup.auto_backup_custom_interval_value"
+
+        fun findsIntervalValue(query: String): Boolean = searchSettingsEntries(english, query).any {
+            it.id == target && it.parentCard("data").categoryId() == "data"
+        }
+
+        for (value in 1..60) {
+            assertTrue("$label $value", findsIntervalValue("$label $value"))
+        }
+        assertTrue(findsIntervalValue("37 $label"))
+        assertTrue(findsIntervalValue("37"))
+        assertFalse(findsIntervalValue("$label 0"))
+        assertFalse(findsIntervalValue("$label 61"))
+    }
+
     @Test fun backupIntervalSearchMatchesChoicesBeforeTheirSettingLabels() {
         val cases = listOf(
             Triple(

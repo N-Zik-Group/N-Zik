@@ -44,6 +44,7 @@ import java.time.format.TextStyle
 import timber.log.Timber
 
 internal val AutoBackupRetentionOptions = listOf(1, 3, 5, 10, 20, -1)
+internal val AutoBackupCustomIntervalValueOptions = (1..60).toList()
 internal val AutoBackupMonthlyDayOptions = (1..28).toList()
 internal val AutoBackupScheduleHours = (0..23).toList()
 
@@ -271,7 +272,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.backup_auto_custom_interval_value),
                     selectedValue = autoBackupCustomIntervalValue,
-                    values = (1..60).toList(),
+                    values = AutoBackupCustomIntervalValueOptions,
                     onValueSelected = {
                         autoBackupCustomIntervalValue = it
                         BackupManager.scheduleBackup(context, autoBackupInterval, target)
