@@ -3,7 +3,9 @@ package app.n_zik.android.components.ui.screens.home
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.components.tab.selectionActionTargets
+import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.PlaylistsType
+import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.core.database.isYouTubePlaylistSource
@@ -36,6 +38,14 @@ internal data class HomeLibraryPlaylistScope(
         }
     }
 }
+
+/** Only an unsearched position-sorted projection can safely rewrite global positions. */
+internal fun canReorderHomePlaylists(
+    query: String,
+    sortBy: PlaylistSortBy,
+    sortOrder: SortOrder,
+    locked: Boolean,
+): Boolean = query.isBlank() && sortBy == PlaylistSortBy.Custom && sortOrder == SortOrder.Ascending && !locked
 
 /** Hidden selections never broaden a bulk action or fall back to all visible rows. */
 internal fun homeLibraryActionTargets(

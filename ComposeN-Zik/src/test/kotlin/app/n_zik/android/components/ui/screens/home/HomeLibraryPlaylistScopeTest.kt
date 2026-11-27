@@ -2,7 +2,9 @@ package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.core.database.HomeParentSong
+import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.PlaylistsType
+import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.Song
@@ -15,6 +17,16 @@ import org.junit.Test
 
 // runBlocking bridges synchronous JUnit tests to the suspend song-loader contract.
 class HomeLibraryPlaylistScopeTest {
+    @Test fun `custom playlist positions can only be changed without a search filter`() {
+        val custom = PlaylistSortBy.Custom
+        val ascending = SortOrder.Ascending
+        assertTrue(canReorderHomePlaylists("", custom, ascending, locked = false))
+        assertFalse(canReorderHomePlaylists("science", custom, ascending, locked = false))
+        assertFalse(canReorderHomePlaylists("", custom, ascending, locked = true))
+        assertFalse(canReorderHomePlaylists("", custom, SortOrder.Descending, locked = false))
+        assertFalse(canReorderHomePlaylists("", PlaylistSortBy.Name, ascending, locked = false))
+    }
+
     private fun preview(id: Long, name: String, browseId: String? = null): PlaylistPreview =
         PlaylistPreview(Playlist(id = id, name = name, browseId = browseId), songCount = 1)
 

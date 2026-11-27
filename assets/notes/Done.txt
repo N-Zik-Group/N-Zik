@@ -1764,3 +1764,7 @@ Settings:
 Menus:
 - fix(menu): expose sorting direction action label
   - Announce and verify the toolbar long press that reverses the sorting direction.
+
+Playlists:
+- fix(playlist): disable reordering during library search
+  - Keep custom order editing available on the full playlist list and disallow mutations from filtered positions.

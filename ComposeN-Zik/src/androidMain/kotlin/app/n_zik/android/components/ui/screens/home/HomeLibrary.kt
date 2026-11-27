@@ -308,6 +308,8 @@ fun HomeLibrary(
         )
     }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
+    fun canReorderPlaylists() =
+        canReorderHomePlaylists(search.filterQuery, sort.sortBy, sort.sortOrder, positionLock.isLocked())
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
 
     //</editor-fold>
@@ -615,6 +617,7 @@ fun HomeLibrary(
                 val reorderableLazyGridState = sh.calvin.reorderable.rememberReorderableLazyGridState(
                     lazyGridState = lazyGridState
                 ) { from, to ->
+                    if (!canReorderPlaylists()) return@rememberReorderableLazyGridState
                     val mutableItemsOnDisplay = itemsOnDisplay.toMutableList()
                     val fromIndex = mutableItemsOnDisplay.indexOfFirst { it.playlist.id == from.key }
                     val toIndex = mutableItemsOnDisplay.indexOfFirst { it.playlist.id == to.key }
@@ -753,9 +756,7 @@ fun HomeLibrary(
                             key = preview.playlist.id
                         ) { isDraggingItem ->
                             Box(modifier = Modifier) {
-                                if ((gridReady || isDraggingItem) && !positionLock.isLocked() &&
-                                    sort.sortBy == PlaylistSortBy.Custom && sort.sortOrder == SortOrder.Ascending
-                                ) {
+                                if ((gridReady || isDraggingItem) && canReorderPlaylists()) {
                                     Box(
                                         modifier = Modifier
                                             .padding(4.dp)
@@ -768,10 +769,12 @@ fun HomeLibrary(
                                                 },
                                                 onDragStopped = {
                                                     hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                                    val currentItems = itemsOnDisplay.toList()
-                                                    Database.asyncTransaction {
-                                                        currentItems.forEachIndexed { index, preview ->
-                                                            playlistTable.updatePosition(preview.playlist.id, index)
+                                                    if (canReorderPlaylists()) {
+                                                        val currentItems = itemsOnDisplay.toList()
+                                                        Database.asyncTransaction {
+                                                            currentItems.forEachIndexed { index, preview ->
+                                                                playlistTable.updatePosition(preview.playlist.id, index)
+                                                            }
                                                         }
                                                     }
                                                 }
