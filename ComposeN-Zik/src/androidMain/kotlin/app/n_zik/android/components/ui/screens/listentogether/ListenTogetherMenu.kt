@@ -248,11 +248,17 @@ fun ListenTogetherMenu() {
     ) { target ->
         when (target) {
             RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
-                ListMenu.Menu(title = stringResource(R.string.listen_together_title)) {
+                ListMenu.Menu(
+                    title = stringResource(R.string.listen_together_title),
+                    headerTrailing = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
+                ) {
                     ListLtMenuContent(content)
                 }
             } else {
-                GridMenu.Menu(title = stringResource(R.string.listen_together_title)) {
+                GridMenu.Menu(
+                    title = stringResource(R.string.listen_together_title),
+                    headerTrailing = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
+                ) {
                     GridLtMenuContent(content, palette)
                 }
             }

@@ -294,6 +294,7 @@ internal fun UserActionMenu(
     val palette = colorPalette()
     val style = rememberPreference(menuStyleKey, MenuStyle.List).value
     val title = stringResource(R.string.listen_together_manage_user)
+    val backButton = managementBackButton(if (menuState.hasPrevious) menuState::pop else null)
     val header: @Composable () -> Unit = {
         Text(
             text = username,
@@ -332,12 +333,12 @@ internal fun UserActionMenu(
         },
     )
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title) {
+        ListMenu.Menu(title = title, headerTrailing = backButton) {
             header()
             entries.forEach { it() }
         }
     } else {
-        GridMenu.Menu(title = title) {
+        GridMenu.Menu(title = title, headerTrailing = backButton) {
             item(span = { GridItemSpan(maxLineSpan) }) { header() }
             items(entries) { it() }
         }

@@ -113,7 +113,7 @@ fun ListenTogetherLogsMenu(
     }
 }
 
-private fun managementBackButton(onBack: (() -> Unit)?): (@Composable RowScope.() -> Unit)? =
+internal fun managementBackButton(onBack: (() -> Unit)?): (@Composable RowScope.() -> Unit)? =
     onBack?.let { navigateBack ->
         {
             IconButton(onClick = navigateBack) {

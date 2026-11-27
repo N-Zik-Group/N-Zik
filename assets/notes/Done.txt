@@ -1300,3 +1300,7 @@ Library:
 Menus:
 - fix(player): use one blur range in all controls
   - Keep existing blur values editable in both menu styles and from the cover.
+
+Menus:
+- fix(listen-together): show back in nested room menus
+  - Expose explicit back navigation only when the room or participant sheet has a parent.
