@@ -18,6 +18,7 @@ import app.n_zik.android.components.ui.screens.album.AlbumScreen
 import app.n_zik.android.components.ui.screens.artist.ArtistScreen
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceAlbumScreen
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceArtistScreen
+import app.n_zik.android.core.navigation.RegisterDisplayedPlaylistAlias
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.enums.NavRoutes
@@ -150,6 +151,7 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
         }
         key(target) {
             if (target.localPlaylistId != null) {
+                RegisterDisplayedPlaylistAlias(navBackStackEntry, target.localPlaylistId)
                 LocalPlaylistScreen(navController, target.localPlaylistId, miniPlayer = miniPlayer)
             } else {
                 PlaylistScreen(
@@ -183,6 +185,7 @@ internal fun NavGraphBuilder.libraryDetailDestinations(
         }
         key(target) {
             if (target.localPlaylistId != null) {
+                RegisterDisplayedPlaylistAlias(navBackStackEntry, target.localPlaylistId)
                 LocalPlaylistScreen(navController, target.localPlaylistId, miniPlayer = miniPlayer)
             } else {
                 PodcastScreen(

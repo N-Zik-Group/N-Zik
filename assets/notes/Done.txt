@@ -1808,3 +1808,7 @@ Playlists:
 Playlists:
 - fix(playlist): distinguish available tracks from complete imports
   - Share the picker fallback with albums and require a complete source before importing a collection.
+
+Playlists:
+- fix(playlist): reuse the displayed local alias destination
+  - Avoid a duplicate detail while preserving true source and On-device navigation scopes.
