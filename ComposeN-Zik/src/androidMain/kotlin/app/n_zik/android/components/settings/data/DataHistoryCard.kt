@@ -17,8 +17,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import timber.log.Timber
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
@@ -172,22 +174,27 @@ internal fun DataHistoryCard(
                     onDismiss = { confirmListenClear = false },
                     onConfirm = {
                         val profile = getActiveProfile(context)
-                        Database.asyncTransaction {
-                            eventTable.deleteAll()
-                        }
-                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                            withContext(NzikDispatchers.DATA) {
-                                DatabaseRestoreJournal.withProfileStorageMutation(context) {
-                                    if (profile == getActiveProfile(context) && profileStorageIdentity(context, profile) != null &&
-                                        !isLegacyStorageShared(context, profile, ProfileDataItem.WAVEFORMS)
-                                    ) {
-                                        val root = context.filesDir.canonicalFile
-                                        ProfileResetSnapshot.deleteVerifiedTree(root.resolve(waveformsDir(context, profile).name))
+                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch(start = CoroutineStart.UNDISPATCHED) {
+                            try {
+                                Database.awaitWriteBatch<Unit> {
+                                    transaction { eventTable.deleteAll() }
+                                    DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                                        if (profile == getActiveProfile(context) && profileStorageIdentity(context, profile) != null &&
+                                            !isLegacyStorageShared(context, profile, ProfileDataItem.WAVEFORMS)
+                                        ) {
+                                            val root = context.filesDir.canonicalFile
+                                            ProfileResetSnapshot.deleteVerifiedTree(root.resolve(waveformsDir(context, profile).name))
+                                        }
                                     }
+                                    WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                                 }
+                                Toaster.done()
+                            } catch (error: CancellationException) {
+                                throw error
+                            } catch (error: Exception) {
+                                Timber.tag("DataHistoryCard").e(error, "Could not clear listening history")
+                                Toaster.e(R.string.history_clear_listen_history_failed)
                             }
-                            WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
-                            Toaster.done()
                         }
                     },
                 )

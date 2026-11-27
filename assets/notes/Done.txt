@@ -1504,3 +1504,7 @@ Menus:
 Settings:
 - fix(settings): clarify the accounts reset card
   - Explain account deactivation and credential preservation on the targeted reset.
+
+Settings:
+- fix(history): wait for the listening history deletion
+  - Confirm only after the queued write succeeds and show a distinct failure message.

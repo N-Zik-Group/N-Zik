@@ -35,6 +35,7 @@
 
     <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
+    <string name="history_clear_listen_history_failed">Could not finish clearing listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
 
     <!-- Home -->

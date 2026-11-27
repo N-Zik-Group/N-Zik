@@ -52,6 +52,8 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.performTouchInput
 import androidx.test.core.app.ApplicationProvider
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -91,6 +93,7 @@ import app.n_zik.android.core.database.EventTable
 import app.n_zik.android.core.profiles.coversDir
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import app.n_zik.android.utils.saveProfileDisplayName
@@ -616,6 +619,40 @@ class DataSettingsWiringTest {
         composeRule.onNode(isEditable()).performTextInput(query)
         composeRule.waitForIdle()
         composeRule.onNode(hasText(query) and !isEditable()).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test fun `clearing listening history waits for the write and reports failure without success`() {
+        val writeResult = CompletableDeferred<Unit>()
+        val failures = AtomicInteger()
+        every { Database.eventTable.countAll() } returns flowOf(1L)
+        coEvery { Database.awaitWriteBatch<Unit>(any(), any()) } coAnswers { writeResult.await() }
+        mockkObject(Toaster)
+        try {
+            every { Toaster.done() } returns Unit
+            every { Toaster.e(R.string.history_clear_listen_history_failed) } answers { failures.incrementAndGet() }
+            show()
+            val clearAction = composeRule.onNodeWithText(context.getString(R.string.settings_history_action_clear_listening))
+            composeRule.waitUntil(5_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                runCatching { clearAction.assertIsEnabled() }.isSuccess
+            }
+            clearAction.performScrollTo().performClick()
+            composeRule.onNodeWithText(context.getString(R.string.common_action_clear)).performClick()
+
+            coVerify(exactly = 1) { Database.awaitWriteBatch<Unit>(any(), any()) }
+            verify(exactly = 0) { Toaster.done() }
+            assertEquals(0, failures.get())
+            writeResult.completeExceptionally(IllegalStateException("Write failed"))
+            composeRule.waitUntil(5_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                failures.get() > 0
+            }
+            assertEquals(1, failures.get())
+            verify(exactly = 0) { Toaster.done() }
+        } finally {
+            writeResult.cancel()
+            unmockkObject(Toaster)
+        }
     }
 
     @Test fun `backup singleton host stays mounted when search has no results`() {
