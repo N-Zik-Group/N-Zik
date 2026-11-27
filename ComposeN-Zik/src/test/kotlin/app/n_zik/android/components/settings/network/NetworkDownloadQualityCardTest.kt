@@ -155,16 +155,14 @@ class NetworkDownloadQualityCardTest {
 
     @Test fun `download quality card preserves settings while exposing both controls`() {
         val before = context.preferences.all.toMap()
-        var restartRequests = 0
         content {
-            NetworkDownloadQualityCard("", connectionMetered = false) { restartRequests++ }
+            NetworkDownloadQualityCard("", connectionMetered = false)
         }
         composeRule.onNodeWithText(context.getString(R.string.downloads_quality_format)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_format)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.settings_network_image_quality_label)).assertDoesNotExist()
         assertEquals(before, context.preferences.all)
-        assertEquals(0, restartRequests)
     }
 
     @Test fun `automatic audio follows metering while automatic artwork follows network quality`() {
@@ -210,10 +208,9 @@ class NetworkDownloadQualityCardTest {
             context.getString(R.string.network_quality_low)))).assertDoesNotExist()
     }
 
-    @Test fun `download automatic status shares its selector and selection retains restart action`() {
-        var restartRequests = 0
+    @Test fun `download automatic status shares its selector and applies the selection`() {
         content {
-            NetworkDownloadQualityCard("", connectionMetered = true) { restartRequests++ }
+            NetworkDownloadQualityCard("", connectionMetered = true)
         }
         composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_auto_effective_fmt,
             context.getString(R.string.audio_quality_format_low)))).assertExists()
@@ -225,7 +222,6 @@ class NetworkDownloadQualityCardTest {
             .performSemanticsAction(SemanticsActions.OnClick) { it() }
         awaitTextCount(currentValue(context.getString(R.string.audio_quality_format_high)))
         assertEquals(DownloadQualityFormat.High.name, context.preferences.getString(downloadQualityFormatKey, null))
-        assertEquals(1, restartRequests)
         composeRule.onNodeWithText(currentValue(context.getString(R.string.audio_quality_format_high))).assertExists()
     }
 }

@@ -153,12 +153,7 @@ internal fun AccountsDiscordCard(search: Search) {
                             title = stringResource(R.string.discord_enable_rich_presence),
                             text = stringResource(R.string.settings_description_with_value, stringResource(R.string.discord_enabled_description), stringResource(R.string.discord_beta_warning)),
                             isChecked = isDiscordPresenceEnabled,
-                            onCheckedChange = {
-                                isDiscordPresenceEnabled = it
-                                if (!it) {
-                                    RestartAppDialog.showDialog()
-                                }
-                            },
+                            onCheckedChange = { isDiscordPresenceEnabled = it },
                             icon = R.drawable.musical_notes
                         )
                     }
@@ -252,7 +247,6 @@ internal fun AccountsDiscordCard(search: Search) {
                                             discordUsername = ""
                                             discordAvatar = ""
                                             showTokenError = false
-                                            RestartAppDialog.showDialog()
                                         } else
                                             loginDiscord = true
                                     }

@@ -1572,3 +1572,7 @@ Settings:
 Menus:
 - fix(metadata): update active queue entries by media ID
   - Refresh the current track when an existing playback entry has a distinct stream cache key.
+
+Settings:
+- fix(settings): apply download quality and Discord changes live
+  - Use the existing runtime listeners when changing download quality, disabling Discord or signing out.

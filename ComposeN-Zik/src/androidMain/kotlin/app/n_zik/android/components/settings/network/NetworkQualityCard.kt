@@ -75,7 +75,7 @@ internal fun NetworkQualityCard(
             }
 
             if (includeDownloadQuality && (query.isBlank() || stringResource(R.string.downloads_quality_format).contains(query, true) || stringResource(R.string.downloads_action_refresh_quality).contains(query, true))) {
-                DownloadQualityEntry(automaticQualityText = automaticAudioQualityStatusText(connectionMetered), onQualityChanged = { onRestartRequired(true) })
+                DownloadQualityEntry(automaticQualityText = automaticAudioQualityStatusText(connectionMetered))
                 UpdateDownloadsButton()
             }
 

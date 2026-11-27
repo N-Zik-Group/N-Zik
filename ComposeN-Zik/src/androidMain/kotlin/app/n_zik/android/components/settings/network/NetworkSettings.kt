@@ -182,7 +182,7 @@ internal fun NetworkSettingsContent(
         }
         if (selectedCards != null && R.string.settings_download_quality in selectedCards) {
             SettingsCardSlot(R.string.settings_download_quality, modifier = { cardModifier(R.string.settings_download_quality) }) {
-                NetworkDownloadQualityCard(search.inputValue, connectionMetered) { restartService = it }
+                NetworkDownloadQualityCard(search.inputValue, connectionMetered)
             }
         }
         if (selectedCards == null || R.string.network_settings in selectedCards) {
