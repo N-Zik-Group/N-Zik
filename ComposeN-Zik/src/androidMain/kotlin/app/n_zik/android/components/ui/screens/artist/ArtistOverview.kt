@@ -66,6 +66,7 @@ import app.n_zik.android.components.artist.ArtistFollowButton
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.artist.artistStatisticsText
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.RenderAboveMenu
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
@@ -350,8 +351,8 @@ internal fun ArtistOverview(
     }
     val languageDestination = activeTranslateLang.contentTranslationTarget
 
-    downloadAllDialog.Render()
-    deleteAllDownloadsDialog.Render()
+    downloadAllDialog.RenderAboveMenu(menuState)
+    deleteAllDownloadsDialog.RenderAboveMenu(menuState)
 
     DialogPresence(visible = showTranslateLanguageDialog) {
         ValueSelectorDialog(

@@ -125,6 +125,7 @@ import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.menu.playlist.rememberAlbumPlaylistActions
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.RenderAboveMenu
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.items.AlbumItemPlaceholder
@@ -686,11 +687,11 @@ fun AlbumDetails(
         .padding(horizontal = 16.dp)
         .padding(top = 24.dp, bottom = 8.dp)
 
-    downloadALlDialog.Render()
-    deleteAllDownloadsDialog.Render()
-    changeTitle.Render()
-    changeAuthors.Render()
-    changeCover.Render()
+    downloadALlDialog.RenderAboveMenu(menuState)
+    deleteAllDownloadsDialog.RenderAboveMenu(menuState)
+    changeTitle.RenderAboveMenu(menuState)
+    changeAuthors.RenderAboveMenu(menuState)
+    changeCover.RenderAboveMenu(menuState)
 
     DialogPresence(visible = showTranslateLanguageDialog) {
         ValueSelectorDialog(

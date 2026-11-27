@@ -1740,3 +1740,7 @@ Playlist:
 Playlist:
 - fix(playlist): keep playback cache when row downloads are rejected
   - Defer cache cleanup until accepted; keep playlist and podcast menu dialogs in the correct window.
+
+Menus:
+- fix(menu): open album and artist dialogs above their menus
+  - Apply the shared native and Glass window policy to confirmed collection toolbar actions.
