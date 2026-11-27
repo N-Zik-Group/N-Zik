@@ -1948,3 +1948,7 @@ Settings / Search:
 Settings / Appearance:
 - fix(settings): animate conditional controls
   - Use shared layout transitions for Rewind and conditional Appearance controls.
+
+Toolbars / Dock:
+- fix(toolbar): preserve native dock order across surfaces
+  - Keep other dock tab sequences unchanged when one group is reordered from defaults.

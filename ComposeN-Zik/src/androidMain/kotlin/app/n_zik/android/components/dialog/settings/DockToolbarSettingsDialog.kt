@@ -26,8 +26,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 /** Reorders expanded dock tabs with the same drag interaction as other toolbar dialogs. */
 object DockToolbarSettingsDialog : ContentFramedDialog {
 
-    /** Exact searchable options from the same definitions used by this dialog. */
-    private val homeTabs = buildHomeTabDefs().values.map { tab ->
+    private val homeTabs = defaultHomeTabsOrder.map(buildHomeTabDefs()::getValue).map { tab ->
         val id = when (tab.id) {
             "quickpicks" -> "sparkles"
             "songs" -> "musical_notes"
@@ -40,6 +39,10 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
     private val tabsById = (homeTabs + searchDockTabs + searchResultDockTabs + statisticsDockTabs + artistDockTabs)
         .groupBy { it.id }
     private val tabs = tabsById.mapValues { (_, sameIcon) -> sameIcon.first() }
+
+    // The shared library tab follows the opening tabs of both Search and Artist.
+    internal val defaultOrder = (homeTabs.filterNot { it.id == "library" } + searchResultDockTabs +
+        searchDockTabs + statisticsDockTabs + artistDockTabs).map(DockToolbarTab::id).distinct()
 
     internal fun searchOptions(): List<SettingsNestedOption> = tabs.values.map { tab ->
         val alternateLabel = tabsById.getValue(tab.id).firstOrNull { it.labelRes != tab.labelRes }?.labelRes
@@ -54,7 +57,6 @@ object DockToolbarSettingsDialog : ContentFramedDialog {
     override fun DialogBody() {
         val context = LocalContext.current
         val prefs = context.preferences
-        val defaultOrder = tabs.keys.toList()
         var order by remember {
             mutableStateOf(DockToolbarPreferences.orderedIds(defaultOrder,
                 prefs.getString(DockToolbarPreferences.orderKey, "").orEmpty()))

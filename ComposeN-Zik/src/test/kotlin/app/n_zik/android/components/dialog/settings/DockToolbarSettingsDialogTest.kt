@@ -23,6 +23,11 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.navigation.dock.DockToolbarPreferences
+import app.n_zik.android.components.navigation.dock.DockToolbarTab
+import app.n_zik.android.components.navigation.dock.artistDockTabs
+import app.n_zik.android.components.navigation.dock.searchDockTabs
+import app.n_zik.android.components.navigation.dock.searchResultDockTabs
+import app.n_zik.android.components.navigation.dock.statisticsDockTabs
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -83,6 +88,35 @@ class DockToolbarSettingsDialogTest {
         compose.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
         assertEquals(customOrder, context.preferences.getString(DockToolbarPreferences.orderKey, null))
         assertOtherMiniPreferencesUnchanged()
+    }
+
+    @Test fun `moving a statistics period from defaults preserves every other dock tab order`() {
+        val homeTabs = defaultHomeTabsOrder.map(buildHomeTabDefs()::getValue).map {
+            context.resources.getResourceEntryName(it.iconRes)
+        }
+        val otherOrders = listOf(homeTabs) + listOf(searchDockTabs, searchResultDockTabs, artistDockTabs).map { tabs ->
+            tabs.map(DockToolbarTab::id)
+        }
+        val statisticsOrder = statisticsDockTabs.map(DockToolbarTab::id)
+        val order = DockToolbarSettingsDialog.defaultOrder
+        assertEquals((otherOrders.flatten() + statisticsOrder).toSet(), order.toSet())
+        val defaults = DockToolbarPreferences.serializeOrder(order)
+        (otherOrders + listOf(statisticsOrder)).forEach { nativeOrder ->
+            assertEquals(nativeOrder, DockToolbarPreferences.orderedIds(nativeOrder, defaults))
+        }
+
+        val reordered = order.toMutableList().apply {
+            val todayIndex = indexOf("stat_today")
+            add(todayIndex, removeAt(indexOf("stat_week")))
+        }
+        val saved = DockToolbarPreferences.serializeOrder(reordered)
+        otherOrders.forEach { nativeOrder ->
+            assertEquals(nativeOrder, DockToolbarPreferences.orderedIds(nativeOrder, saved))
+        }
+        assertEquals(
+            listOf("stat_week", "stat_today") + statisticsOrder.drop(2),
+            DockToolbarPreferences.orderedIds(statisticsOrder, saved),
+        )
     }
 
     @Test fun `mini action settings expose the normal controls without separate compact selectors`() {
