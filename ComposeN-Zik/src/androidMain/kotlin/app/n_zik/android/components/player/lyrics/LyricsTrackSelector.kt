@@ -1,11 +1,13 @@
 package app.n_zik.android.components.player.lyrics
 
 import app.n_zik.android.components.ui.LeadingIconBadge
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -40,6 +43,7 @@ import app.n_zik.android.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.MenuConstants
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.uiRoundnessShape
@@ -136,6 +140,10 @@ internal fun LyricsTrackSelector(
     val style by rememberPreference(menuStyleKey, MenuStyle.List)
     val menuTitle = stringResource(R.string.lyrics_title)
     val showCancel = LocalMenuBack.current == null
+    val configuration = LocalConfiguration.current
+    // Keep the fields in the scroll area on short screens without moving focus as the IME opens.
+    val pinSearch = configuration.orientation == Configuration.ORIENTATION_PORTRAIT &&
+        configuration.screenHeightDp >= 480 * configuration.fontScale.coerceAtLeast(1f)
     val searchFields: @Composable () -> Unit = {
         if (showCancel) {
             ListMenu.Entry(
@@ -202,10 +210,19 @@ internal fun LyricsTrackSelector(
         }
         menuState.hide()
     }
+    val searchHeader: (@Composable ColumnScope.() -> Unit)? = if (pinSearch) {
+        {
+            val horizontal = if (style == MenuStyle.List) MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING
+                else MenuConstants.CONTENT_HORIZONTAL_PADDING
+            Column(Modifier.fillMaxWidth().padding(horizontal = horizontal.dp, vertical = 8.dp)) {
+                searchFields()
+            }
+        }
+    } else null
 
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = menuTitle) {
-            searchFields()
+        ListMenu.Menu(title = menuTitle, bodyHeader = searchHeader) {
+            if (!pinSearch) searchFields()
             searchStatus()
             tracks.forEach { track ->
                 ListMenu.Entry(
@@ -217,11 +234,13 @@ internal fun LyricsTrackSelector(
             }
         }
     } else {
-        GridMenu.Menu(title = menuTitle) {
-            item(span = { GridItemSpan(maxLineSpan) }) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    searchFields()
-                    searchStatus()
+        GridMenu.Menu(title = menuTitle, bodyHeader = searchHeader) {
+            if (!pinSearch || loading || resultMessage != null) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        if (!pinSearch) searchFields()
+                        searchStatus()
+                    }
                 }
             }
             items(tracks) { track ->

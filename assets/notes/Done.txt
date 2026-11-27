@@ -1820,3 +1820,7 @@ Playlists:
 Settings:
 - fix(settings): align card headings and transition durations
   - Allow two title lines and consistent animation timings across native and Glass settings.
+
+Menus / Lyrics:
+- fix(menu): align the lyrics controls with the shared frame
+  - Keep search under the header where space allows and render the current lyrics format as information.

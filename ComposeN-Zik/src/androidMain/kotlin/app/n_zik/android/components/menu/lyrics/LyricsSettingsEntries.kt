@@ -119,22 +119,25 @@ internal fun LyricsSettingsMenu.ActionSettingEntry(
     title: String,
     icon: Int,
     enabled: Boolean = true,
-    onClick: () -> Unit
+    onClick: (() -> Unit)?
 ) {
+    val trailingContent: @Composable () -> Unit = {
+        if (onClick != null) {
+            Icon(
+                painter = painterResource(R.drawable.chevron_forward),
+                tint = colorPalette().textSecondary,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+            )
+        }
+    }
     if (menuStyle == MenuStyle.List) {
         ListMenu.Entry(
             text = title,
             icon = { SettingIcon(icon) },
             enabled = enabled,
             onClick = onClick,
-            trailingContent = {
-                Icon(
-                    painter = painterResource(R.drawable.chevron_forward),
-                    tint = colorPalette().textSecondary,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
+            trailingContent = trailingContent,
         )
     } else {
         GridMenu.Entry(
@@ -143,14 +146,7 @@ internal fun LyricsSettingsMenu.ActionSettingEntry(
             iconHasOwnBackground = true,
             enabled = enabled,
             onClick = onClick,
-            trailingContent = {
-                Icon(
-                    painter = painterResource(R.drawable.chevron_forward),
-                    tint = colorPalette().textSecondary,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
+            trailingContent = trailingContent,
         )
     }
 }
@@ -242,8 +238,7 @@ internal fun LyricsSettingsMenu.LyricsCurrentTypeEntry(actualType: LyricsType?, 
             ActionSettingEntry(
                 title = stringResource(R.string.lyrics_current_state_format, stateString),
                 icon = R.drawable.information,
-                enabled = false,
-                onClick = {}
+                onClick = null,
             )
         }
     }
