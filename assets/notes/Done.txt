@@ -1824,3 +1824,7 @@ Settings:
 Menus / Lyrics:
 - fix(menu): align the lyrics controls with the shared frame
   - Keep search under the header where space allows and render the current lyrics format as information.
+
+Menus:
+- test(dialog): verify live radio selections with the Compose clock
+  - Wait for the dialog choice to recompose before checking its selected state.

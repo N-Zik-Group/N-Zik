@@ -96,8 +96,8 @@ class DialogFrameLayoutTest {
         composeRule.onAllNodes(radio, useUnmergedTree = true).assertCountEquals(3)
         composeRule.onNodeWithText("Automatic").assert(radio).assertIsSelected()
         composeRule.onNodeWithText("Unavailable").assert(radio).assertIsNotEnabled()
+        composeRule.mainClock.autoAdvance = true
         composeRule.onNodeWithText("Synchronized").assert(radio).performClick()
-        composeRule.mainClock.advanceTimeByFrame()
         composeRule.onNodeWithText("Synchronized").assertIsSelected()
     }
 
