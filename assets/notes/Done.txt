@@ -1260,3 +1260,7 @@ Menus:
 Menus:
 - fix(queue): keep mixed selections eligible for playlist adds
   - Limit the picker to local destinations when queued selections include device files.
+
+Settings:
+- fix(settings): offer app permissions after an audio denial
+  - Expose the Android permission settings entry after a denied local audio request.

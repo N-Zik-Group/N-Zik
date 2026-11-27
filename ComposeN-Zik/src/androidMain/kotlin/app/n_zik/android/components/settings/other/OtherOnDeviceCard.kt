@@ -106,6 +106,7 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
         context.observeDeviceLibraryEnabled(target.id)
     }.collectAsStateWithLifecycle(context.isDeviceLibraryEnabled(target.id))
     var pendingPermission by rememberSaveable(target.id, target.generation) { mutableStateOf(false) }
+    var permissionDenied by rememberSaveable(target.id, target.generation) { mutableStateOf(false) }
     var hasPermission by remember(context) { mutableStateOf(context.hasDeviceAudioPermission()) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
 
@@ -116,6 +117,7 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
                 if (granted && !hasPermission && enabled && ProfileWorkOwner.exists(context, target)) {
                     localSongRefreshRequests.request(target.id)
                 }
+                if (granted) permissionDenied = false
                 hasPermission = granted
             }
         }
@@ -132,6 +134,7 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         hasPermission = granted
+        permissionDenied = !granted
         if (pendingPermission && granted) setEnabled(true)
         pendingPermission = false
     }
@@ -151,7 +154,7 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
             }
         },
     )
-    if (enabled && !hasPermission) {
+    if (!hasPermission && (enabled || permissionDenied)) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget(LocalMusicPermissionTarget),
             title = stringResource(R.string.visualizer_action_open_permission_settings),
