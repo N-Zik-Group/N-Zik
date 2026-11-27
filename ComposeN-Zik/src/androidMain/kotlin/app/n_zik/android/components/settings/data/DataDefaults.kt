@@ -19,6 +19,7 @@ import app.n_zik.android.components.image.readOriginalImageQuality
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.ondevice.applyDeviceLibraryDefaults
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileDataPrefs
@@ -59,7 +60,7 @@ internal fun readStorageCacheLimits(context: Context, profileId: String): Storag
     )
 }
 
-/** Restores storage and automatic backup defaults for the active profile. */
+/** Restores storage, automatic backup and local music defaults for the active profile. */
 internal fun applyDataDefaults(
     context: Context,
     profileId: String = getActiveProfile(context),
@@ -79,6 +80,7 @@ internal fun applyDataDefaults(
         val canResetDownloadLimit = currentDownloadLimit == defaultDownloadLimit ||
             runCatching { profileDownloadSpanBytes(context, target.id) <= defaultDownloadLimit.bytes }.getOrDefault(false)
         preferences.edit {
+            applyDeviceLibraryDefaults()
             autoBackupSettingKeys.forEach(::remove)
             remove(ORIGINAL_IMAGE_QUALITY_KEY)
             putEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`)

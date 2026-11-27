@@ -17,8 +17,10 @@ import app.n_zik.android.components.ui.screens.home.onDevice.withLocalFolderProf
 import app.n_zik.android.core.utils.readDeviceLibrary
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.defaultFolderKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.isAtLeastAndroid13
+import app.n_zik.android.utils.showFoldersOnDeviceKey
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,6 +61,13 @@ internal fun Context.hasDeviceAudioPermission(): Boolean =
     ContextCompat.checkSelfPermission(this, deviceAudioPermission) == PackageManager.PERMISSION_GRANTED
 
 internal const val SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY = "scanDeviceLibraryOnStartup"
+
+internal fun SharedPreferences.Editor.applyDeviceLibraryDefaults() {
+    putBoolean(DEVICE_LIBRARY_ENABLED_KEY, false)
+    putBoolean(SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY, true)
+    putBoolean(showFoldersOnDeviceKey, true)
+    putString(defaultFolderKey, "/")
+}
 
 internal const val DEVICE_ALBUM_PREFIX = "LOCAL_ALBUM_DEVICE_"
 internal const val DEVICE_ARTIST_PREFIX = "LOCAL_ARTIST_DEVICE_"

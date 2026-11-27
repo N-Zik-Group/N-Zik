@@ -18,6 +18,9 @@ import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
 import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
+import app.n_zik.android.utils.defaultFolderKey
 import app.n_zik.android.utils.coilDiskCacheMaxSizeKey
 import app.n_zik.android.utils.exoPlayerCacheLocationKey
 import app.n_zik.android.utils.exoPlayerCustomCacheKey
@@ -28,6 +31,7 @@ import app.n_zik.android.utils.pauseListenHistoryKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.showFoldersOnDeviceKey
 import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.profileStorageIdentity
@@ -48,6 +52,12 @@ class DataSettingsPreferencesTest {
         exoPlayerCacheLocationKey to ExoPlayerCacheLocation.System.name,
         exoPlayerCustomCacheKey to 32,
         PROFILE_IMAGE_CACHE_CUSTOM_MB to 32,
+    )
+    private val deviceLibraryDefaults = mapOf(
+        DEVICE_LIBRARY_ENABLED_KEY to false,
+        SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY to true,
+        showFoldersOnDeviceKey to true,
+        defaultFolderKey to "/",
     )
 
     @Before fun setUp() {
@@ -75,13 +85,24 @@ class DataSettingsPreferencesTest {
         }
     }
 
-    @Test fun `reset restores storage without changing search history or other profiles`() {
-        context.preferences.edit().putString("sentinel", "keep").putInt(exoPlayerCustomCacheKey, 1000).putBoolean(pauseListenHistoryKey, true).commit()
+    @Test fun `reset restores storage and local music without changing history or other profiles`() {
+        context.preferences.edit()
+            .putString("sentinel", "keep")
+            .putInt(exoPlayerCustomCacheKey, 1000)
+            .putBoolean(pauseListenHistoryKey, true)
+            .putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true)
+            .putBoolean(SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY, false)
+            .putBoolean(showFoldersOnDeviceKey, false)
+            .putString(defaultFolderKey, "Music")
+            .commit()
         val base = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
-        base.edit().putBoolean(pauseSearchHistoryKey, true).commit()
+        base.edit().putBoolean(pauseSearchHistoryKey, true).putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true)
+            .putString(defaultFolderKey, "Other Music").commit()
         applyDataDefaults(context)
-        assertEquals((expected - exoPlayerCacheLocationKey) + mapOf("sentinel" to "keep", pauseListenHistoryKey to true), context.preferences.all)
-        assertEquals(mapOf(pauseSearchHistoryKey to true), base.all)
+        assertEquals((expected - exoPlayerCacheLocationKey) + deviceLibraryDefaults +
+            mapOf("sentinel" to "keep", pauseListenHistoryKey to true), context.preferences.all)
+        assertEquals(mapOf(pauseSearchHistoryKey to true, DEVICE_LIBRARY_ENABLED_KEY to true,
+            defaultFolderKey to "Other Music"), base.all)
     }
 
     @Test fun `reset restores automatic backup defaults for the current profile and keeps its destination`() {
