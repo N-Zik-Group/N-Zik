@@ -351,6 +351,7 @@ fun Queue(
                 Timber.tag("Queue").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
             itemSelector = itemSelector,
+            localDestinationsOnly = selectedQueueWindows().any { it.mediaItem.isLocal },
             onMenuDestinationOpened = revealMenuDestination,
         )
         val queueArrow = QueueArrow { onDismiss( repeat.type ) }

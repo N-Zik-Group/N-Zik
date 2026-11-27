@@ -1256,3 +1256,7 @@ Menus:
 Menus:
 - fix(charts): keep the country selector available after load failure
   - Keep the source control visible so the user can switch countries.
+
+Menus:
+- fix(queue): keep mixed selections eligible for playlist adds
+  - Limit the picker to local destinations when queued selections include device files.
