@@ -2,28 +2,31 @@ package app.n_zik.android.components.dialog.export
 
 import android.content.Context
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
-import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
+import app.n_zik.android.BuildConfig
+import app.n_zik.android.R
+import app.n_zik.android.core.rescue.RescueFiles
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.encryptedPreferencesForProfile
+import app.n_zik.android.utils.getActiveProfile
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
-import app.n_zik.android.BuildConfig
-import app.n_zik.android.core.rescue.RescueFiles
-import app.n_zik.android.core.backup.SettingsPreferencesBridge
-import app.n_zik.android.core.profiles.profileDataPrefs
-import app.n_zik.android.utils.encryptedPreferencesForProfile
-import app.n_zik.android.utils.getActiveProfile
-import app.n_zik.android.utils.proxyPasswordKey
-import androidx.compose.runtime.MutableState
 
 class ExportSettingsDialog private constructor(
     private val launcher: ManagedActivityResultLauncher<String, Uri?>,
@@ -32,88 +35,78 @@ class ExportSettingsDialog private constructor(
     private val includeDiscordState: MutableState<Boolean>,
     private val includeLastfmState: MutableState<Boolean>,
     private val includeProxyState: MutableState<Boolean>,
-    private val includeGitHubState: MutableState<Boolean>
+    private val includeGitHubState: MutableState<Boolean>,
+    private val pendingProfile: MutableState<String?>,
 ) {
     companion object {
-        private fun onExport(
-            uri: Uri,
-            context: Context,
-            includeYtb: Boolean,
-            includeDiscord: Boolean,
-            includeLastfm: Boolean,
-            includeProxy: Boolean, includeGitHub: Boolean
-        ) = NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-            runCatching {
-                Timber.tag("ExportSettingsDialog").d("Starting settings export...")
-                val profile = getActiveProfile(context)
-                val preferences = profileDataPrefs(context, profile)
-                val entries = SettingsPreferencesBridge.export(context, preferences, profile)
-
-                // Single source of truth (RescueFiles): the selected credential groups plus,
-                // when checked, the proxy key — exactly as the auto backup and the rescue build them.
-                if (includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub) {
-                    entries.addAll(
-                        RescueFiles.buildCredentialExport(
-                            context.encryptedPreferencesForProfile(profile).all,
-                            includeYtb,
-                            includeDiscord,
-                            includeLastfm,
-                            includeProxy,
-                            includeGitHub,
-                            legacyProxyPassword = if (includeProxy) preferences.all[proxyPasswordKey] as? String else null,
-                        ),
-                    )
-                }
-
-                Timber.tag("ExportSettingsDialog").d("Found ${entries.size} settings entries")
-
-                context.contentResolver
-                    .openOutputStream( uri )
-                    ?.use { outStream ->
-                        csvWriter().open( outStream ) {
-                            writeRow( "Type", "Key", "Value" )
-                            flush()
-                            entries.forEach {
-                                writeRow( it.first, it.second, it.third )
-                            }
-                            close()
-                        }
-                        Timber.tag("ExportSettingsDialog").d("Settings export complete")
-                    } ?: Timber.tag("ExportSettingsDialog").w("Failed to open output stream")
-            }.onFailure { e ->
-                Timber.tag("ExportSettingsDialog").e(e, "Settings export failed")
-            }
-        }
-
         @Composable
-        operator fun invoke(context: Context, onPickerFinished: () -> Unit = {}): ExportSettingsDialog {
+        operator fun invoke(
+            context: Context,
+            onPickerFinished: () -> Unit = {},
+            onWriteFailed: () -> Unit = {},
+        ): ExportSettingsDialog {
             val includeYtbState = rememberSaveable { mutableStateOf(false) }
             val includeDiscordState = rememberSaveable { mutableStateOf(false) }
             val includeLastfmState = rememberSaveable { mutableStateOf(false) }
             val includeGitHubState = rememberSaveable { mutableStateOf(false) }
             val includeProxyState = rememberSaveable { mutableStateOf(false) }
+            val pendingProfile = rememberSaveable { mutableStateOf<String?>(null) }
+            val scope = rememberCoroutineScope()
+            val finish by rememberUpdatedState(onPickerFinished)
+            val fail by rememberUpdatedState(onWriteFailed)
             val launcher = rememberLauncherForActivityResult(
-                ActivityResultContracts.CreateDocument( "text/csv" )
+                ActivityResultContracts.CreateDocument("text/csv"),
             ) { uri ->
-                Timber.tag("ExportSettingsDialog").d("File picker callback received, uri: $uri")
+                val profile = pendingProfile.value
+                pendingProfile.value = null
                 if (uri == null) {
-                    onPickerFinished()
+                    finish()
+                    return@rememberLauncherForActivityResult
+                }
+                if (profile == null) {
+                    Toaster.e(R.string.export_cached_songs_generic_error)
+                    fail()
                     return@rememberLauncherForActivityResult
                 }
                 val ytb = includeYtbState.value
                 val discord = includeDiscordState.value
                 val lastfm = includeLastfmState.value
                 val proxy = includeProxyState.value
-                onExport(uri, context, ytb, discord, lastfm, proxy, includeGitHubState.value)
-                onPickerFinished()
+                val github = includeGitHubState.value
+                val app = context.applicationContext
+                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                    val encrypted = if (ytb || discord || lastfm || proxy || github) {
+                        runCatching { app.encryptedPreferencesForProfile(profile) }
+                    } else null
+                    val result = RescueFiles.exportSettings(
+                        app, uri, encrypted, ytb, discord, lastfm, proxy, github, profile = profile,
+                    )
+                    result.onFailure { error ->
+                        Timber.tag("ExportSettingsDialog").e("Settings export failed: %s", error.javaClass.simpleName)
+                        runCatching { DocumentsContract.deleteDocument(app.contentResolver, uri) }
+                    }
+                    withContext(NzikDispatchers.UI) {
+                        result.onSuccess { outcome ->
+                            if (outcome.encryptedSkipped) Toaster.w(R.string.recovery_encrypted_unavailable_warning)
+                            if (scope.isActive) finish()
+                        }.onFailure {
+                            Toaster.e(R.string.export_cached_songs_generic_error)
+                            if (scope.isActive) fail()
+                        }
+                    }
+                }
             }
             return remember(launcher, context) {
-                ExportSettingsDialog(launcher, context, includeYtbState, includeDiscordState, includeLastfmState, includeProxyState, includeGitHubState)
+                ExportSettingsDialog(
+                    launcher, context, includeYtbState, includeDiscordState, includeLastfmState,
+                    includeProxyState, includeGitHubState, pendingProfile,
+                )
             }
         }
     }
 
     fun export(includeYtb: Boolean = false, includeDiscord: Boolean = false, includeLastfm: Boolean = false, includeProxy: Boolean = false, includeGitHub: Boolean = false) {
+        pendingProfile.value = getActiveProfile(context)
         includeYtbState.value = includeYtb
         includeDiscordState.value = includeDiscord
         includeLastfmState.value = includeLastfm

@@ -1408,3 +1408,7 @@ Menus:
 Android Auto:
 - fix(auto): honor disabled device playlist folders
   - Respect the device-category switch for browsing and scoped playback.
+
+Settings:
+- fix(backup): await settings export completion
+  - Report failed writes and keep the backup flow retryable.

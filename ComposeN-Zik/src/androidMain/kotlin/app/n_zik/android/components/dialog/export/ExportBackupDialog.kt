@@ -88,7 +88,14 @@ object ExportBackupDialog : ContentFramedDialog {
                 finishRegularExport()
             }
         }
-        val exportSettingsDialog = ExportSettingsDialog(context, onPickerFinished = ::exportProfilesOrFinish)
+        val exportSettingsDialog = ExportSettingsDialog(
+            context,
+            onPickerFinished = { if (isActive) exportProfilesOrFinish() },
+            onWriteFailed = {
+                regularInProgress = false
+                remaining = 0
+            },
+        )
         val exportSettings = {
             exportSettingsDialog.export(
                 includeYtbCredentials, includeDiscordCredentials, includeLastfmCredentials, includeProxyCredentials, includeGitHubCredentials
