@@ -107,9 +107,8 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.PermissionUsageJournal
-import app.n_zik.android.startup.applyKeepScreenOnPreference
 import app.n_zik.android.startup.initializeLaunchPreferences
-import app.n_zik.android.startup.registerStartupBackCallback
+import app.n_zik.android.startup.observeWindowPreferences
 import app.n_zik.android.startup.registerStartupCookieWarning
 import app.n_zik.android.ui.components.InterfaceLayoutDirection
 import app.n_zik.android.ui.screens.player.PlayerSheetState
@@ -528,7 +527,7 @@ class MainActivity :
             }
         }
 
-        registerStartupBackCallback()
+        observeWindowPreferences()
 
         val launchedFromNotification = intent?.extras?.getBoolean("fromWidget") ?: false
 
@@ -541,8 +540,6 @@ class MainActivity :
         }
         onboardingStep = readOnboardingStep()
 
-        val startupPreferences = preferences
-        applyKeepScreenOnPreference(window, startupPreferences)
         applyProfileProxy(this)
 
         setInterfaceContent { MainActivityContent(launchedFromNotification) }

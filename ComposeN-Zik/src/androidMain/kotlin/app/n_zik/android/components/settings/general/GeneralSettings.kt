@@ -195,9 +195,6 @@ internal fun GeneralSettingsContent(
                 GeneralAppBehaviorCard(
                     visible = visibleCards.contains(R.string.settings_app_behavior_title),
                     onRestartServiceSet = { restartService = true },
-                    restartActivity = restartActivity,
-                    onRestartActivitySet = { restartActivity = true },
-                    onRestartActivityClear = { restartActivity = false }
                 )
             }
         }

@@ -35,6 +35,7 @@ import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.models.toUiMood
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 import app.n_zik.android.components.navigation.Skeleton
+import app.n_zik.android.utils.closeWithBackButtonKey
 import app.n_zik.android.utils.enableQuickPicksPageKey
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.homeScreenTabIndexKey
@@ -256,6 +257,17 @@ fun HomeScreen(
 
     // The search shortcut is not a tab: open the search screen on top of the home tab.
     // Home can leave composition between deliveries. Save which request it already handled.
+    var defaultDestinationConsumed by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(isReady, openTabFromShortcut) {
+        if (!isReady || defaultDestinationConsumed) return@LaunchedEffect
+        defaultDestinationConsumed = true
+        if (preview == null && openTabFromShortcut1 == -1 && openTabFromShortcut == -1 &&
+            preferences.getEnum(indexNavigationTabKey, HomeScreenTabs.Default) == HomeScreenTabs.Search
+        ) {
+            navController.navigate(NavRoutes.search.name) { launchSingleTop = true }
+        }
+    }
+
     var consumedSearchDelivery by rememberSaveable { mutableStateOf<Long?>(null) }
     LaunchedEffect(openTabFromShortcut, shortcutDelivery) {
         if (openTabFromShortcut != OPEN_SEARCH_SHORTCUT) {
@@ -483,10 +495,13 @@ fun HomeScreen(
     }
     // Exit app when user uses back
     val context = LocalContext.current
-    var confirmCount by remember { mutableIntStateOf( 0 ) }
+    val closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
+    val exitOnBack = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || closeWithBackButton
+    var confirmCount by remember(exitOnBack) { mutableIntStateOf(0) }
     val currentBackEntry by navController.currentBackStackEntryAsState()
     // Outgoing Home remains composed during transitions; it must not intercept another page's gesture.
     BackHandler(enabled = currentBackEntry?.destination?.route?.startsWith(NavRoutes.home.name) == true) {
+        if (!exitOnBack) return@BackHandler
         if( confirmCount == 0 ) {
             Toaster.i( R.string.navigation_back_again_to_exit_message )
             confirmCount++

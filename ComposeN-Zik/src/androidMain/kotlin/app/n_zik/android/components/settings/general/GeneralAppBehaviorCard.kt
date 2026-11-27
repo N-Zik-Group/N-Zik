@@ -10,7 +10,6 @@ import app.n_zik.android.utils.closebackgroundPlayerKey
 import app.n_zik.android.utils.isAtLeastAndroid13
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.R
-import app.n_zik.android.components.settings.common.RestartActivity
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -20,9 +19,6 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 fun GeneralAppBehaviorCard(
     visible: Boolean,
     onRestartServiceSet: () -> Unit,
-    restartActivity: Boolean,
-    onRestartActivitySet: () -> Unit,
-    onRestartActivityClear: () -> Unit,
 ) {
     var closeWithBackButton by rememberPreference(closeWithBackButtonKey, true)
     var closebackgroundPlayer by rememberPreference(closebackgroundPlayerKey, false)
@@ -38,15 +34,10 @@ fun GeneralAppBehaviorCard(
                     title = stringResource(R.string.settings_behavior_back_button_exits_label),
                     text = stringResource(R.string.settings_behavior_back_button_exits_description),
                     isChecked = closeWithBackButton,
-                    onCheckedChange = {
-                        closeWithBackButton = it
-                        onRestartActivitySet()
-                    },
+                    onCheckedChange = { closeWithBackButton = it },
                     icon = R.drawable.close
                 )
             }
-            RestartActivity(restartActivity, onRestart = { onRestartActivityClear() })
-
             OtherSwitchSettingEntry(
                 modifier = Modifier.settingsSearchTarget("general.app_behavior.close_background_player"),
                 title = stringResource(R.string.settings_player_stop_on_task_removal_label),

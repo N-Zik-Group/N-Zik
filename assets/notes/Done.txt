@@ -1552,3 +1552,7 @@ Settings:
 Settings / Menus:
 - fix(logging): stop writing debug logs when disabled
   - Honor the active profile switch before queuing and writing debug logs, including after a settings reset.
+
+Settings:
+- fix(settings): apply window and startup preferences live
+  - Apply the back-button and keep-screen-on settings without restarting and open Search when selected as the default page.

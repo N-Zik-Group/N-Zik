@@ -3,10 +3,11 @@ package app.n_zik.android.startup
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
-import android.view.Window
 import android.view.WindowManager
-import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -40,14 +41,34 @@ internal fun ComponentActivity.registerStartupCookieWarning() {
     }
 }
 
-internal fun ComponentActivity.registerStartupBackCallback() {
-    if (!preferences.getBoolean(closeWithBackButtonKey, true) && Build.VERSION.SDK_INT >= 33) {
-        onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT) {}
-    }
-}
+internal fun ComponentActivity.observeWindowPreferences() {
+    val preferences = preferences
+    // Register before navigation so Back can still dismiss dialogs and pop screens.
+    val backFallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() = Unit
+        }.also { onBackPressedDispatcher.addCallback(it) }
+    } else null
 
-internal fun applyKeepScreenOnPreference(window: Window, preferences: SharedPreferences) {
-    if (preferences.getBoolean(isKeepScreenOnEnabledKey, false)) {
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    fun applyWindowPreferences(key: String?) {
+        if (key == null || key == isKeepScreenOnEnabledKey) {
+            val flag = WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+            if (preferences.getBoolean(isKeepScreenOnEnabledKey, false)) window.addFlags(flag)
+            else window.clearFlags(flag)
+        }
+        if (key == null || key == closeWithBackButtonKey) {
+            backFallback?.isEnabled = !preferences.getBoolean(closeWithBackButtonKey, true)
+        }
     }
+
+    val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key -> applyWindowPreferences(key) }
+    preferences.registerOnSharedPreferenceChangeListener(listener)
+    applyWindowPreferences(null)
+    lifecycle.addObserver(object : DefaultLifecycleObserver {
+        override fun onDestroy(owner: LifecycleOwner) {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+            backFallback?.remove()
+            owner.lifecycle.removeObserver(this)
+        }
+    })
 }
