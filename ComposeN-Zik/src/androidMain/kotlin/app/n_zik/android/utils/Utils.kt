@@ -599,9 +599,10 @@ internal suspend fun addPlaylistItemsFromMenu(
             return@withLock PlaylistAddResult.Unavailable
         }
         val remoteSource = isYouTubePlaylistSource(browseId, playlist.isYoutubePlaylist)
-        if (localDestinationsOnly && remoteSource) return@withLock PlaylistAddResult.Unavailable
-        val items = mediaItems.filterNot { remoteSource && it.isLocal }.distinctBy { it.asSong.id }
-        if (items.isEmpty()) return@withLock PlaylistAddResult.Unavailable
+        if (remoteSource && (localDestinationsOnly || mediaItems.any { it.isLocal })) {
+            return@withLock PlaylistAddResult.Unavailable
+        }
+        val items = mediaItems.distinctBy { it.asSong.id }
 
         suspend fun store(itemsToAdd: List<MediaItem>): PlaylistAddResult = Database.awaitWriteBatch {
             var result = PlaylistAddResult.Unavailable

@@ -516,6 +516,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             Timber.tag("HomeSongsScreen").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
+        localDestinationsOnly = getSongs().any(Song::isLocal),
     )
     val smartTrash = SmartTrash(
         builtInPlaylist = { builtInPlaylist },

@@ -613,7 +613,7 @@ fun LocalPlaylistSongs(
             Timber.tag("LocalPlaylistSongs").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
-        localDestinationsOnly = onDeviceOnly,
+        localDestinationsOnly = onDeviceOnly || getSongs().any(Song::isLocal),
     )
 
     fun sync() {

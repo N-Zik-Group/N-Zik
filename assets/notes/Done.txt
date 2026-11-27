@@ -1272,3 +1272,7 @@ Menus:
 Menus:
 - fix(playlists): show back only for nested pickers
   - Keep direct picker headers centered and use matching YouTube badges in the player picker.
+
+Menus:
+- fix(playlists): reject partial adds to remote playlists
+  - Keep mixed selections local when they contain device tracks and guard persistence against partial remote adds.

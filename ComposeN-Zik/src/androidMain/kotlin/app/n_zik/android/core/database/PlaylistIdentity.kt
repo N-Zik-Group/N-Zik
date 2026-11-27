@@ -102,7 +102,7 @@ internal suspend fun Database.addTracksToStoredPlaylist(
         val playlist = playlistTable.findById(playlistId).first() ?: return@transaction
         if (!canEditPlaylistMembership(playlist)) return@transaction
         val remote = isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
-        if (remote && (localDestinationsOnly || songs.all { it.isLocal })) return@transaction
+        if (remote && (localDestinationsOnly || songs.any { it.isLocal })) return@transaction
 
         result = if (mapMissingPlaylistSongs(playlist, songs) > 0) {
             PlaylistAddResult.Added
