@@ -149,6 +149,26 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(rewind): preserve legacy playlists during regeneration (c64ad7ebd9)
+  - Mark new generated snapshots with their own source identity and only replace snapshots with matching provenance.
+  - Preserve legacy same-name playlists and keep their rows accessible. Respect Rewind visibility when opening old notification links.
+- fix(playlists): preserve import order and export context (469d48ecac)
+  - Keep explicit sort choices when importing and preserve exact source context for podcasts, linked playlists and bookmarks.
+  - Resume a restored CSV export only for the same browsing scope. Preserve provider documents when there is no valid payload.
+- fix(settings): deactivate accounts without clearing setup (858d98c79e)
+  - Disable account usage and scheduled sync while keeping credentials, provider options and sync cursors.
+  - Keep active-profile settings resets scoped to the initiating profile.
+- fix(settings): align search and dependent controls (e7a31be01a)
+  - Map network quality search terms to the actual controls and prevent interactions as conditional entries animate out.
+- fix(menu): align transitions and collection toolbars (f428f48808)
+  - Keep the configured action order in responsive toolbars and their overflow. Give collection actions 48dp touch targets.
+  - Preserve source metadata in online menu playback, submenu transitions and the displayed count during confirmation exit.
+- fix(auto): follow mobile library preferences and playlist playback (b4cc161a10)
+  - Share tab visibility, sort and filter preferences with the phone. Use the real device scan for counts, rows and queues.
+  - Follow playlist continuations and preserve podcast source IDs. Respect shuffle exclusions and skip imports awaiting a match.
+- fix(settings): retain pending player restart across navigation (51e2e479c9)
+  - Keep restart requirements across categories for the same profile and clear them after a replacement service is ready.
+  - Scope player teardown notifications to the player and sleep timer.
 - fix(settings): reset on-device collection sort preferences
   - Clear the saved criteria and directions for on-device albums, artists and playlists on interface reset.
   - Exercise the active-profile reset and verify that other profiles retain their choices.
