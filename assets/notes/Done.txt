@@ -1468,3 +1468,7 @@ Menus:
 Downloads:
 - fix(offline): protect cached playlist and podcast audio
   - Keep the download confirmation open when offline and remove only actual download requests.
+
+Settings:
+- fix(settings): surface local audio permission in search
+  - Resume explicit local music activation after Android grants audio access.

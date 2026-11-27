@@ -23,6 +23,7 @@ import app.n_zik.android.components.settings.ui.glassSearchOption
 import app.n_zik.android.components.settings.ui.isGlassSearchLabelSupported
 import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
 import app.n_zik.android.components.ui.screens.bridge.BridgeSettingsTargetArgument
+import app.n_zik.android.core.ondevice.hasDeviceAudioPermission
 import app.n_zik.android.extensions.pip.supportsPictureInPicture
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.NavRoutes
@@ -119,6 +120,7 @@ internal fun searchSettingsEntries(
             result.id.startsWith("general.picture_in_picture.") &&
                 result.id != "general.picture_in_picture.settings_enable_pip" -> supportsPictureInPicture(context)
             result.cardTitleRes == R.string.glass_effect_title -> isGlassSearchLabelSupported(context, result.labelRes)
+            result.id == LocalMusicPermissionTarget -> !context.hasDeviceAudioPermission()
             PlayerSongSwipeSetting.entries.any { it.target == result.id } -> result.id == activeSwipeSetting.target
             else -> true
         }

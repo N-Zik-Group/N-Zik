@@ -63,6 +63,7 @@ import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.LocalMusicPermissionTarget
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.image.writeOwnedImageAtomically
 import app.n_zik.android.components.ui.screens.home.onDevice.blockedLocalFoldersFile
@@ -107,8 +108,10 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
     }.collectAsStateWithLifecycle(context.isDeviceLibraryEnabled(target.id))
     var pendingPermission by rememberSaveable(target.id, target.generation) { mutableStateOf(false) }
     var permissionDenied by rememberSaveable(target.id, target.generation) { mutableStateOf(false) }
+    var enableAfterSettings by rememberSaveable(target.id, target.generation) { mutableStateOf(false) }
     var hasPermission by remember(context) { mutableStateOf(context.hasDeviceAudioPermission()) }
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val permissionTargeted = LocalSettingsTargets.current?.storageEntryTarget == LocalMusicPermissionTarget
 
     DisposableEffect(lifecycle, context, target) {
         val observer = LifecycleEventObserver { _, event ->
@@ -138,6 +141,10 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
         if (pendingPermission && granted) setEnabled(true)
         pendingPermission = false
     }
+    val settingsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        if (enableAfterSettings && context.hasDeviceAudioPermission()) setEnabled(true)
+        enableAfterSettings = false
+    }
     OtherSwitchSettingEntry(
         modifier = Modifier.settingsSearchTarget("other.on_device.enabled"),
         title = stringResource(R.string.settings_local_music_enabled_title),
@@ -146,26 +153,32 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
         isChecked = enabled,
         enabled = !pendingPermission,
         onCheckedChange = { checked ->
-            if (!checked || context.hasDeviceAudioPermission()) {
-                setEnabled(checked)
+            if (!checked) {
+                permissionDenied = false
+                enableAfterSettings = false
+                setEnabled(false)
+            } else if (context.hasDeviceAudioPermission()) {
+                setEnabled(true)
             } else {
                 pendingPermission = true
                 permissionLauncher.launch(deviceAudioPermission)
             }
         },
     )
-    if (!hasPermission && (enabled || permissionDenied)) {
+    if (!hasPermission && (enabled || permissionDenied || permissionTargeted)) {
         OtherSettingsEntry(
             modifier = Modifier.settingsSearchTarget(LocalMusicPermissionTarget),
             title = stringResource(R.string.visualizer_action_open_permission_settings),
             text = stringResource(R.string.library_local_media_permission_message),
             icon = R.drawable.locked,
             onClick = {
+                enableAfterSettings = permissionDenied
                 runCatching {
-                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    settingsLauncher.launch(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", context.packageName, null)
                     })
                 }.onFailure { error ->
+                    enableAfterSettings = false
                     Timber.tag("OnDeviceSettings").w(error, "Could not open permission settings")
                     Toaster.e(R.string.library_on_device_permission_settings_failed)
                 }

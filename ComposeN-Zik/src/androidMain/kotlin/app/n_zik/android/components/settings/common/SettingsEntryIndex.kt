@@ -419,6 +419,11 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
         listOf(R.string.bridge_auto_stop, R.string.bridge_auto_stop_inactivity_hint), groupTitleRes = R.string.bridge_auto_stop),
     SettingsEntryTarget("other.on_device.section", 4, R.string.storage_breakdown_title, R.string.library_on_device_title),
     SettingsEntryTarget("other.on_device.enabled", 4, R.string.storage_breakdown_title, R.string.settings_local_music_enabled_title, listOf(R.string.settings_local_music_enabled_description)),
+    SettingsEntryTarget(
+        LocalMusicPermissionTarget, 4, R.string.storage_breakdown_title, R.string.visualizer_action_open_permission_settings,
+        listOf(R.string.library_local_media_permission_message, R.string.permissions_label_media_audio),
+        innerCardTitleRes = R.string.library_on_device_title,
+    ),
     SettingsEntryTarget("other.on_device.summary", 4, R.string.storage_breakdown_title, R.string.settings_local_music_summary_title, listOf(R.string.settings_local_music_summary_description)),
     SettingsEntryTarget("other.on_device.scan_on_startup", 4, R.string.storage_breakdown_title, R.string.settings_local_music_scan_on_startup_title, listOf(R.string.settings_local_music_scan_on_startup_description)),
     SettingsEntryTarget("other.on_device.refresh", 4, R.string.storage_breakdown_title, R.string.settings_local_music_refresh_title, listOf(R.string.settings_local_music_refresh_description)),
