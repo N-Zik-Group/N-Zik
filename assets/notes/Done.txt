@@ -1508,3 +1508,7 @@ Settings:
 Settings:
 - fix(history): wait for the listening history deletion
   - Confirm only after the queued write succeeds and show a distinct failure message.
+
+Settings:
+- fix(history): apply pause without player restart
+  - Use the preference immediately when recording a playback event.

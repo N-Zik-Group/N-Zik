@@ -89,10 +89,7 @@ internal fun DataHistoryCard(
                 title = stringResource(R.string.player_pause_listen_history),
                 text = stringResource(R.string.player_pause_listen_history_info),
                 isChecked = pauseListenHistory,
-                onCheckedChange = {
-                    pauseListenHistory = it
-                    restartService = true
-                },
+                onCheckedChange = { pauseListenHistory = it },
                 icon = R.drawable.pause
             )
             OtherSettingsEntry(
