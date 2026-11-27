@@ -152,6 +152,19 @@ private fun settingsSearchPrerequisite(
     }
     if (requiredTheme != null) return SearchPrerequisite(ThemeSettingsTarget, listOf(requiredTheme.textId))
 
+    val requiredCoverVisibility = when (target) {
+        "appearance.cover_and_thumbnail.show_cover_thumbnail_animation" -> R.string.common_state_on
+        "appearance.cover_and_thumbnail.noblur" -> R.string.common_state_off
+        else -> null
+    }
+    if (requiredCoverVisibility != null) {
+        return if (hasTarget(ShowCoverSettingsTarget)) {
+            SearchPrerequisite(ShowCoverSettingsTarget, listOf(requiredCoverVisibility))
+        } else {
+            SearchPrerequisite(BackgroundSettingsTarget, listOf(R.string.player_background_artwork_blurred_label))
+        }
+    }
+
     if (target == "appearance.colors_and_background.albumCoverRotation" &&
         preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient) == PlayerBackgroundColors.BlurredCoverColor
     ) {

@@ -1232,3 +1232,7 @@ Settings:
 Settings:
 - fix(dialog): center toolbar toggle ripple around its row
   - Keep the icons and drag handles in place and draw press feedback within a padded outline around the whole row.
+
+Settings:
+- fix(settings): explain thumbnail prerequisites in search
+  - Focus the thumbnail toggle or its background prerequisite for hidden cover animation and blur controls.
