@@ -89,6 +89,7 @@ object ListMenu {
         onClick: (() -> Unit)? = null,
         onLongClick: (() -> Unit)? = null,
         loading: Boolean = false,
+        onLongClickLabel: String? = null,
         trailingContent: @Composable () -> Unit = {}
     ) {
         val alpha = if (enabled) 1f else 0.5f
@@ -103,7 +104,10 @@ object ListMenu {
                 .then(modifier)
                 .fillMaxWidth()
                 .clip(shape)
-                .menuEntryClick(shape, enabled && !loading, onClick, onLongClick, insetFeedback = false)
+                .menuEntryClick(
+                    shape, enabled && !loading, onClick, onLongClick,
+                    insetFeedback = false, onLongClickLabel = onLongClickLabel,
+                )
                 .padding(vertical = 10.dp, horizontal = outset)
         ) {
             icon()

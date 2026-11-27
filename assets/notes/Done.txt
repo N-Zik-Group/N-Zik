@@ -1724,3 +1724,7 @@ Settings / Player:
 Settings / Theme Store:
 - fix(settings): resume GitHub usage after confirmed authorization
   - Restore usage after saving a valid explicit OAuth session and preserve cancellation and profile ownership.
+
+Menus:
+- fix(menu): keep outgoing pages passive and dialogs above their source
+  - Share transition input and accessibility guards and keep mixed native and Glass dialogues in the correct window.

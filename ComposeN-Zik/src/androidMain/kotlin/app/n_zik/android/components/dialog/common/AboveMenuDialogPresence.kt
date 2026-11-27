@@ -9,6 +9,7 @@ import app.n_zik.android.components.glass.canHostGlassMenuSheet
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.ui.components.tab.toolbar.Dialog as ToolbarDialog
 
 @Composable
 internal fun AboveMenuDialogPresence(
@@ -17,13 +18,39 @@ internal fun AboveMenuDialogPresence(
     content: @Composable () -> Unit,
 ) {
     DialogPresence(visible = visible) {
-        val glass = rememberGlassSettings()
-        val host = LocalGlassMenuHost.current
-        val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
-        val menuSharesActivityWindow = canHostGlassMenuSheet(glass, glassRenderer(glass), sameWindow && host?.backdrop != null)
-        val requiresNativeDialog = LocalRequireNativeDialogWindow.current ||
-            (menuState.isDisplayed && !menuSharesActivityWindow)
-        val nativeDialog = remember { requiresNativeDialog }
-        CompositionLocalProvider(LocalRequireNativeDialogWindow provides nativeDialog, content = content)
+        AboveMenuDialogWindow(menuState, content)
     }
+}
+
+@Composable
+internal fun <T : Any> AboveMenuDialogPresence(
+    menuState: MenuState,
+    target: T?,
+    content: @Composable (T) -> Unit,
+) {
+    DialogPresence(target = target) { payload ->
+        AboveMenuDialogWindow(menuState) { content(payload) }
+    }
+}
+
+@Composable
+internal fun Dialog.RenderAboveMenu(menuState: MenuState) {
+    AboveMenuDialogPresence(menuState, visible = isActive) { Render() }
+}
+
+@Composable
+internal fun ToolbarDialog.RenderAboveMenu(menuState: MenuState) {
+    AboveMenuDialogPresence(menuState, visible = isActive) { Render() }
+}
+
+@Composable
+private fun AboveMenuDialogWindow(menuState: MenuState, content: @Composable () -> Unit) {
+    val glass = rememberGlassSettings()
+    val host = LocalGlassMenuHost.current
+    val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
+    val menuSharesActivityWindow = canHostGlassMenuSheet(glass, glassRenderer(glass), sameWindow && host?.backdrop != null)
+    val requiresNativeDialog = LocalRequireNativeDialogWindow.current ||
+        (menuState.isDisplayed && !menuSharesActivityWindow)
+    val nativeDialog = remember { requiresNativeDialog }
+    CompositionLocalProvider(LocalRequireNativeDialogWindow provides nativeDialog, content = content)
 }

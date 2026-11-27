@@ -29,6 +29,7 @@ import app.n_zik.android.components.glass.GlassToastOverlayScene
 import app.n_zik.android.components.glass.glassContentCaptureEnabled
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuEntry
@@ -49,42 +50,49 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
         onDismissRequest = menuState::hide,
         sheetState = menuSheetState,
     ) {
-        AnimatedContent(
-            targetState = menuState.presentationState,
-            transitionSpec = {
-                val returning = (targetState.second?.depth ?: 0) < (initialState.second?.depth ?: 0)
-                if (returning) {
-                    screenPopEnter(transitionEffect) togetherWith screenPopExit(transitionEffect)
-                } else {
-                    slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } +
-                        fadeIn(animationSpec = tween(300)) togetherWith
-                        slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } +
-                        fadeOut(animationSpec = tween(300))
-                }
-            },
-            label = "MenuContentTransition"
-        ) { target ->
-            BackHandler(enabled = menuState.isDisplayed && menuState.canGoBack) {
-                menuState.pop()
+        MenuStackContent(menuState, transitionEffect)
+    }
+}
+
+@Composable
+internal fun MenuStackContent(menuState: MenuState, transitionEffect: TransitionEffect) {
+    BackHandler(enabled = menuState.isDisplayed && menuState.canGoBack) {
+        menuState.pop()
+    }
+    AnimatedContent(
+        targetState = menuState.presentationState,
+        transitionSpec = {
+            val returning = (targetState.second?.depth ?: 0) < (initialState.second?.depth ?: 0)
+            if (returning) {
+                screenPopEnter(transitionEffect) togetherWith screenPopExit(transitionEffect)
+            } else {
+                slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } +
+                    fadeIn(animationSpec = tween(300)) togetherWith
+                    slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } +
+                    fadeOut(animationSpec = tween(300))
             }
-            Box(modifier = Modifier.fillMaxWidth()) {
-                target.second?.let { entry ->
-                    val back = remember(menuState, entry) {
-                        if (entry.hasPrevious || entry.onReturn != null) {
-                            {
-                                if (menuState.isDisplayed && menuState.presentationState.second === entry) {
-                                    menuState.pop()
-                                }
+        },
+        label = "MenuContentTransition"
+    ) { target ->
+        val entry = target.second
+        val active = menuState.isDisplayed && menuState.presentationState.second === entry
+        Box(modifier = Modifier.fillMaxWidth().menuPageInteraction(active)) {
+            if (entry != null) {
+                val back = remember(menuState, entry) {
+                    if (entry.hasPrevious || entry.onReturn != null) {
+                        {
+                            if (menuState.isDisplayed && menuState.presentationState.second === entry) {
+                                menuState.pop()
                             }
-                        } else null
-                    }
-                    CompositionLocalProvider(
-                        LocalMenuScrollState provides entry.scrollState,
-                        LocalMenuBack provides back,
-                        LocalMenuEntry provides entry,
-                    ) {
-                        entry.content()
-                    }
+                        }
+                    } else null
+                }
+                CompositionLocalProvider(
+                    LocalMenuScrollState provides entry.scrollState,
+                    LocalMenuBack provides back,
+                    LocalMenuEntry provides entry,
+                ) {
+                    entry.content()
                 }
             }
         }

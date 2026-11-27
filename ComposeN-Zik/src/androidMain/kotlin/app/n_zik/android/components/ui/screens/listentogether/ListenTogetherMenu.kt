@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -18,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -28,6 +30,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.components.settings.ServerChooserSheet
 import app.n_zik.android.components.settings.UsernameSheet
 import app.n_zik.android.core.navigation.screenPopEnter
@@ -40,6 +43,7 @@ import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherServers
 import app.n_zik.android.listentogether.RoomRole
+import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.utils.DataStoreUtils
@@ -242,7 +246,9 @@ fun ListenTogetherMenu() {
     val palette = colorPalette()
     val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
 
-    BackHandler(enabled = menuState.isDisplayed && page != RoomMenuPage.Room) {
+    val menuEntry = LocalMenuEntry.current
+    val active = menuState.isDisplayed && (menuEntry == null || menuState.presentationState.second === menuEntry)
+    BackHandler(enabled = active && page != RoomMenuPage.Room) {
         page = RoomMenuPage.Room
     }
     AnimatedContent(
@@ -257,31 +263,33 @@ fun ListenTogetherMenu() {
         },
         label = "ListenTogetherMenuPage",
     ) { target ->
-        CompositionLocalProvider(LocalMenuScrollState provides LocalMenuScrollState.current?.forPage(target)) {
-            when (target) {
-                RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
-                    ListMenu.Menu(
-                        title = stringResource(R.string.listen_together_title),
-                    ) {
-                        ListLtMenuContent(content)
+        Box(Modifier.menuPageInteraction(active && target == page), propagateMinConstraints = true) {
+            CompositionLocalProvider(LocalMenuScrollState provides LocalMenuScrollState.current?.forPage(target)) {
+                when (target) {
+                    RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
+                        ListMenu.Menu(
+                            title = stringResource(R.string.listen_together_title),
+                        ) {
+                            ListLtMenuContent(content)
+                        }
+                    } else {
+                        GridMenu.Menu(
+                            title = stringResource(R.string.listen_together_title),
+                        ) {
+                            GridLtMenuContent(content, palette)
+                        }
                     }
-                } else {
-                    GridMenu.Menu(
-                        title = stringResource(R.string.listen_together_title),
-                    ) {
-                        GridLtMenuContent(content, palette)
-                    }
+                    RoomMenuPage.Logs -> ListenTogetherLogsMenu(
+                        logs = logs,
+                        onClear = { listenTogetherManager.clearLogs() },
+                        onBack = { page = RoomMenuPage.Room },
+                    )
+                    RoomMenuPage.BlockedUsers -> ListenTogetherBlockedUsersMenu(
+                        blockedUsernames = blockedUsernames,
+                        onUnblock = { listenTogetherManager.unblockUser(it) },
+                        onBack = { page = RoomMenuPage.Room },
+                    )
                 }
-                RoomMenuPage.Logs -> ListenTogetherLogsMenu(
-                    logs = logs,
-                    onClear = { listenTogetherManager.clearLogs() },
-                    onBack = { page = RoomMenuPage.Room },
-                )
-                RoomMenuPage.BlockedUsers -> ListenTogetherBlockedUsersMenu(
-                    blockedUsernames = blockedUsernames,
-                    onUnblock = { listenTogetherManager.unblockUser(it) },
-                    onBack = { page = RoomMenuPage.Room },
-                )
             }
         }
     }

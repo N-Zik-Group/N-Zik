@@ -15,6 +15,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.TextButton
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.node.DelegatableNode
@@ -37,9 +38,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.geometry.Rect
@@ -57,6 +60,12 @@ import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
+import app.n_zik.android.components.dialog.common.DialogFrame
+import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
+import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.ui.app.AppAppearanceMenu
+import app.n_zik.android.ui.components.MenuState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -238,6 +247,61 @@ class GlassDialogHostTest {
         assertFalse(canHostGlassMenuSheet(enabled.copy(enabled = false), GlassRenderer.Refraction, true))
         assertFalse(canHostGlassMenuSheet(enabled, GlassRenderer.Tint, true))
         assertFalse(canHostGlassMenuSheet(enabled, GlassRenderer.Refraction, false))
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Test fun `screen owned glass dialog opens above native menu and returns to it`() {
+        val host = GlassMenuHostState()
+        val menuState = MenuState()
+        val settings = GlassSettings(enabled = true, menus = false, dialogs = true)
+        var showDialog by mutableStateOf(false)
+        var sharesActivityWindow: Boolean? = null
+        menuState.display {
+            ListMenu.Menu(title = "Overflow") {
+                ListMenu.Entry("Export cached tracks", icon = {}, onClick = { showDialog = true })
+            }
+        }
+        showContent {
+            val root = LocalView.current.rootView
+            val backdrop = rememberCanvasBackdrop { drawRect(Color.Black) }
+            SideEffect { host.backdrop = backdrop }
+            CompositionLocalProvider(
+                LocalGlassMenuHost provides host,
+                LocalGlassPreviewSettings provides settings,
+            ) {
+                AppAppearanceMenu(menuState, rememberModalBottomSheetState(skipPartiallyExpanded = false))
+                AboveMenuDialogPresence(menuState, visible = showDialog) {
+                    DialogFrame(title = "Export", onDismiss = { showDialog = false }) {
+                        val sameWindow = LocalView.current.rootView === root
+                        SideEffect { sharesActivityWindow = sameWindow }
+                        TextButton(onClick = { showDialog = false }) { BasicText("Cancel export") }
+                    }
+                }
+                GlassDialogOverlayHost(host)
+            }
+        }
+        composeRule.onNodeWithText("Export cached tracks").performClick()
+        composeRule.onNodeWithText("Cancel export").assertExists()
+        composeRule.runOnIdle {
+            assertEquals(false, sharesActivityWindow)
+            assertFalse(host.dialogs.hasDialogs)
+            assertEquals(2, host.nativeOverlays.size)
+        }
+        composeRule.onNodeWithText("Cancel export").performClick()
+        composeRule.onNodeWithText("Cancel export").assertDoesNotExist()
+        composeRule.onNodeWithText("Export cached tracks").assertExists()
+        composeRule.runOnIdle {
+            assertTrue(menuState.isDisplayed)
+            assertEquals(1, host.nativeOverlays.size)
+            menuState.hide()
+        }
+        composeRule.onNodeWithText("Export cached tracks").assertDoesNotExist()
+        composeRule.runOnIdle { showDialog = true }
+        composeRule.onNodeWithText("Cancel export").assertExists()
+        composeRule.runOnIdle {
+            assertEquals(true, sharesActivityWindow)
+            assertTrue(host.dialogs.hasDialogs)
+        }
     }
 
     @Test fun `shared dialog accepts text while covered page is inaccessible and outside dismisses once`() {

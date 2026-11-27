@@ -49,6 +49,7 @@ class ItemSelector<E> private constructor(
 
     override val iconId: Int
         get() = if( isActive ) R.drawable.checked_filled else R.drawable.unchecked_outline
+    override val menuToggleState: Boolean get() = isActive
     override val messageId: Int
         get() = if ( isActive ) R.string.playlist_selection_action_deselect else R.string.common_action_select
     override val menuIconTitle: String
@@ -158,9 +159,14 @@ private open class SelectionGuardedMenuIcon(
         @Composable get() = action.menuIconTitle
     override val sizeDp: Dp get() = action.sizeDp
     override val modifier: Modifier get() = action.modifier
+    override val menuToggleState: Boolean? get() = action.menuToggleState
+    override val menuStateDescription: String?
+        @Composable get() = action.menuStateDescription
     override val isEnabled: Boolean get() = action.isEnabled && selectionAllowsAction()
     override val menuLongClick: (() -> Unit)?
         get() = action.menuLongClick?.let { onLongClick -> { if (isEnabled) onLongClick() } }
+    override val menuLongClickLabel: String?
+        @Composable get() = action.menuLongClickLabel
 
     override fun onShortClick() {
         if (isEnabled) action.onShortClick()
