@@ -41,7 +41,9 @@ import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.components.radioButtonIcon
 import app.n_zik.android.components.shuffleButtonIcon
+import app.n_zik.android.components.tab.stopActiveRadio
 import app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.MiniPlayerButton
 import app.n_zik.android.enums.NavRoutes
@@ -255,6 +257,9 @@ internal fun MiniPlayerSlotButton(
         }
         MiniPlayerButton.Radio -> {
             val isRadioActive = binder?.isRadioActive == true
+            val offlineMode by OfflineMode.rememberEnabled()
+            val radioSeed = mediaItem?.takeUnless { offlineMode || it.isLocal }
+            if (!isRadioActive && radioSeed == null) return
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
@@ -266,7 +271,9 @@ internal fun MiniPlayerSlotButton(
                 // (blocked centrally in NZikRadio.startRadio + grayed here).
                 enabled = !listenTogetherGuestLock,
                 onClick = {
-                    if (!listenTogetherGuestLock) mediaItem?.let { binder?.startRadio(it, false, null, true) }
+                    if (binder?.stopActiveRadio() != true) {
+                        radioSeed?.let { binder?.startRadio(it, isExplicit = true) }
+                    }
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 rotationAngle = rotationAngle,

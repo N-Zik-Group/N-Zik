@@ -158,6 +158,10 @@ class NZikRadio(
             }
 
             if (mediaItem.isLocal) return
+            if (!isNetworkConnected(context)) {
+                Toaster.noInternet()
+                return
+            }
             stopRadio(showToast = false) // Clean state before starting
             isRadioActive = true
 

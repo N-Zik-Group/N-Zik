@@ -4,6 +4,7 @@ import app.n_zik.android.utils.effectRotationDefault
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.components.tab.stopActiveRadio
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.utils.playerActionBarButtonOrderKey
@@ -784,18 +785,22 @@ internal fun playerActionBarActions(
                 }
                 "start_radio" -> {
                     val showButtonPlayerStartRadio by rememberPreference( showButtonPlayerStartRadioKey, false )
-                    if ((placedAtTop || showButtonPlayerStartRadio) && !offlineMode)
+                    val isRadioActive = binder?.isRadioActive == true
+                    val canStartRadio = !offlineMode && !mediaItem.isLocal
+                    if ((placedAtTop || showButtonPlayerStartRadio) && (isRadioActive || canStartRadio))
                         playerActions.add(PlayerActionSlot(buttonId) {
                             PlayerActionIcon(
                                 // Issue #866 (gh-866): state icon — radio_stop while the radio is
                                 // active (the state change is the press feedback).
                                 icon = radioButtonIcon(),
-                                color = if (binder?.isRadioActive == true) colorPalette().accent else Color.Gray,
+                                color = if (isRadioActive) colorPalette().accent else Color.Gray,
                                 // Guest lock: Radio is a stateful ON/OFF control owned by the
                                 // host — blocked in NZikRadio.startRadio + grayed here
                                 enabled = !ltGuestLocked,
                                 onClick = {
-                                    binder?.startRadio( mediaItem, false, null, true )
+                                    if (binder?.stopActiveRadio() != true && canStartRadio) {
+                                        binder?.startRadio(mediaItem, isExplicit = true)
+                                    }
                                 },
                                 modifier = Modifier
                                     .size( 24.dp )

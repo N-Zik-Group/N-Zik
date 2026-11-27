@@ -35,9 +35,8 @@ import org.junit.jupiter.api.Test
 
 /**
  * Offline audit (2026-10-22, F3/F4 + A5a): an offline radio spends no network attempt —
- * `fetchAndInject` skips the Innertube fetch while the monitor reads offline, so an explicit
- * start gets exactly ONE "No Connection" report (the player gate's offline fast-fail — the
- * radio side adds no second toast, F3) and the auto-fill makes no DNS-failing fetch per track
+ * Explicit starts reject offline playback before activating Radio and report "No Connection"
+ * once. Auto-fill makes no DNS-failing fetch per track
  * transition (F4); the queue fills when the network is back (auto-fill retry). Plus the A5a
  * predicate: offline => "No Connection" instead of the generic fetch-error string (only
  * reachable on a mid-fetch drop, since the offline fetch itself is skipped up front).
@@ -121,21 +120,17 @@ class NZikRadioOfflineTest {
         verify(exactly = 0) { Toaster.e(any<Int>()) }
     }
 
-    // --- F3: the offline explicit start adds no radio-side report ---
-
     @Test
-    fun `an offline explicit start does no radio-side fetch or error toast (F3)`() {
-        // currentMediaItem is null -> forcePlay(Z) runs, then the fetch must be skipped offline
+    fun `offline explicit start leaves radio off and reports no connection once`() {
         nZikRadio.startRadio(mediaItem("Z"), isExplicit = true)
 
-        assertTrue(nZikRadio.isRadioActive, "the radio stays ON (the queue fills when the network is back)")
-        assertFalse(nZikRadio.isLoading, "the skipped fetch must leave isLoading released")
+        assertFalse(nZikRadio.isRadioActive)
+        assertFalse(nZikRadio.isLoading)
         coVerify(exactly = 0) { Innertube.nextPage(videoId = "Z") }
         coVerify(exactly = 0) { Innertube.nextPage(videoId = "Z", playlistId = any()) }
-        // The single "No Connection" report for an offline explicit start is the player gate's
-        // (offline fast-fail) — the radio side must not add a second toast.
+        verify(exactly = 0) { mockPlayer.prepare() }
         verify(exactly = 0) { Toaster.e(any<Int>()) }
-        verify(exactly = 0) { Toaster.noInternet() }
+        verify(exactly = 1) { Toaster.noInternet() }
     }
 
     // --- A5a: the mid-fetch drop (the only path where the offline branch is reachable) ---
@@ -146,7 +141,7 @@ class NZikRadioOfflineTest {
         var networkChecks = 0
         every { isNetworkConnected(context) } answers {
             networkChecks++
-            networkChecks == 1
+            networkChecks <= 2
         }
         coEvery { Innertube.nextPage(videoId = "Z") } returns null
 
