@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertWidthIsEqualTo
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -23,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.FontType
@@ -68,18 +70,20 @@ class SearchResultHeaderActionsTest {
             CompositionLocalProvider(LocalAppearance provides appearance,
                 LocalGlassPreviewSettings provides GlassSettings(enabled = false)) {
                 Box(Modifier.size(360.dp, 80.dp), contentAlignment = Alignment.TopCenter) {
-                    SearchResultHeaderActions(true, {}) {
-                        trigger = requireNotNull(LocalGlassMenuTrigger.current)
-                        SearchResultHeaderIcon(R.drawable.discover, "native globe", {})
-                        SearchResultHeaderIcon(R.drawable.sort_grid, "native layout", {})
-                    }
+                    SearchResultHeaderActions(
+                        onEditQuery = {},
+                        filter = SearchResultFilterAction(onOpen = {}) {
+                            trigger = requireNotNull(LocalGlassMenuTrigger.current)
+                        },
+                        onToggleLayout = {},
+                    )
                 }
             }
         }
-        val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search_title))
-        val layout = compose.onNodeWithContentDescription("native layout")
+        val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search_action_edit_query))
+        val layout = compose.onNodeWithContentDescription(context.getString(R.string.accessibility_switch_mode))
         pencil.assertWidthIsEqualTo(36.dp)
-        compose.onNodeWithContentDescription("native globe").assertWidthIsEqualTo(36.dp)
+        compose.onNodeWithContentDescription(context.getString(R.string.accessibility_filter)).assertWidthIsEqualTo(36.dp)
         layout.assertWidthIsEqualTo(36.dp)
         val before = listOf(pencil.fetchSemanticsNode().boundsInRoot, layout.fetchSemanticsNode().boundsInRoot)
         val source = trigger.bounds
@@ -126,6 +130,8 @@ class SearchResultHeaderActionsTest {
     }
 
     private fun assertNativeGlobeTransfer(globalGlass: Boolean) {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val filterLabel = context.getString(R.string.accessibility_filter)
         val host = GlassMenuHostState()
         val expanded = mutableStateOf(false)
         var selected = false
@@ -142,23 +148,23 @@ class SearchResultHeaderActionsTest {
                     areaModes = mapOf(GlassArea.ActionButtons to GlassAreaMode.Disabled)),
             ) {
                 Box {
-                    SearchResultHeaderActions(false, {}) {
-                        Box {
-                            SearchResultHeaderIcon(R.drawable.discover, "globe", { expanded.value = true })
+                    SearchResultHeaderActions(
+                        onEditQuery = {},
+                        filter = SearchResultFilterAction(onOpen = { expanded.value = true }) {
                             GlassDropdownMenu(expanded.value, { expanded.value = false }, Color.DarkGray, CircleShape) {
                                 DropdownMenuItem(text = { Text("Native filter") }, onClick = {
                                     selected = true
                                     expanded.value = false
                                 })
                             }
-                        }
-                    }
+                        },
+                    )
                     GlassOverlayHost(host)
                 }
             }
         }
-        val initialBounds = compose.onNodeWithContentDescription("globe").fetchSemanticsNode().boundsInRoot
-        compose.onNodeWithContentDescription("globe").performClick()
+        val initialBounds = compose.onNodeWithContentDescription(filterLabel).fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithContentDescription(filterLabel).performClick()
         compose.waitForIdle()
         compose.runOnIdle {
             val entry = requireNotNull(host.entry)
@@ -172,18 +178,21 @@ class SearchResultHeaderActionsTest {
             assertNotNull("the overlay must receive the native globe glyph", trigger.content)
             assertTrue(trigger.isTransferred)
         }
-        compose.onNodeWithContentDescription("globe").assertDoesNotExist()
+        compose.onNodeWithContentDescription(filterLabel).assertDoesNotExist()
         compose.onNodeWithText("Native filter").performClick()
         compose.waitForIdle()
         compose.runOnIdle {
             assertTrue(selected)
             assertNull(host.entry)
         }
-        assertEquals(initialBounds, compose.onNodeWithContentDescription("globe").fetchSemanticsNode().boundsInRoot)
+        assertEquals(initialBounds, compose.onNodeWithContentDescription(filterLabel).fetchSemanticsNode().boundsInRoot)
     }
 
     @Test fun `globe transfers into its dropdown and three action capsule rejoins after closing`() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        val filterLabel = context.getString(R.string.accessibility_filter)
+        val editLabel = context.getString(R.string.search_action_edit_query)
+        val layoutLabel = context.getString(R.string.accessibility_switch_mode)
         val previous = context.preferences.getBoolean(glassEnabledKey, false)
         context.preferences.edit().putBoolean(glassEnabledKey, true).commit()
         try {
@@ -200,45 +209,45 @@ class SearchResultHeaderActionsTest {
                 CompositionLocalProvider(LocalAppearance provides appearance, LocalGlassMenuHost provides host) {
                     Box(Modifier.fillMaxWidth()) {
                         Box(Modifier.align(Alignment.TopEnd)) {
-                            SearchResultHeaderActions(true, { clicks[0]++ }) {
-                                Box {
-                                    SearchResultHeaderIcon(R.drawable.discover, "globe", { expanded.value = true })
+                            SearchResultHeaderActions(
+                                onEditQuery = { clicks[0]++ },
+                                filter = SearchResultFilterAction(onOpen = { expanded.value = true }) {
                                     GlassDropdownMenu(expanded.value, { expanded.value = false }, Color.Transparent, CircleShape) {
                                         DropdownMenuItem(text = { Text("Choose filter") }, onClick = {
                                             selected++
                                             expanded.value = false
                                         })
                                     }
-                                }
-                                SearchResultHeaderIcon(R.drawable.sort_grid, "layout", { clicks[1]++ })
-                            }
+                                },
+                                onToggleLayout = { clicks[1]++ },
+                            )
                         }
                         GlassOverlayHost(host)
                     }
                 }
             }
-            val globe = compose.onNodeWithContentDescription("globe").fetchSemanticsNode().boundsInRoot
-            val layout = compose.onNodeWithContentDescription("layout").fetchSemanticsNode().boundsInRoot
-            val pencil = compose.onNodeWithContentDescription(context.getString(R.string.search_title)).fetchSemanticsNode().boundsInRoot
-            compose.onNodeWithContentDescription("globe").performClick()
+            val globe = compose.onNodeWithContentDescription(filterLabel).fetchSemanticsNode().boundsInRoot
+            val layout = compose.onNodeWithContentDescription(layoutLabel).fetchSemanticsNode().boundsInRoot
+            val pencil = compose.onNodeWithContentDescription(editLabel).fetchSemanticsNode().boundsInRoot
+            compose.onNodeWithContentDescription(filterLabel).performClick()
             compose.waitForIdle()
             compose.runOnIdle {
                 assertNotNull(host.entry?.trigger)
                 assertEquals(globe, host.entry?.anchor)
                 assertEquals(globe, host.entry?.trigger?.bounds)
             }
-            compose.onNodeWithContentDescription("globe").assertDoesNotExist()
+            compose.onNodeWithContentDescription(filterLabel).assertDoesNotExist()
             compose.onNodeWithText("Choose filter").performClick()
             compose.waitForIdle()
             compose.runOnIdle {
                 assertNull(host.entry)
                 assertEquals(1, selected)
             }
-            assertEquals(globe, compose.onNodeWithContentDescription("globe").fetchSemanticsNode().boundsInRoot)
-            assertEquals(layout, compose.onNodeWithContentDescription("layout").fetchSemanticsNode().boundsInRoot)
-            assertEquals(pencil, compose.onNodeWithContentDescription(context.getString(R.string.search_title)).fetchSemanticsNode().boundsInRoot)
-            compose.onNodeWithContentDescription("layout").performClick()
-            compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performClick()
+            assertEquals(globe, compose.onNodeWithContentDescription(filterLabel).fetchSemanticsNode().boundsInRoot)
+            assertEquals(layout, compose.onNodeWithContentDescription(layoutLabel).fetchSemanticsNode().boundsInRoot)
+            assertEquals(pencil, compose.onNodeWithContentDescription(editLabel).fetchSemanticsNode().boundsInRoot)
+            compose.onNodeWithContentDescription(layoutLabel).performClick()
+            compose.onNodeWithContentDescription(editLabel).performClick()
             compose.runOnIdle { assertEquals(listOf(1, 1), clicks.toList()) }
         } finally {
             context.preferences.edit().putBoolean(glassEnabledKey, previous).commit()
@@ -260,20 +269,62 @@ class SearchResultHeaderActionsTest {
         )
         compose.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
-                SearchResultHeaderActions(showToggle.value, { clicks[0]++ }) {
-                    SearchResultHeaderIcon(R.drawable.discover, "filter", { clicks[1]++ })
-                    if (showToggle.value) {
-                        SearchResultHeaderIcon(R.drawable.sort_grid, "layout", { clicks[2]++ })
-                    }
-                }
+                SearchResultHeaderActions(
+                    onEditQuery = { clicks[0]++ },
+                    filter = SearchResultFilterAction(onOpen = { clicks[1]++ }) {},
+                    onToggleLayout = if (showToggle.value) ({ clicks[2]++ }) else null,
+                )
             }
         }
-        compose.onNodeWithContentDescription("layout").assertDoesNotExist()
-        compose.onNodeWithContentDescription(context.getString(R.string.search_title)).performTouchInput { click() }
-        compose.onNodeWithContentDescription("filter").performTouchInput { click() }
+        val layout = compose.onNodeWithContentDescription(context.getString(R.string.accessibility_switch_mode))
+        val filter = compose.onNodeWithContentDescription(context.getString(R.string.accessibility_filter))
+        layout.assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.search_action_edit_query)).performTouchInput { click() }
+        filter.performTouchInput { click() }
         compose.runOnIdle { showToggle.value = true }
-        compose.onNodeWithContentDescription("layout").assertWidthIsEqualTo(36.dp).performTouchInput { click() }
-        compose.onNodeWithContentDescription("filter").performTouchInput { click() }
+        layout.assertWidthIsEqualTo(36.dp).performTouchInput { click() }
+        filter.performTouchInput { click() }
         compose.runOnIdle { assertEquals(listOf(1, 2, 1), clicks.toList()) }
+    }
+
+    @Test fun `search headers without a filter only reserve the visible seats in both modes`() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val glassEnabled = mutableStateOf(false)
+        val showToggle = mutableStateOf(false)
+        val appearance = Appearance(
+            colorPalette = DefaultDarkColorPalette,
+            typography = typographyOf(Color.White, true, false, FontType.Rubik),
+            thumbnailShape = CircleShape, uiRoundnessShape = CircleShape, artistThumbnailShape = CircleShape,
+        )
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalGlassPreviewSettings provides GlassSettings(enabled = glassEnabled.value),
+            ) {
+                SearchResultHeaderActions(
+                    onEditQuery = {},
+                    onToggleLayout = if (showToggle.value) ({}) else null,
+                    modifier = Modifier.testTag("search-result-actions"),
+                )
+            }
+        }
+
+        val header = compose.onNodeWithTag("search-result-actions")
+        val layout = compose.onNodeWithContentDescription(context.getString(R.string.accessibility_switch_mode))
+        val edit = compose.onNodeWithContentDescription(context.getString(R.string.search_action_edit_query))
+        listOf(false, true).forEach { glass ->
+            compose.runOnIdle {
+                glassEnabled.value = glass
+                showToggle.value = false
+            }
+            header.assertWidthIsEqualTo(36.dp)
+            layout.assertDoesNotExist()
+
+            compose.runOnIdle { showToggle.value = true }
+            header.assertWidthIsEqualTo(72.dp)
+            val editBounds = edit.fetchSemanticsNode().boundsInRoot
+            val layoutBounds = layout.fetchSemanticsNode().boundsInRoot
+            assertEquals(editBounds.right, layoutBounds.left, .5f)
+        }
     }
 }

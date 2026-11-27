@@ -1616,3 +1616,7 @@ Playlist:
 Menus / Lyrics:
 - fix(lyrics): preserve cached lyrics and current-track actions
   - Keep cached or edited lyrics safe during refresh and use the actual lyrics format and network mode for menu choices.
+
+Search:
+- fix(search): align result actions and labels
+  - Keep search actions with their matching result context and use the shared action presentation.

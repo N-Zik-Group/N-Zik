@@ -2,7 +2,7 @@ package app.n_zik.android.ui.screens.searchresult
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 
 import app.n_zik.android.components.search.SearchResultHeaderActions
-import app.n_zik.android.components.search.SearchResultHeaderIcon
+import app.n_zik.android.components.search.SearchResultFilterAction
 import android.annotation.SuppressLint
 import android.net.Uri
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -53,7 +53,6 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import app.n_zik.android.components.menu.menuSelectionSemantics
 import app.n_zik.android.enums.ContentType
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.filterContentTypeKey
@@ -124,63 +123,54 @@ fun SearchResultScreen(
             verticalPadding = 4.dp,
             trailingIcon = {
                 SearchResultHeaderActions(
-                    showLayoutToggle = showLayoutToggle,
                     onEditQuery = editQuery,
-                ) {
-                    if (showContentTypeFilter) Box {
-                        SearchResultHeaderIcon(
-                            icon = R.drawable.discover,
-                            contentDescription = stringResource(R.string.accessibility_filter),
-                            onClick = { showFilterMenu.value = true },
-                        )
-                        GlassDropdownMenu(
-                            expanded = showFilterMenu.value,
-                            containerColor = colorPalette().background0,
-                            onDismissRequest = { showFilterMenu.value = false },
-                            shape = uiRoundnessShape()
-                        ) {
-                            ContentType.entries.forEach { type ->
-                                val selected = type == filterContentType
-                                PageButtonFeedback(false, true, RectangleShape, null) { feedback, source ->
-                                    DropdownMenuItem(
-                                        modifier = feedback.then(menuSelectionSemantics(selected)),
-                                        interactionSource = source,
-                                        text = { Text(type.textName, color = colorPalette().text) },
-                                        leadingIcon = {
-                                            Icon(
-                                                painter = painterResource(id = type.icon),
-                                                contentDescription = null,
-                                                tint = colorPalette().text
-                                            )
-                                        },
-                                        trailingIcon = {
-                                            RadioButton(
-                                                selected = selected,
-                                                onClick = null,
-                                                modifier = Modifier.size(20.dp),
-                                                colors = RadioButtonDefaults.colors(
-                                                    selectedColor = colorPalette().accent,
-                                                    unselectedColor = colorPalette().textSecondary,
-                                                ),
-                                            )
-                                        },
-                                        onClick = {
-                                            onFilterContentTypeChanged(type)
-                                            showFilterMenu.value = false
-                                        }
-                                    )
+                    filter = if (showContentTypeFilter) SearchResultFilterAction(
+                        onOpen = { showFilterMenu.value = true },
+                        menu = {
+                            GlassDropdownMenu(
+                                expanded = showFilterMenu.value,
+                                containerColor = colorPalette().background0,
+                                onDismissRequest = { showFilterMenu.value = false },
+                                shape = uiRoundnessShape()
+                            ) {
+                                ContentType.entries.forEach { type ->
+                                    val selected = type == filterContentType
+                                    PageButtonFeedback(false, true, RectangleShape, null) { feedback, source ->
+                                        DropdownMenuItem(
+                                            modifier = feedback.then(menuSelectionSemantics(selected)),
+                                            interactionSource = source,
+                                            text = { Text(type.textName, color = colorPalette().text) },
+                                            leadingIcon = {
+                                                Icon(
+                                                    painter = painterResource(id = type.icon),
+                                                    contentDescription = null,
+                                                    tint = colorPalette().text
+                                                )
+                                            },
+                                            trailingIcon = {
+                                                RadioButton(
+                                                    selected = selected,
+                                                    onClick = null,
+                                                    modifier = Modifier.size(20.dp),
+                                                    colors = RadioButtonDefaults.colors(
+                                                        selectedColor = colorPalette().accent,
+                                                        unselectedColor = colorPalette().textSecondary,
+                                                    ),
+                                                )
+                                            },
+                                            onClick = {
+                                                onFilterContentTypeChanged(type)
+                                                showFilterMenu.value = false
+                                            }
+                                        )
+                                    }
                                 }
                             }
-                        }
-                    }
-                    if (showLayoutToggle) {
-                        SearchResultHeaderIcon(
-                            icon = if (useGrid) R.drawable.sort_vertical else R.drawable.sort_grid,
-                            contentDescription = stringResource(R.string.accessibility_switch_mode),
-                            onClick = { setUseGrid(!useGrid) },
-                        )
-                    }
-                }
+                        },
+                    ) else null,
+                    useGrid = useGrid,
+                    onToggleLayout = if (showLayoutToggle) ({ setUseGrid(!useGrid) }) else null,
+                )
             }
         )
         if (showContentTypeFilter) Row(
