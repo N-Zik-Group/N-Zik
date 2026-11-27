@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.ui
 
+import android.content.Context
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -53,6 +54,7 @@ import app.n_zik.android.components.ui.screens.home.tabIdForIndex
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.utils.enableQuickPicksPageKey
 import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.settings.common.ArtistRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.ThumbnailRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.InterfaceRoundnessSettingsTarget
@@ -65,6 +67,40 @@ import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.R
+
+private fun defaultHomePageChoices(activeTabs: List<String>): List<HomeScreenTabs> =
+    HomeScreenTabs.entries.filter {
+        it == HomeScreenTabs.Default || it == HomeScreenTabs.Search || tabIdForIndex(it.index) in activeTabs
+    }
+
+internal fun defaultHomePageChoices(context: Context): List<HomeScreenTabs> {
+    val (order, enabled) = HomeTabsSettingsDialog.loadPrefs(context.preferences)
+    val tabs = order.zip(enabled).toMap()
+    return defaultHomePageChoices(activeHomeTabIds(
+        order,
+        quickPicks = tabs.getValue("quickpicks"),
+        songs = tabs.getValue("songs"),
+        artists = tabs.getValue("artists"),
+        albums = tabs.getValue("albums"),
+        playlists = tabs.getValue("playlists"),
+        offlineMode = OfflineMode.enabled(context),
+    ))
+}
+
+@Composable
+internal fun rememberDefaultHomePageChoices(): List<HomeScreenTabs> {
+    val homeOrder by rememberPreference(homeTabsOrderKey, "")
+    val quickPicks by rememberPreference(enableQuickPicksPageKey, true)
+    val songs by rememberPreference("hometab_songs_enabled", true)
+    val artists by rememberPreference("hometab_artists_enabled", true)
+    val albums by rememberPreference("hometab_albums_enabled", true)
+    val playlists by rememberPreference("hometab_playlists_enabled", true)
+    val offline by OfflineMode.rememberEnabled()
+    return remember(homeOrder, quickPicks, songs, artists, albums, playlists, offline) {
+        val order = HomeTabsSettingsDialog.parseOrder(homeOrder)
+        defaultHomePageChoices(activeHomeTabIds(order, quickPicks, songs, artists, albums, playlists, offline))
+    }
+}
 
 /** Owns the interface settings and their local dialogs. */
 @Composable
@@ -281,17 +317,7 @@ internal fun UiInterfaceCard(search: Search) {
                     SearchableSettingsSectionHeading(R.string.home_title, "ui.user_interface.section.home")
                 }
 
-                val homeOrder by rememberPreference(homeTabsOrderKey, "")
-                val quickPicks by rememberPreference(enableQuickPicksPageKey, true)
-                val songs by rememberPreference("hometab_songs_enabled", true)
-                val artists by rememberPreference("hometab_artists_enabled", true)
-                val albums by rememberPreference("hometab_albums_enabled", true)
-                val playlists by rememberPreference("hometab_playlists_enabled", true)
-                val offline by OfflineMode.rememberEnabled()
-                val activeTabs = activeHomeTabIds(HomeTabsSettingsDialog.parseOrder(homeOrder), quickPicks, songs, artists, albums, playlists, offline)
-                val defaultPageChoices = HomeScreenTabs.entries.filter {
-                    it == HomeScreenTabs.Default || it == HomeScreenTabs.Search || tabIdForIndex(it.index) in activeTabs
-                }
+                val defaultPageChoices = rememberDefaultHomePageChoices()
                 val effectiveDefaultPage = indexNavigationTab.takeIf { it in defaultPageChoices } ?: HomeScreenTabs.Default
                 var showDefPageDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_home_default_page_label).contains(search.inputValue, true)) {

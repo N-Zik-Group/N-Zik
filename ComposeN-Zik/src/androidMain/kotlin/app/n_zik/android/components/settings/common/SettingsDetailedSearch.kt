@@ -27,6 +27,7 @@ import app.n_zik.android.components.settings.data.storageCleanupSearchLabels
 import app.n_zik.android.components.settings.ui.GlassSearchOptions
 import app.n_zik.android.components.settings.ui.GlassSearchParent
 import app.n_zik.android.components.settings.ui.GlassSectionGroupTitles
+import app.n_zik.android.components.settings.ui.defaultHomePageChoices
 import app.n_zik.android.components.settings.ui.glassSearchOption
 import app.n_zik.android.components.settings.ui.isGlassSearchLabelSupported
 import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
@@ -138,7 +139,9 @@ internal fun searchSettingsEntries(
         context.preferences.getEnum(playerTypeKey, PlayerType.Essential),
         isLandscape,
     )
-    return settingsEntrySearchIndex(resources).search(query, profileShortcutIndex) { id, count ->
+    val homePageLabels = defaultHomePageChoices(context).map { resources.getString(it.textId) }
+    val currentChoiceLabels = mapOf("ui.user_interface.default_page" to homePageLabels)
+    return settingsEntrySearchIndex(resources).search(query, profileShortcutIndex, currentChoiceLabels) { id, count ->
         resources.getQuantityString(id, count, count)
     }.filter { result ->
         when {
@@ -221,6 +224,7 @@ internal class SettingsEntrySearchIndex(
     fun search(
         query: String,
         additionalIndex: SettingsEntrySearchIndex?,
+        currentChoiceLabels: Map<String, List<String>> = emptyMap(),
         resolveCountedLabel: ((Int, Int) -> String)? = null,
     ): List<SettingsEntryTarget> {
         val needle = normalizedSettingsText(query)
@@ -242,7 +246,7 @@ internal class SettingsEntrySearchIndex(
                     entry.scopeTerms.none { matchesSettingsTerms(it, tokens) } &&
                     (entry.qualifiedLabels.any { it.contains(needle) } || entry.qualifiedTerms.any { matchesSettingsTerms(it, tokens) }) -> 3
                 entry.keywords.any { keyword -> keyword.contains(needle) || labels.any { "$it $keyword" == needle } } -> 3
-                entry.choices.any { choice ->
+                (currentChoiceLabels[entry.target.id]?.map(::normalizedSettingsText) ?: entry.choices).any { choice ->
                     choice.contains(needle) || labels.any { label -> tokens.all { label.contains(it) || choice.contains(it) } } ||
                         (entry.target.cardTitleRes == R.string.glass_effect_title && entry.scopeTerms.any { scope ->
                             tokens.any { it in scope && !choice.contains(it) } &&

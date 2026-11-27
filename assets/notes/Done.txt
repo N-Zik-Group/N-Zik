@@ -1648,3 +1648,7 @@ Menus:
 Menus / Playlist:
 - fix(playlist): use the shared entry point from player and track actions
   - Route track, artist, mini-player and full-player entry points to the same Playlist actions dialog.
+
+Settings:
+- fix(settings): match default page search to enabled tabs
+  - Share the current Home page choices with the selector and keep cached search results aligned with tab visibility.

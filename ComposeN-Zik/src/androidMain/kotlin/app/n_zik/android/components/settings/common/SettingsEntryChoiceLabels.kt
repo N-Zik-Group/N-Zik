@@ -31,7 +31,6 @@ import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
 import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
 import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.enums.FontType
-import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.IconLikeType
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.enums.LocalRecommandationsNumber
@@ -103,7 +102,6 @@ internal fun settingsEntryChoiceLabels(
         "ui.user_interface.navigation_bar_type" to NavigationBarType.entries.map { resolveString(it.textId) },
         "ui.user_interface.player_position" to PlayerPosition.entries.map { resolveString(it.textId) },
         "ui.user_interface.menu_style" to MenuStyle.entries.map { resolveString(it.textId) },
-        "ui.user_interface.default_page" to HomeScreenTabs.entries.map { resolveString(it.textId) },
         "ui.user_interface.transition_effect" to TransitionEffect.entries.map { resolveString(it.textId) },
         "ui.swipe_to_action.queue_and_local_playlists_left_swipe" to QueueSwipeAction.entries.map { resolveString(it.textId) },
         "ui.swipe_to_action.queue_and_local_playlists_right_swipe" to QueueSwipeAction.entries.map { resolveString(it.textId) },

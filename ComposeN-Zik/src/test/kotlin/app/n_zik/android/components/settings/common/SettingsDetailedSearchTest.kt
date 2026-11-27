@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import app.n_zik.android.components.settings.appearance.PlayerSongSwipeSetting
 import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.playerTypeKey
@@ -112,6 +113,30 @@ class SettingsDetailedSearchTest {
                 })
             }
         }
+    }
+
+    @Test fun defaultPageSearchFollowsAvailableHomeTabsWithoutRebuildingTheIndex() {
+        val english = localized(Locale.ENGLISH)
+        val prefs = english.preferences
+        val label = english.getString(R.string.settings_home_default_page_label)
+        val artists = english.getString(R.string.library_artists_title)
+        val quickPicks = english.getString(R.string.recommendations_title)
+        val search = english.getString(R.string.search_title)
+        val target = "ui.user_interface.default_page"
+        fun findsDefaultPage(query: String): Boolean = searchSettingsEntries(english, query)
+            .any { it.id == target && it.parentCard("interface").categoryId() == "interface" }
+
+        assertTrue(findsDefaultPage("$label $artists"))
+        assertTrue(findsDefaultPage("$label $quickPicks"))
+        prefs.edit().putBoolean("hometab_artists_enabled", false).putBoolean(fullOfflineModeKey, true).apply()
+        assertFalse(findsDefaultPage("$label $artists"))
+        assertFalse(findsDefaultPage("$label $quickPicks"))
+        assertTrue(findsDefaultPage("$label $search"))
+        assertTrue(findsDefaultPage(label))
+
+        prefs.edit().remove("hometab_artists_enabled").remove(fullOfflineModeKey).apply()
+        assertTrue(findsDefaultPage("$artists $label"))
+        assertTrue(findsDefaultPage("$quickPicks $label"))
     }
 
     @Test fun sectionHeadingsRouteToTheirOwnTargetAndQualifyChildBreadcrumbs() {

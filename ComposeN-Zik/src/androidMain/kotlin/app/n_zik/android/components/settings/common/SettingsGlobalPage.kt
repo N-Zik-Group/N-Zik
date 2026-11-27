@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.components.settings.ui.rememberDefaultHomePageChoices
 import app.n_zik.android.components.ui.horizontalLayoutOutset
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -114,7 +115,8 @@ fun SettingsGlobalPage(
     val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val profileShortcutIndex = rememberProfileShortcutSettingsIndex(context)
     val hasAudioPermission = rememberSettingsAudioPermission(context)
-    val entryResults = remember(context, configuration, query, playerType, profileShortcutIndex, hasAudioPermission) {
+    val defaultHomePageChoices = rememberDefaultHomePageChoices()
+    val entryResults = remember(context, configuration, query, playerType, profileShortcutIndex, hasAudioPermission, defaultHomePageChoices) {
         searchSettingsEntries(context, query, profileShortcutIndex, hasAudioPermission)
     }
     val categoryResults = remember(context, configuration, query) {
