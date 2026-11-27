@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.showDataResetFeedback
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -28,6 +29,7 @@ internal fun DataResetCard(search: Search) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var resetting by remember { mutableStateOf(false) }
+    var restartPlayer by remember { mutableStateOf(false) }
     val visible = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
     SettingsSectionCard(
         title = stringResource(R.string.settings_reset),
@@ -44,6 +46,7 @@ internal fun DataResetCard(search: Search) {
                 onClick = {
                     if (!resetting) {
                         val profileId = getActiveProfile(context)
+                        val priorLimits = readStorageCacheLimits(context, profileId)
                         resetting = true
                         scope.launch {
                             try {
@@ -53,7 +56,13 @@ internal fun DataResetCard(search: Search) {
                                 }
                                 if (applied && getActiveProfile(context) == profileId) {
                                     showDataResetFeedback(downloadLimitRetained)
-                                    if (hasPendingDataResetCacheMove(context, profileId)) RestartAppDialog.showDialog()
+                                    val currentLimits = readStorageCacheLimits(context, profileId)
+                                    if (hasPendingDataResetCacheMove(context, profileId) || currentLimits.requiresAppRestart(priorLimits)) {
+                                        restartPlayer = false
+                                        RestartAppDialog.showDialog()
+                                    } else if (priorLimits.streaming != currentLimits.streaming) {
+                                        restartPlayer = true
+                                    }
                                 }
                             } finally {
                                 resetting = false
@@ -62,6 +71,7 @@ internal fun DataResetCard(search: Search) {
                     }
                 },
             )
+            RestartPlayerService(restartPlayer) { restartPlayer = false }
         }
     )
 }

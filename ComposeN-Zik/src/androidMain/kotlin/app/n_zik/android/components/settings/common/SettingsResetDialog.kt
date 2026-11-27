@@ -33,6 +33,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.settings.network.applyDownloadDefaults
 import app.n_zik.android.components.settings.data.hasPendingDataResetCacheMove
+import app.n_zik.android.components.settings.data.readStorageCacheLimits
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.settings.general.applyPlaybackDefaults
@@ -142,12 +143,16 @@ internal fun SettingsResetCard(
                                     resetting = true
                                     coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
                                         try {
+                                            val profileId = getActiveProfile(context)
+                                            val priorLimits = readStorageCacheLimits(context, profileId)
                                             var downloadLimitRetained = false
                                             if (applyAllSettingsDefaults(
                                                     context,
                                                     onDownloadLimitRetained = { downloadLimitRetained = true },
                                                     onSettingsApplied = {
-                                                        if (hasPendingDataResetCacheMove(context, getActiveProfile(context))) {
+                                                        if (hasPendingDataResetCacheMove(context, profileId) ||
+                                                            readStorageCacheLimits(context, profileId).requiresAppRestart(priorLimits)
+                                                        ) {
                                                             RestartAppDialog.showDialog()
                                                         } else {
                                                             onRestartRequired()

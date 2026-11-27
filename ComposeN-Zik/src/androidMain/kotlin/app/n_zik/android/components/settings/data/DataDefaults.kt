@@ -41,6 +41,24 @@ internal fun hasPendingDataResetCacheMove(context: Context, profileId: String): 
     return ProfileCacheLocationMigration.requested(context, target) == ExoPlayerCacheLocation.System
 }
 
+internal data class StorageCacheLimits(
+    val streaming: ExoPlayerDiskCacheMaxSize,
+    val downloads: ExoPlayerDiskDownloadCacheMaxSize,
+    val artwork: CoilDiskCacheMaxSize,
+) {
+    fun requiresAppRestart(previous: StorageCacheLimits): Boolean =
+        downloads != previous.downloads || artwork != previous.artwork
+}
+
+internal fun readStorageCacheLimits(context: Context, profileId: String): StorageCacheLimits {
+    val prefs = profileDataPrefs(context, profileId)
+    return StorageCacheLimits(
+        prefs.getEnum(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`2GB`),
+        prefs.getEnum(exoPlayerDiskDownloadCacheMaxSizeKey, ExoPlayerDiskDownloadCacheMaxSize.`2GB`),
+        prefs.getEnum(coilDiskCacheMaxSizeKey, CoilDiskCacheMaxSize.`128MB`),
+    )
+}
+
 /** Restores storage and automatic backup defaults for the active profile. */
 internal fun applyDataDefaults(
     context: Context,

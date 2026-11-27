@@ -48,9 +48,6 @@ class DataSettingsPreferencesTest {
         exoPlayerCacheLocationKey to ExoPlayerCacheLocation.System.name,
         exoPlayerCustomCacheKey to 32,
         PROFILE_IMAGE_CACHE_CUSTOM_MB to 32,
-        pauseSearchHistoryKey to false,
-        pauseListenHistoryKey to false,
-        exoPlayerMinTimeForEventKey to "20s",
     )
 
     @Before fun setUp() {
@@ -78,12 +75,12 @@ class DataSettingsPreferencesTest {
         }
     }
 
-    @Test fun `reset restores storage and history values without touching other profiles`() {
+    @Test fun `reset restores storage without changing search history or other profiles`() {
         context.preferences.edit().putString("sentinel", "keep").putInt(exoPlayerCustomCacheKey, 1000).putBoolean(pauseListenHistoryKey, true).commit()
         val base = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         base.edit().putBoolean(pauseSearchHistoryKey, true).commit()
         applyDataDefaults(context)
-        assertEquals((expected - exoPlayerCacheLocationKey) + mapOf("sentinel" to "keep"), context.preferences.all)
+        assertEquals((expected - exoPlayerCacheLocationKey) + mapOf("sentinel" to "keep", pauseListenHistoryKey to true), context.preferences.all)
         assertEquals(mapOf(pauseSearchHistoryKey to true), base.all)
     }
 

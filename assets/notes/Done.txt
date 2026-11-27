@@ -1564,3 +1564,7 @@ Menus:
 Menus:
 - fix(menu): keep device volume and audio controls in sync
   - Read hardware volume when opening the menu, apply grid gestures immediately, and avoid duplicate audio option badges.
+
+Settings:
+- fix(settings): request the right restart after cache reset
+  - Account for changes to streaming, download and artwork cache limits while preserving the listening-history settings.
