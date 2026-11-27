@@ -52,13 +52,13 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.menuHeaderBackLeading
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherBlockedUsersMenu
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherLogsMenu
-import app.n_zik.android.components.ui.screens.listentogether.managementBackButton
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherServers
@@ -360,7 +360,7 @@ internal fun ServerChooserSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_choose_server),
-                headerLeading = managementBackButton(onDismiss),
+                headerLeading = menuHeaderBackLeading(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     ListenTogetherServers.servers.forEach { server ->
@@ -491,7 +491,7 @@ internal fun UsernameSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_username),
-                headerLeading = managementBackButton(onDismiss),
+                headerLeading = menuHeaderBackLeading(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(

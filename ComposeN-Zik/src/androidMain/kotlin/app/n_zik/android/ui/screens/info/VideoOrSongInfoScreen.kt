@@ -15,10 +15,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,6 +44,10 @@ import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.topUiRoundnessShape
+import app.n_zik.android.components.menu.MenuHeaderTitle
+import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.menuHeaderBackLeading
 import app.n_zik.android.components.menu.info.InformationMenuSurface
 import app.n_zik.android.components.menu.info.InformationStatsCard
 import app.n_zik.android.components.menu.info.informationMenuBodyColor
@@ -56,6 +58,7 @@ import app.n_zik.android.components.song.isArtistIdForSong
 import app.n_zik.android.components.song.openTrackMetadataSearch
 import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
@@ -144,6 +147,8 @@ fun VideoOrSongInfoScreen(
     if (videoId.isBlank()) return
 
     val menuState = LocalMenuState.current
+    val guestLocked = rememberListenTogetherGuestLock()
+    val playAction = onPlay.takeUnless { guestLocked }
     var info by remember(videoId, songArtist, source) { mutableStateOf<VideoOrSongInfo?>(null) }
     var isLoading by remember(videoId, songArtist, source) { mutableStateOf(true) }
     var finalArtists by remember(videoId, songArtist, source) { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
@@ -169,7 +174,7 @@ fun VideoOrSongInfoScreen(
     InformationMenuSurface(
         modifier = Modifier
             .fillMaxSize()
-            .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+            .clip(topUiRoundnessShape())
     ) {
         // ── Top Section (Separated Header) ───────────────────────────────────
         Column(
@@ -178,25 +183,12 @@ fun VideoOrSongInfoScreen(
                 .fillMaxWidth()
                 .background(informationMenuHeaderColor())
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                IconButton(onClick = onNavigateUp) {
-                    Icon(
-                        painterResource(R.drawable.chevron_back),
-                        contentDescription = stringResource(R.string.common_action_back),
-                        tint = colorPalette().text,
-                    )
-                }
-                IconButton(onClick = onClose) {
-                    Icon(
-                        painterResource(R.drawable.close),
-                        contentDescription = stringResource(R.string.common_action_close),
-                        tint = colorPalette().text,
-                    )
-                }
-            }
+            MenuSheetDragHandle(color = colorPalette().text)
+            MenuHeaderTitle(
+                title = null,
+                leading = menuHeaderBackLeading(onNavigateUp),
+                trailing = null,
+            )
 
             // ── Main Info: Cover + Title + Artist + Album ─────────────────────
             Row(
@@ -224,16 +216,11 @@ fun VideoOrSongInfoScreen(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    // Titre + Flèche
                     InfoRow(
                         label = stringResource(R.string.metadata_info_title_label),
                         value = displayTitle,
-                        showArrow = onPlay != null,
-                        onClick = {
-                            if (onPlay != null) {
-                                onPlay()
-                            }
-                        }
+                        showArrow = playAction != null,
+                        onClick = playAction,
                     )
 
                     Spacer(Modifier.height(8.dp))
@@ -362,7 +349,7 @@ private fun InfoRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
+            .clip(uiRoundnessShape())
             .clickable(enabled = showArrow && onClick != null) { onClick?.invoke() }
             .padding(vertical = 4.dp, horizontal = 4.dp)
     ) {

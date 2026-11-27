@@ -23,16 +23,22 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
 import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.ui.screens.info.VideoOrSongInfoResult
 import app.n_zik.android.ui.screens.info.VideoOrSongInfoScreen
@@ -234,6 +240,7 @@ class InformationMenuSurfaceTest {
         mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
         coEvery { loadVideoOrSongInfo(any(), any(), null) } returns VideoOrSongInfoResult(null, emptyList())
         var playCount = 0
+        var backCount = 0
         var density = 1f
         var header = Color.Unspecified
         var body = Color.Unspecified
@@ -252,7 +259,7 @@ class InformationMenuSurfaceTest {
                         Box(Modifier.fillMaxWidth().height(500.dp).background(body))
                     } else VideoOrSongInfoScreen(
                         videoId = "information-test", songTitle = "Local information song",
-                        onNavigateUp = {}, onClose = {}, onPlay = { playCount++ },
+                        onNavigateUp = { backCount++ }, onClose = {}, onPlay = { playCount++ },
                     )
                 }
             }
@@ -264,7 +271,15 @@ class InformationMenuSurfaceTest {
         }
         composeRule.onNodeWithText("Local information song").assertIsDisplayed().performClick()
         composeRule.runOnIdle { assertEquals(1, playCount) }
+        composeRule.onNodeWithContentDescription(context.getString(R.string.common_action_close)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(context.getString(R.string.common_action_back))
+            .assertIsDisplayed().performClick()
+        composeRule.runOnIdle { assertEquals(1, backCount) }
         val pixels = composeRule.onNodeWithTag("actual-information").captureToImage().toPixelMap()
+        assertEquals(
+            PureBlackColorPalette.text.toArgb(),
+            pixels[pixels.width / 2, (20 * density).toInt()].toArgb(),
+        )
         composeRule.runOnIdle { showReference.value = true }
         composeRule.mainClock.advanceTimeByFrame()
         val reference = composeRule.onNodeWithTag("actual-information").captureToImage().toPixelMap()
@@ -273,6 +288,44 @@ class InformationMenuSurfaceTest {
             reference[x, (50 * density).toInt()].toArgb(), pixels[x, (50 * density).toInt()].toArgb())
         assertEquals("the legacy body must not mask the shared glass with opaque black",
             reference[x, (550 * density).toInt()].toArgb(), pixels[x, (550 * density).toInt()].toArgb())
+    }
+
+    @Test
+    @Config(sdk = [32])
+    fun `information title follows the Listen Together guest lock while open`() {
+        mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
+        coEvery { loadVideoOrSongInfo(any(), any(), null) } returns VideoOrSongInfoResult(null, emptyList())
+        val previousLock = listenTogetherGuestLock.value
+        var playCount = 0
+        try {
+            composeRule.runOnIdle { listenTogetherGuestLock.value = true }
+            composeRule.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                    VideoOrSongInfoScreen(
+                        videoId = "information-guest-test",
+                        songTitle = "Room track",
+                        onNavigateUp = {},
+                        onClose = {},
+                        onPlay = { playCount++ },
+                    )
+                }
+            }
+
+            val title = composeRule.onNodeWithText("Room track")
+            title.assertIsDisplayed().assertIsNotEnabled().performTouchInput { click() }
+            composeRule.runOnIdle {
+                assertEquals(0, playCount)
+                listenTogetherGuestLock.value = false
+            }
+            title.assertIsEnabled().performClick()
+            composeRule.runOnIdle {
+                assertEquals(1, playCount)
+                listenTogetherGuestLock.value = true
+            }
+            title.assertIsDisplayed().assertIsNotEnabled()
+        } finally {
+            composeRule.runOnIdle { listenTogetherGuestLock.value = previousLock }
+        }
     }
 
     @Test

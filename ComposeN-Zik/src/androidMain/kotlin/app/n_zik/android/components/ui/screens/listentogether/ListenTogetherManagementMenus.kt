@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.menuHeaderBackLeading
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -98,13 +97,13 @@ fun ListenTogetherLogsMenu(
         }
     }
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
+        ListMenu.Menu(title = title, headerLeading = menuHeaderBackLeading(onBack)) {
             if (logs.isEmpty()) empty() else logs.forEach { LogEntryRow(it) }
             copyEntry()
             clearEntry()
         }
     } else {
-        GridMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
+        GridMenu.Menu(title = title, headerLeading = menuHeaderBackLeading(onBack)) {
             if (logs.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
             else items(logs, span = { GridItemSpan(maxLineSpan) }) { LogEntryRow(it) }
             item { copyEntry() }
@@ -112,19 +111,6 @@ fun ListenTogetherLogsMenu(
         }
     }
 }
-
-internal fun managementBackButton(onBack: (() -> Unit)?): (@Composable RowScope.() -> Unit)? =
-    onBack?.let { navigateBack ->
-        {
-            IconButton(onClick = navigateBack) {
-                Icon(
-                    painter = painterResource(R.drawable.chevron_back),
-                    contentDescription = stringResource(R.string.common_action_back),
-                    tint = colorPalette().text,
-                )
-            }
-        }
-    }
 
 @Composable
 private fun LogEntryRow(log: LogEntry) {
@@ -220,11 +206,11 @@ fun ListenTogetherBlockedUsersMenu(
     }
 
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
+        ListMenu.Menu(title = title, headerLeading = menuHeaderBackLeading(onBack)) {
             if (blockedUsernames.isEmpty()) empty() else blockedUsernames.forEach { entry(it) }
         }
     } else {
-        GridMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
+        GridMenu.Menu(title = title, headerLeading = menuHeaderBackLeading(onBack)) {
             if (blockedUsernames.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
             else items(blockedUsernames.toList(), key = { it }) { entry(it) }
         }

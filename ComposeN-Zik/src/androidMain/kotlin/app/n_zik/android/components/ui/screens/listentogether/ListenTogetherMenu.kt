@@ -30,8 +30,11 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.settings.ServerChooserSheet
 import app.n_zik.android.components.settings.UsernameSheet
+import app.n_zik.android.core.navigation.screenPopEnter
+import app.n_zik.android.core.navigation.screenPopExit
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.listentogether.LISTEN_TOGETHER_BLOCKED_REASON
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
@@ -42,6 +45,7 @@ import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.transitionEffectKey
 
 private const val TAG = "ListenTogetherMenu"
 
@@ -236,6 +240,7 @@ fun ListenTogetherMenu() {
         )
 
     val palette = colorPalette()
+    val transitionEffect by rememberPreference(transitionEffectKey, TransitionEffect.Fade)
 
     BackHandler(enabled = menuState.isDisplayed && page != RoomMenuPage.Room) {
         page = RoomMenuPage.Room
@@ -243,8 +248,12 @@ fun ListenTogetherMenu() {
     AnimatedContent(
         targetState = page,
         transitionSpec = {
-            slideInHorizontally(tween(250)) { it / 2 } + fadeIn(tween(250)) togetherWith
-                (slideOutHorizontally(tween(250)) { -it / 2 } + fadeOut(tween(250)))
+            if (targetState == RoomMenuPage.Room) {
+                screenPopEnter(transitionEffect) togetherWith screenPopExit(transitionEffect)
+            } else {
+                slideInHorizontally(tween(250)) { it / 2 } + fadeIn(tween(250)) togetherWith
+                    (slideOutHorizontally(tween(250)) { -it / 2 } + fadeOut(tween(250)))
+            }
         },
         label = "ListenTogetherMenuPage",
     ) { target ->
@@ -253,14 +262,12 @@ fun ListenTogetherMenu() {
                 RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
                     ListMenu.Menu(
                         title = stringResource(R.string.listen_together_title),
-                        headerLeading = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
                     ) {
                         ListLtMenuContent(content)
                     }
                 } else {
                     GridMenu.Menu(
                         title = stringResource(R.string.listen_together_title),
-                        headerLeading = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
                     ) {
                         GridLtMenuContent(content, palette)
                     }

@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.menuHeaderBackLeading
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.glass.GlassTextField as TextField
@@ -87,7 +88,7 @@ internal fun CreateRoomSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_create_room),
-                headerLeading = managementBackButton(onDismiss),
+                headerLeading = menuHeaderBackLeading(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(
@@ -195,7 +196,7 @@ internal fun JoinRoomSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_join_room),
-                headerLeading = managementBackButton(onDismiss),
+                headerLeading = menuHeaderBackLeading(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(

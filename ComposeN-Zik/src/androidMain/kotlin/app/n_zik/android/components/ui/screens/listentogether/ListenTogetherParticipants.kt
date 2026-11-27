@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.menuHeaderBackLeading
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.menu.GridMenu
@@ -294,7 +295,7 @@ internal fun UserActionMenu(
     val palette = colorPalette()
     val style = rememberPreference(menuStyleKey, MenuStyle.List).value
     val title = stringResource(R.string.listen_together_manage_user)
-    val backButton = managementBackButton(if (menuState.hasPrevious) menuState::pop else null)
+    val backButton = menuHeaderBackLeading(if (menuState.hasPrevious) menuState::pop else null)
     val header: @Composable () -> Unit = {
         Text(
             text = username,

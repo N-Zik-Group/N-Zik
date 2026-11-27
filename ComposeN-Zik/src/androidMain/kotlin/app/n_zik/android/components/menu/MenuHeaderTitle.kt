@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -27,21 +28,29 @@ internal fun menuHeaderLeading(
     allowDefaultBack: Boolean,
 ): (@Composable RowScope.() -> Unit)? {
     if (leading != null || !allowDefaultBack) return leading
-    val onBack = LocalMenuBack.current ?: return null
-    return {
-        val textColor = colorPalette().text
-        GlassSectionActions(
-            listOf(
-                GlassSectionAction(
-                    icon = R.drawable.chevron_back,
-                    contentDescription = stringResource(R.string.common_action_back),
-                    nativeColor = textColor,
-                    glassColor = textColor,
-                    onClick = onBack,
-                )
+    return menuHeaderBackLeading(LocalMenuBack.current)
+}
+
+internal fun menuHeaderBackLeading(onBack: (() -> Unit)?): (@Composable RowScope.() -> Unit)? =
+    onBack?.let { back ->
+        {
+            GlassSectionActions(
+                actions = listOf(menuHeaderBackAction(back)),
+                modifier = Modifier.padding(start = 12.dp),
             )
-        )
+        }
     }
+
+@Composable
+internal fun menuHeaderBackAction(onBack: () -> Unit): GlassSectionAction {
+    val textColor = colorPalette().text
+    return GlassSectionAction(
+        icon = R.drawable.chevron_back,
+        contentDescription = stringResource(R.string.common_action_back),
+        nativeColor = textColor,
+        glassColor = textColor,
+        onClick = onBack,
+    )
 }
 
 @Composable
@@ -49,18 +58,20 @@ internal fun MenuHeaderTitle(
     title: String?,
     leading: (@Composable RowScope.() -> Unit)?,
     trailing: (@Composable RowScope.() -> Unit)?,
+    modifier: Modifier = Modifier,
+    titleMaxLines: Int = Int.MAX_VALUE,
 ) {
     if (leading == null && trailing == null) {
-        title?.let { MenuTitleText(it) }
+        title?.let { MenuTitleText(it, titleMaxLines) }
         return
     }
 
     Layout(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         content = {
             Row(verticalAlignment = Alignment.CenterVertically) { leading?.invoke(this) }
             Row(verticalAlignment = Alignment.CenterVertically) { trailing?.invoke(this) }
-            title?.let { MenuTitleText(it) }
+            title?.let { MenuTitleText(it, titleMaxLines) }
         },
     ) { measurables, constraints ->
         val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
@@ -79,11 +90,13 @@ internal fun MenuHeaderTitle(
 }
 
 @Composable
-private fun MenuTitleText(title: String) {
+private fun MenuTitleText(title: String, maxLines: Int) {
     Text(
         text = title,
         style = typography().m.copy(color = colorPalette().text),
         textAlign = TextAlign.Center,
-        modifier = Modifier.semantics { heading() }.padding(top = 5.dp, bottom = 10.dp),
+        maxLines = maxLines,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.semantics { heading() }.padding(vertical = 10.dp),
     )
 }

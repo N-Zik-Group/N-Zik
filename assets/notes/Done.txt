@@ -1516,3 +1516,7 @@ Settings:
 Menus:
 - fix(menu): handle refused picture-in-picture requests
   - Show the existing failure message when Android refuses entry and close the menu when it succeeds.
+
+Menus:
+- fix(menu): share and align menu header actions
+  - Use the same aligned Back control for menu headers and restore the Information handle and the Listen Together return transition.

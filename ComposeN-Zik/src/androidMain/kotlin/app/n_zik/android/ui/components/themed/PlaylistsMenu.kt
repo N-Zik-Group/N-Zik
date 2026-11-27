@@ -33,12 +33,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableIntStateOf
@@ -54,10 +51,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import app.n_zik.android.R
@@ -78,7 +71,6 @@ import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.ui.components.LocalMenuBack
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.models.PlaylistPreview
-import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
@@ -105,6 +97,8 @@ import androidx.compose.ui.graphics.compositeOver
 
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.menu.MenuHeaderTitle
+import app.n_zik.android.components.menu.menuHeaderBackAction
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.openDestination
 import androidx.compose.material3.Icon
@@ -145,42 +139,26 @@ private fun PlaylistPickerHeader(
     onCreate: () -> Unit,
 ) {
     val textColor = colorPalette().text
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.width(84.dp), contentAlignment = Alignment.CenterStart) {
+    val backAction = onBack?.let { menuHeaderBackAction(it) }
+    MenuHeaderTitle(
+        title = title,
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+        titleMaxLines = 2,
+        leading = {
             GlassSectionActions(
-                buildList {
-                    if (onBack != null) add(
-                        GlassSectionAction(
-                            icon = R.drawable.chevron_back,
-                            contentDescription = stringResource(R.string.common_action_back),
-                            nativeColor = textColor,
-                            glassColor = textColor,
-                            onClick = onBack,
-                        )
-                    )
-                    add(
-                        GlassSectionAction(
-                            icon = R.drawable.search_circle,
-                            contentDescription = stringResource(R.string.search_title),
-                            nativeColor = textColor,
-                            glassColor = textColor,
-                            onClick = search::onShortClick,
-                        )
-                    )
-                },
+                listOfNotNull(
+                    backAction,
+                    GlassSectionAction(
+                        icon = R.drawable.search_circle,
+                        contentDescription = stringResource(R.string.search_title),
+                        nativeColor = textColor,
+                        glassColor = textColor,
+                        onClick = search::onShortClick,
+                    ),
+                ),
             )
-        }
-        BasicText(
-            title,
-            style = typography().m.copy(color = textColor, textAlign = TextAlign.Center),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f).semantics { heading() },
-        )
-        Box(Modifier.width(84.dp), contentAlignment = Alignment.CenterEnd) {
+        },
+        trailing = {
             GlassSectionActions(
                 listOf(
                     GlassSectionAction(
@@ -189,11 +167,11 @@ private fun PlaylistPickerHeader(
                         nativeColor = textColor,
                         glassColor = textColor,
                         onClick = onCreate,
-                    )
-                )
+                    ),
+                ),
             )
-        }
-    }
+        },
+    )
 }
 
 private class PlaylistPickerFilters {
