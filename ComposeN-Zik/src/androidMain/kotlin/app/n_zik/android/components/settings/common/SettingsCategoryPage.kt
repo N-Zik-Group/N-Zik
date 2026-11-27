@@ -88,6 +88,7 @@ import app.n_zik.android.core.navigation.LocalPageNavigationEntry
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.NavRoutes
+import app.n_zik.android.enums.PlayerInfoType
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
@@ -123,6 +124,8 @@ private val rewindNotificationPrerequisites = mapOf(
 private const val LyricsOnCoverSettingsTarget = "appearance.txt_lyrics.show_lyrics_thumbnail"
 private const val LyricsBackgroundSettingsTarget = "appearance.txt_lyrics.show_background_in_lyrics"
 private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show_thumbnail"
+private const val CoverAnimationEnabledTarget = "appearance.cover_and_thumbnail.show_cover_thumbnail_animation"
+private const val CoverAnimationStyleTarget = "appearance.cover_and_thumbnail.cover_thumbnail_animation_type"
 private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
 private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
 private const val PlayerTypeSettingsTarget = "appearance.player_presets_and_layout.playertype"
@@ -150,6 +153,45 @@ private fun settingsSearchPrerequisite(
     preferences: SharedPreferences,
     hasTarget: (String) -> Boolean,
 ): SearchPrerequisite? {
+    requiredEnabledSettingTargets[target]?.let {
+        return SearchPrerequisite(it, listOf(R.string.common_state_on))
+    }
+    rewindNotificationPrerequisites[target]?.let { prerequisite ->
+        return SearchPrerequisite(
+            prerequisite.takeIf(hasTarget) ?: RewindMasterSettingsTarget,
+            listOf(R.string.common_state_on),
+        )
+    }
+
+    when (target) {
+        "appearance.player_presets_and_layout.pinfo_show_icons" -> return SearchPrerequisite(
+            "appearance.player_presets_and_layout.pinfo_type", listOf(PlayerInfoType.Modern.textId),
+        )
+        "appearance.txt_lyrics.color_custom" -> return SearchPrerequisite(
+            "appearance.txt_lyrics.lyricscolor", listOf(R.string.common_color_custom),
+        )
+        GradientSettingsTarget -> return SearchPrerequisite(
+            BackgroundSettingsTarget, listOf(R.string.player_background_animated_gradient_label),
+        )
+        "appearance.colors_and_background.m3e_always_show_shapes",
+        "appearance.colors_and_background.shake_sensitivity_theme" -> return if (hasTarget(GradientSettingsTarget)) {
+            SearchPrerequisite(
+                GradientSettingsTarget,
+                listOf(R.string.player_background_theme_m3e_morphing_label, R.string.player_background_artwork_m3e_morphing_label),
+            )
+        } else {
+            SearchPrerequisite(BackgroundSettingsTarget, listOf(R.string.player_background_animated_gradient_label))
+        }
+        "appearance.player_behavior_and_visuals.player_swipe_sensitivity" ->
+            return appearanceBehaviorSearchFallback(target, hasTarget)?.let {
+                SearchPrerequisite(it, listOf(R.string.common_state_off))
+            }
+        CoverAnimationStyleTarget ->
+            if (hasTarget(CoverAnimationEnabledTarget)) {
+                return SearchPrerequisite(CoverAnimationEnabledTarget, listOf(R.string.common_state_on))
+            }
+    }
+
     val requiredTheme = when (target) {
         "ui.theme.respect_brightness" -> ColorPaletteName.Dynamic
         "ui.theme.customcolor" -> ColorPaletteName.CustomColor
@@ -164,7 +206,9 @@ private fun settingsSearchPrerequisite(
         return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(PlayerType.Modern.textId))
     }
     val requiredCoverVisibility = when (target) {
-        "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",
+        "appearance.cover_and_thumbnail.section.motion",
+        CoverAnimationEnabledTarget,
+        CoverAnimationStyleTarget,
         "appearance.cover_and_thumbnail.player_thumbnail_size" -> R.string.common_state_on
         "appearance.cover_and_thumbnail.noblur",
         "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" -> R.string.common_state_off
@@ -220,14 +264,23 @@ private fun settingsSearchPrerequisite(
             SearchPrerequisite(AutoBackupIntervalTarget, listOf(R.string.backup_auto_interval_weekly))
         "auto_backup_schedule_day_of_month" ->
             SearchPrerequisite(AutoBackupIntervalTarget, listOf(R.string.backup_auto_interval_monthly))
-        "auto_backup_on_change" -> SearchPrerequisite(AutoBackupIntervalTarget)
+        "auto_backup_on_change" -> SearchPrerequisite(
+            AutoBackupIntervalTarget,
+            listOf(
+                R.string.backup_auto_interval_hourly,
+                R.string.backup_auto_interval_daily,
+                R.string.backup_auto_interval_weekly,
+                R.string.backup_auto_interval_monthly,
+                R.string.backup_auto_interval_custom,
+            ),
+        )
         else -> null
     }
     return prerequisite?.takeIf { hasTarget(it.target) }
         ?: SearchPrerequisite(AutoBackupEnabledTarget, listOf(R.string.common_state_on))
 }
 
-private val hiddenSettingPrerequisites = mapOf(
+private val requiredEnabledSettingTargets = mapOf(
     "general.app_behavior.resume_playback_on_start" to "general.app_behavior.persistent_queue",
     "general.playback.crossfade_duration" to "general.playback.crossfade",
     "general.playback.crossfade_gapless" to "general.playback.crossfade",
@@ -240,11 +293,7 @@ private val hiddenSettingPrerequisites = mapOf(
     "general.picture_in_picture.open" to "general.picture_in_picture.settings_enable_pip",
     "appearance.player_behavior_and_visuals.songs_number_to_show" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
     "appearance.player_behavior_and_visuals.showalbumcover" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
-    "appearance.cover_and_thumbnail.section.motion" to ShowCoverSettingsTarget,
     "appearance.cover_and_thumbnail.hold_to_speed_up_rate" to "appearance.cover_and_thumbnail.hold_to_speed_up",
-    "appearance.player_presets_and_layout.pinfo_show_icons" to "appearance.player_presets_and_layout.pinfo_type",
-    "appearance.txt_lyrics.color_custom" to "appearance.txt_lyrics.lyricscolor",
-    GradientSettingsTarget to BackgroundSettingsTarget,
     "other.proxy.proxy_mode" to "other.proxy.enable_proxy",
     "other.proxy.proxy_host" to "other.proxy.enable_proxy",
     "other.proxy.proxy_port" to "other.proxy.enable_proxy",
@@ -627,19 +676,9 @@ fun SettingsCategoryPage(
             showMessage(requirement?.let { context.getString(R.string.settings_target_prerequisite, it) } ?: unavailableMessage)
         }
         val resolved = if (unavailable) {
-            val prerequisite = searchPrerequisite?.target ?: hiddenSettingPrerequisites[requestedTarget] ?: when {
+            val prerequisite = searchPrerequisite?.target ?: when {
                 entry?.paletteTitleRes != null -> ThemeSettingsTarget
-                requestedTarget == "appearance.cover_and_thumbnail.cover_thumbnail_animation_type" -> listOf(
-                    "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",
-                    ShowCoverSettingsTarget,
-                ).firstOrNull(registry.targets::containsKey)
-                requestedTarget == "appearance.colors_and_background.m3e_always_show_shapes" ||
-                    requestedTarget == "appearance.colors_and_background.shake_sensitivity_theme" ->
-                    listOf(GradientSettingsTarget, BackgroundSettingsTarget).firstOrNull(registry.targets::containsKey)
-                requestedTarget.startsWith("embedded.rewind.") -> {
-                    rewindNotificationPrerequisites[requestedTarget]?.takeIf(registry.targets::containsKey)
-                        ?: RewindMasterSettingsTarget
-                }
+                requestedTarget.startsWith("embedded.rewind.") -> RewindMasterSettingsTarget
                 hiddenQuickPicksTarget -> "ai.tab_general.enable_quick_picks_page"
                 hiddenCoverLyricsTarget -> ShowCoverSettingsTarget
                 hiddenFullscreenLyricsTarget || requestedTarget == LyricsBackgroundSettingsTarget -> LyricsOnCoverSettingsTarget
@@ -738,7 +777,9 @@ fun SettingsCategoryPage(
                     }
                     if (showInterfaceShortcuts) {
                         item(key = "interface-shortcuts", contentType = "card") {
-                            InterfaceSettingsShortcuts(::openInterfaceDestination)
+                            Column(Modifier.animateItem().settingsSearchContentVisibility(searchFocus.contentAlpha)) {
+                                InterfaceSettingsShortcuts(::openInterfaceDestination)
+                            }
                         }
                     }
                     items(exactInterfacePageMatches, key = { "page:${it.labelRes}" }, contentType = { "page" }) { item ->

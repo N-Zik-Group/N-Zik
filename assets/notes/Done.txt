@@ -1344,3 +1344,7 @@ Android Auto:
 Settings:
 - fix(settings): validate the proxy port
   - Preserve the stored port when input is invalid and distinguish port and hostname errors.
+
+Settings:
+- fix(settings): explain search prerequisites and align results
+  - Guide users to the required option and let shortcut cards follow the search animation.

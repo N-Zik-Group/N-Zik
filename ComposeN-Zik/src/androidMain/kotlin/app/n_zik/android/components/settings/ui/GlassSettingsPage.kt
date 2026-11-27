@@ -183,6 +183,7 @@ internal fun GlassSettingsContent(
 
     val registry = remember { SettingsTargetRegistry() }
     val scroll = rememberLazyListState()
+    val config = rememberGlassSettings(GlassScope.Shared)
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
     LaunchedEffect(requestedTarget) {
@@ -197,12 +198,22 @@ internal fun GlassSettingsContent(
             snapshotFlow { registry.targets[targetId] }.first { it != null }
         }
         val resolved = if (found != null) targetId else {
-            val requirement = option.requiredTintSource?.let { source ->
-                val label = context.getString(R.string.glass_effect_tint_source)
-                val choice = context.getString(source.labelRes())
-                context.getString(R.string.settings_target_prerequisite, "$label › $choice")
+            val requirement = when {
+                option.requiredTintSource != null -> {
+                    val label = context.getString(R.string.glass_effect_tint_source)
+                    val choice = context.getString(option.requiredTintSource.labelRes())
+                    "$label › $choice"
+                }
+                option.fallback == "glass.quality" && config.quality == GlassQuality.Performance &&
+                    isGlassSearchLabelSupported(context, option.target.labelRes) -> {
+                    val label = context.getString(R.string.glass_effect_rendering_quality)
+                    val balanced = context.getString(R.string.glass_effect_quality_balanced)
+                    val high = context.getString(R.string.glass_effect_quality_high)
+                    "$label › $balanced / $high"
+                }
+                else -> null
             }
-            showMessage(requirement ?: unavailableMessage)
+            showMessage(requirement?.let { context.getString(R.string.settings_target_prerequisite, it) } ?: unavailableMessage)
             option.fallback ?: run {
                 searchTargetHandled = true
                 return@LaunchedEffect
@@ -218,7 +229,6 @@ internal fun GlassSettingsContent(
         if (requester != null) registry.blink(resolved)
     }
     val store = rememberGlassStore()
-    val config = rememberGlassSettings(GlassScope.Shared)
     val floatingBackdrop = if (searchEnabled) rememberGlassFloatingActionBackdrop() else null
     val preview = config.copy(enabled = true)
     val renderer = glassRenderer(preview)
