@@ -108,6 +108,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "appearance.timeline_and_controls.transparentbar" to R.string.player_controls_mini_player_transparent_background_description,
     "appearance.txt_lyrics.click_lyrics_text" to R.string.lyrics_tap_to_seek_description,
     "appearance.txt_lyrics.color_custom" to R.string.lyrics_custom_color_description,
+    "appearance.txt_lyrics.cover_dimming_enabled" to R.string.lyrics_cover_dimming_description,
     "appearance.txt_lyrics.lyricscolor" to R.string.lyrics_color_source_description,
     "appearance.txt_lyrics.player_enable_lyrics_popup_message" to R.string.lyrics_popup_messages_description,
     "appearance.txt_lyrics.show_background_in_lyrics" to R.string.lyrics_background_enabled_description,

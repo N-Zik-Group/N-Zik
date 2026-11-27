@@ -1980,3 +1980,7 @@ Playlists / On device:
 Settings / Appearance:
 - fix(settings): retire controls while their exit animation runs
   - Animate the dependent lyrics background control and prevent interaction with outgoing settings.
+
+Settings / Search:
+- fix(settings): index cover dimming descriptions in display order
+  - Make the lyrics dimming description searchable and match the visualizer control order.
