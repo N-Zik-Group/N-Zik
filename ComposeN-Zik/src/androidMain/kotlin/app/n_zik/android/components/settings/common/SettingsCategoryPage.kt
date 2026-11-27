@@ -89,7 +89,6 @@ import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerType
-import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
@@ -99,15 +98,17 @@ import app.n_zik.android.components.settings.privacy.PermissionUsageSettingsCard
 import app.n_zik.android.components.settings.privacy.PrivacyScreenCaptureCard
 import app.n_zik.android.components.settings.ui.UiSettingsContent
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.themed.n_zik.screen.player.readPlayerActionBarTopSlots
 import app.n_zik.android.utils.StringResourceIdentity
 import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.expandedplayerKey
+import app.n_zik.android.utils.expandedplayertoggleKey
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showTipsKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
-import app.n_zik.android.utils.playerBackgroundColorsKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
@@ -125,6 +126,10 @@ private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show
 private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
 private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
 private const val PlayerTypeSettingsTarget = "appearance.player_presets_and_layout.playertype"
+private val expandedArtworkTargets = setOf(
+    "appearance.cover_and_thumbnail.carousel",
+    "appearance.cover_and_thumbnail.carouselsize",
+)
 private const val ThemeSettingsTarget = "ui.theme.theme"
 private const val SwipeActionsSettingsTarget = "ui.swipe_to_action.swipe_to_action"
 private const val AutoBackupEnabledTarget = "embedded.auto_backup.enabled"
@@ -152,9 +157,10 @@ private fun settingsSearchPrerequisite(
     }
     if (requiredTheme != null) return SearchPrerequisite(ThemeSettingsTarget, listOf(requiredTheme.textId))
 
-    if (target == "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" &&
-        preferences.getEnum(playerTypeKey, PlayerType.Essential) != PlayerType.Modern
-    ) {
+    val needsModernPlayer = target in expandedArtworkTargets ||
+        target == "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ||
+        target == "appearance.colors_and_background.albumCoverRotation"
+    if (needsModernPlayer && preferences.getEnum(playerTypeKey, PlayerType.Essential) != PlayerType.Modern) {
         return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(PlayerType.Modern.textId))
     }
     val requiredCoverVisibility = when (target) {
@@ -172,11 +178,6 @@ private fun settingsSearchPrerequisite(
         }
     }
 
-    if (target == "appearance.colors_and_background.albumCoverRotation" &&
-        preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient) == PlayerBackgroundColors.BlurredCoverColor
-    ) {
-        return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(PlayerType.Modern.textId))
-    }
     if (target in setOf(
             ShowCoverSettingsTarget,
             "appearance.colors_and_background.rotating_cover_title",
@@ -469,7 +470,15 @@ fun SettingsCategoryPage(
         // Two layout frames include children and their initial conditional composition.
         withFrameNanos { }
         withFrameNanos { }
-        val requestedTarget = when (rawTarget) {
+        val preferences = context.preferences
+        val requiresExpandedPlayer = rawTarget in expandedArtworkTargets && !isLandscape &&
+            preferences.getEnum(playerTypeKey, PlayerType.Essential) == PlayerType.Modern &&
+            !preferences.getBoolean(expandedplayerKey, false) &&
+            !preferences.getBoolean(expandedplayertoggleKey, false) &&
+            "expanded_player" !in readPlayerActionBarTopSlots(preferences)
+        val requestedTarget = if (requiresExpandedPlayer) {
+            "nested.appearance.player_action_bar.player_action_bar_buttons.1.expanded_player"
+        } else when (rawTarget) {
             "appearance.player_presets_and_layout.icon_like_button" -> "appearance.timeline_and_controls.icon_like_button"
             "network.network_status.image_quality_format" -> "network.quality.image_quality_format"
             "network.network_status.audio_quality_format" -> "network.quality.audio_quality_format"
@@ -567,6 +576,14 @@ fun SettingsCategoryPage(
             return@LaunchedEffect
         }
         val nested = entry?.nestedDestination.takeUnless { hiddenQuickPicksTarget }
+        if (requestedTarget == ListenTogetherCustomServerTarget &&
+            registry.targets.containsKey("embedded.listen_together.listen_together_server_url")
+        ) {
+            registry.sheetTarget = requestedTarget
+            withTimeoutOrNull(1500) {
+                snapshotFlow { registry.targets[requestedTarget] }.first { it != null }
+            }
+        }
         if (storageEntry) {
             withTimeoutOrNull(1500) {
                 snapshotFlow { registry.targets[requestedTarget] }.first { it != null }
@@ -585,14 +602,16 @@ fun SettingsCategoryPage(
             }
         }
         val unavailable = hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
+        if (unavailable && registry.sheetTarget == requestedTarget) registry.sheetTarget = null
         val needsQuickPicksForYou = requestedTarget != rawTarget &&
             rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")
         val searchPrerequisite = when {
             unavailable -> settingsSearchPrerequisite(requestedTarget, context.preferences, registry.targets::containsKey)
-            needsQuickPicksForYou -> SearchPrerequisite(requestedTarget, listOf(R.string.common_state_on))
+            needsQuickPicksForYou || requiresExpandedPlayer ->
+                SearchPrerequisite(requestedTarget, listOf(R.string.common_state_on))
             else -> null
         }
-        if (unavailable || needsQuickPicksForYou) {
+        if (unavailable || needsQuickPicksForYou || requiresExpandedPlayer) {
             if (unavailable && nested != null) {
                 settingsNestedDialog(nested.dialogId)?.hideDialog()
                 registry.nestedTarget = null
@@ -652,7 +671,7 @@ fun SettingsCategoryPage(
             // A tall card is already positioned by the list. Bringing the full card into view
             // again can move its header behind the overlay to reveal more of its body.
             if (item == null || resolved != cardId) {
-                targetingListRow = nested == null || unavailable
+                targetingListRow = unavailable || (nested == null && registry.sheetTarget != requestedTarget)
                 try {
                     requester.bringIntoView()
                 } finally {

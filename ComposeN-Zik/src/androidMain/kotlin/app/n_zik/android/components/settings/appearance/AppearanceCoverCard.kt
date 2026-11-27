@@ -29,6 +29,8 @@ import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.SwipeAnimationNoThumbnail
 import app.n_zik.android.enums.ThumbnailCoverType
+import app.n_zik.android.themed.n_zik.screen.player.playerActionBarTopSlotsKey
+import app.n_zik.android.themed.n_zik.screen.player.resolvePlayerActionBarTopSlots
 import app.n_zik.android.utils.carouselKey
 import app.n_zik.android.utils.carouselSizeKey
 import app.n_zik.android.utils.coverThumbnailAnimationKey
@@ -73,10 +75,13 @@ import kotlin.math.round
 @Composable
 internal fun AppearanceCoverCard(search: Search) {
     var showthumbnail by rememberPreference(showthumbnailKey, true)
-    var expandedplayer by rememberPreference(expandedplayerKey, false)
+    val expandedPlayer by rememberPreference(expandedplayerKey, false)
     var thumbnailSizeDp by rememberPreference(thumbnailSizeDpKey, DEFAULT_THUMBNAIL_SIZE_DP)
     var thumbnailSizeLDp by rememberPlayerLandscapeArtworkSize()
-    var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
+    val expandedPlayerButton by rememberPreference(expandedplayertoggleKey, false)
+    val topSlots by rememberPreference(playerActionBarTopSlotsKey, "")
+    val canExpandPlayer = expandedPlayer || expandedPlayerButton ||
+        "expanded_player" in resolvePlayerActionBarTopSlots(topSlots)
     val thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
     var playerBackgroundColors by rememberPreference(
         playerBackgroundColorsKey,
@@ -241,7 +246,7 @@ internal fun AppearanceCoverCard(search: Search) {
 
                     if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_artwork_motion, "appearance.cover_and_thumbnail.section.motion")
 
-                    if (playerType == PlayerType.Modern && !isLandscape && (expandedplayertoggle || expandedplayer)) {
+                    if (playerType == PlayerType.Modern && !isLandscape && canExpandPlayer) {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_carousel_label).contains(
                                 search.inputValue,
                                 true

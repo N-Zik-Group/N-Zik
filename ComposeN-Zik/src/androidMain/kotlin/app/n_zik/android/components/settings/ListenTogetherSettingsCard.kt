@@ -10,6 +10,8 @@
 package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.ListenTogetherCustomServerTarget
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
@@ -140,6 +142,8 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     // item-menu sheet, which gets stuck after the keyboard closes.
     var showServerChooserSheet by rememberSaveable { mutableStateOf(false) }
     var showUsernameSheet by rememberSaveable { mutableStateOf(false) }
+    val settingsTargets = LocalSettingsTargets.current
+    val searchingCustomServer = settingsTargets?.sheetTarget == ListenTogetherCustomServerTarget
 
     val isInRoom = roomState != null
     // Guests cannot change host-side approvals while in a room (hosts always can)
@@ -301,10 +305,16 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
 
     // Form sheets, placed after the card like the app's own settings sheets.
     ServerChooserSheet(
-        showSheet = showServerChooserSheet,
+        showSheet = showServerChooserSheet || searchingCustomServer,
         onSaved = { settingsVersion.value++ },
-        onDismiss = { showServerChooserSheet = false },
+        onDismiss = {
+            showServerChooserSheet = false
+            if (searchingCustomServer) settingsTargets?.sheetTarget = null
+        },
         currentUrl = serverUrl,
+        customServerModifier = if (searchingCustomServer) {
+            Modifier.settingsSearchTarget(ListenTogetherCustomServerTarget)
+        } else Modifier,
     )
     UsernameSheet(
         showSheet = showUsernameSheet,
@@ -329,6 +339,7 @@ internal fun ServerChooserSheet(
     onSaved: () -> Unit,
     onDismiss: () -> Unit,
     currentUrl: String,
+    customServerModifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val palette = colorPalette()
@@ -423,10 +434,7 @@ internal fun ServerChooserSheet(
                         placeholder = { Text(stringResource(R.string.listen_together_server_url_hint)) },
                         colors = InputDialog.defaultTextFieldColors(),
                         shape = uiRoundnessShape(),
-                        modifier =
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
+                        modifier = customServerModifier.fillMaxWidth().padding(vertical = 8.dp),
                     )
                     Button(
                         onClick = {

@@ -10,6 +10,7 @@ import app.n_zik.android.components.settings.accounts.GITHUB_SETTINGS_SIGN_OUT_T
 
 internal const val RewindPlaylistSectionTarget = "embedded.rewind.playlists_section"
 internal const val RewindNotificationSectionTarget = "embedded.rewind.notifications_section"
+internal const val ListenTogetherCustomServerTarget = "embedded.listen_together.custom_server"
 
 /** Exact destinations for settings cards shared with other screens. */
 val EmbeddedSettingsEntryTargets = listOf(
@@ -45,6 +46,10 @@ val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.listen_together.section.diagnostics", 5, R.string.listen_together_title, R.string.settings_group_connection_diagnostics),
     SettingsEntryTarget("embedded.listen_together.module_open", 5, R.string.listen_together_title, R.string.modules_open, keywordRes = listOf(R.string.listen_together_open_description), groupTitleRes = R.string.settings_group_room_connection),
     SettingsEntryTarget("embedded.listen_together.listen_together_server_url", 5, R.string.listen_together_title, R.string.listen_together_server_url, groupTitleRes = R.string.settings_group_room_connection),
+    SettingsEntryTarget(ListenTogetherCustomServerTarget, 5, R.string.listen_together_title,
+        R.string.listen_together_custom_server,
+        keywordRes = listOf(R.string.listen_together_choose_server, R.string.listen_together_use_custom_server),
+        groupTitleRes = R.string.settings_group_room_connection),
     SettingsEntryTarget("embedded.listen_together.listen_together_username", 5, R.string.listen_together_title, R.string.listen_together_username, keywordRes = listOf(R.string.listen_together_not_set), groupTitleRes = R.string.settings_group_room_connection),
     SettingsEntryTarget("embedded.listen_together.listen_together_auto_approval_joins", 5, R.string.listen_together_title, R.string.listen_together_auto_approval_joins, keywordRes = listOf(R.string.listen_together_auto_approval_joins_description), groupTitleRes = R.string.settings_group_room_controls),
     SettingsEntryTarget("embedded.listen_together.listen_together_auto_approval_suggestions", 5, R.string.listen_together_title, R.string.listen_together_auto_approval_suggestions, keywordRes = listOf(R.string.listen_together_auto_approval_suggestions_description), groupTitleRes = R.string.settings_group_room_controls),

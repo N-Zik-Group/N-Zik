@@ -37,6 +37,7 @@ internal class SettingsTargetRegistry {
     val targets = mutableStateMapOf<String, BringIntoViewRequester>()
     var highlighted by mutableStateOf<String?>(null)
     var nestedTarget by mutableStateOf<SettingsEntryTarget?>(null)
+    var sheetTarget by mutableStateOf<String?>(null)
     var storageProfileTarget by mutableStateOf<ProfileStorageIdentity?>(null)
     var storageEntryTarget by mutableStateOf<String?>(null)
     var storageCleanupOpened by mutableStateOf(false)

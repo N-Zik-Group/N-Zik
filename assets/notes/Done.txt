@@ -1316,3 +1316,7 @@ Android Auto:
 Menus:
 - fix(playlists): show picker origins and device sort
   - Show matching playlist source icons and use the library sort for the device group.
+
+Settings:
+- fix(settings): open prerequisites and custom server from search
+  - Route hidden player layout options to the controls that enable them and open the custom server field.
