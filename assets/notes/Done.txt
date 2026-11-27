@@ -1728,3 +1728,7 @@ Settings / Theme Store:
 Menus:
 - fix(menu): keep outgoing pages passive and dialogs above their source
   - Share transition input and accessibility guards and keep mixed native and Glass dialogues in the correct window.
+
+Menus:
+- fix(menu): expose command states and alternate actions
+  - Keep menu toggles, repeat modes, long presses and Playlist availability consistent across List and Grid.

@@ -108,6 +108,8 @@ import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.showMyTopPlaylistKey
 import app.n_zik.android.utils.showOnDevicePlaylistKey
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
+import app.n_zik.android.components.dialog.common.RenderAboveMenu
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.enums.FilterBy
 import app.n_zik.android.components.menu.FilterMenu
@@ -402,7 +404,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         )
     }
 
-    DialogPresence(target = matchCandidates) { candidates ->
+    val queueMenuState = LocalMenuState.current
+    AboveMenuDialogPresence(queueMenuState, target = matchCandidates) { candidates ->
         ConfirmationDialog(
             title = stringResource(R.string.song_matching_dialog_title),
             confirmText = stringResource(R.string.song_matching_dialog_title),
@@ -427,7 +430,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
     val runningMatch = songMatch?.takeIf { it.status == SongMatchStatus.Running }
     val showMatchProgress = runningMatch != null && runningMatch.requestId != hiddenMatchRequestId
-    DialogPresence(visible = showMatchProgress) {
+    AboveMenuDialogPresence(queueMenuState, visible = showMatchProgress) {
         InProgressDialog(
             total = songMatch?.total ?: 0,
             done = songMatch?.processed ?: 0,
@@ -445,7 +448,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     LaunchedEffect(matchResult?.requestId) {
         if (matchResult != null) matchRefreshKey++
     }
-    DialogPresence(target = matchResult) { result ->
+    AboveMenuDialogPresence(queueMenuState, target = matchResult) { result ->
         key(result.requestId) {
             val failedSongs by produceState(emptyList<Song>(), result.requestId) {
                 value = loadSongMatchFailures(result)
@@ -495,7 +498,6 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         isRecommendationsLoading = { isRecommendationsLoading },
         onToggleRecommendation = { isRecommendationEnabled = !isRecommendationEnabled }
     )
-    val queueMenuState = LocalMenuState.current
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
         val songs = getSongs().toList()
@@ -586,6 +588,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             coroutineScope.launch(NzikDispatchers.DATA) { removeYTMLikedSongs() }
         }
         override val menuLongClick: (() -> Unit) get() = ::onLongClick
+        @get:Composable
+        override val menuLongClickLabel: String get() = stringResource(R.string.library_favorites_action_remove)
     }
 
     val localMatchButton = remember {
@@ -749,7 +753,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                     importMenu.Render()
                     exportDialog.Render()
 
-                    DialogPresence(visible = showExportCacheConfirmDialog) {
+                    AboveMenuDialogPresence(queueMenuState, visible = showExportCacheConfirmDialog) {
                         val count = resolveExportPayload(selectedCacheExport, selectedCacheTargets, ::visibleSongs)
                             .orEmpty().size
                         ConfirmationDialog(
@@ -763,7 +767,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                             }
                         )
                     }
-                    DialogPresence(visible = showExportCacheLyricsDialog) {
+                    AboveMenuDialogPresence(queueMenuState, visible = showExportCacheLyricsDialog) {
                         CachedLyricsExportDialog(
                             onDismiss = { showExportCacheLyricsDialog = false },
                             onChoice = { choice ->
@@ -772,8 +776,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                             }
                         )
                     }
-                    ffmpegPreparation.Render()
-                    DialogPresence(visible = isExportingCache) {
+                    AboveMenuDialogPresence(queueMenuState, visible = ffmpegPreparation.showsProgress) {
+                        ffmpegPreparation.Render()
+                    }
+                    AboveMenuDialogPresence(queueMenuState, visible = isExportingCache) {
                         InProgressDialog(
                             total = exportCacheTotal,
                             done = exportCacheProgress,
@@ -782,10 +788,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                         )
                     }
 
-                    downloadAllDialog.Render()
-                    deleteDownloadsDialog.Render()
-                    updateSongsDialog.Render()
-                    smartTrash.Render()
+                    downloadAllDialog.RenderAboveMenu(queueMenuState)
+                    deleteDownloadsDialog.RenderAboveMenu(queueMenuState)
+                    updateSongsDialog.RenderAboveMenu(queueMenuState)
+                    smartTrash.RenderAboveMenu(queueMenuState)
 
                     GlassToolbarButtons( buttons )
 

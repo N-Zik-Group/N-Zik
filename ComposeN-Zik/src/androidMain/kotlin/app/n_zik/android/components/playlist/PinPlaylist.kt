@@ -12,8 +12,11 @@ import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 
 class PinPlaylist(
-    val playlist: Playlist?,
+    private val readPlaylist: () -> Playlist?,
 ): MenuIcon, DynamicColor, Descriptive {
+    constructor(playlist: Playlist?) : this({ playlist })
+
+    val playlist: Playlist? get() = readPlaylist()
 
     companion object {
         @Composable
@@ -30,6 +33,8 @@ class PinPlaylist(
         get() = playlist?.name?.startsWith( PINNED_PREFIX, true ) == true
         set(value) =
             throw UnsupportedOperationException("Please use Database.playlistTable.togglePin(playlistId) instead!")
+
+    override val menuToggleState: Boolean get() = isFirstColor
 
     override fun onShortClick() = Database.asyncTransaction {
         val playlistId = playlist?.id ?: return@asyncTransaction

@@ -104,6 +104,9 @@ open class Sort<T> (
     override fun onShortClick() { sortOrder = !sortOrder }
     override fun onLongClick() = openMenu()
     override val menuLongClick: (() -> Unit) get() = ::onLongClick
+    override val menuLongClickLabel: String
+        @Composable
+        get() = stringResource(R.string.library_sort_action_choose_criterion)
 
     @Suppress("UNCHECKED_CAST")
     protected open fun getEnumConstants(): List<T> {

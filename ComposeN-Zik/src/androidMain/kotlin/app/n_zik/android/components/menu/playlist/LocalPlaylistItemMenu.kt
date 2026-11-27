@@ -612,6 +612,7 @@ class LocalPlaylistItemMenu private constructor(
             if (!onDevice && playlistPreview.playlist.isYoutubePlaylist && playlistLinkKind(playlistPreview.playlist.browseId) == PlaylistLinkKind.YouTubePlaylist && isYouTubeSyncEnabled()) {
                 list.add(object : MenuIcon, Descriptive, DynamicColor {
                     override var isFirstColor: Boolean = playlistPreview.playlist.isAutoSync
+                    override val menuToggleState: Boolean get() = playlistPreview.playlist.isAutoSync
                     override val iconId: Int = R.drawable.sync
                     override val messageId: Int = R.string.sync_per_playlist_auto
                     @get:Composable override val menuIconTitle: String

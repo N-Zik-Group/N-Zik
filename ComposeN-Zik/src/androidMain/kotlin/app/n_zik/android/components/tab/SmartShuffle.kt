@@ -34,6 +34,9 @@ class SmartShuffle private constructor(
         get() = isRecommendationEnabled()
         set(value) {}
 
+    override val menuToggleState: Boolean get() = isRecommendationEnabled()
+    override val isEnabled: Boolean get() = !isRecommendationsLoading()
+
     companion object {
         @Composable
         operator fun invoke(
@@ -54,12 +57,12 @@ class SmartShuffle private constructor(
         get() = stringResource(R.string.recommendations_action_smart_shuffle)
 
     override fun onShortClick() {
-        onToggleRecommendation()
+        if (isEnabled) onToggleRecommendation()
     }
 
     @Composable
     override fun ToolBarButton() {
-        if (isRecommendationsLoading()) {
+        if (!isEnabled) {
             if (GlassToolbarLoading()) return
         } else if (GlassToolbarIcon(
             painterResource(iconId),
@@ -70,13 +73,13 @@ class SmartShuffle private constructor(
             modifier = Modifier.size(48.dp), // Standard IconButton size
             contentAlignment = Alignment.Center
         ) {
-            if (isRecommendationsLoading()) {
+            if (!isEnabled) {
                 InlineCircularLoader(
                     modifier = Modifier.size(24.dp),
                     color = colorPalette().text,
                 )
             } else {
-                IconButton(onClick = { onToggleRecommendation() }, shape = uiRoundnessShape()) {
+                IconButton(onClick = ::onShortClick, shape = uiRoundnessShape()) {
                     Icon(
                         painter = painterResource(R.drawable.smart_shuffle),
                         contentDescription = stringResource(R.string.recommendations_action_smart_shuffle),

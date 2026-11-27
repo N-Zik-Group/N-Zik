@@ -32,6 +32,7 @@ class PositionLock(
     // This is inverted, first icon is locked icon
     override var isFirstIcon: Boolean by mutableStateOf( true )
     override var isFirstColor: Boolean by colorState
+    override val menuToggleState: Boolean get() = isLocked()
 
     // Guest lock (spec-listen-together-guest-lock-hardening): the reorder lock ("cadena") is a
     // host-owned stateful control — a locked guest sees it grayed (disabled) and can never toggle

@@ -120,6 +120,7 @@
     <string name="library_collection_favorites_sync_failed">Couldn’t sync some favorites with YouTube.</string>
 
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Choose sort criterion</string>
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album Year</string>
     <string name="library_sort_artist">Artist</string>

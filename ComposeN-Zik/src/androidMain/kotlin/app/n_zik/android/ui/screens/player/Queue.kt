@@ -128,6 +128,7 @@ import app.n_zik.android.components.player.playerQueueBulkSongs
 import app.n_zik.android.components.player.findPlayerQueueWindowIndex
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.dialog.common.RenderAboveMenu
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.settings.ui.ToolbarAction
@@ -374,9 +375,10 @@ fun Queue(
         )
 
         exportDialog.Render()
-        (deleteDialog as Dialog).Render()
-        downloadAllDialog.Render()
-        deleteAllDownloadedDialog.Render()
+        val menuState = LocalMenuState.current
+        (deleteDialog as Dialog).RenderAboveMenu(menuState)
+        downloadAllDialog.RenderAboveMenu(menuState)
+        deleteAllDownloadedDialog.RenderAboveMenu(menuState)
 
         val downloadsMapState by MyDownloadHelper.downloads.collectAsStateWithLifecycle(
             initialValue = MyDownloadHelper.downloads.value,
@@ -393,7 +395,7 @@ fun Queue(
         val visibleToolbarActions = ToolbarSurface.QUEUE.visibleActions()
         val playlistActions = rememberCollectionAddAction(
             sourceId = "player-queue",
-            menuState = LocalMenuState.current,
+            menuState = menuState,
             canImportCollection = false,
             hasTracks = ToolbarAction.ADD_TO_PLAYLIST in visibleToolbarActions && getSongs().isNotEmpty(),
             importFromCurrentCollection = false,

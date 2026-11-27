@@ -27,6 +27,7 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.components.menu.DropdownMenuRowFeedback
+import app.n_zik.android.components.menu.menuToggleSemantics
 import app.n_zik.android.components.ui.LeadingIconBadge
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.ui.header.clampedLabelMaxWidth
@@ -52,7 +53,7 @@ fun DebugLogsMenuItem(
     val label = if (logDebugEnabled) disableLabel else stringResource(R.string.maintenance_debug_logging_title)
 
     DropdownMenuRowFeedback(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().menuToggleSemantics(logDebugEnabled),
         onClick = {
             logDebugEnabled = !logDebugEnabled
             if (logDebugEnabled) {

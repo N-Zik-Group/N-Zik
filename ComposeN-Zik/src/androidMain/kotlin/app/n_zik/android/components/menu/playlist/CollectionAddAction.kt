@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.res.stringResource
@@ -47,6 +48,8 @@ internal fun rememberCollectionAddAction(
     canExport: Boolean = false,
     openExport: (() -> Unit)? = null,
 ): MenuIcon {
+    val exportAvailable = canExport && openExport != null
+    val hasAvailableAction by rememberUpdatedState(hasTracks || canImportCollection || exportAvailable)
     var toolbarChoiceOpen by remember(sourceId) { mutableStateOf(false) }
     val choiceOpen = menuEntry?.let { menuState.isPlaylistChoiceOpen(it, sourceId) } ?: toolbarChoiceOpen
     fun setChoiceOpen(open: Boolean) {
@@ -64,7 +67,7 @@ internal fun rememberCollectionAddAction(
         canAdd = hasTracks,
         canImport = canImportCollection,
         importFromCurrentCollection = importFromCurrentCollection,
-        canExport = canExport,
+        canExport = exportAvailable,
         onExport = openExport?.let { export ->
             {
                 setChoiceOpen(false)
@@ -76,7 +79,7 @@ internal fun rememberCollectionAddAction(
         onDismiss = { setChoiceOpen(false) },
         onImport = { openImport { setChoiceOpen(false) } },
         onAdd = {
-            val hasAlternative = canImportCollection || (canExport && openExport != null)
+            val hasAlternative = canImportCollection || exportAvailable
             if (menuEntry == null || !hasAlternative) setChoiceOpen(false)
             val onReturn = if (menuEntry == null && hasAlternative) {
                 { setChoiceOpen(true) }
@@ -87,9 +90,10 @@ internal fun rememberCollectionAddAction(
     return object : MenuIcon, Descriptive {
         override val iconId = R.drawable.playlist
         override val messageId = R.string.playlist_actions_title
+        override val isEnabled: Boolean get() = hasAvailableAction
         @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
         override fun onShortClick() {
-            setChoiceOpen(true)
+            if (isEnabled) setChoiceOpen(true)
         }
     }
 }

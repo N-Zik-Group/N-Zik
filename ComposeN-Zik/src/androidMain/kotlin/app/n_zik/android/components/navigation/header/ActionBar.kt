@@ -81,6 +81,7 @@ import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.extensions.pip.isPipSupported
 import app.n_zik.android.extensions.pip.rememberPipHandler
 import app.n_zik.android.components.menu.DropdownMenu
+import app.n_zik.android.components.menu.menuToggleSemantics
 import app.n_zik.android.components.glass.GlassActionGroup
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.GlassVerticalActionGroup
@@ -233,6 +234,7 @@ private fun HamburgerMenu(
                 BurgerMenuItem(
                     iconRes = R.drawable.airplane,
                     label = stringResource(if (offlineMode) R.string.network_action_disable_offline_mode else R.string.network_action_enable_offline_mode),
+                    modifier = Modifier.menuToggleSemantics(offlineMode),
                     onShortTap = { context.preferences.edit().putBoolean(fullOfflineModeKey, !offlineMode).apply() },
                     onLongTap = {
                         navController.navigate("${NavRoutes.settings.name}?tab=6&focus=offline")

@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -59,6 +60,7 @@ fun Discover(
 
     // Active state of this button
     override var isFirstColor: Boolean by rememberPreference(discoverKey, false)
+    override val menuToggleState: Boolean get() = isFirstColor
 
     private val guestLocked = rememberListenTogetherGuestLock()
     override val isEnabled: Boolean
@@ -98,6 +100,14 @@ class Repeat private constructor(
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
+    override val menuStateDescription: String
+        @Composable get() = stringResource(
+            when (type) {
+                QueueLoopType.Default -> R.string.player_repeat_mode_off
+                QueueLoopType.RepeatOne -> R.string.player_repeat_mode_one
+                QueueLoopType.RepeatAll -> R.string.player_repeat_mode_all
+            },
+        )
     override val icon: Painter
         @Composable
         get() = painterResource( type.iconId )
@@ -107,12 +117,13 @@ class Repeat private constructor(
 
     @Composable
     override fun ToolBarButton() {
+        val description = menuStateDescription
         TabToolBar.Icon(
             icon,
             color,
             TabToolBar.TOOLBAR_ICON_SIZE,
             isEnabled,
-            Modifier,
+            Modifier.semantics { stateDescription = description },
             contentDescription = menuIconTitle,
             onClick = this::onShortClick,
         )

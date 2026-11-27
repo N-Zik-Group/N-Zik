@@ -44,6 +44,7 @@
     <string name="audio_reverb_small_room">Small Room</string>
 
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Only the host can change automatic approvals in this room. Leave the room to edit your own settings.</string>
     <string name="listen_together_auto_approval_joins_description">Automatically approve join requests without reviewing them manually</string>
     <string name="listen_together_auto_approval_suggestions_description">Automatically approve and queue song suggestions from guests</string>
     <string name="listen_together_blocked_users_description">View and manage the participants blocked from your listening rooms.</string>
@@ -176,6 +177,9 @@
     <string name="player_action_play_next">Play next</string>
     <string name="player_action_previous">Previous</string>
     <string name="player_action_repeat">Repeat</string>
+    <string name="player_repeat_mode_off">Off</string>
+    <string name="player_repeat_mode_one">Repeat one</string>
+    <string name="player_repeat_mode_all">Repeat all</string>
     <string name="player_action_seek_forward">Forward</string>
     <string name="player_action_seek_forward_30_seconds">Forward 30 seconds</string>
     <string name="player_action_seek_forward_5_seconds">Forward 5 seconds</string>

@@ -20,6 +20,7 @@ open class StatefulMenuIcon(
     private val closeMenuAfterAction: Boolean = false,
 ) : MenuIcon, Descriptive {
     val active: Boolean get() = readActive()
+    override val menuToggleState: Boolean get() = active
     override val iconId: Int get() = readIcon()
     @get:StringRes
     internal val titleRes: Int get() = readTitle()
