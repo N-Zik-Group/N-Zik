@@ -14,7 +14,7 @@ internal fun playbackNotificationButtons(
     labelRes: (NotificationButtons) -> Int,
     iconRes: (NotificationButtons) -> Int,
 ): List<CommandButton> {
-    val buttons = listOf(first, second) + NotificationButtons.entries.filterNot { it == first || it == second }
+    val buttons = (listOf(first, second) + NotificationButtons.entries).distinct()
     return buttons.filter { allowDownload || it != NotificationButtons.Download }.map { button ->
         CommandButton.Builder()
             .setDisplayName(appTextResources().getString(labelRes(button)))
