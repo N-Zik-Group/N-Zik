@@ -20,6 +20,7 @@ import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
+import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
@@ -107,6 +108,7 @@ internal fun applyUiDefaults(context: Context) {
     context.preferences.edit {
         putBoolean(hideStatusBarKey, false)
         putFloat(uiRoundnessDpKey, 25f)
+        putFloat(thumbnailRoundnessDpKey, 12f)
         putFloat(artistThumbnailRoundnessDpKey, 48f)
         putBoolean(rightToLeftInterfaceKey, false)
         putBoolean(disableIconButtonOnTopKey, false)

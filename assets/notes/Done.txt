@@ -1144,3 +1144,7 @@ Settings:
 Settings:
 - fix(settings): align profile avatars with card badges
   - Use the shared 32 dp badge column for profile shortcuts and the face preview.
+
+Settings:
+- fix(settings): group thumbnail roundness with interface appearance
+  - Move the global thumbnail control, search target, and reset to Interface while retaining the stored preference and theme format.

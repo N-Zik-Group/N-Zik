@@ -240,7 +240,6 @@ internal fun playerSettingsSearchFallback(
             ShowCoverSettingsTarget.takeUnless { playerType != PlayerType.Modern || isLandscape }
                 ?: layout.takeUnless { playerType == PlayerType.Modern || isLandscape }
         "appearance.cover_and_thumbnail.player_thumbnail_size" -> ShowCoverSettingsTarget.takeIf { isLandscape }
-        "appearance.cover_and_thumbnail.thumbnail_roundness" -> ShowCoverSettingsTarget
         "appearance.cover_and_thumbnail.carousel", "appearance.cover_and_thumbnail.carouselsize" ->
             if (isLandscape) null else if (playerType != PlayerType.Modern) layout else actionButtons
         "appearance.cover_and_thumbnail.fadingedge", "appearance.cover_and_thumbnail.thumbnailpause",
@@ -417,7 +416,12 @@ fun SettingsCategoryPage(
         }
         val storageRoute = target.split('|', limit = 3)
         val rawTarget = storageRoute.first()
-        if (categoryId == "player" && (rawTarget == InterfaceRoundnessSettingsTarget || rawTarget == ArtistRoundnessSettingsTarget)) {
+        if (categoryId == "player" && rawTarget in setOf(
+                InterfaceRoundnessSettingsTarget,
+                ThumbnailRoundnessSettingsTarget,
+                ArtistRoundnessSettingsTarget,
+            )
+        ) {
             val movedEntry = AllSettingsEntryTargets.first { it.id == rawTarget }
             searchTargetHandled = true
             onSearchResultNavigate(movedEntry.destinationRoute(context))

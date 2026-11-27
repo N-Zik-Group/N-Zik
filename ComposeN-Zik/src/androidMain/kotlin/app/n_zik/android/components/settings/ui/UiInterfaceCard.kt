@@ -30,6 +30,7 @@ import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.enums.SearchDisplayOrder
 import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
+import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.disableNavigationBackStackKey
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.indexNavigationTabKey
@@ -48,6 +49,7 @@ import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
 import app.n_zik.android.components.settings.common.ArtistRoundnessSettingsTarget
+import app.n_zik.android.components.settings.common.ThumbnailRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.InterfaceRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -87,13 +89,18 @@ internal fun UiInterfaceCard(search: Search) {
 
     val query = search.inputValue
     var interfaceRoundness by rememberPreference(uiRoundnessDpKey, 25f)
+    var thumbnailRoundness by rememberPreference(thumbnailRoundnessDpKey, 12f)
     var artistRoundness by rememberPreference(artistThumbnailRoundnessDpKey, 48f)
     val interfaceRoundnessTitle = stringResource(R.string.settings_interface_corner_radius_label)
     val interfaceRoundnessDescription = stringResource(R.string.interface_corner_roundness_description)
+    val thumbnailRoundnessTitle = stringResource(R.string.settings_player_artwork_corner_radius_label)
+    val thumbnailRoundnessDescription = stringResource(R.string.player_artwork_corner_roundness_description)
     val artistRoundnessTitle = stringResource(R.string.artist_roundness)
     val artistRoundnessDescription = stringResource(R.string.interface_artist_image_roundness_description)
     val interfaceRoundnessMatches = interfaceRoundnessTitle.contains(query, ignoreCase = true) ||
         interfaceRoundnessDescription.contains(query, ignoreCase = true)
+    val thumbnailRoundnessMatches = thumbnailRoundnessTitle.contains(query, ignoreCase = true) ||
+        thumbnailRoundnessDescription.contains(query, ignoreCase = true)
     val artistRoundnessMatches = artistRoundnessTitle.contains(query, ignoreCase = true) ||
         artistRoundnessDescription.contains(query, ignoreCase = true)
     val playlistIndicatorTitle = stringResource(R.string.settings_library_playlist_indicator_label)
@@ -118,7 +125,8 @@ internal fun UiInterfaceCard(search: Search) {
     }
 
     val navSearchContextMatch = layoutDirectionMatches ||
-        playlistIndicatorMatches || nowPlayingIndicatorMatches || interfaceRoundnessMatches || artistRoundnessMatches ||
+        playlistIndicatorMatches || nowPlayingIndicatorMatches || interfaceRoundnessMatches ||
+        thumbnailRoundnessMatches || artistRoundnessMatches ||
         stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true) ||
         stringResource(R.string.search_display_order).contains(search.inputValue, true) ||
         stringResource(R.string.settings_navigation_position_label).contains(search.inputValue, true) ||
@@ -336,6 +344,19 @@ internal fun UiInterfaceCard(search: Search) {
                         defaultValue = 25f,
                         shape = RoundedCornerShape(BoundedCornerSize(interfaceRoundness.dp, 0.4f)),
                         onSlide = { interfaceRoundness = it },
+                    )
+                }
+                if (thumbnailRoundnessMatches) {
+                    InterfaceRoundnessSlider(
+                        target = ThumbnailRoundnessSettingsTarget,
+                        icon = R.drawable.image,
+                        title = thumbnailRoundnessTitle,
+                        description = thumbnailRoundnessDescription,
+                        value = thumbnailRoundness,
+                        defaultValue = 12f,
+                        shape = if (thumbnailRoundness >= 48f) CircleShape else
+                            RoundedCornerShape(BoundedCornerSize(thumbnailRoundness.dp, 0.25f)),
+                        onSlide = { thumbnailRoundness = it },
                     )
                 }
                 if (artistRoundnessMatches) {

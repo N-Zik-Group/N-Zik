@@ -59,6 +59,7 @@ class UiSettingsPreferencesTest {
     private val fullReset: Map<String, Any> = mapOf(
         "hideStatusBarKey" to false,
         "uiRoundnessDpKey" to 25f,
+        "thumbnailRoundnessDpKey" to 12f,
         "artistThumbnailRoundnessDpKey" to 48f,
         "disableIconButtonOnTop" to false,
         "colorPaletteName" to "Dynamic",
@@ -172,6 +173,7 @@ class UiSettingsPreferencesTest {
             .putString("colorPaletteName", "Customized")
             .putString("colorPaletteMode", "Light")
             .putFloat("uiRoundnessDpKey", 11f)
+            .putFloat("thumbnailRoundnessDpKey", 18f)
             .putFloat("artistThumbnailRoundnessDpKey", 20f)
             .putString("playerType", "Modern")
             .putString("queueType", "Essential")
@@ -183,6 +185,7 @@ class UiSettingsPreferencesTest {
         assertEquals("Customized", preferences.getString("colorPaletteName", null))
         assertEquals("Light", preferences.getString("colorPaletteMode", null))
         assertEquals(11f, preferences.getFloat("uiRoundnessDpKey", -1f), 0f)
+        assertEquals(18f, preferences.getFloat("thumbnailRoundnessDpKey", -1f), 0f)
         assertEquals(20f, preferences.getFloat("artistThumbnailRoundnessDpKey", -1f), 0f)
         assertEquals("Essential", preferences.getString("playerType", null))
         assertEquals("Modern", preferences.getString("queueType", null))
@@ -199,6 +202,7 @@ class UiSettingsPreferencesTest {
         assertEquals("Dynamic", preferences.getString("colorPaletteName", null))
         assertEquals("System", preferences.getString("colorPaletteMode", null))
         assertEquals(25f, preferences.getFloat("uiRoundnessDpKey", -1f), 0f)
+        assertEquals(12f, preferences.getFloat("thumbnailRoundnessDpKey", -1f), 0f)
         assertEquals(48f, preferences.getFloat("artistThumbnailRoundnessDpKey", -1f), 0f)
         assertEquals("Modern", preferences.getString("playerType", null))
         assertEquals("Essential", preferences.getString("queueType", null))

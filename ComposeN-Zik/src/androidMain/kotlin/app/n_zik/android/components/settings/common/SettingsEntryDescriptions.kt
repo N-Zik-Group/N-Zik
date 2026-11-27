@@ -62,7 +62,7 @@ internal val SettingsEntryDescriptions = mapOf(
     "appearance.cover_and_thumbnail.show_thumbnail" to R.string.player_artwork_show_thumbnail_description,
     "appearance.cover_and_thumbnail.statsfornerdsplayer" to R.string.player_artwork_technical_info_description,
     "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" to R.string.player_artwork_hidden_swipe_animation_description,
-    "appearance.cover_and_thumbnail.thumbnail_roundness" to R.string.player_artwork_corner_roundness_description,
+    ThumbnailRoundnessSettingsTarget to R.string.player_artwork_corner_roundness_description,
     "appearance.cover_and_thumbnail.thumbnailpause" to R.string.player_artwork_shrink_when_paused_description,
     InterfaceRoundnessSettingsTarget to R.string.interface_corner_roundness_description,
     "appearance.full_screen_lyrics_components.actionbar" to R.string.lyrics_fullscreen_action_bar_description,

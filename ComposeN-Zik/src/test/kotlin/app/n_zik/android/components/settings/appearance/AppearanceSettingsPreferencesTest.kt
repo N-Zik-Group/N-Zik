@@ -81,7 +81,6 @@ class AppearanceSettingsPreferencesTest {
         "lyricsColor" to "White",
         "lyricsCustomColor" to -1,
         "showBackgroundLyrics" to false,
-        "thumbnailRoundnessDpKey" to 12f,
         "miniPlayerType" to "Essential",
         "playerBackgroundColors" to "AnimatedGradient",
         "showTopActionsBar" to true,

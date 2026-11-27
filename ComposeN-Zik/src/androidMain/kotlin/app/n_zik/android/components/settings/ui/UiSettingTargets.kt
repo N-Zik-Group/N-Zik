@@ -5,6 +5,7 @@ import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
+import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.customColorKey
@@ -59,6 +60,7 @@ internal object UiSettingTargets {
                 hideStatusBarKey,
                 rightToLeftInterfaceKey,
                 uiRoundnessDpKey,
+                thumbnailRoundnessDpKey,
                 artistThumbnailRoundnessDpKey,
                 navigationBarPositionKey,
                 navigationBarTypeKey,

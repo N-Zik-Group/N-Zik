@@ -125,7 +125,6 @@ import app.n_zik.android.utils.tapqueueKey
 import app.n_zik.android.utils.textoutlineKey
 import app.n_zik.android.utils.thumbnailFadeExKey
 import app.n_zik.android.utils.thumbnailFadeKey
-import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.thumbnailSpacingKey
@@ -210,7 +209,6 @@ internal fun applyAppearanceDefaults(context: Context) {
         putInt(lyricsCustomColorKey, android.graphics.Color.WHITE)
         putEnum(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
         putBoolean(showBackgroundLyricsKey, false)
-        putFloat(thumbnailRoundnessDpKey, 12f)
         putEnum(miniPlayerTypeKey, MiniPlayerType.Essential)
         putEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient)
         putBoolean(showTopActionsBarKey, true)

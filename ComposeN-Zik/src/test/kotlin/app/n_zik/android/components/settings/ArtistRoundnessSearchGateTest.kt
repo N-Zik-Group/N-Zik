@@ -68,6 +68,13 @@ class ArtistRoundnessSearchGateTest {
     }
 
     @Test
+    fun thumbnailRoundnessRowIsComposedWhenSearchMatchesItsLabel() {
+        val thumbnailLabel = context.getString(R.string.settings_player_artwork_corner_radius_label)
+        interfaceSettings(thumbnailLabel)
+        assertEquals(1, composeRule.onAllNodesWithText(thumbnailLabel).fetchSemanticsNodes().size)
+    }
+
+    @Test
     fun artistRoundnessRowIsRemovedWhenSearchMatchesNoCardLabel() {
         interfaceSettings("zzz_no_match_query")
         assertEquals(0, composeRule.onAllNodesWithText(artistRoundnessLabel).fetchSemanticsNodes().size)
