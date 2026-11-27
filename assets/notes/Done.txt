@@ -1296,3 +1296,7 @@ Menus:
 Library:
 - fix(playlists): include and pin device playlists in the library
   - Keep device playlists visible in the general and pinned library views and expose pinning on their detail toolbar.
+
+Menus:
+- fix(player): use one blur range in all controls
+  - Keep existing blur values editable in both menu styles and from the cover.

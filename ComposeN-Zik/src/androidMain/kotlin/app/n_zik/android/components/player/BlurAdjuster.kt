@@ -30,6 +30,8 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.rotatingAlbumCoverKey
 import app.n_zik.android.components.dialog.common.Dialog
 
+internal val PLAYER_BLUR_STRENGTH_RANGE = 0f..100f
+
 class BlurAdjuster private constructor(
     activeState: MutableState<Boolean>,
     strengthState: MutableState<Float>,
@@ -84,7 +86,7 @@ class BlurAdjuster private constructor(
                     onSlide = { strength = it },
                     onSlideComplete = {},
                     toDisplay = { "${it.toInt()}" },
-                    range = 0f..100f,
+                    range = PLAYER_BLUR_STRENGTH_RANGE,
                     stepSize = 1f
                 )
             }

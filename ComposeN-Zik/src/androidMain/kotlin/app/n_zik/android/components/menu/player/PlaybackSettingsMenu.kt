@@ -49,6 +49,7 @@ import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.DialogFrame
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
+import app.n_zik.android.components.player.PLAYER_BLUR_STRENGTH_RANGE
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.utils.setGlobalVolume
 import app.n_zik.android.typography
@@ -250,7 +251,7 @@ class PlaybackSettingsMenu private constructor(
                     blurStrength = kotlin.math.round(it)
                     onBlurScaleChange(blurStrength)
                 },
-                valueRange = 0f..50f,
+                valueRange = PLAYER_BLUR_STRENGTH_RANGE,
                 displayValue = { "${it.toInt()}" },
                 stepSize = 0f,
                 defaultValue = 25f,
@@ -470,7 +471,7 @@ class PlaybackSettingsMenu private constructor(
                         blurStrength = kotlin.math.round(it)
                         onBlurScaleChange(blurStrength)
                     },
-                    valueRange = 0f..50f,
+                    valueRange = PLAYER_BLUR_STRENGTH_RANGE,
                     stepSize = 0f,
                     defaultValue = 25f,
                     drawValuePoints = true,
