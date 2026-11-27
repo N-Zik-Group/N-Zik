@@ -1,7 +1,6 @@
 package app.n_zik.android.components.dialog.export
 
 import android.net.Uri
-import android.provider.DocumentsContract
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -128,23 +127,18 @@ class ExportSongsToCSVDialog private constructor(
                             }
                         } else load
                         val songs = readyLoad?.invoke()
+                        // The picker can return an existing document, so leave it untouched without a valid payload.
                         if (restoreBrowsing && readyLoad != null && savedBrowsingScope != latestBrowsingScope.value?.invoke()) {
-                            removeEmptyExport(uri)
                             Toaster.e(R.string.common_load_failed)
                             return@launch
                         }
                         if (songs == null) {
                             if (readyLoad == null) {
-                                when {
-                                    selectedExport -> Toaster.e(R.string.export_selection_lost)
-                                    requireCapture || restoreBrowsing -> Toaster.e(R.string.common_load_failed)
-                                }
+                                Toaster.e(if (selectedExport) R.string.export_selection_lost else R.string.common_load_failed)
                             }
-                            removeEmptyExport(uri)
                             return@launch
                         }
                         if (songs.isEmpty()) {
-                            removeEmptyExport(uri)
                             Toaster.w(R.string.player_no_song_found)
                             return@launch
                         }
@@ -185,17 +179,6 @@ class ExportSongsToCSVDialog private constructor(
                         latestBrowsingScope.value?.invoke()?.takeUnless { selectionAtOpen.value || requireCapture }
                 },
             )
-        }
-
-        private fun removeEmptyExport(uri: Uri) {
-            val resolver = appContext().contentResolver
-            try {
-                if (resolver.openFileDescriptor(uri, "r")?.use { it.statSize } == 0L) {
-                    DocumentsContract.deleteDocument(resolver, uri)
-                }
-            } catch (error: Exception) {
-                Timber.tag("ExportSongsToCSVDialog").w(error, "Could not remove the empty export document")
-            }
         }
     }
 

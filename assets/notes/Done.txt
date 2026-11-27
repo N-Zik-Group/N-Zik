@@ -1956,3 +1956,7 @@ Toolbars / Dock:
 Settings / Sliders:
 - fix(settings): mark the real default on sliders
   - Keep the default detent visible with or without step markers, including the current Glass profile and sync controls.
+
+Playlists / Export:
+- fix(playlist): preserve the export destination if data is unavailable
+  - Require a valid export payload before opening the document chosen in Android's file picker.

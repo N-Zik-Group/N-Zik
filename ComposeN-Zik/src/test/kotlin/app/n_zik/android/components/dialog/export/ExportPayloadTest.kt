@@ -59,4 +59,21 @@ class ExportPayloadTest {
 
         assertNull(result)
     }
+
+    @Test
+    fun `restored browsing discards a payload when the scope changes during hydration`() = runTest {
+        val scope = mutableStateOf("original")
+        val songs = mutableStateOf<List<String>?>(null)
+        val result = async(start = CoroutineStart.UNDISPATCHED) {
+            awaitRestoredExportPayload("original", { scope.value }) { songs.value }
+        }
+        assertFalse(result.isCompleted)
+
+        Snapshot.withMutableSnapshot {
+            scope.value = "different"
+            songs.value = listOf("other playlist")
+        }
+
+        assertNull(result.await())
+    }
 }
