@@ -1368,3 +1368,7 @@ Menus:
 Menus:
 - fix(toolbar): align collection overflow and add availability
   - Keep Import and show Add only for eligible selections, with the Glass separator before overflow.
+
+Menus:
+- fix(lyrics): preserve the menu behind dialogs
+  - Keep provider, edit, and offset dialogs above the originating menu and remove redundant back actions.

@@ -24,6 +24,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Rect
@@ -66,6 +67,8 @@ import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 
+internal val LocalRequireNativeDialogWindow = staticCompositionLocalOf { false }
+
 /** Shared dialog surface with bounded width and height. */
 @Composable
 fun DialogFrame(
@@ -93,8 +96,9 @@ fun DialogFrame(
     val hasBackdrop = LocalIndependentGlassBackdrop.current != null || glassHost?.modalBackdrop != null
     // Keep the preview dialog in the window that PixelCopy captures, also without Glass.
     val isDialogPreview = LocalThemePreview.current?.scene == ThemePreviewScene.DIALOG
-    val useSharedHost = (isDialogPreview && glassHost != null) ||
-        canHostGlassDialog(glass, glassRenderer(glass), sameWindow && hasBackdrop)
+    val useSharedHost = !LocalRequireNativeDialogWindow.current &&
+        ((isDialogPreview && glassHost != null) ||
+            canHostGlassDialog(glass, glassRenderer(glass), sameWindow && hasBackdrop))
     val shape = uiRoundnessShape()
     val surface = surfaceColor(colorPalette().background1)
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp

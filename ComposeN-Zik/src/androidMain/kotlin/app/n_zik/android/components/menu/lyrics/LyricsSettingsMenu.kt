@@ -163,10 +163,7 @@ class LyricsSettingsMenu private constructor(
             ActionSettingEntry(
                 title = stringResource(R.string.lyrics_provider_settings_title),
                 icon = R.drawable.search,
-                onClick = {
-                    menuState.hide()
-                    onShowProviders()
-                }
+                onClick = onShowProviders,
             )
         }
 
@@ -453,10 +450,7 @@ class LyricsSettingsMenu private constructor(
             ActionSettingEntry(
                 title = stringResource(R.string.lyrics_action_edit),
                 icon = R.drawable.title_edit,
-                onClick = {
-                    menuState.hide()
-                    onEditLyrics()
-                }
+                onClick = onEditLyrics,
             )
 
             // Copy Lyrics
@@ -500,10 +494,7 @@ class LyricsSettingsMenu private constructor(
             ActionSettingEntry(
                 title = stringResource(R.string.lyrics_offset),
                 icon = R.drawable.time,
-                onClick = {
-                    menuState.hide()
-                    onShowOffsetDialog()
-                }
+                onClick = onShowOffsetDialog,
             )
 
             // Pick from LrcLib (network)
@@ -846,10 +837,7 @@ class LyricsSettingsMenu private constructor(
                 ActionSettingEntry(
                     title = stringResource(R.string.lyrics_action_edit),
                     icon = R.drawable.title_edit,
-                    onClick = {
-                        menuState.hide()
-                        onEditLyrics()
-                    }
+                    onClick = onEditLyrics,
                 )
             }
 
@@ -901,10 +889,7 @@ class LyricsSettingsMenu private constructor(
                 ActionSettingEntry(
                     title = stringResource(R.string.lyrics_offset),
                     icon = R.drawable.time,
-                    onClick = {
-                        menuState.hide()
-                        onShowOffsetDialog()
-                    }
+                    onClick = onShowOffsetDialog,
                 )
             }
 

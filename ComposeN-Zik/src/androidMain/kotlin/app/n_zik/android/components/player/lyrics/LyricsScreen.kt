@@ -32,6 +32,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import app.n_zik.android.components.ui.nativeControlIndication
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -73,6 +74,7 @@ import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.LocalRequireNativeDialogWindow
 import app.n_zik.android.enums.lyrics.LyricsType
 import app.n_zik.android.enums.lyrics.LyricsBackground
 import app.n_zik.android.enums.lyrics.LyricsColor
@@ -83,7 +85,10 @@ import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.models.Lyrics
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.canHostGlassMenuSheet
 import app.n_zik.android.components.glass.glassOverlayCanvasViewport
+import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.GlassOverlayControls
 import app.n_zik.android.components.glass.OverlayFade
@@ -320,34 +325,42 @@ fun LyricsScreen(
         val lyricsBlackInk = LocalNativeSurfaceMix.current?.lyricsBlackInk
             ?: if (colorPaletteName == ColorPaletteName.PureBlack) 1f else 0f
 
-        DialogPresence(visible = showLyricsSizeDialog) {
-            LyricsSizeDialog(
-                onDismiss = { showLyricsSizeDialog = false},
-                sizeValue = { lyricsSize = it },
-                sizeValueL = { lyricsSizeL = it}
-            )
-        }
-
-        DialogPresence(visible = showProviderDialog) {
-            LyricsProviderDialog(
-                initialSelection = providerPreferences.mapValues { (mode, preference) ->
-                    LyricsProvider.decode(mode, preference.value)
-                },
-                onDismiss = { showProviderDialog = false },
-                onApply = { selection ->
-                    selection.forEach { (mode, providers) ->
-                        val preference = providerPreferences.getValue(mode)
-                        if (providers != LyricsProvider.decode(mode, preference.value)) {
-                            preference.value = LyricsProvider.encode(providers)
-                        }
-                    }
-                    showProviderDialog = false
-                }
-            )
-        }
-
         val showOffsetDialog = ShowOffsetDialog(mediaId = mediaId)
-        showOffsetDialog.Render()
+        val glass = rememberGlassSettings()
+        val menuHost = LocalGlassMenuHost.current
+        val menuSharesActivityWindow = canHostGlassMenuSheet(glass, glassRenderer(glass), menuHost?.backdrop != null)
+        // Lyrics owns the activity-result launchers. Its dialogs still need to sit above a native menu window.
+        CompositionLocalProvider(
+            LocalRequireNativeDialogWindow provides (menuState.isDisplayed && !menuSharesActivityWindow),
+        ) {
+            DialogPresence(visible = showLyricsSizeDialog) {
+                LyricsSizeDialog(
+                    onDismiss = { showLyricsSizeDialog = false },
+                    sizeValue = { lyricsSize = it },
+                    sizeValueL = { lyricsSizeL = it },
+                )
+            }
+
+            DialogPresence(visible = showProviderDialog) {
+                LyricsProviderDialog(
+                    initialSelection = providerPreferences.mapValues { (mode, preference) ->
+                        LyricsProvider.decode(mode, preference.value)
+                    },
+                    onDismiss = { showProviderDialog = false },
+                    onApply = { selection ->
+                        selection.forEach { (mode, providers) ->
+                            val preference = providerPreferences.getValue(mode)
+                            if (providers != LyricsProvider.decode(mode, preference.value)) {
+                                preference.value = LyricsProvider.encode(providers)
+                            }
+                        }
+                        showProviderDialog = false
+                    },
+                )
+            }
+            showOffsetDialog.Render()
+            editLyricsDialog.Render()
+        }
 
         LaunchedEffect(mediaId, resolvedTitle, resolvedArtist) {
             editedArtistName = null
@@ -403,8 +416,6 @@ fun LyricsScreen(
             }
         )
 
-        editLyricsDialog.Render()
-
         if (lyricsType != LyricsType.Unsynced) {
             DisposableEffect(Unit) {
                 currentView.keepScreenOn = true
@@ -414,7 +425,7 @@ fun LyricsScreen(
             }
         }
 
-        val overlayCanvasViewport = Modifier.glassOverlayCanvasViewport(rememberGlassSettings(), showThumbnail = showlyricsthumbnail)
+        val overlayCanvasViewport = Modifier.glassOverlayCanvasViewport(glass, showThumbnail = showlyricsthumbnail)
         var transportHeightPx by remember { mutableIntStateOf(0) }
         LyricsGlassScene(
             background = if (showlyricsthumbnail) LyricsCoverScrim else Color.Transparent,

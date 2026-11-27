@@ -33,6 +33,7 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
@@ -81,7 +82,6 @@ private fun SettingIcon(@DrawableRes icon: Int) {
     }
 }
 
-/** Type and text a LrcLib [track] is stored as when picked in [lyricsType] mode, or null when the track has nothing usable in that mode: Unsynced mode takes the plain text (else the synced text without its timestamps), any other mode takes the synced text only, since plain text would break the synced view. */
 private fun pickedRow(track: Track, lyricsType: LyricsType): Pair<LyricsType, String>? =
     when (lyricsType) {
         LyricsType.Unsynced -> {
@@ -95,10 +95,8 @@ private fun pickedRow(track: Track, lyricsType: LyricsType): Pair<LyricsType, St
 internal fun canPick(track: Track, lyricsType: LyricsType): Boolean = pickedRow(track, lyricsType) != null
 
 /**
- * Row saved when the user picks a LrcLib track, or null when the track has nothing usable in
- * [lyricsType] mode. It is a deliberate manual choice, so it is flagged [Lyrics.isEdited]: an automatic
- * fetch would otherwise replace it with the default match the user just rejected. The row always has the
- * type of the mode the pick was made in, so it is the displayed row and "Fetch lyrics again" clears it.
+ * Marks a manual LrcLib choice as edited to prevent an automatic fetch from overwriting it.
+ * Stores the choice under the active mode so "Fetch lyrics again" can clear it.
  */
 internal fun pickedLyrics(mediaId: String, track: Track, lyricsType: LyricsType): Lyrics? =
     pickedRow(track, lyricsType)?.let { (type, data) ->
@@ -153,12 +151,15 @@ internal fun LyricsTrackSelector(
 
     val style by rememberPreference(menuStyleKey, MenuStyle.List)
     val menuTitle = stringResource(R.string.lyrics_title)
+    val showCancel = LocalMenuBack.current == null
     val searchFields: @Composable () -> Unit = {
-        ListMenu.Entry(
-            text = stringResource(R.string.common_action_cancel),
-            icon = { SettingIcon(R.drawable.chevron_back) },
-            onClick = menuState::pop,
-        )
+        if (showCancel) {
+            ListMenu.Entry(
+                text = stringResource(R.string.common_action_cancel),
+                icon = { SettingIcon(R.drawable.chevron_back) },
+                onClick = menuState::pop,
+            )
+        }
         Row(modifier = Modifier.fillMaxWidth()) {
             TextField(
                 value = title,
