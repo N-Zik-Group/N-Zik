@@ -80,6 +80,7 @@ sealed class ListenTogetherEvent {
 
     data class ConnectionError(
         val error: String,
+        val isServerConfigurationError: Boolean = false,
     ) : ListenTogetherEvent()
 
     data class Reconnecting(

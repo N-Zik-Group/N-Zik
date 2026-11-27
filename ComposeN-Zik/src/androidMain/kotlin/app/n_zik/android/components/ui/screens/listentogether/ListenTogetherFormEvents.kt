@@ -78,9 +78,13 @@ internal fun ObserveListenTogetherFormEvents(
                     if (latestIsWaiting()) {
                         latestSetCreating(false)
                         latestSetJoining(false)
-                        latestSetError(connectionLostText)
-
-                        Toaster.noInternet()
+                        if (event.isServerConfigurationError) {
+                            latestSetError(event.error)
+                            Toaster.e(event.error)
+                        } else {
+                            latestSetError(connectionLostText)
+                            Toaster.noInternet()
+                        }
                     }
                 }
 

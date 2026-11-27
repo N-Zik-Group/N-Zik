@@ -65,6 +65,7 @@ import app.n_zik.android.listentogether.RoomRole
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import timber.log.Timber
 
 private const val TAG = "ListenTogetherSettings"
@@ -86,11 +87,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     val blockedUsernames by manager.blockedUsernames.collectAsStateWithLifecycle()
     val syncHostVolume by manager.syncHostVolumeEnabled.collectAsStateWithLifecycle()
 
-    // DataStoreUtils reads are one-shot (plain SharedPreferences): bump the version
-    // after every save so the entry texts and toggle states refresh right away,
-//
-    // instead of waiting for an unrelated recomposition ("username saves nothing"
-    // and "toggles unresponsive until leaving the screen" reports).
+    // Refresh the connection labels after their form sheets save.
     val settingsVersion = remember { mutableStateOf(0) }
     val serverUrl =
         remember(settingsVersion.value) {
@@ -102,18 +99,11 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         }
     val username =
         remember(settingsVersion.value) { DataStoreUtils.getString(context, PREF_USERNAME) }
-    val autoApprovalJoins =
-        remember(settingsVersion.value) {
-            DataStoreUtils.getBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVAL, false)
-        }
-    val autoApproveSuggestions =
-        remember(settingsVersion.value) {
-            DataStoreUtils.getBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS, false)
-        }
-    val historyEnabled =
-        remember(settingsVersion.value) {
-            DataStoreUtils.getBoolean(context, ListenTogetherClient.PREF_HISTORY, false)
-        }
+    val autoApprovalJoins by rememberDataStoreBooleanPreference(ListenTogetherClient.PREF_AUTO_APPROVAL, false)
+    val autoApproveSuggestions by rememberDataStoreBooleanPreference(
+        ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS, false,
+    )
+    val historyEnabled by rememberDataStoreBooleanPreference(ListenTogetherClient.PREF_HISTORY, false)
 
     // App shared menu state (same mechanism as the app's own item menus):
     // display() pushes a menu into the root menu sheet rendered by MainActivity.
@@ -198,7 +188,6 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             enabled = canEditApprovals,
             onCheckedChange = {
                 DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVAL, it)
-                settingsVersion.value++
                 Timber.tag(TAG).i("Auto-approve joins -> $it")
             },
             icon = R.drawable.checkmark,
@@ -217,7 +206,6 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
                     ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS,
                     it,
                 )
-                settingsVersion.value++
                 Timber.tag(TAG).i("Auto-approve suggestions -> $it")
             },
             icon = R.drawable.musical_notes,
@@ -242,7 +230,6 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
             isChecked = historyEnabled,
             onCheckedChange = {
                 DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_HISTORY, it)
-                settingsVersion.value++
                 Timber.tag(TAG).i("Local history -> $it")
             },
             icon = R.drawable.history,
@@ -324,12 +311,16 @@ internal fun ServerChooserSheet(
     val context = LocalContext.current
     val palette = colorPalette()
     var customUrl by remember { mutableStateOf(currentUrl) }
+    var invalidCustomUrl by remember { mutableStateOf(false) }
     val trimmedCustomUrl = customUrl.trim()
 
     // Re-sync the draft each time the sheet opens (the composable stays composed
     // across open/close, so plain remember would keep a stale value).
     LaunchedEffect(showSheet) {
-        if (showSheet) customUrl = currentUrl
+        if (showSheet) {
+            customUrl = currentUrl
+            invalidCustomUrl = false
+        }
     }
 
     SampledMenuSheet(
@@ -400,23 +391,34 @@ internal fun ServerChooserSheet(
                     )
                     TextField(
                         value = customUrl,
-                        onValueChange = { customUrl = it },
+                        onValueChange = {
+                            customUrl = it
+                            invalidCustomUrl = false
+                        },
                         singleLine = true,
                         placeholder = { Text(stringResource(R.string.listen_together_server_url_hint)) },
                         colors = InputDialog.defaultTextFieldColors(),
                         shape = uiRoundnessShape(),
+                        isError = invalidCustomUrl,
                         modifier = customServerModifier.fillMaxWidth().padding(vertical = 8.dp),
                     )
+                    if (invalidCustomUrl) {
+                        Text(
+                            text = stringResource(R.string.common_validation_invalid_input),
+                            style = typography().xxs,
+                            color = palette.red,
+                        )
+                    }
                     Button(
                         onClick = {
-                            DataStoreUtils.saveString(
-                                context,
-                                ListenTogetherClient.PREF_SERVER_URL,
-                                trimmedCustomUrl,
-                            )
-                            Timber.tag(TAG).i("Server URL (custom) -> $trimmedCustomUrl")
-                            onSaved()
-                            onDismiss()
+                            val url = ListenTogetherServers.customUrlForSave(trimmedCustomUrl)
+                            if (url == null) {
+                                invalidCustomUrl = true
+                            } else {
+                                DataStoreUtils.saveString(context, ListenTogetherClient.PREF_SERVER_URL, url)
+                                onSaved()
+                                onDismiss()
+                            }
                         },
                         enabled = trimmedCustomUrl.isNotBlank(),
                         colors =

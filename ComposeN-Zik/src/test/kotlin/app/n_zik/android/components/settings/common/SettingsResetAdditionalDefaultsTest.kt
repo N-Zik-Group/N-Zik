@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings.common
 
 import android.app.Application
 import android.content.Context
+import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.utils.checkUpdateStateKey
 import app.n_zik.android.utils.checkBetaUpdatesKey
@@ -17,6 +18,7 @@ import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.createBooleanPreferenceListener
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -25,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -90,7 +93,22 @@ class SettingsResetAdditionalDefaultsTest {
             .putBoolean(DataStoreUtils.KEY_REWIND_ENABLED, false)
             .commit()
 
-        resetListenTogetherSettingsDefaults(context)
+        val observedValues = mutableMapOf<String, Boolean>()
+        val listeners = listOf(
+            ListenTogetherClient.PREF_AUTO_APPROVAL,
+            ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS,
+            ListenTogetherClient.PREF_HISTORY,
+        ).associateWith { key ->
+            createBooleanPreferenceListener(context, key, false) { observedValues[key] = it }
+        }
+        listeners.values.forEach(prefs::registerOnSharedPreferenceChangeListener)
+        try {
+            resetListenTogetherSettingsDefaults(context)
+            shadowOf(Looper.getMainLooper()).idle()
+            assertEquals(listeners.keys.associateWith { false }, observedValues)
+        } finally {
+            listeners.values.forEach(prefs::unregisterOnSharedPreferenceChangeListener)
+        }
 
         assertFalse(prefs.getBoolean(ListenTogetherClient.PREF_AUTO_APPROVAL, false))
         assertFalse(prefs.getBoolean(ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS, false))
@@ -112,7 +130,7 @@ class SettingsResetAdditionalDefaultsTest {
         val principal = context.getSharedPreferences("preferences", Context.MODE_PRIVATE)
         principal.edit().putBoolean("privacyBlockScreenCapture", true).commit()
 
-        resetAdditionalSettingsDefaults(context)
+        applyPrivacyDefaults(prefs)
 
         assertFalse(prefs.getBoolean("privacyBlockScreenCapture", false))
         assertFalse(prefs.getBoolean("permissionUsageJournalPaused", false))

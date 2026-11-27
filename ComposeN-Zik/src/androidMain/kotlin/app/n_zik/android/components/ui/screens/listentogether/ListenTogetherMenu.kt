@@ -48,6 +48,7 @@ import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.menuStyleKey
+import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.transitionEffectKey
 
@@ -102,8 +103,7 @@ fun ListenTogetherMenu() {
     val canEditApprovals = !isInRoom || role != RoomRole.GUEST
     val waiting = isCreatingRoom || isJoiningRoom
 
-    // DataStoreUtils reads are one-shot (plain SharedPreferences): bump the version
-    // after every save so the entry texts and toggle states refresh right away.
+    // Refresh the connection labels after their form sheets save.
     val settingsVersion = remember { mutableStateOf(0) }
     val serverUrl =
         remember(settingsVersion.value) {
@@ -115,18 +115,11 @@ fun ListenTogetherMenu() {
         }
     val username =
         remember(settingsVersion.value) { DataStoreUtils.getString(context, PREF_USERNAME) }
-    val autoApprovalJoins =
-        remember(settingsVersion.value) {
-            DataStoreUtils.getBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVAL, false)
-        }
-    val autoApproveSuggestions =
-        remember(settingsVersion.value) {
-            DataStoreUtils.getBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS, false)
-        }
-    val historyEnabled =
-        remember(settingsVersion.value) {
-            DataStoreUtils.getBoolean(context, ListenTogetherClient.PREF_HISTORY, false)
-        }
+    val autoApprovalJoins by rememberDataStoreBooleanPreference(ListenTogetherClient.PREF_AUTO_APPROVAL, false)
+    val autoApproveSuggestions by rememberDataStoreBooleanPreference(
+        ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS, false,
+    )
+    val historyEnabled by rememberDataStoreBooleanPreference(ListenTogetherClient.PREF_HISTORY, false)
 
     val selectedServer = remember(serverUrl) { ListenTogetherServers.findByUrl(serverUrl) }
     val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
@@ -222,24 +215,20 @@ fun ListenTogetherMenu() {
             onOpenLogs = { page = RoomMenuPage.Logs },
             onOpenBlockedUsers = { page = RoomMenuPage.BlockedUsers },
             onToggleAutoApprovalJoins = {
-                DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVAL, !autoApprovalJoins)
-                settingsVersion.value++
-                Timber.tag(TAG).i("Auto-approve joins -> ${!autoApprovalJoins}")
+                val enabled = !autoApprovalJoins
+                DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVAL, enabled)
+                Timber.tag(TAG).i("Auto-approve joins -> $enabled")
             },
             onToggleAutoApproveSuggestions = {
-                DataStoreUtils.saveBoolean(
-                    context,
-                    ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS,
-                    !autoApproveSuggestions,
-                )
-                settingsVersion.value++
-                Timber.tag(TAG).i("Auto-approve suggestions -> ${!autoApproveSuggestions}")
+                val enabled = !autoApproveSuggestions
+                DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_AUTO_APPROVE_SUGGESTIONS, enabled)
+                Timber.tag(TAG).i("Auto-approve suggestions -> $enabled")
             },
             onToggleSyncVolume = { listenTogetherManager.setSyncHostVolumeEnabled(!syncHostVolume) },
             onToggleHistory = {
-                DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_HISTORY, !historyEnabled)
-                settingsVersion.value++
-                Timber.tag(TAG).i("Local history -> ${!historyEnabled}")
+                val enabled = !historyEnabled
+                DataStoreUtils.saveBoolean(context, ListenTogetherClient.PREF_HISTORY, enabled)
+                Timber.tag(TAG).i("Local history -> $enabled")
             },
         )
 

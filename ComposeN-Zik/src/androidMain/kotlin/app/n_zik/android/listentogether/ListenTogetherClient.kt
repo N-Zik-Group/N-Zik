@@ -6,7 +6,6 @@ package app.n_zik.android.listentogether
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 
 import android.Manifest
@@ -28,6 +27,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -45,9 +45,20 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
 
 /** Shared Listen Together WebSocket client installed by the application. */
-class ListenTogetherClient(
+class ListenTogetherClient internal constructor(
     private val context: Context,
+    private val socketFactory: WebSocket.Factory,
 ) {
+        constructor(context: Context) : this(
+            context,
+            OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .pingInterval(60, TimeUnit.SECONDS) // Match server ping interval
+                .build(),
+        )
+
         companion object {
             private const val TAG = "ListenTogether"
             private val DEFAULT_SERVER_URL = ListenTogetherServers.defaultServerUrl
@@ -138,23 +149,7 @@ class ListenTogetherClient(
         // The startup coroutine reads preferences immediately after launch.
         private val sessionPreferences = ListenTogetherSessionPreferences(context)
 
-        /** Incremented when the user explicitly starts create/join so a late-finishing [loadPersistedSession] cannot restore disk state over that intent (would make [onOpen] choose RECONNECT instead of [executePendingAction]). */
-        private val sessionApplyGeneration = AtomicInteger(0)
-
-        init {
-            setInstance(this)
-            ensureNotificationChannel()
-            scope.launch {
-                for (event in eventQueue) {
-                    _events.emit(event)
-                }
-            }
-            // Load persisted session info asynchronously after construction to avoid calling log() before flows are initialized
-            scope.launch {
-                loadPersistedSession()
-                observeNetworkChanges()
-            }
-        }
+        private var restoreSession = true
 
         private fun emitEvent(event: ListenTogetherEvent) {
             if (eventQueue.trySend(event).isFailure) {
@@ -178,7 +173,7 @@ class ListenTogetherClient(
                             if (_connectionState.value == ConnectionState.ERROR ||
                                 _connectionState.value == ConnectionState.DISCONNECTED
                             ) {
-                                if (sessionToken != null || _roomState.value != null || pendingAction != null) {
+                                if (sessionCredential != null || _roomState.value != null || pendingAction != null) {
                                     log(LogLevel.INFO, R.string.listen_together_log_event_network_restored_triggering_reconnection)
                                     reconnectAttempts = 0 // Reset attempts for a fresh start
                                     connect()
@@ -198,40 +193,8 @@ class ListenTogetherClient(
          * Load persisted session information from storage
          */
         private fun loadPersistedSession() {
-            val generationAtLoadStart = sessionApplyGeneration.get()
             try {
-                val session = sessionPreferences.read()
-                val token = session.token
-                val roomCode = session.roomCode
-                val userId = session.userId
-                val isHost = session.isHost
-                val timestamp = session.timestamp
-
-                // Check if session is still valid (within grace period)
-                if (token.isNotEmpty() && roomCode.isNotEmpty() &&
-                    (System.currentTimeMillis() - timestamp < SESSION_GRACE_PERIOD_MS)
-                ) {
-                    if (generationAtLoadStart != sessionApplyGeneration.get()) {
-                        log(
-                            LogLevel.INFO,
-                            R.string.listen_together_log_event_skipping_persisted_session_restore,
-                            logDetail(R.string.listen_together_log_detail_restore_superseded),
-                        )
-                        return
-                    }
-                    sessionToken = token
-                    storedRoomCode = roomCode
-                    _userId.value = userId.ifEmpty { null }
-                    wasHost = isHost
-                    sessionStartTime = timestamp
-                    log(LogLevel.INFO, R.string.listen_together_log_event_loaded_persisted_session, logDetail(R.string.listen_together_log_detail_room_and_host, roomCode, isHost))
-                } else if (token.isNotEmpty()) {
-                    if (generationAtLoadStart != sessionApplyGeneration.get()) {
-                        return
-                    }
-                    log(LogLevel.WARNING, R.string.listen_together_log_event_session_expired, logDetail(R.string.listen_together_log_detail_session_age, System.currentTimeMillis() - timestamp))
-                    clearPersistedSession()
-                }
+                restorePersistedSession()
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_load_persisted_session, e.message)
             }
@@ -245,6 +208,30 @@ class ListenTogetherClient(
             // Signal that persisted-session loading is complete so the manager can
             // start its auto-reconnect.
             _persistedSessionLoaded.value = true
+        }
+
+        @Synchronized
+        private fun restorePersistedSession() {
+            if (!restoreSession) {
+                log(LogLevel.INFO, R.string.listen_together_log_event_skipping_persisted_session_restore, logDetail(R.string.listen_together_log_detail_restore_superseded))
+                return
+            }
+            val session = sessionPreferences.read()
+            if (session.token.isEmpty()) return
+            val age = System.currentTimeMillis() - session.timestamp
+            if (session.roomCode.isEmpty() || age >= SESSION_GRACE_PERIOD_MS) {
+                log(LogLevel.WARNING, R.string.listen_together_log_event_session_expired, logDetail(R.string.listen_together_log_detail_session_age, age))
+                clearPersistedSession()
+                return
+            }
+            // Older records contain no evidence tying their token to the current setting.
+            val serverUrl = session.serverUrl ?: return
+            sessionCredential = ListenTogetherSessionCredential(session.token, serverUrl)
+            storedRoomCode = session.roomCode
+            _userId.value = session.userId.ifEmpty { null }
+            wasHost = session.isHost
+            sessionStartTime = session.timestamp
+            log(LogLevel.INFO, R.string.listen_together_log_event_loaded_persisted_session, logDetail(R.string.listen_together_log_detail_room_and_host, session.roomCode, session.isHost))
         }
 
         /**
@@ -276,11 +263,11 @@ class ListenTogetherClient(
         private fun migrateServerUrl() {
             try {
                 val configuredUrl = DataStoreUtils.getString(context, PREF_SERVER_URL, DEFAULT_SERVER_URL)
-                val normalizedUrl = normalizeServerUrl(configuredUrl)
+                val normalizedUrl = ListenTogetherServers.normalizeUrl(configuredUrl)
 
-                if (normalizedUrl != configuredUrl) {
+                if (normalizedUrl != configuredUrl && ListenTogetherServers.connectionUrl(normalizedUrl) != null) {
                     log(LogLevel.INFO, R.string.listen_together_log_event_migrating_server_url, logDetail(R.string.listen_together_log_detail_url_migration, configuredUrl, normalizedUrl))
-                    scope.launch {
+                    if (DataStoreUtils.getString(context, PREF_SERVER_URL, DEFAULT_SERVER_URL) == configuredUrl) {
                         DataStoreUtils.saveString(context, PREF_SERVER_URL, normalizedUrl)
                     }
                 }
@@ -294,15 +281,15 @@ class ListenTogetherClient(
          */
         private fun savePersistedSession() {
             try {
-                val token = sessionToken ?: return
-                scope.launch {
-                    sessionPreferences.save(
-                        token = token,
-                        roomCode = { storedRoomCode.orEmpty() },
-                        userId = { _userId.value.orEmpty() },
-                        isHost = { wasHost },
-                    )
-                }
+                val credential = sessionCredential ?: return
+                sessionPreferences.save(
+                    token = credential.token,
+                    roomCode = storedRoomCode.orEmpty(),
+                    userId = _userId.value.orEmpty(),
+                    isHost = wasHost,
+                    timestamp = sessionStartTime,
+                    serverUrl = credential.serverUrl,
+                )
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_save_persisted_session, e.message)
             }
@@ -313,9 +300,7 @@ class ListenTogetherClient(
          */
         private fun clearPersistedSession() {
             try {
-                scope.launch {
-                    sessionPreferences.clear()
-                }
+                sessionPreferences.clear()
             } catch (e: Exception) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_clear_persisted_session, e.message)
             }
@@ -327,19 +312,25 @@ class ListenTogetherClient(
         private val pingSequence = AtomicLong(0L)
         private val lastPlaybackRevision = AtomicLong(0L)
 
+        @Volatile
         private var webSocket: WebSocket? = null
+        private var connectionRequestUrl: HttpUrl? = null
+        private var connectedServerUrl: HttpUrl? = null
         private var pingJob: Job? = null
         private var reconnectAttempts = 0
 
         // Session info for reconnection
-        private var sessionToken: String? = null
+        @Volatile
+        private var sessionCredential: ListenTogetherSessionCredential? = null
         private var storedUsername: String? = null
         private var storedRoomCode: String? = null
         private var wasHost: Boolean = false
         private var sessionStartTime: Long = 0
 
         // Pending actions to execute when connected
+        @Volatile
         private var pendingAction: PendingAction? = null
+        private var pendingActionServerUrl: HttpUrl? = null
 
         // Wake lock to keep connection alive when in a room
         private var wakeLock: PowerManager.WakeLock? = null
@@ -354,22 +345,17 @@ class ListenTogetherClient(
                 true
             }
 
-        private val client =
-            OkHttpClient
-                .Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .pingInterval(60, TimeUnit.SECONDS) // Match server ping interval
-                .build()
-
-        private fun normalizeServerUrl(url: String): String {
-            val trimmed = url.trim()
-            if (trimmed.isEmpty()) return DEFAULT_SERVER_URL
-            return if (trimmed.contains("metroserver.meowery.eu", ignoreCase = true)) {
-                DEFAULT_SERVER_URL
-            } else {
-                trimmed
+        init {
+            setInstance(this)
+            ensureNotificationChannel()
+            scope.launch {
+                for (event in eventQueue) {
+                    _events.emit(event)
+                }
+            }
+            scope.launch {
+                loadPersistedSession()
+                observeNetworkChanges()
             }
         }
 
@@ -380,9 +366,9 @@ class ListenTogetherClient(
                 .removeSuffix(".foss")
                 .removeSuffix(".dev")
 
-        private fun getServerUrl(): String {
+        private fun getServerUrl(): HttpUrl? {
             val configuredUrl = DataStoreUtils.getString(context, PREF_SERVER_URL, DEFAULT_SERVER_URL)
-            return normalizeServerUrl(configuredUrl)
+            return ListenTogetherServers.connectionUrl(configuredUrl)
         }
 
         /**
@@ -440,6 +426,7 @@ class ListenTogetherClient(
         /**
          * Connect to the Listen Together server
          */
+        @Synchronized
         fun connect() {
             if (_connectionState.value == ConnectionState.CONNECTED ||
                 _connectionState.value == ConnectionState.CONNECTING
@@ -448,34 +435,49 @@ class ListenTogetherClient(
                 return
             }
 
-            _connectionState.value = ConnectionState.CONNECTING
+            val serverUrl = sessionCredential?.serverUrl ?: pendingActionServerUrl ?: getServerUrl()
+            if (serverUrl == null) {
+                reportConnectionError(R.string.listen_together_invalid_server_address)
+                return
+            }
+
+            connectionRequestUrl = serverUrl
             serverClock.reset()
-            log(LogLevel.INFO, R.string.listen_together_log_event_connecting_to_server, getServerUrl())
+            log(LogLevel.INFO, R.string.listen_together_log_event_connecting_to_server, serverUrl.redact())
 
             val request =
                 Request
                     .Builder()
-                    .url(getServerUrl())
+                    .url(serverUrl)
                     .header("User-Agent", userAgent())
                     .build()
 
+            _connectionState.value = ConnectionState.CONNECTING
             webSocket =
-                client.newWebSocket(
+                socketFactory.newWebSocket(
                     request,
                     object : WebSocketListener() {
                         override fun onOpen(
                             webSocket: WebSocket,
                             response: Response,
-                        ) {
+                        ) = synchronized(this@ListenTogetherClient) {
+                            if (webSocket !== this@ListenTogetherClient.webSocket) return@synchronized
+                            val serverUrl = response.request.url
+                            val credential = sessionCredential
+                            val resumeToken = credential?.tokenFor(serverUrl)
+                            if (credential != null && resumeToken == null) {
+                                reportConnectionError(R.string.listen_together_session_server_changed)
+                                return@synchronized
+                            }
+                            connectedServerUrl = serverUrl
                             log(LogLevel.INFO, R.string.listen_together_log_event_connected_to_server)
                             _connectionState.value = ConnectionState.CONNECTED
                             reconnectAttempts = 0
                             startPingJob()
 
-                            // Try to reconnect to previous session if we have a valid token
-                            if (sessionToken != null && storedRoomCode != null) {
+                            if (resumeToken != null) {
                                 log(LogLevel.INFO, R.string.listen_together_log_event_attempting_to_reconnect_to_previous_session, logDetail(R.string.listen_together_log_detail_room, storedRoomCode))
-                                sendMessage(MessageTypes.RECONNECT, ReconnectPayload(sessionToken!!))
+                                sendMessage(MessageTypes.RECONNECT, ReconnectPayload(resumeToken), webSocket)
                             } else {
                                 // Execute any pending action
                                 executePendingAction()
@@ -485,25 +487,30 @@ class ListenTogetherClient(
                         override fun onMessage(
                             webSocket: WebSocket,
                             bytes: okio.ByteString,
-                        ) {
+                        ) = synchronized(this@ListenTogetherClient) {
+                            if (webSocket !== this@ListenTogetherClient.webSocket) return@synchronized
                             // Handle binary protobuf messages
-                            handleMessage(bytes.toByteArray())
+                            handleMessage(bytes.toByteArray(), connectedServerUrl ?: return@synchronized)
                         }
 
                         override fun onClosing(
                             webSocket: WebSocket,
                             code: Int,
                             reason: String,
-                        ) {
+                        ) = synchronized(this@ListenTogetherClient) {
+                            if (webSocket !== this@ListenTogetherClient.webSocket) return@synchronized
                             log(LogLevel.INFO, R.string.listen_together_log_event_server_closing_connection, logDetail(R.string.listen_together_log_detail_close_code_reason, code, reason))
                             webSocket.close(1000, null)
+                            Unit
                         }
 
                         override fun onClosed(
                             webSocket: WebSocket,
                             code: Int,
                             reason: String,
-                        ) {
+                        ) = synchronized(this@ListenTogetherClient) {
+                            if (webSocket !== this@ListenTogetherClient.webSocket) return@synchronized
+                            clearConnection()
                             log(LogLevel.INFO, R.string.listen_together_log_event_connection_closed, logDetail(R.string.listen_together_log_detail_close_code_reason, code, reason))
                             handleDisconnect()
                         }
@@ -512,7 +519,9 @@ class ListenTogetherClient(
                             webSocket: WebSocket,
                             t: Throwable,
                             response: Response?,
-                        ) {
+                        ) = synchronized(this@ListenTogetherClient) {
+                            if (webSocket !== this@ListenTogetherClient.webSocket) return@synchronized
+                            clearConnection()
                             log(LogLevel.ERROR, R.string.listen_together_log_event_connection_failure, t.message)
                             handleConnectionFailure(t)
                         }
@@ -520,9 +529,30 @@ class ListenTogetherClient(
                 )
         }
 
+        private fun reportConnectionError(@StringRes reason: Int) {
+            clearConnection()?.cancel()
+            pingJob?.cancel()
+            pingJob = null
+            pendingAction = null
+            pendingActionServerUrl = null
+            _connectionState.value = ConnectionState.ERROR
+            val message = appTextResources().getString(reason)
+            log(LogLevel.ERROR, R.string.listen_together_log_event_connection_failure, message)
+            emitEvent(ListenTogetherEvent.ConnectionError(message, isServerConfigurationError = true))
+        }
+
+        private fun clearConnection(): WebSocket? {
+            val socket = webSocket
+            webSocket = null
+            connectionRequestUrl = null
+            connectedServerUrl = null
+            return socket
+        }
+
         private fun executePendingAction() {
             val action = pendingAction ?: return
             pendingAction = null
+            pendingActionServerUrl = null
 
             sendRoomAction(action, queued = true)
         }
@@ -547,6 +577,7 @@ class ListenTogetherClient(
         /**
          * Disconnect from the server
          */
+        @Synchronized
         fun disconnect() {
             log(LogLevel.INFO, R.string.listen_together_log_event_disconnecting_from_server)
             releaseWakeLock() // Release wake lock when disconnecting
@@ -554,15 +585,16 @@ class ListenTogetherClient(
             pingJob = null
             serverClock.reset()
             lastPlaybackRevision.set(0L)
-            webSocket?.close(1000, "User disconnected")
-            webSocket = null
+            clearConnection()?.close(1000, "User disconnected")
             _connectionState.value = ConnectionState.DISCONNECTED
 
             // Clear session and state on explicit disconnect
-            sessionToken = null
+            restoreSession = false
+            sessionCredential = null
             storedRoomCode = null
             storedUsername = null
             pendingAction = null
+            pendingActionServerUrl = null
             _roomState.value = null
             _role.value = RoomRole.NONE
             _userId.value = null
@@ -677,7 +709,7 @@ class ListenTogetherClient(
             _bufferingUsers.value = emptyList()
 
             // If we have a session, try to reconnect
-            if (sessionToken != null && _roomState.value != null) {
+            if (sessionCredential != null && _roomState.value != null) {
                 log(LogLevel.INFO, R.string.listen_together_log_event_connection_lost_will_attempt_to_reconnect)
                 handleConnectionFailure(Exception("Connection lost"))
             } else {
@@ -690,7 +722,7 @@ class ListenTogetherClient(
             pingJob = null
 
             // Always try to reconnect if we have a session token or pending action
-            val shouldReconnect = sessionToken != null || _roomState.value != null || pendingAction != null
+            val shouldReconnect = sessionCredential != null || _roomState.value != null || pendingAction != null
 
             if (!isNetworkAvailable) {
                 log(LogLevel.WARNING, R.string.listen_together_log_event_connection_failure_waiting_for_network, t.message)
@@ -725,7 +757,7 @@ class ListenTogetherClient(
                 _connectionState.value = ConnectionState.ERROR
 
                 // If we had a session, notify user but keep session data for manual retry
-                if (sessionToken != null) {
+                if (sessionCredential != null) {
                     log(
                         LogLevel.ERROR,
                         R.string.listen_together_log_event_reconnection_failed,
@@ -738,7 +770,8 @@ class ListenTogetherClient(
                     )
                 } else {
                     // No session, so clear everything
-                    sessionToken = null
+                    pendingAction = null
+                    pendingActionServerUrl = null
                     storedRoomCode = null
                     storedUsername = null
                     _roomState.value = null
@@ -750,7 +783,7 @@ class ListenTogetherClient(
             }
         }
 
-        private fun handleMessage(data: ByteArray) {
+        private fun handleMessage(data: ByteArray, serverUrl: HttpUrl) {
             log(LogLevel.DEBUG, R.string.listen_together_log_event_received_message, logDetail(R.string.listen_together_log_detail_message_bytes, data.size))
 
             try {
@@ -763,7 +796,7 @@ class ListenTogetherClient(
                         _userId.value = payload.userId
                         _role.value = RoomRole.HOST
                         lastPlaybackRevision.set(0L)
-                        sessionToken = payload.sessionToken
+                        sessionCredential = ListenTogetherSessionCredential(payload.sessionToken, serverUrl)
                         storedRoomCode = payload.roomCode
                         wasHost = true
                         sessionStartTime = System.currentTimeMillis()
@@ -827,7 +860,7 @@ class ListenTogetherClient(
                         val payload = codec.decodePayload(msgType, payloadBytes) as? JoinApprovedPayload ?: return
                         _userId.value = payload.userId
                         _role.value = RoomRole.GUEST
-                        sessionToken = payload.sessionToken
+                        sessionCredential = ListenTogetherSessionCredential(payload.sessionToken, serverUrl)
                         storedRoomCode = payload.roomCode
                         wasHost = false
                         sessionStartTime = System.currentTimeMillis()
@@ -897,7 +930,8 @@ class ListenTogetherClient(
                         val payload = codec.decodePayload(msgType, payloadBytes) as? KickedPayload ?: return
                         log(LogLevel.WARNING, R.string.listen_together_log_event_kicked_from_room, logReason(payload.reason))
                         releaseWakeLock() // Release wake lock when kicked
-                        sessionToken = null
+                        sessionCredential = null
+                        clearPersistedSession()
                         _roomState.value = null
                         _role.value = RoomRole.NONE
                         lastPlaybackRevision.set(0L)
@@ -1012,7 +1046,9 @@ class ListenTogetherClient(
                                 _bufferingUsers.value = emptyList()
 
                                 // Session expired on server, try to rejoin the room
-                                if (storedRoomCode != null && storedUsername != null && !wasHost) {
+                                val roomCode = storedRoomCode
+                                val username = storedUsername
+                                if (roomCode != null && username != null && !wasHost) {
                                     log(
                                         LogLevel.WARNING,
                                         R.string.listen_together_log_event_session_expired_on_server,
@@ -1021,7 +1057,11 @@ class ListenTogetherClient(
                                     // Try rejoining as a guest
                                     scope.launch {
                                         delay(500) // Small delay before rejoin attempt
-                                        joinRoom(storedRoomCode!!, storedUsername!!)
+                                        synchronized(this@ListenTogetherClient) {
+                                            if (connectedServerUrl == serverUrl && sessionCredential?.serverUrl == serverUrl) {
+                                                submitRoomAction(PendingAction.JoinRoom(roomCode, username), username, serverUrl)
+                                            }
+                                        }
                                     }
                                 } else if (storedRoomCode != null && storedUsername != null) {
                                     // Host session expired - would need to create new room
@@ -1031,10 +1071,10 @@ class ListenTogetherClient(
                                         logDetail(R.string.listen_together_log_detail_rejoin_manual, storedRoomCode),
                                     )
                                     clearPersistedSession()
-                                    sessionToken = null
+                                    sessionCredential = null
                                 } else {
                                     clearPersistedSession()
-                                    sessionToken = null
+                                    sessionCredential = null
                                 }
                             }
 
@@ -1060,6 +1100,7 @@ class ListenTogetherClient(
 
                     MessageTypes.RECONNECTED -> {
                         val payload = codec.decodePayload(msgType, payloadBytes) as? ReconnectedPayload ?: return
+                        if (sessionCredential?.serverUrl != serverUrl) return
                         _userId.value = payload.userId
                         _role.value = if (payload.isHost) RoomRole.HOST else RoomRole.GUEST
                         _roomState.value = payload.state
@@ -1122,11 +1163,12 @@ class ListenTogetherClient(
         private fun sendMessage(
             type: String,
             payload: MessageLite?,
+            socket: WebSocket? = webSocket,
         ): Boolean = try {
             val data = codec.encode(type, payload)
             log(LogLevel.DEBUG, R.string.listen_together_log_event_sending_message, logDetail(R.string.listen_together_log_detail_protobuf_type, type))
 
-            val success = webSocket?.send(okio.ByteString.of(*data)) == true
+            val success = socket?.send(okio.ByteString.of(*data)) == true
             if (!success) {
                 log(LogLevel.ERROR, R.string.listen_together_log_event_failed_to_send_message, type)
             }
@@ -1149,17 +1191,24 @@ class ListenTogetherClient(
         fun joinRoom(roomCode: String, username: String) =
             submitRoomAction(PendingAction.JoinRoom(roomCode, username), username)
 
-        private fun submitRoomAction(action: PendingAction, username: String) {
-            sessionApplyGeneration.incrementAndGet()
+        @Synchronized
+        private fun submitRoomAction(action: PendingAction, username: String, serverUrl: HttpUrl? = getServerUrl()) {
+            if (serverUrl == null) {
+                reportConnectionError(R.string.listen_together_invalid_server_address)
+                return
+            }
+            restoreSession = false
             lastPlaybackRevision.set(0L)
             // The new action must win over a pending persisted-session restore.
             clearPersistedSession()
-            sessionToken = null
+            sessionCredential = null
             storedRoomCode = null
             wasHost = false
             storedUsername = username
 
-            if (_connectionState.value == ConnectionState.CONNECTED) {
+            if (_connectionState.value == ConnectionState.CONNECTED &&
+                (connectionRequestUrl == serverUrl || connectedServerUrl == serverUrl)
+            ) {
                 sendRoomAction(action, queued = false)
                 return
             }
@@ -1169,6 +1218,13 @@ class ListenTogetherClient(
             }
             log(LogLevel.INFO, waitingMessage)
             pendingAction = action
+            pendingActionServerUrl = serverUrl
+            if (webSocket != null && connectionRequestUrl != serverUrl) {
+                clearConnection()?.close(1000, "Server selection changed")
+                pingJob?.cancel()
+                pingJob = null
+                _connectionState.value = ConnectionState.DISCONNECTED
+            }
             if (_connectionState.value == ConnectionState.DISCONNECTED || _connectionState.value == ConnectionState.ERROR) {
                 connect()
             }
@@ -1177,14 +1233,17 @@ class ListenTogetherClient(
         /**
          * Leave the current room
          */
+        @Synchronized
         fun leaveRoom() {
             sendMessageNoPayload(MessageTypes.LEAVE_ROOM)
 
             // Clear session info on intentional leave
-            sessionToken = null
+            restoreSession = false
+            sessionCredential = null
             storedRoomCode = null
             storedUsername = null
             pendingAction = null
+            pendingActionServerUrl = null
             _roomState.value = null
             _role.value = RoomRole.NONE
             _userId.value = null
@@ -1424,17 +1483,19 @@ class ListenTogetherClient(
         /**
          * Force reconnection to server (useful for manual recovery)
          */
+        @Synchronized
         fun forceReconnect() {
             log(LogLevel.INFO, R.string.listen_together_log_event_forcing_reconnection_to_server)
             reconnectAttempts = 0 // Reset attempts to retry from start
+            pingJob?.cancel()
+            pingJob = null
 
             if (webSocket != null) {
                 try {
-                    webSocket?.close(1000, "Forcing reconnection")
+                    clearConnection()?.close(1000, "Forcing reconnection")
                 } catch (e: Exception) {
                     log(LogLevel.DEBUG, R.string.listen_together_log_event_error_closing_websocket, e.message)
                 }
-                webSocket = null
             }
 
             _connectionState.value = ConnectionState.DISCONNECTED
@@ -1450,7 +1511,7 @@ class ListenTogetherClient(
          * Check if there's a persisted session available for recovery
          */
         val hasPersistedSession: Boolean
-            get() = sessionToken != null && storedRoomCode != null
+            get() = sessionCredential != null
 
         /**
          * Get the persisted room code if available
