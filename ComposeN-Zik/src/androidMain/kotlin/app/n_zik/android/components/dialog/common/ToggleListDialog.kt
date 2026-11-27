@@ -4,6 +4,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.indication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -271,21 +272,24 @@ private fun ToggleRow(
     modifier: Modifier = Modifier
 ) {
     val ctx = LocalContext.current
+    val rowInteraction = remember { MutableInteractionSource() }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-            .heightIn(min = 35.dp),
+            .padding(horizontal = 10.dp)
+            .heightIn(min = 35.dp)
+            .clip(uiRoundnessShape())
+            .indication(rowInteraction, LocalIndication.current)
+            .padding(horizontal = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             modifier = Modifier
                 .weight(1f)
-                .clip(uiRoundnessShape())
                 .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = LocalIndication.current,
+                    interactionSource = rowInteraction,
+                    indication = null,
                     enabled = enabled,
                     onClick = {
                         if (enabled) {

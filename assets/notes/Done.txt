@@ -1228,3 +1228,7 @@ Menus:
 Settings:
 - fix(listen-together): balance room form spacing
   - Match the gap below the room code input with the room header spacing.
+
+Settings:
+- fix(dialog): center toolbar toggle ripple around its row
+  - Keep the icons and drag handles in place and draw press feedback within a padded outline around the whole row.
