@@ -38,12 +38,20 @@ internal fun menuLikeActionDescription(
     @StringRes add: Int,
     @StringRes remove: Int,
 ): String {
+    return stringResource(menuLikeActionLabel(state, dislikesEnabled, add, remove))
+}
+
+@StringRes
+internal fun menuLikeActionLabel(
+    state: Boolean?,
+    dislikesEnabled: Boolean,
+    @StringRes add: Int,
+    @StringRes remove: Int,
+): Int {
     val action = if (dislikesEnabled) FavoriteAction.Rotate else FavoriteAction.Toggle
-    return stringResource(
-        when (action.next(state)) {
-            true -> add
-            false -> R.string.library_dislikes_action_add
-            null -> if (state == false) R.string.library_dislikes_action_remove else remove
-        }
-    )
+    return when (action.next(state)) {
+        true -> add
+        false -> R.string.library_dislikes_action_add
+        null -> if (state == false) R.string.library_dislikes_action_remove else remove
+    }
 }

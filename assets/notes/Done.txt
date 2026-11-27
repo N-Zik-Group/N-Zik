@@ -1452,3 +1452,7 @@ Settings:
 Android Auto:
 - fix(auto): align browse labels with app language
   - Use Playlists for the playlist destination and retain the dedicated Quick Picks action.
+
+Playback:
+- fix(player): label the next favorite action
+  - Use the same add, dislike and remove actions for media controls as in the player.

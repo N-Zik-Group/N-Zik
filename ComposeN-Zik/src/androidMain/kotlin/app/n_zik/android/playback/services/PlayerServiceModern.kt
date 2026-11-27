@@ -111,6 +111,9 @@ import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionToken
 import app.n_zik.android.repository.QuickPicksRepository
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.menuLikeActionLabel
+import app.n_zik.android.enums.DislikeMode
+import app.n_zik.android.utils.excludeDislikedSongsKey
 
 import com.google.common.util.concurrent.MoreExecutors
 import app.n_zik.android.components.song.isArtistIdForSong
@@ -2253,10 +2256,21 @@ class PlayerServiceModern : MediaLibraryService(),
     private val isDiscoverEnabledForCommandButtons: Boolean
         get() = if (::nzikRadio.isInitialized) nzikRadio.isDiscoverEnabled else false
 
-    /** Issue #866 (gh-866): the radio button is state-dependent — its label follows [isRadioActiveForCommandButtons] (`start_radio` → `stop_radio`); every other button keeps its static legacy [NotificationButtons.textId]. */
-    private fun commandButtonLabelRes(button: NotificationButtons): Int =
-        if (button == NotificationButtons.Radio) radioCommandButtonLabelRes(isRadioActiveForCommandButtons)
-        else button.textId
+    private fun commandButtonLabelRes(button: NotificationButtons): Int = when (button) {
+        NotificationButtons.Radio -> radioCommandButtonLabelRes(isRadioActiveForCommandButtons)
+        NotificationButtons.Favorites -> {
+            val likedAt = currentSong.value.takeIf { it.mediaId == currentMediaItem.value?.mediaId }?.likedAt
+            val state = when {
+                likedAt == -1L -> false
+                likedAt != null && likedAt > 0L -> true
+                else -> null
+            }
+            val dislikesEnabled = preferences.getEnum(excludeDislikedSongsKey, DislikeMode.Enabled).isEnabled
+            menuLikeActionLabel(state, dislikesEnabled,
+                R.string.library_favorites_action_add, R.string.library_favorites_action_remove)
+        }
+        else -> button.textId
+    }
 
     /**
      * Issue #866 (gh-866): resolve the state icon published by the command buttons. All buttons
