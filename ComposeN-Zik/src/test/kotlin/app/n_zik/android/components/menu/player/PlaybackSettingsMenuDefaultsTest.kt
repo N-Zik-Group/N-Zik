@@ -10,8 +10,10 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
@@ -33,6 +35,7 @@ import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.loudnessBaseGainKey
+import app.n_zik.android.utils.playbackDeviceVolumeKey
 import app.n_zik.android.utils.playbackPitchKey
 import app.n_zik.android.utils.playbackSpeedKey
 import app.n_zik.android.utils.preferences
@@ -132,6 +135,24 @@ class PlaybackSettingsMenuDefaultsTest {
         compose.onNodeWithText(title).performClick()
         compose.onNodeWithText(context.getString(R.string.common_action_reset)).performClick()
         assertReset()
+    }
+
+    @Test
+    fun `open grid device volume dialog follows external volume changes`() {
+        val label = context.getString(R.string.player_controls_device_volume_title)
+        context.preferences.edit().putFloat(playbackDeviceVolumeKey, 0.25f).commit()
+        show(MenuStyle.Grid)
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText(label))
+        compose.onNodeWithText(label).performClick()
+        val inDialog = hasAnyAncestor(hasTestTag("dialogFrameCard"))
+        compose.onNode(hasText("25%") and inDialog, useUnmergedTree = true).assertExists()
+
+        compose.runOnIdle {
+            context.preferences.edit().putFloat(playbackDeviceVolumeKey, 0.75f).apply()
+        }
+
+        compose.onNode(hasText("25%") and inDialog, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNode(hasText("75%") and inDialog, useUnmergedTree = true).assertExists()
     }
 
     @Test

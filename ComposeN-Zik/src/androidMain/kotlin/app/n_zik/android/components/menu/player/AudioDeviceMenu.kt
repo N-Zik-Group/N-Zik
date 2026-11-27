@@ -211,7 +211,11 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             selectBridgeOutput(AudioOutput.PC)
             return
         }
-        if (binder?.setPreferredAudioDevice(device.deviceId) != true) return
+        if (binder?.setPreferredAudioDevice(device.deviceId) != true) {
+            refreshDevices()
+            Toaster.w(R.string.audio_output_device_unavailable)
+            return
+        }
         if (BridgeServerController.audioOutput.value == AudioOutput.PC) selectBridgeOutput(AudioOutput.PHONE)
         refreshDevices()
         coroutineScope.launch {
@@ -489,6 +493,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             text = dev.name,
                             enabled = !isCarProjectionActive || dev.isActive,
                             modifier = Modifier.audioOptionSelection(dev.isActive),
+                            iconHasOwnBackground = true,
                             icon = {
                                 val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
                                 Box(
@@ -572,6 +577,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         GridMenu.Entry(
                             text = label,
                             modifier = Modifier.audioOptionSelection(isSelected),
+                            iconHasOwnBackground = true,
                             icon = {
                                 val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
                                 Box(

@@ -1560,3 +1560,7 @@ Settings:
 Menus:
 - fix(menu): show diagnostics dialogs above maintenance
   - Dismiss the Maintenance sheet when opening the related debug and crash log dialogs.
+
+Menus:
+- fix(menu): keep device volume and audio controls in sync
+  - Read hardware volume when opening the menu, apply grid gestures immediately, and avoid duplicate audio option badges.

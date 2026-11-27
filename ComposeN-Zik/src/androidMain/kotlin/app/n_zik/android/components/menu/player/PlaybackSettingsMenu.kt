@@ -63,7 +63,6 @@ import app.n_zik.android.utils.blurStrengthKey
 import app.n_zik.android.utils.getDeviceVolume
 import app.n_zik.android.utils.loudnessBaseGainKey
 import app.n_zik.android.utils.playbackDurationKey
-import app.n_zik.android.utils.playbackDeviceVolumeKey
 import app.n_zik.android.utils.playbackPitchKey
 import app.n_zik.android.utils.playbackSpeedKey
 import app.n_zik.android.utils.playbackVolumeKey
@@ -116,7 +115,7 @@ class PlaybackSettingsMenu private constructor(
         var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
         var playbackPitch by rememberPreference(playbackPitchKey, 1f)
         var playbackVolume by rememberPreference(playbackVolumeKey, 1f)
-        var playbackDeviceVolume by rememberPreference(playbackDeviceVolumeKey, getDeviceVolume(context))
+        var playbackDeviceVolume by remember(context) { mutableFloatStateOf(getDeviceVolume(context)) }
         var playbackDuration by rememberPreference(playbackDurationKey, 0f)
 
         DisposableEffect(Unit) {
@@ -223,9 +222,8 @@ class PlaybackSettingsMenu private constructor(
                 title = stringResource(R.string.player_controls_device_volume_title),
                 value = playbackDeviceVolume,
                 onValueChange = {
-                    val rounded = kotlin.math.round(it * 100f) / 100f
-                    playbackDeviceVolume = rounded
-                    setDeviceVolume(context, playbackDeviceVolume)
+                    setDeviceVolume(context, it)
+                    playbackDeviceVolume = getDeviceVolume(context)
                 },
                 valueRange = 0f..1f,
                 displayValue = { percentLabel((it * 100).toInt()) },
@@ -320,7 +318,7 @@ class PlaybackSettingsMenu private constructor(
         var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
         var playbackPitch by rememberPreference(playbackPitchKey, 1f)
         var playbackVolume by rememberPreference(playbackVolumeKey, 1f)
-        var playbackDeviceVolume by rememberPreference(playbackDeviceVolumeKey, getDeviceVolume(context))
+        var playbackDeviceVolume by remember(context) { mutableFloatStateOf(getDeviceVolume(context)) }
         var playbackDuration by rememberPreference(playbackDurationKey, 0f)
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
@@ -432,11 +430,12 @@ class PlaybackSettingsMenu private constructor(
                     title = stringResource(R.string.player_controls_device_volume_title),
                     icon = R.drawable.master_volume,
                     value = playbackDeviceVolume,
+                    syncExternalValue = true,
+                    applyWhileDragging = true,
                     toDisplay = { percentLabel((it * 100).toInt()) },
                     onValueChange = {
-                        val rounded = kotlin.math.round(it * 100f) / 100f
-                        playbackDeviceVolume = rounded
-                        setDeviceVolume(context, playbackDeviceVolume)
+                        setDeviceVolume(context, it)
+                        playbackDeviceVolume = getDeviceVolume(context)
                     },
                     valueRange = 0f..1f,
                     stepSize = 0f,
@@ -673,7 +672,9 @@ class PlaybackSettingsMenu private constructor(
         isEnabled: Boolean = true,
         stepSize: Float = 0.1f,
         defaultValue: Float? = null,
-        drawValuePoints: Boolean = false
+        drawValuePoints: Boolean = false,
+        syncExternalValue: Boolean = false,
+        applyWhileDragging: Boolean = false,
     ) {
         var isShowingDialog by remember(isEnabled) { mutableStateOf(false) }
 
@@ -686,6 +687,8 @@ class PlaybackSettingsMenu private constructor(
                 stepSize = stepSize,
                 defaultValue = defaultValue,
                 drawValuePoints = drawValuePoints,
+                syncExternalValue = syncExternalValue,
+                applyWhileDragging = applyWhileDragging,
                 onValueChange = { if (isEnabled) onValueChange(it) },
                 onSlideComplete = { if (isEnabled) onSlideComplete() },
                 onReset = onReset?.let { reset -> { if (isEnabled) reset() } },
@@ -697,6 +700,7 @@ class PlaybackSettingsMenu private constructor(
         GridMenu.Entry(
             text = title,
             icon = { SettingIcon(icon) },
+            iconHasOwnBackground = true,
             subtitle = toDisplay(value),
             enabled = isEnabled,
             onClick = { isShowingDialog = true },
@@ -720,13 +724,15 @@ class PlaybackSettingsMenu private constructor(
         stepSize: Float = 0.1f,
         defaultValue: Float? = null,
         drawValuePoints: Boolean = false,
+        syncExternalValue: Boolean,
+        applyWhileDragging: Boolean,
         onValueChange: (Float) -> Unit,
         onSlideComplete: () -> Unit = {},
         onReset: (() -> Unit)? = null,
         toDisplay: @Composable (Float) -> String = { it.toInt().toString() },
         onDismiss: () -> Unit
     ) {
-        var currentValue by remember { mutableFloatStateOf(value) }
+        var currentValue by remember(if (syncExternalValue) value else null) { mutableFloatStateOf(value) }
 
         DialogFrame(
             onDismiss = onDismiss,
@@ -772,9 +778,12 @@ class PlaybackSettingsMenu private constructor(
             SliderControl(
                 state = currentValue,
                 label = title,
-                onSlide = { currentValue = it },
+                onSlide = {
+                    currentValue = it
+                    if (applyWhileDragging) onValueChange(it)
+                },
                 onSlideComplete = {
-                    onValueChange(currentValue)
+                    if (!applyWhileDragging) onValueChange(currentValue)
                     onSlideComplete()
                 },
                 toDisplay = toDisplay,
