@@ -289,6 +289,18 @@ class SettingsEntrySearchIndexTest {
     }
 
     @Test
+    fun `hidden Discord templates point to the specific switch before advanced mode`() {
+        val prefix = "accounts.social_discord."
+        val details = "${prefix}discord_advanced_show_details"
+        val pause = "${prefix}discord_pause_presence"
+        val available = setOf(details, pause, "${prefix}discord_advanced_mode")
+        val pauseTemplate = "${prefix}discord_advanced_pause"
+        assertEquals(details, discordSettingsSearchFallback("${prefix}discord_advanced_details", available::contains))
+        assertEquals(details, discordSettingsSearchFallback(pauseTemplate, available::contains) { false })
+        assertEquals(pause, discordSettingsSearchFallback(pauseTemplate, available::contains) { true })
+    }
+
+    @Test
     fun `About search resolves counted contributor labels in the language of the card`() {
         val groups = listOf(
             Triple("about.contributors.translators", R.plurals.about_translator_count, 14),

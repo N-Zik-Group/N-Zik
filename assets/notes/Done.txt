@@ -1712,3 +1712,7 @@ Playlist:
 Playlist:
 - fix(playlist): disable empty artist playlist actions
   - Use the actual track selection for the Artist Overview toolbar and expanded actions.
+
+Settings:
+- fix(settings): explain actionable search prerequisites
+  - Identify the necessary switch, mode, permission or account action without changing settings during search.

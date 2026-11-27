@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.WindowInsets
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
+import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
@@ -37,6 +38,9 @@ import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.ondevice.hasDeviceAudioPermission
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 import app.n_zik.android.privacy.PermissionFeature
@@ -59,6 +63,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showCoverThumbnailAnimationKey
+import app.n_zik.android.utils.showTotalTimeQueueKey
 import app.n_zik.android.utils.showTipsKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
@@ -171,7 +176,8 @@ class SettingsSearchTargetTest {
         pumpUntil("hidden duration must highlight its enable switch") { highlighted(parent, true) }
         composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertDoesNotExist()
         composeRule.onNodeWithTag("settings.target.unavailable").assertDoesNotExist()
-        assertEquals(listOf(context.getString(app.n_zik.android.R.string.settings_target_unavailable)), messages)
+        val requirement = "${context.getString(R.string.settings_audio_skip_silence_label)} › ${context.getString(R.string.common_state_on)}"
+        assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, requirement)), messages)
         assertEquals(before, context.preferences.all)
         repeat(4) { pulse ->
             if (pulse > 0) pumpUntil("next highlight pulse must appear") { highlighted(parent, true) }
@@ -205,6 +211,8 @@ class SettingsSearchTargetTest {
             category = "audio",
             target = "general.audio_effects.settings_loudness_base_gain",
             prerequisite = "general.audio_effects.loudness_normalization",
+            requiredLabel = R.string.settings_audio_loudness_normalization_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -213,6 +221,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "general.picture_in_picture.settings_pip_module",
             prerequisite = "general.picture_in_picture.settings_enable_pip",
+            requiredLabel = R.string.settings_enable_pip,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -222,6 +232,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.cover_and_thumbnail.hold_to_speed_up_rate",
             prerequisite = "appearance.cover_and_thumbnail.hold_to_speed_up",
+            requiredLabel = R.string.player_artwork_hold_to_speed_up_title,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -231,6 +243,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.cover_and_thumbnail.cover_thumbnail_animation_type",
             prerequisite = "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",
+            requiredLabel = R.string.settings_player_artwork_animation_enabled_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -243,6 +257,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.cover_and_thumbnail.cover_thumbnail_animation_type",
             prerequisite = "appearance.cover_and_thumbnail.show_thumbnail",
+            requiredLabel = R.string.settings_player_artwork_visible_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -276,6 +292,46 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.full_screen_lyrics_components.controls",
             prerequisite = "appearance.txt_lyrics.show_lyrics_thumbnail",
+            requiredLabel = R.string.settings_lyrics_artwork_visible_label,
+            requiredChoices = listOf(R.string.common_state_off),
+        )
+    }
+
+    @Test fun `search for fullscreen lyrics queue duration explains the main queue duration prerequisite`() {
+        context.preferences.edit()
+            .putBoolean(showlyricsthumbnailKey, false)
+            .putBoolean(showTotalTimeQueueKey, false)
+            .commit()
+        assertSearchHighlightsPrerequisite(
+            category = "player",
+            target = "appearance.full_screen_lyrics_components.show_total_time_of_queue",
+            prerequisite = "appearance.colors_and_background.show_total_time_of_queue",
+            requiredLabel = R.string.settings_player_queue_duration_visible_label,
+            requiredChoices = listOf(R.string.common_state_on),
+        )
+    }
+
+    @Test fun `search for fullscreen lyrics technical info explains the required player type`() {
+        context.preferences.edit()
+            .putBoolean(showlyricsthumbnailKey, false)
+            .putBoolean(showthumbnailKey, true)
+            .putString(playerTypeKey, PlayerType.Essential.name)
+            .commit()
+        assertSearchHighlightsPrerequisite(
+            category = "player",
+            target = "appearance.full_screen_lyrics_components.statsfornerds",
+            prerequisite = "appearance.player_presets_and_layout.playertype",
+            requiredLabel = R.string.player_type,
+            requiredChoices = listOf(PlayerType.Modern.textId),
+        )
+    }
+
+    @Test fun `search for removing a missing profile photo explains where to add it`() {
+        assertSearchHighlightsPrerequisite(
+            category = "profiles",
+            target = "embedded.profile.face_photo_remove",
+            prerequisite = "embedded.profile.face_photo",
+            requiredLabel = R.string.profile_photo,
         )
     }
 
@@ -285,6 +341,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.txt_lyrics.show_background_in_lyrics",
             prerequisite = "appearance.txt_lyrics.show_lyrics_thumbnail",
+            requiredLabel = R.string.settings_lyrics_artwork_visible_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -298,6 +356,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.txt_lyrics.show_lyrics_thumbnail",
             prerequisite = "appearance.cover_and_thumbnail.show_thumbnail",
+            requiredLabel = R.string.settings_player_artwork_visible_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -307,6 +367,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.colors_and_background.gradienttype",
             prerequisite = "appearance.colors_and_background.background_colors",
+            requiredLabel = R.string.settings_player_background_colors_label,
+            requiredChoices = listOf(R.string.player_background_animated_gradient_label),
         )
     }
 
@@ -319,6 +381,11 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.colors_and_background.m3e_always_show_shapes",
             prerequisite = "appearance.colors_and_background.gradienttype",
+            requiredLabel = R.string.settings_player_gradient_style_label,
+            requiredChoices = listOf(
+                R.string.player_background_theme_m3e_morphing_label,
+                R.string.player_background_artwork_m3e_morphing_label,
+            ),
         )
     }
 
@@ -336,6 +403,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.player_behavior_and_visuals.player_swipe_sensitivity",
             prerequisite = "appearance.player_behavior_and_visuals.disable_horizontal_swipe",
+            requiredLabel = R.string.settings_player_disable_horizontal_swipe_label,
+            requiredChoices = listOf(R.string.common_state_off),
         )
     }
 
@@ -345,6 +414,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.player_behavior_and_visuals.color_custom",
             prerequisite = "appearance.player_behavior_and_visuals.visualizer_white_color_option",
+            requiredLabel = R.string.visualizer_color_source,
+            requiredChoices = listOf(R.string.common_color_custom),
         )
     }
 
@@ -381,15 +452,35 @@ class SettingsSearchTargetTest {
     }
 
     @Test fun `search for local folders highlights the disabled on-device library switch`() {
+        Shadows.shadowOf(context as Application).denyPermissions(Manifest.permission.READ_MEDIA_AUDIO)
+        assertEquals(false, context.hasDeviceAudioPermission())
         val prerequisite = "other.on_device.enabled"
         assertSearchHighlightsPrerequisite(
             category = "data",
             target = "other.on_device.folders",
             prerequisite = prerequisite,
+            requiredLabel = R.string.settings_local_music_enabled_title,
+            requiredChoices = listOf(R.string.common_state_on),
         )
         val switch = hasAnyAncestor(hasTestTag("settings.target.$prerequisite")) and
             SemanticsMatcher.keyIsDefined(SemanticsProperties.ToggleableState)
         composeRule.onNode(switch, useUnmergedTree = true).assertIsOff()
+        assertEquals(false, context.hasDeviceAudioPermission())
+    }
+
+    @Test fun `search for startup scan explains audio permission when the on-device library is already enabled`() {
+        Shadows.shadowOf(context as Application).denyPermissions(Manifest.permission.READ_MEDIA_AUDIO)
+        val profilePrefs = profileDataPrefs(context, "default")
+        profilePrefs.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).commit()
+        val before = profilePrefs.all.toMap()
+        assertSearchHighlightsPrerequisite(
+            category = "data",
+            target = "other.on_device.scan_on_startup",
+            prerequisite = LocalMusicPermissionTarget,
+            requiredLabel = R.string.permissions_label_media_audio,
+        )
+        assertEquals(before, profilePrefs.all)
+        assertEquals(false, context.hasDeviceAudioPermission())
     }
 
     @Test fun `search for YouTube sign in highlights the disabled connection switch`() {
@@ -402,6 +493,8 @@ class SettingsSearchTargetTest {
                 category = "youtube",
                 target = "accounts.youtube_music.account_login",
                 prerequisite = "accounts.youtube_music.enable_youtube_music_login",
+                requiredLabel = R.string.settings_youtube_login_enabled_label,
+                requiredChoices = listOf(R.string.common_state_on),
             )
             assertTrue(accountPrefs.all.isEmpty())
         } finally {
@@ -416,6 +509,8 @@ class SettingsSearchTargetTest {
             category = "interface",
             target = "ui.theme.color_background_1.dark",
             prerequisite = "ui.theme.theme",
+            requiredLabel = R.string.common_color_source_theme,
+            requiredChoices = listOf(R.string.theme_palette_custom),
         )
     }
 
@@ -426,7 +521,7 @@ class SettingsSearchTargetTest {
             category = "interface",
             target = "ui.theme.respect_brightness",
             prerequisite = "ui.theme.theme",
-            requiredChoice = ColorPaletteName.Dynamic.textId,
+            requiredChoices = listOf(ColorPaletteName.Dynamic.textId),
         )
     }
 
@@ -437,7 +532,7 @@ class SettingsSearchTargetTest {
             category = "interface",
             target = "ui.theme.customcolor",
             prerequisite = "ui.theme.theme",
-            requiredChoice = ColorPaletteName.CustomColor.textId,
+            requiredChoices = listOf(ColorPaletteName.CustomColor.textId),
         )
     }
 
@@ -448,6 +543,8 @@ class SettingsSearchTargetTest {
             category = "player",
             target = "appearance.player_behavior_and_visuals.songs_number_to_show",
             prerequisite = "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+            requiredLabel = R.string.settings_player_next_queue_visible_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -458,6 +555,8 @@ class SettingsSearchTargetTest {
             category = "ai",
             target = "ai.quick_picks.quick_picks_content",
             prerequisite = "ai.tab_general.enable_quick_picks_page",
+            requiredLabel = R.string.settings_recommendations_quick_picks_enabled_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -467,6 +566,8 @@ class SettingsSearchTargetTest {
             category = "ai",
             target = settingsCardTargetId(context, 3, R.string.recommendations_title),
             prerequisite = "ai.tab_general.enable_quick_picks_page",
+            requiredLabel = R.string.settings_recommendations_quick_picks_enabled_label,
+            requiredChoices = listOf(R.string.common_state_on),
         )
     }
 
@@ -489,7 +590,8 @@ class SettingsSearchTargetTest {
         category: String,
         target: String,
         prerequisite: String,
-        requiredChoice: Int? = null,
+        requiredChoices: List<Int> = emptyList(),
+        requiredLabel: Int? = null,
     ) {
         val before = context.preferences.all.toMap()
         show(category, target, parent = "")
@@ -499,10 +601,11 @@ class SettingsSearchTargetTest {
         composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, prerequisite), useUnmergedTree = true)
             .assertIsDisplayed()
         composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertDoesNotExist()
-        val expectedMessage = if (requiredChoice != null) {
-            val label = context.getString(R.string.common_color_source_theme)
-            val choice = context.getString(requiredChoice)
-            context.getString(R.string.settings_target_prerequisite, "$label › $choice")
+        val expectedMessage = if (requiredLabel != null || requiredChoices.isNotEmpty()) {
+            val label = context.getString(requiredLabel ?: R.string.common_color_source_theme)
+            val choices = requiredChoices.joinToString(" / ") { context.getString(it) }
+            val requirement = if (choices.isEmpty()) label else "$label › $choices"
+            context.getString(R.string.settings_target_prerequisite, requirement)
         } else {
             context.getString(R.string.settings_target_unavailable)
         }

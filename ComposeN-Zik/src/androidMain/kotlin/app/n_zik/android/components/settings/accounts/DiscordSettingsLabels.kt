@@ -19,16 +19,30 @@ internal enum class DiscordButtonField(val targetId: String, private val buttonR
     }
 }
 
-internal fun discordSettingsSearchFallback(targetId: String, isVisible: (String) -> Boolean): String? {
+internal fun discordSettingsSearchFallback(
+    targetId: String,
+    isVisible: (String) -> Boolean,
+    showDetails: () -> Boolean = { true },
+): String? {
     val prefix = "accounts.social_discord."
     if (!targetId.startsWith(prefix)) return null
     val master = "${prefix}discord_enable_rich_presence"
     val advanced = "${prefix}discord_advanced_mode"
-    val alternate = when (targetId) {
-        "${prefix}account_login" -> "${prefix}account_logoff"
-        "${prefix}account_logoff" -> "${prefix}account_login"
-        else -> DiscordButtonField.forTarget(targetId)?.targetId?.substringBeforeLast('.')
+    val alternate = when (targetId.removePrefix(prefix)) {
+        "account_login" -> "account_logoff"
+        "account_logoff" -> "account_login"
+        "discord_advanced_details" -> "discord_advanced_show_details"
+        "discord_advanced_state" -> "discord_advanced_show_state"
+        "discord_advanced_image_text" -> "discord_advanced_show_artwork"
+        "discord_advanced_logo_text" -> "discord_advanced_show_small_image"
+        "discord_advanced_pause" -> if (isVisible("${prefix}discord_advanced_show_details") && !showDetails()) {
+            "discord_advanced_show_details"
+        } else {
+            "discord_pause_presence"
+        }
+        "discord_advanced_pause_auto_clear" -> "discord_pause_presence"
+        else -> DiscordButtonField.forTarget(targetId)?.targetId?.removePrefix(prefix)?.substringBeforeLast('.')
     }
-    return listOfNotNull(alternate, advanced.takeIf { targetId != it }, master.takeIf { targetId != it })
+    return listOfNotNull(alternate?.let { "$prefix$it" }, advanced.takeIf { targetId != it }, master.takeIf { targetId != it })
         .firstOrNull(isVisible)
 }

@@ -56,18 +56,22 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.isConnectionMeteredEnabledKey
 import app.n_zik.android.utils.isSwipeToActionEnabledKey
 import app.n_zik.android.utils.isShowingThumbnailInLockscreenKey
 import app.n_zik.android.utils.loudnessBaseGainKey
 import app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey
 import app.n_zik.android.utils.setActiveProfile
+import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.volumeNormalizationKey
 import app.n_zik.android.R
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.settingsCardTargetId
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
+import app.n_zik.android.components.settings.common.RewindMasterSettingsTarget
+import app.n_zik.android.components.settings.common.RewindNotificationSectionTarget
 import app.n_zik.android.components.settings.common.SettingsTargetHighlighted
 import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
@@ -533,6 +537,94 @@ class SettingsCategoryPageTest {
         val prerequisite = "${context.getString(R.string.player_type)} › ${context.getString(R.string.player_controls_style_modern)}"
         assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, prerequisite)), messages)
         assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun rewindMonthlySearchExplainsTheDisabledMasterSwitch() {
+        val globalPreferences = DataStoreUtils.prefs(context)
+        globalPreferences.edit().putBoolean(DataStoreUtils.KEY_REWIND_ENABLED, false).commit()
+        assertSearchPrerequisite(
+            category = "rewind",
+            target = "embedded.rewind.rw_settings_monthly",
+            prerequisiteTarget = RewindMasterSettingsTarget,
+            labelRes = R.string.rewind_settings_enabled,
+            valueRes = R.string.common_state_on,
+        )
+        assertEquals(false, globalPreferences.getBoolean(DataStoreUtils.KEY_REWIND_ENABLED, true))
+    }
+
+    @Test fun rewindNotificationsSearchHighlightsTheSummaryPeriodsWhenAllSchedulesAreDisabled() {
+        val globalPreferences = DataStoreUtils.prefs(context)
+        globalPreferences.edit()
+            .putBoolean(DataStoreUtils.KEY_REWIND_ENABLED, true)
+            .putBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, false)
+            .putBoolean(DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, false)
+            .putBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, false)
+            .putBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false)
+            .commit()
+        val before = globalPreferences.all.toMap()
+        val target = searchSettingsEntries(context, context.getString(R.string.rewind_settings_notifications))
+            .first { it.id == RewindNotificationSectionTarget }
+        assertSearchFeedback(
+            category = "rewind",
+            target = target.id,
+            highlightedTarget = "embedded.rewind.section.summaries",
+            expectedMessage = context.getString(R.string.settings_target_unavailable),
+        )
+        assertEquals(before, globalPreferences.all)
+    }
+
+    @Test fun lyricsOnArtworkSearchPointsToBackgroundWhenArtworkVisibilityIsHidden() {
+        context.preferences.edit().putBoolean(showthumbnailKey, false).commit()
+        assertSearchPrerequisite(
+            category = "player",
+            target = "appearance.txt_lyrics.show_lyrics_thumbnail",
+            prerequisiteTarget = "appearance.colors_and_background.background_colors",
+            labelRes = R.string.settings_player_background_colors_label,
+            valueRes = R.string.player_background_artwork_blurred_label,
+        )
+        assertEquals(false, context.preferences.getBoolean(showthumbnailKey, true))
+    }
+
+    private fun assertSearchPrerequisite(
+        category: String,
+        target: String,
+        prerequisiteTarget: String,
+        labelRes: Int,
+        valueRes: Int,
+    ) {
+        val requirement = "${context.getString(labelRes)} › ${context.getString(valueRes)}"
+        assertSearchFeedback(
+            category = category,
+            target = target,
+            highlightedTarget = prerequisiteTarget,
+            expectedMessage = context.getString(R.string.settings_target_prerequisite, requirement),
+        )
+    }
+
+    private fun assertSearchFeedback(
+        category: String,
+        target: String,
+        highlightedTarget: String,
+        expectedMessage: String,
+    ) {
+        val messages = mutableListOf<String>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsSearchMessage provides { messages.add(it) },
+            ) {
+                SettingsCategoryPage(categoryId = category, navController = mockk(relaxed = true), target = target)
+            }
+        }
+        pumpUntil("the required setting must be highlighted") {
+            runCatching {
+                composeRule.onNodeWithTag("settings.target.$highlightedTarget", useUnmergedTree = true)
+                    .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
+            }.isSuccess
+        }
+        assertEquals(listOf(expectedMessage), messages)
     }
 
     @Test fun mixedSourceCategoryHasOneScrollContainerAndTargetsTheActualSetting() {

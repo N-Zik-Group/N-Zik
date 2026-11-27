@@ -381,6 +381,16 @@ class AccountsSettingsEmbeddingWiringTest {
         )
     }
 
+    @Test
+    fun `searching for authenticated browsing while signed out highlights sign in`() {
+        assertSyncSearchPrerequisite(
+            target = "accounts.youtube_music.login_for_browse",
+            expectedTarget = "accounts.youtube_music.account_login",
+            expectedLabel = R.string.account_action_login,
+            requiresOn = false,
+        )
+    }
+
     private fun assertSyncSearchPrerequisite(
         expectedTarget: String,
         expectedLabel: Int,
