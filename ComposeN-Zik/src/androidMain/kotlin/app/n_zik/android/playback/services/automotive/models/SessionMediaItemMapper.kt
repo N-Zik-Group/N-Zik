@@ -57,7 +57,7 @@ object SessionMediaItemMapper {
     }
 
     @Synchronized
-    private fun fallbackArtworkBytes(): ByteArray? {
+    internal fun fallbackArtworkBytes(): ByteArray? {
         serializedFallbackBytes?.let { return it }
         return try {
             ArtworkBitmapDecoder.decode {

@@ -1,6 +1,9 @@
 package app.n_zik.android.playback.services.automotive.models
 
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import app.n_zik.android.R
+import app.n_zik.android.appContext
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -36,11 +39,12 @@ object CancellableAutoMediaItemMapper {
         searchPath: String = "",
         loadArtwork: Boolean = false,
     ): MediaItem = withContext(NzikDispatchers.DATA) {
-        if (loadArtwork) SessionMediaItemMapper.mapArtistWithArtwork(
+        val item = if (loadArtwork) SessionMediaItemMapper.mapArtistWithArtwork(
             parentId, id, name, thumbnailUrl, subtext, searchPath,
         ) else SessionMediaItemMapper.mapArtistToMediaItem(
             parentId, id, name, thumbnailUrl, subtext, searchPath,
         )
+        item.withBrowsableArtworkFallback()
     }
 
     suspend fun mapAlbumToMediaItem(
@@ -52,10 +56,23 @@ object CancellableAutoMediaItemMapper {
         searchPath: String = "",
         loadArtwork: Boolean = false,
     ): MediaItem = withContext(NzikDispatchers.DATA) {
-        if (loadArtwork) SessionMediaItemMapper.mapAlbumWithArtwork(
+        val item = if (loadArtwork) SessionMediaItemMapper.mapAlbumWithArtwork(
             parentId, id, title, authorsText, thumbnailUrl, searchPath,
         ) else SessionMediaItemMapper.mapAlbumToMediaItem(
             parentId, id, title, authorsText, thumbnailUrl, searchPath,
         )
+        item.withBrowsableArtworkFallback()
     }
+
+    private fun MediaItem.withBrowsableArtworkFallback(): MediaItem =
+        if (mediaMetadata.artworkData != null || !mediaMetadata.artworkUri?.toString().isNullOrBlank()) this
+        else buildUpon().setMediaMetadata(
+            mediaMetadata.buildUpon()
+                .setArtworkUri(AutoMediaItemMapper.drawableUri(appContext(), R.drawable.ic_launcher_box))
+                .apply {
+                    SessionMediaItemMapper.fallbackArtworkBytes()?.let {
+                        setArtworkData(it, MediaMetadata.PICTURE_TYPE_ILLUSTRATION)
+                    }
+                }.build(),
+        ).build()
 }

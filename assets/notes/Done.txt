@@ -1336,3 +1336,7 @@ Menus:
 Android Auto:
 - fix(auto): align device folders and playlist icons
   - Add scoped playback for device album and artist folders and use the folder icon on device playlists.
+
+Android Auto:
+- fix(auto): provide artwork fallback on collection rows
+  - Attach artwork for album and artist rows that lack a thumbnail.
