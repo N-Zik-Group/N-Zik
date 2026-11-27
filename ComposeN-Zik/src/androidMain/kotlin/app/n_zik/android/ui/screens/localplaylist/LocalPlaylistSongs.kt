@@ -120,6 +120,7 @@ import app.n_zik.android.components.playlist.PinPlaylist
 import app.n_zik.android.components.playlist.PlaylistSongsSort
 import app.n_zik.android.components.playlist.RefreshPlaylistOnOpening
 import app.n_zik.android.components.playlist.Reposition
+import app.n_zik.android.components.playlist.canEditPlaylistMembershipInView
 import app.n_zik.android.components.playlist.canOfferPlaylistDeleteAction
 import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
 import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
@@ -154,7 +155,6 @@ import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.canBookmarkPlaylist
-import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.canRefreshPlaylist
 import app.n_zik.android.core.database.editStoredPlaylistMembership
 import app.n_zik.android.core.database.isPlaylistBookmarked
@@ -298,7 +298,7 @@ fun LocalPlaylistSongs(
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
-    val membershipEditableState = rememberUpdatedState(!forceOnDevice && playlist?.let(::canEditPlaylistMembership) == true)
+    val membershipEditableState = rememberUpdatedState(canEditPlaylistMembershipInView(playlist, forceOnDevice))
     val membershipEditable by membershipEditableState
     if (preview == null && !onDeviceOnly) RefreshPlaylistOnOpening(playlistId, playlist, offlineMode)
     val refreshOnOpen = playlistRefreshOnOpenAction(playlist)
@@ -1214,8 +1214,8 @@ fun LocalPlaylistSongs(
                         },
                         downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
                         downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
-                        swipeLeftActionParam = playlistMembershipSwipeAction(playlist, queueSwipeLeftAction),
-                        swipeRightActionParam = playlistMembershipSwipeAction(playlist, queueSwipeRightAction),
+                        swipeLeftActionParam = playlistMembershipSwipeAction(membershipEditable, queueSwipeLeftAction),
+                        swipeRightActionParam = playlistMembershipSwipeAction(membershipEditable, queueSwipeRightAction),
                     ) {
                         SongItem(
                             song = song,

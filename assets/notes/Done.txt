@@ -1788,3 +1788,7 @@ Menus:
 Menus:
 - fix(menu): expose Glass handle accessibility actions
   - Reuse expand, collapse and dismiss actions on the existing Glass handle.
+
+Playlists:
+- fix(playlist): hide removal swipes from device views
+  - Use the current view editability for both swipe directions.

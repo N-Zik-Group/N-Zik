@@ -24,16 +24,34 @@ class PlaylistMembershipActionsTest {
 
     @Test fun `readonly removes destructive swipe in either direction and keeps every other configured action`() {
         readonly.forEach { playlist ->
+            val editable = canEditPlaylistMembershipInView(playlist, forceOnDevice = false)
+            val editableCopy = canEditPlaylistMembershipInView(playlist.copy(isEditable = true), forceOnDevice = false)
             QueueSwipeAction.entries.forEach { action ->
                 assertEquals(
                     if (action == QueueSwipeAction.RemoveFromQueue) QueueSwipeAction.NoAction else action,
-                    playlistMembershipSwipeAction(playlist, action),
+                    playlistMembershipSwipeAction(editable, action),
                 )
-                assertEquals(action, playlistMembershipSwipeAction(playlist.copy(isEditable = true), action))
+                assertEquals(action, playlistMembershipSwipeAction(editableCopy, action))
             }
         }
         val local = Playlist(name = "Local", isEditable = false)
-        assertEquals(QueueSwipeAction.RemoveFromQueue,
-            playlistMembershipSwipeAction(local, QueueSwipeAction.RemoveFromQueue))
+        val editable = canEditPlaylistMembershipInView(local, forceOnDevice = false)
+        assertEquals(QueueSwipeAction.RemoveFromQueue, playlistMembershipSwipeAction(editable, QueueSwipeAction.RemoveFromQueue))
+    }
+
+    @Test fun `opening an editable local playlist from On device suppresses only its removal gesture`() {
+        val playlist = Playlist(name = "Local", isEditable = true)
+        val editable = canEditPlaylistMembershipInView(playlist, forceOnDevice = false)
+        val editableOnDevice = canEditPlaylistMembershipInView(playlist, forceOnDevice = true)
+        assertTrue(editable)
+        assertFalse(editableOnDevice)
+
+        QueueSwipeAction.entries.forEach { action ->
+            assertEquals(action, playlistMembershipSwipeAction(editable, action))
+            assertEquals(
+                if (action == QueueSwipeAction.RemoveFromQueue) QueueSwipeAction.NoAction else action,
+                playlistMembershipSwipeAction(editableOnDevice, action),
+            )
+        }
     }
 }
