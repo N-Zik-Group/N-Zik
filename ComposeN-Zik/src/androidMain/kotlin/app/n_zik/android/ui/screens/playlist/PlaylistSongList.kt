@@ -463,12 +463,13 @@ fun PlaylistSongList(
     }
     val currentOverflowActions by rememberUpdatedState(overflowActions)
     val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
+    val hasOverflowActions = overflowActions.isNotEmpty()
     val inlineActionIds = toolbarOrder.filterNot {
         it == ToolbarControl.BOOKMARK || it == ToolbarControl.PLAY_NEXT ||
             it == ToolbarControl.FAVORITES || it == ToolbarControl.SELECT ||
             it == ToolbarControl.CHANGE_TITLE || it == ToolbarControl.CHANGE_ARTISTS ||
             it == ToolbarControl.CHANGE_PLAYLIST_BROWSE_ID
-    } + listOfNotNull(ToolbarControl.MENU.takeIf { overflowActions.isNotEmpty() })
+    } + listOfNotNull(ToolbarControl.MENU.takeIf { hasOverflowActions })
     val playlistStatesMap by remember(playlistSongIds) {
         PlaylistStateManager.getPlaylistStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -897,7 +898,9 @@ fun PlaylistSongList(
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
                                                                 { importPlaylistDialog.onShortClick() }
                                                             },
-                                                            onOpenAddToPlaylist = addToPlaylist::onShortClick,
+                                                            onOpenAddToPlaylist = if (actionSongs.isNotEmpty()) {
+                                                                addToPlaylist::onShortClick
+                                                            } else null,
                                                             disableScrollingText = disableScrollingText
                                                         )
                                                     }
@@ -922,6 +925,7 @@ fun PlaylistSongList(
                             CollectionToolbar(
                                 bookmark = bookmarkAction,
                                 actions = inlineActionIds.mapNotNull(toolbarActions::get),
+                                trailingSeparator = hasOverflowActions,
                             )
 
 
@@ -943,6 +947,7 @@ fun PlaylistSongList(
                                     )
                                 },
                                 actions = actionIcons.map { icon -> @Composable { DisabledPlaylistAction(icon) } },
+                                trailingSeparator = hasOverflowActions,
                             )
                         } else {
                             BasicText(

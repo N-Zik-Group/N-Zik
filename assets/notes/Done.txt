@@ -1364,3 +1364,7 @@ Menus:
 Menus:
 - fix(menu): share navigation motion and nested back behavior
   - Use the app back transition when returning to the actual parent sheet.
+
+Menus:
+- fix(toolbar): align collection overflow and add availability
+  - Keep Import and show Add only for eligible selections, with the Glass separator before overflow.

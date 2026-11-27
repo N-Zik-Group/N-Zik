@@ -325,10 +325,11 @@ fun Podcast(
     }
     val currentOverflowActions by rememberUpdatedState(overflowActions)
     val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
+    val hasOverflowActions = overflowActions.isNotEmpty()
     val inlineActionIds = toolbarOrder.filterNot {
         it == ToolbarControl.BOOKMARK || it == ToolbarControl.PLAY_NEXT ||
             it == ToolbarControl.FAVORITES || it == ToolbarControl.SELECT
-    } + listOfNotNull(ToolbarControl.MENU.takeIf { overflowActions.isNotEmpty() })
+    } + listOfNotNull(ToolbarControl.MENU.takeIf { hasOverflowActions })
 
     LayoutWithAdaptiveThumbnail(
         thumbnailContent = thumbnailContent,
@@ -656,7 +657,9 @@ fun Podcast(
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
                                                                 importDialog::onShortClick
                                                             },
-                                                            onOpenAddToPlaylist = addToPlaylist::onShortClick,
+                                                            onOpenAddToPlaylist = if (hasEpisodeTargets) {
+                                                                addToPlaylist::onShortClick
+                                                            } else null,
                                                             disableScrollingText = disableScrollingText
                                                         )
                                                     }
@@ -681,6 +684,7 @@ fun Podcast(
                             CollectionToolbar(
                                 bookmark = bookmarkAction,
                                 actions = inlineActionIds.mapNotNull(toolbarActions::get),
+                                trailingSeparator = hasOverflowActions,
                             )
                         } else {
                             val actionIcons = inlineActionIds.map { action ->
@@ -694,6 +698,7 @@ fun Podcast(
                             CollectionToolbar(
                                 bookmark = { DisabledPodcastAction(R.drawable.bookmark_outline) },
                                 actions = actionIcons.map { icon -> @Composable { DisabledPodcastAction(icon) } },
+                                trailingSeparator = hasOverflowActions,
                             )
                         }
                     }
