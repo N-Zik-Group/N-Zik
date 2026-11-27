@@ -18,6 +18,7 @@ import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
+import app.n_zik.android.core.rewind.updateRewindWorkPreference
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import timber.log.Timber
@@ -49,7 +50,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     title = stringResource(R.string.rewind_settings_enabled),
                     text = stringResource(R.string.rewind_settings_enabled_description),
                     isChecked = rewindEnabled,
-                    onCheckedChange = { DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, it) },
+                    onCheckedChange = { updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_ENABLED, it) },
                     icon = R.drawable.sparkles,
                 )
                 if (!rewindEnabled) return@SettingsSectionCard
@@ -71,7 +72,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     text = stringResource(R.string.rewind_settings_monthly_description),
                     isChecked = monthlyEnabled,
                     onCheckedChange = {
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
+                        updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
                         Timber.tag("RewindReminder").i("Rewind monthly -> $it")
                     },
                     icon = R.drawable.calendar
@@ -83,7 +84,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     text = stringResource(R.string.rewind_settings_yearly_description),
                     isChecked = yearlyEnabled,
                     onCheckedChange = {
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
+                        updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
                         Timber.tag("RewindReminder").i("Rewind yearly -> $it")
                     },
                     icon = R.drawable.trending
@@ -132,7 +133,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     text = stringResource(R.string.rewind_settings_playlists_monthly_description),
                     isChecked = monthlyPlaylistEnabled,
                     onCheckedChange = {
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, it)
+                        updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, it)
                         Timber.tag("RewindReminder").i("Rewind monthly playlist -> $it")
                     },
                     icon = R.drawable.calendar
@@ -143,7 +144,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     text = stringResource(R.string.rewind_settings_playlists_yearly_description),
                     isChecked = yearlyPlaylistEnabled,
                     onCheckedChange = {
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, it)
+                        updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, it)
                         Timber.tag("RewindReminder").i("Rewind yearly playlist -> $it")
                     },
                     icon = R.drawable.trending
@@ -168,7 +169,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                         text = stringResource(R.string.rewind_settings_monthly_notification_description),
                         isChecked = monthlyNotifEnabled,
                         onCheckedChange = {
-                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, it)
+                            updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, it)
                             Timber.tag("RewindReminder").i("Rewind monthly notification -> $it")
                         },
                         icon = R.drawable.notification2
@@ -195,7 +196,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                         text = stringResource(R.string.rewind_settings_yearly_notification_description),
                         isChecked = yearlyNotifEnabled,
                         onCheckedChange = {
-                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, it)
+                            updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, it)
                             Timber.tag("RewindReminder").i("Rewind yearly notification -> $it")
                         },
                         icon = R.drawable.notification2

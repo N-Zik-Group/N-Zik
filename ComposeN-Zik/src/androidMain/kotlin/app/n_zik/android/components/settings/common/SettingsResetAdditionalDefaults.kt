@@ -13,6 +13,7 @@ import app.n_zik.android.utils.playerBackdropKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
+import app.n_zik.android.core.rewind.scheduleRewindWork
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.privacy.blockScreenCaptureKey
 import app.n_zik.android.utils.DataStoreUtils
@@ -45,6 +46,7 @@ private val listenTogetherSettingKeys = setOf(
 internal fun resetAdditionalSettingsDefaults(context: Context) {
     context.preferences.removeSettings(additionalProfileSettingKeys)
     DataStoreUtils.prefs(context).removeSettings(additionalGlobalSettingKeys)
+    scheduleRewindWork(context)
     resetListenTogetherSettingsDefaults(context)
 }
 

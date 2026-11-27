@@ -30,8 +30,6 @@ import app.n_zik.android.core.notifications.installAppNotificationChannels
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.components.image.PickedImageEditor
 import app.n_zik.android.components.settings.applyUseLoginForSearch
-import app.n_zik.android.components.ui.screens.rewind.RewindReminderWorker
-import app.n_zik.android.components.ui.screens.rewind.RewindYearlyReminderWorker
 import app.n_zik.android.core.backup.DatabaseBackup
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.core.backup.LibraryStartup
@@ -54,8 +52,7 @@ import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.rescue.RescueProcess
-import app.n_zik.android.core.rewind.RewindMonthlyPlaylistWorker
-import app.n_zik.android.core.rewind.RewindYearlyPlaylistWorker
+import app.n_zik.android.core.rewind.scheduleRewindWork
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
 import app.n_zik.android.core.settings.readProxyPort
@@ -450,17 +447,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Enrich artist/album MusicBrainz metadata in background (first run after 1h)
         MbBackfillWorker.schedule(this)
 
-        // Monthly rewind reminder (next 1st of the month, WorkManager, self-rescheduling)
-        RewindReminderWorker.schedule(this)
-
-        // Yearly rewind reminder (next 1st of January, WorkManager, self-rescheduling)
-        RewindYearlyReminderWorker.schedule(this)
-
-        // Rewind monthly playlist (next 1st of the month, WorkManager, self-rescheduling)
-        RewindMonthlyPlaylistWorker.schedule(this)
-
-        // Rewind yearly playlist (next 1st of January, WorkManager, self-rescheduling)
-        RewindYearlyPlaylistWorker.schedule(this)
+        scheduleRewindWork(this)
 
         installStartupDiagnostics()
     }

@@ -1160,3 +1160,7 @@ Menus:
 Menus:
 - fix(menu): start playlist radio from an eligible track
   - Use the current track only when it belongs to the selected playlist scope.
+
+Settings:
+- fix(rewind): reconcile work when settings change
+  - Apply reminder and playlist scheduling immediately on toggles and resets through the existing profile-owned workers.

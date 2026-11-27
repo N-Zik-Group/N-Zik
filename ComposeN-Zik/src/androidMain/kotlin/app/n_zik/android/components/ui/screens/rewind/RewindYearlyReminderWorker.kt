@@ -110,7 +110,7 @@ internal class RewindYearlyReminderWorker(
             schedule(context, owner)
         }
 
-        private fun schedule(context: Context, owner: ProfileStorageIdentity) {
+        internal fun schedule(context: Context, owner: ProfileStorageIdentity) {
             if (!ProfileWorkOwner.isBound(context, owner)) return
             val work = WorkManager.getInstance(context)
             val workName = ProfileWorkOwner.name(WORK_NAME, owner)
