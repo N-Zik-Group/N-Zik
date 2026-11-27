@@ -1,6 +1,7 @@
 package app.n_zik.android.components.menu.playlist
 
 import app.n_zik.android.R
+import app.n_zik.android.components.dialog.playlist.importPlaylistNameError
 import app.n_zik.android.ui.components.MenuState
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -10,11 +11,19 @@ import org.junit.jupiter.api.Test
 
 class CollectionAddActionTest {
     @Test
-    fun toolbarUsesOneAnchorAndPrefersTheConfiguredAddPosition() {
-        assertEquals("add_to_playlist", playlistActionsAnchor(listOf("export_dialog", "add_to_playlist", "import_menu")))
+    fun toolbarUsesOneAnchorAtTheFirstVisiblePlaylistAction() {
+        assertEquals("export_dialog", playlistActionsAnchor(listOf("export_dialog", "add_to_playlist", "import_menu")))
         assertEquals("import_menu", playlistActionsAnchor(listOf("sort", "import_menu", "export_dialog")))
-        assertEquals("export", playlistActionsAnchor(listOf("sort", "export"), exportId = "export"))
+        assertEquals("add_to_playlist", playlistActionsAnchor(listOf("sort", "add_to_playlist", "export_dialog")))
+        assertEquals("export", playlistActionsAnchor(listOf("sort", "export", "add_to_playlist"), exportId = "export"))
         assertNull(playlistActionsAnchor(listOf("sort", "sync")))
+    }
+
+    @Test
+    fun importNamesCannotImpersonateRewindPlaylists() {
+        assertEquals(R.string.playlist_name_reserved, importPlaylistNameError("rewind-alltime"))
+        assertEquals(R.string.playlist_name_reserved, importPlaylistNameError(" pinned:Rewind-monthly:202611 "))
+        assertNull(importPlaylistNameError("Rewind November 2026"))
     }
 
     @Test

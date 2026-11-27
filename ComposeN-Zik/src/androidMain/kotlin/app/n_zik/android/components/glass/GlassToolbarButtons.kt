@@ -47,8 +47,8 @@ internal fun toolbarItemShape(override: Shape? = null): Shape = override ?: uiRo
 
 private data class ToolbarStyle(val count: Int, val settings: GlassSettings,
     val cellWidth: Dp = GlassActionCellWidth, val wide: Boolean = false, val itemShape: Shape? = null,
-    val compact: Boolean = false, val grouped: Boolean = false) {
-    val actionWidth get() = if (count == 1 && !(compact && wide)) GlassStandaloneActionSize else cellWidth
+    val compact: Boolean = false, val grouped: Boolean = false, val cellHeight: Dp = GlassActionCellHeight) {
+    val actionWidth get() = if (count == 1 && !(compact && wide)) cellHeight else cellWidth
 }
 private val LocalToolbarStyle = staticCompositionLocalOf<ToolbarStyle?> { null }
 
@@ -117,6 +117,7 @@ fun GlassToolbarRow(
     trailingSeparator: Boolean = false,
     itemShape: Shape? = null,
     compact: Boolean = false,
+    cellHeight: Dp = LocalToolbarStyle.current?.cellHeight ?: GlassActionCellHeight,
     content: @Composable RowScope.() -> Unit,
 ) {
     if (actionCount <= 0) return
@@ -131,7 +132,8 @@ fun GlassToolbarRow(
         val cellWidth = if (constraints.hasBoundedWidth && (actionCount > 1 || compact && expandToWidth))
             (maxWidth / actionCount).let { if (expandToWidth) it else it.coerceAtMost(GlassActionCellWidth) }
             else GlassActionCellWidth
-        CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, cellWidth, expandToWidth, itemShape, compact)) {
+        CompositionLocalProvider(LocalToolbarStyle provides ToolbarStyle(actionCount, settings, cellWidth,
+            expandToWidth, itemShape, compact, cellHeight = cellHeight)) {
             if (actionCount == 1) Row(verticalAlignment = Alignment.CenterVertically, content = content)
             else if (!material) Row(Modifier.width(cellWidth * actionCount),
                 verticalAlignment = Alignment.CenterVertically, content = content)
@@ -174,7 +176,7 @@ fun GlassToolbarColumn(
 @Composable
 fun GlassToolbarLoading(): Boolean {
     val style = LocalToolbarStyle.current ?: return false
-    Box(Modifier.size(style.actionWidth, GlassActionCellHeight),
+    Box(Modifier.size(style.actionWidth, style.cellHeight),
         contentAlignment = Alignment.Center) {
         InlineCircularLoader(Modifier.size(GlassActionIconSize), color = toolbarForeground(style, colorPalette().text))
     }
@@ -207,8 +209,7 @@ fun GlassToolbarIcon(
     // enlarge a cell after the row has divided its available width.
     val containerModifier = if (modifierOnContainer && !style.compact) modifier else Modifier
     if (style.compact && !style.settings.usesGlassMaterial(GlassArea.ActionButtons)) {
-        Box(containerModifier.size(style.actionWidth,
-            GlassActionCellHeight).clip(itemShape)
+        Box(containerModifier.size(style.actionWidth, style.cellHeight).clip(itemShape)
             .glassAreaContour(style.settings, GlassArea.ActionButtons, itemShape)
             .combinedClickable(remember { MutableInteractionSource() },
                 glassGlobalIndication(nativeControlIndication()), enabled = enabled, role = Role.Button,
@@ -217,12 +218,12 @@ fun GlassToolbarIcon(
         return true
     }
     if (style.count == 1 && enabled) {
-        LiquidButton(onClick, backdrop, containerModifier.size(style.actionWidth, GlassActionCellHeight),
+        LiquidButton(onClick, backdrop, containerModifier.size(style.actionWidth, style.cellHeight),
             onLongClick = onLongClick, settings = style.settings.forArea(GlassArea.ActionButtons),
             filmColor = glassActionFilmColor(),
-            contentHeight = GlassStandaloneActionSize, contentPadding = 0.dp, shape = itemShape, content = { glyph() })
+            contentHeight = style.cellHeight, contentPadding = 0.dp, shape = itemShape, content = { glyph() })
     } else {
-        val dimensions = containerModifier.size(style.actionWidth, GlassActionCellHeight)
+        val dimensions = containerModifier.size(style.actionWidth, style.cellHeight)
         val surface = if (style.count == 1) dimensions.glassMaterial(
             style.settings.forArea(GlassArea.ActionButtons), itemShape,
             ownBackdrop = backdrop,

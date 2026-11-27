@@ -31,8 +31,7 @@ internal fun MenuState.isPlaylistChoiceOpen(entry: MenuState.Entry, sourceId: St
 internal fun playlistActionsAnchor(
     order: List<String>,
     exportId: String = "export_dialog",
-): String? = "add_to_playlist".takeIf { it in order }
-    ?: order.firstOrNull { it == "import_menu" || it == exportId }
+): String? = order.firstOrNull { it == "add_to_playlist" || it == "import_menu" || it == exportId }
 
 @Composable
 internal fun rememberCollectionAddAction(

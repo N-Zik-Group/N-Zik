@@ -32,6 +32,18 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class CustomToolbarSettingsTest {
+    @Test fun `queue playlist actions take the position of the first visible member`() {
+        val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-queue-playlist", Context.MODE_PRIVATE)
+        val queue = ToolbarSurface.QUEUE
+        assertEquals(ToolbarAction.ADD_TO_PLAYLIST, queue.readVisibleActions(prefs).queuePlaylistActionAnchor())
+
+        prefs.edit().putString(queue.orderKey, """["export","search","addToPlaylist"]""").apply()
+        assertEquals(ToolbarAction.EXPORT, queue.readVisibleActions(prefs).queuePlaylistActionAnchor())
+
+        prefs.edit().putBoolean(queue.visibilityKey(ToolbarAction.EXPORT), false).apply()
+        assertEquals(ToolbarAction.ADD_TO_PLAYLIST, queue.readVisibleActions(prefs).queuePlaylistActionAnchor())
+    }
+
     @Test fun `playlist and podcast keep their default menu order and honor saved visibility and order`() {
         val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-overflow", Context.MODE_PRIVATE)
         val common = listOf(ToolbarAction.PLAY_NEXT, ToolbarAction.SELECT, ToolbarAction.FAVORITES)

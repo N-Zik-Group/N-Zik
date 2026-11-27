@@ -582,7 +582,7 @@ class LocalPlaylistItemMenu private constructor(
             if (playlistPreview.playlist.supportsInsertionPosition()) list.add(insertionDialog)
 
             val canChangeBrowseId = !onDevice && canChangePlaylistBrowseId(savedPlaylist)
-            val canEditMetadata = !isSpecialPlaylist && !RewindPlaylists.isRewind(savedPlaylist.name) &&
+            val canEditMetadata = !isSpecialPlaylist && !RewindPlaylists.isReservedName(savedPlaylist.name) &&
                 (savedPlaylist.isEditable || hasYouTubeLink || canChangeBrowseId)
             if (canEditMetadata) {
                 list.add(rename)

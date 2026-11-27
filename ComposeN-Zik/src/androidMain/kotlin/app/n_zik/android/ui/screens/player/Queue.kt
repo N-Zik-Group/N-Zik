@@ -133,6 +133,7 @@ import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.settings.ui.ToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.queuePlaylistActionAnchor
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.utils.currentWindow
@@ -426,8 +427,7 @@ fun Queue(
             put(ToolbarAction.SELECT, itemSelector)
             put(ToolbarAction.FAVORITES, favorites)
             put(ToolbarAction.REMOVE, deleteDialog)
-            val playlistAnchor = ToolbarAction.ADD_TO_PLAYLIST.takeIf { it in visibleToolbarActions }
-                ?: ToolbarAction.EXPORT.takeIf { it in visibleToolbarActions }
+            val playlistAnchor = visibleToolbarActions.queuePlaylistActionAnchor()
             if (playlistAnchor != null) put(playlistAnchor, playlistActions)
         }
         val buttonsList = visibleToolbarActions.mapNotNull(actions::get)

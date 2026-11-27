@@ -74,6 +74,22 @@ class MenuEntryInteractionTest {
     @get:Rule val composeRule = createComposeRule()
 
     @Test
+    fun `no transition replaces a submenu page without retaining the outgoing page`() {
+        val menu = MenuState().apply { display { Text("Parent menu") } }
+        composeRule.setContent { MenuStackContent(menu, TransitionEffect.None) }
+        composeRule.mainClock.autoAdvance = false
+
+        composeRule.runOnIdle {
+            menu.display { Text("Child menu") }
+            Snapshot.sendApplyNotifications()
+        }
+        composeRule.mainClock.advanceTimeBy(64)
+
+        composeRule.onNodeWithText("Child menu", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithText("Parent menu", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
     fun `sort toolbar names the action that opens criteria`() {
         val context = ApplicationProvider.getApplicationContext<Application>()
         val menu = MenuState()

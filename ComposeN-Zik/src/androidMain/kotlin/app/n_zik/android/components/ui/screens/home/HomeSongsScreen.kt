@@ -635,21 +635,13 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     } catch (_: Exception) { defaultToolbarOrder }
 
-    fun toolbarActionEnabled(id: String): Boolean {
-        val toggleKey = "${when (builtInPlaylist) {
-            BuiltInPlaylist.All -> "all"
-            BuiltInPlaylist.Favorites -> "favs"
-            BuiltInPlaylist.Offline -> "off"
-            BuiltInPlaylist.Downloaded -> "dl"
-            BuiltInPlaylist.Top -> "top"
-            BuiltInPlaylist.OnDevice -> "dev"
-            BuiltInPlaylist.Disliked -> "disliked"
-            else -> "x"
-        }}_ts_$id"
-        return id in HomeSongsToolbarSettingsDialog.lockedIds ||
-            context.preferences.getBoolean(toggleKey, true)
+    val toolbarPrefix = HomeSongsToolbarSettingsDialog.getTabPrefix(builtInPlaylist)
+    val visibleToolbarOrder = order.filter { id ->
+        val toggleKey = "${toolbarPrefix}_ts_$id"
+        key(toggleKey) {
+            id in HomeSongsToolbarSettingsDialog.lockedIds || rememberPreference(toggleKey, true).value
+        }
     }
-    val visibleToolbarOrder = order.filter(::toolbarActionEnabled)
     val playlistAnchor = playlistActionsAnchor(visibleToolbarOrder)
     val addPlaylistAction = rememberCollectionAddAction(
         sourceId = builtInPlaylist.name,

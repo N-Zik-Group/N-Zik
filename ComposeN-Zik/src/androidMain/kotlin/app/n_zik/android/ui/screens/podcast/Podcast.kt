@@ -16,7 +16,7 @@ import app.n_zik.android.utils.asSong
 import app.n_zik.android.hasExplicitPrefix
 import androidx.compose.ui.draw.clip
 
-import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 
@@ -93,7 +93,8 @@ import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.stopActiveRadio
-import app.n_zik.android.components.ui.CollectionToolbar
+import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.collectionToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.settings.ui.visibleActions
@@ -101,10 +102,10 @@ import app.n_zik.android.components.ui.CollectionFavoritesKind
 import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.utils.player.addNextOffMain
+import app.n_zik.android.utils.player.queueMediaItemsOffMain
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.core.database.collectionFavoriteSongId
 import app.n_zik.android.models.Song
-import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
@@ -134,8 +135,6 @@ import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.asPodcastMediaItem
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
-import app.n_zik.android.utils.enqueue
-import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
@@ -148,11 +147,11 @@ import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.playback.utils.Shuffler
@@ -275,8 +274,8 @@ fun Podcast(
     val hasEpisodeTargets = episodes.isNotEmpty()
     val collectionActionEnabled = !itemSelector.isActive || hasEpisodeTargets
     val radioActive = binder?.isRadioActive == true
-    val canUseRadio = hasEpisodeTargets || radioActive
     val ltGuestLocked = rememberListenTogetherGuestLock()
+    val canUseRadio = !ltGuestLocked && (hasEpisodeTargets || radioActive)
     val favoriteMediaItems = remember(browseId, episodes) { episodes.map { it.asPodcastMediaItem(browseId) } }
     val playNext = PlayNext(enabled = hasEpisodeTargets && !ltGuestLocked && binder != null, dismissOnClick = false) {
         val player = binder?.player ?: return@PlayNext
@@ -355,33 +354,138 @@ fun Podcast(
         openImport = importDialog::open,
         openPicker = addToPlaylist::openPicker,
     )
-    val addToolbarAction: @Composable () -> Unit = {
-        HeaderIconButton(
-            icon = addAction.iconId,
-            contentDescription = addAction.menuIconTitle,
-            enabled = addAction.isEnabled,
-            color = if (addAction.isEnabled) colorPalette().text else colorPalette().textDisabled,
-            modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-            onClick = addAction::onShortClick,
-            onLongClick = { Toaster.i(R.string.playlist_actions_title) },
-        )
-    }
     val toolbarSurface = ToolbarSurface.PODCAST
     val toolbarOrder = toolbarSurface.visibleActions()
-    val overflowActions = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull {
-        when (it) {
-            ToolbarControl.PLAY_NEXT -> playNext
-            ToolbarControl.FAVORITES -> favorites
-            ToolbarControl.SELECT -> itemSelector
-            else -> null
-        }
+    val toolbarLoading = showShimmer
+    val overflowActions = mapOf(
+        ToolbarControl.PLAY_NEXT to playNext,
+        ToolbarControl.FAVORITES to favorites,
+        ToolbarControl.SELECT to itemSelector,
+    ).mapValues { (action, button) ->
+        if (toolbarLoading) collectionToolbarAction(action, enabled = false) else button
     }
-    val currentOverflowActions by rememberUpdatedState(overflowActions)
-    val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
-    val hasOverflowActions = overflowActions.isNotEmpty()
-    val inlineActionIds = toolbarOrder.filterNot {
-        it == ToolbarControl.BOOKMARK || it in toolbarSurface.overflowActions
-    } + listOfNotNull(ToolbarControl.MENU.takeIf { hasOverflowActions })
+    val directToolbarActions = mapOf(
+        ToolbarControl.SEARCH to if (toolbarLoading) collectionToolbarAction(ToolbarControl.SEARCH, enabled = false)
+            else search,
+        ToolbarControl.DOWNLOAD to collectionToolbarAction(
+            ToolbarControl.DOWNLOAD,
+            enabled = !toolbarLoading && !offlineMode && hasEpisodeTargets,
+            dismissMenu = false,
+        ) { pendingDownloadSongs = targetMediaItems().takeIf { it.isNotEmpty() } },
+        ToolbarControl.DELETE_DOWNLOADS to collectionToolbarAction(
+            ToolbarControl.DELETE_DOWNLOADS,
+            enabled = !toolbarLoading && collectionActionEnabled,
+            dismissMenu = false,
+        ) {
+            val downloadRequests = MyDownloadHelper.downloads.value
+            val targets = targetMediaItems()
+                .filter { it.mediaId in downloadRequests }
+                .distinctBy { it.mediaId }
+            if (targets.isEmpty()) Toaster.i(R.string.downloads_nothing_to_delete)
+            else pendingDeleteDownloads = targets
+        },
+        ToolbarControl.ENQUEUE to collectionToolbarAction(
+            ToolbarControl.ENQUEUE,
+            enabled = !toolbarLoading && hasEpisodeTargets && !ltGuestLocked && binder != null,
+            label = R.string.player_action_enqueue_songs,
+            dismissMenu = false,
+        ) {
+            val items = targetMediaItems()
+            val menuKey = menuState.transitionKey
+            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                if (queueMediaItemsOffMain(items, context, playNext = false) { binder?.player } &&
+                    menuState.isCurrentMenu(menuKey)
+                ) menuState.hide()
+            }
+        },
+        ToolbarControl.SHUFFLE to collectionToolbarAction(
+            ToolbarControl.SHUFFLE,
+            enabled = !toolbarLoading && hasEpisodeTargets && !ltGuestLocked,
+            icon = shuffleButtonIcon(),
+            onClick = ::shuffleSelection,
+        ),
+        ToolbarControl.RADIO to collectionToolbarAction(
+            ToolbarControl.RADIO,
+            enabled = !toolbarLoading && canUseRadio && (!offlineMode || radioActive),
+            icon = radioButtonIcon(),
+            label = binder?.radioActionTextRes ?: R.string.radio_action_start,
+            selected = radioActive,
+        ) {
+            if (binder?.stopActiveRadio() == true) return@collectionToolbarAction
+            val eligible = targetMediaItems()
+            val first = eligible.firstOrNull() ?: return@collectionToolbarAction
+            val currentId = binder?.player?.currentMediaItem?.mediaId
+            val seed = eligible.firstOrNull { it.mediaId == currentId } ?: first
+            binder?.startRadio(seed, isExplicit = true)
+        },
+        ToolbarControl.ADD_TO_PLAYLIST to addAction,
+    )
+    val toolbarButtons = toolbarOrder.mapNotNull { directToolbarActions[it] ?: overflowActions[it] }
+    val menuButtons = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull(overflowActions::get).toSet()
+
+    AboveMenuDialogPresence(menuState, visible = pendingDownloadSongs != null) {
+        ConfirmationDialog(
+            title = stringResource(R.string.downloads_action_download_all),
+            confirmText = stringResource(R.string.downloads_title),
+            text = stringResource(R.string.downloads_download_all_confirmation),
+            onDismiss = { pendingDownloadSongs = null },
+            dismissOnConfirm = false,
+            onConfirm = {
+                if (!isNetworkConnected(context)) {
+                    Toaster.noInternet()
+                    return@ConfirmationDialog
+                }
+                val episodes = pendingDownloadSongs.orEmpty()
+                pendingDownloadSongs = null
+                if (episodes.isNotEmpty()) {
+                    downloadState = Download.STATE_DOWNLOADING
+                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                        for (mediaItem in episodes) {
+                            if (MyDownloadHelper.downloads.value[mediaItem.mediaId]?.state ==
+                                Download.STATE_COMPLETED
+                            ) continue
+                            if (!isNetworkConnected(context)) {
+                                Toaster.noInternet()
+                                break
+                            }
+                            manageDownload(
+                                context = context,
+                                mediaItem = mediaItem,
+                                downloadState = false
+                            ) {
+                                binder?.cache?.removeResource(mediaItem.mediaId)
+                                Database.asyncTransaction {
+                                    formatTable.findBySongId(mediaItem.mediaId)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+
+    AboveMenuDialogPresence(menuState, target = pendingDeleteDownloads) { episodes ->
+        ConfirmationDialog(
+            title = stringResource(R.string.downloads_delete_dialog_title),
+            confirmText = stringResource(R.string.common_action_delete),
+            text = stringResource(
+                R.string.downloads_delete_all_count_confirmation,
+                episodes.size,
+            ),
+            onDismiss = { pendingDeleteDownloads = null },
+            onConfirm = {
+                pendingDeleteDownloads = null
+                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                    episodes.forEach { mediaItem ->
+                        if (mediaItem.mediaId in MyDownloadHelper.downloads.value) {
+                            MyDownloadHelper.removeDownload(context, mediaItem)
+                        }
+                    }
+                }
+            }
+        )
+    }
 
     LayoutWithAdaptiveThumbnail(
         thumbnailContent = thumbnailContent,
@@ -530,217 +634,18 @@ fun Podcast(
                                 )
                             }
 
-                            val toolbarActions = mapOf<ToolbarControl, @Composable () -> Unit>(
-                                ToolbarControl.SEARCH to {
-                                    HeaderIconButton(
-                                        onClick = search::onShortClick,
-                                        icon = R.drawable.search_circle,
-                                        color = colorPalette().text,
-                                        iconSize = 24.dp,
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                    )
-
-                                },
-                                ToolbarControl.DOWNLOAD to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.download,
-                                        enabled = collectionActionEnabled,
-                                        color = if (collectionActionEnabled) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    pendingDownloadSongs = targetMediaItems().toList()
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( R.string.downloads_action_download_all )
-                                                }
-                                    )
-
-                                    DialogPresence(visible = pendingDownloadSongs != null) {
-                                        ConfirmationDialog(
-                                            title = stringResource(R.string.downloads_action_download_all),
-                                            confirmText = stringResource(R.string.downloads_title),
-                                            text = stringResource(R.string.downloads_download_all_confirmation),
-                                            onDismiss = { pendingDownloadSongs = null },
-                                            dismissOnConfirm = false,
-                                            onConfirm = {
-                                                if (!isNetworkConnected(context)) {
-                                                    Toaster.noInternet()
-                                                    return@ConfirmationDialog
-                                                }
-                                                val episodes = pendingDownloadSongs.orEmpty()
-                                                pendingDownloadSongs = null
-                                                if (episodes.isNotEmpty()) {
-                                                    downloadState = Download.STATE_DOWNLOADING
-                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                        for (mediaItem in episodes) {
-                                                            if (MyDownloadHelper.downloads.value[mediaItem.mediaId]?.state ==
-                                                                Download.STATE_COMPLETED
-                                                            ) continue
-                                                            if (!isNetworkConnected(context)) {
-                                                                Toaster.noInternet()
-                                                                break
-                                                            }
-                                                            manageDownload(
-                                                                context = context,
-                                                                mediaItem = mediaItem,
-                                                                downloadState = false
-                                                            ) {
-                                                                binder?.cache?.removeResource(mediaItem.mediaId)
-                                                                Database.asyncTransaction {
-                                                                    formatTable.findBySongId(mediaItem.mediaId)
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    }
-
-                                },
-                                ToolbarControl.DELETE_DOWNLOADS to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.downloaded,
-                                        enabled = collectionActionEnabled,
-                                        color = if (collectionActionEnabled) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    val downloadRequests = MyDownloadHelper.downloads.value
-                                                    val targets = targetMediaItems()
-                                                        .filter { it.mediaId in downloadRequests }
-                                                        .distinctBy { it.mediaId }
-                                                    if (targets.isEmpty()) Toaster.i(R.string.downloads_nothing_to_delete)
-                                                    else pendingDeleteDownloads = targets
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( R.string.downloads_action_remove_all )
-                                                }
-                                    )
-
-                                    DialogPresence(visible = pendingDeleteDownloads != null) {
-                                        ConfirmationDialog(
-                                            title = stringResource(R.string.downloads_delete_dialog_title),
-                                            confirmText = stringResource(R.string.common_action_delete),
-                                            text = stringResource(
-                                                R.string.downloads_delete_all_count_confirmation,
-                                                pendingDeleteDownloads.orEmpty().size,
-                                            ),
-                                            onDismiss = { pendingDeleteDownloads = null },
-                                            onConfirm = {
-                                                val episodes = pendingDeleteDownloads.orEmpty()
-                                                pendingDeleteDownloads = null
-                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                    episodes.forEach { mediaItem ->
-                                                        if (mediaItem.mediaId in MyDownloadHelper.downloads.value) {
-                                                            MyDownloadHelper.removeDownload(context, mediaItem)
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    }
-
-
-
-                                },
-                                ToolbarControl.ENQUEUE to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.enqueue,
-                                        enabled = hasEpisodeTargets,
-                                        color =  if (hasEpisodeTargets) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    targetMediaItems().takeIf { it.isNotEmpty() }?.let { mediaItems ->
-                                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                            val filtered = withContext(NzikDispatchers.DATA) {
-                                                val player = binder?.player ?: return@withContext emptyList()
-                                                player.excludeMediaItems(mediaItems, context)
-                                            }
-                                            val player = binder?.player ?: return@launch
-                                            player.enqueue(filtered)
-                                        }
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( R.string.player_action_enqueue_songs )
-                                                }
-                                    )
-
-                                },
-                                ToolbarControl.SHUFFLE to {
-                                    HeaderIconButton(
-                                        // Issue #866 (gh-866): app-wide shuffle confirmation flash.
-                                        icon = shuffleButtonIcon(),
-                                        enabled = hasEpisodeTargets,
-                                        color = if (hasEpisodeTargets) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = ::shuffleSelection,
-                                                onLongClick = {
-                                                    Toaster.i( R.string.player_action_shuffle_hint )
-                                                }
-                                    )
-
-                                },
-                                ToolbarControl.RADIO to {
-                                    HeaderIconButton(
-                                        // Issue #866 (gh-866): state icon, radio_stop while the radio
-                                        // is active (the state change is the press feedback).
-                                        icon = radioButtonIcon(),
-                                        enabled = canUseRadio,
-                                        color = if (!canUseRadio) colorPalette().textDisabled
-                                                else if (radioActive) colorPalette().accent
-                                                else colorPalette().text,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    if (binder?.stopActiveRadio() == true) return@HeaderIconButton
-                                                    val episodes = targetMediaItems()
-                                                    val first = episodes.firstOrNull() ?: return@HeaderIconButton
-                                                    val currentId = binder?.player?.currentMediaItem?.mediaId
-                                                    val seed = episodes.firstOrNull { it.mediaId == currentId } ?: first
-                                                    binder?.startRadio(seed, false, null, true)
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( binder?.radioActionTextRes ?: R.string.radio_action_start_hint )
-                                                }
-                                    )
-
-
-                                },
-                                ToolbarControl.ADD_TO_PLAYLIST to addToolbarAction,
-                                ToolbarControl.MENU to {
-                                    val menuLabel = stringResource(R.string.common_menu_label)
-                                    HeaderIconButton(
-                                        icon = moreActions.iconId,
-                                        color = if (forceShimmer) colorPalette().textDisabled else colorPalette().text,
-                                        enabled = !forceShimmer,
-                                        modifier = Modifier.padding(horizontal = 5.dp),
-                                        contentDescription = menuLabel,
-                                        onClick = moreActions::onShortClick,
-                                    )
-                                },
-                            )
-                            CollectionToolbar(
+                            CollectionButtonToolbar(
                                 bookmark = bookmarkAction,
-                                actions = inlineActionIds.mapNotNull(toolbarActions::get),
-                                trailingSeparator = hasOverflowActions,
+                                buttons = toolbarButtons,
+                                menuButtons = menuButtons,
+                                overflowEnabled = !toolbarLoading,
                             )
                         } else {
-                            val loadingActions = inlineActionIds.map<ToolbarControl, @Composable () -> Unit> { action ->
-                                {
-                                    if (action == ToolbarControl.ADD_TO_PLAYLIST) addToolbarAction()
-                                    else DisabledPodcastAction(when (action) {
-                                            ToolbarControl.SHUFFLE -> shuffleButtonIcon()
-                                            ToolbarControl.RADIO -> radioButtonIcon()
-                                            ToolbarControl.MENU -> moreActions.iconId
-                                            else -> action.icon
-                                        })
-                                }
-                            }
-                            CollectionToolbar(
+                            CollectionButtonToolbar(
                                 bookmark = { DisabledPodcastAction(R.drawable.bookmark_outline) },
-                                actions = loadingActions,
-                                trailingSeparator = hasOverflowActions,
+                                buttons = toolbarButtons,
+                                menuButtons = menuButtons,
+                                overflowEnabled = false,
                             )
                         }
                     }

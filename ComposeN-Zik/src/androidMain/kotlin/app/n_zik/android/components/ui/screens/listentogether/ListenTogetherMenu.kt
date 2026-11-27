@@ -5,11 +5,6 @@ import android.content.ClipboardManager
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
@@ -33,6 +28,8 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.components.settings.ServerChooserSheet
 import app.n_zik.android.components.settings.UsernameSheet
+import app.n_zik.android.core.navigation.screenEnter
+import app.n_zik.android.core.navigation.screenExit
 import app.n_zik.android.core.navigation.screenPopEnter
 import app.n_zik.android.core.navigation.screenPopExit
 import app.n_zik.android.core.utils.Toaster
@@ -246,8 +243,7 @@ fun ListenTogetherMenu() {
             if (targetState == RoomMenuPage.Room) {
                 screenPopEnter(transitionEffect) togetherWith screenPopExit(transitionEffect)
             } else {
-                slideInHorizontally(tween(250)) { it / 2 } + fadeIn(tween(250)) togetherWith
-                    (slideOutHorizontally(tween(250)) { -it / 2 } + fadeOut(tween(250)))
+                screenEnter(transitionEffect) togetherWith screenExit(transitionEffect)
             }
         },
         label = "ListenTogetherMenuPage",

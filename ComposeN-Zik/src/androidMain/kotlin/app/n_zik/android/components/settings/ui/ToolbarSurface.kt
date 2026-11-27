@@ -52,6 +52,10 @@ private val onlinePlaylistActions = listOf(
 )
 
 private val playlistAndPodcastOverflowActions = setOf(ToolbarAction.PLAY_NEXT, ToolbarAction.FAVORITES, ToolbarAction.SELECT)
+internal val queuePlaylistActions = setOf(ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.EXPORT)
+
+internal fun List<ToolbarAction>.queuePlaylistActionAnchor(): ToolbarAction? =
+    firstOrNull(queuePlaylistActions::contains)
 
 internal enum class ToolbarSurface(
     val id: String,

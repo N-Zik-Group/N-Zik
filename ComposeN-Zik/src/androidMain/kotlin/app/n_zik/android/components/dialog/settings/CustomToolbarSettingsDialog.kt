@@ -22,6 +22,7 @@ import app.n_zik.android.components.navigation.dock.DockToolbarPreferences
 import app.n_zik.android.components.settings.common.SettingsNestedOption
 import app.n_zik.android.components.settings.ui.ToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarSurface
+import app.n_zik.android.components.settings.ui.queuePlaylistActions
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.preferences
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -47,6 +48,7 @@ internal open class CustomToolbarSettingsDialog(
                 itemId(surface, action), action.label, index, surface.label.takeIf { surfaces.size > 1 },
                 descriptionRes = when {
                     action == ToolbarAction.ADD_TO_PLAYLIST -> R.string.playlist_action_add
+                    surface == ToolbarSurface.QUEUE && action in queuePlaylistActions -> R.string.playlist_actions_title
                     action in surface.overflowActions -> R.string.common_menu_label
                     else -> null
                 },
@@ -88,7 +90,11 @@ internal open class CustomToolbarSettingsDialog(
             ToggleItem(
                 itemId(surface, action), action.icon, stringResource(action.label),
                 surface.visibilityKey(action), surface.defaultVisible(prefs, action),
-                description = if (action in surface.overflowActions) stringResource(R.string.common_menu_label) else null,
+                description = when {
+                    surface == ToolbarSurface.QUEUE && action in queuePlaylistActions -> stringResource(R.string.playlist_actions_title)
+                    action in surface.overflowActions -> stringResource(R.string.common_menu_label)
+                    else -> null
+                },
             )
         }
         ToggleListDialog(

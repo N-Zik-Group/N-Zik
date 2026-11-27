@@ -63,6 +63,21 @@ import org.robolectric.annotation.GraphicsMode
 class CollectionToolbarTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `one trailing More seat retains configured order on wide and narrow bars`() {
+        val buttons = listOf("search", "playNext", "shuffle", "favorites", "enqueue")
+        val more = setOf("playNext", "favorites")
+        assertEquals(
+            listOf("search", "shuffle", "enqueue") to listOf("playNext", "favorites"),
+            collectionToolbarPlacement(buttons, more, capacity = 4),
+        )
+        assertEquals(
+            listOf("search") to listOf("playNext", "shuffle", "favorites", "enqueue"),
+            collectionToolbarPlacement(buttons, more, capacity = 2),
+        )
+        assertEquals(emptyList<String>() to buttons, collectionToolbarPlacement(buttons, more, capacity = 1))
+        assertEquals(buttons to emptyList<String>(), collectionToolbarPlacement(buttons, emptySet(), capacity = 5))
+    }
+
     @Test fun `last playlist heart stays visible and clickable in native and Glass at narrow width`() {
         verifyToolbar(320, 8)
     }
@@ -77,6 +92,50 @@ class CollectionToolbarTest {
 
     @Test fun `artist fits Follow inside the playlist width limit`() {
         verifyAvailableWidth(100, 7)
+    }
+
+    @Test fun `48 dp action targets move the remaining buttons to More in both renderers`() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val actions = listOf(ToolbarAction.SEARCH, ToolbarAction.SHUFFLE, ToolbarAction.ENQUEUE, ToolbarAction.DOWNLOAD)
+        val labels = actions.map { application.getString(it.label) }
+        val moreLabel = application.getString(R.string.common_menu_label)
+        val menuState = MenuState()
+        val glass = mutableStateOf(false)
+        val width = mutableStateOf(248)
+        compose.setContent {
+            AppearanceProvider {
+                CompositionLocalProvider(LocalMenuState provides menuState) {
+                    Box(Modifier.requiredWidth(width.value.dp).testTag("available")) {
+                        CollectionButtonToolbar(
+                            bookmark = { TabToolBar.Icon(R.drawable.bookmark, onClick = {}) },
+                            buttons = actions.map { collectionToolbarAction(it) },
+                            settings = GlassSettings(enabled = glass.value, quality = GlassQuality.Performance),
+                        )
+                    }
+                }
+            }
+        }
+
+        for (material in listOf(false, true)) {
+            compose.runOnIdle {
+                glass.value = material
+                width.value = 248
+                menuState.hide()
+            }
+            compose.onNodeWithContentDescription(moreLabel).assertDoesNotExist()
+            compose.onAllNodes(hasClickAction()).assertCountEquals(5)
+            compose.runOnIdle { width.value = 247 }
+            val available = compose.onNodeWithTag("available").fetchSemanticsNode().boundsInRoot
+            val targetSize = available.width / 247f * 48f
+            val bounds = compose.onAllNodes(hasClickAction()).assertCountEquals(4)
+                .fetchSemanticsNodes().map { it.boundsInRoot }
+            assertTrue(bounds.all { it.width >= targetSize - 1f && it.height >= targetSize - 1f })
+            assertEquals(available.center.x, (bounds.minOf { it.left } + bounds.maxOf { it.right }) / 2, 1f)
+            labels.take(2).forEach { compose.onNodeWithContentDescription(it).assertIsEnabled() }
+            labels.drop(2).forEach { compose.onNodeWithContentDescription(it).assertDoesNotExist() }
+            compose.onNodeWithContentDescription(moreLabel).assertIsEnabled().performTouchInput { click() }
+            compose.runOnIdle { assertTrue(menuState.isDisplayed) }
+        }
     }
 
     @Test fun `overflow keeps its seat but only opens once collection actions load`() {
@@ -242,7 +301,7 @@ class CollectionToolbarTest {
                     width.value = available
                     glass.value = material
                 }
-                val capacity = ((minOf(available, 356) - bookmarkWidth - 8 + .5) / 38.5).toInt()
+                val capacity = (minOf(available, 356) - maxOf(bookmarkWidth, 48) - 8) / 48
                 compose.onAllNodes(hasClickAction()).assertCountEquals(1 + minOf(capacity, actionCount))
             }
         }

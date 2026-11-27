@@ -60,6 +60,7 @@ import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuState
@@ -73,11 +74,7 @@ import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.utils.withPodcastSource
-import app.n_zik.android.utils.canPushToYTM
-import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.menuStyleKey
@@ -113,7 +110,6 @@ import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.openExternalMenuLink
 import app.n_zik.android.components.podcast.PodcastBookmarkOperation
 import app.n_zik.android.components.podcast.togglePodcastBookmark
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -352,7 +348,7 @@ class OnlinePlaylistItemMenu private constructor(
 
                                             val existing = rows.firstOrNull()
                                             val saved = (existing?.copy(isYoutubePlaylist = true) ?: Playlist(
-                                                name = title.orEmpty(),
+                                                name = app.portablePlaylistName(title.orEmpty()),
                                                 browseId = "VL$playlistId",
                                                 isYoutubePlaylist = true,
                                                 isEditable = false,
@@ -372,10 +368,7 @@ class OnlinePlaylistItemMenu private constructor(
                                     }
                                     if (!ProfileWorkOwner.isBound(app, workOwner)) return@launch
                                     Toaster.s(if (bookmarked) R.string.library_favorites_added else R.string.library_favorites_removed)
-                                    if (isYouTubeSyncEnabled() && canPushToYTM() &&
-                                        app.preferences.getBoolean(syncPushPlaylistKey, false) && isNetworkConnected(app) &&
-                                        ProfileWorkOwner.isBound(app, workOwner)
-                                    ) {
+                                    if (canPushPlaylistBookmark(app) && ProfileWorkOwner.isBound(app, workOwner)) {
                                         val result = if (bookmarked) YtMusic.likePlaylistOrAlbum(playlistId)
                                         else YtMusic.removelikePlaylistOrAlbum(playlistId)
                                         val error = result.exceptionOrNull()
@@ -434,6 +427,7 @@ class OnlinePlaylistItemMenu private constructor(
 
         var fetchedSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
         var partialSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
+        var sourceContent by remember(sourceId) { mutableStateOf<OnlinePlaylistContent?>(null) }
         var contentLoadFailed by remember(sourceId) { mutableStateOf(false) }
         
         var displayTitle by remember(sourceId) {
@@ -482,15 +476,19 @@ class OnlinePlaylistItemMenu private constructor(
                     ownerChannel = result.channel ?: ownerChannel
                     displayThumbnailUrl = result.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
                 }
+                sourceContent = result
                 fetchedSongs = result?.songs
                 partialSongs = result?.takeIf { it.songs == null }?.availableSongs
                 contentLoadFailed = result?.songs == null
             }
         }
 
-        val (playNext, enqueue) = collectionQueueActions(context, menuState, { binder?.captureMenuQueueEdit() }, songs, contentUnavailable) {
-            it.asMediaItem.withPodcastSource(sourceId)
-        }
+        val currentContent = sourceContent
+        fun mediaItem(song: Song) = onlinePlaylistMenuMediaItem(song, currentContent, sourceId)
+
+        val (playNext, enqueue) = collectionQueueActions(
+            context, menuState, { binder?.captureMenuQueueEdit() }, songs, contentUnavailable, ::mediaItem,
+        )
 
         val pickerTracks = remember(songs, partialSongs, parentalControlEnabled) {
             collectionMenuPickerSongs(songs, partialSongs, parentalControlEnabled)
@@ -503,7 +501,7 @@ class OnlinePlaylistItemMenu private constructor(
                 else {
                     val filterExplicit = isPodcastSource && context.preferences.getBoolean(parentalControlEnabledKey, false)
                     pickerSongs.orEmpty().filterNot { filterExplicit && it.title.hasExplicitPrefix() }
-                        .map { it.asMediaItem.withPodcastSource(sourceId) }
+                        .map(::mediaItem)
                 }
             },
             onFailure = { _, _ -> },
@@ -582,7 +580,7 @@ class OnlinePlaylistItemMenu private constructor(
         )
 
         val shuffleAction = SongShuffler.fromMediaItems {
-            songs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) }
+            songs.orEmpty().map(::mediaItem)
         }
         val shuffle = shuffleAction.withMenuGuestLock {
             if (songs == null) warnPlaylistSongsUnavailable(contentUnavailable)

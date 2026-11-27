@@ -2,11 +2,6 @@ package app.n_zik.android.components.ui.app
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
@@ -35,6 +30,8 @@ import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.core.navigation.screenEnter
+import app.n_zik.android.core.navigation.screenExit
 import app.n_zik.android.core.navigation.screenPopEnter
 import app.n_zik.android.core.navigation.screenPopExit
 import app.n_zik.android.enums.TransitionEffect
@@ -66,10 +63,7 @@ internal fun MenuStackContent(menuState: MenuState, transitionEffect: Transition
             if (returning) {
                 screenPopEnter(transitionEffect) togetherWith screenPopExit(transitionEffect)
             } else {
-                slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } +
-                    fadeIn(animationSpec = tween(300)) togetherWith
-                    slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } +
-                    fadeOut(animationSpec = tween(300))
+                screenEnter(transitionEffect) togetherWith screenExit(transitionEffect)
             }
         },
         label = "MenuContentTransition"

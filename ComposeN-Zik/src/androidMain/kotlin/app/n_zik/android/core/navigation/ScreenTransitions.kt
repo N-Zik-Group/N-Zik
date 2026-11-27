@@ -14,24 +14,10 @@ import app.n_zik.android.enums.TransitionEffect
 /** The app-wide navigation policy, shared by the main host and nested Settings host. */
 class ScreenTransitions(transitionEffect: TransitionEffect) {
     val enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition) = {
-        when (transitionEffect) {
-            TransitionEffect.None -> EnterTransition.None
-            TransitionEffect.Expand -> scaleIn(animationSpec = tween(350), initialScale = 2.0f)
-            TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
-            TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
-            TransitionEffect.SlideVertical -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            TransitionEffect.SlideHorizontal -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-        }
+        screenEnter(transitionEffect)
     }
     val exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition) = {
-        when (transitionEffect) {
-            TransitionEffect.None -> ExitTransition.None
-            TransitionEffect.Expand -> scaleOut(animationSpec = tween(350), targetScale = 2.0f)
-            TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
-            TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
-            TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Up)
-            TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
-        }
+        screenExit(transitionEffect)
     }
     val popEnterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition) = {
         screenPopEnter(transitionEffect)
@@ -46,6 +32,26 @@ class ScreenTransitions(transitionEffect: TransitionEffect) {
     val predictivePopExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.(Int) -> ExitTransition =
         { popExitTransition() }
 }
+
+internal fun <T> AnimatedContentTransitionScope<T>.screenEnter(effect: TransitionEffect): EnterTransition =
+    when (effect) {
+        TransitionEffect.None -> EnterTransition.None
+        TransitionEffect.Expand -> scaleIn(animationSpec = tween(350), initialScale = 2.0f)
+        TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
+        TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
+        TransitionEffect.SlideVertical -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        TransitionEffect.SlideHorizontal -> slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+    }
+
+internal fun <T> AnimatedContentTransitionScope<T>.screenExit(effect: TransitionEffect): ExitTransition =
+    when (effect) {
+        TransitionEffect.None -> ExitTransition.None
+        TransitionEffect.Expand -> scaleOut(animationSpec = tween(350), targetScale = 2.0f)
+        TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
+        TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
+        TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Up)
+        TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Left)
+    }
 
 internal fun <T> AnimatedContentTransitionScope<T>.screenPopEnter(effect: TransitionEffect): EnterTransition =
     when (effect) {

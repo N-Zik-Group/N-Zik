@@ -3,12 +3,11 @@ package app.n_zik.android.ui.screens.playlist
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.ui.screens.CollectionPageStatus
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.RenderAboveMenu
-import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
 
@@ -49,7 +48,6 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -69,13 +67,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastDistinctBy
 import androidx.compose.ui.util.fastFilter
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.components.menu.isCurrentMenu
+import app.n_zik.android.components.menu.playlist.canPushPlaylistBookmark
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.R
 import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
 import app.n_zik.android.components.playlist.launchLoadedPlaylistImport
@@ -96,6 +95,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
@@ -108,7 +108,8 @@ import app.n_zik.android.ui.components.themed.FontSizeRange
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
-import app.n_zik.android.components.ui.CollectionToolbar
+import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.collectionToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.settings.ui.visibleActions
@@ -116,9 +117,9 @@ import app.n_zik.android.components.ui.CollectionFavoritesKind
 import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.utils.player.addNextOffMain
+import app.n_zik.android.utils.player.queueMediaItemsOffMain
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.stopActiveRadio
-import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
@@ -139,7 +140,6 @@ import app.n_zik.android.ui.components.forceLoadingShimmerPreview
 import app.n_zik.android.ui.items.FullSongListPlaceholderCount
 import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.ui.items.SongItemPlaceholders
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.addNext
@@ -149,14 +149,13 @@ import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.color
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
-import app.n_zik.android.utils.enqueue
-import app.n_zik.android.utils.excludeMediaItems
 import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.enqueue
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.utils.otherLanguageAppPlaylistKey
 import app.n_zik.android.utils.rememberPreference
@@ -225,6 +224,7 @@ fun PlaylistSongList(
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
     val menuState = LocalMenuState.current
+    var bookmarkPending by remember(browseId) { mutableStateOf(false) }
     val hapticFeedback = LocalHapticFeedback.current
     val lazyListState = rememberLazyListState()
     val forceSongPlaceholders = forceLoadingShimmerPreview()
@@ -234,7 +234,6 @@ fun PlaylistSongList(
 
     // Grayed out and non-interactive for a guest.
     val ltGuestLocked = rememberListenTogetherGuestLock()
-    val guestLockAlpha = guestLockedAlpha(ltGuestLocked)
 
     // Settings
     val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
@@ -391,7 +390,6 @@ fun PlaylistSongList(
     }
     val actionSongs = selectedSongs()
     val hasNonDislikedSongs = actionSongs.any { it.key !in dislikedSongs }
-    val canDownload = !itemSelector.isActive || hasNonDislikedSongs
     val canTargetSongs = !itemSelector.isActive || actionSongs.isNotEmpty()
     val radioActive = binder?.isRadioActive == true
     val canUseRadio = !ltGuestLocked && (hasNonDislikedSongs || radioActive)
@@ -466,36 +464,130 @@ fun PlaylistSongList(
         openImport = importPlaylistDialog::open,
         openPicker = addToPlaylist::openPicker,
     )
-    val addToolbarAction: @Composable () -> Unit = {
-        HeaderIconButton(
-            icon = addAction.iconId,
-            contentDescription = addAction.menuIconTitle,
-            enabled = addAction.isEnabled,
-            color = if (addAction.isEnabled) colorPalette().text else colorPalette().textDisabled,
-            modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-            onClick = addAction::onShortClick,
-            onLongClick = { Toaster.i(R.string.playlist_actions_title) },
-        )
-    }
     val toolbarSurface = ToolbarSurface.ONLINE_PLAYLIST
     val toolbarOrder = toolbarSurface.visibleActions()
-    val overflowActions = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull {
-        when (it) {
-            ToolbarControl.PLAY_NEXT -> playNext
-            ToolbarControl.FAVORITES -> favorites
-            ToolbarControl.SELECT -> itemSelector
-            ToolbarControl.CHANGE_TITLE -> renamePlaylist.takeIf { localPlaylist != null }
-            ToolbarControl.CHANGE_ARTISTS -> renameAuthor.takeIf { localPlaylist != null }
-            ToolbarControl.CHANGE_PLAYLIST_BROWSE_ID -> changePlaylistId.takeIf { localPlaylist != null }
-            else -> null
-        }
+    val toolbarLoading = isInitialLoading || forceSongPlaceholders
+    val overflowActions = mapOf(
+        ToolbarControl.PLAY_NEXT to playNext,
+        ToolbarControl.FAVORITES to favorites,
+        ToolbarControl.SELECT to itemSelector,
+        ToolbarControl.CHANGE_TITLE to renamePlaylist.takeIf { localPlaylist != null },
+        ToolbarControl.CHANGE_ARTISTS to renameAuthor.takeIf { localPlaylist != null },
+        ToolbarControl.CHANGE_PLAYLIST_BROWSE_ID to changePlaylistId.takeIf { localPlaylist != null },
+    ).mapValues { (action, button) ->
+        if (toolbarLoading && button != null) collectionToolbarAction(action, enabled = false) else button
     }
-    val currentOverflowActions by rememberUpdatedState(overflowActions)
-    val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
-    val hasOverflowActions = overflowActions.isNotEmpty()
-    val inlineActionIds = toolbarOrder.filterNot {
-        it == ToolbarControl.BOOKMARK || it in toolbarSurface.overflowActions
-    } + listOfNotNull(ToolbarControl.MENU.takeIf { hasOverflowActions })
+
+    val directToolbarActions = mapOf(
+        ToolbarControl.SEARCH to if (toolbarLoading) collectionToolbarAction(ToolbarControl.SEARCH, enabled = false)
+            else search,
+        ToolbarControl.DOWNLOAD to collectionToolbarAction(
+            ToolbarControl.DOWNLOAD,
+            enabled = !toolbarLoading && !offlineMode && hasNonDislikedSongs,
+            dismissMenu = false,
+        ) { pendingDownloadSongs = playableSelection().takeIf { it.isNotEmpty() } },
+        ToolbarControl.DELETE_DOWNLOADS to collectionToolbarAction(
+            ToolbarControl.DELETE_DOWNLOADS,
+            enabled = !toolbarLoading && canTargetSongs,
+            dismissMenu = false,
+        ) {
+            val downloadRequests = MyDownloadHelper.downloads.value
+            val targets = selectedSongs()
+                .filter { it.key in downloadRequests }
+                .distinctBy { it.key }
+            if (targets.isEmpty()) Toaster.i(R.string.downloads_nothing_to_delete)
+            else pendingDeleteDownloads = targets
+        },
+        ToolbarControl.ENQUEUE to collectionToolbarAction(
+            ToolbarControl.ENQUEUE,
+            enabled = !toolbarLoading && hasNonDislikedSongs && !ltGuestLocked && binder != null,
+            label = R.string.player_action_enqueue_songs,
+            dismissMenu = false,
+        ) {
+            val items = playableSelection().map(Innertube.SongItem::asMediaItem)
+            val menuKey = menuState.transitionKey
+            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                if (queueMediaItemsOffMain(items, context, playNext = false) { binder?.player } &&
+                    menuState.isCurrentMenu(menuKey)
+                ) menuState.hide()
+            }
+        },
+        ToolbarControl.SHUFFLE to collectionToolbarAction(
+            ToolbarControl.SHUFFLE,
+            enabled = !toolbarLoading && hasNonDislikedSongs && !ltGuestLocked,
+            icon = shuffleButtonIcon(),
+            onClick = ::shuffleSelection,
+        ),
+        ToolbarControl.RADIO to collectionToolbarAction(
+            ToolbarControl.RADIO,
+            enabled = !toolbarLoading && canUseRadio && (!offlineMode || radioActive),
+            icon = radioButtonIcon(),
+            label = binder?.radioActionTextRes ?: R.string.radio_action_start,
+            selected = radioActive,
+        ) {
+            if (binder?.stopActiveRadio() == true) return@collectionToolbarAction
+            val eligible = playableSelection().map(Innertube.SongItem::asMediaItem)
+            val first = eligible.firstOrNull() ?: return@collectionToolbarAction
+            val currentId = binder?.player?.currentMediaItem?.mediaId
+            val seed = eligible.firstOrNull { it.mediaId == currentId } ?: first
+            binder?.startRadio(seed, isExplicit = true)
+        },
+        ToolbarControl.ADD_TO_PLAYLIST to addAction,
+    )
+    val toolbarButtons = toolbarOrder.mapNotNull { directToolbarActions[it] ?: overflowActions[it] }
+    val menuButtons = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull(overflowActions::get).toSet()
+
+    AboveMenuDialogPresence(menuState, visible = pendingDownloadSongs != null) {
+        ConfirmationDialog(
+            title = stringResource(R.string.downloads_action_download_all),
+            confirmText = stringResource(R.string.downloads_title),
+            text = stringResource(R.string.downloads_download_all_confirmation),
+            onDismiss = { pendingDownloadSongs = null },
+            dismissOnConfirm = false,
+            onConfirm = {
+                if (!isNetworkConnected(context)) {
+                    Toaster.noInternet()
+                    return@ConfirmationDialog
+                }
+                val songs = pendingDownloadSongs.orEmpty()
+                pendingDownloadSongs = null
+                if (songs.isNotEmpty())
+                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                        processPlaylistBatch(
+                            songs = songs,
+                            binder = binder,
+                            context = context,
+                            downloadState = false
+                        )
+                    }
+            }
+        )
+    }
+
+    AboveMenuDialogPresence(menuState, target = pendingDeleteDownloads) { songs ->
+        ConfirmationDialog(
+            title = stringResource(R.string.downloads_delete_dialog_title),
+            confirmText = stringResource(R.string.common_action_delete),
+            text = stringResource(
+                R.string.downloads_delete_all_count_confirmation,
+                songs.size,
+            ),
+            onDismiss = { pendingDeleteDownloads = null },
+            onConfirm = {
+                pendingDeleteDownloads = null
+                if (songs.isNotEmpty())
+                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                        processPlaylistBatch(
+                            songs = songs,
+                            binder = binder,
+                            context = context,
+                            downloadState = true
+                        )
+                    }
+            }
+        )
+    }
+
     val playlistStatesMap by remember(playlistSongIds) {
         PlaylistStateManager.getPlaylistStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -663,53 +755,49 @@ fun PlaylistSongList(
                             .fillMaxWidth()
                     ) {
 
-                        //if (!isLandscape) thumbnailContent()
-
                         if (playlistPage != null) {
-
-                            //actionsContent()
-
                             val bookmarkAction: @Composable () -> Unit = {
+                                val isBookmarked = isPlaylistBookmarked(localPlaylist)
                                 HeaderIconButton(
-                                    icon = if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark else R.drawable.bookmark_outline,
-                                    color = if (localPlaylist?.isYoutubePlaylist == true) colorPalette().favoritesIcon else colorPalette().text,
+                                    icon = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline,
+                                    color = if (isBookmarked) colorPalette().favoritesIcon else colorPalette().text,
+                                    contentDescription = stringResource(
+                                        if (isBookmarked) R.string.library_action_remove_bookmark else R.string.library_action_bookmark,
+                                    ),
+                                    enabled = !bookmarkPending,
                                     modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                     onClick = {
+                                        if (bookmarkPending) return@HeaderIconButton
+                                        val app = context.applicationContext
+                                        val owner = ProfileWorkOwner.capture(app) ?: return@HeaderIconButton
+                                        val loadedPage = playlistPage ?: return@HeaderIconButton
+                                        bookmarkPending = true
                                         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                            val stored = Database.playlistTable.findMusicBookmarkByBrowseId(browseId).first()
-                                            if (stored?.isYoutubePlaylist == true) {
-                                                if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                                    YtMusic.removelikePlaylistOrAlbum(browseId.removePrefix("VL"))
-                                                }
+                                            try {
+                                                if (!ProfileWorkOwner.isBound(app, owner)) return@launch
+                                                var nowBookmarked: Boolean? = null
+                                                var addedPlaylist: Playlist? = null
                                                 Database.awaitWriteBatch {
                                                     transaction {
-                                                        playlistTable.findMusicBookmarkRows(browseId).first()
-                                                            .filter { isPlaylistBookmarked(it) }
-                                                            .forEach { existing ->
-                                                                if (existing.isEditable) {
-                                                                    playlistTable.update(existing.copy(isYoutubePlaylist = false))
+                                                        if (!ProfileWorkOwner.isBound(app, owner)) return@transaction
+                                                        val existing = playlistTable.findMusicBookmarkByBrowseId(browseId).first()
+                                                        if (isPlaylistBookmarked(existing)) {
+                                                            val bookmarked = playlistTable.findMusicBookmarkRows(browseId).first()
+                                                                .filter { isPlaylistBookmarked(it) }
+                                                            if (!ProfileWorkOwner.isBound(app, owner)) return@transaction
+                                                            bookmarked.forEach { row ->
+                                                                if (row.isEditable) {
+                                                                    playlistTable.update(row.copy(isYoutubePlaylist = false))
                                                                 } else {
-                                                                    playlistTable.delete(existing)
+                                                                    playlistTable.delete(row)
                                                                 }
                                                             }
-                                                    }
-                                                }
-                                            } else {
-                                                if (isYouTubeSyncEnabled() && isNetworkConnected(context)) {
-                                                    YtMusic.likePlaylistOrAlbum(browseId.removePrefix("VL"))
-                                                }
-                                                val completeTracks = playlistPage
-                                                    ?.takeIf { it.songsContinuation == null }
-                                                    ?.songs
-                                                    ?.map(Innertube.SongItem::asMediaItem)
-                                                val saved = Database.awaitWriteBatch {
-                                                    var addedPlaylist: Playlist? = null
-                                                    transaction {
-                                                        val existing = playlistTable.findMusicBookmarkByBrowseId(browseId).first()
-                                                        if (existing?.isYoutubePlaylist == true) return@transaction
+                                                            nowBookmarked = false
+                                                            return@transaction
+                                                        }
 
                                                         val playlist = (existing?.copy(isYoutubePlaylist = true) ?: Playlist(
-                                                            name = playlistPage?.playlist?.title.orEmpty(),
+                                                            name = app.portablePlaylistName(loadedPage.playlist.title.orEmpty()),
                                                             browseId = bookmarkBrowseId,
                                                             isYoutubePlaylist = true,
                                                             isEditable = false,
@@ -722,20 +810,34 @@ fun PlaylistSongList(
 
                                                         val savedPlaylist = playlist.copy(id = id)
                                                         if (!savedPlaylist.isEditable) {
-                                                            playlistSongs?.map(Innertube.SongItem::asMediaItem)
-                                                                ?.let { mapIgnore(savedPlaylist, *it.toTypedArray()) }
+                                                            mapIgnore(savedPlaylist, *playlistSongs.map(Innertube.SongItem::asMediaItem).toTypedArray())
                                                         }
                                                         addedPlaylist = savedPlaylist
+                                                        nowBookmarked = true
                                                     }
-                                                    addedPlaylist
                                                 }
-                                                if (saved != null) {
+                                                val bookmarked = nowBookmarked ?: return@launch
+                                                if (!ProfileWorkOwner.isBound(app, owner)) return@launch
+                                                addedPlaylist?.let { saved ->
+                                                    val completeTracks = loadedPage.takeIf { it.songsContinuation == null && !saved.isEditable }
+                                                        ?.songs?.map(Innertube.SongItem::asMediaItem)
                                                     MyDownloadHelper.downloadBookmarkedPlaylist(
-                                                        context, saved.browseId, saved, completeTracks.takeUnless { saved.isEditable },
+                                                        app, saved.browseId, saved, completeTracks,
                                                     )
                                                 }
+                                                if (!ProfileWorkOwner.isBound(app, owner)) return@launch
+                                                Toaster.done()
+                                                if (canPushPlaylistBookmark(app) && ProfileWorkOwner.isBound(app, owner)) {
+                                                    val id = browseId.removePrefix("VL")
+                                                    val result = if (bookmarked) YtMusic.likePlaylistOrAlbum(id)
+                                                        else YtMusic.removelikePlaylistOrAlbum(id)
+                                                    val error = result.exceptionOrNull()
+                                                    if (error is CancellationException) throw error
+                                                    if (error != null) Toaster.e(R.string.common_load_failed)
+                                                }
+                                            } finally {
+                                                withContext(NzikDispatchers.UI) { bookmarkPending = false }
                                             }
-                                            Toaster.done()
                                         }
                                     },
                                     onLongClick = {
@@ -744,223 +846,23 @@ fun PlaylistSongList(
                                 )
                             }
 
-                            val toolbarActions = mapOf<ToolbarControl, @Composable () -> Unit>(
-                                ToolbarControl.SEARCH to {
-                                    HeaderIconButton(
-                                        onClick = search::onShortClick,
-                                        icon = R.drawable.search_circle,
-                                        color = colorPalette().text,
-                                        iconSize = 24.dp,
-                                        modifier = Modifier
-                                            .padding(horizontal = 5.dp)
-                                    )
-
-                                },
-                                ToolbarControl.DOWNLOAD to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.download,
-                                        enabled = canDownload,
-                                        color = if (canDownload) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    pendingDownloadSongs = playableSelection().toList()
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i(R.string.downloads_action_download_all)
-                                                }
-                                    )
-
-                                    DialogPresence(visible = pendingDownloadSongs != null) {
-                                        ConfirmationDialog(
-                                            title = stringResource(R.string.downloads_action_download_all),
-                                            confirmText = stringResource(R.string.downloads_title),
-                                            text = stringResource(R.string.downloads_download_all_confirmation),
-                                            onDismiss = { pendingDownloadSongs = null },
-                                            dismissOnConfirm = false,
-                                            onConfirm = {
-                                                if (!isNetworkConnected(context)) {
-                                                    Toaster.noInternet()
-                                                    return@ConfirmationDialog
-                                                }
-                                                val songs = pendingDownloadSongs.orEmpty()
-                                                pendingDownloadSongs = null
-                                                if (songs.isNotEmpty())
-                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                        processPlaylistBatch(
-                                                            songs = songs,
-                                                            binder = binder,
-                                                            context = context,
-                                                            downloadState = false
-                                                        )
-                                                    }
-                                            }
-                                        )
-                                    }
-
-                                },
-                                ToolbarControl.DELETE_DOWNLOADS to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.downloaded,
-                                        enabled = canTargetSongs,
-                                        color = if (canTargetSongs) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    val downloadRequests = MyDownloadHelper.downloads.value
-                                                    val targets = selectedSongs()
-                                                        .filter { it.key in downloadRequests }
-                                                        .distinctBy { it.key }
-                                                    if (targets.isEmpty()) Toaster.i(R.string.downloads_nothing_to_delete)
-                                                    else pendingDeleteDownloads = targets
-                                                },
-                                                onLongClick = {
-                                                    Toaster.n(R.string.downloads_action_remove_all)
-                                                }
-                                    )
-
-                                    DialogPresence(visible = pendingDeleteDownloads != null) {
-                                        ConfirmationDialog(
-                                            title = stringResource(R.string.downloads_delete_dialog_title),
-                                            confirmText = stringResource(R.string.common_action_delete),
-                                            text = stringResource(
-                                                R.string.downloads_delete_all_count_confirmation,
-                                                pendingDeleteDownloads.orEmpty().size,
-                                            ),
-                                            onDismiss = { pendingDeleteDownloads = null },
-                                            onConfirm = {
-                                                val songs = pendingDeleteDownloads.orEmpty()
-                                                pendingDeleteDownloads = null
-                                                if (songs.isNotEmpty())
-                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                        processPlaylistBatch(
-                                                            songs = songs,
-                                                            binder = binder,
-                                                            context = context,
-                                                            downloadState = true
-                                                        )
-                                                    }
-                                            }
-                                        )
-                                    }
-
-
-
-                                },
-                                ToolbarControl.ENQUEUE to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.enqueue,
-                                        enabled = hasNonDislikedSongs,
-                                        color =  if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    val songs = playableSelection()
-                                                    if (songs.isNotEmpty()) {
-                                                        val mediaItems = songs.map(Innertube.SongItem::asMediaItem)
-                                                        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                                                            val filtered = withContext(NzikDispatchers.DATA) {
-                                                                val player = binder?.player ?: return@withContext emptyList()
-                                                                player.excludeMediaItems(mediaItems, context)
-                                                            }
-                                                            val player = binder?.player ?: return@launch
-                                                            player.enqueue(filtered)
-                                                        }
-                                                    } else if (!itemSelector.isActive) {
-                                                        Toaster.e(R.string.playlist_error_action_on_all_disliked_songs)
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i(R.string.player_action_enqueue_songs)
-                                                }
-                                    )
-
-                                },
-                                ToolbarControl.SHUFFLE to {
-                                    HeaderIconButton(
-                                        // Issue #866 (gh-866): app-wide shuffle confirmation flash.
-                                        icon = shuffleButtonIcon(),
-                                        enabled = hasNonDislikedSongs,
-                                        color = if (hasNonDislikedSongs) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = ::shuffleSelection,
-                                                onLongClick = {
-                                                    Toaster.i( R.string.player_action_shuffle_hint )
-                                                }
-                                    )
-
-                                },
-                                ToolbarControl.RADIO to {
-                                    HeaderIconButton(
-                                        // Issue #866 (gh-866): state icon — radio_stop while the radio
-                                        // is active (the state change is the press feedback).
-                                        icon = radioButtonIcon(),
-                                        enabled = canUseRadio,
-                                        color = if (!canUseRadio) colorPalette().textDisabled
-                                                else if (radioActive) colorPalette().accent
-                                                else colorPalette().text,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()).alpha(guestLockAlpha),
-                                                onClick = {
-                                                    if (binder?.stopActiveRadio() == true) return@HeaderIconButton
-                                                    val active = itemSelector.isActive
-                                                    val songs = selectedSongs()
-                                                    if (!active && songs.fastAny { it.key in dislikedSongs }) {
-                                                        Toaster.e(R.string.playlist_error_action_on_all_disliked_songs)
-                                                        return@HeaderIconButton
-                                                    }
-                                                    val eligible = songs.filter { it.key !in dislikedSongs }
-                                                        .map(Innertube.SongItem::asMediaItem)
-                                                    val first = eligible.firstOrNull() ?: return@HeaderIconButton
-                                                    val currentId = binder?.player?.currentMediaItem?.mediaId
-                                                    val seed = eligible.firstOrNull { it.mediaId == currentId } ?: first
-                                                    binder?.startRadio(seed, false, null, true)
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( binder?.radioActionTextRes ?: R.string.radio_action_start_hint )
-                                                }
-                                    )
-
-
-                                },
-                                ToolbarControl.ADD_TO_PLAYLIST to addToolbarAction,
-                                ToolbarControl.MENU to {
-                                    val menuLabel = stringResource(R.string.common_menu_label)
-                                    HeaderIconButton(
-                                        icon = moreActions.iconId,
-                                        color = if (showSongPlaceholders) colorPalette().textDisabled else colorPalette().text,
-                                        enabled = !showSongPlaceholders,
-                                        modifier = Modifier.padding(horizontal = 5.dp),
-                                        contentDescription = menuLabel,
-                                        onClick = moreActions::onShortClick,
-                                    )
-                                },
-                            )
-                            CollectionToolbar(
+                            CollectionButtonToolbar(
                                 bookmark = bookmarkAction,
-                                actions = inlineActionIds.mapNotNull(toolbarActions::get),
-                                trailingSeparator = hasOverflowActions,
+                                buttons = toolbarButtons,
+                                menuButtons = menuButtons,
+                                overflowEnabled = !toolbarLoading,
                             )
-
-
-
                         } else if (isInitialLoading) {
-                            val loadingActions = inlineActionIds.map<ToolbarControl, @Composable () -> Unit> { action ->
-                                {
-                                    if (action == ToolbarControl.ADD_TO_PLAYLIST) addToolbarAction()
-                                    else DisabledPlaylistAction(when (action) {
-                                            ToolbarControl.SHUFFLE -> shuffleButtonIcon()
-                                            ToolbarControl.RADIO -> radioButtonIcon()
-                                            ToolbarControl.MENU -> moreActions.iconId
-                                            else -> action.icon
-                                        })
-                                }
-                            }
-                            CollectionToolbar(
+                            CollectionButtonToolbar(
                                 bookmark = {
                                     DisabledPlaylistAction(
                                         if (localPlaylist?.isYoutubePlaylist == true) R.drawable.bookmark
                                         else R.drawable.bookmark_outline,
                                     )
                                 },
-                                actions = loadingActions,
-                                trailingSeparator = hasOverflowActions,
+                                buttons = toolbarButtons,
+                                menuButtons = menuButtons,
+                                overflowEnabled = false,
                             )
                         } else {
                             BasicText(

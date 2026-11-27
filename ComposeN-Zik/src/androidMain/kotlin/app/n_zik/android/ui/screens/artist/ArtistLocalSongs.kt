@@ -11,6 +11,7 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
 import app.n_zik.android.uiRoundnessShape
 
 
@@ -261,7 +262,7 @@ fun ArtistLocalSongs(
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
     val playlistSwipeRightAction by rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext)
 
-    DialogPresence(target = pendingDownload) { request ->
+    AboveMenuDialogPresence(LocalMenuState.current, target = pendingDownload) { request ->
         ConfirmationDialog(
             title = stringResource(
                 if (request.remove) R.string.downloads_delete_dialog_title else R.string.downloads_action_download_all,
@@ -306,10 +307,14 @@ fun ArtistLocalSongs(
             val actions = mapOf(
                 ToolbarControl.SEARCH to search,
                 ToolbarControl.LOCATE to locator,
-                ToolbarControl.DOWNLOAD to artistLibraryToolbarAction(ToolbarControl.DOWNLOAD, enabled = downloadTargets.isNotEmpty()) {
+                ToolbarControl.DOWNLOAD to artistLibraryToolbarAction(
+                    ToolbarControl.DOWNLOAD, enabled = downloadTargets.isNotEmpty(), dismissOnClick = false,
+                ) {
                     pendingDownload = ArtistDownloadRequest(downloadTargets, remove = false)
                 },
-                ToolbarControl.DELETE_DOWNLOADS to artistLibraryToolbarAction(ToolbarControl.DELETE_DOWNLOADS, enabled = removeDownloadTargets.isNotEmpty()) {
+                ToolbarControl.DELETE_DOWNLOADS to artistLibraryToolbarAction(
+                    ToolbarControl.DELETE_DOWNLOADS, enabled = removeDownloadTargets.isNotEmpty(), dismissOnClick = false,
+                ) {
                     pendingDownload = ArtistDownloadRequest(removeDownloadTargets, remove = true)
                 },
                 ToolbarControl.PLAY_NEXT to artistLibraryToolbarAction(ToolbarControl.PLAY_NEXT, enabled = hasTargets) {
