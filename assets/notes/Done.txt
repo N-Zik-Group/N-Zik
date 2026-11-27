@@ -1852,3 +1852,7 @@ Settings / Accounts:
 Playlists:
 - fix(innertube): keep nested and legacy playlist continuation tokens
   - Preserve the next page from nested sections and historical first-page layouts.
+
+Settings / Accounts:
+- fix(settings): allow disconnecting saved accounts while disabled
+  - Keep session removal accessible without re-enabling integrations or discarding other saved identities.

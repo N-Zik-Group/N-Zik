@@ -228,6 +228,24 @@ internal fun AccountsYouTubeCard(search: Search) {
                     }
                 )
 
+                val accountAction: @Composable () -> Unit = {
+                    OtherSettingsEntry(
+                        modifier = Modifier.settingsSearchTarget(if (isLoggedIn) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
+                        title = if (isLoggedIn) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
+                        text = stringResource(R.string.account_youtube_login_description),
+                        icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
+                        onClick = {
+                            if (isLoggedIn) {
+                                showLogoutDialog = true
+                            } else {
+                                changingAccount = false
+                                loginYouTube = true
+                            }
+                        }
+                    )
+                }
+                if (!isYouTubeLoginEnabled && isLoggedIn) accountAction()
+
                 AnimatedVisibility(visible = isYouTubeLoginEnabled) {
                     Column {
                         if (isLoggedIn) {
@@ -335,22 +353,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             }
                         }
 
-                        if (search.inputValue.isBlank() || true) {
-                            OtherSettingsEntry(
-                                modifier = Modifier.settingsSearchTarget(if (isLoggedIn) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
-                                title = if (isLoggedIn) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
-                                text = stringResource(R.string.account_youtube_login_description),
-                                icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
-                                onClick = {
-                                    if (isLoggedIn) {
-                                        showLogoutDialog = true
-                                    } else {
-                                        changingAccount = false
-                                        loginYouTube = true
-                                    }
-                                }
-                            )
-                        }
+                        if (isYouTubeLoginEnabled) accountAction()
 
                         val changeAccountLabel = stringResource(R.string.account_youtube_change_account)
                         val changeAccountDescription = stringResource(R.string.account_youtube_change_account_description)

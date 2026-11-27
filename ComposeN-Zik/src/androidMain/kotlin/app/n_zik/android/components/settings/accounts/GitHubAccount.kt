@@ -200,6 +200,8 @@ internal object GitHubAccount {
         },
     )
     val login = MutableStateFlow<String?>(null)
+    private val mutableSavedLogin = MutableStateFlow<String?>(null)
+    val savedLogin = mutableSavedLogin.asStateFlow()
     val awaiting = MutableStateFlow(false)
     val code = MutableStateFlow<String?>(null)
     val publicationAuthorization = GitHubPublicationAuthorization()
@@ -230,7 +232,9 @@ internal object GitHubAccount {
         usageEnabled(context) && context.preferences.getBoolean(GITHUB_BACKGROUND_CHECKS_KEY, true)
 
     fun read(context: Context) {
-        login.value = accountLogin(context)
+        val saved = storage(context).login()
+        login.value = saved.takeIf { usageEnabled(context) }
+        mutableSavedLogin.value = saved
     }
 
     @Synchronized
@@ -444,6 +448,7 @@ internal fun GitHubAccountCard(
 ) {
     val context = LocalContext.current
     val login by GitHubAccount.login.collectAsStateWithLifecycle()
+    val savedLogin by GitHubAccount.savedLogin.collectAsStateWithLifecycle()
     val awaiting by GitHubAccount.awaiting.collectAsStateWithLifecycle()
     val code by GitHubAccount.code.collectAsStateWithLifecycle()
     val offline by OfflineMode.rememberEnabled()
@@ -501,6 +506,15 @@ internal fun GitHubAccountCard(
             },
         )
         val connectedLogin = login
+        val saved = savedLogin
+        if (connectedLogin == null && saved != null) OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget(GITHUB_SETTINGS_SIGN_OUT_TARGET),
+            title = stringResource(R.string.github_account_logout),
+            text = "@$saved",
+            icon = R.drawable.github_icon,
+            shimmer = shimmer,
+            onClick = { GitHubAccount.disconnect(context) },
+        )
         if (connectedLogin != null) SwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget(GITHUB_SETTINGS_BACKGROUND_CHECKS_TARGET),
             title = stringResource(R.string.github_account_background_checks),

@@ -24,7 +24,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.glass.GlassDialogIconButton as IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -147,6 +146,32 @@ fun LastFmSettingsCard() {
                 icon = R.drawable.musical_notes
             )
 
+            val hasSavedAccount = lastfmSession.isNotEmpty()
+            val accountAction: @Composable () -> Unit = {
+                OtherSettingsEntry(
+                    modifier = Modifier.settingsSearchTarget(if (hasSavedAccount) LastFmSettingsLogoutTarget else LastFmSettingsLoginTarget),
+                    title = stringResource(if (hasSavedAccount) R.string.account_action_logout else R.string.account_action_login),
+                    text = stringResource(R.string.lastfm_login_description),
+                    selectedValueText = when {
+                        !isLastfmScrobblingEnabled -> null
+                        hasSavedAccount -> stringResource(R.string.lastfm_connected)
+                        else -> stringResource(R.string.settings_lastfm_scrobbling_description)
+                    },
+                    icon = R.drawable.logout,
+                    onClick = {
+                        if (hasSavedAccount) {
+                            lastfmSession = ""
+                            lastfmUsername = ""
+                            lastfmAvatarUrl = ""
+                            LastFm.sessionKey = null
+                        } else {
+                            loginLastfm = true
+                        }
+                    }
+                )
+            }
+            if (!isLastfmScrobblingEnabled && hasSavedAccount) accountAction()
+
             AnimatedVisibility(visible = isLastfmScrobblingEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
                 Column {
                     if (lastfmSession.isNotEmpty()) {
@@ -195,24 +220,7 @@ fun LastFmSettingsCard() {
                         }
                     }
 
-                    val isConnected = lastfmSession.isNotEmpty()
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget(if (isConnected) LastFmSettingsLogoutTarget else LastFmSettingsLoginTarget),
-                        title = stringResource(if (isConnected) R.string.account_action_logout else R.string.account_action_login),
-                        text = stringResource(R.string.lastfm_login_description),
-                        selectedValueText = if (lastfmSession.isNotEmpty()) stringResource(R.string.lastfm_connected) else stringResource(R.string.settings_lastfm_scrobbling_description),
-                        icon = R.drawable.logout,
-                        onClick = {
-                            if (lastfmSession.isNotEmpty()) {
-                                lastfmSession = ""
-                                lastfmUsername = ""
-                                lastfmAvatarUrl = ""
-                                LastFm.sessionKey = null
-                            } else {
-                                loginLastfm = true
-                            }
-                        }
-                    )
+                    if (isLastfmScrobblingEnabled) accountAction()
 
                     SearchableSettingsSectionHeading(R.string.settings_group_scrobbling, "embedded.lastfm.section.scrobbling")
 
@@ -303,12 +311,6 @@ fun LastFmSettingsCard() {
                                 bottomEnd = CornerSize(0.dp)
                             )
                         } ?: uiRoundnessShape(),
-                        dragHandle = {
-                            Surface(
-                                modifier = Modifier.padding(vertical = 0.dp),
-                                color = Color.Transparent
-                            ) {}
-                        }
                     ) {
                         // Cap the content at ~50% of the screen: ListMenu.Menu stretches to
                         // the full screen height on its own, which would make the Expanded

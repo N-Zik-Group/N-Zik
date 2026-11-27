@@ -76,6 +76,21 @@ class GitHubSettingsImportTest {
     }
 
     @Test
+    fun savedAccountCanBeDisconnectedWhileUsageIsDisabled() {
+        GitHubAccount.disableUsage(context)
+
+        assertNull(GitHubAccount.login.value)
+        assertEquals("active", GitHubAccount.savedLogin.value)
+        assertNull(GitHubAccount.tokenFor(context, 456))
+
+        GitHubAccount.disconnect(context)
+
+        assertNull(GitHubAccount.savedLogin.value)
+        assertFalse(GitHubAccount.resumeSavedAccount(context))
+        assertFalse(secrets("default").contains("githubPublicationSession"))
+    }
+
+    @Test
     fun cancelledOrSwitchedAuthorizationLeavesUsageDisabled() {
         GitHubAccount.disableUsage(context)
         val session = GitHubAccount.SetupSession(456, "active", "new-token", Long.MAX_VALUE, "default")

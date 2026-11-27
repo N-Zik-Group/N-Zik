@@ -126,8 +126,8 @@ internal fun AccountsDiscordCard(search: Search) {
                     )
                     var showTokenError by remember { mutableStateOf(false) }
 
-                    LaunchedEffect(discordPersonalAccessToken) {
-                        if (discordPersonalAccessToken.isNotEmpty()) {
+                    LaunchedEffect(isDiscordPresenceEnabled, discordPersonalAccessToken) {
+                        if (isDiscordPresenceEnabled && discordPersonalAccessToken.isNotEmpty()) {
                             val presenceManager = DiscordPresenceManager(context, { discordPersonalAccessToken })
                             when (presenceManager.validateToken(discordPersonalAccessToken)) {
                                 true -> {
@@ -157,6 +157,31 @@ internal fun AccountsDiscordCard(search: Search) {
                             icon = R.drawable.musical_notes
                         )
                     }
+
+                    val hasSavedAccount = discordPersonalAccessToken.isNotEmpty()
+                    val accountAction: @Composable () -> Unit = {
+                        OtherSettingsEntry(
+                            modifier = Modifier.settingsSearchTarget(if (hasSavedAccount) "accounts.social_discord.account_logoff" else "accounts.social_discord.account_login"),
+                            title = stringResource(if (hasSavedAccount) R.string.account_action_logout else R.string.account_action_login),
+                            text = stringResource(R.string.discord_login_description),
+                            selectedValueText = if (hasSavedAccount && isDiscordPresenceEnabled) stringResource(R.string.discord_connected_to_discord_account) else null,
+                            icon = R.drawable.logout,
+                            onClick = {
+                                if (hasSavedAccount) {
+                                    discordPersonalAccessToken = ""
+                                    discordUsername = ""
+                                    discordAvatar = ""
+                                    showTokenError = false
+                                } else {
+                                    loginDiscord = true
+                                }
+                            }
+                        )
+                    }
+                    val matchesAccountAction = search.inputValue.isBlank() ||
+                        stringResource(R.string.account_action_login).contains(search.inputValue, true) ||
+                        stringResource(R.string.account_action_logout).contains(search.inputValue, true)
+                    if (!isDiscordPresenceEnabled && hasSavedAccount && matchesAccountAction) accountAction()
 
                     AnimatedVisibility(visible = isDiscordPresenceEnabled) {
                         Column {
@@ -234,24 +259,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                 }
                             }
 
-                            if (search.inputValue.isBlank() || stringResource(R.string.account_action_login).contains(search.inputValue, true) || stringResource(R.string.account_action_logout).contains(search.inputValue, true)) {
-                                OtherSettingsEntry(
-                                    modifier = Modifier.settingsSearchTarget(if (discordPersonalAccessToken.isNotEmpty()) "accounts.social_discord.account_logoff" else "accounts.social_discord.account_login"),
-                                    title = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
-                                    text = stringResource(R.string.discord_login_description),
-                                    selectedValueText = if (discordPersonalAccessToken.isNotEmpty()) stringResource(R.string.discord_connected_to_discord_account) else "",
-                                    icon = R.drawable.logout,
-                                    onClick = {
-                                        if (discordPersonalAccessToken.isNotEmpty()) {
-                                            discordPersonalAccessToken = ""
-                                            discordUsername = ""
-                                            discordAvatar = ""
-                                            showTokenError = false
-                                        } else
-                                            loginDiscord = true
-                                    }
-                                )
-                            }
+                            if (isDiscordPresenceEnabled && matchesAccountAction) accountAction()
 
                             val discordRpcError by DiscordRpcErrorState.error.collectAsStateWithLifecycle()
                             AnimatedVisibility(discordRpcError != null) {
