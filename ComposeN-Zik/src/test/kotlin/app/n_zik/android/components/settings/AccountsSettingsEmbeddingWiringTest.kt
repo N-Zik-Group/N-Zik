@@ -27,6 +27,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
@@ -496,6 +497,19 @@ class AccountsSettingsEmbeddingWiringTest {
 
         composeRule.onNodeWithText(title).assertExists()
 
+    }
+
+    @Test
+    fun `an incomplete YouTube cookie keeps recovery actions and disables authenticated settings`() {
+        mockEncryptedPrefs(cookie = "VISITOR_INFO1_LIVE=fixture", loginEnabled = true)
+        showScreen()
+
+        composeRule.onNodeWithText(context.getString(R.string.settings_account_information_label)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.account_youtube_cookie_invalid)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.account_youtube_change_account)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.account_action_logout)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.settings_youtube_authenticated_browsing_label)).assertIsNotEnabled()
+        composeRule.onNodeWithText(title).assertIsNotEnabled()
     }
 
 

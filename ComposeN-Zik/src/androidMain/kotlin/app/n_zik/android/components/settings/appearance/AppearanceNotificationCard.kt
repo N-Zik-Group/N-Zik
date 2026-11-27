@@ -24,7 +24,7 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
 @Composable
-internal fun AppearanceNotificationCard(search: Search, requestPlayerRestart: () -> Unit) {
+internal fun AppearanceNotificationCard(search: Search) {
     var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Download)
     var notificationPlayerSecondIcon by rememberPreference(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
     val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.settings_section_notification_player_title).contains(search.inputValue, true) || stringResource(R.string.player_notification_first_action).contains(search.inputValue, true) || stringResource(R.string.player_notification_second_action).contains(search.inputValue, true)
@@ -51,10 +51,7 @@ internal fun AppearanceNotificationCard(search: Search, requestPlayerRestart: ()
                         icon = R.drawable.notification2,
                         title = stringResource(R.string.player_notification_first_action),
                         selectedValue = notificationPlayerFirstIcon,
-                        onValueSelected = {
-                            notificationPlayerFirstIcon = it
-                            requestPlayerRestart()
-                        },
+                        onValueSelected = { notificationPlayerFirstIcon = it },
                         valueText = { it.text },
                     )
                 }
@@ -65,10 +62,7 @@ internal fun AppearanceNotificationCard(search: Search, requestPlayerRestart: ()
                         icon = R.drawable.notification2,
                         title = stringResource(R.string.player_notification_second_action),
                         selectedValue = notificationPlayerSecondIcon,
-                        onValueSelected = {
-                            notificationPlayerSecondIcon = it
-                            requestPlayerRestart()
-                        },
+                        onValueSelected = { notificationPlayerSecondIcon = it },
                         valueText = { it.text },
                     )
                 }

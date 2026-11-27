@@ -11,7 +11,6 @@ import app.n_zik.android.R
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.test.isEditable
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +49,7 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.navigationBarPositionKey
+import app.n_zik.android.utils.notificationPlayerFirstIconKey
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.preferences
@@ -121,7 +121,7 @@ class AppearanceSettingsWiringTest {
         composeRule.onNodeWithTag("appearance.card.reset", useUnmergedTree = true).assertDoesNotExist()
     }
 
-    @Test fun notificationActionShowsOneRestartControlWhenThePlayerIsUnavailable() {
+    @Test fun notificationActionPersistsWithoutRequestingAPlayerRestart() {
         val restartState = SettingsPlayerRestartState()
         composeRule.setContent {
             CompositionLocalProvider(
@@ -141,9 +141,8 @@ class AppearanceSettingsWiringTest {
         composeRule.onNodeWithText(context.getString(R.string.player_notification_first_action)).performClick()
         composeRule.onNodeWithText(context.getString(NotificationButtons.Shuffle.textId)).performClick()
         val restart = context.getString(R.string.settings_player_action_restart_service)
-        composeRule.onAllNodesWithText(restart).assertCountEquals(1)
-        composeRule.onNodeWithText(restart).assertIsNotEnabled()
-        composeRule.onNodeWithText(context.getString(R.string.player_restart_service_unavailable_message)).assertExists()
+        composeRule.onNodeWithText(restart).assertDoesNotExist()
+        assertEquals(NotificationButtons.Shuffle.name, context.preferences.getString(notificationPlayerFirstIconKey, null))
     }
 
     @Test fun openingModernAppearancePreservesWhetherEssentialShrinksPausedArtwork() {

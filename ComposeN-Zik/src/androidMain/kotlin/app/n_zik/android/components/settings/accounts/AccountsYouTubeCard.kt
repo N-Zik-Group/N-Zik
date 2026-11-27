@@ -73,6 +73,8 @@ import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.MainApplication
+import app.n_zik.android.MainApplication.CookieStatus
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
@@ -115,7 +117,8 @@ internal fun AccountsYouTubeCard(search: Search) {
     val accountEmail = accountPreferences.getString(ytAccountEmailKey, "").orEmpty()
     val accountChannelHandle = accountPreferences.getString(ytAccountChannelHandleKey, "").orEmpty()
     val accountThumbnail = accountPreferences.getString(ytAccountThumbnailKey, "").orEmpty()
-    val isLoggedIn = !cookie.isNullOrBlank()
+    val hasSavedCookie = !cookie.isNullOrBlank()
+    val isLoggedIn = hasYouTubeAuthCookie(cookie)
 
     // YouTube Music Section
     AnimatedVisibility(
@@ -211,12 +214,12 @@ internal fun AccountsYouTubeCard(search: Search) {
 
                 val accountAction: @Composable () -> Unit = {
                     OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget(if (isLoggedIn) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
-                        title = if (isLoggedIn) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
+                        modifier = Modifier.settingsSearchTarget(if (hasSavedCookie) "accounts.youtube_music.account_logoff" else "accounts.youtube_music.account_login"),
+                        title = if (hasSavedCookie) stringResource(R.string.account_action_logout) else stringResource(R.string.account_action_login),
                         text = stringResource(R.string.account_youtube_login_description),
-                        icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
+                        icon = if (hasSavedCookie) R.drawable.logout else R.drawable.person,
                         onClick = {
-                            if (isLoggedIn) {
+                            if (hasSavedCookie) {
                                 showLogoutDialog = true
                             } else {
                                 changingAccount = false
@@ -225,7 +228,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                         }
                     )
                 }
-                if (!isYouTubeLoginEnabled && isLoggedIn) accountAction()
+                if (!isYouTubeLoginEnabled && hasSavedCookie) accountAction()
 
                 SettingsEntryVisibility(visible = isYouTubeLoginEnabled) {
                     Column {
@@ -311,8 +314,9 @@ internal fun AccountsYouTubeCard(search: Search) {
                             }
                         }
 
-                        // Cookie status warning — show when cookie is invalid/expired
-                        if (isLoggedIn && app.n_zik.android.MainApplication.cookieStatus in listOf(app.n_zik.android.MainApplication.CookieStatus.INVALID, app.n_zik.android.MainApplication.CookieStatus.EXPIRED)) {
+                        val cookieStatus = MainApplication.cookieStatus
+                        val needsSessionRecovery = !isLoggedIn || cookieStatus == CookieStatus.INVALID || cookieStatus == CookieStatus.EXPIRED
+                        if (hasSavedCookie && needsSessionRecovery) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -338,7 +342,7 @@ internal fun AccountsYouTubeCard(search: Search) {
 
                         val changeAccountLabel = stringResource(R.string.account_youtube_change_account)
                         val changeAccountDescription = stringResource(R.string.account_youtube_change_account_description)
-                        if (isLoggedIn && (search.inputValue.isBlank() ||
+                        if (hasSavedCookie && (search.inputValue.isBlank() ||
                                 changeAccountLabel.contains(search.inputValue, ignoreCase = true) ||
                                 changeAccountDescription.contains(search.inputValue, ignoreCase = true))
                         ) {

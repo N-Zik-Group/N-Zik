@@ -179,7 +179,7 @@ internal fun AppearanceSettingsContent(
         }
         if (selectedCards == null || R.string.settings_section_notification_player_title in selectedCards) {
             SettingsCardSlot(R.string.settings_section_notification_player_title, modifier = { cardModifier(R.string.settings_section_notification_player_title) }) {
-                AppearanceNotificationCard(search, requestPlayerRestart)
+                AppearanceNotificationCard(search)
             }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
