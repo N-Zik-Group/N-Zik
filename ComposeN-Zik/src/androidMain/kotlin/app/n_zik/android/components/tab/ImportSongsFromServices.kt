@@ -25,7 +25,7 @@ import app.n_zik.android.R
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importServiceSongsToPlaylist
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber
 
@@ -44,7 +44,7 @@ class ImportSongsFromServices private constructor(
             beforeTransaction: (Int, Map<String, String>, String?) -> Unit = { _,_,_ -> },
             afterTransaction: ( Int, Song, Album, List<Artist> ) -> Unit = { _,_,_,_ -> },
             onImportComplete: ((Long) -> Unit)? = null,
-        ) {
+        ): Boolean {
             val context = appContext()
             var fileName = uri.lastPathSegment ?: context.getString(R.string.playlist_import_default_name)
             context.applicationContext.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
@@ -55,17 +55,11 @@ class ImportSongsFromServices private constructor(
             }
             var activePlaylistId = targetPlaylistId
             var createPlaylist = false
-            var targetPlaylist = if (targetPlaylistId > 0L) {
-                Database.playlistTable.findById(targetPlaylistId).first()
-                    ?: error("Import target playlist no longer exists")
-            } else null
             val importedRows = mutableListOf<ImportedRow>()
             val beforeActions = mutableListOf<() -> Unit>()
 
-            context.applicationContext
-                .contentResolver
-                .openInputStream(uri)
-                ?.use { inputStream ->
+            checkNotNull(context.contentResolver.openInputStream(uri))
+                .use { inputStream ->
 
                     csvReader().open(inputStream) {
                         readAllWithHeaderAsSequence().forEachIndexed { index, row: Map<String, String> ->
@@ -85,14 +79,8 @@ class ImportSongsFromServices private constructor(
 
                                 if (isSpotifyFormat) {
                                     val explicitPrefix = if (row["Explicit"] == "true") EXPLICIT_PREFIX else ""
-                                    val mediaId = row["Track URI"]
-                                    if (mediaId == null) {
-                                        return@parseRow
-                                    }
-                                    val title = row["Track Name"]
-                                    if (title == null) {
-                                        return@parseRow
-                                    }
+                                    val mediaId = row["Track URI"]?.takeIf(String::isNotBlank) ?: return@parseRow
+                                    val title = row["Track Name"]?.takeIf(String::isNotBlank) ?: return@parseRow
                                     val artistsText = row["Artist Name(s)"] ?: ""
                                     val durationText = formatAsDuration(row["Duration (ms)"]?.toLong() ?: 0L)
 
@@ -126,9 +114,10 @@ class ImportSongsFromServices private constructor(
                                     val explicitPrefix = if (row["Explicit"] == "true") "e:" else ""
                                     val pseudoMediaId = (row["Track Name"].orEmpty()+row["Artist Name(s)"].orEmpty()).filter { it.isLetterOrDigit() }
                                     val mediaId = row["MediaId"] ?: pseudoMediaId
-                                    if(mediaId.isEmpty()) return@parseRow
+                                    if (mediaId.isBlank()) return@parseRow
                                     
-                                    val title = row["Title"] ?: row["Track Name"] ?: return@parseRow
+                                    val title = (row["Title"] ?: row["Track Name"])?.takeIf(String::isNotBlank)
+                                        ?: return@parseRow
                                     val artistsText = row["Artists"] ?: row["Artist Name(s)"] ?: ""
 
                                     val durationText = row["Duration"]?.takeIf { it.isNotBlank() } ?: "00:00"
@@ -171,22 +160,23 @@ class ImportSongsFromServices private constructor(
                         
                     }
                 }
-            Database.asyncTransaction {
+            if (importedRows.isEmpty()) return false
+            val songs = importedRows.map { it.song }
+            Database.awaitWriteBatch {
                 transaction {
                     if (createPlaylist) {
                         val newPlaylist = Playlist(name = fileName.substringBeforeLast("."), browseId = source)
                         activePlaylistId = playlistTable.insert(newPlaylist)
-                        targetPlaylist = newPlaylist.copy(id = activePlaylistId)
                     }
                     beforeActions.forEach { it() }
-                    importServiceSongsToPlaylist(targetPlaylist, importedRows.map { it.song }) { index, position ->
+                    importServiceSongsToPlaylist(activePlaylistId.takeIf { it > 0L }, songs) { index, position ->
                         val row = importedRows[index]
                         afterTransaction(position, row.song, row.album, row.artists)
                     }
                 }
-                onImportComplete?.invoke(activePlaylistId)
-                Toaster.done()
             }
+            onImportComplete?.invoke(activePlaylistId)
+            return true
         }
 
         @JvmStatic
@@ -208,8 +198,17 @@ class ImportSongsFromServices private constructor(
                     if( uri == null ) return@rememberLauncherForActivityResult
                     
                     coroutineScope.launch(NzikDispatchers.DATA) {
-                        openFile(uri, playlistIdForMatch, source, likeImported, beforeTransaction,
-                            afterTransaction, onImportComplete)
+                        try {
+                            val imported = openFile(uri, playlistIdForMatch, source, likeImported, beforeTransaction,
+                                afterTransaction, onImportComplete)
+                            if (imported) Toaster.done()
+                            else Toaster.w(R.string.player_no_song_found)
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (error: Exception) {
+                            Timber.tag("Import").w(error, "Service CSV import failed")
+                            Toaster.e(R.string.playlist_import_failed)
+                        }
                     }
                 }
             )

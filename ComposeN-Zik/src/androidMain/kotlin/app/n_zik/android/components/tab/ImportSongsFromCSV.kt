@@ -19,15 +19,15 @@ import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.coroutines.NzikDispatchers
-import app.n_zik.android.utils.playlist.importSongsToPlaylist
-import app.n_zik.android.utils.playlist.mergeCsvImportSongs
-import kotlinx.coroutines.flow.first
+import app.n_zik.android.utils.playlist.importCsvSongs
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.core.utils.DurationUtils
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.utils.csv.SongCSV
 import java.io.InputStream
+import timber.log.Timber
 
 /**
  * Import songs from custom CSV file.
@@ -108,6 +108,28 @@ class ImportSongsFromCSV(
                      }
                  }
 
+        internal suspend fun importFile(
+            input: InputStream,
+            targetPlaylistId: Long = 0L,
+            sourceSuffix: String = "",
+            likeImported: Boolean = false,
+        ): Boolean {
+            val straySongs = mutableListOf<Song>()
+            val playlists = linkedMapOf<Playlist, List<Song>>()
+            processSongs(parseFromCsvFile(input), likeImported).forEach { (identity, songs) ->
+                val (name, sourceId) = identity
+                if (name.isBlank()) {
+                    straySongs.addAll(songs)
+                } else {
+                    val browseId = if (sourceSuffix.isEmpty()) sourceId else "${sourceId}_$sourceSuffix"
+                    playlists[Playlist(name = name, browseId = browseId)] = songs
+                }
+            }
+            if (straySongs.isEmpty() && playlists.isEmpty()) return false
+            Database.awaitWriteBatch { importCsvSongs(targetPlaylistId, straySongs, playlists) }
+            return true
+        }
+
         @Composable
         operator fun invoke(targetPlaylistId: Long = 0L, sourceSuffix: String = "", likeImported: Boolean = false, onImportComplete: (() -> Unit)? = null) = ImportSongsFromCSV(
             rememberLauncherForActivityResult(
@@ -119,45 +141,20 @@ class ImportSongsFromCSV(
                 // Run in background to prevent UI thread
                 // from freezing due to large file.
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    // Songs with no playlist
-                    val straySongs = mutableListOf<Song>()
-                    val combos = mutableMapOf<Playlist, List<Song>>()
-
                     try {
-                        appContext().contentResolver
-                                    .openInputStream( uri )
-                                    ?.use( ::parseFromCsvFile )       // Use [use] because it closes stream on exit
-                                    ?.let { processSongs(it, likeImported) }
-                                    ?.forEach { (playlist, songs) ->
-                                        if( playlist.first.isNotBlank() ) {
-                                            val browseId = if (sourceSuffix.isNotEmpty()) "${playlist.second}_$sourceSuffix" else playlist.second
-                                            val realPlaylist = Playlist(name = playlist.first, browseId = browseId)
-                                            combos[realPlaylist] = songs
-                                        } else
-                                            straySongs.addAll( songs )
-                                    }
-
-                        val targetPlaylist = if (targetPlaylistId > 0L) {
-                            Database.playlistTable.findById(targetPlaylistId).first()
-                                ?: error("Import target playlist no longer exists")
-                        } else null
-                        Database.asyncTransaction {
-                            if (targetPlaylist != null) {
-                                // One batch preserves the previous stray/group order when prepending.
-                                importSongsToPlaylist(targetPlaylist, straySongs + combos.values.flatten())
-                            } else {
-                                mergeCsvImportSongs(straySongs)
-                                combos.forEach { (playlist, songs) ->
-                                    mergeCsvImportSongs(songs)
-                                    mapIgnore( playlist, *songs.toTypedArray() )
-                                }
-                            }
-
-                            // Show message when it's done
-                            Toaster.done()
-                            onImportComplete?.invoke()
+                        val imported = checkNotNull(appContext().contentResolver.openInputStream(uri)).use { input ->
+                            importFile(input, targetPlaylistId, sourceSuffix, likeImported)
                         }
+                        if (!imported) {
+                            Toaster.w(R.string.player_no_song_found)
+                            return@launch
+                        }
+                        Toaster.done()
+                        onImportComplete?.invoke()
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
                     } catch ( e: Exception ) {
+                        Timber.tag("Import").w(e, "N-Zik CSV import failed")
                         when( e ) {
                             is InvalidHeaderException   -> Toaster.e( R.string.playlist_import_unsupported_format )
                             else                        -> Toaster.e( R.string.playlist_import_failed )

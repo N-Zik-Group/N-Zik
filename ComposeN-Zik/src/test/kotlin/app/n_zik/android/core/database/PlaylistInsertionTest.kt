@@ -13,6 +13,7 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.appContext
+import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.menu.playlist.importOnlinePlaylist
 import app.n_zik.android.core.sync.FavoriteAction
@@ -41,8 +42,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -251,9 +250,37 @@ class PlaylistInsertionTest {
 
         assertEquals(PlaylistAddResult.Unavailable, Database.addTracksToStoredPlaylist(remote.id, listOf(device)))
         assertEquals(emptyList<String>(), ids())
-        assertEquals(PlaylistAddResult.Added, Database.addTracksToStoredPlaylist(remote.id, listOf(device, online)))
+        assertEquals(PlaylistAddResult.Unavailable, Database.addTracksToStoredPlaylist(remote.id, listOf(device, online)))
+        assertEquals(emptyList<String>(), ids())
+        assertEquals(PlaylistAddResult.Added, Database.addTracksToStoredPlaylist(remote.id, listOf(online)))
         assertEquals(listOf("A"), ids())
         assertEquals(PlaylistAddResult.Unavailable, Database.addTracksToStoredPlaylist(remote.id, listOf(online), localDestinationsOnly = true))
+    }
+
+    // JUnit is synchronous, while the CSV import awaits its Room write batch.
+    @Test fun `CSV rejects device tracks atomically for the stored YouTube destination`() = runBlocking<Unit> {
+        db.playlistTable.insert(playlist.copy(browseId = "VLPLremote"))
+        val deviceId = "${LOCAL_KEY_PREFIX}123"
+        val onlineId = "dQw4w9WgXcQ"
+        suspend fun importCsv(vararg ids: String) {
+            val csv = buildString {
+                appendLine("PlaylistBrowseId,PlaylistName,MediaId,Title,Artists,Duration,ThumbnailUrl")
+                ids.forEach { appendLine(",Local CSV,$it,Track Title,Artist,100,") }
+            }
+            csv.byteInputStream().use { ImportSongsFromCSV.importFile(it, targetPlaylistId = playlist.id) }
+        }
+
+        assertTrue(runCatching { importCsv(deviceId) }.isFailure)
+        assertTrue(runCatching { importCsv(onlineId, deviceId) }.isFailure)
+        assertEquals(emptyList<String>(), ids())
+        assertEquals(emptyList<Song>(), db.songTable.findByIdsDirect(listOf(deviceId, onlineId)))
+
+        importCsv(onlineId)
+        assertEquals(listOf(onlineId), ids())
+
+        db.playlistTable.update(playlist)
+        importCsv(onlineId, deviceId)
+        assertEquals(listOf(onlineId, deviceId), ids())
     }
 
     @Test fun `generated playlist id supports normal default insertion`() = runBlocking<Unit> {
@@ -263,6 +290,14 @@ class PlaylistInsertionTest {
             while (it.moveToNext()) result += it.getString(0)
             assertEquals(listOf("C", "D"), result)
         }
+    }
+
+    @Test fun `native CSV without usable tracks does not import a playlist`() = runBlocking<Unit> {
+        val csv = "PlaylistBrowseId,PlaylistName,MediaId,Title,Artists,Duration,ThumbnailUrl\n" +
+            ",Empty playlist,,Track Title,Artist,100,\n"
+        val imported = csv.byteInputStream().use { ImportSongsFromCSV.importFile(it) }
+        assertFalse(imported)
+        assertTrue(db.playlistTable.getAll().isEmpty())
     }
 
     @Test fun `YouTube and CSV import batch prepends in order and still upserts existing metadata`() = runBlocking<Unit> {
@@ -279,7 +314,7 @@ class PlaylistInsertionTest {
         add("A", "B")
         begin()
         val observedPositions = mutableListOf<Int>()
-        importServiceSongsToPlaylist(playlist, listOf(Song.makePlaceholder("C"), Song.makePlaceholder("D"), Song.makePlaceholder("A"))) { _, position ->
+        importServiceSongsToPlaylist(playlist.id, listOf(Song.makePlaceholder("C"), Song.makePlaceholder("D"), Song.makePlaceholder("A"))) { _, position ->
             observedPositions += position
         }
         assertEquals(listOf("C", "D", "A", "B"), ids())
@@ -317,24 +352,68 @@ class PlaylistInsertionTest {
         begin()
         val csv = File.createTempFile("service-import", ".csv", context.cacheDir)
         csv.writeText("Track URI,Track Name,Artist Name(s),Duration (ms)\nC,First,Artist,1000\nD,Second,Artist,2000\nC,Duplicate,Artist,1000\n")
-        val finished = CountDownLatch(1)
         val callbacks = mutableListOf<Int>()
         var completedOrder = emptyList<String>()
         try {
-            // The synchronous JUnit method waits for the suspend file reader and queued Room transaction.
-            runBlocking {
-                ImportSongsFromServices.openFile(
-                    Uri.fromFile(csv), targetPlaylistId = playlist.id,
-                    afterTransaction = { position, _, _, _ -> callbacks += position },
-                    onImportComplete = { completedOrder = ids(); finished.countDown() },
-                )
-            }
-            assertTrue("import completion callback", finished.await(5, TimeUnit.SECONDS))
+            assertTrue(ImportSongsFromServices.openFile(
+                Uri.fromFile(csv), targetPlaylistId = playlist.id,
+                afterTransaction = { position, _, _, _ -> callbacks += position },
+                onImportComplete = { completedOrder = ids() },
+            ))
             assertEquals(listOf("C", "D", "A", "B"), completedOrder)
             assertEquals(listOf(0, 1, 0), callbacks)
             assertEquals(0, db.importSongTable.getPosition("C", playlist.id))
             assertEquals(1, db.importSongTable.getPosition("D", playlist.id))
             assertEquals("First", db.songTable.findByIdDirect("C")?.title)
+        } finally {
+            csv.delete()
+        }
+    }
+
+    @Test fun `empty service CSV input neither creates a playlist nor reports completion`() = runBlocking<Unit> {
+        val csv = File.createTempFile("empty-service-import", ".csv", context.cacheDir)
+        try {
+            val inputs = listOf(
+                "Bad,Header\nFoo,Bar\n",
+                "Track URI,Track Name\n,Missing URI\n",
+                "MediaId,Title,AlbumId,ArtistIds\n,Missing ID,album,artist\n",
+            )
+            inputs.forEach { input ->
+                csv.writeText(input)
+                val imported = ImportSongsFromServices.openFile(
+                    Uri.fromFile(csv),
+                    onImportComplete = { error("Empty CSV must not complete") },
+                )
+                assertFalse(imported)
+                assertTrue(db.playlistTable.getAll().isEmpty())
+                assertEquals(null, db.songTable.findByIdDirect(""))
+            }
+        } finally {
+            csv.delete()
+        }
+    }
+
+    @Test fun `RiPlay CSV rejects mixed tracks atomically for a stored YouTube destination`() = runBlocking<Unit> {
+        db.playlistTable.insert(playlist.copy(browseId = "VLPLremote"))
+        val onlineId = "dQw4w9WgXcQ"
+        val deviceId = "${LOCAL_KEY_PREFIX}123"
+        val csv = File.createTempFile("riplay-import", ".csv", context.cacheDir)
+        try {
+            csv.writeText("MediaId,Title,AlbumId\n$onlineId,Remote,album\n$deviceId,Device,album\n")
+            val result = runCatching {
+                ImportSongsFromServices.openFile(
+                    Uri.fromFile(csv), targetPlaylistId = playlist.id,
+                    onImportComplete = { error("Rejected CSV must not complete") },
+                )
+            }
+            assertTrue(result.isFailure)
+            assertTrue(ids().isEmpty())
+            assertTrue(db.songTable.findByIdsDirect(listOf(onlineId, deviceId)).isEmpty())
+            assertEquals(null, db.importSongTable.getPosition(deviceId, playlist.id))
+
+            db.playlistTable.update(playlist)
+            assertTrue(ImportSongsFromServices.openFile(Uri.fromFile(csv), targetPlaylistId = playlist.id))
+            assertEquals(listOf(onlineId, deviceId), ids())
         } finally {
             csv.delete()
         }

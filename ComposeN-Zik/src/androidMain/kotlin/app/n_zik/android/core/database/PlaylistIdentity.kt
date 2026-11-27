@@ -85,6 +85,10 @@ fun isReadOnlyPlaylistSource(playlist: Playlist): Boolean =
 fun canEditPlaylistMembership(playlist: Playlist): Boolean =
     !isReadOnlyPlaylistSource(playlist) && !RewindPlaylists.isRewind(playlist.cleanName())
 
+internal fun canAddTracksToPlaylist(playlist: Playlist, localDestinationsOnly: Boolean): Boolean =
+    canEditPlaylistMembership(playlist) &&
+        (!localDestinationsOnly || !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist))
+
 /** Rechecks an existing target inside the caller's database transaction. */
 suspend fun canEditStoredPlaylistMembership(playlistId: Long): Boolean =
     Database.playlistTable.getAll().firstOrNull { it.id == playlistId }
@@ -102,9 +106,7 @@ internal suspend fun Database.addTracksToStoredPlaylist(
     var result = PlaylistAddResult.Unavailable
     transaction {
         val playlist = playlistTable.findById(playlistId).first() ?: return@transaction
-        if (!canEditPlaylistMembership(playlist)) return@transaction
-        val remote = isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
-        if (remote && (localDestinationsOnly || songs.any { it.isLocal })) return@transaction
+        if (!canAddTracksToPlaylist(playlist, localDestinationsOnly || songs.any(Song::isLocal))) return@transaction
 
         result = if (mapMissingPlaylistSongs(playlist, songs) > 0) {
             PlaylistAddResult.Added

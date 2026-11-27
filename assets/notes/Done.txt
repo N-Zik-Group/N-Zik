@@ -1704,3 +1704,7 @@ Playlist:
 Playlist:
 - fix(playlist): match album and artist actions to eligible tracks
   - Lock incompatible destinations for captured device files and derive Home bulk actions from the same track eligibility as their loaders.
+
+Playlist:
+- fix(playlist): report actual CSV import outcomes
+  - Validate the stored destination and the usable data before writing, then show success only after the complete import commits.

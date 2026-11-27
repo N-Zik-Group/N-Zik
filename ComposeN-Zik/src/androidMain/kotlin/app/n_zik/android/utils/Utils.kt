@@ -48,7 +48,7 @@ import app.n_zik.android.core.database.PlaylistAddResult
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.addTracksToStoredPlaylist
 import app.n_zik.android.core.database.canEditPlaylistMembership
-import app.n_zik.android.core.database.isYouTubePlaylistSource
+import app.n_zik.android.core.database.canAddTracksToPlaylist
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.EXPLICIT_PREFIX
@@ -592,14 +592,12 @@ internal suspend fun addPlaylistItemsFromMenu(
     val playlistId = confirmedPlaylist.id
     return playlistAddMutex.withLock {
         if (!ProfileWorkOwner.isBound(context, owner)) return@withLock PlaylistAddResult.Unavailable
-        val playlist = Database.playlistTable.findById(playlistId).first()
-            ?.takeIf(::canEditPlaylistMembership) ?: return@withLock PlaylistAddResult.Unavailable
+        val playlist = Database.playlistTable.findById(playlistId).first() ?: return@withLock PlaylistAddResult.Unavailable
         val browseId = playlist.browseId
         if (browseId != confirmedPlaylist.browseId || playlist.isYoutubePlaylist != confirmedPlaylist.isYoutubePlaylist) {
             return@withLock PlaylistAddResult.Unavailable
         }
-        val remoteSource = isYouTubePlaylistSource(browseId, playlist.isYoutubePlaylist)
-        if (remoteSource && (localDestinationsOnly || mediaItems.any { it.isLocal })) {
+        if (!canAddTracksToPlaylist(playlist, localDestinationsOnly || mediaItems.any(MediaItem::isLocal))) {
             return@withLock PlaylistAddResult.Unavailable
         }
         val items = mediaItems.distinctBy { it.asSong.id }
