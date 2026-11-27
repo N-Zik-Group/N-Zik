@@ -106,7 +106,7 @@ class VisualizerSettingsMenu private constructor(
 
         DialogPresence(visible = isShowingCustomColorPicker) {
             val customColorString = stringResource(R.string.common_color_custom)
-            DialogColorPicker(onDismiss = { isShowingCustomColorPicker = false }) {
+            DialogColorPicker(onDismiss = { isShowingCustomColorPicker = false }, initialColor = Color(visualizerCustomColor)) {
                 visualizerCustomColor = it.toArgb()
                 isShowingCustomColorPicker = false
                 Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
@@ -226,6 +226,7 @@ class VisualizerSettingsMenu private constructor(
                     GridMenu.Entry(
                         text = stringResource(R.string.common_color_custom),
                         icon = { SettingIcon(R.drawable.color_palette) },
+                        iconHasOwnBackground = true,
                         onClick = { isShowingCustomColorPicker = true },
                         trailingContent = {
                             Box(
@@ -370,6 +371,7 @@ class VisualizerSettingsMenu private constructor(
             GridMenu.Entry(
                 text = title,
                 icon = { SettingIcon(icon) },
+                iconHasOwnBackground = true,
                 subtitle = subtitle,
                 modifier = Modifier.menuToggleSemantics(isChecked),
                 onClick = { onCheckedChange(!isChecked) },
@@ -433,6 +435,7 @@ class VisualizerSettingsMenu private constructor(
             GridMenu.Entry(
                 text = title,
                 icon = { SettingIcon(icon) },
+                iconHasOwnBackground = true,
                 subtitle = valueText(selectedValue),
                 onClick = { isShowingDialog = true },
                 trailingContent = trailingContent

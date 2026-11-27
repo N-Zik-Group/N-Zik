@@ -12,7 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +24,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,11 +43,12 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toRect
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.graphics.Color as AndroidColor
 import app.n_zik.android.uiRoundnessShape
@@ -54,17 +58,18 @@ import android.graphics.LinearGradient
 @Composable
 fun DialogColorPicker(
     onDismiss: () -> Unit,
+    initialColor: Color,
     onColorSelected: (Color) -> Unit
 ) {
     val hsv = remember {
         val hsv = floatArrayOf(0f, 0f, 0f)
-        AndroidColor.colorToHSV(Color.Blue.toArgb(), hsv)
+        AndroidColor.colorToHSV(initialColor.toArgb(), hsv)
         mutableStateOf(
             Triple(hsv[0], hsv[1], hsv[2])
         )
     }
     val backgroundColor = remember(hsv.value) {
-        mutableStateOf(Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third))
+        mutableStateOf(Color.hsv(hsv.value.first, hsv.value.second, hsv.value.third, initialColor.alpha))
     }
 
     DefaultDialog(
@@ -86,13 +91,13 @@ fun DialogColorPicker(
             verticalArrangement = Arrangement.Center
         ) {
 
-            SatValPanel(hue = hsv.value.first) { sat, value ->
+            SatValPanel(hue = hsv.value.first, saturation = hsv.value.second, brightness = hsv.value.third) { sat, value ->
                 hsv.value = Triple(hsv.value.first, sat, value)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            HueBar { hue ->
+            HueBar(selectedHue = hsv.value.first) { hue ->
                 hsv.value = Triple(hue, hsv.value.second, hsv.value.third)
             }
 
@@ -114,27 +119,38 @@ internal fun ColorPreviewSwatch(color: Color, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun SatValPanel(
+private fun SatValPanel(
     hue: Float,
+    saturation: Float,
+    brightness: Float,
     setSatVal: (Float, Float) -> Unit
 ) {
     val interactionSource = remember {
         MutableInteractionSource()
     }
-    val scope = rememberCoroutineScope()
-    var sat: Float
-    var value: Float
-    val pressOffset = remember {
-        mutableStateOf(Offset.Zero)
+    var panelSize by remember { mutableStateOf(IntSize.Zero) }
+    val onChange by rememberUpdatedState(setSatVal)
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            (interaction as? PressInteraction.Press)?.pressPosition?.let { position ->
+                val size = panelSize
+                if (size.width > 0 && size.height > 0) {
+                    onChange(
+                        (position.x / size.width).coerceIn(0f, 1f),
+                        (1f - position.y / size.height).coerceIn(0f, 1f),
+                    )
+                }
+            }
+        }
     }
     Canvas(
         modifier = Modifier
             .size(300.dp)
+            .onSizeChanged { panelSize = it }
             .emitDragGesture(interactionSource)
             .clip(uiRoundnessShape())
     ) {
         val cornerRadius = 12.dp.toPx()
-        val satValSize = size
         val bitmap = Bitmap.createBitmap(size.width.toInt(), size.height.toInt(), Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         val satValPanel = RectF(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
@@ -165,39 +181,11 @@ fun SatValPanel(
             panel = satValPanel
         )
 
-        fun pointToSatVal(pointX: Float, pointY: Float): Pair<Float, Float> {
-            val width = satValPanel.width()
-            val height = satValPanel.height()
-            val x = when {
-                pointX < satValPanel.left -> 0f
-                pointX > satValPanel.right -> width
-                else -> pointX - satValPanel.left
-            }
-            val y = when {
-                pointY < satValPanel.top -> 0f
-                pointY > satValPanel.bottom -> height
-                else -> pointY - satValPanel.top
-            }
-            val satPoint = 1f / width * x
-            val valuePoint = 1f - 1f / height * y
-            return satPoint to valuePoint
-        }
-        scope.collectForPress(interactionSource) { pressPosition ->
-            val pressPositionOffset = Offset(
-                pressPosition.x.coerceIn(0f..satValSize.width),
-                pressPosition.y.coerceIn(0f..satValSize.height)
-            )
-
-            pressOffset.value = pressPositionOffset
-            val (satPoint, valuePoint) = pointToSatVal(pressPositionOffset.x, pressPositionOffset.y)
-            sat = satPoint
-            value = valuePoint
-            setSatVal(sat, value)
-        }
+        val selection = Offset(saturation * size.width, (1f - brightness) * size.height)
         drawCircle(
             color = Color.White,
             radius = 8.dp.toPx(),
-            center = pressOffset.value,
+            center = selection,
             style = Stroke(
                 width = 2.dp.toPx()
             )
@@ -205,7 +193,7 @@ fun SatValPanel(
         drawCircle(
             color = Color.White,
             radius = 2.dp.toPx(),
-            center = pressOffset.value,
+            center = selection,
         )
 
     }
@@ -227,24 +215,28 @@ private fun Modifier.emitDragGesture(
 }
 
 @Composable
-fun HueBar(
+private fun HueBar(
+    selectedHue: Float,
     setColor: (Float) -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    val interactionSource = remember {
-        MutableInteractionSource()
-    }
-    val pressOffset = remember {
-        mutableStateOf(Offset.Zero)
+    val interactionSource = remember { MutableInteractionSource() }
+    var panelSize by remember { mutableStateOf(IntSize.Zero) }
+    val onChange by rememberUpdatedState(setColor)
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            (interaction as? PressInteraction.Press)?.pressPosition?.let { position ->
+                if (panelSize.width > 0) onChange((position.x / panelSize.width).coerceIn(0f, 1f) * 360f)
+            }
+        }
     }
     Canvas(
         modifier = Modifier
             .height(40.dp)
             .width(300.dp)
+            .onSizeChanged { panelSize = it }
             .clip(uiRoundnessShape())
             .emitDragGesture(interactionSource)
     ) {
-        val drawScopeSize = size
         val bitmap = Bitmap.createBitmap(size.width.toInt(), size.height.toInt(), Bitmap.Config.ARGB_8888)
         val hueCanvas = Canvas(bitmap)
         val huePanel = RectF(0f, 0f, bitmap.width.toFloat(), bitmap.height.toFloat())
@@ -264,47 +256,16 @@ fun HueBar(
             bitmap = bitmap,
             panel = huePanel
         )
-        fun pointToHue(pointX: Float): Float {
-            val width = huePanel.width()
-            val x = when {
-                pointX < huePanel.left -> 0F
-                pointX > huePanel.right -> width
-                else -> pointX - huePanel.left
-            }
-            return x * 360f / width
-        }
-
-        scope.collectForPress(interactionSource) { pressPosition ->
-            val pressPos = pressPosition.x.coerceIn(0f..drawScopeSize.width)
-            pressOffset.value = Offset(pressPos, 0f)
-            val selectedHue = pointToHue(pressPos)
-            setColor(selectedHue)
-        }
-
         drawCircle(
             Color.White,
             radius = size.height/2,
-            center = Offset(pressOffset.value.x, size.height/2),
+            center = Offset(selectedHue / 360f * size.width, size.height / 2),
             style = Stroke(
                 width = 2.dp.toPx()
             )
         )
     }
 }
-
-fun CoroutineScope.collectForPress(
-    interactionSource: InteractionSource,
-    setOffset: (Offset) -> Unit
-) {
-    launch {
-        interactionSource.interactions.collect { interaction ->
-            (interaction as? PressInteraction.Press)
-                ?.pressPosition
-                ?.let(setOffset)
-        }
-    }
-}
-
 
 private fun DrawScope.drawBitmap(
     bitmap: Bitmap,

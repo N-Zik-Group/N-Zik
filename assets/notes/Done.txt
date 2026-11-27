@@ -1576,3 +1576,7 @@ Menus:
 Settings:
 - fix(settings): apply download quality and Discord changes live
   - Use the existing runtime listeners when changing download quality, disabling Discord or signing out.
+
+Menus / Settings:
+- fix(dialog): open color pickers on the saved color
+  - Initialize the preview and selection markers from the current setting and collect pointer events once per control.

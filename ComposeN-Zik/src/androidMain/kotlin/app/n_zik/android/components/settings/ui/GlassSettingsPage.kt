@@ -538,7 +538,7 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
             },
         )
         DialogPresence(visible = showColorPicker) {
-            DialogColorPicker(onDismiss = { showColorPicker = false }) {
+            DialogColorPicker(onDismiss = { showColorPicker = false }, initialColor = chosen) {
                 onColor(it.toArgb())
                 showColorPicker = false
             }

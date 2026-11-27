@@ -436,7 +436,7 @@ fun ColorSettingEntry(
     )
 
     DialogPresence(visible = showColorPicker) {
-        DialogColorPicker(onDismiss = { showColorPicker = false }) {
+        DialogColorPicker(onDismiss = { showColorPicker = false }, initialColor = color) {
             onColorSelected(it)
             showColorPicker = false
             Toaster.n( R.string.settings_theme_color_applied_format, title )

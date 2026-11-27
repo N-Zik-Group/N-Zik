@@ -204,7 +204,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                         )
                     }
                     DialogPresence(visible = showColorPicker) {
-                        DialogColorPicker(onDismiss = { showColorPicker = false }) {
+                        DialogColorPicker(onDismiss = { showColorPicker = false }, initialColor = androidx.compose.ui.graphics.Color(lyricsCustomColor)) {
                             lyricsCustomColor = it.toArgb()
                             showColorPicker = false
                             Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
