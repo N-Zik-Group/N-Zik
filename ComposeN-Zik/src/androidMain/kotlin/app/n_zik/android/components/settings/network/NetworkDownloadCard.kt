@@ -21,6 +21,8 @@ import app.n_zik.android.utils.autoDownloadSongWhenPlaylistBookmarkedKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SETTINGS_CARD_ENTER_MILLIS
+import app.n_zik.android.components.settings.common.SETTINGS_CARD_EXIT_MILLIS
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -53,12 +55,12 @@ internal fun NetworkDownloadCard(query: String, searchTarget: String) {
 
             AnimatedVisibility(
                 visible = autoDownloadSong || revealCategoryOptions,
-                enter = fadeIn(animationSpec = tween(400)) + scaleIn(
-                    animationSpec = tween(400),
+                enter = fadeIn(animationSpec = tween(SETTINGS_CARD_ENTER_MILLIS)) + scaleIn(
+                    animationSpec = tween(SETTINGS_CARD_ENTER_MILLIS),
                     initialScale = 0.9f
                 ),
-                exit = fadeOut(animationSpec = tween(200)) + scaleOut(
-                    animationSpec = tween(200),
+                exit = fadeOut(animationSpec = tween(SETTINGS_CARD_EXIT_MILLIS)) + scaleOut(
+                    animationSpec = tween(SETTINGS_CARD_EXIT_MILLIS),
                     targetScale = 0.9f
                 )
             ) {

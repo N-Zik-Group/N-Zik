@@ -1816,3 +1816,7 @@ Playlists:
 Playlists:
 - fix(playlist): keep the All filter anchored consistently
   - Share the chip order with Library and the picker and lock the first filter in Settings.
+
+Settings:
+- fix(settings): align card headings and transition durations
+  - Allow two title lines and consistent animation timings across native and Glass settings.

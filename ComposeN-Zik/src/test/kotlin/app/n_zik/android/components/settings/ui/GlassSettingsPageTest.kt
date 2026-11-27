@@ -44,7 +44,6 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
-import androidx.compose.ui.test.hasAnySibling
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasContentDescription
@@ -361,7 +360,11 @@ class GlassSettingsPageTest {
         composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true).assertIsDisplayed()
         composeRule.onNodeWithText(context.getString(R.string.glass_effect_ripple_size)).assertIsNotEnabled()
         val prerequisite = "${context.getString(R.string.glass_effect_ripple_enabled)} › ${context.getString(R.string.common_state_on)}"
-        composeRule.onNodeWithText(context.getString(R.string.settings_target_prerequisite, prerequisite), substring = true).assertIsDisplayed()
+        composeRule.onNode(
+            hasText(context.getString(R.string.settings_target_prerequisite, prerequisite), substring = true) and
+                hasAnyAncestor(SemanticsMatcher.expectValue(SettingsTargetId, target)),
+            useUnmergedTree = true,
+        ).assertIsDisplayed()
         assertFalse(store.read().rippleEnabled)
         assertEquals(before, context.preferences.all)
     }
@@ -423,7 +426,11 @@ class GlassSettingsPageTest {
                     .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
             }.isSuccess
         }
-        assertEquals(listOf(context.getString(R.string.settings_target_unavailable)), messages)
+        val quality = context.getString(R.string.glass_effect_rendering_quality)
+        val balanced = context.getString(R.string.glass_effect_quality_balanced)
+        val high = context.getString(R.string.glass_effect_quality_high)
+        val prerequisite = "$quality › $balanced / $high"
+        assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, prerequisite)), messages)
         assertEquals(before, store.read())
         assertEquals(listOf(query), SearchHistoryStore.all(context.preferences, SearchHistoryStore.PAGE_SETTINGS_GLASS))
     }
@@ -495,11 +502,15 @@ class GlassSettingsPageTest {
             composeRule.mainClock.advanceTimeBy(100)
             composeRule.waitForIdle()
             val openingHeight = height()
+            composeRule.mainClock.advanceTimeBy(200)
+            composeRule.waitForIdle()
+            val heightWithinBudget = height()
             composeRule.mainClock.advanceTimeBy(500)
             composeRule.waitForIdle()
             val expandedHeight = height()
             assertTrue("Opening: $collapsedHeight < $openingHeight < $expandedHeight",
                 openingHeight > collapsedHeight && openingHeight < expandedHeight)
+            assertEquals("Opening must settle within the 300 ms budget", expandedHeight, heightWithinBudget, 1f)
             startTransition()
             composeRule.mainClock.advanceTimeBy(64)
             composeRule.waitForIdle()
@@ -705,8 +716,7 @@ class GlassSettingsPageTest {
     private fun assertSelectedChoice(label: Int) {
         composeRule.onNode(
             SemanticsMatcher.expectValue(SemanticsProperties.Selected, true) and
-                hasAnySibling(hasText(context.getString(label))),
-            useUnmergedTree = true,
+                hasText(context.getString(label)),
         ).assertExists()
     }
 

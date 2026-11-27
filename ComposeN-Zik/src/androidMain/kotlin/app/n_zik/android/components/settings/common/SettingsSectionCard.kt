@@ -110,7 +110,8 @@ fun SettingsSectionCard(
         (glassSettings.enabled && glassSettings.mode(GlassArea.Switches) != GlassAreaMode.Disabled)
     val chevronRotation by animateFloatAsState(
         targetValue = if (expanded == true) 90f else 0f,
-        animationSpec = tween(300), label = "settingsSectionExpansion",
+        animationSpec = tween(if (expanded == true) SETTINGS_CARD_ENTER_MILLIS else SETTINGS_CARD_EXIT_MILLIS),
+        label = "settingsSectionExpansion",
     )
     GlassControlOverflowColumn {
         AnimatedVisibility(
@@ -118,7 +119,9 @@ fun SettingsSectionCard(
             enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
             exit = if (overflow) settingsCardOverflowExit else settingsCardExit
         ) {
-            Column(modifier = modifier.fillMaxWidth().then(if (overflow) glassOverflowFade(400, 200) else Modifier)) {
+            Column(modifier = modifier.fillMaxWidth().then(
+                if (overflow) glassOverflowFade(SETTINGS_CARD_ENTER_MILLIS, SETTINGS_CARD_EXIT_MILLIS) else Modifier,
+            )) {
                 SettingsCardSurface(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -171,11 +174,11 @@ fun SettingsSectionCard(
 
                             Column(Modifier.weight(1f)) {
                                 if (shimmerHeader) {
-                                    MeasuredMetadataPlaceholder(displayTitle, typography().xs.semiBold, maxLines = 1)
+                                    MeasuredMetadataPlaceholder(displayTitle, typography().xs.semiBold, maxLines = 2)
                                 } else BasicText(
                                     text = displayTitle,
                                     style = typography().xs.semiBold.copy(color = colorPalette().text),
-                                    maxLines = 1,
+                                    maxLines = 2,
                                     overflow = TextOverflow.Ellipsis,
                                 )
                                 if (showDescription && !description.isNullOrEmpty()) {
@@ -211,7 +214,9 @@ fun SettingsSectionCard(
                             enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
                             exit = if (overflow) settingsCardOverflowExit else settingsCardExit,
                         ) {
-                            Column(Modifier.then(if (overflow) glassOverflowFade(400, 200) else Modifier)) {
+                            Column(Modifier.then(
+                                if (overflow) glassOverflowFade(SETTINGS_CARD_ENTER_MILLIS, SETTINGS_CARD_EXIT_MILLIS) else Modifier,
+                            )) {
                                 groupedContent()
                             }
                         }

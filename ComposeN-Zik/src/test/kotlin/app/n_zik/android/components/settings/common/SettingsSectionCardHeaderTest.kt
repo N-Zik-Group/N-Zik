@@ -14,13 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -53,6 +56,7 @@ class SettingsSectionCardHeaderTest {
     private fun checkHeader(glass: Boolean) {
         val expanded = mutableStateOf(false)
         val settings = GlassSettings(enabled = glass, quality = GlassQuality.Performance)
+        val title = "Auto Sync Imported Playlists"
         val summary = "Menus, sheets, dialogs and temporary messages."
         compose.setContent {
             val shape = RoundedCornerShape(28.dp)
@@ -63,7 +67,7 @@ class SettingsSectionCardHeaderTest {
                 GlassRippleProvider(settings) {
                     Column(Modifier.width(320.dp).background(DefaultDarkColorPalette.background0)) {
                         SettingsSectionCard(
-                            title = "Windows and messages", icon = R.drawable.sort_grid,
+                            title = title, icon = R.drawable.sort_grid,
                             description = summary, expanded = expanded.value,
                             headerModifier = Modifier.testTag("header"),
                             onHeaderClick = { expanded.value = !expanded.value },
@@ -86,6 +90,12 @@ class SettingsSectionCardHeaderTest {
         }
         val baseline = mask()
         assertTrue("The full four-cell glyph must be present", baseline.count { it } > 40)
+        val titleLayouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithText(title, useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(titleLayouts) }
+        val titleLayout = titleLayouts.single()
+        assertEquals(2, titleLayout.lineCount)
+        assertTrue(!titleLayout.hasVisualOverflow)
         compose.onNodeWithText(summary, useUnmergedTree = true).assertIsDisplayed()
         val beforeRipple = header.captureToImage().toPixelMap()
         compose.mainClock.autoAdvance = false
