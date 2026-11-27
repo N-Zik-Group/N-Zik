@@ -15,6 +15,7 @@ import app.n_zik.android.utils.ARTIST_LINKED_NAMES_EXTRA
 import app.n_zik.android.utils.alignInfosToDisplayOrder
 import app.n_zik.android.utils.artistLinksWithStoredFallback
 import app.n_zik.android.utils.readMediaItemArtistLinks
+import app.n_zik.android.utils.usableTrackArtistName
 
 @Composable
 internal fun rememberTrackMenuArtists(
@@ -52,8 +53,18 @@ internal fun mergeTrackMenuArtistCredits(
     sourceNames: List<String>,
 ): List<Info> {
     val linkedNames = (resolvedLinks + sourceLinks).mapNotNull(Info::name)
-    val unlinkedCredits = sourceNames.filterNot { name ->
-        linkedNames.any { cleanPrefix(it).trim().equals(cleanPrefix(name).trim(), ignoreCase = true) }
-    }
+    val unlinkedCredits = unlinkedTrackMenuArtistNames(sourceNames, linkedNames)
     return resolvedLinks + unlinkedCredits.map { Info("", it) }
+}
+
+internal fun unlinkedTrackMenuArtistNames(
+    names: List<String>,
+    linkedNames: List<String> = emptyList(),
+): List<String> {
+    val linkedKeys = linkedNames.mapTo(HashSet()) { cleanPrefix(it).trim().lowercase() }
+    return names.mapNotNull { name ->
+        usableTrackArtistName(name)?.lowercase()?.let { key -> key to name }
+    }.distinctBy { (key, _) -> key }
+        .filterNot { (key, _) -> key in linkedKeys }
+        .map { (_, name) -> name }
 }

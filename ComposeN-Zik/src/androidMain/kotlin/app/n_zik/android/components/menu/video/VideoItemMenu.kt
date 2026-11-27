@@ -97,6 +97,7 @@ import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.menu.player.playerMenuMediaItem
 import app.n_zik.android.utils.resolveTrackArtistName
 import app.n_zik.android.components.menu.song.rememberTrackMenuArtists
+import app.n_zik.android.components.menu.song.unlinkedTrackMenuArtistNames
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.song.chooseTrackArtist
 import app.n_zik.android.components.song.rememberTrackAlbumLink
@@ -437,7 +438,7 @@ class VideoItemMenu private constructor(
                 if (artistNames.size <= 1) {
                     goToArtistFallback.takeIf { it.isEnabled }?.let(::add)
                 } else {
-                    artistNames.forEach { artistName ->
+                    unlinkedTrackMenuArtistNames(artistNames).forEach { artistName ->
                         add(GoToArtist(navController, song, menuState, artistName = artistName))
                     }
                 }

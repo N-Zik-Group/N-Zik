@@ -9,6 +9,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.R
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.components.menu.song.unlinkedTrackMenuArtistNames
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.navigateToMenuEntity
 import app.n_zik.android.components.song.artistMenuIdentity
@@ -76,8 +77,7 @@ internal fun albumMenuArtistFallbackNames(
     val coveredNames = (linkedArtists + sourceCredits).flatMap { artist ->
         cleanPrefix(artist.name.orEmpty()).splitArtistNames()
     }
-    return cleanPrefix(storedCredits.orEmpty()).splitArtistNames()
-        .filterNot { name -> coveredNames.any { it.equals(name, ignoreCase = true) } }
+    return unlinkedTrackMenuArtistNames(storedCredits.splitArtistNames(), coveredNames).map(::cleanPrefix)
 }
 
 @Composable

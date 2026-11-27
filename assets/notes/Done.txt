@@ -1928,3 +1928,7 @@ Playlists / On device:
 Settings / Listen Together:
 - fix(settings): validate Listen Together servers and bind room recovery
   - Reject invalid addresses and resume rooms only on their verified server. Refresh both room settings surfaces when defaults are restored.
+
+Menus / Navigation:
+- fix(menu): deduplicate fallback credits and keep Stop Radio available
+  - Deduplicate unlinked artist actions and preserve the Stop Radio control on local tracks.

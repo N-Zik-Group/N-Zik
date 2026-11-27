@@ -114,6 +114,18 @@ class AlbumMenuArtistCreditsTest {
     }
 
     @Test
+    fun `unlinked album credits omit duplicate and unknown artists`() {
+        assertEquals(
+            listOf("Alice", "Bob"),
+            albumMenuArtistFallbackNames(
+                storedCredits = "Alice, alice, Unknown Artist, Bob, Justice",
+                headerArtists = emptyList(),
+                linkedArtists = listOf(firstTrackArtist),
+            ),
+        )
+    }
+
+    @Test
     fun `online album menu uses the replacement metadata while retaining its saved state`() {
         val stored = Album(
             id = "${MODIFIED_PREFIX}MPREbNew",

@@ -98,8 +98,10 @@ import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
 import app.n_zik.android.components.menu.song.SongMenuSnapshot
 import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.menu.song.localTrackNavigationActions
+import app.n_zik.android.components.menu.song.localTrackRadioAction
 import app.n_zik.android.utils.resolveTrackArtistName
 import app.n_zik.android.components.menu.song.rememberTrackMenuArtists
+import app.n_zik.android.components.menu.song.unlinkedTrackMenuArtistNames
 import app.n_zik.android.components.song.rememberTrackAlbumLink
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.song.chooseTrackArtist
@@ -205,6 +207,7 @@ class PlayerItemMenu private constructor(
             }
 
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
+            buttons.localTrackRadioAction(offlineMode)?.ListMenuItem()
             for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -297,6 +300,7 @@ class PlayerItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
+            buttons.localTrackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
             for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
@@ -639,6 +643,7 @@ class PlayerItemMenu private constructor(
                     add(sleepTimerButton)    // 4
                     add(addToFavorite)       // 5
                     add(addToPlaylist)       // 6
+                    add(startRadio)
                     
                     add(goToAlbumObj)
                     if (menuArtists.isEmpty()) {
@@ -682,7 +687,7 @@ class PlayerItemMenu private constructor(
                         if (artistNames.size <= 1) {
                             goToArtistObj.takeIf { it.isEnabled }?.let(::add)
                         } else {
-                            artistNames.forEach { artistName ->
+                        unlinkedTrackMenuArtistNames(artistNames).forEach { artistName ->
                                 add(GoToArtist(navController, song, menuState, artistName = artistName, onNavigate = onClosePlayer))
                             }
                         }

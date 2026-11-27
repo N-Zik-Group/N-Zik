@@ -33,4 +33,27 @@ class TrackMenuArtistsTest {
 
         assertEquals(listOf(edited, Info("", "Guest musician")), credits)
     }
+
+    @Test
+    fun `unlinked artist names omit duplicate and unusable fallback actions`() {
+        assertEquals(
+            listOf("Alice", "Bob", "${MODIFIED_PREFIX}Release - Topic"),
+            unlinkedTrackMenuArtistNames(
+                listOf("Alice", "alice", "Bob", " ", "Unknown Artist", "Release - Topic", "${MODIFIED_PREFIX}Release - Topic"),
+            ),
+        )
+    }
+
+    @Test
+    fun `duplicate fallback names do not merge distinct artist links`() {
+        val linkedArtists = listOf(Info("UC_one", "Alice"), Info("UC_two", "Alice"))
+        assertEquals(
+            linkedArtists + Info("", "Bob"),
+            mergeTrackMenuArtistCredits(
+                resolvedLinks = linkedArtists,
+                sourceLinks = emptyList(),
+                sourceNames = listOf("alice", "Bob", "Bob", "Unknown Artist", ""),
+            ),
+        )
+    }
 }

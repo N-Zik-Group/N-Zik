@@ -202,7 +202,7 @@ class SongItemMenu private constructor(
 
             // Section: Playback
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
-            // Full offline mode: startRadio (the first playback entry) needs the network — skipped
+            buttons.localTrackRadioAction(offlineMode)?.ListMenuItem()
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -292,7 +292,7 @@ class SongItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
-            // Full offline mode: startRadio (the first playback entry) needs the network — skipped
+            buttons.localTrackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
@@ -586,7 +586,7 @@ class SongItemMenu private constructor(
                         // Single artist - use fallback with Innertube lookup
                         goToArtistFallback.takeIf { it.isEnabled }?.let(::add)
                     } else {
-                        artistNames.forEach { artistName ->
+                        unlinkedTrackMenuArtistNames(artistNames).forEach { artistName ->
                             add(GoToArtist(navController, song, menuState, artistName = artistName))
                         }
                     }
@@ -752,3 +752,6 @@ internal const val LOCAL_PLAYBACK_COUNT = 5
 
 internal fun List<Button>.localTrackNavigationActions(): List<MenuIcon> =
     filterIsInstance<MenuIcon>().filter { it is GoToAlbum || it is GoToArtist }
+
+internal fun List<Button>.localTrackRadioAction(offlineMode: Boolean): Radio? =
+    if (offlineMode) null else filterIsInstance<Radio>().firstOrNull { it.active }
