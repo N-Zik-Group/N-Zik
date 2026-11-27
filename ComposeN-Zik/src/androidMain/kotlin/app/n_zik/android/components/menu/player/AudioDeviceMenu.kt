@@ -100,6 +100,7 @@ import app.n_zik.android.utils.getBottomSheetDeviceIcon
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
+import app.n_zik.android.utils.setMusicStreamVolumeLevel
 import app.n_zik.android.utils.shimmerEffect
 
 /**
@@ -154,6 +155,11 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     var maxVolume by remember { mutableStateOf(audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)) }
     val coroutineScope = rememberCoroutineScope()
 
+    fun refreshStreamVolume() {
+        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
+        maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+    }
+
     val binder = LocalPlayerServiceBinder.current
     val service = binder?.service
     var showDevicePopup by remember { mutableStateOf(false) }
@@ -183,8 +189,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             loadDevices(context, service?.preferredDeviceId, currentIsCarProjectionActive, onSuccess = { devices ->
                 audioDevices = devices
                 errorMessage = null
-                currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
-                maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                refreshStreamVolume()
                 isLoading = false
             }, onError = { error ->
                 if (isLoading) errorMessage = error
@@ -217,8 +222,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             repeat(12) {
                 delay(250)
                 if (!isUserDragging) {
-                    currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
-                    maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+                    refreshStreamVolume()
                 }
             }
         }
@@ -234,7 +238,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                 if (intent.action == "android.media.VOLUME_CHANGED_ACTION") {
                     val streamType = intent.getIntExtra("android.media.EXTRA_VOLUME_STREAM_TYPE", -1)
                     if (streamType == AudioManager.STREAM_MUSIC && !isUserDragging) {
-                        currentVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()
+                        refreshStreamVolume()
                     }
                 }
             }
@@ -345,10 +349,13 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             },
             onVolumeChange = { newVolume ->
                 isUserDragging = true
-                currentVolume = newVolume
-                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume.toInt(), 0)
+                audioManager.setMusicStreamVolumeLevel(newVolume, flags = 0)
+                refreshStreamVolume()
             },
-            onVolumeChangeComplete = { isUserDragging = false },
+            onVolumeChangeComplete = {
+                isUserDragging = false
+                refreshStreamVolume()
+            },
         )
     }
 }
@@ -368,7 +375,7 @@ internal fun AudioDeviceMenuOptions(
     onVolumeChangeComplete: () -> Unit,
 ) {
     val context = LocalContext.current
-    val volumeEnabled = !isLoading && error == null && !isCarProjectionActive
+    val volumeEnabled = !isLoading && !isCarProjectionActive
     val bridgePcSubtitle = stringResource(R.string.bridge_audio_output_pc_subtitle)
     var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
     val selectedRowBackground = Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())

@@ -1,5 +1,7 @@
 package app.n_zik.android.utils
 
+import kotlin.math.round
+
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Context.AUDIO_SERVICE
@@ -25,7 +27,14 @@ fun getDeviceVolume(context: Context): Float {
 
 fun setDeviceVolume(context: Context, volume: Float) {
     val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
-    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, kotlin.math.round(volume.coerceIn(0f, 1f) * audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)).toInt(), AudioManager.FLAG_SHOW_UI)
+    audioManager.setMusicStreamVolumeLevel(
+        volume.coerceIn(0f, 1f) * audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC),
+        AudioManager.FLAG_SHOW_UI,
+    )
+}
+
+internal fun AudioManager.setMusicStreamVolumeLevel(level: Float, flags: Int) {
+    setStreamVolume(AudioManager.STREAM_MUSIC, round(level).toInt(), flags)
 }
 
 @MainThread

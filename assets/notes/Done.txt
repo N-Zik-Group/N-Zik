@@ -1692,3 +1692,7 @@ Settings:
 Playlist:
 - fix(playlist): prevent source import for manually unlinked albums
   - Apply the same local-album eligibility rule to the detail toolbar and context menu.
+
+Menus:
+- fix(menu): display the actual system volume during adjustment
+  - Apply the nearest Android stream step, refresh on release, and keep local volume usable after output discovery errors.

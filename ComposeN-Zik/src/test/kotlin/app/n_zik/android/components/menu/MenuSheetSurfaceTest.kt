@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,12 +20,14 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
@@ -32,6 +35,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.MenuStyle
@@ -230,9 +234,10 @@ class MenuSheetSurfaceTest {
     @Test
     // Exercise real blur and menu geometry without Robolectric's API 33 RuntimeShader compiler.
     @Config(sdk = [32])
-    fun `audio discovery failure keeps quality choices and retry in both menu layouts`() {
+    fun `audio discovery failure keeps local volume quality choices and retry in both menu layouts`() {
         val error = mutableStateOf<String?>(null)
         val style = mutableStateOf(MenuStyle.List)
+        val volume = mutableFloatStateOf(5f)
         val backdrop = Color(0xFF00C853)
         val shape = RoundedCornerShape(32.dp)
         val appearance = Appearance(
@@ -253,11 +258,11 @@ class MenuSheetSurfaceTest {
                         error = error.value,
                         shownDevices = listOf(AudioDevice(name = "Stale device", type = AudioDeviceType.PC, isConnected = true)),
                         isCarProjectionActive = false,
-                        currentVolume = 5f,
+                        currentVolume = volume.floatValue,
                         maxVolume = 10f,
                         selectDevice = { throw AssertionError("Stale device became selectable") },
                         onRetry = { error.value = null },
-                        onVolumeChange = { throw AssertionError("Disabled volume changed") },
+                        onVolumeChange = { volume.floatValue = it },
                         onVolumeChangeComplete = {},
                     )
                 }
@@ -278,6 +283,9 @@ class MenuSheetSurfaceTest {
         }
         composeRule.onNodeWithText("Bluetooth permission denied").assertIsDisplayed()
         composeRule.onNodeWithText("Stale device").assertDoesNotExist()
+        val volumeSlider = composeRule.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.SetProgress))
+        volumeSlider.performScrollTo().performSemanticsAction(SemanticsActions.SetProgress) { it(7f) }
+        composeRule.runOnIdle { assertEquals(7f, volume.floatValue, 0f) }
         val high = context.getString(R.string.audio_quality_format_high)
         composeRule.onNodeWithText(high).performScrollTo().performClick().assertIsSelected()
 
@@ -285,6 +293,12 @@ class MenuSheetSurfaceTest {
         composeRule.onNodeWithText("Bluetooth permission denied").assertIsDisplayed()
         composeRule.onNodeWithText("Stale device").assertDoesNotExist()
         val grid = composeRule.onNode(hasScrollAction())
+        val volumeTile = hasText(context.getString(R.string.player_statistics_volume_label)) and hasClickAction()
+        grid.performScrollToNode(volumeTile)
+        composeRule.onNode(volumeTile).performClick()
+        volumeSlider.performSemanticsAction(SemanticsActions.SetProgress) { it(8f) }
+        composeRule.runOnIdle { assertEquals(8f, volume.floatValue, 0f) }
+        composeRule.onNodeWithText(context.getString(R.string.common_action_close)).performClick()
         grid.performScrollToNode(hasText(high))
         composeRule.onNodeWithText(high).assertIsSelected()
         val low = context.getString(R.string.audio_quality_format_low)

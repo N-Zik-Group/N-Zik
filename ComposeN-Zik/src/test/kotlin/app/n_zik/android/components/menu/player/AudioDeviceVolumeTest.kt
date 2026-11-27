@@ -1,6 +1,7 @@
 package app.n_zik.android.components.menu.player
 
 import android.app.Application
+import android.media.AudioManager
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableFloatStateOf
@@ -20,6 +21,7 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
+import app.n_zik.android.utils.setMusicStreamVolumeLevel
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -32,6 +34,22 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class, qualifiers = "en-w400dp-h800dp")
 class AudioDeviceVolumeTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun `fractional system music volume requests use the nearest hardware step`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val audio = context.getSystemService(AudioManager::class.java)
+        val stream = AudioManager.STREAM_MUSIC
+        val initialVolume = audio.getStreamVolume(stream)
+        try {
+            audio.setMusicStreamVolumeLevel(1.8f, flags = 0)
+            assertEquals(2, audio.getStreamVolume(stream))
+            audio.setMusicStreamVolumeLevel(1.2f, flags = 0)
+            assertEquals(1, audio.getStreamVolume(stream))
+        } finally {
+            audio.setStreamVolume(stream, initialVolume, 0)
+        }
+    }
 
     @Test
     fun `grid volume applies during drag and stays closed when re-enabled`() {
