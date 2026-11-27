@@ -34,7 +34,6 @@ import app.n_zik.android.utils.actionExpandedKey
 import app.n_zik.android.utils.actionspacedevenlyKey
 import app.n_zik.android.utils.albumCoverRotationKey
 import app.n_zik.android.utils.animatedGradientKey
-import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.backgroundProgressKey
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
 import app.n_zik.android.utils.blackgradientKey
@@ -143,7 +142,6 @@ import app.n_zik.android.utils.topPaddingKey
 import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.utils.transparentbarKey
-import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.visualizerCustomColorKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.utils.visualizerLineThicknessKey
@@ -213,8 +211,6 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(lyricsFontSizeKey, LyricsFontSize.DEFAULT)
         putBoolean(showBackgroundLyricsKey, false)
         putFloat(thumbnailRoundnessDpKey, 12f)
-        putFloat(artistThumbnailRoundnessDpKey, 48f)
-        putFloat(uiRoundnessDpKey, 25f)
         putEnum(miniPlayerTypeKey, MiniPlayerType.Essential)
         putEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient)
         putBoolean(showTopActionsBarKey, true)

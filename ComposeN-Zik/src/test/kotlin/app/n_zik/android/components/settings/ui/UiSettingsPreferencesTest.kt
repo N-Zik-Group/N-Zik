@@ -58,6 +58,8 @@ class UiSettingsPreferencesTest {
 
     private val fullReset: Map<String, Any> = mapOf(
         "hideStatusBarKey" to false,
+        "uiRoundnessDpKey" to 25f,
+        "artistThumbnailRoundnessDpKey" to 48f,
         "disableIconButtonOnTop" to false,
         "colorPaletteName" to "Dynamic",
         "colorPaletteMode" to "System",
@@ -169,6 +171,8 @@ class UiSettingsPreferencesTest {
         preferences.edit()
             .putString("colorPaletteName", "Customized")
             .putString("colorPaletteMode", "Light")
+            .putFloat("uiRoundnessDpKey", 11f)
+            .putFloat("artistThumbnailRoundnessDpKey", 20f)
             .putString("playerType", "Modern")
             .putString("queueType", "Essential")
             .putFloat("thumbnailSizeLDpKey", 45f)
@@ -178,6 +182,8 @@ class UiSettingsPreferencesTest {
 
         assertEquals("Customized", preferences.getString("colorPaletteName", null))
         assertEquals("Light", preferences.getString("colorPaletteMode", null))
+        assertEquals(11f, preferences.getFloat("uiRoundnessDpKey", -1f), 0f)
+        assertEquals(20f, preferences.getFloat("artistThumbnailRoundnessDpKey", -1f), 0f)
         assertEquals("Essential", preferences.getString("playerType", null))
         assertEquals("Modern", preferences.getString("queueType", null))
         assertFalse(preferences.contains("thumbnailSizeLDpKey"))
@@ -192,6 +198,8 @@ class UiSettingsPreferencesTest {
 
         assertEquals("Dynamic", preferences.getString("colorPaletteName", null))
         assertEquals("System", preferences.getString("colorPaletteMode", null))
+        assertEquals(25f, preferences.getFloat("uiRoundnessDpKey", -1f), 0f)
+        assertEquals(48f, preferences.getFloat("artistThumbnailRoundnessDpKey", -1f), 0f)
         assertEquals("Modern", preferences.getString("playerType", null))
         assertEquals("Essential", preferences.getString("queueType", null))
         assertEquals(45f, preferences.getFloat("thumbnailSizeLDpKey", -1f), 0f)
@@ -236,7 +244,7 @@ class UiSettingsPreferencesTest {
 
     @Test fun `target inventory covers ten cards and stable unique setting and action identities`() {
         assertEquals(listOf("interface", "floating-dock", "theme", "font", "swipe", "home-tabs", "burger", "toolbars", "sort-menus", "reset"), UiSettingTargets.cards.map { it.id.removePrefix("ui.card.") })
-        assertEquals(listOf(13, 1, 24, 3, 7, 0, 0, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
+        assertEquals(listOf(15, 1, 24, 3, 7, 0, 0, 0, 0, 0), UiSettingTargets.cards.map { it.preferenceKeys.size })
         assertEquals(listOf(1, 1, 2, 0, 0, 5, 1, 10, 6, 1), UiSettingTargets.cards.map { it.actions.size })
         assertEquals(UiSettingTargets.ids.size, UiSettingTargets.ids.toSet().size)
         assertTrue(UiSettingTargets.ids.none { it.contains(' ') })

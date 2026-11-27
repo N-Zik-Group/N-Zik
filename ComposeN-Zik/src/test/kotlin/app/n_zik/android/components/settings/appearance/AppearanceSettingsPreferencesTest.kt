@@ -82,8 +82,6 @@ class AppearanceSettingsPreferencesTest {
         "lyricsCustomColor" to -1,
         "showBackgroundLyrics" to false,
         "thumbnailRoundnessDpKey" to 12f,
-        "artistThumbnailRoundnessDpKey" to 48f,
-        "uiRoundnessDpKey" to 25f,
         "miniPlayerType" to "Essential",
         "playerBackgroundColors" to "AnimatedGradient",
         "showTopActionsBar" to true,
@@ -163,7 +161,7 @@ class AppearanceSettingsPreferencesTest {
         val globalBefore = store("app_settings").all.toMap()
         applyAppearanceDefaults(context)
         baselineDefaults.forEach { (key, expected) -> assertEquals(key, expected, context.preferences.all[key]) }
-        assertEquals(111, baselineDefaults.size)
+        assertEquals(109, baselineDefaults.size)
         assertFalse(context.preferences.contains("thumbnailSizeLDpKey"))
         assertFalse(context.preferences.contains(m3eAlwaysShowShapesKey))
         assertEquals("keep", context.preferences.getString("unrelated", null))

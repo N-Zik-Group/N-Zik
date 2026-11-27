@@ -52,13 +52,11 @@ import app.n_zik.android.utils.thumbnailpauseKey
 import app.n_zik.android.utils.cropVideoThumbnailsKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.ui.styling.BoundedCornerSize
-import app.n_zik.android.utils.uiRoundnessDpKey
 import androidx.compose.foundation.shape.CircleShape
 import app.n_zik.android.components.player.rememberPlayerLandscapeArtworkSize
 import androidx.compose.foundation.layout.Row
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
-import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import androidx.compose.foundation.shape.RoundedCornerShape
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -80,8 +78,6 @@ internal fun AppearanceCoverCard(search: Search) {
     var thumbnailSizeLDp by rememberPlayerLandscapeArtworkSize()
     var expandedplayertoggle by rememberPreference(expandedplayertoggleKey, false)
     var thumbnailRoundnessDp by rememberPreference(thumbnailRoundnessDpKey, 12f)
-    var artistThumbnailRoundnessDp by rememberPreference(artistThumbnailRoundnessDpKey, 48f)
-    var uiRoundnessDp by rememberPreference(uiRoundnessDpKey, 25f)
     var playerBackgroundColors by rememberPreference(
         playerBackgroundColorsKey,
         PlayerBackgroundColors.AnimatedGradient
@@ -99,7 +95,7 @@ internal fun AppearanceCoverCard(search: Search) {
     var showCoverThumbnailAnimation by rememberPreference(showCoverThumbnailAnimationKey, false)
     var coverThumbnailAnimation by rememberPreference(coverThumbnailAnimationKey, ThumbnailCoverType.Vinyl)
     var swipeAnimationNoThumbnail by rememberPreference(swipeAnimationsNoThumbnailKey, SwipeAnimationNoThumbnail.Sliding)
-    val searchCtx_0_2 = search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_hidden_swipe_animation).contains(search.inputValue, true) || stringResource(R.string.settings_transition_slide_vertical).contains(search.inputValue, true) || stringResource(R.string.settings_transition_fade).contains(search.inputValue, true) || stringResource(R.string.settings_transition_scale).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_carousel_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_transition_circular).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_fading_edge_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_expanded_artwork_size_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_shrink_when_paused_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_enabled_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_style_label).contains(search.inputValue, true) || stringResource(R.string.player_thumbnail_size).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_corner_radius_label).contains(search.inputValue, true) || stringResource(R.string.artist_roundness).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_blur_disabled_without_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_technical_info_title).contains(search.inputValue, true) || stringResource(R.string.settings_interface_corner_radius_label).contains(search.inputValue, true)
+    val searchCtx_0_2 = search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_section_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_visible_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_hidden_swipe_animation).contains(search.inputValue, true) || stringResource(R.string.settings_transition_slide_vertical).contains(search.inputValue, true) || stringResource(R.string.settings_transition_fade).contains(search.inputValue, true) || stringResource(R.string.settings_transition_scale).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_carousel_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_transition_circular).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_fading_edge_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_expanded_artwork_size_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_shrink_when_paused_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_enabled_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_animation_style_label).contains(search.inputValue, true) || stringResource(R.string.player_thumbnail_size).contains(search.inputValue, true) || stringResource(R.string.settings_player_artwork_corner_radius_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_blur_disabled_without_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.player_artwork_technical_info_title).contains(search.inputValue, true)
     val matchesVideoCrop = search.inputValue.isBlank() ||
         stringResource(R.string.settings_player_crop_video_artwork_label).contains(search.inputValue, true)
     val holdToSpeedUpTitle = stringResource(R.string.player_artwork_hold_to_speed_up_title)
@@ -269,58 +265,6 @@ internal fun AppearanceCoverCard(search: Search) {
 
                 }
             }
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.artist_roundness).contains(
-                            search.inputValue,
-                            true
-                        )
-                    )
-                        if (search.inputValue.isBlank() || stringResource(R.string.artist_roundness).contains(search.inputValue, true)) {
-                            Column(modifier = Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)) {
-                                SliderSettingsEntry(
-                                    modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.artist_roundness"),
-                                    icon = R.drawable.image,
-                                    title = stringResource(R.string.artist_roundness),
-                                    text = stringResource(R.string.interface_artist_image_roundness_description),
-                                    state = artistThumbnailRoundnessDp,
-                                    range = 0f..48f,
-                                    stepSize = 0f,
-                                    defaultValue = 48f,
-                                    drawValuePoints = true,
-                                    isIntegerOnly = true,
-                                    onSlide = { artistThumbnailRoundnessDp = kotlin.math.round(it) },
-                                    toDisplay = { it.toInt().toString() },
-                                    trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Spacer(modifier = Modifier.size(36.dp).background(color = colorPalette().accent.copy(alpha = 0.5f), shape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f))).border(width = 1.dp, color = colorPalette().accent, shape = if (artistThumbnailRoundnessDp >= 48f) CircleShape else RoundedCornerShape(BoundedCornerSize(artistThumbnailRoundnessDp.dp, 0.25f)))) } }
-                                )
-
-
-                            }
-                        }
-
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_interface_corner_radius_label).contains(
-                            search.inputValue,
-                            true
-                        )
-                    )
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_interface_corner_radius_label).contains(search.inputValue, true)) {
-                            SliderSettingsEntry(
-                                icon = R.drawable.ui,
-                                title = stringResource(R.string.settings_interface_corner_radius_label),
-                                text = stringResource(R.string.interface_corner_roundness_description),
-                                state = uiRoundnessDp,
-                                range = 0f..48f,
-                                stepSize = 0f,
-                                defaultValue = 25f,
-                                drawValuePoints = true,
-                                isIntegerOnly = true,
-                                onSlide = { uiRoundnessDp = kotlin.math.round(it) },
-                                toDisplay = { it.toInt().toString() },
-                                trailingContent = @Composable { Row(verticalAlignment = Alignment.CenterVertically) { Spacer(modifier = Modifier.size(36.dp).background(color = colorPalette().accent.copy(alpha = 0.5f), shape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f))).border(width = 1.dp, color = colorPalette().accent, shape = RoundedCornerShape(BoundedCornerSize(uiRoundnessDp.dp, 0.4f)))) } },
-                                modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.ui_roundness")
-                            )
-
-
-                        }
 
                     if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_artwork_motion, "appearance.cover_and_thumbnail.section.motion")
 

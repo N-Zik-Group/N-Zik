@@ -122,6 +122,45 @@ private const val LyricsBackgroundSettingsTarget = "appearance.txt_lyrics.show_b
 private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show_thumbnail"
 private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
 private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
+private const val AutoBackupEnabledTarget = "embedded.auto_backup.enabled"
+private const val AutoBackupContentTarget = "embedded.auto_backup.auto_backup_target"
+private const val AutoBackupIntervalTarget = "embedded.auto_backup.auto_backup_interval"
+private const val LocalMusicEnabledTarget = "other.on_device.enabled"
+private const val LocalMusicFolderModeTarget = "other.on_device.folders"
+
+private data class SearchPrerequisite(val target: String, val choices: List<Int> = emptyList())
+
+private fun settingsSearchPrerequisite(target: String, hasTarget: (String) -> Boolean): SearchPrerequisite? {
+    if (target == ShowCoverSettingsTarget) {
+        return SearchPrerequisite(BackgroundSettingsTarget, listOf(R.string.player_background_artwork_blurred_label))
+    }
+    if (target == "other.on_device.folder_that_will_show_when_you_open_on_device_page") {
+        return SearchPrerequisite(
+            LocalMusicFolderModeTarget.takeIf(hasTarget) ?: LocalMusicEnabledTarget,
+            listOf(R.string.common_state_on),
+        )
+    }
+    if (!target.startsWith("embedded.auto_backup.") || target == AutoBackupEnabledTarget) return null
+    val prerequisite = when (target.substringAfterLast('.')) {
+        "include_youtube_credentials", "include_discord_credentials", "include_lastfm_credentials",
+        "include_github_credentials", "include_proxy_credentials" ->
+            SearchPrerequisite(AutoBackupContentTarget, listOf(R.string.settings_title))
+        "auto_backup_custom_interval_value", "auto_backup_custom_interval_unit" ->
+            SearchPrerequisite(AutoBackupIntervalTarget, listOf(R.string.backup_auto_interval_custom))
+        "auto_backup_schedule_time" -> SearchPrerequisite(
+            AutoBackupIntervalTarget,
+            listOf(R.string.backup_auto_interval_daily, R.string.backup_auto_interval_weekly, R.string.backup_auto_interval_monthly),
+        )
+        "auto_backup_schedule_day_of_week" ->
+            SearchPrerequisite(AutoBackupIntervalTarget, listOf(R.string.backup_auto_interval_weekly))
+        "auto_backup_schedule_day_of_month" ->
+            SearchPrerequisite(AutoBackupIntervalTarget, listOf(R.string.backup_auto_interval_monthly))
+        "auto_backup_on_change" -> SearchPrerequisite(AutoBackupIntervalTarget)
+        else -> null
+    }
+    return prerequisite?.takeIf { hasTarget(it.target) }
+        ?: SearchPrerequisite(AutoBackupEnabledTarget, listOf(R.string.common_state_on))
+}
 
 private val hiddenSettingPrerequisites = mapOf(
     "general.app_behavior.resume_playback_on_start" to "general.app_behavior.persistent_queue",
@@ -342,6 +381,12 @@ fun SettingsCategoryPage(
         }
         val storageRoute = target.split('|', limit = 3)
         val rawTarget = storageRoute.first()
+        if (categoryId == "player" && (rawTarget == InterfaceRoundnessSettingsTarget || rawTarget == ArtistRoundnessSettingsTarget)) {
+            val movedEntry = AllSettingsEntryTargets.first { it.id == rawTarget }
+            searchTargetHandled = true
+            onSearchResultNavigate(movedEntry.destinationRoute(context))
+            return@LaunchedEffect
+        }
         if (categoryId == "network") {
             val downloadTarget = when (rawTarget) {
                 "network.network_status.download_quality_format",
@@ -474,15 +519,23 @@ fun SettingsCategoryPage(
             }
         }
         val unavailable = hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
+        val searchPrerequisite = if (unavailable) settingsSearchPrerequisite(requestedTarget, registry.targets::containsKey) else null
         if (unavailable || requestedTarget != rawTarget && rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")) {
             if (unavailable && nested != null) {
                 settingsNestedDialog(nested.dialogId)?.hideDialog()
                 registry.nestedTarget = null
             }
-            showMessage(unavailableMessage)
+            val requirement = searchPrerequisite?.let { prerequisite ->
+                AllSettingsEntryTargets.firstOrNull { it.id == prerequisite.target }?.let { setting ->
+                    val label = context.getString(setting.labelRes)
+                    val choices = prerequisite.choices.joinToString(" / ") { context.getString(it) }
+                    if (choices.isEmpty()) label else "$label › $choices"
+                }
+            }
+            showMessage(requirement?.let { context.getString(R.string.settings_target_prerequisite, it) } ?: unavailableMessage)
         }
         val resolved = if (unavailable) {
-            val prerequisite = hiddenSettingPrerequisites[requestedTarget] ?: when {
+            val prerequisite = searchPrerequisite?.target ?: hiddenSettingPrerequisites[requestedTarget] ?: when {
                 entry?.paletteTitleRes != null -> "ui.theme.theme"
                 requestedTarget == "appearance.cover_and_thumbnail.cover_thumbnail_animation_type" -> listOf(
                     "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",

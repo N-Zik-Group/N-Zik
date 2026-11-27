@@ -11,11 +11,11 @@ import app.n_zik.android.core.profiles.ProfileStorageIdentity
 
 /** Reuses the existing automatic backup controls. */
 @Composable
-internal fun DataAutoBackupCard(target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
+internal fun DataAutoBackupCard(target: ProfileStorageIdentity) {
     SettingsSectionCard(
         title = stringResource(R.string.backup_auto_title),
         icon = R.drawable.history,
         headerModifier = Modifier.settingsSearchTarget("embedded.auto_backup.section"),
-        content = { AutoBackupSettingsBlock(target, pageEntryTargets) },
+        content = { AutoBackupSettingsBlock(target) },
     )
 }

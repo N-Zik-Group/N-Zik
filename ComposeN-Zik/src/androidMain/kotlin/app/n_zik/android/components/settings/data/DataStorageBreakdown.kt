@@ -420,8 +420,8 @@ internal fun DataStorageCard(
         )
         if (cacheTarget != null) key(cacheTarget) {
             DataCacheCard(search, restartState, cacheTarget)
-            DataAutoBackupCard(cacheTarget, pageEntryTargets)
-            OtherOnDeviceCard(search, cacheTarget, pageEntryTargets)
+            DataAutoBackupCard(cacheTarget)
+            OtherOnDeviceCard(search, cacheTarget)
         }
     }
     DialogPresence(target = storageDialog) { dialog ->

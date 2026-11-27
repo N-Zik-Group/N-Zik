@@ -75,13 +75,11 @@ import app.n_zik.android.utils.rememberQueueScrollPositionKey
 import app.n_zik.android.utils.transparentBackgroundPlayerActionBarKey
 import app.n_zik.android.utils.transparentbarKey
 import app.n_zik.android.utils.visualizerEnabledKey
-import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.visualizerWhiteColorOptionKey
 import app.n_zik.android.utils.thumbnailSizeLDpKey
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.lyricsColorKey
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
-import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.lyricsCustomColorKey
 import app.n_zik.android.utils.visualizerLineThicknessKey
 import app.n_zik.android.utils.visualizerCustomColorKey
@@ -90,7 +88,7 @@ import app.n_zik.android.utils.visualizerCustomColorKey
 internal object AppearanceSettingTargets {
     val cards = listOf(
         AppearanceCardTargets("appearance.card.presets", listOf(playerTypeKey, queueTypeKey, thumbnailTypeKey, playerInfoTypeKey, playerInfoShowIconsKey, playerControlsTypeKey, iconLikeTypeKey), emptyList()),
-        AppearanceCardTargets("appearance.card.cover", listOf(showthumbnailKey, thumbnailSizeDpKey, thumbnailSizeLDpKey, thumbnailRoundnessDpKey, artistThumbnailRoundnessDpKey, uiRoundnessDpKey, thumbnailpauseKey, cropVideoThumbnailsKey, statsfornerdsKey, holdToSpeedUpKey, holdToSpeedUpRateKey, noblurKey, fadingedgeKey, carouselKey, carouselSizeKey, showCoverThumbnailAnimationKey, coverThumbnailAnimationKey, swipeAnimationsNoThumbnailKey), listOf()),
+        AppearanceCardTargets("appearance.card.cover", listOf(showthumbnailKey, thumbnailSizeDpKey, thumbnailSizeLDpKey, thumbnailRoundnessDpKey, thumbnailpauseKey, cropVideoThumbnailsKey, statsfornerdsKey, holdToSpeedUpKey, holdToSpeedUpRateKey, noblurKey, fadingedgeKey, carouselKey, carouselSizeKey, showCoverThumbnailAnimationKey, coverThumbnailAnimationKey, swipeAnimationsNoThumbnailKey), listOf()),
         AppearanceCardTargets("appearance.card.colors", listOf(blackgradientKey, bottomgradientKey, textoutlineKey, showTotalTimeQueueKey, showRemainingSongTimeKey, showSkipTimeButtonsKey, playerBackgroundColorsKey, animatedGradientKey, shakeSensitivityThemeKey, m3eAlwaysShowShapesKey, albumCoverRotationKey), listOf()),
         AppearanceCardTargets("appearance.card.timeline", listOf(transparentbarKey, playerPlayButtonTypeKey, playerTimelineTypeKey, playerTimelineSizeKey, playerControlsColorsKey, iconLikeTypeKey, playerSwapControlsWithTimelineKey, buttonzoomoutKey), listOf("MiniPlayerButtonsSettingsDialog")),
         AppearanceCardTargets("appearance.card.actionBar",

@@ -1108,3 +1108,7 @@ Menus:
 Interface:
 - style(ui): add breathing room inside menu and settings rows
   - Add 2 dp of horizontal content padding while keeping press feedback inset at 6 dp.
+
+Settings:
+- fix(settings): guide searches to prerequisites and group roundness in interface
+  - Keep unavailable controls in their real context and place global roundness settings in Interface.

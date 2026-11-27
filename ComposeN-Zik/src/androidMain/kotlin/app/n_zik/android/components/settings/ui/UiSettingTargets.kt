@@ -4,6 +4,7 @@ import app.n_zik.android.components.dialog.settings.interfaceToolbarSettingsDial
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.colorPaletteModeKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.customColorKey
@@ -46,6 +47,7 @@ import app.n_zik.android.utils.queueSwipeRightActionKey
 import app.n_zik.android.utils.searchDisplayOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.transitionEffectKey
+import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 
@@ -56,6 +58,8 @@ internal object UiSettingTargets {
             preferenceKeys = listOf(
                 hideStatusBarKey,
                 rightToLeftInterfaceKey,
+                uiRoundnessDpKey,
+                artistThumbnailRoundnessDpKey,
                 navigationBarPositionKey,
                 navigationBarTypeKey,
                 playerPositionKey,

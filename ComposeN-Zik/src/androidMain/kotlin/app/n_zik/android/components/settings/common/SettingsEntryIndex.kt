@@ -27,6 +27,9 @@ private fun paletteEntry(id: String, labelRes: Int, paletteTitleRes: Int, keywor
     SettingsEntryTarget(id, 1, R.string.common_color_source_theme, labelRes, keywordRes, paletteTitleRes = paletteTitleRes)
 
 internal const val RewindMasterSettingsTarget = "ai.tab_general.rw_settings_master"
+// Keep existing search links valid when the controls move between categories.
+internal const val InterfaceRoundnessSettingsTarget = "appearance.cover_and_thumbnail.ui_roundness"
+internal const val ArtistRoundnessSettingsTarget = "appearance.cover_and_thumbnail.artist_roundness"
 
 val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget(
@@ -118,6 +121,8 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("ui.user_interface.section.display", 1, R.string.settings_interface_title, R.string.settings_interface_group_display),
     SettingsEntryTarget("ui.settings_use_font_type.hide_status_bar", 1, R.string.settings_interface_title, R.string.settings_interface_hide_status_bar_label, groupTitleRes = R.string.settings_interface_group_display),
     SettingsEntryTarget("ui.user_interface.right_to_left", 1, R.string.settings_interface_title, R.string.settings_interface_right_to_left_label, listOf(R.string.settings_interface_right_to_left_description), groupTitleRes = R.string.settings_interface_group_display),
+    SettingsEntryTarget(InterfaceRoundnessSettingsTarget, 1, R.string.settings_interface_title, R.string.settings_interface_corner_radius_label, groupTitleRes = R.string.settings_interface_group_display),
+    SettingsEntryTarget(ArtistRoundnessSettingsTarget, 1, R.string.settings_interface_title, R.string.artist_roundness, groupTitleRes = R.string.settings_interface_group_display),
     SettingsEntryTarget("ui.user_interface.section.search", 1, R.string.settings_interface_title, R.string.search_title),
     SettingsEntryTarget("ui.user_interface.search_display_order", 1, R.string.settings_interface_title, R.string.search_display_order, listOf(R.string.search_display_order_description), groupTitleRes = R.string.search_title),
     SettingsEntryTarget("ui.user_interface.show_floating_icon", 1, R.string.settings_interface_title, R.string.settings_search_floating_button_visible_label, groupTitleRes = R.string.search_title),
@@ -250,8 +255,6 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("appearance.cover_and_thumbnail.crop_video_thumbnails", 2, R.string.settings_player_artwork_section_title, R.string.settings_player_crop_video_artwork_label, groupTitleRes = R.string.settings_group_artwork_layout),
     SettingsEntryTarget("appearance.cover_and_thumbnail.player_thumbnail_size", 2, R.string.settings_player_artwork_section_title, R.string.player_thumbnail_size, groupTitleRes = R.string.settings_group_artwork_layout),
     SettingsEntryTarget("appearance.cover_and_thumbnail.thumbnail_roundness", 2, R.string.settings_player_artwork_section_title, R.string.settings_player_artwork_corner_radius_label, groupTitleRes = R.string.settings_group_artwork_layout),
-    SettingsEntryTarget("appearance.cover_and_thumbnail.artist_roundness", 2, R.string.settings_player_artwork_section_title, R.string.artist_roundness, groupTitleRes = R.string.settings_group_artwork_layout),
-    SettingsEntryTarget("appearance.cover_and_thumbnail.ui_roundness", 2, R.string.settings_player_artwork_section_title, R.string.settings_interface_corner_radius_label, groupTitleRes = R.string.settings_group_artwork_layout),
     SettingsEntryTarget("appearance.cover_and_thumbnail.section.motion", 2, R.string.settings_player_artwork_section_title, R.string.settings_group_artwork_motion),
     SettingsEntryTarget("appearance.cover_and_thumbnail.carousel", 2, R.string.settings_player_artwork_section_title, R.string.settings_player_artwork_carousel_label, groupTitleRes = R.string.settings_group_artwork_motion),
     SettingsEntryTarget("appearance.cover_and_thumbnail.carouselsize", 2, R.string.settings_player_artwork_section_title, R.string.settings_player_expanded_artwork_size_label, groupTitleRes = R.string.settings_group_artwork_motion),

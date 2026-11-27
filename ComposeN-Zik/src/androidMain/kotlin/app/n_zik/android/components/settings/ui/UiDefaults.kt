@@ -19,6 +19,7 @@ import app.n_zik.android.enums.SearchDisplayOrder
 import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.DefaultLightColorPalette
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
 import app.n_zik.android.utils.applyFontPaddingKey
@@ -74,6 +75,7 @@ import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.utils.showSearchTabKey
 import app.n_zik.android.utils.showStatsInNavbarKey
 import app.n_zik.android.utils.transitionEffectKey
+import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
 import app.n_zik.android.components.dialog.settings.HistorySortSettingsDialog
@@ -104,6 +106,8 @@ internal fun applyUiDefaults(context: Context) {
     context.preferences.edit().remove(app.n_zik.android.components.navigation.dock.DockToolbarPreferences.orderKey).apply()
     context.preferences.edit {
         putBoolean(hideStatusBarKey, false)
+        putFloat(uiRoundnessDpKey, 25f)
+        putFloat(artistThumbnailRoundnessDpKey, 48f)
         putBoolean(rightToLeftInterfaceKey, false)
         putBoolean(disableIconButtonOnTopKey, false)
         putEnum(colorPaletteNameKey, ColorPaletteName.Dynamic)

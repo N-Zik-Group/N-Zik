@@ -4,14 +4,23 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.MusicAnimationType
@@ -20,6 +29,7 @@ import app.n_zik.android.enums.NavigationBarType
 import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.enums.SearchDisplayOrder
 import app.n_zik.android.enums.TransitionEffect
+import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.disableNavigationBackStackKey
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.indexNavigationTabKey
@@ -34,14 +44,19 @@ import app.n_zik.android.utils.rightToLeftInterfaceKey
 import app.n_zik.android.utils.searchDisplayOrderKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.transitionEffectKey
+import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
+import app.n_zik.android.components.settings.common.ArtistRoundnessSettingsTarget
+import app.n_zik.android.components.settings.common.InterfaceRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.ui.styling.BoundedCornerSize
 import app.n_zik.android.R
 
 /** Owns the interface settings and their local dialogs. */
@@ -71,6 +86,16 @@ internal fun UiInterfaceCard(search: Search) {
     var showNowPlayingIndicatorDialog by remember { mutableStateOf(false) }
 
     val query = search.inputValue
+    var interfaceRoundness by rememberPreference(uiRoundnessDpKey, 25f)
+    var artistRoundness by rememberPreference(artistThumbnailRoundnessDpKey, 48f)
+    val interfaceRoundnessTitle = stringResource(R.string.settings_interface_corner_radius_label)
+    val interfaceRoundnessDescription = stringResource(R.string.interface_corner_roundness_description)
+    val artistRoundnessTitle = stringResource(R.string.artist_roundness)
+    val artistRoundnessDescription = stringResource(R.string.interface_artist_image_roundness_description)
+    val interfaceRoundnessMatches = interfaceRoundnessTitle.contains(query, ignoreCase = true) ||
+        interfaceRoundnessDescription.contains(query, ignoreCase = true)
+    val artistRoundnessMatches = artistRoundnessTitle.contains(query, ignoreCase = true) ||
+        artistRoundnessDescription.contains(query, ignoreCase = true)
     val playlistIndicatorTitle = stringResource(R.string.settings_library_playlist_indicator_label)
     val playlistIndicatorDescription = stringResource(R.string.settings_library_playlist_indicator_description)
     val nowPlayingIndicatorTitle = stringResource(R.string.settings_library_now_playing_indicator_label)
@@ -93,7 +118,7 @@ internal fun UiInterfaceCard(search: Search) {
     }
 
     val navSearchContextMatch = layoutDirectionMatches ||
-        playlistIndicatorMatches || nowPlayingIndicatorMatches ||
+        playlistIndicatorMatches || nowPlayingIndicatorMatches || interfaceRoundnessMatches || artistRoundnessMatches ||
         stringResource(R.string.settings_interface_hide_status_bar_label).contains(search.inputValue, true) ||
         stringResource(R.string.search_display_order).contains(search.inputValue, true) ||
         stringResource(R.string.settings_navigation_position_label).contains(search.inputValue, true) ||
@@ -301,6 +326,32 @@ internal fun UiInterfaceCard(search: Search) {
                     )
                 }
 
+                if (interfaceRoundnessMatches) {
+                    InterfaceRoundnessSlider(
+                        target = InterfaceRoundnessSettingsTarget,
+                        icon = R.drawable.ui,
+                        title = interfaceRoundnessTitle,
+                        description = interfaceRoundnessDescription,
+                        value = interfaceRoundness,
+                        defaultValue = 25f,
+                        shape = RoundedCornerShape(BoundedCornerSize(interfaceRoundness.dp, 0.4f)),
+                        onSlide = { interfaceRoundness = it },
+                    )
+                }
+                if (artistRoundnessMatches) {
+                    InterfaceRoundnessSlider(
+                        target = ArtistRoundnessSettingsTarget,
+                        icon = R.drawable.image,
+                        title = artistRoundnessTitle,
+                        description = artistRoundnessDescription,
+                        value = artistRoundness,
+                        defaultValue = 48f,
+                        shape = if (artistRoundness >= 48f) CircleShape else
+                            RoundedCornerShape(BoundedCornerSize(artistRoundness.dp, 0.25f)),
+                        onSlide = { artistRoundness = it },
+                    )
+                }
+
                 if (search.inputValue.isBlank()) {
                     SearchableSettingsSectionHeading(R.string.search_title, "ui.user_interface.section.search")
                 }
@@ -369,4 +420,35 @@ internal fun UiInterfaceCard(search: Search) {
             }
         )
     }
+}
+
+@Composable
+private fun InterfaceRoundnessSlider(
+    target: String,
+    icon: Int,
+    title: String,
+    description: String,
+    value: Float,
+    defaultValue: Float,
+    shape: Shape,
+    onSlide: (Float) -> Unit,
+) {
+    val accent = colorPalette().accent
+    SliderSettingsEntry(
+        modifier = Modifier.settingsSearchTarget(target),
+        icon = icon,
+        title = title,
+        text = description,
+        state = value,
+        range = 0f..48f,
+        stepSize = 0f,
+        defaultValue = defaultValue,
+        drawValuePoints = true,
+        isIntegerOnly = true,
+        onSlide = { onSlide(kotlin.math.round(it)) },
+        toDisplay = { it.toInt().toString() },
+        trailingContent = {
+            Spacer(Modifier.size(36.dp).background(accent.copy(alpha = 0.5f), shape).border(1.dp, accent, shape))
+        },
+    )
 }

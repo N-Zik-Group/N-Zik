@@ -54,7 +54,6 @@ import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
-import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.image.writeOwnedImageAtomically
 import app.n_zik.android.components.ui.screens.home.onDevice.blockedLocalFoldersFile
@@ -81,17 +80,17 @@ import timber.log.Timber
 
 @UnstableApi
 @Composable
-internal fun OtherOnDeviceCard(search: Search, target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
+internal fun OtherOnDeviceCard(search: Search, target: ProfileStorageIdentity) {
     SettingsSectionCard(
         title = stringResource(R.string.library_on_device_title),
         icon = R.drawable.folder,
         headerModifier = Modifier.settingsSearchTarget("other.on_device.section"),
-        content = { OnDeviceSettings(search, target, pageEntryTargets) },
+        content = { OnDeviceSettings(search, target) },
     )
 }
 
 @Composable
-private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
+private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
     val context = LocalContext.current
     val prefs = remember(target) { profileDataPrefs(context, target.id) }
     val enabled by remember(context, target) {
@@ -127,18 +126,17 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity, pag
         },
     )
     androidx.compose.animation.AnimatedVisibility(visible = enabled) {
-        Column { OnDeviceOptions(search, target, pageEntryTargets) }
+        Column { OnDeviceOptions(search, target) }
     }
 }
 
 @Composable
-private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
+private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity) {
     val context = LocalContext.current
     val prefs = remember(target) { profileDataPrefs(context, target.id) }
     var defaultFolder by remember(target) { mutableStateOf(prefs.getString(defaultFolderKey, "/").orEmpty()) }
     var showFolders by remember(target) { mutableStateOf(prefs.getBoolean(showFoldersOnDeviceKey, true)) }
     val file = remember(target) { blockedLocalFoldersFile(context, target.id) }
-    val searchTarget = LocalSettingsTargets.current?.storageEntryTarget
     var blackListedPaths by remember(target) { mutableStateOf<List<String>?>(null) }
     val blockedPathWrites = remember(target) { Mutex() }
     LaunchedEffect(target) {
@@ -338,7 +336,7 @@ private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity, page
     }
 
     val startFolderTarget = "other.on_device.folder_that_will_show_when_you_open_on_device_page"
-    AnimatedVisibility(visible = showFolders || searchTarget == startFolderTarget || startFolderTarget in pageEntryTargets) {
+    AnimatedVisibility(visible = showFolders) {
 
         var showFolderDialog by remember { mutableStateOf(false) }
         if (search.inputValue.isBlank() || stringResource(R.string.settings_local_music_initial_folder_description).contains(search.inputValue, true) || stringResource(R.string.settings_local_music_start_folder_path_description).contains(search.inputValue, true)) {

@@ -11,7 +11,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
-import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -47,14 +46,9 @@ import timber.log.Timber
 internal val AutoBackupRetentionOptions = listOf(1, 3, 5, 10, 20, -1)
 
 @Composable
-internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTargets: Set<String>) {
+internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
-    val navigationTarget = LocalSettingsTargets.current?.storageEntryTarget
-    val searchTargets = (pageEntryTargets + listOfNotNull(navigationTarget))
-        .filter { it.startsWith("embedded.auto_backup.") }
-        .map { it.substringAfterLast('.') }
-
     val legacyEnabled = remember(context, target) { BackupManager.isEnabled(profileDataPrefs(context, target.id)) }
     var autoBackupEnabled by rememberBackupPreference(context, target, BackupManager.PREF_ENABLED, legacyEnabled)
     var autoBackupInterval by rememberBackupPreference(context, target, BackupManager.PREF_INTERVAL, BackupManager.INTERVAL_NONE)
@@ -102,17 +96,8 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
 
     val decodedUri = runCatching { Uri.parse(autoBackupUri).lastPathSegment?.let { Uri.decode(it) } }.getOrNull() ?: autoBackupUri
 
-    val toggleModifier = if (autoBackupEnabled) {
-        Modifier.settingsSearchTarget("embedded.auto_backup.enabled")
-    } else {
-        (pageEntryTargets + listOfNotNull(navigationTarget)).filter {
-            it.startsWith("embedded.auto_backup.") && it != "embedded.auto_backup.enabled"
-        }.fold(Modifier.settingsSearchTarget("embedded.auto_backup.enabled")) { modifier, id ->
-            modifier.settingsSearchTarget(id)
-        }
-    }
     OtherSwitchSettingEntry(
-        modifier = toggleModifier,
+        modifier = Modifier.settingsSearchTarget("embedded.auto_backup.enabled"),
         title = stringResource(R.string.backup_auto_enabled_title),
         text = stringResource(R.string.backup_auto_enabled_description),
         icon = R.drawable.backup,
@@ -148,8 +133,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 onClick = { showTargetDialog = true }
             )
 
-            AnimatedVisibility(visible = BackupContent.Settings.isSelected(targetSelection) ||
-                searchTargets.any { it.startsWith("include_") }) {
+            AnimatedVisibility(visible = BackupContent.Settings.isSelected(targetSelection)) {
                 Column {
                     OtherSwitchSettingEntry(
                         title = stringResource(R.string.backup_include_youtube_credentials),
@@ -259,8 +243,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 )
             }
 
-            AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_CUSTOM ||
-                searchTargets.any { it.startsWith("auto_backup_custom_interval_") }) {
+            AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_CUSTOM) {
                 Column {
                     OtherSettingsEntry(
                         title = stringResource(R.string.backup_auto_custom_interval_value),
@@ -331,8 +314,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 )
             }
 
-            AnimatedVisibility(visible = autoBackupInterval in listOf(BackupManager.INTERVAL_DAILY, BackupManager.INTERVAL_WEEKLY, BackupManager.INTERVAL_MONTHLY) ||
-                "auto_backup_schedule_time" in searchTargets) {
+            AnimatedVisibility(visible = autoBackupInterval in listOf(BackupManager.INTERVAL_DAILY, BackupManager.INTERVAL_WEEKLY, BackupManager.INTERVAL_MONTHLY)) {
                 Column {
                     OtherSettingsEntry(
                         title = stringResource(R.string.backup_auto_schedule_time),
@@ -359,8 +341,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 )
             }
 
-            AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_WEEKLY ||
-                "auto_backup_schedule_day_of_week" in searchTargets) {
+            AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_WEEKLY) {
                 Column {
                     OtherSettingsEntry(
                         title = stringResource(R.string.backup_auto_schedule_day_of_week),
@@ -391,8 +372,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 )
             }
 
-            AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_MONTHLY ||
-                "auto_backup_schedule_day_of_month" in searchTargets) {
+            AnimatedVisibility(visible = autoBackupInterval == BackupManager.INTERVAL_MONTHLY) {
                 Column {
                     OtherSettingsEntry(
                         title = stringResource(R.string.backup_auto_schedule_day_of_month),
@@ -419,8 +399,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity, pageEntryTa
                 )
             }
 
-            AnimatedVisibility(visible = autoBackupInterval != BackupManager.INTERVAL_NONE ||
-                "auto_backup_on_change" in searchTargets) {
+            AnimatedVisibility(visible = autoBackupInterval != BackupManager.INTERVAL_NONE) {
                 Column {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_on_change"),
