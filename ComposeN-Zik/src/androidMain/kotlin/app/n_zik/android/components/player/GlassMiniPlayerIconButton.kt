@@ -63,8 +63,9 @@ fun GlassMiniPlayerIconButton(
     onLongClick: (() -> Unit)? = null,
     // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
+    keepGlyphContrast: Boolean = false,
 ) {
-    val glyphColor = miniPlayerGlyphColor(settings, color, enabled)
+    val glyphColor = miniPlayerGlyphColor(settings, color, enabled || keepGlyphContrast)
     MiniPlayerIconSurface(
         enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
         nativePressMotion = icon == R.drawable.play_skip_back || icon == R.drawable.play_skip_forward,

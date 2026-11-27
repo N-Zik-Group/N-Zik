@@ -3,6 +3,13 @@
 package app.n_zik.android.components.player
 
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -110,6 +117,20 @@ class PlayerActionSlot(
     val spansTwoCells: Boolean = false,
     val content: @Composable () -> Unit,
 )
+
+@Composable
+internal fun PlayerChangingAction(
+    visibility: MutableTransitionState<Boolean>,
+    motionAllowed: Boolean = isGlassMotionAllowed(),
+    content: @Composable () -> Unit,
+) {
+    val duration = if (motionAllowed) 200 else 0
+    AnimatedVisibility(
+        visibleState = visibility,
+        enter = fadeIn(tween(duration)) + expandHorizontally(tween(duration), expandFrom = Alignment.CenterHorizontally),
+        exit = fadeOut(tween(duration)) + shrinkHorizontally(tween(duration), shrinkTowards = Alignment.CenterHorizontally),
+    ) { content() }
+}
 
 /** Full-player controls share the same physical side margins. */
 const val PlayerControlsWidthFraction = .9f
@@ -420,8 +441,7 @@ fun PlayerActionIcon(
         return
     }
     PlayerActionCell(enabled, onClick, onLongClick) {
-        Image(painterResource(icon), contentDescription, colorFilter = ColorFilter.tint(if (enabled)
-            surfaceGlyphColor(color, LocalPlayerActionSurface.current) else color), modifier = modifier)
+        Image(painterResource(icon), contentDescription, colorFilter = ColorFilter.tint(surfaceGlyphColor(color, LocalPlayerActionSurface.current)), modifier = modifier)
     }
 }
 
@@ -534,8 +554,7 @@ fun PlayerDownloadAction(
         downloadState == Download.STATE_RESTARTING
     val progress = if (mediaId != null) getDownloadProgress(mediaId) else 0f
     PlayerActionCell(enabled, if (active) onCancelButtonClicked else onClick) {
-        if (!active) Image(painterResource(icon), null, colorFilter = ColorFilter.tint(if (enabled)
-            surfaceGlyphColor(color, LocalPlayerActionSurface.current) else color), modifier = modifier)
+        if (!active) Image(painterResource(icon), null, colorFilter = ColorFilter.tint(surfaceGlyphColor(color, LocalPlayerActionSurface.current)), modifier = modifier)
         else Box(modifier, contentAlignment = Alignment.Center) {
             val arc = surfaceGlyphColor(colorPalette().accent, LocalPlayerActionSurface.current)
             val track = surfaceProgressTrackColor(arc, colorPalette().textDisabled, LocalPlayerActionSurface.current)

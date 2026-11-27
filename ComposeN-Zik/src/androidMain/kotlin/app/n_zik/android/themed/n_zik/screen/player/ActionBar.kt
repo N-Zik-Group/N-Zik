@@ -15,6 +15,8 @@ import android.media.audiofx.AudioEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.runtime.SideEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.combinedClickable
@@ -53,6 +55,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -108,6 +111,7 @@ import app.n_zik.android.components.player.PlayerActionToolbar
 import app.n_zik.android.components.player.PlayerActionPanel
 import app.n_zik.android.components.player.PlayerActionIcon
 import app.n_zik.android.components.player.PlayerDownloadAction
+import app.n_zik.android.components.player.PlayerChangingAction
 import app.n_zik.android.components.player.playerTextOutlineColor
 import app.n_zik.android.components.player.LocalPlayerWhatsNextTextColor
 import app.n_zik.android.components.player.opposingTextOutlineColor
@@ -544,30 +548,26 @@ internal fun playerActionBarActions(
                 }
                 "download" -> {
                     val showButtonPlayerDownload by rememberPreference( showButtonPlayerDownloadKey, true )
-                    if ((placedAtTop || showButtonPlayerDownload) && !offlineMode && !mediaItem.isLocal) {
-                        val isDownloaded = isDownloadedSong( mediaItem.mediaId )
+                    val visible = (placedAtTop || showButtonPlayerDownload) && !offlineMode && !mediaItem.isLocal
+                    val visibility = remember { MutableTransitionState(visible) }.apply { targetState = visible }
+                    var previousItem by remember { mutableStateOf(mediaItem) }
+                    if (visible) SideEffect { previousItem = mediaItem }
+                    if (visible || visibility.currentState || !visibility.isIdle) {
+                        val displayedItem = if (visible) mediaItem else previousItem
                         playerActions.add(PlayerActionSlot(buttonId) {
-                            PlayerDownloadAction(
-                                icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                                color = if (isDownloaded) colorPalette().accent else Color.Gray,
-                                downloadState = getDownloadState(mediaItem.mediaId),
-                                mediaId = mediaItem.mediaId,
-                                onClick = {
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = mediaItem,
-                                        downloadState = isDownloaded
-                                    )
-                                },
-                                onCancelButtonClicked = {
-                                    manageDownload(
-                                        context = context,
-                                        mediaItem = mediaItem,
-                                        downloadState = true
-                                    )
-                                },
-                                modifier = Modifier.size( 24.dp )
-                            )
+                            PlayerChangingAction(visibility) {
+                                val isDownloaded = isDownloadedSong(displayedItem.mediaId)
+                                PlayerDownloadAction(
+                                    icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
+                                    color = if (isDownloaded) colorPalette().accent else Color.Gray,
+                                    downloadState = getDownloadState(displayedItem.mediaId),
+                                    mediaId = displayedItem.mediaId,
+                                    enabled = visible,
+                                    onClick = { manageDownload(context, displayedItem, isDownloaded) },
+                                    onCancelButtonClicked = { manageDownload(context, displayedItem, true) },
+                                    modifier = Modifier.size(24.dp),
+                                )
+                            }
                         })
                     }
                 }

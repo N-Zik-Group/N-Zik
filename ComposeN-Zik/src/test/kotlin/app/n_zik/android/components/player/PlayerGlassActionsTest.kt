@@ -2,6 +2,7 @@ package app.n_zik.android.components.player
 
 import android.app.Application
 import android.os.Looper
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -92,6 +94,44 @@ class PlayerGlassActionsTest {
     @get:Rule val compose = createComposeRule()
     private val settings = GlassSettings(film = 0f, rim = 0f, blur = 0f,
         vibrancy = 0f, depth = 0f, amount = 0f)
+
+    @Test fun `changing action releases and restores its slot progressively`() {
+        val visibility = MutableTransitionState(true)
+        compose.mainClock.autoAdvance = false
+        compose.setContent {
+            Row {
+                PlayerChangingAction(visibility, motionAllowed = true) {
+                    Box(Modifier.size(40.dp).background(Color.White))
+                }
+                Box(Modifier.size(24.dp).testTag("neighbor"))
+            }
+        }
+        fun neighborLeft() =
+            compose.onNodeWithTag("neighbor").fetchSemanticsNode().boundsInRoot.left
+
+        fun advanceFrames(count: Int) {
+            repeat(count) {
+                compose.runOnIdle { Snapshot.sendApplyNotifications() }
+                compose.mainClock.advanceTimeByFrame()
+                compose.waitForIdle()
+            }
+        }
+
+        val expanded = neighborLeft()
+        compose.runOnIdle { visibility.targetState = false }
+        advanceFrames(6)
+        val closing = neighborLeft()
+        advanceFrames(15)
+        val collapsed = neighborLeft()
+        assertTrue("Closing: $expanded -> $closing -> $collapsed", closing > collapsed && closing < expanded)
+
+        compose.runOnIdle { visibility.targetState = true }
+        advanceFrames(6)
+        val opening = neighborLeft()
+        advanceFrames(15)
+        assertTrue("Opening: $collapsed -> $opening -> $expanded", opening > collapsed && opening < expanded)
+        assertEquals(expanded, neighborLeft(), 1f)
+    }
 
     @Test fun `only a selector on a rendered toolbar receives the toolbar glass plate`() {
         val showCompanion = mutableStateOf(true)

@@ -7,11 +7,13 @@ import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -48,6 +50,7 @@ import app.n_zik.android.enums.QueueLoopType
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.playback.services.AudioOutputManager
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.components.player.PlayerChangingAction
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.utils.playNextIfAvailable
 import app.n_zik.android.playback.utils.seekPreviousIfAvailable
@@ -205,18 +208,28 @@ internal fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Download -> {
-            val isDownloaded = mediaItem?.let { isDownloadedSong(it.mediaId) } ?: false
-            GlassMiniPlayerIconButton(
-                contentDescription = stringResource(button.labelRes),
-                preserveNativeGeometry = true,
-                icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
-                color = if (isDownloaded) colorPalette().accent else controlsColorText,
-                onClick = {
-                    mediaItem?.let { manageDownload(context, it, isDownloaded) }
-                    if (effectRotationEnabled) onRotatedChange(!isRotated)
-                },
-                rotationAngle = rotationAngle
-            )
+            val downloadable = mediaItem?.takeUnless { it.isLocal }
+            val visible = downloadable != null
+            val visibility = remember { MutableTransitionState(visible) }.apply { targetState = visible }
+            var previousItem by remember { mutableStateOf(downloadable) }
+            if (downloadable != null) SideEffect { previousItem = downloadable }
+            PlayerChangingAction(visibility) {
+                val displayedItem = downloadable ?: previousItem
+                val isDownloaded = displayedItem?.let { isDownloadedSong(it.mediaId) } == true
+                GlassMiniPlayerIconButton(
+                    contentDescription = stringResource(button.labelRes),
+                    preserveNativeGeometry = true,
+                    icon = if (isDownloaded) R.drawable.downloaded else R.drawable.download,
+                    color = if (isDownloaded) colorPalette().accent else controlsColorText,
+                    enabled = visible,
+                    keepGlyphContrast = true,
+                    onClick = {
+                        downloadable?.let { manageDownload(context, it, isDownloaded) }
+                        if (effectRotationEnabled) onRotatedChange(!isRotated)
+                    },
+                    rotationAngle = rotationAngle,
+                )
+            }
         }
         MiniPlayerButton.Share -> {
             val shareItem = mediaItem?.takeUnless { it.isLocal }
