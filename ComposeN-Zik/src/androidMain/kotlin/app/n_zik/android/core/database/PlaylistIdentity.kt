@@ -62,6 +62,10 @@ fun canRefreshPlaylist(playlist: Playlist?): Boolean = when (playlistLinkKind(pl
 /** Identifies podcast browse endpoints without converting them into playlist IDs. */
 fun isPodcastBrowseId(browseId: String?): Boolean = browseId?.startsWith("MPSP") == true
 
+/** Resolves the provider ID from an unmodified or locally decorated playlist source. */
+internal fun podcastSourceBrowseId(browseId: String?): String? =
+    browseId?.removePrefix(MODIFIED_PREFIX)?.takeIf(::isPodcastBrowseId)
+
 /** Source identity is independent of the mutable remote-library bookmark flag. */
 fun isYouTubePlaylistSource(browseId: String?, remoteSource: Boolean = false): Boolean =
     remoteSource || playlistLinkKind(browseId) != PlaylistLinkKind.Local

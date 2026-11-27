@@ -18,9 +18,7 @@ internal enum class GenerateMode {
     CreateIfMissing,
 
     /**
-     * Button / post-import job path: delete the existing playlist first (its
-     * `SongPlaylistMap` mappings cascade away) and recreate it. The click or the
-     * import is an explicit "recompute now" act.
+     * Button / post-import job path: replace a snapshot with verified generated provenance.
      */
     Regenerate
 }
@@ -64,15 +62,17 @@ internal suspend fun generateRewindPlaylist(
     var written = 0
     Database.transaction {
         if (!isStillOwner()) return@transaction
-        // Recheck the row under the transaction in case another request created it.
-        val existing = playlistTable.getAll().firstOrNull {
-            it.name.trim().equals(name.trim(), ignoreCase = true)
+        val sourceId = RewindPlaylists.generatedSourceId(name)
+        val rows = playlistTable.getAll()
+        if (mode == GenerateMode.CreateIfMissing && rows.any { it.name.trim().equals(name, ignoreCase = true) }) {
+            return@transaction
         }
+        val existing = rows.firstOrNull { it.browseId == sourceId }
         if (existing != null) {
             if (mode == GenerateMode.CreateIfMissing) return@transaction
             playlistTable.delete(existing)
         }
-        val playlistId = playlistTable.insert(Playlist(name = name))
+        val playlistId = playlistTable.insert(Playlist(name = name, browseId = sourceId))
         songs.forEach { song ->
             songTable.insertIgnore(song)
             // `map` appends at MAX(position)+1 -> positions 0..n-1 in top order

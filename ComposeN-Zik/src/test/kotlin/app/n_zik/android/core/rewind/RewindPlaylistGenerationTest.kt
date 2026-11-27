@@ -216,6 +216,28 @@ class RewindPlaylistGenerationTest {
     }
 
     @Test
+    fun regenerationPreservesAnUnmarkedPlaylistWithTheSameName() = runBlocking {
+        val name = RewindPlaylists.yearlyName(1989)
+        val from = 1_735_689_600_000L
+        val oldSong = "rewind-collision-user-song"
+        val generatedSong = "rewind-collision-generated-song"
+        insertSong(oldSong)
+        insertSong(generatedSong)
+        insertEvent(generatedSong, from + 1_000, 60_000)
+        val original = withContext(NzikDispatchers.DATA) {
+            val id = Database.playlistTable.insert(Playlist(name = name))
+            Database.songPlaylistMapTable.map(oldSong, id)
+            id
+        }
+
+        assertEquals(1, generateRewindPlaylist(name, from, from + 2_000, GenerateMode.Regenerate))
+        val generated = requireNotNull(Database.playlistTable.findByBrowseId(RewindPlaylists.generatedSourceId(name)).first())
+        assertTrue(original != generated.id)
+        assertEquals(listOf(oldSong), songsIn(original))
+        assertEquals(listOf(generatedSong), songsIn(generated.id))
+    }
+
+    @Test
     fun emptyWindowCreatesNothing() = runBlocking {
         val from = 1_780_000_000_000L
         val to = from + 86_400_000L

@@ -274,6 +274,7 @@
     <string name="playlist_like_all_dialog_title">Like all songs</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(estimated time) is required to like all the songs. You need to close the app to cancel this process. Do you want to continue?</string>
     <string name="playlist_name_input_hint">Enter the playlist name</string>
+    <string name="playlist_name_reserved">This name is reserved for Rewind playlists.</string>
     <string name="playlist_operation_wait_message">Please wait, this may take few minutes...</string>
     <string name="playlist_pinned_title">Pinned</string>
     <string name="playlist_positions_shuffled">%d positions shuffled</string>

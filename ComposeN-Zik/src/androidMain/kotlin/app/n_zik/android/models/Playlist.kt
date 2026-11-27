@@ -6,6 +6,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.cleanPrefix
+import app.n_zik.android.core.database.canBookmarkPlaylist
 
 @Immutable
 @Entity
@@ -32,7 +33,7 @@ data class Playlist(
      * Only playlists linked to a real YouTube Music playlist can: a purely local playlist
      * (no [browseId]) or a locally modified one has nothing on YouTube Music to save.
      */
-    fun canBeBookmarked(): Boolean = browseId?.startsWith( MODIFIED_PREFIX ) == false
+    fun canBeBookmarked(): Boolean = canBookmarkPlaylist(this)
 }
 
 

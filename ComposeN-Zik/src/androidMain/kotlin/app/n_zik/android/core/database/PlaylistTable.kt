@@ -253,9 +253,12 @@ interface PlaylistTable {
         SELECT DISTINCT P.*, COUNT(spm.songId) as songCount
         FROM Playlist P
         LEFT JOIN SongPlaylistMap spm ON P.id = spm.playlistId
-        LEFT JOIN Song S ON S.id = spm.songId
+        LEFT JOIN (
+            SELECT songId, SUM(playtime) AS listeningTime
+            FROM Event GROUP BY songId
+        ) E ON E.songId = spm.songId
         GROUP BY P.id
-        ORDER BY COALESCE(SUM(S.totalPlayTimeMs), 0) ASC
+        ORDER BY COALESCE(SUM(E.listeningTime), 0) ASC, P.id ASC
         LIMIT :limit
     """)
     fun sortPreviewsByListeningTime( limit: Int = Int.MAX_VALUE ): Flow<List<PlaylistPreview>>
@@ -264,9 +267,12 @@ interface PlaylistTable {
         SELECT DISTINCT P.*, COUNT(spm.songId) as songCount
         FROM Playlist P
         LEFT JOIN SongPlaylistMap spm ON P.id = spm.playlistId
-        LEFT JOIN Song S ON S.id = spm.songId
+        LEFT JOIN (
+            SELECT songId, COUNT(id) AS playCount
+            FROM Event GROUP BY songId
+        ) E ON E.songId = spm.songId
         GROUP BY P.id
-        ORDER BY COALESCE(SUM(S.playCount), 0) ASC
+        ORDER BY COALESCE(SUM(E.playCount), 0) ASC, P.id ASC
         LIMIT :limit
     """)
     fun sortPreviewsByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<PlaylistPreview>>

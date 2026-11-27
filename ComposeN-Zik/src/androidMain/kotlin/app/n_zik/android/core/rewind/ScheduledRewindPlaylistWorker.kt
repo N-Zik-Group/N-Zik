@@ -191,7 +191,7 @@ internal abstract class ScheduledRewindPlaylistWorker(
             }
             val count = generateRewindPlaylist(name, window.first, window.second, GenerateMode.CreateIfMissing, ::stillBound)
             if (count > 0 && stillBound()) {
-                val playlistId = Database.playlistTable.findByName(name).first()?.id
+                val playlistId = Database.playlistTable.findByBrowseId(RewindPlaylists.generatedSourceId(name)).first()?.id
                 if (stillBound()) cadence.notifyCreated(context, finished, playlistId)
             }
             return Result.success()

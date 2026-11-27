@@ -68,20 +68,25 @@ internal class RewindPostImportRegenerationWorker(
             Timber.tag(TAG).i("Database is closed after the import: retrying so the run survives the restart")
             return Result.retry()
         }
-        val existing = Database.playlistTable.getAll().filter { RewindPlaylists.isRewind(it.name) }
-        existing.forEach { playlist ->
-            val window = RewindPlaylists.windowFor(playlist.name)
+        val visibility = RewindPlaylists.visibility(applicationContext)
+        val snapshots = Database.playlistTable.getAll().filter { playlist ->
+            RewindPlaylists.isRewind(playlist.name) &&
+                playlist.browseId == RewindPlaylists.generatedSourceId(playlist.name) &&
+                visibility.visibleInLibrary(playlist.name)
+        }
+        snapshots.map { it.name }.distinct().forEach { name ->
+            val window = RewindPlaylists.windowFor(name)
             if (window == null) {
-                Timber.tag(TAG).w("No listening window derivable for \"${playlist.name}\": skipping")
+                Timber.tag(TAG).w("No listening window derivable for \"$name\": skipping")
                 return@forEach
             }
             val count = generateRewindPlaylist(
-                playlist.name,
+                name,
                 window.first,
                 window.second,
                 GenerateMode.Regenerate,
             ) { ProfileWorkOwner.isBound(applicationContext, owner) }
-            Timber.tag(TAG).i("Regenerated \"${playlist.name}\" with $count songs")
+            Timber.tag(TAG).i("Regenerated \"$name\" with $count songs")
         }
         return Result.success()
     }

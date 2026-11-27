@@ -360,9 +360,9 @@ class RewindPlaylistWorkersTest {
         insertSong("imp_old_m")
         insertSong("imp_old_y")
         insertSong("imp_old_a")
-        val oldMonthlyId = insertPlaylist(monthlyName)
-        val oldYearlyId = insertPlaylist(yearlyName)
-        val oldAlltimeId = insertPlaylist(alltimeName)
+        val oldMonthlyId = insertPlaylist(monthlyName, generated = true)
+        val oldYearlyId = insertPlaylist(yearlyName, generated = true)
+        val oldAlltimeId = insertPlaylist(alltimeName, generated = true)
         // a regular (non-rewind) playlist: the job must leave it alone
         insertSong("imp_custom")
         val customId = insertPlaylist("my custom playlist")
@@ -420,7 +420,7 @@ class RewindPlaylistWorkersTest {
         }
 
         // first run: the playlist exists, so it is regenerated
-        insertPlaylist(name)
+        insertPlaylist(name, generated = true)
         runWorker(postImportWorker())
         awaitPlaylistContaining(name, listOf("imp_keep_new")) // regenerated: the new content is visible
 
@@ -534,10 +534,10 @@ class RewindPlaylistWorkersTest {
         }
     }
 
-    private fun insertPlaylist(name: String): Long =
+    private fun insertPlaylist(name: String, generated: Boolean = false): Long =
         runBlocking {
             withContext(NzikDispatchers.DATA) {
-                Database.playlistTable.insert(Playlist(name = name))
+                Database.playlistTable.insert(Playlist(name = name, browseId = RewindPlaylists.generatedSourceId(name).takeIf { generated }))
             }
         }
 

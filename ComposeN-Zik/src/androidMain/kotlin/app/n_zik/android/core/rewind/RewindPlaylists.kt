@@ -2,6 +2,7 @@ package app.n_zik.android.core.rewind
 
 import android.content.Context
 import app.n_zik.android.R
+import app.n_zik.android.cleanPrefix
 import app.n_zik.android.utils.DataStoreUtils
 import java.time.LocalDate
 import java.time.ZoneId
@@ -21,11 +22,33 @@ import java.util.Locale
  */
 object RewindPlaylists {
 
+    private const val GENERATED_SOURCE_PREFIX = "NZIK_REWIND:"
+
+    internal fun generatedSourceId(name: String): String = GENERATED_SOURCE_PREFIX + name
+
+    internal fun isGeneratedSourceId(browseId: String?): Boolean = browseId?.startsWith(GENERATED_SOURCE_PREFIX) == true
+
+    internal fun isReservedName(name: String): Boolean = isRewind(cleanPrefix(name.trim()).trim())
+
+    internal fun visibleInLibrary(name: String, enabled: Boolean, monthlyEnabled: Boolean, yearlyEnabled: Boolean): Boolean {
+        val cleanName = cleanPrefix(name.trim()).trim()
+        return !isRewind(cleanName) || (enabled && isShown(cleanName, monthlyEnabled, yearlyEnabled, Filter.All))
+    }
+
+    internal fun Context.portablePlaylistName(name: String): String {
+        val cleanName = cleanPrefix(name.trim()).trim()
+        if (!isRewind(cleanName)) return name
+        val displayName = rewindDisplayName(cleanName)
+        return displayName.takeUnless(::isReservedName) ?: getString(R.string.rewind_title)
+    }
+
     internal data class Visibility(
         val enabled: Boolean,
         val monthlyEnabled: Boolean,
         val yearlyEnabled: Boolean,
-    )
+    ) {
+        fun visibleInLibrary(name: String): Boolean = RewindPlaylists.visibleInLibrary(name, enabled, monthlyEnabled, yearlyEnabled)
+    }
 
     /** Effective visibility leaves the saved playlist choices intact while Rewind is disabled. */
     internal fun visibility(context: Context): Visibility {
