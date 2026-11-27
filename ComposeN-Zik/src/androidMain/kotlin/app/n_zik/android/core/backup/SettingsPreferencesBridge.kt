@@ -18,6 +18,8 @@ import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.profileDownloadSpanBytes
 import app.n_zik.android.components.glass.validGlassPreferenceValue
+import app.n_zik.android.utils.proxyPasswordEncryptedKey
+import app.n_zik.android.utils.proxyPasswordKey
 import org.json.JSONArray
 
 /** Separate typed CSV record: its key can also exist in normal settings without collision. */
@@ -27,7 +29,8 @@ internal object SettingsPreferencesBridge {
 
     fun export(context: Context, plain: SharedPreferences, profileId: String = getActiveProfile(context)): MutableList<Triple<String, String, Any>> {
         val entries = plain.all.mapNotNull { (key, value) ->
-            if (RemovedSettingsMigration.isRemovedKey(key) || ProfileCacheLocationMigration.isRequestKey(key) ||
+            if (key == proxyPasswordKey || key == proxyPasswordEncryptedKey || RemovedSettingsMigration.isRemovedKey(key) ||
+                ProfileCacheLocationMigration.isRequestKey(key) ||
                 MaintenanceStateStore.isStorageCleanupKey(key) || ThemeStoreLibrary.isDownloadPreference(key)
             ) return@mapNotNull null
             value?.let { Triple(it::class.simpleName ?: "null", key, it) }

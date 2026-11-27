@@ -33,6 +33,7 @@ import app.n_zik.android.utils.profileDisplayName
 import app.n_zik.android.utils.profileLastUsed
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.proxyPasswordEncryptedKey
+import app.n_zik.android.utils.proxyPasswordKey
 import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.utils.saveProfileDisplayName
 import app.n_zik.android.utils.saveProfileLastUsed
@@ -171,8 +172,7 @@ object RescueFiles {
     )
     /**
      * The app's own encrypted setting (the proxy password): not a service credential group, so it
-     * gets its own checkbox instead of riding along with the credential groups. It lives in the
-     * encrypted prefs, so it cannot appear in the plain `prefs.all` export.
+     * gets its own checkbox instead of riding along with the credential groups.
      */
     internal val PROXY_KEYS = listOf(proxyPasswordEncryptedKey)
     // Every key that lives in the encrypted prefs: import routing must send each one to the
@@ -231,7 +231,9 @@ object RescueFiles {
         includeYtb: Boolean,
         includeDiscord: Boolean,
         includeLastfm: Boolean,
-        includeProxy: Boolean = false, includeGitHub: Boolean = false
+        includeProxy: Boolean = false,
+        includeGitHub: Boolean = false,
+        legacyProxyPassword: String? = null,
     ): List<Triple<String, String, Any>> {
         if (!includeYtb && !includeDiscord && !includeLastfm && !includeProxy && !includeGitHub) return emptyList()
         val keys = mutableListOf<String>()
@@ -241,7 +243,11 @@ object RescueFiles {
         if (includeProxy) keys.addAll(PROXY_KEYS)
         if (includeGitHub) keys.add("githubBackupIdentity")
         return keys.mapNotNull { key ->
-            val value = encryptedPrefs[key] ?: return@mapNotNull null
+            // Retain a password from an inactive, unmigrated profile under the encrypted import key.
+            val value = if (key == proxyPasswordEncryptedKey && key !in encryptedPrefs) {
+                legacyProxyPassword?.takeIf { it.isNotEmpty() }
+            } else encryptedPrefs[key]
+            if (value == null) return@mapNotNull null
             val type = value::class.simpleName ?: "null"
             if (type == "null") return@mapNotNull null
             Triple(type, key, value)
@@ -329,7 +335,17 @@ object RescueFiles {
             val encPrefs = encryptedPrefsResult?.getOrNull()
             if (encPrefs != null) {
                 // Single source of truth: the selected groups plus, when checked, the proxy key.
-                entries.addAll(buildCredentialExport(encPrefs.all, includeYtb, includeDiscord, includeLastfm, includeProxy, includeGitHub))
+                entries.addAll(
+                    buildCredentialExport(
+                        encPrefs.all,
+                        includeYtb,
+                        includeDiscord,
+                        includeLastfm,
+                        includeProxy,
+                        includeGitHub,
+                        legacyProxyPassword = if (includeProxy) prefs.all[proxyPasswordKey] as? String else null,
+                    ),
+                )
             } else {
                 encryptedSkipped = true
                 Timber.tag(TAG).w("Cannot access encrypted preferences; exporting without credentials")

@@ -1388,3 +1388,7 @@ Android Auto:
 Settings:
 - fix(settings): align proxy and visualizer options with their modes
   - Describe available options and their prerequisites using the active mode.
+
+Settings:
+- fix(backup): honor proxy password export opt-in
+  - Keep legacy passwords out of exports unless inclusion is enabled.

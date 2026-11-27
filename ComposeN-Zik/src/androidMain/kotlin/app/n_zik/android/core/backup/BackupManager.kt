@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.TimeUnit
 import app.n_zik.android.utils.isProfileIdSafe
+import app.n_zik.android.utils.proxyPasswordKey
 import com.github.doyaaaaaken.kotlincsv.dsl.csvWriter
 import java.time.Year
 
@@ -363,26 +364,25 @@ object BackupManager {
     ) {
         val (entries, credentials) = DatabaseRestoreJournal.withProfileStorageMutation(context) {
             check(ProfileWorkOwner.exists(context, owner))
-            val settings = SettingsPreferencesBridge.export(context, profileDataPrefs(context, owner.id), owner.id)
+            val preferences = profileDataPrefs(context, owner.id)
+            val settings = SettingsPreferencesBridge.export(context, preferences, owner.id)
             val secrets = if (includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub) {
-                profileSecurePrefs(context, owner.id).all
-            } else emptyMap()
+                RescueFiles.buildCredentialExport(
+                    profileSecurePrefs(context, owner.id).all,
+                    includeYtb,
+                    includeDiscord,
+                    includeLastfm,
+                    includeProxy,
+                    includeGitHub,
+                    legacyProxyPassword = if (includeProxy) preferences.all[proxyPasswordKey] as? String else null,
+                )
+            } else emptyList()
             settings to secrets
         }
 
         Timber.tag("AutoBackup").d("exportSettings: Base settings count: ${entries.size}")
 
-        // Single source of truth (RescueFiles): the selected credential groups plus, when
-        // checked, the proxy key — exactly as the manual export and the rescue build them.
-        entries.addAll(
-            RescueFiles.buildCredentialExport(
-                credentials,
-                includeYtb,
-                includeDiscord,
-                includeLastfm,
-                includeProxy, includeGitHub
-            )
-        )
+        entries.addAll(credentials)
 
         Timber.tag("AutoBackup").d("exportSettings: Final settings count to write: ${entries.size} (Include Ytb: $includeYtb, Include Discord: $includeDiscord, Include Lastfm: $includeLastfm, Include Proxy: $includeProxy)")
 

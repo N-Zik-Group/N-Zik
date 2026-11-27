@@ -11,6 +11,8 @@ import app.n_zik.android.enums.ExoPlayerCacheLocation
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.exoPlayerCacheLocationKey
 import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
+import app.n_zik.android.utils.proxyPasswordEncryptedKey
+import app.n_zik.android.utils.proxyPasswordKey
 import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.core.profiles.ProfileCacheLocationMigration
 import app.n_zik.android.core.profiles.profileStorageIdentity
@@ -187,6 +189,32 @@ class GlassSettingsBackupTest {
         glass.edit().putFloat(glassBlurKey, 21f).commit()
         assertTrue(RescueFiles.importSettings(context, empty).isSuccess)
         assertTrue(glass.all.isEmpty())
+    }
+
+    @Test fun `legacy proxy password is exported only when selected and restores to the encrypted store`() {
+        plain.edit().putString(proxyPasswordKey, "legacy value").commit()
+        val excluded = uri("excluded-proxy.csv")
+        val included = uri("included-proxy.csv")
+
+        assertTrue(RescueFiles.exportSettings(context, excluded, Result.success(credentials)).isSuccess)
+        assertFalse(File(requireNotNull(excluded.path)).readText().contains("legacy value"))
+        assertTrue(RescueFiles.exportSettings(context, included, Result.success(credentials), includeProxy = true).isSuccess)
+
+        plain.edit().remove(proxyPasswordKey).commit()
+        assertTrue(RescueFiles.importSettings(context, included, Result.success(credentials)).isSuccess)
+        assertEquals("legacy value", credentials.getString(proxyPasswordEncryptedKey, null))
+        assertFalse(plain.contains(proxyPasswordKey))
+    }
+
+    @Test fun `cleared encrypted proxy password takes precedence over a legacy value`() {
+        plain.edit().putString(proxyPasswordKey, "legacy value").commit()
+        credentials.edit().putString(proxyPasswordEncryptedKey, "").commit()
+        val file = uri("cleared-proxy.csv")
+
+        assertTrue(RescueFiles.exportSettings(context, file, Result.success(credentials), includeProxy = true).isSuccess)
+        val csv = File(requireNotNull(file.path)).readText()
+        assertFalse(csv.contains("legacy value"))
+        assertTrue(csv.contains(proxyPasswordEncryptedKey))
     }
 
     @Test fun `malformed Glass snapshot never commits plain or Glass edits`() {

@@ -19,8 +19,10 @@ import java.time.format.DateTimeFormatter
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
-import app.n_zik.android.utils.encryptedPreferences
-import app.n_zik.android.utils.preferences
+import app.n_zik.android.core.profiles.profileDataPrefs
+import app.n_zik.android.utils.encryptedPreferencesForProfile
+import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.proxyPasswordKey
 import androidx.compose.runtime.MutableState
 
 class ExportSettingsDialog private constructor(
@@ -43,19 +45,25 @@ class ExportSettingsDialog private constructor(
         ) = NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runCatching {
                 Timber.tag("ExportSettingsDialog").d("Starting settings export...")
-                val entries = SettingsPreferencesBridge.export(context, context.preferences)
+                val profile = getActiveProfile(context)
+                val preferences = profileDataPrefs(context, profile)
+                val entries = SettingsPreferencesBridge.export(context, preferences, profile)
 
                 // Single source of truth (RescueFiles): the selected credential groups plus,
                 // when checked, the proxy key — exactly as the auto backup and the rescue build them.
-                entries.addAll(
-                    RescueFiles.buildCredentialExport(
-                        context.encryptedPreferences.all,
-                        includeYtb,
-                        includeDiscord,
-                        includeLastfm,
-                        includeProxy, includeGitHub
+                if (includeYtb || includeDiscord || includeLastfm || includeProxy || includeGitHub) {
+                    entries.addAll(
+                        RescueFiles.buildCredentialExport(
+                            context.encryptedPreferencesForProfile(profile).all,
+                            includeYtb,
+                            includeDiscord,
+                            includeLastfm,
+                            includeProxy,
+                            includeGitHub,
+                            legacyProxyPassword = if (includeProxy) preferences.all[proxyPasswordKey] as? String else null,
+                        ),
                     )
-                )
+                }
 
                 Timber.tag("ExportSettingsDialog").d("Found ${entries.size} settings entries")
 
