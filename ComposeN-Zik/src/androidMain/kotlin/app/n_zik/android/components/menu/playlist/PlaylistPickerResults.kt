@@ -36,6 +36,9 @@ import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.enums.PlaylistSortBy
+import app.n_zik.android.components.ui.screens.home.rememberAvailableDevicePlaylistSongCounts
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.uiRoundnessShape
@@ -100,21 +103,24 @@ internal fun rememberPlaylistPickerRead(includeDeviceSort: Boolean, deviceScanPe
     val devicePlaylistIds by remember {
         Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds().map { it.toSet() }
     }.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA)
+    val deviceLibraryAvailable = deviceLibraryEnabled()
+    val groupByDevice = deviceLibraryAvailable && (libraryBy == PlaylistSortBy.OnDevice || pinnedBy == PlaylistSortBy.OnDevice)
+    val scannedPlaylistIds = if (groupByDevice) rememberAvailableDevicePlaylistSongCounts()?.keys else emptySet()
     val librarySort = libraryBy to libraryOrder
     val pinnedSort = pinnedBy to pinnedOrder
     val youtubeSort = youtubeBy to youtubeOrder
     val deviceSort = (deviceBy to deviceOrder).takeIf { includeDeviceSort && deviceBy != PlaylistSortBy.SongCount }
     val deviceSongCountOrder = deviceOrder.takeIf { includeDeviceSort && deviceBy == PlaylistSortBy.SongCount }
     var retry by remember { mutableIntStateOf(0) }
-    val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, retry) {
-        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort))
+    val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, groupByDevice, scannedPlaylistIds, retry) {
+        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort, groupByDevice, scannedPlaylistIds.orEmpty()))
     }
     return key(retry) {
         val result by results.collectAsStateWithLifecycle<Result<PlaylistPickerPreviews>?>(
             initialValue = null,
             context = NzikDispatchers.DATA,
         )
-        PlaylistPickerRead(result, devicePlaylistIds, deviceScanPending, deviceSongCountOrder) { retry++ }
+        PlaylistPickerRead(result, devicePlaylistIds, deviceScanPending || scannedPlaylistIds == null, deviceSongCountOrder) { retry++ }
     }
 }
 
@@ -123,9 +129,19 @@ private fun sortedPlaylistPickerPreviews(
     pinnedSort: Pair<PlaylistSortBy, SortOrder>,
     youtubeSort: Pair<PlaylistSortBy, SortOrder>,
     deviceSort: Pair<PlaylistSortBy, SortOrder>?,
+    groupByDevice: Boolean,
+    scannedPlaylistIds: Set<Long>,
 ): Flow<PlaylistPickerPreviews> {
     val sorts = (listOf(librarySort, pinnedSort, youtubeSort) + listOfNotNull(deviceSort)).distinct()
-    val flows = sorts.map { (sortBy, sortOrder) -> Database.playlistTable.sortPreviews(sortBy, sortOrder) }
+    val flows = sorts.map { sort ->
+        val (sortBy, sortOrder) = sort
+        if (sortBy != PlaylistSortBy.OnDevice) Database.playlistTable.sortPreviews(sortBy, sortOrder)
+        else if (!groupByDevice || (sort != librarySort && sort != pinnedSort)) {
+            Database.playlistTable.sortPreviews(PlaylistSortBy.Name, sortOrder)
+        } else Database.playlistTable.sortPreviews(PlaylistSortBy.Name, SortOrder.Ascending).map { previews ->
+            previews.groupByDeviceAvailability(sortOrder) { it.playlist.id in scannedPlaylistIds }
+        }
+    }
     if (flows.size == 1) return flows.single().map { PlaylistPickerPreviews(it) }
     return combine(flows) { previews ->
         val library = previews[sorts.indexOf(librarySort)]

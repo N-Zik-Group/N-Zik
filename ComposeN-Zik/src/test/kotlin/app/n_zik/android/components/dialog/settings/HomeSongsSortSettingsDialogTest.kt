@@ -31,7 +31,7 @@ import org.robolectric.annotation.Config
 /**
  * The changed option sets of the phone's songs sort-settings dialog: "Custom" is offered on every
  * sort chip (its real tab menu shows it too, its visibility flags default to visible), while
- * "Downloaded" stays out of the cached and downloaded chips — the same sets the phone's tabs
+ * "Downloaded" stays out of the downloaded chip — the same sets the phone's tabs
  * display.
  *
  * The sets themselves are pinned on the dialog's pure option logic
@@ -72,7 +72,7 @@ class HomeSongsSortSettingsDialogTest {
     }
 
     @Test
-    fun `every sort chip offers the custom order, the cached and downloaded chips do not offer the downloaded sort`() {
+    fun `every sort chip offers the custom order, only the downloaded chip excludes downloaded sorting`() {
         val ids = HomeSongsSortSettingsDialog.tabAvailableIds
 
         // "Custom" on every song chip — the phone's own tab menus show it too (its visibility
@@ -84,8 +84,12 @@ class HomeSongsSortSettingsDialogTest {
             assertTrue("\"Custom\" is offered on the $tab chip", "Custom" in (ids[tab] ?: emptyList()))
         }
 
-        // "Downloaded" stays out of the cached and downloaded chips, present on the rest
-        assertFalse("Downloaded" in (ids[BuiltInPlaylist.Offline] ?: emptyList()))
+        // Cached can mix streamed and downloaded titles. The Downloaded tab already has one origin.
+        assertTrue("Downloaded" in (ids[BuiltInPlaylist.Offline] ?: emptyList()))
+        assertEquals(
+            setOf(BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked),
+            ids.filterValues { "OnDevice" in it }.keys,
+        )
         assertFalse("Downloaded" in (ids[BuiltInPlaylist.Downloaded] ?: emptyList()))
         assertTrue("Downloaded" in (ids[BuiltInPlaylist.All] ?: emptyList()))
 

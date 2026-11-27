@@ -216,6 +216,9 @@ fun HomeSongs(
         BuiltInPlaylist.Disliked -> Sort( HOME_SONGS_DISLIKED_SORT_BY, HOME_SONGS_DISLIKED_SORT_ORDER, homeSongsDislikedSortMenuOrderKey, "disliked" )
         else -> Sort( HOME_SONGS_SORT_BY, HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
     }
+    songSort.onDeviceCriterionAvailable = includeDeviceSongs && sourceFilter != FilterBy.YoutubeLibrary
+    val groupByDevice = songSort.sortBy == SongSortBy.OnDevice
+    val databaseOrder = if (groupByDevice) SortOrder.Ascending else songSort.sortOrder
     val needsDownloadedIds = builtInPlaylist == BuiltInPlaylist.Downloaded || songSort.sortBy == SongSortBy.Downloaded
     val downloadedIds by remember(needsDownloadedIds, preview, downloads) {
         if (!needsDownloadedIds || preview != null) flowOf(emptySet<String>())
@@ -278,7 +281,7 @@ fun HomeSongs(
                         .map { it.sortByDownload() }
                 } else {
                     Database.songTable.sortAll(
-                        songSort.sortBy, songSort.sortOrder,
+                        songSort.sortBy, databaseOrder,
                         excludeHidden = excludeHidden && !includeDeviceSongs, dislikedOnly = dislikedOnly,
                     )
                 }
@@ -310,7 +313,7 @@ fun HomeSongs(
                     Database.songTable.sortFavorites( SongSortBy.Title, SortOrder.Ascending )
                         .map { it.sortByDownload() }
                 } else {
-                    Database.songTable.sortFavorites( songSort.sortBy, songSort.sortOrder )
+                    Database.songTable.sortFavorites( songSort.sortBy, databaseOrder )
                 }
             }
 
@@ -325,7 +328,9 @@ fun HomeSongs(
 
         val selectedPlaylist = builtInPlaylist
         val librarySongs = if (includeDeviceSongs) {
-            val deviceLibrary = context.observeDeviceLibrary().onStart { emit(DeviceLibrarySnapshot()) }
+            val deviceLibrary = context.observeDeviceLibrary().onStart {
+                if (!groupByDevice) emit(DeviceLibrarySnapshot())
+            }
             retrievedSongs.combine(deviceLibrary) { songs, device ->
                 projectHomeLibrarySongs(songs, device.songIds, excludeHidden = selectedPlaylist == BuiltInPlaylist.All && excludeHidden)
             }
@@ -481,6 +486,7 @@ fun HomeSongs(
         recommendationsEnabled = isRecommendationEnabled,
         recommendations = displayRecommendations,
         parentalControlEnabled = parentalControlEnabled,
+        deviceSortOrder = songSort.sortOrder.takeIf { groupByDevice },
     )
     var baseSongs by remember { mutableStateOf(emptyList<Song>()) }
     var baseReady by remember(baseInput, isLoading) { mutableStateOf(false) }

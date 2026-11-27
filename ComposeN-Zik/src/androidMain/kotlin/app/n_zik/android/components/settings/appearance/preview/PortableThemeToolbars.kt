@@ -48,15 +48,17 @@ internal fun ThemeFields.toolbars(schemaVersion: Int) {
     }
     optional("sortMenus") {
         group("sortMenus") {
-            controlLists("songs", HomeSongsSortSettingsDialog.portableLists())
-            controlLists("artists", HomeArtistsSortSettingsDialog.portableLists())
-            controlLists("albums", HomeAlbumsSortSettingsDialog.portableLists())
-            controlLists("library", HomeLibrarySortSettingsDialog.portableLists())
-            controlList("localPlaylist", LocalPlaylistSortSettingsDialog.portableList())
-            controlList("history", HistorySortSettingsDialog.portableList())
+            controlLists("songs", HomeSongsSortSettingsDialog.portableLists().mapValues { it.value.withoutDeviceSort() })
+            controlLists("artists", HomeArtistsSortSettingsDialog.portableLists().mapValues { it.value.withoutDeviceSort() })
+            controlLists("albums", HomeAlbumsSortSettingsDialog.portableLists().mapValues { it.value.withoutDeviceSort() })
+            controlLists("library", HomeLibrarySortSettingsDialog.portableLists().mapValues { it.value.withoutDeviceSort() })
+            controlList("localPlaylist", LocalPlaylistSortSettingsDialog.portableList().withoutDeviceSort())
+            controlList("history", HistorySortSettingsDialog.portableList().withoutDeviceSort())
         }
     }
 }
+
+private fun PortableControlList.withoutDeviceSort() = copy(ids = ids.filterNot { it == "OnDevice" })
 
 private fun ThemeFields.customToolbars(schemaVersion: Int) {
     fun acceptsVisibility(surface: ToolbarSurface, action: ToolbarAction): Boolean =

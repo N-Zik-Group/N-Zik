@@ -587,7 +587,7 @@ interface ArtistTable {
         limit: Int = Int.MAX_VALUE,
         includeDeviceGroups: Boolean = false,
     ): Flow<List<Artist>> = when( sortBy ) {
-        ArtistSortBy.Name       -> sortFollowingByName()
+        ArtistSortBy.OnDevice, ArtistSortBy.Name       -> sortFollowingByName()
         ArtistSortBy.DateAdded  -> allFollowing()
         ArtistSortBy.PlayCount -> sortFollowingByPlayCount(limit, includeDeviceGroups)
         ArtistSortBy.ListeningTime -> sortFollowingByListeningTime(limit, includeDeviceGroups)
@@ -656,7 +656,7 @@ interface ArtistTable {
         limit: Int = Int.MAX_VALUE,
         includeDeviceGroups: Boolean = false,
     ): Flow<List<Artist>> = when( sortBy ) {
-        ArtistSortBy.Name       -> sortInLibraryByName()
+        ArtistSortBy.OnDevice, ArtistSortBy.Name       -> sortInLibraryByName()
         ArtistSortBy.DateAdded  -> allInLibrary()     // Already sorted by ROWID
         ArtistSortBy.PlayCount -> sortInLibraryByPlayCount(limit, includeDeviceGroups)
         ArtistSortBy.ListeningTime -> sortInLibraryByListeningTime(limit, includeDeviceGroups)

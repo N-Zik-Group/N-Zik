@@ -1,4 +1,8 @@
 Added:
+- feat(library): sort mixed collections by device availability
+  - Group scanned device items in songs, albums, artists, playlists, the playlist picker and listening history.
+  - Reverse group priority without reversing the secondary order. Exclude Cached, Downloaded, On device and provider-only lists.
+  - Use the scan before publishing the order and keep the existing portable appearance and Bridge contracts.
 - feat(search): add a clear-all button to saved search lists
   - Use the shared accent button below the last query in native and Glass themes. Clear only the search history for that screen.
 - feat(settings): show the active profile on the settings home

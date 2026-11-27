@@ -621,7 +621,7 @@ interface AlbumTable {
         limit: Int = Int.MAX_VALUE,
         includeDeviceGroups: Boolean = false,
     ): Flow<List<Album>> = when( sortBy ) {
-        AlbumSortBy.Title       -> sortBookmarkedByTitle()
+        AlbumSortBy.OnDevice, AlbumSortBy.Title       -> sortBookmarkedByTitle()
         AlbumSortBy.Year        -> sortBookmarkedByYear()
         AlbumSortBy.DateAdded   -> allBookmarked()       // Already sorted by ROWID
         AlbumSortBy.Artist      -> sortBookmarkedByArtist()
@@ -743,7 +743,7 @@ interface AlbumTable {
         limit: Int = Int.MAX_VALUE,
         includeDeviceGroups: Boolean = false,
     ): Flow<List<Album>> = when( sortBy ) {
-        AlbumSortBy.Title       -> sortInLibraryByTitle()
+        AlbumSortBy.OnDevice, AlbumSortBy.Title       -> sortInLibraryByTitle()
         AlbumSortBy.Year        -> sortInLibraryByYear()
         AlbumSortBy.DateAdded   -> allInLibrary()        // Already sorted by ROWID
         AlbumSortBy.Artist      -> sortInLibraryByArtist()

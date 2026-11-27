@@ -65,7 +65,7 @@ class HistorySortSettingsDialogTest {
         }
         composeRule.onNodeWithText(context.getString(R.string.common_action_apply)).performClick()
 
-        assertEquals(order, prefs.getString(historySortMenuOrderKey, null))
+        assertEquals("""["ARTIST","DATE","ALPHABETICAL","OnDevice"]""", prefs.getString(historySortMenuOrderKey, null))
         assertFalse(prefs.getBoolean(visibilityKey, true))
         val document = encodeThemeAppearance(prefs.all, emptyMap<String, Any>())
         val restored = themePreviewPreferences(document, glass = false).plain

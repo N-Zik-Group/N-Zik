@@ -39,12 +39,12 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     } }
 
 
-    private val librarySortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration", "Custom")
+    private val librarySortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration", "Custom", "OnDevice")
     private val onDeviceSortIds = listOf("Title", "Artist", "Songs", "Duration", "PlayCount", "ListeningTime", "DateAdded", "Year", "Custom")
 
-    private val favoritesSortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration")
+    private val favoritesSortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration", "OnDevice")
 
-    private val dislikedSortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration")
+    private val dislikedSortIds = listOf("AlbumName", "Artist", "Year", "DateAdded", "PlayCount", "Duration", "OnDevice")
 
     private enum class AlbumTab(val textId: Int, val availableIds: List<String>) {
         Library(R.string.library_title, librarySortIds),
@@ -84,6 +84,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private fun getSortIcon(id: String): Int = when (id) {
+        "OnDevice" -> R.drawable.folder
         "AlbumName", "Title" -> R.drawable.text
         "Artist" -> R.drawable.artist
         "Year" -> R.drawable.calendar
@@ -97,6 +98,7 @@ object HomeAlbumsSortSettingsDialog : ContentFramedDialog {
     }
 
     private fun getSortLabelRes(id: String): Int? = when (id) {
+        "OnDevice" -> R.string.library_on_device_title
         "AlbumName", "Title" -> R.string.library_sort_name
         "Artist" -> R.string.library_sort_artist
         "Year" -> R.string.library_sort_album_year

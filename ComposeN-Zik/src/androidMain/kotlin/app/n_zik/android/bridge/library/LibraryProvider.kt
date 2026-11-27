@@ -711,7 +711,7 @@ internal object SongsSortMenu {
     )
 
     private fun optionNamesOf(chip: ChipKeys): List<String> =
-        optionNames[chip] ?: SongSortBy.entries.map { it.name }
+        optionNames[chip] ?: SongSortBy.entries.filterNot { it == SongSortBy.OnDevice }.map { it.name }
 
     /** Every preference key one of the phone's songs sort menus reads (contract §10.3, since 1.7.3): each chip's saved order and its per-option visibility flags, with the chip's own option ids (its `SongSortBy` / `StatisticsType` / `OnDeviceSongSortBy` names). */
     val sortMenuKeys: Set<String> = buildSet {

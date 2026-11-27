@@ -1,7 +1,9 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.enums.BuiltInPlaylist
+import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -28,6 +30,7 @@ internal data class HomeSongsBaseInput(
     val recommendationsEnabled: Boolean,
     val recommendations: Map<Song, Int>,
     val parentalControlEnabled: Boolean,
+    val deviceSortOrder: SortOrder? = null,
 )
 
 internal suspend fun projectHomeSongsBase(input: HomeSongsBaseInput): List<Song> =
@@ -41,10 +44,14 @@ internal suspend fun projectHomeSongsBase(input: HomeSongsBaseInput): List<Song>
             }
         }
         val seenIds = HashSet<String>()
-        ordered.filter { song ->
+        val visible = ordered.filter { song ->
             context.ensureActive()
             seenIds.add(song.id) && (!input.parentalControlEnabled || !song.title.startsWith(EXPLICIT_PREFIX, true))
         }
+        val order = input.deviceSortOrder ?: return@withContext visible
+        // The library input has already been reconciled with the current device scan.
+        val deviceIds = input.items.filter(Song::isLocal).mapTo(HashSet(), Song::id)
+        visible.groupByDeviceAvailability(order) { it.id in deviceIds }
     }
 
 internal suspend fun searchHomeSongs(items: List<Song>, query: String): List<Song> {

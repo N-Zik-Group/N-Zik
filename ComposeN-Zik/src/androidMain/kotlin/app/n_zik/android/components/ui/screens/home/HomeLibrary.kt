@@ -11,6 +11,7 @@ import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.profiles.boundProcessStorageIdentity
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.components.ui.screens.home.onDevice.DeviceLibraryPullRefresh
 import app.n_zik.android.appTextResources
@@ -242,7 +243,8 @@ fun HomeLibrary(
     val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
     val showRewind = rewindEnabled && showRewindPlaylists
     val showOnDeviceTab by rememberPreference(showOnDevicePlaylistsKey, true)
-    val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
+    val deviceLibraryAvailable = deviceLibraryEnabled()
+    val showOnDevice = deviceLibraryAvailable && showOnDeviceTab
     val showYtPlaylists by rememberPreference(showYtPlaylistsKey, true)
     val rewindMonthlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
     val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
@@ -295,7 +297,13 @@ fun HomeLibrary(
             optionIds = HomeLibrarySortSettingsDialog.menuIds(homeLibraryMonthlyPlaylistSortMenuOrderKey),
         )
     }
+    sort.onDeviceCriterionAvailable = deviceLibraryAvailable &&
+        (playlistType == PlaylistsType.Playlist || playlistType == PlaylistsType.PinnedPlaylist)
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
+    val deviceSortOrder = sort.sortOrder.takeIf { sort.sortBy == PlaylistSortBy.OnDevice }
+    val sortDevicePlaylistIds = if (deviceSortOrder != null && previewSession == null) {
+        rememberAvailableDevicePlaylistSongCounts()?.keys
+    } else emptySet()
     fun canReorderPlaylists() =
         canReorderHomePlaylists(search.filterQuery, sort.sortBy, sort.sortOrder, positionLock.isLocked())
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )
@@ -329,7 +337,7 @@ fun HomeLibrary(
             return@LaunchedEffect
         }
         Database.playlistTable
-                .sortPreviews( sort.sortBy, sort.sortOrder )
+                .sortPreviews( sort.sortBy, if (deviceSortOrder != null) SortOrder.Ascending else sort.sortOrder )
                 .distinctUntilChanged()
                 .flowOn(NzikDispatchers.DATA)
                 .collect {
@@ -354,19 +362,21 @@ fun HomeLibrary(
     val deviceIdsReady = devicePlaylistIds != null
     val deviceSongCountOrder = sort.sortOrder.takeIf { onDeviceSource && sort.sortBy == PlaylistSortBy.SongCount }
     var projectionReady by remember(
-        searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, availableDevicePlaylistSongCounts, deviceSongCountOrder,
+        searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, availableDevicePlaylistSongCounts, deviceSongCountOrder, deviceSortOrder, sortDevicePlaylistIds,
     ) {
         mutableStateOf(false)
     }
     LaunchedEffect(
-        searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, availableDevicePlaylistSongCounts, deviceSongCountOrder,
+        searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, availableDevicePlaylistSongCounts, deviceSongCountOrder, deviceSortOrder, sortDevicePlaylistIds,
     ) {
-        if (!searchReady || !deviceIdsReady || availableDevicePlaylistSongCounts == null) return@LaunchedEffect
+        if (!searchReady || !deviceIdsReady || availableDevicePlaylistSongCounts == null || sortDevicePlaylistIds == null) return@LaunchedEffect
         val candidates = itemsOnDisplay
         filteredItems = withContext(NzikDispatchers.DATA) {
             val visible = scopeWithoutQuery.visible(candidates, availableDevicePlaylistSongCounts.keys)
             if (scopeWithoutQuery.type == PlaylistsType.OnDevice) {
                 projectDevicePlaylistPreviews(visible, availableDevicePlaylistSongCounts, deviceSongCountOrder)
+            } else if (deviceSortOrder != null) {
+                visible.groupByDeviceAvailability(deviceSortOrder) { it.playlist.id in sortDevicePlaylistIds }
             } else visible
         }
         projectionReady = true

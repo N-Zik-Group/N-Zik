@@ -567,6 +567,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
             homeSongsAllSortMenuOrderKey, "all", optionIds = sortMenuIds,
         )
     }
+    songSort.onDeviceCriterionAvailable = includeDeviceSongs
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
     val topPlaylists = PeriodSelector( Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
     val downloadAllDialog = DownloadAllSongsDialog(::getRemoteSongs)

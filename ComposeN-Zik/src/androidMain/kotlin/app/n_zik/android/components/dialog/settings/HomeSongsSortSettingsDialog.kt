@@ -49,19 +49,21 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
         "PlayTime", "RelativePlayTime", "DateAdded", "DatePlayed", "DateLiked", "Downloaded", "Custom"
     )
 
+    private val mixedSongSortIds = songSortIds.toMutableList().apply { add(indexOf("Custom"), "OnDevice") }
+
     private val onDeviceSortIds = listOf("Title", "DateAdded", "Artist", "Duration", "Album")
 
     private val topSortIds = listOf("Today", "OneWeek", "OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All")
 
     // The cache can contain both streamed and downloaded songs, unlike the Downloaded tab.
     internal val tabAvailableIds = mapOf(
-        BuiltInPlaylist.All to songSortIds,
-        BuiltInPlaylist.Favorites to songSortIds,
+        BuiltInPlaylist.All to mixedSongSortIds,
+        BuiltInPlaylist.Favorites to mixedSongSortIds,
         BuiltInPlaylist.Offline to songSortIds,
         BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Downloaded" },
         BuiltInPlaylist.Top to topSortIds,
         BuiltInPlaylist.OnDevice to onDeviceSortIds,
-        BuiltInPlaylist.Disliked to songSortIds
+        BuiltInPlaylist.Disliked to mixedSongSortIds
     )
 
     private fun getTabPrefix(tab: BuiltInPlaylist): String = when (tab) {
@@ -114,6 +116,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private fun getSortIcon(id: String): Int = when (id) {
+        "OnDevice" -> R.drawable.folder
         "Title" -> R.drawable.text
         "Artist" -> R.drawable.artist
         "AlbumName" -> R.drawable.album
@@ -138,6 +141,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
     }
 
     private fun getSortLabelRes(id: String): Int? = when (id) {
+        "OnDevice" -> R.string.library_on_device_title
         "Title" -> R.string.library_sort_title
         "Artist" -> R.string.library_sort_artist
         "AlbumName" -> R.string.library_sort_album

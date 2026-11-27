@@ -98,7 +98,12 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -196,14 +201,35 @@ fun HistoryList(
     }
 
 
+    val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.library_history_title))
+    val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
+    val useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
+    val sessionGeneration = encryptedPreferencesUpdateTrigger
+    val profileId = getActiveProfile(context)
+    val onlineHistoryOwner = remember(profileId, sessionGeneration, useLoginForBrowse, syncImportHistory) {
+        if (syncImportHistory && isYouTubeSyncEnabled()) {
+            YouTubeHistoryOwner(profileId, currentQuickPicksAccountIdentity())
+        } else null
+    }
+    if (onlineHistoryOwner != null) {
+        buttonsList += HistoryType.YTMHistory to stringResource(R.string.sync_youtube_history_title)
+    }
+
+    var selectedHistoryType by rememberPreference(historyTypeKey, HistoryType.History)
+    val historyType = if (onlineHistoryOwner == null) HistoryType.History else selectedHistoryType
+
     val sort = Sort<HistorySortOrder>(Preference.HISTORY_SORT_BY, Preference.HISTORY_SORT_ORDER, historySortMenuOrderKey, "hist")
 
+    sort.onDeviceCriterionAvailable = deviceLibraryEnabled() && historyType == HistoryType.History
+    val deviceSort = sort.sortBy == HistorySortOrder.OnDevice
     var localHistoryRetry by remember { mutableIntStateOf(0) }
     val eventResults = remember(sort.sortBy, sort.sortOrder, parentalControlEnabled) {
+        val deviceIds = if (deviceSort) context.observeDeviceLibrary().map { it.songIds }
+            else flowOf(emptySet())
         Database.eventTable
                 .allWithSong()
                 .distinctUntilChanged()
-                .map { list ->
+                .combine(deviceIds) { list, availableIds ->
                     val filtered = list.filter { !parentalControlEnabled || !it.song.title.startsWith( EXPLICIT_PREFIX, true ) }
                     val sorted = when (sort.sortOrder) {
                         SortOrder.Ascending -> filtered
@@ -233,6 +259,10 @@ fun HistoryList(
                         HistorySortOrder.ALPHABETICAL -> {
                             historyTitleGroups(sorted)
                         }
+                        HistorySortOrder.OnDevice -> {
+                            val ordered = filtered.groupByDeviceAvailability(sort.sortOrder) { it.song.id in availableIds }
+                            ordered.groupBy { "" }
+                        }
                         HistorySortOrder.ARTIST -> {
                             historyArtistGroups(sorted)
                         }
@@ -249,22 +279,6 @@ fun HistoryList(
     }
     val events = loadedEvents?.getOrNull().orEmpty()
 
-    val buttonsList = mutableListOf(HistoryType.History to stringResource(R.string.library_history_title))
-    val syncImportHistory by rememberPreference(syncImportHistoryKey, false)
-    val useLoginForBrowse by rememberPreference(useLoginForBrowseKey, true)
-    val sessionGeneration = encryptedPreferencesUpdateTrigger
-    val profileId = getActiveProfile(context)
-    val onlineHistoryOwner = remember(profileId, sessionGeneration, useLoginForBrowse, syncImportHistory) {
-        if (syncImportHistory && isYouTubeSyncEnabled()) {
-            YouTubeHistoryOwner(profileId, currentQuickPicksAccountIdentity())
-        } else null
-    }
-    if (onlineHistoryOwner != null) {
-        buttonsList += HistoryType.YTMHistory to stringResource(R.string.sync_youtube_history_title)
-    }
-
-    var selectedHistoryType by rememberPreference(historyTypeKey, HistoryType.History)
-    val historyType = if (onlineHistoryOwner == null) HistoryType.History else selectedHistoryType
     var isYTMLoading by remember(onlineHistoryOwner) { mutableStateOf(false) }
     var didYTMRefreshFail by remember(onlineHistoryOwner) { mutableStateOf(false) }
     var youtubeHistoryRetry by remember { mutableIntStateOf(0) }
@@ -295,9 +309,10 @@ fun HistoryList(
     }
 
     val query = search.filterQuery
-    val filteredEvents = remember(events, query) {
+    val filteredEvents = remember(events, query, deviceSort) {
         events.mapValues { (_, details) ->
-            details.fastDistinctBy { it.song.id }.filter { event ->
+            val rows = if (deviceSort) details else details.fastDistinctBy { it.song.id }
+            rows.filter { event ->
                 event.song.matchesCollectionSearch(query)
             }
         }.filterValues { it.isNotEmpty() }
@@ -569,7 +584,7 @@ fun HistoryList(
                     }
                     if (historyType == HistoryType.History) {
                         filteredEvents.forEach { (headerStr, details) ->
-                            stickyHeader {
+                            if (headerStr != "") stickyHeader {
                                 HistorySectionTitle(
                                     title = headerStr ?: stringResource(R.string.common_unknown),
                                     modifier = Modifier.graphicsLayer { if (!forceShimmer) alpha = searchFocus.contentAlpha },

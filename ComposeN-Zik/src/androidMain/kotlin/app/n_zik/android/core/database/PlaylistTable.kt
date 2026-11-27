@@ -313,7 +313,7 @@ interface PlaylistTable {
     ): Flow<List<PlaylistPreview>> = when( sortBy ) {
         PlaylistSortBy.ListeningTime -> sortPreviewsByListeningTime( limit )
         PlaylistSortBy.PlayCount              -> sortPreviewsByPlayCount()
-        PlaylistSortBy.Name         -> sortPreviewsByName()
+        PlaylistSortBy.OnDevice, PlaylistSortBy.Name         -> sortPreviewsByName()
         PlaylistSortBy.DateAdded    -> allAsPreview()       // Already sorted by ROWID
         PlaylistSortBy.SongCount    -> sortPreviewsBySongCount()
         PlaylistSortBy.Custom       -> sortPreviewsByPosition( limit )

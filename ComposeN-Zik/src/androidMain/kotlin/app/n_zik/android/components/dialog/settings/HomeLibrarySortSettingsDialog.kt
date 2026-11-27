@@ -40,10 +40,10 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
     } }
 
 
-    private val libraryPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
+    private val libraryPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom", "OnDevice")
     private val onDeviceSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "Custom")
     private val ytPlaylistSortIds = listOf("Name", "SongCount", "DateAdded")
-    private val pinnedPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded")
+    private val pinnedPlaylistSortIds = listOf("Name", "SongCount", "ListeningTime", "PlayCount", "DateAdded", "OnDevice")
     private val rewindSortIds = listOf("Name", "SongCount", "DateAdded")
 
     private enum class LibraryTab(val textId: Int, val availableIds: List<String>) {
@@ -97,6 +97,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private fun getSortIcon(id: String): Int = when (id) {
+        "OnDevice" -> R.drawable.folder
         "Name" -> R.drawable.text
         "SongCount" -> R.drawable.medical
         "ListeningTime" -> R.drawable.trending
@@ -106,6 +107,7 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
+        "OnDevice" -> R.string.library_on_device_title
         "Name" -> R.string.library_sort_name
         "SongCount" -> R.string.library_sort_songs_number
         "ListeningTime" -> R.string.library_sort_listening_time

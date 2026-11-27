@@ -27,7 +27,7 @@ object HistorySortSettingsDialog : ContentFramedDialog {
     internal fun searchOptions(): List<SettingsNestedOption> = sortIds.map { id -> SettingsNestedOption("hist_$id", requireNotNull(getSortLabelRes(id))) }
 
 
-    private val sortIds = listOf("DATE", "ALPHABETICAL", "ARTIST")
+    private val sortIds = listOf("DATE", "ALPHABETICAL", "ARTIST", "OnDevice")
 
     internal fun portableList(): PortableControlList =
         PortableControlList(historySortMenuOrderKey, sortIds, "hist_sort_", "_visible")
@@ -47,12 +47,14 @@ object HistorySortSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private fun getSortIcon(id: String): Int = when (id) {
+        "OnDevice" -> R.drawable.folder
         "DATE" -> R.drawable.time
         "ALPHABETICAL" -> R.drawable.text
         "ARTIST" -> R.drawable.artist
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
+        "OnDevice" -> R.string.library_on_device_title
         "DATE" -> R.string.library_sort_history_date
         "ALPHABETICAL" -> R.string.library_sort_history_alphabetical
         "ARTIST" -> R.string.artist_title

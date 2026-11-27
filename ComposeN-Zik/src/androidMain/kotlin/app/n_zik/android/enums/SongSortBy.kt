@@ -32,6 +32,8 @@ enum class SongSortBy(
 
     Downloaded( R.string.library_sort_downloaded, R.drawable.downloaded ),
 
+    OnDevice( R.string.library_on_device_title, R.drawable.folder ),
+
     Custom( R.string.library_sort_custom_order, R.drawable.position );
 }
 

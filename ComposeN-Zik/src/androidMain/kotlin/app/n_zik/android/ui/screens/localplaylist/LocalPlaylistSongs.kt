@@ -152,6 +152,7 @@ import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -163,6 +164,8 @@ import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.core.utils.Toaster
@@ -308,6 +311,9 @@ fun LocalPlaylistSongs(
     val isRewindPlaylist = playlist?.name?.let { RewindPlaylists.isRewind(it) } == true
 
     val sort = PlaylistSongsSort(playlistId, isRewind = isRewindPlaylist)
+    sort.onDeviceCriterionAvailable = deviceLibraryEnabled() && !onDeviceOnly && playlist != null &&
+        !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
+    val deviceSortOrder = sort.sortOrder.takeIf { sort.sortBy == PlaylistSongSortBy.OnDevice }
 
     val loadedItems by remember( sort.sortBy, sort.sortOrder, preview ) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo.queue)
@@ -329,7 +335,7 @@ fun LocalPlaylistSongs(
                     .distinctUntilChanged()
         } else {
             Database.songPlaylistMapTable
-                    .sortSongs( playlistId, sort.sortBy, sort.sortOrder )
+                    .sortSongs( playlistId, sort.sortBy, if (deviceSortOrder != null) SortOrder.Ascending else sort.sortOrder )
                     .flowOn( NzikDispatchers.DATA )
                     .distinctUntilChanged()
         }
@@ -341,13 +347,16 @@ fun LocalPlaylistSongs(
         if (loadedItems != null && !hasDeviceTracks) onDeviceSelected = false
     }
     val profile = getActiveProfile(context)
-    val scan by remember(context, profile, onDeviceOnly) {
-        if (onDeviceOnly) context.observeDeviceLibrary() else kotlinx.coroutines.flow.flowOf(null)
+    val needsDeviceScan = onDeviceOnly || deviceSortOrder != null
+    val scan by remember(context, profile, needsDeviceScan) {
+        if (needsDeviceScan) context.observeDeviceLibrary() else kotlinx.coroutines.flow.flowOf(null)
     }.collectAsStateWithLifecycle(DeviceLibraryResults.current(profile))
     val sourceTracks = loadedItems
     val sourceScan = scan
-    val items = sourceTracks.orEmpty().let { songs ->
-        if (onDeviceOnly) songs.filter { it.isLocal && it.id in sourceScan?.songIds.orEmpty() } else songs
+    val items = remember(sourceTracks, sourceScan, onDeviceOnly, deviceSortOrder) {
+        val songs = sourceTracks.orEmpty()
+        val availableIds = sourceScan?.songIds.orEmpty()
+        if (onDeviceOnly) songs.filter { it.isLocal && it.id in availableIds } else songs
     }
     var filteredQuery by remember { mutableStateOf<String?>(null) }
     var itemsOnDisplay by persistList<Song>("localPlaylist/$playlistId/${if (forceOnDevice) "on_device/" else ""}songs/on_display")
@@ -676,17 +685,21 @@ fun LocalPlaylistSongs(
     val displayRecommendations = remember(relatedSongs, storedRecommendations) {
         relatedSongs.mapKeys { (song, _) -> resolveSongDisplayMetadata(song, storedRecommendations[song.id]) }
     }
-    var songProjectionReady by remember(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
+    var songProjectionReady by remember(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled, deviceSortOrder, sourceScan) {
         mutableStateOf(false)
     }
-    LaunchedEffect(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
-        itemsOnDisplay = projectLocalPlaylistSongs(
+    LaunchedEffect(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled, deviceSortOrder, sourceScan) {
+        val visible = projectLocalPlaylistSongs(
             songs = items,
             recommendations = if (isRecommendationEnabled) displayRecommendations else emptyMap(),
             query = query,
             onDeviceOnly = onDeviceOnly,
             parentalControlEnabled = parentalControlEnabled,
         )
+        val availableIds = sourceScan?.songIds.orEmpty()
+        itemsOnDisplay = if (deviceSortOrder != null) {
+            visible.groupByDeviceAvailability(deviceSortOrder) { it.id in availableIds }
+        } else visible
         filteredQuery = query
         songProjectionReady = true
     }

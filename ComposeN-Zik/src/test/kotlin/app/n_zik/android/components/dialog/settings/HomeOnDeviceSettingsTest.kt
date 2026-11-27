@@ -31,15 +31,15 @@ class HomeOnDeviceSettingsTest {
     @Test
     fun onDeviceSortSettingsUseTheRuntimeSortIds() {
         assertEquals(
-            AlbumSortBy.entries.map { "alb_dev_${it.name}" }.toSet(),
+            AlbumSortBy.entries.filterNot { it == AlbumSortBy.OnDevice }.map { "alb_dev_${it.name}" }.toSet(),
             onDeviceOptions(HomeAlbumsSortSettingsDialog.searchOptions()),
         )
         assertEquals(
-            ArtistSortBy.entries.map { "art_dev_${it.name}" }.toSet(),
+            ArtistSortBy.entries.filterNot { it == ArtistSortBy.OnDevice }.map { "art_dev_${it.name}" }.toSet(),
             onDeviceOptions(HomeArtistsSortSettingsDialog.searchOptions()),
         )
         assertEquals(
-            PlaylistSortBy.entries.map { "lib_dev_${it.name}" }.toSet(),
+            PlaylistSortBy.entries.filterNot { it == PlaylistSortBy.OnDevice }.map { "lib_dev_${it.name}" }.toSet(),
             onDeviceOptions(HomeLibrarySortSettingsDialog.searchOptions()),
         )
     }

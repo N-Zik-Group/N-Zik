@@ -2,6 +2,7 @@ package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.enums.BuiltInPlaylist
+import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancelAndJoin
@@ -67,6 +68,21 @@ class HomeSongsProjectionTest {
             projectHomeSongsBase(input.copy(parentalControlEnabled = false)).map { it.id })
         assertEquals(listOf("a", "duplicate", "b"),
             projectHomeSongsBase(input.copy(recommendationsEnabled = false)).map { it.id })
+    }
+
+    @Test
+    fun `recommendations stay outside the device group in the displayed and playback order`() = runTest {
+        val scanned = setOf("local:1", "local:2")
+        val library = projectHomeLibrarySongs(
+            listOf(song("a"), song("local:1"), song("local:2"), song("local:removed"), song("b")),
+            scanned,
+        )
+        val input = HomeSongsBaseInput(
+            library, true, mapOf(song("recommendation") to 2), false, SortOrder.Ascending,
+        )
+        assertEquals(listOf("local:1", "local:2", "a", "recommendation", "b"), projectHomeSongsBase(input).map(Song::id))
+        assertEquals(listOf("a", "recommendation", "b", "local:1", "local:2"),
+            projectHomeSongsBase(input.copy(deviceSortOrder = SortOrder.Descending)).map(Song::id))
     }
 
     @Test

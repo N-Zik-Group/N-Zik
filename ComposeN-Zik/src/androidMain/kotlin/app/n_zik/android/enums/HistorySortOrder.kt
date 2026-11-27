@@ -12,5 +12,6 @@ enum class HistorySortOrder(
 ): TextView, Drawable {
     DATE(R.string.library_sort_history_date, R.drawable.time),
     ALPHABETICAL(R.string.library_sort_history_alphabetical, R.drawable.text),
-    ARTIST(R.string.artist_title, R.drawable.artist)
+    ARTIST(R.string.artist_title, R.drawable.artist),
+    OnDevice(R.string.library_on_device_title, R.drawable.folder)
 }

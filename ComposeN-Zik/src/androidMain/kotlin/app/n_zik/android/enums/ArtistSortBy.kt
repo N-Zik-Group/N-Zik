@@ -18,6 +18,8 @@ enum class ArtistSortBy(
 
     DateAdded( R.string.library_sort_date_added, R.drawable.time ),
 
+    OnDevice( R.string.library_on_device_title, R.drawable.folder ),
+
     Custom( R.string.library_sort_custom_order, R.drawable.position );
 }
 

@@ -36,7 +36,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
     private val sortIds = listOf(
         "Title", "Artist", "Album", "ArtistAndAlbum", "Duration",
         "PlayCount", "PlayTime", "RelativePlayTime", "DateAdded",
-        "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "Custom"
+        "DatePlayed", "DateLiked", "AlbumYear", "Downloaded", "OnDevice", "Custom"
     )
 
     internal fun portableList(): PortableControlList =
@@ -57,6 +57,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private fun getSortIcon(id: String): Int = when (id) {
+        "OnDevice" -> R.drawable.folder
         "Title" -> R.drawable.text
         "Artist" -> R.drawable.artist
         "Album" -> R.drawable.album
@@ -74,6 +75,7 @@ object LocalPlaylistSortSettingsDialog : ContentFramedDialog {
         else -> R.drawable.text
     }
     private fun getSortLabelRes(id: String): Int? = when (id) {
+        "OnDevice" -> R.string.library_on_device_title
         "Title" -> R.string.library_sort_title
         "Artist" -> R.string.library_sort_artist
         "Album" -> R.string.library_sort_album

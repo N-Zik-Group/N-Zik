@@ -72,6 +72,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.utils.getActiveProfile
@@ -311,8 +312,12 @@ fun HomeAlbums(
         }
     }
 
+    sort.onDeviceCriterionAvailable = includeDeviceGroups && sourceFilter != FilterBy.YoutubeLibrary &&
+        albumType != AlbumsType.OnDevice
+    val deviceSortOrder = sort.sortOrder.takeIf { sort.sortBy == AlbumSortBy.OnDevice }
+    val databaseOrder = if (deviceSortOrder != null) SortOrder.Ascending else sort.sortOrder
     var searchDataReady by remember(sort.sortBy, sort.sortOrder, albumType) { mutableStateOf(false) }
-    val groupsReady = albumType != AlbumsType.OnDevice || eligibleDeviceGroups != null
+    val groupsReady = (albumType != AlbumsType.OnDevice && deviceSortOrder == null) || eligibleDeviceGroups != null
     val forceShimmer = forceLoadingShimmerPreview()
     LaunchedEffect(sort.sortBy, sort.sortOrder, albumType, includeDeviceGroups) {
         if (preview != null) {
@@ -329,28 +334,30 @@ fun HomeAlbums(
         }
         when ( albumType ) {
             AlbumsType.Favorites -> Database.albumTable.sortBookmarked(
-                sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
+                sort.sortBy, databaseOrder, includeDeviceGroups = includeDeviceGroups,
             )
             AlbumsType.Library, AlbumsType.OnDevice -> Database.albumTable.sortInLibrary(
-                sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
+                sort.sortBy, databaseOrder, includeDeviceGroups = includeDeviceGroups,
             )
-            AlbumsType.Disliked -> Database.albumTable.allDisliked()
+            AlbumsType.Disliked -> Database.albumTable.allDisliked().map { rows ->
+                if (deviceSortOrder != null) rows.sortedBy { it.title.orEmpty().lowercase() } else rows
+            }
         }.flowOn(NzikDispatchers.DATA).collect {
             itemsToFilter = it
             searchDataReady = true
         }
     }
     val groups = eligibleDeviceGroups
-    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups, includeDeviceGroups) {
+    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups, includeDeviceGroups, deviceSortOrder) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups, includeDeviceGroups) {
+    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups, includeDeviceGroups, deviceSortOrder) {
         if (!searchDataReady || !groupsReady) return@LaunchedEffect
         val type = albumType
         val source = sourceFilter
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
-            candidates.filter { item ->
+            val visible = candidates.filter { item ->
                 when {
                     type != AlbumsType.OnDevice && type != AlbumsType.Disliked && item.dislikedAt != null -> false
                     isDeviceAlbumId(item.id) -> includeDeviceGroups && item.id in groups.orEmpty()
@@ -362,6 +369,8 @@ fun HomeAlbums(
                     }
                 }
             }
+            if (deviceSortOrder != null) visible.groupByDeviceAvailability(deviceSortOrder) { it.id in groups.orEmpty() }
+            else visible
         }
         baseReady = true
     }

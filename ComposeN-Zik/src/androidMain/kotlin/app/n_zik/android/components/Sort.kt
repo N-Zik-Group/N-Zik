@@ -55,7 +55,7 @@ import androidx.compose.animation.scaleIn
 
 open class Sort<T> (
     override val menuState: MenuState,
-    sortByState: MutableState<T>,
+    private val sortByState: MutableState<T>,
     sortOrderState: MutableState<SortOrder>,
     styleState: MutableState<MenuStyle>,
     private val sortMenuOrderKey: String? = null,
@@ -97,7 +97,14 @@ open class Sort<T> (
         @Composable
         get() = stringResource( R.string.library_sort_order_title )
 
-    open var sortBy: T by sortByState
+    var onDeviceCriterionAvailable = false
+
+    open var sortBy: T
+        get() = sortByState.value.let { saved ->
+            if (!onDeviceCriterionAvailable && saved.name == "OnDevice") saved.declaringJavaClass.enumConstants.first()
+            else saved
+        }
+        set(value) { sortByState.value = value }
     open var sortOrder: SortOrder by sortOrderState
     override var menuStyle: MenuStyle by styleState
 
@@ -110,7 +117,8 @@ open class Sort<T> (
 
     @Suppress("UNCHECKED_CAST")
     protected open fun getEnumConstants(): List<T> {
-        return (sortBy.javaClass.enumConstants as? Array<T>)?.toList() ?: emptyList()
+        return (sortBy.javaClass.enumConstants as? Array<T>)?.toList().orEmpty()
+            .filter { onDeviceCriterionAvailable || it.name != "OnDevice" }
     }
 
     @Composable
@@ -146,9 +154,10 @@ open class Sort<T> (
             }.toSet()
         }
 
-        return (savedIds.orEmpty() + availableIds).distinct().mapNotNull { id ->
+        val visible = (savedIds.orEmpty() + availableIds).distinct().mapNotNull { id ->
             constantsById[id].takeIf { id in visibleIds }
         }
+        return visible.ifEmpty { listOfNotNull(availableIds.firstNotNullOfOrNull(constantsById::get)) }
     }
 
     @Composable
