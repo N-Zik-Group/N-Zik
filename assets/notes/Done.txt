@@ -1128,3 +1128,7 @@ Menus:
 Menus:
 - fix(menu): show on-device track information without a network error
   - Skip the remote load error when the track is stored on the device.
+
+Settings:
+- fix(settings): guide inactive search targets to their prerequisites
+  - Point hidden player and swipe actions to active controls and help restore the local audio permission.

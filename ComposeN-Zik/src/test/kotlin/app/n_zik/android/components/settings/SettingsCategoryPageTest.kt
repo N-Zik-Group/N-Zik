@@ -27,6 +27,8 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.performScrollToKey
 import androidx.compose.ui.unit.dp
@@ -55,6 +57,7 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.isConnectionMeteredEnabledKey
+import app.n_zik.android.utils.isSwipeToActionEnabledKey
 import app.n_zik.android.utils.isShowingThumbnailInLockscreenKey
 import app.n_zik.android.utils.loudnessBaseGainKey
 import app.n_zik.android.utils.pauseOnHeadphoneDisconnectKey
@@ -65,6 +68,8 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.settingsCardTargetId
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
+import app.n_zik.android.components.settings.common.SettingsTargetHighlighted
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.settings.common.SettingsGlobalPage
 import app.n_zik.android.components.settings.common.SettingsScrollToTop
 import app.n_zik.android.components.settings.common.SettingsCards
@@ -475,6 +480,33 @@ class SettingsCategoryPageTest {
         val range = composeRule.onNodeWithTag("settings.category.list.$category")
             .fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange]
         return range.value() == 0f && range.maxValue() == 0f
+    }
+
+    @Test fun disabledSwipeActionHighlightsTheMasterAndExplainsHowToEnableIt() {
+        context.preferences.edit().putBoolean(isSwipeToActionEnabledKey, false).commit()
+        val before = context.preferences.all.toMap()
+        val target = "ui.swipe_to_action.queue_and_local_playlists_right_swipe"
+        val master = "ui.swipe_to_action.swipe_to_action"
+        val messages = mutableListOf<String>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsSearchMessage provides { message -> messages.add(message) },
+            ) {
+                SettingsCategoryPage(categoryId = "behavior", navController = mockk(relaxed = true), target = target)
+            }
+        }
+        pumpUntil("the disabled option must highlight its switch") {
+            runCatching {
+                composeRule.onNodeWithTag("settings.target.$master", useUnmergedTree = true)
+                    .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
+            }.isSuccess
+        }
+        val prerequisite = "${context.getString(R.string.settings_swipe_actions_title)} › ${context.getString(R.string.common_state_on)}"
+        assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, prerequisite)), messages)
+        assertEquals(before, context.preferences.all)
     }
 
     @Test fun mixedSourceCategoryHasOneScrollContainerAndTargetsTheActualSetting() {

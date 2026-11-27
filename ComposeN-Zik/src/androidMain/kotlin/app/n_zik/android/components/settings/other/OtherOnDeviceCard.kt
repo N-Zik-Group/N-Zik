@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.other
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
@@ -11,6 +14,7 @@ import app.n_zik.android.core.ondevice.deviceAudioPermission
 import app.n_zik.android.core.ondevice.hasDeviceAudioPermission
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +25,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -55,6 +62,8 @@ import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.LocalMusicPermissionTarget
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.image.writeOwnedImageAtomically
 import app.n_zik.android.components.ui.screens.home.onDevice.blockedLocalFoldersFile
 import app.n_zik.android.components.ui.screens.home.onDevice.localSongRefreshRequests
@@ -97,6 +106,22 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
         context.observeDeviceLibraryEnabled(target.id)
     }.collectAsStateWithLifecycle(context.isDeviceLibraryEnabled(target.id))
     var pendingPermission by rememberSaveable(target.id, target.generation) { mutableStateOf(false) }
+    var hasPermission by remember(context) { mutableStateOf(context.hasDeviceAudioPermission()) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+
+    DisposableEffect(lifecycle, context, target) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val granted = context.hasDeviceAudioPermission()
+                if (granted && !hasPermission && enabled && ProfileWorkOwner.exists(context, target)) {
+                    localSongRefreshRequests.request(target.id)
+                }
+                hasPermission = granted
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
 
     fun setEnabled(checked: Boolean) {
         if (ProfileWorkOwner.exists(context, target)) {
@@ -106,6 +131,7 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        hasPermission = granted
         if (pendingPermission && granted) setEnabled(true)
         pendingPermission = false
     }
@@ -125,7 +151,25 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
             }
         },
     )
-    androidx.compose.animation.AnimatedVisibility(visible = enabled) {
+    if (enabled && !hasPermission) {
+        OtherSettingsEntry(
+            modifier = Modifier.settingsSearchTarget(LocalMusicPermissionTarget),
+            title = stringResource(R.string.visualizer_action_open_permission_settings),
+            text = stringResource(R.string.library_local_media_permission_message),
+            icon = R.drawable.locked,
+            onClick = {
+                runCatching {
+                    context.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                        data = Uri.fromParts("package", context.packageName, null)
+                    })
+                }.onFailure { error ->
+                    Timber.tag("OnDeviceSettings").w(error, "Could not open permission settings")
+                    Toaster.e(R.string.library_on_device_permission_settings_failed)
+                }
+            },
+        )
+    }
+    AnimatedVisibility(visible = enabled && hasPermission) {
         Column { OnDeviceOptions(search, target) }
     }
 }

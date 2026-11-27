@@ -89,6 +89,7 @@ import app.n_zik.android.core.navigation.LocalPageNavigationEntry
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
@@ -106,6 +107,7 @@ import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showTipsKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
+import app.n_zik.android.utils.playerBackgroundColorsKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.roundToInt
@@ -122,17 +124,51 @@ private const val LyricsBackgroundSettingsTarget = "appearance.txt_lyrics.show_b
 private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show_thumbnail"
 private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
 private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
+private const val PlayerTypeSettingsTarget = "appearance.player_presets_and_layout.playertype"
+private const val SwipeActionsSettingsTarget = "ui.swipe_to_action.swipe_to_action"
 private const val AutoBackupEnabledTarget = "embedded.auto_backup.enabled"
 private const val AutoBackupContentTarget = "embedded.auto_backup.auto_backup_target"
 private const val AutoBackupIntervalTarget = "embedded.auto_backup.auto_backup_interval"
 private const val LocalMusicEnabledTarget = "other.on_device.enabled"
 private const val LocalMusicFolderModeTarget = "other.on_device.folders"
+internal const val LocalMusicPermissionTarget = "other.on_device.permission"
 
-private data class SearchPrerequisite(val target: String, val choices: List<Int> = emptyList())
+private data class SearchPrerequisite(
+    val target: String,
+    val choices: List<Int> = emptyList(),
+    val labelRes: Int? = null,
+)
 
-private fun settingsSearchPrerequisite(target: String, hasTarget: (String) -> Boolean): SearchPrerequisite? {
-    if (target == ShowCoverSettingsTarget) {
+private fun settingsSearchPrerequisite(
+    target: String,
+    preferences: SharedPreferences,
+    hasTarget: (String) -> Boolean,
+): SearchPrerequisite? {
+    if (target == "appearance.colors_and_background.albumCoverRotation" &&
+        preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient) == PlayerBackgroundColors.BlurredCoverColor
+    ) {
+        return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(PlayerType.Modern.textId))
+    }
+    if (target in setOf(
+            ShowCoverSettingsTarget,
+            "appearance.colors_and_background.rotating_cover_title",
+            "appearance.colors_and_background.albumCoverRotation",
+            "appearance.colors_and_background.bottomgradient",
+        )
+    ) {
         return SearchPrerequisite(BackgroundSettingsTarget, listOf(R.string.player_background_artwork_blurred_label))
+    }
+    if (target == "appearance.colors_and_background.blackgradient") {
+        return SearchPrerequisite(
+            BackgroundSettingsTarget,
+            listOf(R.string.player_background_artwork_gradient_label, R.string.player_background_theme_gradient_label),
+        )
+    }
+    if (target.startsWith("ui.swipe_to_action.") && target != SwipeActionsSettingsTarget) {
+        return SearchPrerequisite(SwipeActionsSettingsTarget, listOf(R.string.common_state_on))
+    }
+    if (target.startsWith("other.on_device.") && hasTarget(LocalMusicPermissionTarget)) {
+        return SearchPrerequisite(LocalMusicPermissionTarget, labelRes = R.string.permissions_label_media_audio)
     }
     if (target == "other.on_device.folder_that_will_show_when_you_open_on_device_page") {
         return SearchPrerequisite(
@@ -198,7 +234,7 @@ internal fun playerSettingsSearchFallback(
 ): String? {
     val playerType = prefs.getEnum(playerTypeKey, PlayerType.Essential)
     val actionButtons = "appearance.player_action_bar.player_action_bar_buttons"
-    val layout = "appearance.player_presets_and_layout.playertype"
+    val layout = PlayerTypeSettingsTarget
     return when (target) {
         "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ->
             ShowCoverSettingsTarget.takeUnless { playerType != PlayerType.Modern || isLandscape }
@@ -519,15 +555,18 @@ fun SettingsCategoryPage(
             }
         }
         val unavailable = hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
-        val searchPrerequisite = if (unavailable) settingsSearchPrerequisite(requestedTarget, registry.targets::containsKey) else null
+        val searchPrerequisite = if (unavailable) {
+            settingsSearchPrerequisite(requestedTarget, context.preferences, registry.targets::containsKey)
+        } else null
         if (unavailable || requestedTarget != rawTarget && rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")) {
             if (unavailable && nested != null) {
                 settingsNestedDialog(nested.dialogId)?.hideDialog()
                 registry.nestedTarget = null
             }
             val requirement = searchPrerequisite?.let { prerequisite ->
-                AllSettingsEntryTargets.firstOrNull { it.id == prerequisite.target }?.let { setting ->
-                    val label = context.getString(setting.labelRes)
+                val labelRes = prerequisite.labelRes ?: AllSettingsEntryTargets.firstOrNull { it.id == prerequisite.target }?.labelRes
+                labelRes?.let {
+                    val label = context.getString(it)
                     val choices = prerequisite.choices.joinToString(" / ") { context.getString(it) }
                     if (choices.isEmpty()) label else "$label › $choices"
                 }
