@@ -16,6 +16,7 @@ import app.n_zik.android.R
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.applyDeferredImportedAppLanguage
 import app.n_zik.android.utils.closeWithBackButtonKey
 import app.n_zik.android.utils.isKeepScreenOnEnabledKey
 import app.n_zik.android.utils.preferences
@@ -24,6 +25,7 @@ internal fun Context.initializeLaunchPreferences() {
     // A cold profile shortcut can change the active store after application startup.
     ensureDefaultColorPaletteMode(preferences)
     ensurePlayerBehaviorDefaults(preferences)
+    applyDeferredImportedAppLanguage()
 }
 
 internal fun ComponentActivity.registerStartupCookieWarning() {

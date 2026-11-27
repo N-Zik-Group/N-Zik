@@ -401,11 +401,10 @@ object RescueFiles {
             val stats = applySettingRows(rows, editor, encEditor) { key, value ->
                 SettingsPreferencesBridge.stageStorageRow(context, target, editor, key, value)
             }
-            val hasRemovedRows = rows.any { RemovedSettingsMigration.isRemovedKey(it.second) }
-            if (stats.imported == 0 && stats.encryptedSkipped > 0 && glassEditor == null && !hasRemovedRows) {
-                return@withProfileStorageMutation SettingsOutcome(encryptedSkipped = true)
-            }
-            if (stats.imported == 0 && glassEditor == null && !hasRemovedRows) {
+            if (!hasImportableSettings(rows, stats, hasGlassSettings = glassEditor != null)) {
+                if (stats.encryptedSkipped > 0) {
+                    return@withProfileStorageMutation SettingsOutcome(encryptedSkipped = true)
+                }
                 throw ActionUnavailableException(R.string.recovery_no_importable_settings)
             }
 
@@ -427,6 +426,13 @@ object RescueFiles {
 
     /** Counters returned by [applySettingRows]. */
     internal data class SettingsImportStats(val imported: Int, val encryptedSkipped: Int)
+
+    internal fun hasImportableSettings(
+        rows: List<Triple<String, String, String>>,
+        stats: SettingsImportStats,
+        hasGlassSettings: Boolean,
+    ): Boolean = stats.imported > 0 || hasGlassSettings ||
+        rows.any { RemovedSettingsMigration.isRemovedKey(it.second) }
 
     /**
      * Stages [rows] into the editors: credential keys go to [encryptedEditor], everything else to

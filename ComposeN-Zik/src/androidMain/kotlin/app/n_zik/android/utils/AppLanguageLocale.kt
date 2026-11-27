@@ -1,6 +1,10 @@
 package app.n_zik.android.utils
 
+import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.edit
 import androidx.core.os.LocaleListCompat
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.enums.Languages
 
 /**
@@ -38,4 +42,26 @@ internal fun appLanguageForLocales(locales: LocaleListCompat): Languages? {
             supported?.language == locale.language && supported.country.isEmpty()
         }
     }
+}
+
+private fun pendingImportedLanguageKey(profile: String) = "pendingImportedAppLanguage_$profile"
+
+internal fun Context.deferImportedAppLanguage(profile: String, language: Languages) {
+    check(profilePreferences.edit().putString(pendingImportedLanguageKey(profile), language.name).commit()) {
+        "Could not save the imported language for the next launch"
+    }
+}
+
+internal fun Context.applyDeferredImportedAppLanguage() {
+    val key = pendingImportedLanguageKey(getActiveProfile(this))
+    val pendingLanguage = profilePreferences.getString(key, null) ?: return
+    if (!shouldRecreateActivity(Database.isClosed)) return
+    val language = Languages.entries.firstOrNull { it.name == pendingLanguage }
+    if (language != null && preferences.all[languageAppKey] == pendingLanguage) {
+        val locales = localeListForAppLanguage(language)
+        if (AppCompatDelegate.getApplicationLocales() != locales) {
+            AppCompatDelegate.setApplicationLocales(locales)
+        }
+    }
+    profilePreferences.edit { remove(key) }
 }

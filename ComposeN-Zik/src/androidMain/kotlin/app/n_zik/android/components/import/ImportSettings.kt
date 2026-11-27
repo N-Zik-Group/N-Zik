@@ -24,8 +24,12 @@ import app.n_zik.android.components.dialog.common.RestartAppDialog
 import app.n_zik.android.core.rescue.RescueFiles
 import app.n_zik.android.core.backup.SettingsPreferencesBridge
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.enums.Languages
+import app.n_zik.android.utils.deferImportedAppLanguage
+import app.n_zik.android.utils.languageAppKey
 
 class ImportSettings private constructor(
     launcher: ManagedActivityResultLauncher<Array<String>, Uri?>
@@ -43,19 +47,32 @@ class ImportSettings private constructor(
             Timber.tag("ImportSettings").d("Starting settings import into profile '$profile'...")
             val target = checkNotNull(profileStorageIdentity(context, profile))
             val rows = RescueFiles.readSettingsCsv(inStream)
+            if (rows.isEmpty()) throw RescueFiles.ActionUnavailableException(R.string.recovery_settings_file_empty)
             DatabaseRestoreJournal.withProfileStorageMutation(context) {
                 check(profileStorageIdentity(context, profile) == target) { "The profile changed during settings import" }
-                val editor = plainProfilePrefs(context, profile).edit()
+                val plainPreferences = plainProfilePrefs(context, profile)
+                val editor = plainPreferences.edit()
                 val encryptedEditor = profileSecurePrefs(context, profile).edit()
                 val glassEditor = SettingsPreferencesBridge.stageGlass(context, rows, profile)
-                RescueFiles.applySettingRows(rows, editor, encryptedEditor) { key, value ->
+                val stats = RescueFiles.applySettingRows(rows, editor, encryptedEditor) { key, value ->
                     SettingsPreferencesBridge.stageStorageRow(context, target, editor, key, value)
+                }
+                if (!RescueFiles.hasImportableSettings(rows, stats, hasGlassSettings = glassEditor != null)) {
+                    throw RescueFiles.ActionUnavailableException(R.string.recovery_no_importable_settings)
                 }
                 check(editor.commit()) { "Could not save the settings" }
                 check(encryptedEditor.commit()) { "Could not save the credentials" }
                 check(glassEditor?.commit() ?: true) { "Could not save the Glass settings" }
                 rows.lastOrNull { it.second == "githubBackupIdentity" && it.first.equals("string", ignoreCase = true) }
                     ?.third?.let { GitHubAccount.restoreIdentity(context, it, profile) }
+                if (rows.any { (type, key) -> key == languageAppKey && type.equals("string", ignoreCase = true) } &&
+                    profile == getActiveProfile(context) && Database.isClosed
+                ) {
+                    val language = plainPreferences.all[languageAppKey] as? String
+                    Languages.entries.firstOrNull { it.name == language }?.let {
+                        context.deferImportedAppLanguage(profile, it)
+                    }
+                }
             }
             Timber.tag("ImportSettings").d("Settings import complete")
         }
