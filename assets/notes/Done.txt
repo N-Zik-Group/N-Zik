@@ -1568,3 +1568,7 @@ Menus:
 Settings:
 - fix(settings): request the right restart after cache reset
   - Account for changes to streaming, download and artwork cache limits while preserving the listening-history settings.
+
+Menus:
+- fix(metadata): update active queue entries by media ID
+  - Refresh the current track when an existing playback entry has a distinct stream cache key.

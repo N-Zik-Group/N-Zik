@@ -58,7 +58,7 @@ internal object SongUpdatePlaybackRefresh {
     ) {
         for (index in 0 until player.mediaItemCount) {
             val item = player.getMediaItemAt(index)
-            if (item.sessionArtistTrackId() != song.id) continue
+            if (item.mediaId != song.id && item.sessionArtistTrackId() != song.id) continue
             val extras = Bundle(item.mediaMetadata.extras ?: Bundle())
             val metadata = item.mediaMetadata.buildUpon()
             if (selection.title) {
