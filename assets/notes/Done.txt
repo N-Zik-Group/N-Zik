@@ -1700,3 +1700,7 @@ Menus:
 Playlist:
 - fix(playlist): allow creation from Library with empty collections
   - Keep the picker available for creation in the unfiltered All tab without a selected payload.
+
+Playlist:
+- fix(playlist): match album and artist actions to eligible tracks
+  - Lock incompatible destinations for captured device files and derive Home bulk actions from the same track eligibility as their loaders.

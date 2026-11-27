@@ -73,12 +73,14 @@ import app.n_zik.android.components.glass.GlassSectionActions
 import app.n_zik.android.ui.components.LocalMenuBack
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.addPlaylistItemsFromMenu
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
@@ -397,7 +399,6 @@ class PlaylistsMenu private constructor(
     private val onFailure: (Throwable, PlaylistPreview) -> Unit,
     override val menuState: MenuState,
     styleState: MutableState<MenuStyle>,
-    private val localDestinationsOnly: Boolean = false,
     private val onOpenPlaylist: () -> Unit = {},
     private val onMenuDestinationOpened: (() -> Unit)? = null,
     private val openAddChoice: ((PlaylistActionsRequest) -> Unit)? = null,
@@ -407,6 +408,7 @@ class PlaylistsMenu private constructor(
     private class AddRequest(
         val load: (PlaylistPreview) -> suspend () -> List<MediaItem>?,
         val onComplete: suspend (PlaylistPreview) -> Unit,
+        val localDestinationsOnly: Boolean,
     ) {
         val filters = PlaylistPickerFilters()
         var isAdding = false
@@ -426,11 +428,10 @@ class PlaylistsMenu private constructor(
         ) = PlaylistsMenu(
             navController,
             songId,
-            { AddRequest(load = { preview -> { mediaItems(preview) } }, onComplete = { finalAction(it) }) },
+            { AddRequest({ preview -> { mediaItems(preview) } }, { finalAction(it) }, localDestinationsOnly) },
             onFailure,
             LocalMenuState.current,
             rememberPreference( menuStyleKey, MenuStyle.List ),
-            localDestinationsOnly = localDestinationsOnly,
             onOpenPlaylist = onOpenPlaylist,
             openAddChoice = LocalPlaylistAddChoice.current,
             canImportFiles = false,
@@ -465,23 +466,65 @@ class PlaylistsMenu private constructor(
             localDestinationsOnly: Boolean = false,
             onMenuDestinationOpened: (() -> Unit)? = null,
             allowImportChoice: Boolean = true,
+        ): PlaylistsMenu = rememberDeferred(
+            navController = navController,
+            onFailure = onFailure,
+            itemSelector = itemSelector,
+            onMenuDestinationOpened = onMenuDestinationOpened,
+            canImportFiles = allowImportChoice && !localDestinationsOnly && !itemSelector.isActive,
+            captureTracks = {
+                captureMediaItems()?.let { load -> DeferredTracks(load, localDestinationsOnly) }
+            },
+        )
+
+        @Composable
+        internal fun forSongs(
+            navController: NavController,
+            songs: () -> List<Song>,
+            onFailure: (Throwable, PlaylistPreview) -> Unit,
+            itemSelector: ItemSelector<*>,
+        ): PlaylistsMenu = rememberDeferred(
+            navController = navController,
+            onFailure = onFailure,
+            itemSelector = itemSelector,
+            captureTracks = {
+                val snapshot = songs().toList()
+                snapshot.takeIf { it.isNotEmpty() }?.let {
+                    DeferredTracks({ snapshot.map(Song::asMediaItem) }, snapshot.any(Song::isLocal))
+                }
+            },
+        )
+
+        @Composable
+        private fun rememberDeferred(
+            navController: NavController,
+            onFailure: (Throwable, PlaylistPreview) -> Unit,
+            itemSelector: ItemSelector<*>,
+            captureTracks: () -> DeferredTracks?,
+            canImportFiles: Boolean = false,
+            onMenuDestinationOpened: (() -> Unit)? = null,
         ) = PlaylistsMenu(
             navController,
             null,
             {
-                captureMediaItems()?.let { load ->
+                captureTracks()?.let { tracks ->
                     val completeSelection = itemSelector.captureSelectionCompletion()
-                    AddRequest(load = { load }, onComplete = { withContext(NzikDispatchers.UI) { completeSelection() } })
+                    AddRequest(
+                        load = { tracks.load },
+                        onComplete = { withContext(NzikDispatchers.UI) { completeSelection() } },
+                        localDestinationsOnly = tracks.localDestinationsOnly,
+                    )
                 }
             },
             onFailure,
             LocalMenuState.current,
             rememberPreference(menuStyleKey, MenuStyle.List),
-            localDestinationsOnly = localDestinationsOnly,
             onMenuDestinationOpened = onMenuDestinationOpened,
             openAddChoice = LocalPlaylistAddChoice.current,
-            canImportFiles = allowImportChoice && !localDestinationsOnly && !itemSelector.isActive,
+            canImportFiles = canImportFiles,
         )
+
+        private class DeferredTracks(val load: suspend () -> List<MediaItem>?, val localDestinationsOnly: Boolean)
     }
 
     override val iconId: Int = R.drawable.playlist
@@ -501,6 +544,7 @@ class PlaylistsMenu private constructor(
         try {
             val items = request.load(preview)() ?: return
             if (items.isEmpty() && createdAfterConfirmation) return
+            val localDestinationsOnly = request.localDestinationsOnly
             val result = addPlaylistItemsFromMenu(preview.playlist, items, localDestinationsOnly) ?: return
             withContext(NzikDispatchers.UI) {
                 reportPlaylistAddResult(result, localDestinationsOnly)
@@ -525,6 +569,7 @@ class PlaylistsMenu private constructor(
         containsSong: Boolean,
         onDevice: Boolean,
         openOnDevice: Boolean,
+        localDestinationsOnly: Boolean,
         onAdd: () -> Unit,
     ) {
         val playlist = playlistPreview.playlist
@@ -630,7 +675,7 @@ class PlaylistsMenu private constructor(
                 }
             }
         }
-        val newPlaylistButton = NewPlaylistDialog(localOnly = localDestinationsOnly) { playlist ->
+        val newPlaylistButton = NewPlaylistDialog(localOnly = request.localDestinationsOnly) { playlist ->
             add(PlaylistPreview(playlist, 0), createdAfterConfirmation = true)
         }
         newPlaylistButton.Render()
@@ -655,6 +700,7 @@ class PlaylistsMenu private constructor(
                     preview, preview.playlist.id in songPlaylistIds,
                     onDevice = preview.playlist.isOnDevicePickerEntry(playlistRead.devicePlaylistIds),
                     openOnDevice = openOnDevice,
+                    localDestinationsOnly = request.localDestinationsOnly,
                 ) {
                     add(preview)
                 }

@@ -9,6 +9,7 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongArtistMap
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -164,8 +165,9 @@ interface SongArtistMapTable {
         SELECT sam.artistId AS id, COUNT(DISTINCT sam.songId) AS count
         FROM SongArtistMap sam
         JOIN Song S ON S.id = sam.songId
+        WHERE instr(S.id, :localKeyPrefix) = 0
         GROUP BY sam.artistId
     """)
-    fun observeSongCounts(): Flow<List<SongCount>>
+    fun observeNonDeviceSongCounts(localKeyPrefix: String = LOCAL_KEY_PREFIX): Flow<List<SongCount>>
 }
 

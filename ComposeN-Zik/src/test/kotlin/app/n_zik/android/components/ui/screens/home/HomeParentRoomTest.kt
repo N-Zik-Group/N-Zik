@@ -30,6 +30,8 @@ class HomeParentRoomTest {
         try {
             val localAlbum = "LOCAL_ALBUM_DEVICE_1"
             val localArtist = "LOCAL_ARTIST_DEVICE_1"
+            val manuallyLinkedAlbum = "LOCAL_ALBUM_MANUAL"
+            val manuallyLinkedArtist = "LOCAL_ARTIST_MANUAL"
             database.songTable.upsert(listOf(
                 Song.makePlaceholder("remote").copy(totalPlayTimeMs = 1L),
                 Song.makePlaceholder("local:1"),
@@ -84,6 +86,13 @@ class HomeParentRoomTest {
             ) { mapOf(localArtist to setOf("local:1")) }
             assertEquals(listOf("local:1", "remote"), albumSongs.map(Song::id))
             assertEquals(listOf("local:1", "remote"), artistSongs.map(Song::id))
+
+            sql.execSQL("INSERT INTO Album (id, bookmarkedAt) VALUES ('$manuallyLinkedAlbum', 1)")
+            sql.execSQL("INSERT INTO Artist (id, bookmarkedAt) VALUES ('$manuallyLinkedArtist', 1)")
+            sql.execSQL("INSERT INTO SongAlbumMap (songId, albumId, position) VALUES ('local:1', '$manuallyLinkedAlbum', 0)")
+            sql.execSQL("INSERT INTO SongArtistMap (songId, artistId) VALUES ('local:1', '$manuallyLinkedArtist')")
+            assertEquals(listOf("remote-album"), database.songAlbumMapTable.observeNonDeviceSongCounts().first().map { it.id })
+            assertEquals(listOf("remote-artist"), database.songArtistMapTable.observeNonDeviceSongCounts().first().map { it.id })
         } finally {
             database.close()
         }

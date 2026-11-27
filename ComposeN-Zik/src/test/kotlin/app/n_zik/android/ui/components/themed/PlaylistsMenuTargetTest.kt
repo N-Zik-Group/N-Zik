@@ -87,6 +87,60 @@ class PlaylistsMenuTargetTest {
     }
 
     @Test
+    fun `a collection picker locks YouTube only when the invoked selection includes a device file`() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val database = Room.inMemoryDatabaseBuilder(application, DatabaseInitializer::class.java).build()
+        val mainApplication = mockk<MainApplication>()
+        every { mainApplication.applicationContext } returns application
+        mockkObject(DatabaseInitializer.Companion, Dependencies)
+        every { DatabaseInitializer.Instance } returns database
+        every { Dependencies.application } returns mainApplication
+        try {
+            val remote = Playlist(name = "Linked playlist", browseId = "VLPL123", isEditable = true)
+            runBlocking { database.playlistTable.insert(remote) }
+            val remoteTrack = Song.makePlaceholder("remote-track")
+            val deviceTrack = Song.makePlaceholder("local:123")
+            var currentTracks = listOf(remoteTrack)
+            val menuState = MenuState()
+            val lockLabel = application.getString(R.string.playlist_add_destination_locked)
+            lateinit var picker: PlaylistsMenu
+            compose.setContent {
+                val shape = RoundedCornerShape(24.dp)
+                CompositionLocalProvider(
+                    LocalMenuState provides menuState,
+                    LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                        typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape),
+                ) {
+                    picker = PlaylistsMenu.forSongs(
+                        navController = rememberNavController(),
+                        songs = { currentTracks },
+                        onFailure = { error, _ -> throw AssertionError(error) },
+                        itemSelector = ItemSelector<Song>(),
+                    )
+                    if (menuState.isDisplayed) menuState.contentState.second()
+                }
+            }
+            compose.runOnIdle {
+                currentTracks = listOf(remoteTrack, deviceTrack)
+                picker.onShortClick()
+            }
+            compose.waitUntil(5_000) { compose.onAllNodesWithText(remote.name).fetchSemanticsNodes().isNotEmpty() }
+            compose.onNodeWithContentDescription(lockLabel).assertExists()
+
+            compose.runOnIdle {
+                menuState.hide()
+                currentTracks = listOf(remoteTrack)
+                picker.onShortClick()
+            }
+            compose.waitUntil(5_000) { compose.onAllNodesWithText(remote.name).fetchSemanticsNodes().isNotEmpty() }
+            compose.onAllNodesWithContentDescription(lockLabel).assertCountEquals(0)
+        } finally {
+            unmockkObject(DatabaseInitializer.Companion, Dependencies)
+            database.close()
+        }
+    }
+
+    @Test
     fun `a device destination is created locally even when YouTube sync is enabled`() {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = Room.inMemoryDatabaseBuilder(application, DatabaseInitializer::class.java).build()

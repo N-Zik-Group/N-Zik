@@ -201,17 +201,13 @@ fun ArtistLocalSongs(
     val itemSelector = key(browseId) { ItemSelector<Song>() }
     fun actionSongs() = itemSelector.actionTargets(visibleSongs, Song::id, Song::id)
     val offlineMode by OfflineMode.rememberEnabled()
-    val addToPlaylist = PlaylistsMenu.deferred(
+    val addToPlaylist = PlaylistsMenu.forSongs(
         navController = navController,
-        captureMediaItems = {
-            val snapshot = actionSongs().toList()
-            if (snapshot.isEmpty()) null else suspend { snapshot.map(Song::asMediaItem) }
-        },
+        songs = ::actionSongs,
         onFailure = { error, preview ->
             Timber.tag("ArtistLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
-        allowImportChoice = false,
     )
 
     LaunchedEffect(browseId) {

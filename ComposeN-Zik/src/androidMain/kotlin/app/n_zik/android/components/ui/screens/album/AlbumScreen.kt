@@ -631,12 +631,9 @@ fun AlbumDetails(
             binder?.player?.enqueueOffMain(mediaItems, appContext())
         }
     }
-    val addToPlaylist = PlaylistsMenu.deferred(
+    val addToPlaylist = PlaylistsMenu.forSongs(
         navController = navController,
-        captureMediaItems = {
-            val songs = getSongs()
-            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(Song::asMediaItem) })
-        },
+        songs = ::getSongs,
         onFailure = { throwable, preview ->
             Timber.tag("AlbumDetails").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
         },

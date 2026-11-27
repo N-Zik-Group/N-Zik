@@ -431,7 +431,7 @@ fun HomeAlbums(
     }
     val hasEligibleSelection = { eligibleSelection }
     val trackCounts by remember(preview) {
-        if (preview == null) Database.songAlbumMapTable.observeSongCounts() else flowOf(emptyList())
+        if (preview == null) Database.songAlbumMapTable.observeNonDeviceSongCounts() else flowOf(emptyList())
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
     val collectionIdsWithTracks = remember(trackCounts) { trackCounts.mapTo(hashSetOf()) { it.id } }
     val hasPlaylistTargets = actionTargets().any { it.id in collectionIdsWithTracks || isDeviceAlbumId(it.id) }

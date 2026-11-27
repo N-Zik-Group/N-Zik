@@ -8,6 +8,7 @@ import androidx.room.Upsert
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -221,9 +222,10 @@ interface SongAlbumMapTable {
         SELECT sam.albumId AS id, COUNT(DISTINCT sam.songId) AS count
         FROM SongAlbumMap sam
         JOIN Song S ON S.id = sam.songId
+        WHERE instr(S.id, :localKeyPrefix) = 0
         GROUP BY sam.albumId
     """)
-    fun observeSongCounts(): Flow<List<SongCount>>
+    fun observeNonDeviceSongCounts(localKeyPrefix: String = LOCAL_KEY_PREFIX): Flow<List<SongCount>>
 }
 
 /** Number of songs mapped to the album or artist [id]; see [SongAlbumMapTable.songCountsDirect]. */
