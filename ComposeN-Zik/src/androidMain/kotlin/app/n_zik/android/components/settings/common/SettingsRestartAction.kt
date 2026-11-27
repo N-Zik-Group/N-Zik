@@ -34,6 +34,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassCustomChip
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
+import java.util.UUID
 
 internal typealias SettingsPlayerRestart = (PlayerServiceModern.Binder, (Boolean) -> Unit) -> Unit
 internal val LocalSettingsPlayerRestart = staticCompositionLocalOf<SettingsPlayerRestart?> { null }
@@ -66,11 +67,13 @@ internal class SettingsPlayerRestartState(initialGeneration: Long = 0L) {
     }
 
     companion object {
+        private val processToken = UUID.randomUUID().toString()
+
         fun saver(profileId: String): Saver<SettingsPlayerRestartState, Any> = listSaver(
-            save = { listOf(profileId, it.generation) },
+            save = { listOf(profileId, processToken, it.generation) },
             restore = { values ->
-                (values.getOrNull(1) as? Long)
-                    ?.takeIf { values.firstOrNull() == profileId }
+                (values.getOrNull(2) as? Long)
+                    ?.takeIf { values.firstOrNull() == profileId && values.getOrNull(1) == processToken }
                     ?.let(::SettingsPlayerRestartState)
             },
         )

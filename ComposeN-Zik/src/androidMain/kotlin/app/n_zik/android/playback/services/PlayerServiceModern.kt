@@ -48,7 +48,6 @@ import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -111,11 +110,9 @@ import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
-import androidx.media3.session.MediaController
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaNotification.Provider
 import androidx.media3.session.MediaSession
-import androidx.media3.session.SessionToken
 import app.n_zik.android.repository.QuickPicksRepository
 import app.n_zik.android.R
 import app.n_zik.android.components.menu.menuLikeActionLabel
@@ -124,7 +121,6 @@ import app.n_zik.android.utils.excludeDislikedSongsKey
 
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.MoreExecutors
 import app.n_zik.android.components.song.isArtistIdForSong
 import app.n_zik.android.utils.isGenericReleaseChannel
 import app.n_zik.innertube.Innertube
@@ -344,7 +340,6 @@ class PlayerServiceModern : MediaLibraryService(),
     private val openPlayerToken = System.currentTimeMillis()
     private var mediaLibrarySessionCallback: AutoSessionCallback =
         AutoSessionCallback(this, Database, MyDownloadHelper, playbackReady)
-    private var sessionController: MediaController? = null
     lateinit var player: ExoPlayer
     private var internalEffectsSessionId = C.AUDIO_SESSION_ID_UNSET
     private var bassBoostReady = false
@@ -802,12 +797,8 @@ class PlayerServiceModern : MediaLibraryService(),
         // Internal service init MUST bypass the guard (spine AD-7) — the raw player is used.
         applyPlaybackTuning(preferences)
 
-        // Keep a connected controller so that notification works
-        val sessionToken = SessionToken(this, ComponentName(this, PlayerServiceModern::class.java))
-        val controllerFuture = MediaController.Builder(this, sessionToken).buildAsync()
-        controllerFuture.addListener({
-            sessionController = controllerFuture.get()
-        }, MoreExecutors.directExecutor())
+        // Register for media notifications without binding the service to itself.
+        addSession(mediaSession)
 
         audioVolumeObserver = AudioVolumeObserver(this)
         audioVolumeObserver.register(AudioManager.STREAM_MUSIC, this)
@@ -1279,8 +1270,6 @@ class PlayerServiceModern : MediaLibraryService(),
             } catch (e: Exception){
                 Timber.tag("PlayerServiceModern").e("onDestroy unregisterReceiver screenStateReceiver "+e.stackTraceToString())
             }
-            sessionController?.release()
-            sessionController = null
             boundStreamingCache = null
             cache.release()
             //downloadCache.release()
@@ -3032,6 +3021,10 @@ class PlayerServiceModern : MediaLibraryService(),
         /**
          * This method should ONLY be called when the application (sc. activity) is in the foreground!
          */
+        internal val canRestartFromSettings: Boolean
+            get() = ::mediaSession.isInitialized &&
+                mediaSession.connectedControllers.none { mediaSession.isAutoCompanionController(it) }
+
         internal suspend fun awaitDestruction() = destructionCompleted.await()
 
         internal suspend fun awaitPlaybackReady() = playbackReady.await()

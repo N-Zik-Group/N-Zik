@@ -293,7 +293,7 @@ class MainActivity :
 
     @UnstableApi
     internal fun restartSettingsPlayer(service: PlayerServiceModern.Binder, onComplete: (Boolean) -> Unit) {
-        if (settingsPlayerRestartInProgress || !libraryUiBound || binder !== service) {
+        if (settingsPlayerRestartInProgress || !libraryUiBound || binder !== service || !service.canRestartFromSettings) {
             onComplete(false)
             return
         }

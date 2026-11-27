@@ -47,6 +47,7 @@ class SettingsPlayerRestartStateTest {
         val restored = requireNotNull(saver.restore(saved))
 
         assertNull(SettingsPlayerRestartState.saver("profile-b").restore(saved))
+        assertNull(saver.restore(listOf("profile-a", "previous-process", 1L)))
         assertTrue(restored.pending)
         assertFalse(restored.restarting)
         assertTrue(restored.complete(requireNotNull(restored.begin()), ready = true))
