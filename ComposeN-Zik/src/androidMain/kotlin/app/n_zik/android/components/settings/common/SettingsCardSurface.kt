@@ -53,12 +53,13 @@ internal fun Modifier.settingsCardAlignedInset(): Modifier {
 @Composable
 internal fun SettingsCardContent(
     padding: Dp = SettingsCardContentPadding,
+    verticalPadding: Dp = padding.coerceAtMost(8.dp),
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val outset = (padding - PressFeedbackHorizontalInset).coerceAtLeast(0.dp)
     CompositionLocalProvider(LocalSettingsCardRowOutset provides outset) {
         Column(
-            Modifier.padding(horizontal = padding, vertical = padding.coerceAtMost(8.dp)),
+            Modifier.padding(horizontal = padding, vertical = verticalPadding),
             content = content,
         )
     }

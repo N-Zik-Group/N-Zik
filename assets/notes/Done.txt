@@ -1540,3 +1540,7 @@ Settings:
 Settings:
 - fix(settings): remove obsolete service requirement
   - Keep battery optimization guidance focused on the available controls.
+
+Settings:
+- fix(settings): tighten search result card padding
+  - Use consistent spacing for global and page search results while keeping multiline paths readable.

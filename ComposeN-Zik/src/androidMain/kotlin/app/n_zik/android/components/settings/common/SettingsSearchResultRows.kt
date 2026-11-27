@@ -113,7 +113,8 @@ internal fun SettingsCardResultRow(
 @Composable
 internal fun SettingsResultCard(
     testTag: String,
-    contentPadding: Dp = SettingsCardContentPadding,
+    contentPadding: Dp = 10.dp,
+    verticalPadding: Dp = 4.dp,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
@@ -130,7 +131,7 @@ internal fun SettingsResultCard(
             shadowColor = colorPalette().accent.copy(alpha = 0.2f),
             shadowElevation = 4.dp
         ) {
-            SettingsCardContent(padding = contentPadding) {
+            SettingsCardContent(padding = contentPadding, verticalPadding = verticalPadding) {
                 content()
             }
         }

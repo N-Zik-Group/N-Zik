@@ -208,6 +208,8 @@ fun SettingsGlobalPage(
                         SettingsPageGroups.forEach { group ->
                             SettingsResultCard(
                                 testTag = "settings_global_group_${group.group}",
+                                contentPadding = SettingsCardContentPadding,
+                                verticalPadding = 8.dp,
                                 content = {
                                     SettingsPageItems
                                         .filter { it.group == group.group }
