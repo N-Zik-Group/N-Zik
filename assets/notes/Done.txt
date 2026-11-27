@@ -1172,3 +1172,7 @@ Menus:
 Settings:
 - fix(settings): center 36 dp profile avatars in card rows
   - Keep the 36 dp avatar and align its center with the settings badge column.
+
+Menus:
+- fix(export): report the result of cached audio exports
+  - Show an export success only when the audio file was written, both for one song and for batches.

@@ -122,24 +122,18 @@ class ExportCacheDialog private constructor(
             }
         }
 
-        // Shared scope for this dialog's fire-and-forget export work (issue #606):
-        // SupervisorJob (via NzikDispatchers.fireAndForget) so a failed export
-
-        // (onExport or batchExport) never prevents a later export from running
-        // on the same scope.
+        // Batch exports outlive the picker and a failed batch does not cancel later ones.
         internal val scope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
 
         @UnstableApi
-        private fun onExport(
+        private suspend fun exportAudio(
             uri: Uri,
-            binder: PlayerServiceModern.Binder ,
+            binder: PlayerServiceModern.Binder,
             song: Song,
-            isExporting: MutableState<Boolean>,
-            showResultToast: Boolean = true
-        ) = scope.launch {
-            kotlinx.coroutines.withContext(NzikDispatchers.UI) { isExporting.value = true }
-            try {
-                Timber.tag("ExportCache").i("onExport triggered for song: ${song.title}")
+        ): Boolean {
+            var complete = false
+            return try {
+                Timber.tag("ExportCache").i("Exporting audio for song: ${song.title}")
                 val format = Database.formatTable.findBySongId( song.id ).first()
                 val contentLength = format?.contentLength ?: 0L
                 val isOpus = format?.mimeType?.contains("webm", ignoreCase = true) == true || 
@@ -151,17 +145,7 @@ class ExportCacheDialog private constructor(
                 Timber.tag("ExportCache").i("isCached: $isCached, isDownloaded: $isDownloaded, contentLength: $contentLength")
 
                 if( !isCached && !isDownloaded ) {
-                    Toaster.i( R.string.export_song_unavailable_message )
-
-                    try {
-                        // Attempt to delete created file
-                        DocumentsContract.deleteDocument( appContext().contentResolver, uri )
-                    } catch (error: Exception) {
-                        Timber.tag("ExportCacheDialog").w("Unable to delete incomplete export (%s)", error.javaClass.simpleName)
-                    }
-
-                    kotlinx.coroutines.withContext(NzikDispatchers.UI) { isExporting.value = false }
-                    return@launch
+                    return false
                 }
 
                 val cacheDir = appContext().cacheDir
@@ -351,31 +335,12 @@ class ExportCacheDialog private constructor(
                                 inStream.copyTo(outStream)
                             }
                         }
-                        kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                            Timber.tag("ExportCache").i("Toaster.done() called")
-                            isExporting.value = false
-                            if (showResultToast) Toaster.done()
-                        }
+                        complete = true
+                        true
                     } else {
                         val logs = session.allLogsAsString
                         Timber.tag("ExportCache").e("FFmpeg failed with return code $returnCode. Logs: $logs")
-                        kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                            isExporting.value = false
-                            if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
-                        }
-                        try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (error: Exception) {
-                            Timber.tag("ExportCacheDialog").w("Unable to delete incomplete export (%s)", error.javaClass.simpleName)
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    Timber.tag("ExportCache").e(e, "Export overall error")
-                    kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                        isExporting.value = false
-                        if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
-                    }
-                    try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (error: Exception) {
-                        Timber.tag("ExportCacheDialog").w("Unable to delete failed export (%s)", error.javaClass.simpleName)
+                        false
                     }
                 } finally {
                     rawFile.delete()
@@ -383,14 +348,18 @@ class ExportCacheDialog private constructor(
                     coverFile?.delete()
                 }
 
-            } catch (e: Exception) {
-                Timber.tag("ExportCache").e(e, "Export init error")
-                kotlinx.coroutines.withContext(NzikDispatchers.UI) {
-                    isExporting.value = false
-                    if (showResultToast) Toaster.e(R.string.export_cached_songs_generic_error)
-                }
-                try { DocumentsContract.deleteDocument(appContext().contentResolver, uri) } catch (error: Exception) {
-                    Timber.tag("ExportCacheDialog").w("Unable to delete empty export (%s)", error.javaClass.simpleName)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("ExportCache").e(error, "Unable to write exported audio")
+                false
+            } finally {
+                if (!complete) {
+                    try {
+                        DocumentsContract.deleteDocument(appContext().contentResolver, uri)
+                    } catch (error: Exception) {
+                        Timber.tag("ExportCacheDialog").w(error, "Unable to delete incomplete export")
+                    }
                 }
             }
         }
@@ -470,8 +439,11 @@ class ExportCacheDialog private constructor(
                         val audioUri = DocumentsContract.createDocument(
                             appContext().contentResolver, parentUri, mimeType, "$baseName.$ext"
                         )
-                        if (audioUri != null) {
-                            onExport(audioUri, currentBinder, currentSong, isExporting, showResultToast = false).join()
+                        if (audioUri == null || !exportAudio(audioUri, currentBinder, currentSong)) {
+                            withContext(NzikDispatchers.UI) {
+                                Toaster.e(R.string.export_cached_songs_generic_error)
+                            }
+                            return@launch
                         }
 
                         writeLyricsSidecar(
@@ -607,7 +579,10 @@ class ExportCacheDialog private constructor(
                         failCount++
                         return@forEachIndexed
                     }
-                    onExport(docUri, binder, song, mutableStateOf(false), showResultToast = false).join()
+                    if (!exportAudio(docUri, binder, song)) {
+                        failCount++
+                        return@forEachIndexed
+                    }
 
                     try {
                         writeLyricsSidecar(cr, parentUri, baseName, song, lyricsChoice)
