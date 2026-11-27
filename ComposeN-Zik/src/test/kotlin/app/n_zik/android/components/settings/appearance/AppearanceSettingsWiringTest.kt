@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestartState
+import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.SettingsPlayerRestartState
 import androidx.compose.foundation.layout.WindowInsets
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
@@ -119,14 +122,19 @@ class AppearanceSettingsWiringTest {
     }
 
     @Test fun notificationActionShowsOneRestartControlWhenThePlayerIsUnavailable() {
+        val restartState = SettingsPlayerRestartState()
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalSettingsPlayerRestartState provides restartState,
+            ) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     AppearanceSettingsContent(
                         search = Search(initialVisible = false),
                         navController = mockk(relaxed = true),
                         selectedCards = setOf(R.string.settings_section_notification_player_title),
                     )
+                    RestartPlayerService()
                 }
             }
         }

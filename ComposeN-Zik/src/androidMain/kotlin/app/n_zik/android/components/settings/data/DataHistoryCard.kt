@@ -1,10 +1,8 @@
 package app.n_zik.android.components.settings.data
 
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
-import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,11 +47,9 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 internal fun DataHistoryCard(
     search: Search,
     navController: NavController,
-    restartState: MutableState<Boolean>,
     openModifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
-    var restartService by restartState
     var pauseSearchHistory by rememberPreference(pauseSearchHistoryKey, false)
     var pauseListenHistory by rememberPreference(pauseListenHistoryKey, false)
     var minimumListeningTime by rememberPreference(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
@@ -191,7 +187,6 @@ internal fun DataHistoryCard(
                 )
             }
 
-            RestartPlayerService(restartService, onRestart = { restartService = false })
         }
     )
 }

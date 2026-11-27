@@ -519,10 +519,8 @@ fun SettingsCategoryPage(
     val searchInput = rememberSaveable(categoryId, stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(""))
     }
-    var resetRestartRequired by rememberSaveable(categoryId) { mutableStateOf(false) }
-    val dataReset = rememberDataResetAction(
-        onPlayerRestartRequired = { resetRestartRequired = true },
-    )
+    val requestPlayerRestart = settingsPlayerRestartRequest()
+    val dataReset = rememberDataResetAction(onPlayerRestartRequired = requestPlayerRestart)
     var searchTargetHandled by rememberSaveable(categoryId, target, parentTarget) { mutableStateOf(false) }
     val search = Search(initialVisible = true, inputState = searchInput)
     val contentSearch = Search(initialVisible = false)
@@ -625,8 +623,7 @@ fun SettingsCategoryPage(
         val selected = cards.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes }.toSet()
         val titles = slots.getValue(tab).titles
         val ordered = if (titles.isEmpty()) {
-            cards.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes } +
-                if (tab in listOf(0, 2, 6)) listOf(SettingsSourceFooter) else emptyList()
+            cards.filter { it.tab == tab && it.titleRes != R.string.settings_reset }.map { it.titleRes }
         } else titles.toList()
         ordered.filter { it in selected }.map { tab to it }
     }
@@ -777,7 +774,7 @@ fun SettingsCategoryPage(
             else -> originalCardId
         }
         val row = latestRows.indexOfFirst { (tab, title) ->
-            title != SettingsSourceFooter && settingsCardTargetId(context, tab, title) == cardId
+            settingsCardTargetId(context, tab, title) == cardId
         }
         val item = when {
             isSettingsResetDialogTarget(requestedTarget) || resetScopeForTarget(parentTarget) != null -> latestRows.size + settingsHeaderItems
@@ -1052,7 +1049,7 @@ fun SettingsCategoryPage(
                                 SettingsResetCard(
                                     resetScopes,
                                     target,
-                                    onRestartRequired = { resetRestartRequired = true },
+                                    onRestartRequired = requestPlayerRestart,
                                     allowAllSettings = categoryId == "system",
                                     dataResetAction = dataReset,
                                 ) { tab ->
@@ -1081,14 +1078,7 @@ fun SettingsCategoryPage(
                         backdrop = footerBackdrop.takeIf { captureFooterBackdrop },
                         onVisibilityChanged = { hasPinnedFooter = it },
                     ) {
-                        RestartPlayerService(resetRestartRequired, onRestart = { resetRestartRequired = false })
-                        sourceTabs.forEach { tab ->
-                            CompositionLocalProvider(
-                                LocalSettingsResetScope provides (SettingsCategories.firstOrNull { it.tab == tab }?.labelRes ?: R.string.settings_category_privacy),
-                            ) {
-                                slots.getValue(tab).content[SettingsSourceFooter]?.value?.invoke()
-                            }
-                        }
+                        RestartPlayerService()
                     }
                 }
             }

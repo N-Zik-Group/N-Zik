@@ -2,10 +2,8 @@ package app.n_zik.android.components.settings.data
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.RestartAppDialog
-import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,14 +55,14 @@ import kotlinx.coroutines.withContext
 @Composable
 internal fun DataCacheCard(
     search: Search,
-    restartState: MutableState<Boolean>,
+    requestPlayerRestart: () -> Unit,
     target: ProfileStorageIdentity,
 ) {
     SettingsSectionCard(
         title = stringResource(R.string.storage_cache_settings_title),
         icon = R.drawable.folder,
         headerModifier = Modifier.settingsSearchTarget("data.cache.section"),
-        content = { DataCacheSettings(search, restartState, target) },
+        content = { DataCacheSettings(search, requestPlayerRestart, target) },
     )
 }
 
@@ -72,10 +70,9 @@ internal fun DataCacheCard(
 @Composable
 private fun DataCacheSettings(
     search: Search,
-    restartState: MutableState<Boolean>,
+    requestPlayerRestart: () -> Unit,
     target: ProfileStorageIdentity,
 ) {
-    var restartService by restartState
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var read by remember(target) { mutableStateOf<Result<SharedPreferences>?>(null) }
@@ -209,7 +206,7 @@ private fun DataCacheSettings(
                 save(coilDiskCacheMaxSizeKey, it) {
                     coilDiskCacheMaxSize = it
                     showCoilCustomDiskCacheDialog = it == CoilDiskCacheMaxSize.Custom
-                    if (isActive) restartService = true
+                    if (isActive) requestPlayerRestart()
                 }
             },
             valueText = { it.text },
@@ -230,7 +227,7 @@ private fun DataCacheSettings(
                 save(PROFILE_IMAGE_CACHE_CUSTOM_MB, size) {
                     coilCustomDiskCache = size
                     showCoilCustomDiskCacheDialog = false
-                    if (isActive) restartService = true
+                    if (isActive) requestPlayerRestart()
                 }
             }
         )
@@ -257,7 +254,7 @@ private fun DataCacheSettings(
                 save(exoPlayerDiskCacheMaxSizeKey, it) {
                     exoPlayerDiskCacheMaxSize = it
                     showExoPlayerCustomCacheDialog = it == ExoPlayerDiskCacheMaxSize.Custom
-                    if (isActive) restartService = true
+                    if (isActive) requestPlayerRestart()
                 }
             },
             valueText = { it.text },
@@ -278,7 +275,7 @@ private fun DataCacheSettings(
                 save(exoPlayerCustomCacheKey, size) {
                     exoPlayerCustomCache = size
                     showExoPlayerCustomCacheDialog = false
-                    if (isActive) restartService = true
+                    if (isActive) requestPlayerRestart()
                 }
             }
         )
@@ -345,7 +342,6 @@ private fun DataCacheSettings(
         )
     }
 
-    if (isActive) RestartPlayerService(restartService, onRestart = { restartService = false })
 }
 
 private enum class DataCacheOption(val title: Int, val description: Int, val icon: Int, val searchId: String) {

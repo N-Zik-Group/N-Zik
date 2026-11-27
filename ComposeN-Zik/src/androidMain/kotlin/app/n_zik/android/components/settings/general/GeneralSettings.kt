@@ -1,7 +1,8 @@
 package app.n_zik.android.components.settings.general
 
-import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.LocalSettingsResetRestart
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -30,7 +31,6 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog
 import app.n_zik.android.components.settings.common.SettingsCardSlot
-import app.n_zik.android.components.settings.common.SettingsSourceFooter
 import app.n_zik.android.components.settings.common.SettingsDescription
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.utils.preferences
@@ -52,7 +52,7 @@ import kotlinx.coroutines.flow.first
 /**
  * General settings tab (host-independent): header, description, per-tab search bar
  * and the 10 cards filtered at the card level by the registry. Owns the
- * `restartService`/`restartActivity` flags passed to the cards that set them.
+ * The cards share the player restart request and the page-local Activity restart flag.
  *
  * Settings-only focus behavior: focusing the search bar fades out and
  * collapses the title (layout removal, so the bar rises to the top); the
@@ -160,8 +160,8 @@ internal fun GeneralSettingsContent(
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
     val visibleCards = visibleCardTitleRes(LocalContext.current, 0, search.inputValue)
-    val onResetRestartRequired = LocalSettingsResetRestart.current
-    var restartService by rememberSaveable { mutableStateOf(false) }
+    val requestPlayerRestart = settingsPlayerRestartRequest()
+    val onResetRestartRequired = LocalSettingsResetRestart.current ?: requestPlayerRestart
     var restartActivity by rememberSaveable { mutableStateOf(false) }
     cardsContainer {
         if (selectedCards == null || R.string.settings_languages_title in selectedCards) {
@@ -173,7 +173,7 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.common_playback_section_title, modifier = { cardModifier(R.string.common_playback_section_title) }) {
                 GeneralPlaybackCard(
                     visible = visibleCards.contains(R.string.common_playback_section_title),
-                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceSet = requestPlayerRestart,
                 )
             }
         }
@@ -186,7 +186,7 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.settings_queue_management_title, modifier = { cardModifier(R.string.settings_queue_management_title) }) {
                 GeneralQueueManagementCard(
                     visible = visibleCards.contains(R.string.settings_queue_management_title),
-                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceSet = requestPlayerRestart,
                 )
             }
         }
@@ -194,7 +194,7 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.settings_app_behavior_title, modifier = { cardModifier(R.string.settings_app_behavior_title) }) {
                 GeneralAppBehaviorCard(
                     visible = visibleCards.contains(R.string.settings_app_behavior_title),
-                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceSet = requestPlayerRestart,
                 )
             }
         }
@@ -202,7 +202,7 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.audio_effects, modifier = { cardModifier(R.string.audio_effects) }) {
                 GeneralAudioEffectsCard(
                     visible = visibleCards.contains(R.string.audio_effects),
-                    onRestartServiceSet = { restartService = true },
+                    onRestartServiceSet = requestPlayerRestart,
                 )
             }
         }
@@ -235,15 +235,11 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
                 GeneralResetCard(
                     visible = visibleCards.contains(R.string.settings_reset),
-                    onRestartServiceSet = onResetRestartRequired ?: { restartService = true },
+                    onRestartServiceSet = onResetRestartRequired,
                 )
             }
         }
     }
     AppShortcutsSettingsDialog.Render()
-    if (onResetRestartRequired == null) {
-        SettingsCardSlot(SettingsSourceFooter) {
-            RestartPlayerService(restartService, onRestart = { restartService = false })
-        }
-    }
+    if (selectedCards == null) RestartPlayerService()
 }

@@ -47,7 +47,6 @@ import app.n_zik.android.components.settings.common.LocalSettingsCardSlots
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 import app.n_zik.android.components.settings.common.SettingsCardSlots
 import app.n_zik.android.components.settings.common.SettingsPinnedFooter
-import app.n_zik.android.components.settings.common.SettingsSourceFooter
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -205,22 +204,15 @@ class SettingsCardSlotTest {
     }
 
     @Test fun `restart prompt stays accessible after scrolling and releases its inset when dismissed`() {
-        val slots = SettingsCardSlots()
         val warning = mutableStateOf(false)
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 Column(Modifier.height(300.dp)) {
-                    CompositionLocalProvider(LocalSettingsCardSlots provides slots) {
-                        val visible = warning.value
-                        SettingsCardSlot(SettingsSourceFooter) {
-                            if (visible) Text("restart service")
-                        }
-                    }
                     LazyColumn(Modifier.weight(1f).testTag("cards")) {
                         items(20) { Spacer(Modifier.height(400.dp)) }
                     }
                     SettingsPinnedFooter(40.dp) {
-                        slots.content[SettingsSourceFooter]?.value?.invoke()
+                        if (warning.value) Text("restart service")
                     }
                 }
             }

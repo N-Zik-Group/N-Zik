@@ -1,7 +1,8 @@
 package app.n_zik.android.components.settings.network
 
-import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.LocalSettingsResetRestart
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
+import app.n_zik.android.components.settings.common.RestartPlayerService
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
 
 import app.n_zik.android.components.tab.Search
@@ -38,7 +39,6 @@ import app.n_zik.android.components.search.SearchHistorySection
 import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.SettingsCardSlot
-import app.n_zik.android.components.settings.common.SettingsSourceFooter
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.visibleCardTitleRes
 import app.n_zik.android.components.settings.common.settingsSearchContent
@@ -153,8 +153,8 @@ internal fun NetworkSettingsContent(
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
     searchTarget: String = "",
 ) {
-    var restartService by rememberSaveable { mutableStateOf(false) }
-    val onResetRestartRequired = LocalSettingsResetRestart.current
+    val requestPlayerRestart = settingsPlayerRestartRequest()
+    val onResetRestartRequired = LocalSettingsResetRestart.current ?: requestPlayerRestart
     val audioDialog = rememberSaveable { mutableStateOf(false) }
     val imageDialog = rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
@@ -177,7 +177,7 @@ internal fun NetworkSettingsContent(
                 NetworkQualityCard(search.inputValue, audioDialog, imageDialog,
                     networkQuality = networkQuality,
                     connectionMetered = connectionMetered,
-                    includeDownloadQuality = selectedCards == null) { restartService = it }
+                    includeDownloadQuality = selectedCards == null, onRestartRequired = requestPlayerRestart)
             }
         }
         if (selectedCards != null && R.string.settings_download_quality in selectedCards) {
@@ -202,13 +202,9 @@ internal fun NetworkSettingsContent(
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) {
-                NetworkResetCard(search.inputValue, onResetRestartRequired ?: { restartService = true })
+                NetworkResetCard(search.inputValue, onResetRestartRequired)
             }
         }
-        if (onResetRestartRequired == null) {
-            SettingsCardSlot(SettingsSourceFooter) {
-                RestartPlayerService(restartService, onRestart = { restartService = false })
-            }
-        }
+        if (selectedCards == null) RestartPlayerService()
     }
 }

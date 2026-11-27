@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.data
 
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
+import app.n_zik.android.components.settings.common.RestartPlayerService
 
 import kotlin.math.roundToInt
 import androidx.compose.foundation.background
@@ -13,9 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
@@ -39,6 +38,7 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.SettingsCardSlot
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
 import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContent
@@ -143,7 +143,7 @@ internal fun DataSettingsContent(
     historyOpenModifier: Modifier = Modifier,
     cardsContainer: @Composable (@Composable () -> Unit) -> Unit = { it() },
 ) {
-    val restartState = rememberSaveable { mutableStateOf(false) }
+    val requestPlayerRestart = settingsPlayerRestartRequest()
     val context = LocalContext.current
     ExportBackupDialog.Render()
     ImportBackupDialog.Render()
@@ -160,16 +160,17 @@ internal fun DataSettingsContent(
                 R.string.storage_breakdown_title,
                 modifier = { cardModifier(R.string.storage_breakdown_title) },
             ) {
-                DataStorageCard(search, restartState)
+                DataStorageCard(search, requestPlayerRestart)
             }
         }
         if (selectedCards == null || R.string.library_history_title in selectedCards) {
             SettingsCardSlot(R.string.library_history_title, modifier = { cardModifier(R.string.library_history_title) }) {
-                DataHistoryCard(search, navController, restartState, openModifier = historyOpenModifier)
+                DataHistoryCard(search, navController, openModifier = historyOpenModifier)
             }
         }
         if (selectedCards == null || R.string.settings_reset in selectedCards) {
             SettingsCardSlot(R.string.settings_reset, modifier = { cardModifier(R.string.settings_reset) }) { DataResetCard(search) }
         }
+        if (selectedCards == null) RestartPlayerService()
     }
 }

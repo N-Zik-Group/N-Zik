@@ -8,6 +8,11 @@ import androidx.compose.ui.test.click
 import androidx.compose.ui.test.performTouchInput
 import app.n_zik.android.compose.persist.findActivityNullable
 import app.n_zik.android.components.settings.general.GeneralPipCard
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestart
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestartState
+import app.n_zik.android.components.settings.common.SettingsPlayerRestartState
+import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.SettingsPlayerRestart
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -17,6 +22,8 @@ import app.n_zik.android.components.settings.general.GeneralSettingsContent
 import app.n_zik.android.components.tab.Search
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.verticalScroll
@@ -33,6 +40,7 @@ import androidx.compose.ui.test.isEditable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
@@ -47,9 +55,13 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.general.GeneralSettings
+import app.n_zik.android.utils.enablePictureInPictureAutoKey
+import app.n_zik.android.utils.enablePictureInPictureKey
+import app.n_zik.android.utils.preferences
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -102,11 +114,18 @@ class GeneralSettingsWiringTest {
         Dependencies.init(mainApplication)
     }
 
-    private fun showGeneralTab(focus: String = "", binder: PlayerServiceModern.Binder? = null) {
+    private fun showGeneralTab(
+        focus: String = "",
+        binder: PlayerServiceModern.Binder? = null,
+        restartPlayer: SettingsPlayerRestart? = null,
+    ) {
+        val restartState = SettingsPlayerRestartState()
         composeRule.setContent {
             CompositionLocalProvider(
                 LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
                 LocalPlayerServiceBinder provides binder,
+                LocalSettingsPlayerRestart provides restartPlayer,
+                LocalSettingsPlayerRestartState provides restartState,
                 LocalAppearance provides appearance,
             ) {
                 GeneralSettings(focus = focus)
@@ -134,6 +153,37 @@ class GeneralSettingsWiringTest {
         composeRule.onNodeWithText(context.getString(R.string.settings_enable_pip)).performClick()
         open.performScrollTo().performTouchInput { click() }
         composeRule.runOnIdle { assertTrue(activity.isInPictureInPictureMode) }
+    }
+
+    @Test
+    fun `automatic PiP loses its action while the disabled controls are animating out`() {
+        Shadows.shadowOf(context.packageManager)
+            .setSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE, true)
+        context.preferences.edit().putBoolean(enablePictureInPictureKey, true).commit()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    GeneralPipCard(
+                        visible = true,
+                        restartActivity = false,
+                        onRestartActivitySet = {},
+                        onRestartActivityClear = {},
+                        onCardTopYChanged = {},
+                    )
+                }
+            }
+        }
+        val automatic = composeRule.onNodeWithText(context.getString(R.string.settings_enable_pip_auto))
+        val position = automatic.fetchSemanticsNode().boundsInRoot.center
+        composeRule.mainClock.autoAdvance = false
+        composeRule.onNodeWithText(context.getString(R.string.settings_enable_pip)).performClick()
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        composeRule.mainClock.advanceTimeBy(64)
+
+        automatic.assertDoesNotExist()
+        composeRule.onRoot().performTouchInput { click(position) }
+        assertFalse(context.preferences.getBoolean(enablePictureInPictureAutoKey, false))
+        composeRule.mainClock.advanceTimeBy(250)
     }
 
     /**
@@ -279,9 +329,13 @@ class GeneralSettingsWiringTest {
     }
 
     @Test
-    fun togglingASettingShowsTheRestartBarAndRestartingClearsIt() {
+    fun restartBarStaysPendingOnFailureAndClearsOnSuccess() {
         val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
-        showGeneralTab(binder = binder)
+        lateinit var completeRestart: (Boolean) -> Unit
+        showGeneralTab(binder = binder, restartPlayer = { requestedBinder, onComplete ->
+            requestedBinder.restartForegroundOrStop()
+            completeRestart = onComplete
+        })
 
         // The auto-load entry sets restartService when toggled.
         clickRowByDescription(R.string.player_auto_load_songs_in_queue_description)
@@ -301,6 +355,15 @@ class GeneralSettingsWiringTest {
         composeRule.waitForIdle()
 
         verify(exactly = 1) { binder.restartForegroundOrStop() }
+        val restartAction = composeRule.onNodeWithText(context.getString(R.string.settings_player_action_restart_service))
+        restartAction.assertIsNotEnabled()
+        composeRule.runOnIdle { completeRestart(false) }
+        restartAction.assertIsEnabled()
+        restartAction.performSemanticsAction(SemanticsActions.OnClick)
+        restartAction.assertIsNotEnabled()
+        verify(exactly = 2) { binder.restartForegroundOrStop() }
+        composeRule.runOnIdle { completeRestart(true) }
+        composeRule.waitForIdle()
         assertTrue(
             "restarting must clear the restart bar",
             composeRule
@@ -326,16 +389,7 @@ class GeneralSettingsWiringTest {
         )
     }
     @Test fun autoLoadRemainsFunctionalWhenOnlyQueueManagementIsComposed() {
-        composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    GeneralSettingsContent(
-                        search = Search(initialVisible = false),
-                        selectedCards = setOf(R.string.settings_queue_management_title),
-                    )
-                }
-            }
-        }
+        showSelectedCard(R.string.settings_queue_management_title)
         composeRule.waitForIdle()
         assertTrue(!cardTitleIsShown(R.string.player_controls))
         clickRowByDescription(R.string.player_auto_load_songs_in_queue_description)
@@ -347,13 +401,19 @@ class GeneralSettingsWiringTest {
     }
 
     private fun showSelectedCard(titleRes: Int) {
+        val restartState = SettingsPlayerRestartState()
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsPlayerRestartState provides restartState,
+            ) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     GeneralSettingsContent(
                         search = Search(initialVisible = false),
                         selectedCards = setOf(titleRes),
                     )
+                    RestartPlayerService()
                 }
             }
         }

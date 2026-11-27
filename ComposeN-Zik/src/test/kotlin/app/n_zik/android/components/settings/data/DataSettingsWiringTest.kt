@@ -76,7 +76,8 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
-import app.n_zik.android.utils.pauseListenHistoryKey
+import app.n_zik.android.components.settings.common.SettingsCardContentPadding
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.Dependencies
@@ -379,7 +380,7 @@ class DataSettingsWiringTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides registry) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { measurement.await() })
+                    DataStorageCard(Search(initialVisible = false), {}, measure = { measurement.await() })
                 }
             }
         }
@@ -410,7 +411,7 @@ class DataSettingsWiringTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { sample })
+                    DataStorageCard(Search(initialVisible = false), {}, measure = { sample })
                 }
             }
         }
@@ -434,8 +435,9 @@ class DataSettingsWiringTest {
         val band = composeRule.onNodeWithTag("data.storage.nzik-section").getUnclippedBoundsInRoot()
         assertEquals(bar.left.value, tabs.left.value, 1f)
         assertEquals(bar.right.value, tabs.right.value, 1f)
-        assertEquals(48f, (bar.left - card.left).value, 1f)
-        assertEquals(48f, (card.right - bar.right).value, 1f)
+        val storageCardInset = 32f + SettingsCardContentPadding.value
+        assertEquals(storageCardInset, (bar.left - card.left).value, 1f)
+        assertEquals(storageCardInset, (card.right - bar.right).value, 1f)
         val capacity = composeRule.onNodeWithText(context.getString(R.string.storage_breakdown_device_capacity))
             .getUnclippedBoundsInRoot()
         assertTrue(percentage.getUnclippedBoundsInRoot().top >= capacity.bottom)
@@ -482,7 +484,7 @@ class DataSettingsWiringTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance.copy(uiRoundnessShape = RoundedCornerShape(16.dp))) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { sample })
+                    DataStorageCard(Search(initialVisible = false), {}, measure = { sample })
                 }
             }
         }
@@ -531,7 +533,7 @@ class DataSettingsWiringTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance.copy(uiRoundnessShape = RoundedCornerShape(16.dp))) {
                 Column(Modifier.verticalScroll(rememberScrollState())) {
-                    DataStorageCard(Search(initialVisible = false), mutableStateOf(false), measure = { sample })
+                    DataStorageCard(Search(initialVisible = false), {}, measure = { sample })
                 }
             }
         }
@@ -602,16 +604,16 @@ class DataSettingsWiringTest {
     }
 
     @Test fun `reset action is not repeated by recomposition`() {
-        context.preferences.edit().putBoolean(pauseListenHistoryKey, true).commit()
+        context.preferences.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).commit()
         show()
-        composeRule.onNodeWithText(context.getString(R.string.settings_restore_default_settings)).performScrollTo().performClick()
+        composeRule.onNodeWithTag("settings.reset.data.action").performScrollTo().performClick()
         composeRule.waitUntil(10_000) {
             Shadows.shadowOf(Looper.getMainLooper()).idle()
-            !context.preferences.getBoolean(pauseListenHistoryKey, true)
+            !context.preferences.getBoolean(DEVICE_LIBRARY_ENABLED_KEY, true)
         }
-        composeRule.runOnIdle { context.preferences.edit().putBoolean(pauseListenHistoryKey, true).apply() }
+        composeRule.runOnIdle { context.preferences.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).apply() }
         composeRule.waitForIdle()
-        assertTrue(context.preferences.getBoolean(pauseListenHistoryKey, false))
+        assertTrue(context.preferences.getBoolean(DEVICE_LIBRARY_ENABLED_KEY, false))
     }
     @Test fun `matching inner history term keeps its action available`() {
         show()

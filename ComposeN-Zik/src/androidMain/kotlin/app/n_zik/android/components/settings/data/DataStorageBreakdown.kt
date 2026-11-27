@@ -34,7 +34,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableLongStateOf
@@ -236,7 +235,7 @@ private fun Modifier.disableOutgoingStorageContent(active: Boolean): Modifier =
 @Composable
 internal fun DataStorageCard(
     search: Search,
-    restartState: MutableState<Boolean>,
+    requestPlayerRestart: () -> Unit,
     measure: suspend (Context) -> StorageBreakdown? = ::measureStorage,
 ) {
     val context = LocalContext.current
@@ -419,7 +418,7 @@ internal fun DataStorageCard(
             },
         )
         if (cacheTarget != null) key(cacheTarget) {
-            DataCacheCard(search, restartState, cacheTarget)
+            DataCacheCard(search, requestPlayerRestart, cacheTarget)
             DataAutoBackupCard(cacheTarget)
             OtherOnDeviceCard(search, cacheTarget)
         }

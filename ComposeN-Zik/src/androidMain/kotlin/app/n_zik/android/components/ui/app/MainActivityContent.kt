@@ -111,6 +111,9 @@ import app.n_zik.android.components.glass.LocalGlassMenuHost
 import app.n_zik.android.components.glass.glassRenderer
 import app.n_zik.android.components.glass.LocalPlayerArtworkObservation
 import app.n_zik.android.components.settings.common.LocalSettingsFooterHeight
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestart
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestartState
+import app.n_zik.android.components.settings.common.SettingsPlayerRestartState
 import app.n_zik.android.components.settings.common.SettingsFooterMiniPlayerGap
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.components.glass.rememberPlayerArtworkObservation
@@ -258,6 +261,11 @@ import app.n_zik.innertube.utils.LocalePreferences
 internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean) {
     // Issue #881 (gh-881), Phase 3.1: lifecycle + first-frame probe (frozen UI after wake).
     UiFrameClockDiagnostics()
+    val restartSettingsPlayer = remember(this) { this::restartSettingsPlayer }
+    val settingsProfile = getActiveProfile(this)
+    val settingsPlayerRestartState = rememberSaveable(settingsProfile, saver = SettingsPlayerRestartState.saver(settingsProfile)) {
+        SettingsPlayerRestartState()
+    }
     val selectedPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
 
     val pictureInPictureEnabled by rememberPreference(enablePictureInPictureKey, false)
@@ -945,6 +953,8 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     LocalShimmerClock provides shimmerClock,
                     LocalShimmerPalette provides LocalAppearance.current.colorPalette,
                     LocalPlayerServiceBinder provides binder,
+                    LocalSettingsPlayerRestart provides restartSettingsPlayer,
+                    LocalSettingsPlayerRestartState provides settingsPlayerRestartState,
                     LocalPlaybackPositionClock provides positionClock,
                     LocalPlayerArtworkObservation provides playerArtwork,
                     LocalPlayerMusicVideo provides videoSession.takeUnless { pipState.value },

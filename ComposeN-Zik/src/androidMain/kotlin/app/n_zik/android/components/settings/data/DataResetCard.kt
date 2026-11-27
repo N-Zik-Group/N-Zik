@@ -8,13 +8,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
 import app.n_zik.android.components.settings.common.showDataResetFeedback
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
@@ -29,18 +28,9 @@ import kotlinx.coroutines.withContext
 
 @Composable
 internal fun DataResetCard(search: Search) {
-    var restartPlayer by rememberSaveable { mutableStateOf(false) }
-    val reset = rememberDataResetAction(
-        onPlayerRestartRequired = { restartPlayer = true },
-        onAppRestartRequired = {
-            restartPlayer = false
-            RestartAppDialog.showDialog()
-        },
-    )
+    val reset = rememberDataResetAction(onPlayerRestartRequired = settingsPlayerRestartRequest())
     val visible = search.inputValue.isBlank() || stringResource(R.string.settings_reset).contains(search.inputValue, true) || stringResource(R.string.settings_restore_default_settings).contains(search.inputValue, true)
-    DataResetCard(reset, visible) {
-        RestartPlayerService(restartPlayer) { restartPlayer = false }
-    }
+    DataResetCard(reset, visible)
 }
 
 /** Owns the reset in the host that displays the result, even after its dialog closes. */
@@ -98,7 +88,6 @@ internal class DataResetAction(
 internal fun DataResetCard(
     reset: DataResetAction,
     visible: Boolean = true,
-    footer: @Composable () -> Unit = {},
 ) {
     SettingsSectionCard(
         title = stringResource(R.string.settings_reset),
@@ -115,7 +104,6 @@ internal fun DataResetCard(
                 isEnabled = !reset.running,
                 onClick = reset::start,
             )
-            footer()
         }
     )
 }

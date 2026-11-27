@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.network
 
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestartState
+import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.SettingsPlayerRestartState
 import android.app.Application
 import android.os.Looper
 import androidx.compose.foundation.shape.CircleShape
@@ -88,8 +91,9 @@ class NetworkDownloadQualityCardTest {
 
     private fun content(block: @Composable () -> Unit) {
         composeRule.mainClock.autoAdvance = false
+        val restartState = SettingsPlayerRestartState()
         composeRule.setContent {
-            CompositionLocalProvider(LocalAppearance provides appearance) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsPlayerRestartState provides restartState) {
                 Column(Modifier.verticalScroll(rememberScrollState())) { block() }
             }
         }
@@ -115,6 +119,7 @@ class NetworkDownloadQualityCardTest {
         content {
             NetworkSettingsContent(Search(initialVisible = false), rememberNavController(),
                 selectedCards = setOf(R.string.settings_reset))
+            RestartPlayerService()
         }
         composeRule.onNodeWithText(context.getString(R.string.settings_restore_default_settings)).performSemanticsAction(SemanticsActions.OnClick) { it() }
         awaitTextCount(context.getString(R.string.settings_player_action_restart_service))

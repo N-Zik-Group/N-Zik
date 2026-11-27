@@ -71,6 +71,8 @@ import app.n_zik.android.R
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.common.settingsCardTargetId
+import app.n_zik.android.components.settings.common.LocalSettingsPlayerRestartState
+import app.n_zik.android.components.settings.common.SettingsPlayerRestartState
 import app.n_zik.android.components.settings.common.SettingsCategoryPage
 import app.n_zik.android.components.settings.common.RewindMasterSettingsTarget
 import app.n_zik.android.components.settings.common.RewindNotificationSectionTarget
@@ -437,9 +439,19 @@ class SettingsCategoryPageTest {
 
     @Test fun `pending restart footer and mini player remain below the category arrow`() {
         composeRule.mainClock.autoAdvance = false
+        val restartState = SettingsPlayerRestartState()
+        val showCategory = mutableStateOf(true)
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(bottom = 140.dp), LocalAppearance provides appearance) {
-                SettingsCategoryPage(categoryId = "behavior", navController = mockk(relaxed = true))
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(bottom = 140.dp),
+                LocalAppearance provides appearance,
+                LocalSettingsPlayerRestartState provides restartState,
+            ) {
+                if (showCategory.value) {
+                    SettingsCategoryPage(categoryId = "behavior", navController = mockk(relaxed = true))
+                } else {
+                    SettingsGlobalPage(onItemSelected = {}, onCardSelected = { _, _ -> })
+                }
             }
         }
         val toggle = "settings.target.general.app_behavior.close_background_player"
@@ -447,6 +459,16 @@ class SettingsCategoryPageTest {
         composeRule.onNodeWithTag(toggle).performScrollTo().performClick()
         pumpUntil("restart is pending") { runCatching { composeRule.onNodeWithText(context.getString(R.string.settings_player_action_restart_service)).assertIsDisplayed() }.isSuccess }
         val list = composeRule.onNodeWithTag("settings.category.list.behavior")
+        val restartLabel = context.getString(R.string.settings_player_action_restart_service)
+        composeRule.runOnIdle { showCategory.value = false }
+        pumpUntil("category is disposed") { runCatching { list.assertDoesNotExist() }.isSuccess }
+        composeRule.runOnIdle { showCategory.value = true }
+        pumpUntil("one pending restart survives revisiting the category") {
+            runCatching {
+                composeRule.onNodeWithText(restartLabel).assertIsDisplayed()
+                composeRule.onAllNodes(hasText(restartLabel)).assertCountEquals(1)
+            }.isSuccess
+        }
         list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 1600f) }
         settleSearch()
         list.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, -60f) }
@@ -571,7 +593,15 @@ class SettingsCategoryPageTest {
             category = "rewind",
             target = target.id,
             highlightedTarget = "embedded.rewind.section.summaries",
-            expectedMessage = context.getString(R.string.settings_target_unavailable),
+            expectedMessage = context.getString(
+                R.string.settings_target_rewind_notification_prerequisite,
+                listOf(
+                    R.string.rewind_settings_monthly,
+                    R.string.rewind_settings_yearly,
+                    R.string.rewind_settings_playlists_monthly,
+                    R.string.rewind_settings_playlists_yearly,
+                ).joinToString(" / ", transform = context::getString),
+            ),
         )
         assertEquals(before, globalPreferences.all)
     }
@@ -928,8 +958,13 @@ class SettingsCategoryPageTest {
         val target = "$scope.settings_reset.settings_reset"
         val restartLabel = context.getString(R.string.settings_player_action_restart_service)
         val footerRestart = hasAnyAncestor(hasTestTag("settings.category.footer")) and hasText(restartLabel)
+        val restartState = SettingsPlayerRestartState()
         composeRule.setContent {
-            CompositionLocalProvider(LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0), LocalAppearance provides appearance) {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsPlayerRestartState provides restartState,
+            ) {
                 SettingsCategoryPage(
                     categoryId = "system",
                     navController = mockk(relaxed = true),

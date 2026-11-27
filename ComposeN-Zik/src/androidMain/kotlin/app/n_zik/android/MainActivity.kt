@@ -57,6 +57,9 @@ import com.kieronquinn.monetcompat.core.MonetActivityAccessException
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.kieronquinn.monetcompat.interfaces.MonetColorsChangedListener
 import dev.kdrag0n.monet.theme.ColorScheme
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
@@ -262,6 +265,8 @@ class MainActivity :
 
     private var libraryUiStarted = false
     private var libraryUiBound = false
+    private var settingsPlayerRestartInProgress = false
+    private var settingsPlayerDestructionPending = false
     private val deferredLaunchIntents = DeferredLibraryIntents()
     private var waitingColdLaunch = false
     private var awaitingDeferredNavigation = false
@@ -276,7 +281,7 @@ class MainActivity :
     }
 
     private fun bindLibraryUi() {
-        if (libraryUiBound) return
+        if (libraryUiBound || settingsPlayerDestructionPending) return
         if (screenCapturePolicy == null) screenCapturePolicy = app.n_zik.android.privacy.ScreenCapturePolicy.bind(this)
 
         runCatching {
@@ -288,16 +293,51 @@ class MainActivity :
 
     @UnstableApi
     internal fun restartSettingsPlayer(service: PlayerServiceModern.Binder, onComplete: (Boolean) -> Unit) {
-        if (!libraryUiBound || binder !== service) {
+        if (settingsPlayerRestartInProgress || !libraryUiBound || binder !== service) {
             onComplete(false)
             return
         }
+        val profileId = getActiveProfile(this)
+        settingsPlayerRestartInProgress = true
         lifecycleScope.launch(NzikDispatchers.UI.immediate) {
-            service.restartForegroundOrStop()
-            unbindLibraryUi()
-            val stopped = withTimeoutOrNull(2_000L) { service.awaitDestruction(); true } ?: false
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) bindLibraryUi()
-            onComplete(stopped)
+            val restarted = try {
+                settingsPlayerDestructionPending = true
+                val destroyed = try {
+                    service.restartForegroundOrStop()
+                    unbindLibraryUi()
+                    withTimeoutOrNull(2_000L) { service.awaitDestruction() } != null
+                } finally {
+                    settingsPlayerDestructionPending = false
+                }
+                if (destroyed) {
+                    withTimeoutOrNull(5_000L) {
+                        val bound = lifecycle.withStarted {
+                            if (getActiveProfile(this@MainActivity) != profileId) return@withStarted false
+                            bindLibraryUi()
+                            libraryUiBound
+                        }
+                        if (!bound) return@withTimeoutOrNull false
+                        val replacement = snapshotFlow { binder }.filterNotNull().first { it !== service }
+                        replacement.awaitPlaybackReady()
+                        binder === replacement && getActiveProfile(this@MainActivity) == profileId
+                    } == true
+                } else {
+                    // A controller may still hold the old service. Restore the UI connection.
+                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) && getActiveProfile(this@MainActivity) == profileId) {
+                        bindLibraryUi()
+                    }
+                    false
+                }
+            } catch (_: CancellationException) {
+                currentCoroutineContext().ensureActive()
+                false
+            } catch (error: Exception) {
+                Timber.tag("MainActivity").e(error, "Could not restart the player service")
+                false
+            } finally {
+                settingsPlayerRestartInProgress = false
+            }
+            onComplete(restarted)
         }
     }
 

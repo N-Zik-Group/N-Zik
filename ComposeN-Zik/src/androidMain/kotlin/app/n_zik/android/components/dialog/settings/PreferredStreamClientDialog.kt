@@ -38,6 +38,7 @@ import app.n_zik.android.utils.semiBold
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.DialogFrame
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
 import app.n_zik.android.utils.streamClientRestartNeededKey
 import app.n_zik.android.playback.services.clearStreamCaches
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -56,6 +57,7 @@ object PreferredStreamClientDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
+        val requestPlayerRestart = settingsPlayerRestartRequest()
         val binder = LocalPlayerServiceBinder.current
         val prefs = remember { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
         val savedPref = remember { prefs.getString(preferredStreamClientKey, "WEB_REMIX") ?: "WEB_REMIX" }
@@ -94,6 +96,7 @@ object PreferredStreamClientDialog : ContentFramedDialog {
                             if (selectedClient != savedPref) {
                                 prefs.edit().putString(preferredStreamClientKey, selectedClient).apply()
                                 prefs.edit().putBoolean(streamClientRestartNeededKey, true).apply()
+                                requestPlayerRestart()
                                 clearStreamCaches()
                                 // Clear audio cache
                                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {

@@ -26,6 +26,7 @@ import app.n_zik.android.utils.streamClientWebEnabledKey
 import app.n_zik.android.utils.streamClientWebCreatorEnabledKey
 import app.n_zik.android.utils.streamClientMobileEnabledKey
 import app.n_zik.android.utils.streamClientAndroidEnabledKey
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
 import app.n_zik.android.utils.streamClientRestartNeededKey
 import app.n_zik.android.utils.streamClientsOrderKey
 import app.n_zik.android.playback.services.clearStreamCaches
@@ -112,6 +113,7 @@ object StreamClientsSettingsDialog : ContentFramedDialog {
     @Composable
     override fun DialogBody() {
         val context = LocalContext.current
+        val requestPlayerRestart = settingsPlayerRestartRequest()
         val binder = LocalPlayerServiceBinder.current
         val prefs = remember { context.getSharedPreferences("preferences", Context.MODE_PRIVATE) }
         val clientDefs = remember { buildClientDefs() }
@@ -195,6 +197,7 @@ object StreamClientsSettingsDialog : ContentFramedDialog {
                 }
                 if (hasChanges) {
                     editor.putBoolean(streamClientRestartNeededKey, true)
+                    requestPlayerRestart()
                     clearStreamCaches()
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                         clearAudioCache(binder?.cache)
