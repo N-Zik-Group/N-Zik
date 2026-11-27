@@ -73,6 +73,7 @@ import app.n_zik.android.utils.PlayerTrackLinks
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.playerTrackLinks
 
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
 import app.n_zik.android.components.dialog.common.SleepTimerDialog
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -714,7 +715,7 @@ fun Player(
     val screenWidth = configuration.screenWidthDp.dp
     val screenHeight = configuration.screenHeightDp.dp
 
-    DialogPresence(visible = isShowingSleepTimerDialog) {
+    AboveMenuDialogPresence(menuState = menuState, visible = isShowingSleepTimerDialog) {
         SleepTimerDialog(
             sleepTimerMillisLeft = sleepTimerMillisLeft,
             timeRemaining = timeRemaining.toLong(),
@@ -1676,7 +1677,6 @@ fun Player(
                             onClosePlayer = onDismiss,
                             onShowSleepTimer = {
                                 isShowingSleepTimerDialog = true
-                                menuState.hide()
                             },
                             disableScrollingText = disableScrollingText,
                             statsMenuControl = statsMenuControl,

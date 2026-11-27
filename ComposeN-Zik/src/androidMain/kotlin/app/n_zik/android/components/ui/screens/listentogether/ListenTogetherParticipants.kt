@@ -311,7 +311,7 @@ internal fun UserActionMenu(
                 stringResource(R.string.listen_together_kick_user_description), R.drawable.trash, palette.red,
             ) {
                 onKick()
-                menuState.hide()
+                menuState.pop()
             }
         },
         {
@@ -320,7 +320,7 @@ internal fun UserActionMenu(
                 stringResource(R.string.listen_together_permanently_kick_user_description), R.drawable.close, palette.red,
             ) {
                 onPermanentKick()
-                menuState.hide()
+                menuState.pop()
             }
         },
         {
@@ -329,7 +329,7 @@ internal fun UserActionMenu(
                 stringResource(R.string.listen_together_transfer_ownership_description), R.drawable.star_brilliant, palette.accent,
             ) {
                 onTransferOwnership()
-                menuState.hide()
+                menuState.pop()
             }
         },
     )

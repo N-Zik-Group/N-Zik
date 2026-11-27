@@ -130,51 +130,6 @@ fun ExtensionsSheet(
     var uninstallTarget by remember { mutableStateOf<ModuleDefinition?>(null) }
     // The Info source follows the tab where the entry was tapped.
     var infoTarget by remember { mutableStateOf<ModuleInfoRequest?>(null) }
-    DialogPresence(target = infoTarget) { request ->
-        key(request) {
-            val text by produceState<String?>(null) {
-                value = try {
-                    withContext(NzikDispatchers.DATA) {
-                        val installedVersion = request.installedVersion
-                        when {
-                            request.marketplace -> remoteModuleInfo(context, request.definition)
-                            installedVersion != null && installedVersion != request.definition.version ->
-                                "${context.getString(R.string.modules_version)}: $installedVersion"
-                            else -> FfmpegModule.fetchVersionInfo()
-                        }
-                    }
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (error: Exception) {
-                    Timber.tag(TAG).e(error, "Could not fetch the module information")
-                    context.getString(R.string.modules_load_failed)
-                }
-            }
-            ModuleInfoDialog(
-                title = stringResource(request.definition.displayNameRes),
-                content = text,
-                loadingText = if (request.marketplace && text == null) {
-                    formatModuleInfo(context, request.definition, request.definition.downloadSizeBytes)
-                } else null,
-                onDismiss = { infoTarget = null },
-            )
-        }
-    }
-
-    DialogPresence(target = uninstallTarget) { uninstallPayload ->
-        ConfirmationDialog(
-            title = stringResource(R.string.modules_uninstall),
-            confirmText = stringResource(R.string.modules_uninstall),
-            text = stringResource(R.string.modules_uninstall_confirm),
-            onDismiss = { uninstallTarget = null },
-            onConfirm = {
-                val def = uninstallPayload
-                uninstallTarget = null
-                def?.let { scope.launch { manager.uninstall(it) } }
-            },
-        )
-    }
-
     // Opens exactly like the Maintenance sheet: transparent container, top-only
     // shape, statusBarsPadding, skipPartiallyExpanded = false
     SampledMenuSheet(
@@ -194,6 +149,51 @@ fun ExtensionsSheet(
         } ?: uiRoundnessShape(),
         dragHandle = {},
     ) {
+        DialogPresence(target = infoTarget) { request ->
+            key(request) {
+                val text by produceState<String?>(null) {
+                    value = try {
+                        withContext(NzikDispatchers.DATA) {
+                            val installedVersion = request.installedVersion
+                            when {
+                                request.marketplace -> remoteModuleInfo(context, request.definition)
+                                installedVersion != null && installedVersion != request.definition.version ->
+                                    "${context.getString(R.string.modules_version)}: $installedVersion"
+                                else -> FfmpegModule.fetchVersionInfo()
+                            }
+                        }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag(TAG).e(error, "Could not fetch the module information")
+                        context.getString(R.string.modules_load_failed)
+                    }
+                }
+                ModuleInfoDialog(
+                    title = stringResource(request.definition.displayNameRes),
+                    content = text,
+                    loadingText = if (request.marketplace && text == null) {
+                        formatModuleInfo(context, request.definition, request.definition.downloadSizeBytes)
+                    } else null,
+                    onDismiss = { infoTarget = null },
+                )
+            }
+        }
+
+        DialogPresence(target = uninstallTarget) { uninstallPayload ->
+            ConfirmationDialog(
+                title = stringResource(R.string.modules_uninstall),
+                confirmText = stringResource(R.string.modules_uninstall),
+                text = stringResource(R.string.modules_uninstall_confirm),
+                onDismiss = { uninstallTarget = null },
+                onConfirm = {
+                    val def = uninstallPayload
+                    uninstallTarget = null
+                    def?.let { scope.launch { manager.uninstall(it) } }
+                },
+            )
+        }
+
         ListMenu.Menu(title = stringResource(R.string.modules_title)) {
             ScrollableTabRow(
                 selectedTabIndex = selectedTab,
