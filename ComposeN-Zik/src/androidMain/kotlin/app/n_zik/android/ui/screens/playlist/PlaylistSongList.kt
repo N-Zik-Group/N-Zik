@@ -126,6 +126,7 @@ import app.n_zik.android.components.dialog.playlist.RenamePlaylistAuthorDialog
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.components.themed.adaptiveThumbnailContent
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -140,7 +141,6 @@ import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
-import app.n_zik.android.utils.addPlaylistItemsFromMenu
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.align
 import app.n_zik.android.utils.asMediaItem
@@ -181,7 +181,6 @@ import app.n_zik.android.components.radioButtonIcon
 import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.LocalDownloadStatesMap
 import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.ui.components.themed.reportPlaylistAddResult
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.collectionFavoriteSongId
 import app.n_zik.android.core.database.PlaylistStateManager
@@ -441,6 +440,15 @@ fun PlaylistSongList(
     renameAuthor.Render()
     changePlaylistId.Render()
 
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val items = selectedSongs().map(Innertube.SongItem::asMediaItem)
+            if (items.isEmpty()) null else suspend { items }
+        },
+        onFailure = { error, _ -> Timber.tag("PlaylistSongList").e(error, "Could not add items to playlist") },
+        itemSelector = itemSelector,
+    )
     val toolbarOrder = ToolbarSurface.ONLINE_PLAYLIST.visibleActions()
     val overflowActions = toolbarOrder.mapNotNull {
         when (it) {
@@ -881,8 +889,6 @@ fun PlaylistSongList(
                                         modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                                 onClick = {
                                                     val usingSelection = itemSelector.isActive
-                                                    val songs = selectedSongs().map(Innertube.SongItem::asMediaItem)
-                                                    if (usingSelection && songs.isEmpty()) return@HeaderIconButton
                                                     menuState.display {
                                                         PlaylistsItemMenu(
                                                             navController = navController,
@@ -891,25 +897,7 @@ fun PlaylistSongList(
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
                                                                 { importPlaylistDialog.onShortClick() }
                                                             },
-                                                            onAddToPlaylist = { preview ->
-                                                                val target = preview.playlist
-                                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                                    try {
-                                                                        val result = addPlaylistItemsFromMenu(target, songs)
-                                                                        if (result != null) {
-                                                                            withContext(NzikDispatchers.UI) { reportPlaylistAddResult(result) }
-                                                                        }
-                                                                    } catch (cancelled: CancellationException) {
-                                                                        throw cancelled
-                                                                    } catch (error: Exception) {
-                                                                        Timber.tag("PlaylistSongList").e(error, "Could not add playlist songs")
-                                                                        Toaster.e(R.string.common_load_failed)
-                                                                    }
-                                                                }
-                                                            },
-                                                            onGoToPlaylist = {
-                                                                navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                            },
+                                                            onOpenAddToPlaylist = addToPlaylist::onShortClick,
                                                             disableScrollingText = disableScrollingText
                                                         )
                                                     }

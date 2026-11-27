@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.components.themed
 
 import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
+import app.n_zik.android.components.menu.playlist.playlistPickerEmptyBody
 import app.n_zik.android.components.menu.playlist.PlaylistPickerRead
 import app.n_zik.android.components.menu.playlist.playlistPickerGridFeedback
 import app.n_zik.android.components.menu.playlist.matchesPickerQuery
@@ -32,6 +33,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -46,6 +48,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.media3.common.MediaItem
 import androidx.navigation.NavController
 import app.n_zik.android.R
@@ -116,6 +122,54 @@ internal fun PlaylistPickerSearchRows(
 }
 
 @Composable
+internal fun ColumnScope.PlaylistPickerHeader(
+    title: String,
+    search: Search,
+    onBack: () -> Unit,
+    onCreate: () -> Unit,
+) {
+    val textColor = colorPalette().text
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(Modifier.width(72.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(
+                icon = R.drawable.chevron_back,
+                contentDescription = stringResource(R.string.common_action_back),
+                color = textColor,
+                onClick = onBack,
+                modifier = Modifier.size(36.dp).padding(6.dp),
+            )
+            IconButton(
+                icon = R.drawable.search_circle,
+                contentDescription = stringResource(R.string.search_title),
+                color = textColor,
+                onClick = search::onShortClick,
+                modifier = Modifier.size(36.dp).padding(6.dp),
+            )
+        }
+        BasicText(
+            title,
+            style = typography().m.copy(color = textColor, textAlign = TextAlign.Center),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f).semantics { heading() },
+        )
+        Box(Modifier.width(72.dp), contentAlignment = Alignment.CenterEnd) {
+            IconButton(
+                icon = R.drawable.add_in_playlist,
+                contentDescription = stringResource(R.string.playlist_action_create),
+                color = textColor,
+                onClick = onCreate,
+                modifier = Modifier.size(36.dp).padding(6.dp),
+            )
+        }
+    }
+    search.SearchBar(this)
+}
+
+@Composable
 internal fun PlaylistPickerMenu(
     style: MenuStyle,
     playlistRead: PlaylistPickerRead,
@@ -129,9 +183,9 @@ internal fun PlaylistPickerMenu(
         label to previews.filter { it.playlist.matchesPickerQuery(query) }
     }
     val empty = matchingGroups.all { (_, matches) -> matches.isEmpty() }
+    val emptyBody = playlistPickerEmptyBody(playlistRead, query, empty)
     if (style == MenuStyle.List) {
-        ListMenu.Menu {
-            header()
+        ListMenu.Menu(headerContent = header, emptyBody = emptyBody) {
             PlaylistPickerFeedback(playlistRead, query, empty)
             groups.zip(matchingGroups).forEach { (group, matchingGroup) ->
                 val (label, previews) = group
@@ -143,8 +197,7 @@ internal fun PlaylistPickerMenu(
             }
         }
     } else {
-        GridMenu.Menu {
-            item(span = { GridItemSpan(maxLineSpan) }) { Column(content = header) }
+        GridMenu.Menu(headerContent = header, emptyBody = emptyBody) {
             playlistPickerGridFeedback(playlistRead, query, empty)
             matchingGroups.forEach { (label, matches) ->
                 if (matches.isNotEmpty()) {
@@ -468,38 +521,12 @@ class PlaylistsMenu private constructor(
             query = search.inputValue,
             groups = groups,
             header = {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .fillMaxWidth()
-                ) {
-                    if (menuState.hasPrevious) {
-                        IconButton(
-                            onClick = menuState::pop,
-                            icon = R.drawable.chevron_back,
-                            contentDescription = stringResource(R.string.common_action_back),
-                            color = colorPalette().accent,
-                            modifier = Modifier.padding(4.dp).size(20.dp),
-                        )
-                    }
-                    IconButton(
-                        onClick = { search.onShortClick() },
-                        icon = R.drawable.search_circle,
-                        contentDescription = stringResource(R.string.search_title),
-                        color = colorPalette().accent,
-                        modifier = Modifier
-                            .padding(all = 4.dp)
-                            .size(24.dp)
-                    )
-                    BasicText(
-                        text = stringResource(R.string.playlist_action_add),
-                        style = typography().m.semiBold,
-                        modifier = Modifier.weight(1f).padding(start = 8.dp)
-                    )
-                    newPlaylistButton.ToolBarButton()
-                }
-                search.SearchBar(this)
+                PlaylistPickerHeader(
+                    title = stringResource(R.string.playlist_action_add),
+                    search = search,
+                    onBack = menuState::pop,
+                    onCreate = newPlaylistButton::onShortClick,
+                )
             },
             heading = { label ->
                 BasicText(

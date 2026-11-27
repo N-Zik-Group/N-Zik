@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -55,9 +56,17 @@ import app.n_zik.android.uiRoundnessShape
 object ListMenu {
 
     @Composable
-    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, drawSurface: Boolean = true, content: @Composable ColumnScope.() -> Unit ) {
+    fun Menu(
+        showDragHandle: Boolean = true,
+        title: String? = null,
+        headerTrailing: (@Composable RowScope.() -> Unit)? = null,
+        drawSurface: Boolean = true,
+        headerContent: (@Composable ColumnScope.() -> Unit)? = null,
+        emptyBody: (@Composable () -> Unit)? = null,
+        content: @Composable ColumnScope.() -> Unit,
+    ) {
         val screenHeight = LocalConfiguration.current.screenHeightDp
-        val hasHeader = showDragHandle || title != null || headerTrailing != null
+        val hasHeader = showDragHandle || title != null || headerTrailing != null || headerContent != null
         val glass = rememberGlassSettings()
         val useGlass = glass.usesGlassMaterial(GlassArea.Menus)
         val ownsSurface = drawSurface && !LocalMenuSheetSurface.current
@@ -103,11 +112,12 @@ object ListMenu {
                         if (showDragHandle) {
                             MenuSheetDragHandle(
                                 color = colorPalette().text,
-                                centeredVertically = title == null && headerTrailing == null,
+                                centeredVertically = title == null && headerTrailing == null && headerContent == null,
                             )
                         }
 
                         MenuHeaderTitle(title, headerTrailing)
+                        headerContent?.invoke(this)
 
                         GlassHorizontalSeparator(Modifier.height(1.dp))
                     }
@@ -126,18 +136,29 @@ object ListMenu {
                         .glassOverlayPaint(bodyFilm.alpha)
                         .conditional(!hasHeader && (!useGlass || ownsSurface)) {
                             clip(topShape)
-                        }
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp)
-                        .padding(top = MenuConstants.LIST_CONTENT_TOP_PADDING.dp),
+                        },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    CompositionLocalProvider(
-                        LocalListMenuRowOutset provides
-                            (MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp - PressFeedbackHorizontalInset),
-                        content = { content() },
-                    )
-                    Spacer(modifier = Modifier.height(100.dp))
+                    if (emptyBody != null) {
+                        Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                            emptyBody()
+                        }
+                    } else {
+                        Column(
+                            Modifier.fillMaxWidth().weight(1f)
+                                .verticalScroll(rememberScrollState())
+                                .padding(horizontal = MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp)
+                                .padding(top = MenuConstants.LIST_CONTENT_TOP_PADDING.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            CompositionLocalProvider(
+                                LocalListMenuRowOutset provides
+                                    (MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp - PressFeedbackHorizontalInset),
+                                content = { content() },
+                            )
+                            Spacer(Modifier.height(100.dp))
+                        }
+                    }
                 }
             }
         )

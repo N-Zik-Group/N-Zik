@@ -1264,3 +1264,7 @@ Menus:
 Settings:
 - fix(settings): offer app permissions after an audio denial
   - Expose the Android permission settings entry after a denied local audio request.
+
+Menus:
+- fix(playlists): use one playlist picker across app menus
+  - Keep playlist actions while replacing their nested picker with the library chooser. Center empty states and title controls and respect the library sort for each group.

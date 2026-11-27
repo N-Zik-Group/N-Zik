@@ -1,5 +1,6 @@
 package app.n_zik.android.ui.screens.podcast
 
+import timber.log.Timber
 import app.n_zik.android.components.glass.GlassArtworkBackdrop
 import app.n_zik.android.components.podcast.PodcastBannerThumbnail
 import app.n_zik.android.components.podcast.PodcastBookmarkAction
@@ -66,9 +67,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
-import app.n_zik.android.core.database.addTracksToStoredPlaylist
 import app.n_zik.android.cleanPrefix
-import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.components.radioButtonIcon
@@ -110,6 +109,7 @@ import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
 import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.ui.components.ArtworkShimmerPlaceholder
 import app.n_zik.android.ui.components.forceLoadingShimmerPreview
@@ -125,10 +125,8 @@ import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.matchesCollectionSearch
 import app.n_zik.android.components.song.resolveSongDisplayMetadata
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.addNext
-import app.n_zik.android.utils.addToYtPlaylist
 import app.n_zik.android.utils.asPodcastMediaItem
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.durationTextToMillis
@@ -149,7 +147,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.utils.Toaster
-import app.n_zik.android.ui.components.themed.reportPlaylistAddResult
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.components.menu.song.SongItemMenu
 import app.n_zik.android.MODIFIED_PREFIX
@@ -307,6 +304,15 @@ fun Podcast(
         kind = CollectionFavoritesKind.Podcast,
         enabled = !showShimmer && podcastLoadState.status == PodcastPageStatus.Content,
         collectionKey = browseId,
+    )
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val items = targetMediaItems()
+            if (items.isEmpty()) null else suspend { items }
+        },
+        onFailure = { error, _ -> Timber.tag("Podcast").e(error, "Could not add items to playlist") },
+        itemSelector = itemSelector,
     )
     val toolbarOrder = ToolbarSurface.PODCAST.visibleActions()
     val overflowActions = toolbarOrder.mapNotNull {
@@ -642,8 +648,6 @@ fun Podcast(
                                         modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                                 onClick = {
                                                     val usingSelection = itemSelector.isActive
-                                                    val songs = targetMediaItems()
-                                                    if (usingSelection && songs.isEmpty()) return@HeaderIconButton
                                                     menuState.display {
                                                         PlaylistsItemMenu(
                                                             navController = navController,
@@ -652,39 +656,7 @@ fun Podcast(
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
                                                                 importDialog::onShortClick
                                                             },
-                                                            onAddToPlaylist = addToPlaylist@{ playlistPreview ->
-                                                                val target = playlistPreview.playlist
-                                                                val position = if (playlistPreview.songCount > 1) playlistPreview.songCount else 0
-
-                                                                if (!isYouTubeSyncEnabled() || !playlistPreview.playlist.isYoutubePlaylist) {
-                                                                    Database.asyncTransaction {
-                                                                        val result = addTracksToStoredPlaylist(
-                                                                            playlistPreview.playlist.id,
-                                                                            songs.map(MediaItem::asSong),
-                                                                        )
-                                                                        withContext(NzikDispatchers.UI) { reportPlaylistAddResult(result) }
-                                                                    }
-                                                                } else {
-                                                                    val youtubeId = target.browseId?.let(::cleanPrefix) ?: return@addToPlaylist
-                                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                                        if (!isYouTubeSyncEnabled()) return@launch
-                                                                        val current = Database.playlistTable.findById(target.id).first() ?: return@launch
-                                                                        if (!current.isYoutubePlaylist || !canEditPlaylistMembership(current) ||
-                                                                            current.browseId?.let(::cleanPrefix) != youtubeId
-                                                                        ) return@launch
-                                                                        val existingIds = Database.songPlaylistMapTable.songIdsInPlaylist(target.id).toHashSet()
-                                                                        val pending = songs.distinctBy(MediaItem::mediaId).filterNot { it.mediaId in existingIds }
-                                                                        if (pending.isEmpty()) {
-                                                                            Toaster.i(R.string.playlist_contains_song)
-                                                                        } else {
-                                                                            addToYtPlaylist(target.id, position, youtubeId, pending)
-                                                                        }
-                                                                    }
-                                                                }
-                                                            },
-                                                            onGoToPlaylist = {
-                                                                navController.navigate("${NavRoutes.localPlaylist.name}/$it")
-                                                            },
+                                                            onOpenAddToPlaylist = addToPlaylist::onShortClick,
                                                             disableScrollingText = disableScrollingText
                                                         )
                                                     }

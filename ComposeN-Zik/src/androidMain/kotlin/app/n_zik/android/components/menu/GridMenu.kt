@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -59,9 +60,17 @@ import app.n_zik.android.uiRoundnessShape
 object GridMenu {
 
     @Composable
-    fun Menu( showDragHandle: Boolean = true, title: String? = null, headerTrailing: (@Composable RowScope.() -> Unit)? = null, drawSurface: Boolean = true, content: LazyGridScope.() -> Unit ) {
+    fun Menu(
+        showDragHandle: Boolean = true,
+        title: String? = null,
+        headerTrailing: (@Composable RowScope.() -> Unit)? = null,
+        drawSurface: Boolean = true,
+        headerContent: (@Composable ColumnScope.() -> Unit)? = null,
+        emptyBody: (@Composable () -> Unit)? = null,
+        content: LazyGridScope.() -> Unit,
+    ) {
         val screenHeight = LocalConfiguration.current.screenHeightDp
-        val hasHeader = showDragHandle || title != null || headerTrailing != null
+        val hasHeader = showDragHandle || title != null || headerTrailing != null || headerContent != null
         val glass = rememberGlassSettings()
         val useGlass = glass.usesGlassMaterial(GlassArea.Menus)
         val ownsSurface = drawSurface && !LocalMenuSheetSurface.current
@@ -107,11 +116,12 @@ object GridMenu {
                     if (showDragHandle) {
                         MenuSheetDragHandle(
                             color = colorPalette().text,
-                            centeredVertically = title == null && headerTrailing == null,
+                            centeredVertically = title == null && headerTrailing == null && headerContent == null,
                         )
                     }
 
                     MenuHeaderTitle(title, headerTrailing)
+                    headerContent?.invoke(this)
 
                     GlassHorizontalSeparator(Modifier.height(1.dp))
                 }
@@ -126,17 +136,25 @@ object GridMenu {
                 sectionFilm = bodyFilm,
                 foregroundFill = bodyFilm,
             ) { bodyModifier ->
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive( minSize = 120.dp ),
-                    contentPadding = PaddingValues(
-                        start = CONTENT_HORIZONTAL_PADDING.dp,
-                        end = CONTENT_HORIZONTAL_PADDING.dp,
-                        top = CONTENT_TOP_PADDING.dp,
-                        bottom = 100.dp
-                    ),
-                    modifier = bodyModifier,
-                    content = content
-                )
+                Column(bodyModifier) {
+                    if (emptyBody != null) {
+                        Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                            emptyBody()
+                        }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(minSize = 120.dp),
+                            contentPadding = PaddingValues(
+                                start = CONTENT_HORIZONTAL_PADDING.dp,
+                                end = CONTENT_HORIZONTAL_PADDING.dp,
+                                top = CONTENT_TOP_PADDING.dp,
+                                bottom = 100.dp,
+                            ),
+                            modifier = Modifier.weight(1f),
+                            content = content,
+                        )
+                    }
+                }
             }
         }
     }

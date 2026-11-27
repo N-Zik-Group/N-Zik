@@ -1,15 +1,12 @@
 package app.n_zik.android.components.menu.player
 
-import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
-import app.n_zik.android.components.menu.playlist.matchesPickerQuery
-import app.n_zik.android.components.menu.playlist.menuItemCount
 import app.n_zik.android.components.menu.playlist.rememberPlaylistPickerRead
 
 
 import app.n_zik.android.ui.components.themed.PlaylistPickerLockIcon
 import app.n_zik.android.ui.components.themed.PlaylistPickerEntry
 import app.n_zik.android.ui.components.themed.PlaylistPickerMenu
-import app.n_zik.android.ui.components.themed.PlaylistPickerSearchRows
+import app.n_zik.android.ui.components.themed.PlaylistPickerHeader
 import app.n_zik.android.ui.components.themed.SongInPlaylistIcon
 import app.n_zik.android.ui.components.themed.playlistPickerSections
 import app.n_zik.android.ui.components.themed.warnPlaylistPickerLocked
@@ -28,7 +25,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,16 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
-import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.PlaylistAddResult
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.themed.isPlaylistPickerTarget
 import app.n_zik.android.ui.components.themed.reportPlaylistAddResult
 import app.n_zik.android.R
-import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
 import app.n_zik.android.core.navigation.navigateToPickedPlaylist
-import app.n_zik.android.core.rewind.RewindPlaylists
 
 import app.n_zik.android.context
 import app.n_zik.android.enums.MenuStyle
@@ -66,15 +59,12 @@ import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.models.Playlist
-import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.models.PlaylistPreview
-import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.typography
 import app.n_zik.android.components.dialog.playlist.NewPlaylistDialog
-import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.menuSectionHeading
 import app.n_zik.android.ui.components.themed.IconButton
@@ -82,14 +72,8 @@ import app.n_zik.android.utils.semiBold
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
-import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Alignment
-import app.n_zik.android.MONTHLY_PREFIX
-import app.n_zik.android.PINNED_PREFIX
-import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.components.tab.Search
 
 @Composable
@@ -249,39 +233,13 @@ fun AddToPlaylistItemMenu(
             R.string.library_playlists_title to unpinnedPlaylists,
         ),
         header = {
-            val title = stringResource(R.string.library_playlists_title)
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                    .fillMaxWidth()
-            ) {
-                IconButton(
-                    onClick = { search.onShortClick() },
-                    icon = R.drawable.search_circle,
-                    contentDescription = stringResource(R.string.search_title),
-                    color = colorPalette().favoritesIcon,
-                    modifier = Modifier
-                        .padding(all = 4.dp)
-                        .size(24.dp)
-                )
-                BasicText(
-                    text = title,
-                    style = typography().m.semiBold,
-                    modifier = Modifier.weight(1f).padding(start = 8.dp)
-                )
-                IconButton(
-                    onClick = { newPlaylistDialog.onShortClick() },
-                    icon = R.drawable.add_in_playlist,
-                    contentDescription = stringResource(R.string.playlist_action_create),
-                    color = colorPalette().accent,
-                    modifier = Modifier
-                        .padding(all = 4.dp)
-                        .size(24.dp)
-                )
-            }
-            search.SearchBar(this)
+            val menuState = LocalMenuState.current
+            PlaylistPickerHeader(
+                title = stringResource(R.string.playlist_action_add),
+                search = search,
+                onBack = { if (menuState.hasPrevious) menuState.pop() else onDismiss() },
+                onCreate = newPlaylistDialog::onShortClick,
+            )
         },
         heading = { label ->
             BasicText(
@@ -335,272 +293,3 @@ internal fun PlaylistPickerOpenButton(
         modifier = Modifier.size(24.dp),
     )
 }
-
-@ExperimentalTextApi
-@SuppressLint("SuspiciousIndentation")
-@UnstableApi
-@ExperimentalAnimationApi
-@Composable
-fun AddToPlaylistArtistSongsMenu(
-    navController: NavController,
-    onDismiss: () -> Unit,
-    onAddToPlaylist: ((PlaylistPreview) -> Unit),
-    onGoToPlaylist: ((Long) -> Unit)? = null,
-    onRemoveFromPlaylist: ((Playlist) -> Unit)? = null
-) {
-    val context = LocalContext.current
-    val configuration = LocalConfiguration.current
-
-    val screenHeight = configuration.screenHeightDp.dp
-
-    val newPlaylistDialog = NewPlaylistDialog { playlist ->
-        onDismiss()
-        Database.asyncTransaction {
-            val pId = playlist.id
-            onAddToPlaylist(
-                PlaylistPreview(
-                    Playlist(
-                        id = pId,
-                        name = playlist.name
-                    ),
-                    0
-                )
-            )
-        }
-    }
-
-    newPlaylistDialog.Render()
-
-    val playlistRead = rememberPlaylistPickerRead()
-    val playlistPreviews = playlistRead.previews
-
-    val editablePreviews = playlistPreviews.filter { canEditPlaylistMembership(it.playlist) }
-    val pinnedPlaylists = editablePreviews.filter {
-        it.playlist.name.startsWith(PINNED_PREFIX, 0, true)
-                && if (isNetworkConnected(context)) !(it.playlist.isYoutubePlaylist && !it.playlist.isEditable) else !it.playlist.isYoutubePlaylist
-    }
-
-    val youtubePlaylists = editablePreviews.filter { it.playlist.isEditable && it.playlist.isYoutubePlaylist && !it.playlist.name.startsWith(PINNED_PREFIX) }
-
-    val unpinnedPlaylists = editablePreviews.filter {
-        !it.playlist.name.startsWith(PINNED_PREFIX, 0, true) &&
-                !it.playlist.name.startsWith(MONTHLY_PREFIX, 0, true) &&
-                // Spec 2: generated rewind-* playlists are never add-to targets
-                !RewindPlaylists.isRewind(it.playlist.name) &&
-                !it.playlist.isYoutubePlaylist
-    }
-
-    ListMenu.Menu {
-        val search = Search()
-        val title = stringResource(R.string.library_playlists_title)
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth()
-        ) {
-            IconButton(
-                onClick = onDismiss,
-                icon = R.drawable.chevron_back,
-                color = colorPalette().accent,
-                modifier = Modifier
-                    .padding(all = 4.dp)
-                    .size(20.dp)
-            )
-            IconButton(
-                onClick = { search.onShortClick() },
-                icon = R.drawable.search_circle,
-                contentDescription = stringResource(R.string.search_title),
-                color = colorPalette().favoritesIcon,
-                modifier = Modifier
-                    .padding(all = 4.dp)
-                    .size(24.dp)
-            )
-            BasicText(
-                text = title,
-                style = typography().m.semiBold,
-                modifier = Modifier.weight(1f).padding(start = 8.dp)
-            )
-            IconButton(
-                onClick = { newPlaylistDialog.onShortClick() },
-                icon = R.drawable.add_in_playlist,
-                contentDescription = stringResource(R.string.playlist_action_create),
-                color = colorPalette().accent,
-                modifier = Modifier
-                    .padding(all = 4.dp)
-                    .size(24.dp)
-            )
-        }
-        search.SearchBar(this)
-        val filteredPinnedPlaylists = pinnedPlaylists.filter { it.playlist.matchesPickerQuery(search.inputValue) }
-        val filteredYoutubePlaylists = youtubePlaylists.filter { it.playlist.matchesPickerQuery(search.inputValue) }
-        val filteredUnpinnedPlaylists = unpinnedPlaylists.filter { it.playlist.matchesPickerQuery(search.inputValue) }
-
-        val noPlaylistResults = filteredPinnedPlaylists.isEmpty() && filteredUnpinnedPlaylists.isEmpty() && (!isNetworkConnected(context) || filteredYoutubePlaylists.isEmpty())
-        PlaylistPickerFeedback(playlistRead, search.inputValue, noPlaylistResults)
-        if (pinnedPlaylists.isNotEmpty()) {
-            SearchHeaderVisibility(filteredPinnedPlaylists.isNotEmpty()) {
-                BasicText(
-                    text = stringResource(R.string.playlist_pinned_title),
-                    style = typography().m.semiBold,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(top = 5.dp)
-                        .menuSectionHeading(),
-                )
-            }
-
-            onAddToPlaylist.let { onAddToPlaylist ->
-                PlaylistPickerSearchRows(pinnedPlaylists, filteredPinnedPlaylists) { playlistPreview ->
-                    ListMenu.Entry(
-                        text = playlistPreview.playlist.cleanName(),
-                        icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = playlistPreview.menuItemCount(),
-                        onClick = {
-                            onAddToPlaylist(
-                                PlaylistPreview(
-                                    playlistPreview.playlist,
-                                    playlistPreview.songCount
-                                )
-                            )
-                            Toaster.done()
-                            onDismiss()
-                        },
-                        trailingContent = {
-
-                            if (playlistPreview.playlist.isYoutubePlaylist) {
-                                Image(
-                                    painter = painterResource(R.drawable.ytmusic),
-                                    contentDescription = null,
-                                    colorFilter = ColorFilter.tint(
-                                        Color.Red.copy(0.75f).compositeOver(Color.White)
-                                    ),
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                )
-                            }
-                            IconButton(
-                                icon = R.drawable.open,
-                                color = colorPalette().accent,
-                                onClick = {
-                                    if (onGoToPlaylist != null) {
-                                        onGoToPlaylist(playlistPreview.playlist.id)
-                                        onDismiss()
-                                    }
-                                    navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
-                                },
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        }
-                    )
-                }
-            }
-        }
-
-        if (youtubePlaylists.isNotEmpty() && isNetworkConnected(context)) {
-            SearchHeaderVisibility(filteredYoutubePlaylists.isNotEmpty()) {
-                BasicText(
-                    text = stringResource(R.string.sync_youtube_playlists_title),
-                    style = typography().m.semiBold,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(top = 5.dp)
-                        .menuSectionHeading(),
-                )
-            }
-
-            onAddToPlaylist.let { onAddToPlaylist ->
-                PlaylistPickerSearchRows(youtubePlaylists, filteredYoutubePlaylists) { playlistPreview ->
-                    ListMenu.Entry(
-                        text = playlistPreview.playlist.cleanName(),
-                        icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = playlistPreview.menuItemCount(),
-                        onClick = {
-                            onAddToPlaylist(
-                                PlaylistPreview(
-                                    playlistPreview.playlist,
-                                    playlistPreview.songCount
-                                )
-                            )
-                            Toaster.done()
-                            onDismiss()
-                        },
-                        trailingContent = {
-                            IconButton(
-                                icon = R.drawable.open,
-                                color = colorPalette().accent,
-                                onClick = {
-                                    if (onGoToPlaylist != null) {
-                                        onGoToPlaylist(playlistPreview.playlist.id)
-                                        onDismiss()
-                                    }
-                                    navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
-                                },
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-                        }
-                    )
-                }
-            }
-        }
-
-        if (unpinnedPlaylists.isNotEmpty()) {
-            SearchHeaderVisibility(filteredUnpinnedPlaylists.isNotEmpty()) {
-                BasicText(
-                    text = stringResource(R.string.library_playlists_title),
-                    style = typography().m.semiBold,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(top = 5.dp)
-                        .menuSectionHeading(),
-                )
-            }
-
-            onAddToPlaylist.let { onAddToPlaylist ->
-                PlaylistPickerSearchRows(unpinnedPlaylists, filteredUnpinnedPlaylists) { playlistPreview ->
-                    ListMenu.Entry(
-                        text = playlistPreview.playlist.cleanName(),
-                        icon = { SettingIcon(R.drawable.add_in_playlist) },
-                        subtitle = playlistPreview.menuItemCount(),
-                        onClick = {
-                            onAddToPlaylist(
-                                PlaylistPreview(
-                                    playlistPreview.playlist,
-                                    playlistPreview.songCount
-                                )
-                            )
-                            Toaster.done()
-                            onDismiss()
-                        },
-                        trailingContent = {
-
-
-                            IconButton(
-                                icon = R.drawable.open,
-                                color = colorPalette().accent,
-                                onClick = {
-                                    if (onGoToPlaylist != null) {
-                                        onGoToPlaylist(playlistPreview.playlist.id)
-                                        onDismiss()
-                                    }
-                                    navController.navigate(route = "${NavRoutes.localPlaylist.name}/${playlistPreview.playlist.id}")
-                                },
-                                modifier = Modifier
-                                    .size(24.dp)
-                            )
-
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-
-
-
-
-
-
-

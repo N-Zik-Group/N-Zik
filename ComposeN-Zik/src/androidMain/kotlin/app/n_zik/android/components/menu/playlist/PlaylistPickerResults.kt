@@ -25,6 +25,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
+import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -35,6 +36,9 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.enums.PlaylistSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.ui.components.themed.isYouTubePlaylistPickerEntry
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.Preference
@@ -43,6 +47,7 @@ import app.n_zik.android.utils.shimmerEffect
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 
@@ -75,11 +80,18 @@ internal class PlaylistPickerRead(
 
 @Composable
 internal fun rememberPlaylistPickerRead(): PlaylistPickerRead {
-    val sortBy by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY)
-    val sortOrder by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER)
+    val libraryBy by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY)
+    val libraryOrder by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER)
+    val pinnedBy by Preference.remember(Preference.HOME_LIBRARY_PINNED_PLAYLIST_SORT_BY)
+    val pinnedOrder by Preference.remember(Preference.HOME_LIBRARY_PINNED_PLAYLIST_SORT_ORDER)
+    val youtubeBy by Preference.remember(Preference.HOME_LIBRARY_YT_PLAYLIST_SORT_BY)
+    val youtubeOrder by Preference.remember(Preference.HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER)
+    val librarySort = libraryBy to libraryOrder
+    val pinnedSort = pinnedBy to pinnedOrder
+    val youtubeSort = youtubeBy to youtubeOrder
     var retry by remember { mutableIntStateOf(0) }
-    val results = remember(sortBy, sortOrder, retry) {
-        playlistPickerResults(Database.playlistTable.sortPreviews(sortBy, sortOrder))
+    val results = remember(librarySort, pinnedSort, youtubeSort, retry) {
+        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort))
     }
     return key(retry) {
         val result by results.collectAsStateWithLifecycle<Result<List<PlaylistPreview>>?>(
@@ -89,6 +101,32 @@ internal fun rememberPlaylistPickerRead(): PlaylistPickerRead {
         PlaylistPickerRead(result) { retry++ }
     }
 }
+
+private fun sortedPlaylistPickerPreviews(
+    librarySort: Pair<PlaylistSortBy, SortOrder>,
+    pinnedSort: Pair<PlaylistSortBy, SortOrder>,
+    youtubeSort: Pair<PlaylistSortBy, SortOrder>,
+): Flow<List<PlaylistPreview>> {
+    val sorts = listOf(librarySort, pinnedSort, youtubeSort).distinct()
+    val flows = sorts.map { (sortBy, sortOrder) -> Database.playlistTable.sortPreviews(sortBy, sortOrder) }
+    if (flows.size == 1) return flows.single()
+    return combine(flows) { previews ->
+        fun PlaylistPreview.isPinned() = playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true)
+
+        previews[sorts.indexOf(pinnedSort)].filter { it.isPinned() } +
+            previews[sorts.indexOf(youtubeSort)].filter { !it.isPinned() && isYouTubePlaylistPickerEntry(it.playlist) } +
+            previews[sorts.indexOf(librarySort)].filter { !it.isPinned() && !isYouTubePlaylistPickerEntry(it.playlist) }
+    }
+}
+
+internal fun playlistPickerEmptyBody(
+    read: PlaylistPickerRead,
+    query: String,
+    empty: Boolean,
+): (@Composable () -> Unit)? =
+    if (read.result?.isSuccess == true && empty && query.isBlank()) {
+        { SearchNoResults(text = stringResource(R.string.common_empty_items)) }
+    } else null
 
 @Composable
 internal fun PlaylistPickerFeedback(read: PlaylistPickerRead, query: String, empty: Boolean) {
@@ -158,14 +196,7 @@ private fun PlaylistPickerRetryIcon() {
 
 @Composable
 private fun PlaylistPickerEmptyFeedback(query: String, empty: Boolean) {
-    if (!empty) return
-    if (query.isBlank()) {
-        SearchNoResults(
-            text = stringResource(R.string.common_empty_items),
-            modifier = Modifier.height(72.dp),
-        )
-    } else {
-        SearchEmptyFeedback(query = query, empty = true)
-        SearchEmptySpace(Modifier.height(160.dp))
-    }
+    if (!empty || query.isBlank()) return
+    SearchEmptyFeedback(query = query, empty = true)
+    SearchEmptySpace(Modifier.height(160.dp))
 }
