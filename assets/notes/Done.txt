@@ -1888,3 +1888,7 @@ Menus:
 Menus / Audio:
 - fix(menu): preview audible playback changes in Grid
   - Apply speed, pitch and playback volume during a gesture while keeping saved values tied to release.
+
+Playlists:
+- fix(playlist): keep local export tracks stable through the file picker
+  - Capture the displayed tracks or selection before opening the dialog and preserve the source identifier.

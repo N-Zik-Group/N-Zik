@@ -117,6 +117,53 @@ class ExportPickerRestorationTest {
         }
     }
 
+    @Test fun `a playlist exports the visible tracks captured before opening the document picker`() {
+        val application = RuntimeEnvironment.getApplication()
+        val uri = Uri.parse("content://test.documents/visible.csv")
+        val output = ByteArrayOutputStream()
+        Shadows.shadowOf(application.contentResolver).registerOutputStream(uri, output)
+        val displayedSongs = mutableStateOf(listOf(Song.makePlaceholder("cancelled")))
+        val registry = DocumentRegistry()
+        lateinit var dialog: ExportSongsToCSVDialog
+        mockkObject(Toaster)
+        mockkStatic(::appContext)
+        every { appContext() } returns application
+        every { Toaster.done() } just Runs
+        try {
+            compose.setContent {
+                CompositionLocalProvider(LocalActivityResultRegistryOwner provides registry) {
+                    dialog = ExportSongsToCSVDialog.deferred(
+                        playlistName = "Songs",
+                        playlistBrowseId = "VLPL123",
+                        capture = {
+                            val captured = displayedSongs.value.toList()
+                            suspend { captured }
+                        },
+                        requireCapture = true,
+                    )
+                }
+            }
+            compose.runOnIdle {
+                dialog.onShortClick()
+                dialog.onSet("cancelled")
+                registry.complete(null)
+                displayedSongs.value = listOf(Song.makePlaceholder("visible"))
+                dialog.onShortClick()
+                dialog.onSet("visible")
+                displayedSongs.value = listOf(Song.makePlaceholder("later"))
+                registry.complete(uri)
+            }
+
+            verify(timeout = 5_000, exactly = 1) { Toaster.done() }
+            val rows = output.toByteArray().inputStream().use { csvReader().readAllWithHeader(it) }
+            assertEquals(listOf("visible"), rows.map { it["MediaId"] })
+            assertEquals(listOf("VLPL123"), rows.map { it["PlaylistBrowseId"] })
+        } finally {
+            unmockkStatic(::appContext)
+            unmockkObject(Toaster)
+        }
+    }
+
     @Test fun `a document provider without an output stream reports an export failure`() =
         assertExportFailure(output = null)
 
@@ -281,7 +328,7 @@ class ExportPickerRestorationTest {
             launchedIntent = contract.createIntent(RuntimeEnvironment.getApplication(), input)
         }
 
-        fun complete(uri: Uri) {
+        fun complete(uri: Uri?) {
             assertTrue(dispatchResult(requireNotNull(requestCode), uri))
         }
     }

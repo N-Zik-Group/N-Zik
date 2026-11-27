@@ -443,12 +443,6 @@ fun LocalPlaylistSongs(
     val renameDialog = RenamePlaylistDialog { playlist }
     val renameAuthorDialog = RenamePlaylistAuthorDialog { playlist }
     val changeBrowseIdDialog = ChangePlaylistBrowseIdDialog { playlist }
-    val exportDialog = ExportSongsToCSVDialog(
-        playlistBrowseId = playlist?.browseId.orEmpty(),
-        playlistName = playlist?.name ?: "",
-        songs = ::getSongs,
-        selectionActive = { itemSelector.isActive },
-    )
     val importNzikDialog = ImportSongsFromCSV(targetPlaylistId = playlistId, onImportComplete = {
         appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
     })
@@ -694,6 +688,9 @@ fun LocalPlaylistSongs(
     val displayRecommendations = remember(relatedSongs, storedRecommendations) {
         relatedSongs.mapKeys { (song, _) -> resolveSongDisplayMetadata(song, storedRecommendations[song.id]) }
     }
+    var songProjectionReady by remember(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
+        mutableStateOf(false)
+    }
     LaunchedEffect(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled) {
         itemsOnDisplay = projectLocalPlaylistSongs(
             songs = items,
@@ -703,7 +700,20 @@ fun LocalPlaylistSongs(
             parentalControlEnabled = parentalControlEnabled,
         )
         filteredQuery = query
+        songProjectionReady = true
     }
+    val exportReady = playlist != null && preview == null && !forceShimmer && loadedItems != null &&
+        (!onDeviceOnly || scan != null) && songProjectionReady
+    val exportDialog = ExportSongsToCSVDialog.deferred(
+        playlistBrowseId = playlist?.browseId.orEmpty(),
+        playlistName = playlist?.name.orEmpty(),
+        capture = {
+            val displayedSongs = if (exportReady) getSongs().toList() else emptyList()
+            if (displayedSongs.isEmpty()) null else suspend { displayedSongs }
+        },
+        selectionActive = { itemSelector.isActive },
+        requireCapture = true,
+    )
     SearchEmptyFeedback(
         query = query,
         empty = itemsOnDisplay.isEmpty(),
@@ -1025,7 +1035,7 @@ fun LocalPlaylistSongs(
                     canImportCollection = "import_menu" in visibleToolbarOrder && !onDeviceOnly && membershipEditable,
                     hasTracks = "add_to_playlist" in visibleToolbarOrder && getSongs().isNotEmpty(),
                     importFromCurrentCollection = false,
-                    canExport = "export" in visibleToolbarOrder && (getSongs().isNotEmpty()),
+                    canExport = "export" in visibleToolbarOrder && exportReady && getSongs().isNotEmpty(),
                     importDialogOpen = importMenu.isOpen,
                     openImport = importMenu::open,
                     openPicker = addToPlaylist::openPicker,

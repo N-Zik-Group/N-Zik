@@ -35,7 +35,7 @@ class ExportSongsToCSVDialog private constructor(
     activeState: MutableState<Boolean>,
     launcher: ManagedActivityResultLauncher<String, Uri?>,
     private val prepare: () -> Boolean,
-    private val hasExportPayload: () -> Boolean,
+    private val unavailableMessage: () -> Int?,
 ): ExportToFileDialog(valueState, activeState, launcher), MenuIcon, Descriptive {
 
     companion object {
@@ -79,7 +79,12 @@ class ExportSongsToCSVDialog private constructor(
             playlistName: String,
             capture: () -> (suspend () -> List<Song>?)?,
             selectionActive: () -> Boolean = { false },
-        ) = rememberExport(playlistName, "", capture, captureOnOpen = true, selectionActive = selectionActive)
+            playlistBrowseId: String = "",
+            requireCapture: Boolean = false,
+        ) = rememberExport(
+            playlistName, playlistBrowseId, capture, captureOnOpen = true,
+            requireCapture = requireCapture, selectionActive = selectionActive,
+        )
 
         @Composable
         private fun rememberExport(
@@ -87,6 +92,7 @@ class ExportSongsToCSVDialog private constructor(
             playlistBrowseId: String,
             capture: () -> (suspend () -> List<Song>?)?,
             captureOnOpen: Boolean = false,
+            requireCapture: Boolean = false,
             selectionActive: () -> Boolean,
         ): ExportSongsToCSVDialog {
             val latestCapture = rememberUpdatedState(capture)
@@ -98,12 +104,17 @@ class ExportSongsToCSVDialog private constructor(
                 pending.value = null
                 selectionAtOpen.value = false
                 if (uri == null) return@rememberLauncherForActivityResult
-                val load = resolveExportPayload(selectedExport, captured) { latestCapture.value() }
+                val load = resolveExportPayload(selectedExport || requireCapture, captured) { latestCapture.value() }
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                     try {
                         val songs = load?.invoke()
                         if (songs == null) {
-                            if (selectedExport && load == null) Toaster.e(R.string.export_selection_lost)
+                            if (load == null) {
+                                when {
+                                    selectedExport -> Toaster.e(R.string.export_selection_lost)
+                                    requireCapture -> Toaster.e(R.string.common_load_failed)
+                                }
+                            }
                             removeEmptyExport(uri)
                             return@launch
                         }
@@ -136,7 +147,14 @@ class ExportSongsToCSVDialog private constructor(
                     pending.value = if (captureNow) latestCapture.value() else null
                     !captureNow || pending.value != null
                 },
-                hasExportPayload = { !selectionAtOpen.value || pending.value != null },
+                unavailableMessage = {
+                    when {
+                        pending.value != null -> null
+                        selectionAtOpen.value -> R.string.export_selection_lost
+                        requireCapture -> R.string.common_load_failed
+                        else -> null
+                    }
+                },
             )
         }
 
@@ -167,8 +185,9 @@ class ExportSongsToCSVDialog private constructor(
     }
 
     override fun onSet(newValue: String) {
-        if (!hasExportPayload()) {
-            Toaster.e(R.string.export_selection_lost)
+        val unavailable = unavailableMessage()
+        if (unavailable != null) {
+            Toaster.e(unavailable)
             hideDialog()
             return
         }
