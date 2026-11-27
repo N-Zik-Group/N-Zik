@@ -93,7 +93,11 @@ import timber.log.Timber
  */
 private const val TAG = "ExtensionsSheet"
 
-private data class ModuleInfoRequest(val definition: ModuleDefinition, val marketplace: Boolean)
+private data class ModuleInfoRequest(
+    val definition: ModuleDefinition,
+    val marketplace: Boolean,
+    val installedVersion: String? = null,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -131,8 +135,13 @@ fun ExtensionsSheet(
             val text by produceState<String?>(null) {
                 value = try {
                     withContext(NzikDispatchers.DATA) {
-                        if (request.marketplace) remoteModuleInfo(context, request.definition)
-                        else FfmpegModule.fetchVersionInfo()
+                        val installedVersion = request.installedVersion
+                        when {
+                            request.marketplace -> remoteModuleInfo(context, request.definition)
+                            installedVersion != null && installedVersion != request.definition.version ->
+                                "${context.getString(R.string.modules_version)}: $installedVersion"
+                            else -> FfmpegModule.fetchVersionInfo()
+                        }
                     }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
@@ -220,8 +229,9 @@ fun ExtensionsSheet(
             when (selectedTab) {
                 0 -> InstalledTab(
                     states = effectiveStates,
+                    onCancelUpdate = manager::cancelDownload,
                     onUninstall = { def -> uninstallTarget = def },
-                    onInfo = { def -> infoTarget = ModuleInfoRequest(def, marketplace = false) },
+                    onInfo = { def, version -> infoTarget = ModuleInfoRequest(def, marketplace = false, installedVersion = version) },
                 )
 
                 else -> MarketplaceTab(
@@ -243,11 +253,22 @@ fun ExtensionsSheet(
 @Composable
 private fun InstalledTab(
     states: Map<String, ModuleState>,
+    onCancelUpdate: (String) -> Unit,
     onUninstall: (ModuleDefinition) -> Unit,
-    onInfo: (ModuleDefinition) -> Unit,
+    onInfo: (ModuleDefinition, String) -> Unit,
 ) {
     val palette = colorPalette()
-    val installed = ModuleCatalog.all.filter { def -> states[def.id] == ModuleState.READY }
+    val modules = ModuleCatalog.all.map { def ->
+        key(def.id) { def to rememberModuleUi(def) }
+    }
+    val installed = modules.filter { (def, module) ->
+        when (states[def.id]) {
+            ModuleState.READY, is ModuleState.UPDATING -> true
+            ModuleState.NOT_DOWNLOADED, is ModuleState.FAILED ->
+                module.update != null && module.update != ModuleUpdateStatus.NotInstalled
+            else -> false
+        }
+    }
 
     if (installed.isEmpty()) {
         Box(
@@ -256,7 +277,7 @@ private fun InstalledTab(
                 .height(320.dp),
             contentAlignment = Alignment.Center,
         ) {
-            if (ModuleCatalog.all.any { it.id !in states }) {
+            if (modules.any { (def, module) -> def.id !in states || module.update == null }) {
                 ItemTextPlaceholder(null, typography().xs, width = 0.44f)
             } else {
                 BasicText(
@@ -268,8 +289,10 @@ private fun InstalledTab(
         return
     }
 
-    installed.forEach { def ->
-        InstalledModuleCard(def, onUninstall, onInfo)
+    installed.forEach { (def, module) ->
+        key(def.id) {
+            InstalledModuleCard(def, module, states[def.id], onCancelUpdate, onUninstall, onInfo)
+        }
     }
 }
 
@@ -277,25 +300,37 @@ private fun InstalledTab(
 @Composable
 private fun InstalledModuleCard(
     def: ModuleDefinition,
+    module: ModuleUi,
+    state: ModuleState?,
+    onCancelUpdate: (String) -> Unit,
     onUninstall: (ModuleDefinition) -> Unit,
-    onInfo: (ModuleDefinition) -> Unit,
+    onInfo: (ModuleDefinition, String) -> Unit,
 ) {
     val context = LocalContext.current
-    val module = rememberModuleUi(def)
+    val update = module.update as? ModuleUpdateStatus.UpdateAvailable
+    val installedVersion = update?.installedVersion ?: def.version
 
     SettingsSectionCard(
         title = context.getString(def.displayNameRes),
         icon = R.drawable.extension,
         description = context.getString(def.descriptionRes),
         content = {
-            ModuleInfoRow(stringResource(R.string.modules_version), def.version)
+            ModuleInfoRow(stringResource(R.string.modules_version), installedVersion)
             ModuleInfoRow(stringResource(R.string.modules_size), module.sizeText)
-            (module.update as? ModuleUpdateStatus.UpdateAvailable)?.let { updateStatus ->
+            if (state is ModuleState.UPDATING) {
+                DownloadingSettingsEntry(
+                    title = stringResource(R.string.modules_updating),
+                    progress = state.progress,
+                    onCancel = { onCancelUpdate(def.id) },
+                )
+            } else if (update != null) {
+                val failed = state as? ModuleState.FAILED
+                if (failed != null) Text(failed.message)
                 OtherSettingsEntry(
-                    title = stringResource(R.string.common_action_update),
+                    title = stringResource(if (failed != null) R.string.modules_retry else R.string.common_action_update),
                     text = stringResource(
                         R.string.modules_update_available_body,
-                        updateStatus.installedVersion,
+                        update.installedVersion,
                         def.version,
                     ),
                     icon = R.drawable.update,
@@ -306,14 +341,16 @@ private fun InstalledModuleCard(
                 title = stringResource(R.string.modules_info),
                 text = "",
                 icon = R.drawable.information,
-                onClick = { onInfo(def) },
+                onClick = { onInfo(def, installedVersion) },
             )
-            OtherSettingsEntry(
-                title = stringResource(R.string.modules_uninstall),
-                text = "",
-                icon = R.drawable.trash,
-                onClick = { onUninstall(def) },
-            )
+            if (state !is ModuleState.UPDATING) {
+                OtherSettingsEntry(
+                    title = stringResource(R.string.modules_uninstall),
+                    text = "",
+                    icon = R.drawable.trash,
+                    onClick = { onUninstall(def) },
+                )
+            }
         },
     )
 }
@@ -424,7 +461,7 @@ private fun MarketplaceModuleCard(
 
 /** Live per-module update state + actions for the Installed card (off-Main collection, see [FfmpegModule] KDoc). */
 class ModuleUi(
-    val update: ModuleUpdateStatus,
+    val update: ModuleUpdateStatus?,
     val sizeText: String,
     val startDownload: () -> Unit,
 )
@@ -441,7 +478,7 @@ fun rememberModuleUi(def: ModuleDefinition): ModuleUi {
 
     // Byte progress does not change the installed files.
     val phase = states[def.id]?.javaClass
-    val update by produceState<ModuleUpdateStatus>(ModuleUpdateStatus.NotInstalled, def, phase) {
+    val update by produceState<ModuleUpdateStatus?>(null, def, phase) {
         value = withContext(NzikDispatchers.DATA) { manager.checkForUpdate(def) }
     }
     val installedSize by produceState<Long?>(null, def, phase) {

@@ -1176,3 +1176,7 @@ Settings:
 Menus:
 - fix(export): report the result of cached audio exports
   - Show an export success only when the audio file was written, both for one song and for batches.
+
+Menus:
+- fix(extensions): keep installed modules visible during updates
+  - Keep the installed version and its actions available during an update or after a failed download.
