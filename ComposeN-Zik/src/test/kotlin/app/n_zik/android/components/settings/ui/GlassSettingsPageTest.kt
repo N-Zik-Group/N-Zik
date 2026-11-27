@@ -35,6 +35,7 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assert
@@ -358,6 +359,9 @@ class GlassSettingsPageTest {
             }.isSuccess
         }
         composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.glass_effect_ripple_size)).assertIsNotEnabled()
+        val prerequisite = "${context.getString(R.string.glass_effect_ripple_enabled)} › ${context.getString(R.string.common_state_on)}"
+        composeRule.onNodeWithText(context.getString(R.string.settings_target_prerequisite, prerequisite), substring = true).assertIsDisplayed()
         assertFalse(store.read().rippleEnabled)
         assertEquals(before, context.preferences.all)
     }

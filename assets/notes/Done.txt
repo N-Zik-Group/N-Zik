@@ -1132,3 +1132,7 @@ Menus:
 Settings:
 - fix(settings): guide inactive search targets to their prerequisites
   - Point hidden player and swipe actions to active controls and help restore the local audio permission.
+
+Settings:
+- fix(settings): disable Glass intensity controls until their effect is active
+  - Retain exact search targets while displaying the effect toggle prerequisite.
