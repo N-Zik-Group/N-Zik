@@ -1116,3 +1116,7 @@ Settings:
 Interface:
 - style(settings): align search and card titles
   - Match search badge and field alignment to the cards, and render primary card titles with the main foreground.
+
+Menus:
+- fix(menu): label sliders and disable unavailable volume control
+  - Apply the volume lock to the slider itself and expose names for player adjustments.

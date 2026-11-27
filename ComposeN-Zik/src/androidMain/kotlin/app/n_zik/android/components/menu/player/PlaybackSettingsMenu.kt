@@ -663,7 +663,8 @@ class PlaybackSettingsMenu private constructor(
                 defaultValue = defaultValue,
                 drawValuePoints = drawValuePoints,
                 showValue = false,
-                modifier = Modifier.weight(1.5f)
+                modifier = Modifier.weight(1.5f),
+                label = title,
             )
         }
     }
@@ -779,6 +780,7 @@ class PlaybackSettingsMenu private constructor(
             // Slider
             SliderControl(
                 state = currentValue,
+                label = title,
                 onSlide = { currentValue = it },
                 onSlideComplete = {
                     onValueChange(currentValue)

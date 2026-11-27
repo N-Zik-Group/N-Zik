@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,7 +38,8 @@ fun SliderControl(
     drawValuePoints: Boolean = false,
     isEnabled: Boolean = true,
     usePadding: Boolean = true,
-    showValue: Boolean = true
+    showValue: Boolean = true,
+    label: String? = null,
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier = modifier.height(36.dp)
@@ -61,6 +64,7 @@ fun SliderControl(
                 .let { if (usePadding) it.padding(start = 12.dp) else it }
                 .padding(vertical = 16.dp)
                 .fillMaxWidth()
+                .then(if (label == null) Modifier else Modifier.semantics { contentDescription = label })
         )
 
         if (showValue)

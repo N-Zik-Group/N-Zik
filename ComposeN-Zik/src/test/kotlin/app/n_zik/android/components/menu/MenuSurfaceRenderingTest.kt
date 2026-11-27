@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
@@ -66,6 +67,7 @@ import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.menu.player.VolumeRow
 import app.n_zik.android.components.menu.player.audioOptionSelection
 import app.n_zik.android.components.menu.playlist.menuItemCount
 import app.n_zik.android.components.menu.song.SongMenuSurface
@@ -234,6 +236,22 @@ class MenuSurfaceRenderingTest {
         speaker.assert(radio).assertIsSelected()
         composeRule.runOnIdle { selected.value = false }
         speaker.assertIsNotSelected().performClick().assertIsSelected()
+    }
+
+    @Test
+    fun `audio volume exposes a named disabled slider when its route locks changes`() {
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(
+            colorPalette = ColorPalette.fallback, typography = Typography.fallback,
+            thumbnailShape = shape, uiRoundnessShape = shape, artistThumbnailShape = shape,
+        )
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                VolumeRow(currentVolume = 5f, maxVolume = 10f, enabled = false, onVolumeChange = {})
+            }
+        }
+        val slider = composeRule.onNodeWithContentDescription(context.getString(R.string.player_statistics_volume_label))
+        slider.assert(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)).assertIsNotEnabled()
     }
 
     @Test

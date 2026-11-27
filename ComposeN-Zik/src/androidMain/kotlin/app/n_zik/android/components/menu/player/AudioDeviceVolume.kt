@@ -49,6 +49,7 @@ internal fun VolumeRow(
     onVolumeChangeComplete: () -> Unit = {}
 ) {
     val alpha = if (enabled) 1f else 0.5f
+    val volumeLabel = stringResource(R.string.player_statistics_volume_label)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -75,7 +76,7 @@ internal fun VolumeRow(
         }
 
         BasicText(
-            text = stringResource(R.string.player_statistics_volume_label),
+            text = volumeLabel,
             style = typography().s.copy(
                 fontWeight = FontWeight.SemiBold,
                 color = colorPalette().text
@@ -96,9 +97,11 @@ internal fun VolumeRow(
             stepSize = 0f,
             drawValuePoints = false,
             showValue = false,
-            onSlide = if (enabled) onVolumeChange else ({}),
-            onSlideComplete = if (enabled) onVolumeChangeComplete else ({}),
-            modifier = Modifier.weight(1f)
+            onSlide = onVolumeChange,
+            onSlideComplete = onVolumeChangeComplete,
+            isEnabled = enabled,
+            modifier = Modifier.weight(1f),
+            label = volumeLabel,
         )
     }
 }
@@ -166,10 +169,11 @@ private fun VolumeDialog(
     onDismiss: () -> Unit
 ) {
     var dialogVolume by remember { mutableFloatStateOf(currentVolume) }
+    val volumeLabel = stringResource(R.string.player_statistics_volume_label)
 
     DialogFrame(
         onDismiss = onDismiss,
-        title = stringResource(R.string.player_statistics_volume_label),
+        title = volumeLabel,
         horizontalAlignment = Alignment.Start,
         footer = {
             ButtonRow(
@@ -219,6 +223,7 @@ private fun VolumeDialog(
 
         SliderControl(
             state = dialogVolume,
+            label = volumeLabel,
             onSlide = { dialogVolume = it },
             onSlideComplete = {
                 onVolumeChange(dialogVolume)
