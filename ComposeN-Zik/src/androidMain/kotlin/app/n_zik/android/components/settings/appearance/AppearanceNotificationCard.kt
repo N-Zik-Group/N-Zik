@@ -17,7 +17,6 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -25,10 +24,9 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
 @Composable
-internal fun AppearanceNotificationCard(search: Search, restartState: MutableState<Boolean>) {
+internal fun AppearanceNotificationCard(search: Search, requestPlayerRestart: () -> Unit) {
     var notificationPlayerFirstIcon by rememberPreference(notificationPlayerFirstIconKey, NotificationButtons.Download)
     var notificationPlayerSecondIcon by rememberPreference(notificationPlayerSecondIconKey, NotificationButtons.Favorites)
-    var restartService by restartState
     val searchCtx_3 = search.inputValue.isBlank() || stringResource(R.string.settings_section_notification_player_title).contains(search.inputValue, true) || stringResource(R.string.player_notification_first_action).contains(search.inputValue, true) || stringResource(R.string.player_notification_second_action).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_3,
@@ -55,7 +53,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                         selectedValue = notificationPlayerFirstIcon,
                         onValueSelected = {
                             notificationPlayerFirstIcon = it
-                            restartService = true
+                            requestPlayerRestart()
                         },
                         valueText = { it.text },
                     )
@@ -69,7 +67,7 @@ internal fun AppearanceNotificationCard(search: Search, restartState: MutableSta
                         selectedValue = notificationPlayerSecondIcon,
                         onValueSelected = {
                             notificationPlayerSecondIcon = it
-                            restartService = true
+                            requestPlayerRestart()
                         },
                         valueText = { it.text },
                     )

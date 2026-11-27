@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.ui
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -87,7 +88,7 @@ internal fun UiSwipeCard(search: Search) {
                     )
                 }
 
-                AnimatedVisibility(visible = isSwipeToActionEnabled) {
+                SettingsEntryVisibility(visible = isSwipeToActionEnabled) {
                     Column(modifier = Modifier.padding(start = 25.dp)) {
                         var showQSLeftDialog by remember { mutableStateOf(false) }
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_library_queue_playlist_swipe_left_label).contains(search.inputValue, true) || stringResource(R.string.settings_swipe_actions_title).contains(search.inputValue, true)) {

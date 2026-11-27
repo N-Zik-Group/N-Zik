@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.appearance
 
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -95,7 +96,7 @@ internal fun AppearanceTimelineCard(search: Search) {
                         onValueSelected = { playerTimelineType = it },
                         valueText = { stringResource(it.textId) }
                     )
-                    AnimatedVisibility(visible = playerTimelineType == PlayerTimelineType.VisualizerBar) {
+                    SettingsEntryVisibility(visible = playerTimelineType == PlayerTimelineType.VisualizerBar) {
                         ImportantSettingsDescription(text = stringResource(R.string.visualizer_microphone_permission_message))
                     }
                 }

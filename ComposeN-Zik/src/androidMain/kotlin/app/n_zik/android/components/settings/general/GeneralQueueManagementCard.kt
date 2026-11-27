@@ -1,6 +1,5 @@
 package app.n_zik.android.components.settings.general
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -26,6 +25,7 @@ import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 /** Queue persistence, loading, size limits, and discovery. */
@@ -62,7 +62,7 @@ fun GeneralQueueManagementCard(
                 icon = R.drawable.download
             )
 
-            AnimatedVisibility(visible = persistentQueue) {
+            SettingsEntryVisibility(visible = persistentQueue) {
                 Column(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {

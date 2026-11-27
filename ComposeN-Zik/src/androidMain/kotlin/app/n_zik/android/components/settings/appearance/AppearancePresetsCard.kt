@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -140,7 +141,7 @@ internal fun AppearancePresetsCard(search: Search) {
                 }
                 SettingsDescription(text = stringResource(R.string.settings_player_header_album_artist_description))
 
-                AnimatedVisibility( visible = playerInfoType == PlayerInfoType.Modern) {
+                SettingsEntryVisibility(visible = playerInfoType == PlayerInfoType.Modern) {
                     Column {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_player_header_icons_visible_label).contains(
                                 search.inputValue,

@@ -1,7 +1,6 @@
 package app.n_zik.android.components.settings.general
 
 import android.app.PictureInPictureParams
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import app.n_zik.android.components.settings.common.RestartActivity
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import timber.log.Timber
 
@@ -68,7 +68,7 @@ fun GeneralPipCard(
                 icon = R.drawable.logo_youtube
             )
             RestartActivity(restartActivity, onRestart = { onRestartActivityClear() })
-            AnimatedVisibility(visible = enablePictureInPicture && supportsPip) {
+            SettingsEntryVisibility(visible = enablePictureInPicture && supportsPip) {
                 Column(
                     modifier = Modifier.padding(start = 25.dp)
                 ) {

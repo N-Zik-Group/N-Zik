@@ -136,7 +136,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         )
                     }
             }
-            AnimatedVisibility(visible = !showthumbnail && playerType == PlayerType.Modern && !isLandscape) {
+            SettingsEntryVisibility(visible = !showthumbnail && playerType == PlayerType.Modern && !isLandscape) {
 
                 if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_hidden_swipe_animation).contains(
                         search.inputValue,
@@ -182,7 +182,7 @@ internal fun AppearanceCoverCard(search: Search) {
                 )
             }
 
-            AnimatedVisibility(visible = showthumbnail) {
+            SettingsEntryVisibility(visible = showthumbnail) {
                 Column {
 
                     if (isLandscape) {
@@ -335,7 +335,7 @@ internal fun AppearanceCoverCard(search: Search) {
                                 modifier = (Modifier.padding(start = if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) 25.dp else 0.dp)).settingsSearchTarget("appearance.cover_and_thumbnail.show_cover_thumbnail_animation")
                             )
                         }
-                        AnimatedVisibility(visible = showCoverThumbnailAnimation) {
+                        SettingsEntryVisibility(visible = showCoverThumbnailAnimation) {
                             Column {
                                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_animation_style_label).contains(search.inputValue, true)) {
                                     OtherEnumValueSelectorSettingsEntry(
@@ -397,7 +397,7 @@ internal fun AppearanceCoverCard(search: Search) {
                     isChecked = holdToSpeedUp,
                     onCheckedChange = { holdToSpeedUp = it }
                 )
-                AnimatedVisibility(visible = holdToSpeedUp) {
+                SettingsEntryVisibility(visible = holdToSpeedUp) {
                     SliderSettingsEntry(
                         modifier = Modifier
                             .padding(start = 25.dp)

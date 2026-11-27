@@ -552,9 +552,16 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
         )),
     // Tab 6 - Network
     SettingsCardRegistryEntry(6, R.string.settings_network_quality_title, R.drawable.headphones, groupTitleRes = R.string.settings_group_streaming_quality,
-        keywordRes = listOf(R.string.settings_network_quality_title, R.string.audio_quality_format, R.string.settings_network_image_quality_label)),
+        keywordRes = listOf(
+            R.string.settings_network_quality_title, R.string.audio_quality_format, R.string.settings_network_image_quality_label,
+            R.string.network_status, R.string.network_current_stream_audio_quality_description,
+            R.string.network_current_artwork_quality_description,
+        )),
     SettingsCardRegistryEntry(6, R.string.settings_download_quality, R.drawable.audio_quality, groupTitleRes = R.string.settings_group_file_quality,
-        keywordRes = listOf(R.string.downloads_quality_format, R.string.downloads_action_refresh_quality)),
+        keywordRes = listOf(
+            R.string.downloads_quality_format, R.string.downloads_action_refresh_quality,
+            R.string.network_status, R.string.network_current_download_audio_quality_description,
+        )),
     SettingsCardRegistryEntry(6, R.string.network_settings, R.drawable.wifi, groupTitleRes = R.string.settings_group_network_connection,
         keywordRes = listOf(R.string.network_settings, R.string.settings_network_data_saver_label, R.string.settings_network_data_saver_description)),
     SettingsCardRegistryEntry(6, R.string.settings_network_offline_mode_label, R.drawable.airplane, groupTitleRes = R.string.settings_group_offline_availability, focusId = "offline",

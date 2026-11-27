@@ -214,7 +214,7 @@ internal fun AppearanceLyricsCard(search: Search) {
                     )
                 }
 
-                AnimatedVisibility(visible = lyricsColor == LyricsColor.Custom) {
+                SettingsEntryVisibility(visible = lyricsColor == LyricsColor.Custom) {
                     var showColorPicker by remember { mutableStateOf(false) }
                     val customColorString = stringResource(R.string.common_color_custom)
                     if (search.inputValue.isBlank() || true) {

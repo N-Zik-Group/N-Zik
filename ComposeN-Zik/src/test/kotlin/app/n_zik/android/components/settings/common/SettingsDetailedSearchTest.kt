@@ -357,6 +357,27 @@ class SettingsDetailedSearchTest {
         }
     }
 
+    @Test fun networkStatusDescriptionsFindTheControlsShowingEffectiveQuality() {
+        val english = localized(Locale.ENGLISH)
+        val rows = listOf(
+            Triple(R.string.network_current_artwork_quality_description, "network.quality.image_quality_format", "network"),
+            Triple(R.string.network_current_stream_audio_quality_description, "network.quality.audio_quality_format", "network"),
+            Triple(R.string.network_current_download_audio_quality_description, "embedded.network.download_quality_format", "downloads"),
+        )
+        rows.forEach { (description, target, category) ->
+            val query = english.getString(description)
+            val result = searchSettingsEntries(english, query).single { it.id == target }
+            val route = Uri.parse(result.destinationRoute(english))
+            assertEquals("settingsCategory/$category", route.path)
+            assertEquals(target, route.getQueryParameter("target"))
+            assertTrue(searchSettingsCardResults(english, query).contains(result.parentCard()))
+        }
+
+        val ids = searchSettingsEntries(english, english.getString(R.string.network_status)).map { it.id }
+        assertTrue(ids.containsAll(rows.map { it.second }))
+        assertFalse(ids.any { it.startsWith("network.network_status.") })
+    }
+
     @Test fun storageSectionsAndCleanupActionsAreSearchableGloballyAndInData() {
         val labels = listOf(
             R.string.storage_breakdown_subtitle, R.string.storage_cleanup_profile_title,

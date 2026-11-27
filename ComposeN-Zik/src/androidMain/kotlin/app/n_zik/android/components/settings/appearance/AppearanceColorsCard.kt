@@ -95,7 +95,7 @@ internal fun AppearanceColorsCard(search: Search) {
                     )
                 }
 
-            AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
+            SettingsEntryVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient) {
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_gradient_style_label).contains(
                         search.inputValue,
                         true
@@ -117,7 +117,7 @@ internal fun AppearanceColorsCard(search: Search) {
             }
 
             val isM3E = animatedGradient == AnimatedGradient.M3EMorphingTheme || animatedGradient == AnimatedGradient.M3EMorphingCover
-            AnimatedVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient && isM3E) {
+            SettingsEntryVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.AnimatedGradient && isM3E) {
                 Column {
                     if (search.inputValue.isBlank() || stringResource(R.string.settings_player_m3e_motion_sensitivity_label).contains(search.inputValue, true)) {
                         OtherEnumValueSelectorSettingsEntry(
@@ -143,7 +143,7 @@ internal fun AppearanceColorsCard(search: Search) {
                 }
             }
             var isRotatingCoverEnabled by rememberPreference( rotatingAlbumCoverKey, false )
-            AnimatedVisibility( playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor ) {
+            SettingsEntryVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
                 if ( search.inputValue.isBlank() || stringResource( R.string.settings_player_rotating_artwork_title ).contains(search.inputValue, true) )
                     if (search.inputValue.isBlank() || stringResource( R.string.settings_player_rotating_artwork_title ).contains(search.inputValue, true)) {
                         OtherSwitchSettingEntry(

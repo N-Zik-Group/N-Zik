@@ -416,8 +416,20 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("network.download.settings_enable_autodownload_song_when_liked", 6, R.string.downloads_title, R.string.settings_enable_autodownload_song_when_liked, listOf(R.string.settings_downloads_on_like_description)),
     SettingsEntryTarget("network.download.settings_enable_autodownload_song_when_album_bookmarked", 6, R.string.downloads_title, R.string.settings_enable_autodownload_song_when_album_bookmarked, listOf(R.string.settings_downloads_on_album_bookmark_description)),
     SettingsEntryTarget("network.download.settings_enable_autodownload_song_when_playlist_bookmarked", 6, R.string.downloads_title, R.string.settings_enable_autodownload_song_when_playlist_bookmarked, listOf(R.string.settings_downloads_on_playlist_bookmark_description)),
-    SettingsEntryTarget("network.quality.audio_quality_format", 6, R.string.settings_network_quality_title, R.string.audio_quality_format, listOf(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_low)),
-    SettingsEntryTarget("network.quality.image_quality_format", 6, R.string.settings_network_quality_title, R.string.settings_network_image_quality_label, listOf(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_medium, R.string.audio_quality_format_low)),
+    SettingsEntryTarget(
+        "network.quality.audio_quality_format", 6, R.string.settings_network_quality_title, R.string.audio_quality_format,
+        listOf(
+            R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_low,
+            R.string.network_status, R.string.network_current_stream_audio_quality_description,
+        ),
+    ),
+    SettingsEntryTarget(
+        "network.quality.image_quality_format", 6, R.string.settings_network_quality_title, R.string.settings_network_image_quality_label,
+        listOf(
+            R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_medium,
+            R.string.audio_quality_format_low, R.string.network_status, R.string.network_current_artwork_quality_description,
+        ),
+    ),
     SettingsEntryTarget("network.settings_reset.settings_reset", 6, R.string.settings_reset, R.string.settings_reset, listOf(R.string.settings_restore_default_settings)),
     SettingsEntryTarget("network.bridge_server.bridge_server", 6, R.string.bridge_server, R.string.bridge_server, listOf(R.string.bridge_server_description)),
     SettingsEntryTarget(BridgePairedDevicesSettingsTarget, 6, R.string.bridge_server, R.string.bridge_paired_devices),

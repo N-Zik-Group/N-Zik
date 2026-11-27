@@ -21,6 +21,7 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.PlayerOpeningModeSettingsTarget
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsEntrySearchIndex
@@ -169,7 +170,7 @@ internal fun AppearanceActionBarCard(search: Search) {
                     isChecked = queuePreviewEnabled,
                     onCheckedChange = { queuePreviewEnabled = it },
                 )
-                AnimatedVisibility(visible = queuePreviewEnabled && (showQueuePreviewSongCount || showQueuePreviewArtwork)) {
+                SettingsEntryVisibility(visible = queuePreviewEnabled && (showQueuePreviewSongCount || showQueuePreviewArtwork)) {
                     Column {
                         if (showQueuePreviewSongCount) OtherEnumValueSelectorSettingsEntry(
                             modifier = Modifier.padding(start = 25.dp)

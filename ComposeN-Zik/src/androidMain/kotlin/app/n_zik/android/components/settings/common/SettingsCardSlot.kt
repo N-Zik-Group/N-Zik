@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
 import app.n_zik.android.components.glass.backdrop.Backdrop
 
-internal const val SettingsSourceFooter = -1
 internal val SettingsFooterMiniPlayerGap = 6.dp
 
 internal class SettingsCardSlots {

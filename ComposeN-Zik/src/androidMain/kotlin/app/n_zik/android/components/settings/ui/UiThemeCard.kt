@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.ui
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -55,8 +56,6 @@ import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
-import app.n_zik.android.components.settings.common.settingsEntryEnter
-import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -180,11 +179,9 @@ internal fun UiThemeCard(search: Search) {
                 }
 
                 var showThemeModeDialog by remember { mutableStateOf(false) }
-                AnimatedVisibility(
+                SettingsEntryVisibility(
                     visible = themeModeEnabled && (search.inputValue.isBlank() ||
                         stringResource(R.string.settings_theme_mode_label).contains(search.inputValue, true)),
-                    enter = settingsEntryEnter,
-                    exit = settingsEntryExit,
                 ) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.theme.theme_mode"),
@@ -207,10 +204,8 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
-                AnimatedVisibility(
+                SettingsEntryVisibility(
                     visible = colorPaletteName == ColorPaletteName.Dynamic && brightnessSearchMatch,
-                    enter = settingsEntryEnter,
-                    exit = settingsEntryExit,
                 ) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.padding(start = 25.dp).settingsSearchTarget("ui.theme.respect_brightness"),
@@ -222,7 +217,7 @@ internal fun UiThemeCard(search: Search) {
                     )
                 }
 
-                AnimatedVisibility(visible = colorPaletteName == ColorPaletteName.CustomColor, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                SettingsEntryVisibility(visible = colorPaletteName == ColorPaletteName.CustomColor) {
                     Column {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_theme_custom_colors_label).contains(search.inputValue, true) || stringResource(R.string.common_color_source_theme).contains(search.inputValue, true)) {
                             ColorSettingEntry(
@@ -236,7 +231,7 @@ internal fun UiThemeCard(search: Search) {
                     }
                 }
 
-                AnimatedVisibility(visible = colorPaletteName == ColorPaletteName.Customized, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                SettingsEntryVisibility(visible = colorPaletteName == ColorPaletteName.Customized) {
                     Column(modifier = Modifier.padding(start = 25.dp)) {
 
                         if (search.inputValue.isBlank()) {

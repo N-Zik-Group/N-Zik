@@ -150,7 +150,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
                     )
                 }
 
-            AnimatedVisibility(visible = !disablePlayerHorizontalSwipe) {
+            SettingsEntryVisibility(visible = !disablePlayerHorizontalSwipe) {
                 if (search.inputValue.isBlank() || stringResource(R.string.player_swipe_sensitivity).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(
                         text = stringResource(R.string.settings_description_with_value, stringResource(R.string.player_track_swipe_sensitivity_description), playerSwipeSensitivity.text),
@@ -236,7 +236,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
                 }
 
 
-                AnimatedVisibility(visible = visualizerEnabled) {
+                SettingsEntryVisibility(visible = visualizerEnabled) {
                     Column {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || (stringResource(R.string.settings_visualizer_remember_state_description)).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
@@ -278,7 +278,7 @@ internal fun AppearanceBehaviorCard(search: Search) {
                             )
                         }
 
-                        AnimatedVisibility(visible = visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Custom) {
+                        SettingsEntryVisibility(visible = visualizerWhiteColorOption == enums.VisualizerWhiteColorOption.Custom) {
                             ColorSettingEntry(
                                 title = stringResource(R.string.common_color_custom),
                                 text = stringResource(R.string.visualizer_custom_color_description),

@@ -31,7 +31,7 @@ internal fun NetworkQualityCard(
     networkQuality: ImageCacheFactory.NetworkQuality,
     connectionMetered: Boolean,
     includeDownloadQuality: Boolean = true,
-    onRestartRequired: (Boolean) -> Unit,
+    onRestartRequired: () -> Unit,
 ) {
     var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
     var imageQualityFormat by rememberPreference(imageQualityFormatKey, ImageQualityFormat.Auto)
@@ -89,7 +89,7 @@ internal fun NetworkQualityCard(
             selectedValue = audioQualityFormat,
             onValueSelected = {
                 audioQualityFormat = it
-                onRestartRequired(true)
+                onRestartRequired()
                 showAudioQualityDialog = false
             },
             onDismiss = { showAudioQualityDialog = false },

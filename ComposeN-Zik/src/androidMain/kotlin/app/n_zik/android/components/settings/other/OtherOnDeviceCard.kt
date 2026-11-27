@@ -4,9 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
-import androidx.compose.animation.AnimatedVisibility
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -185,7 +185,7 @@ private fun OnDeviceSettings(search: Search, target: ProfileStorageIdentity) {
             },
         )
     }
-    AnimatedVisibility(visible = enabled && hasPermission) {
+    SettingsEntryVisibility(visible = enabled && hasPermission) {
         Column { OnDeviceOptions(search, target) }
     }
 }
@@ -396,7 +396,7 @@ private fun OnDeviceOptions(search: Search, target: ProfileStorageIdentity) {
     }
 
     val startFolderTarget = "other.on_device.folder_that_will_show_when_you_open_on_device_page"
-    AnimatedVisibility(visible = showFolders) {
+    SettingsEntryVisibility(visible = showFolders) {
 
         var showFolderDialog by remember { mutableStateOf(false) }
         if (search.inputValue.isBlank() || stringResource(R.string.settings_local_music_initial_folder_description).contains(search.inputValue, true) || stringResource(R.string.settings_local_music_start_folder_path_description).contains(search.inputValue, true)) {
