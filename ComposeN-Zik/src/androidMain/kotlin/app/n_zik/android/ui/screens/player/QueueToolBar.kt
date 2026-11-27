@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -41,9 +42,14 @@ import app.n_zik.android.components.glass.GlassQueueToolbarActions
 import app.n_zik.android.components.glass.queueToolbarBottomInset
 import app.n_zik.android.components.glass.GlassQueueToolbar
 import app.n_zik.android.components.glass.QueueEmbeddedMini
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
 
 object QueueToolBarState {
     var mediaItemCount by mutableIntStateOf(0)
+    var recommendationCount by mutableIntStateOf(0)
+    var smartShuffleLoading by mutableStateOf(false)
+    internal var selectionActive by mutableStateOf(false)
+    internal var dragInProgress by mutableStateOf(false)
     var buttons: List<Button> by mutableStateOf(emptyList())
     var queueArrow: ToolbarIcon? = null
     var onBarClick: () -> Unit = {}
@@ -51,6 +57,10 @@ object QueueToolBarState {
 
     fun reset() {
         mediaItemCount = 0
+        recommendationCount = 0
+        smartShuffleLoading = false
+        selectionActive = false
+        dragInProgress = false
         buttons = emptyList()
         queueArrow = null
         onBarClick = {}
@@ -69,7 +79,7 @@ fun QueueToolBar(
     GlassQueueToolbar(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { QueueToolBarState.onBarClick() }
+            .clickable(onClickLabel = stringResource(R.string.common_action_close)) { QueueToolBarState.onBarClick() }
             .height(toolbarHeight + bottomInset)
     ) {
         if (!isLandscape) {
@@ -100,27 +110,30 @@ fun QueueToolBar(
                 .padding(horizontal = 8.dp)
                 .fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier
-                    .height(TabToolBar.TOOLBAR_ICON_SIZE)
-                    .wrapContentWidth(),
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier.wrapContentWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Icon(
-                    painter = painterResource(R.drawable.musical_notes),
-                    contentDescription = stringResource(R.string.accessibility_number_of_songs_in_queue),
-                    tint = colorPalette().text,
-                    modifier = Modifier.padding(end = 2.dp)
-                )
-                BasicText(
-                    text = QueueToolBarState.mediaItemCount.toString(),
-                    style = TextStyle(
-                        color = colorPalette().text,
-                        fontStyle = typography().l.fontStyle
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(R.drawable.musical_notes),
+                        contentDescription = stringResource(R.string.accessibility_number_of_songs_in_queue),
+                        tint = colorPalette().text,
+                        modifier = Modifier.padding(end = 2.dp)
+                    )
+                    BasicText(
+                        text = QueueToolBarState.mediaItemCount.toString(),
+                        style = TextStyle(
+                            color = colorPalette().text,
+                            fontStyle = typography().l.fontStyle
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                val recommendationCount = QueueToolBarState.recommendationCount
+                val loading = QueueToolBarState.smartShuffleLoading
+                CollectionSmartShuffleCount(recommendationCount > 0 || loading, loading, recommendationCount)
             }
 
             GlassQueueToolbarActions(

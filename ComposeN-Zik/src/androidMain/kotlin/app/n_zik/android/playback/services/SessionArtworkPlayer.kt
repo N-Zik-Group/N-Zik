@@ -13,9 +13,12 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.source.ForwardingTimeline
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.utils.cropVideoThumbnailsKey
+import app.n_zik.android.utils.EXPLICIT_BUNDLE_TAG
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.R
@@ -25,6 +28,8 @@ import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.utils.isSmartShuffleRecommendation
+import app.n_zik.android.playback.utils.smartShuffleSessionTitle
 
 /** Publishes lightweight session metadata with profile-owned artwork identity. */
 @UnstableApi
@@ -43,6 +48,8 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
     private var durationMediaId: String? = null
     private var knownDurationMs: Long? = null
     private var lastDurationDiagnostic: String? = null
+    private var sourceTimeline: Timeline? = null
+    private var sessionTimeline: Timeline? = null
 
     private data class LocalSessionArtwork(
         val source: String,
@@ -109,10 +116,35 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
         else -> buffered
     }
 
+    override fun getCurrentTimeline(): Timeline {
+        val source = super.getCurrentTimeline()
+        if (source === sourceTimeline) return sessionTimeline ?: source
+        val published = if (source.isEmpty) source else object : ForwardingTimeline(source) {
+            private val markedItems = IdentityHashMap<MediaItem, MediaItem>()
+
+            override fun getWindow(windowIndex: Int, window: Timeline.Window, defaultPositionProjectionUs: Long): Timeline.Window {
+                val result = super.getWindow(windowIndex, window, defaultPositionProjectionUs)
+                val item = result.mediaItem
+                if (item.isSmartShuffleRecommendation) {
+                    result.mediaItem = markedItems.getOrPut(item) {
+                        item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon().apply {
+                            applySmartShuffleTitle(item.mediaMetadata)
+                        }.build()).build()
+                    }
+                }
+                return result
+            }
+        }
+        sourceTimeline = source
+        sessionTimeline = published
+        return published
+    }
+
     override fun addListener(listener: Player.Listener) {
         if (listener in listeners) return
         val translated = object : ExplicitForwardingPlayerListener(listener) {
             override fun onMediaMetadataChanged(metadata: MediaMetadata) = listener.onMediaMetadataChanged(mediaMetadata)
+            override fun onTimelineChanged(timeline: Timeline, reason: Int) = listener.onTimelineChanged(currentTimeline, reason)
             override fun onEvents(player: Player, events: Player.Events) = listener.onEvents(this@SessionArtworkPlayer, events)
         }
         listeners[listener] = translated
@@ -260,7 +292,8 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
             }
         }
         val hasReservedDuration = metadata.extras?.containsKey(METADATA_KEY_DURATION) == true
-        if (providerArtworkUri == null && !clearArtwork && !needsTitleFallback && !needsArtistFallback && correctedArtist == null &&
+        val recommended = currentItem?.isSmartShuffleRecommendation == true
+        if (providerArtworkUri == null && !clearArtwork && !needsTitleFallback && !needsArtistFallback && correctedArtist == null && !recommended &&
             declaredDuration == metadata.durationMs && !hasReservedDuration
         ) return metadata
         return metadata.buildUpon().apply {
@@ -271,9 +304,24 @@ class SessionArtworkPlayer(upstream: Player, private val now: () -> Long = { Sys
                 setArtworkUri(providerArtworkUri)
                 setArtworkData(null, null)
             }
-            if (needsTitleFallback) setTitle(appTextResources().getString(R.string.metadata_unknown_title))
+            if (recommended) applySmartShuffleTitle(metadata, correctedArtist)
+            else if (needsTitleFallback) setTitle(appTextResources().getString(R.string.metadata_unknown_title))
             if (correctedArtist != null) setArtist(correctedArtist)
             else if (needsArtistFallback) setArtist(appTextResources().getString(R.string.metadata_unknown_artist))
         }.build()
+    }
+}
+
+private fun MediaMetadata.Builder.applySmartShuffleTitle(metadata: MediaMetadata, correctedArtist: String? = null) {
+    val title = metadata.title?.takeUnless(SessionMetadataFallbacks::needsFallback)?.toString()?.let(::cleanPrefix)
+        ?: appTextResources().getString(R.string.metadata_unknown_title)
+    val explicit = metadata.extras?.getBoolean(EXPLICIT_BUNDLE_TAG) == true ||
+        metadata.extras?.getBoolean("isExplicit") == true ||
+        metadata.extras?.getBoolean("androidx.media3.session.EXTRAS_KEY_IS_EXPLICIT") == true
+    val displayedTitle = smartShuffleSessionTitle(title, explicit)
+    setTitle(displayedTitle)
+    if (metadata.displayTitle != null) {
+        setDisplayTitle(displayedTitle)
+        setSubtitle(metadata.subtitle ?: correctedArtist ?: metadata.artist)
     }
 }

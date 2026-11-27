@@ -107,6 +107,9 @@ import app.n_zik.android.playback.audio.MuteAudioProcessorChain
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
+import app.n_zik.android.playback.utils.isSmartShuffleRecommendation
+import app.n_zik.android.playback.utils.spreadSmartShuffleRecommendations
+import app.n_zik.android.playback.utils.withoutSmartShuffleSessionPrefix
 import androidx.media3.extractor.DefaultExtractorsFactory
 import androidx.media3.session.CommandButton
 import androidx.media3.session.DefaultMediaNotificationProvider
@@ -1641,12 +1644,16 @@ class PlayerServiceModern : MediaLibraryService(),
 
     override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
         updateDefaultNotification()
-        if (shuffleModeEnabled) {
-            val shuffledIndices = IntArray(player.mediaItemCount) { it }
-            shuffledIndices.shuffle()
-            shuffledIndices[shuffledIndices.indexOf(player.currentMediaItemIndex)] = shuffledIndices[0]
-            shuffledIndices[0] = player.currentMediaItemIndex
-            player.setShuffleOrder(DefaultShuffleOrder(shuffledIndices, System.currentTimeMillis()))
+        val currentIndex = player.currentMediaItemIndex
+        if (shuffleModeEnabled && currentIndex in 0 until player.mediaItemCount) {
+            val remaining = (0 until player.mediaItemCount).filter { it != currentIndex }.shuffled()
+            val distributed = spreadSmartShuffleRecommendations(remaining) { index ->
+                player.getMediaItemAt(index).isSmartShuffleRecommendation
+            }
+            val order = IntArray(player.mediaItemCount) { index ->
+                if (index == 0) currentIndex else distributed[index - 1]
+            }
+            player.setShuffleOrder(DefaultShuffleOrder(order, System.currentTimeMillis()))
         }
         refreshTrackBoundaryPause()
         scheduleCrossfade()
@@ -2754,6 +2761,10 @@ class PlayerServiceModern : MediaLibraryService(),
             )
 
         override fun getNotificationContentTitle(metadata: MediaMetadata): CharSequence? {
+            val sessionTitle = metadata.title?.toString().orEmpty()
+            if (sessionTitle != sessionTitle.withoutSmartShuffleSessionPrefix()) {
+                return super.getNotificationContentTitle(metadata)
+            }
             val isExplicit = metadata.extras?.getBoolean("isExplicit") == true ||
                              metadata.extras?.getBoolean("androidx.media3.session.EXTRAS_KEY_IS_EXPLICIT") == true
             val title = cleanPrefix(metadata.title?.toString() ?: "").ifBlank { context.getString(R.string.metadata_unknown_title) }.let {
@@ -2864,6 +2875,12 @@ class PlayerServiceModern : MediaLibraryService(),
          */
         val player: Player
             get() = this@PlayerServiceModern.guestGuardPlayer
+
+        internal fun setQueueSmartShuffleOrder(expectedPlayer: Player, order: IntArray) {
+            if (player === expectedPlayer && !listenTogetherGuestLock.value) {
+                this@PlayerServiceModern.player.setShuffleOrder(DefaultShuffleOrder(order, System.currentTimeMillis()))
+            }
+        }
 
         val playerUpdateTrigger: StateFlow<Int>
             get() = this@PlayerServiceModern.playerUpdateTrigger

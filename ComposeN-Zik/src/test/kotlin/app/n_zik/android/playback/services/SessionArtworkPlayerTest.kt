@@ -7,12 +7,15 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
+import androidx.media3.exoplayer.source.SinglePeriodTimeline
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
 import app.n_zik.android.appContext
 import app.n_zik.android.models.Info
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
+import app.n_zik.android.playback.utils.asSmartShuffleRecommendation
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.setActiveProfile
@@ -85,6 +88,44 @@ class SessionArtworkPlayerTest {
         every { upstream.isCurrentMediaItemLive } returns false
         every { upstream.duration } returns C.TIME_UNSET
         return upstream
+    }
+
+    @Test
+    fun `smart shuffle preserves the artists used by the car display`() {
+        stubAppContext()
+        val upstream = upstreamWith("Heartless", "Kanye West", "recommended")
+        val source = MediaItem.Builder().setMediaId("recommended").setMediaMetadata(upstream.mediaMetadata)
+            .build().asSmartShuffleRecommendation(true)
+        every { upstream.currentMediaItem } returns source
+        val session = SessionArtworkPlayer(upstream)
+
+        val standard = session.mediaMetadata
+        assertNull(standard.displayTitle)
+        assertEquals("Kanye West", standard.artist.toString())
+        assertEquals("🔀✨ Heartless", standard.title.toString())
+
+        val customTitle = source.mediaMetadata.buildUpon().setDisplayTitle("Heartless").build()
+        every { upstream.mediaMetadata } returns customTitle
+        val custom = session.mediaMetadata
+        assertEquals("🔀✨ Heartless", custom.displayTitle.toString())
+        assertEquals("Kanye West", custom.subtitle.toString())
+    }
+
+    @Test
+    fun `the car queue decorates only the projected recommendation`() {
+        stubAppContext()
+        val upstream = upstreamWith("Track", "Artist", "recommended")
+        val media = Song("recommended", "e:Track", "Artist", "1:00", null)
+            .asMediaItem.asSmartShuffleRecommendation(true)
+        val timeline = SinglePeriodTimeline(60_000_000, true, false, false, null, media)
+        every { upstream.currentTimeline } returns timeline
+        val session = SessionArtworkPlayer(upstream)
+
+        val row = session.currentTimeline.getWindow(0, Timeline.Window()).mediaItem
+        assertEquals("🔀✨ 🅴 Track", row.mediaMetadata.title.toString())
+        assertEquals("Artist", row.mediaMetadata.artist.toString())
+        assertEquals(media.mediaId, row.mediaId)
+        assertEquals(media.mediaMetadata.title, timeline.getWindow(0, Timeline.Window()).mediaItem.mediaMetadata.title)
     }
 
     @Test

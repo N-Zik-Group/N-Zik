@@ -2120,3 +2120,14 @@ Theme Store:
 - chore(themes): refresh bundled Stock preview metadata
   - Match the 64 Stock preview images published in the Theme Store.
   - Update the fallback preview index so its checksums match the catalog assets.
+
+Playback:
+- feat(player): extend Smart Shuffle across music toolbars
+  - Add independently configurable Smart Shuffle controls to music screens, the player, mini-player and queue.
+  - Interleave recommendations in collection rows and preserve source ordering, queue selection and the current playing item.
+  - Share the queue action across players, exclude podcasts and show recommendation markers in the media session.
+
+Settings:
+- fix(toolbars): preserve configured actions during loading and overflow
+  - Use the saved button order for both inline actions and overflow.
+  - Keep collection toolbars stable during loading and support the added controls in Theme Store V3.

@@ -27,7 +27,8 @@ import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
 class SmartShuffle private constructor(
     private val isRecommendationEnabled: () -> Boolean,
     private val isRecommendationsLoading: () -> Boolean,
-    private val onToggleRecommendation: () -> Unit
+    private val onToggleRecommendation: () -> Unit,
+    private val isActionAvailable: () -> Boolean
 ): MenuIcon, Descriptive, DynamicColor {
 
     override var isFirstColor: Boolean
@@ -35,18 +36,20 @@ class SmartShuffle private constructor(
         set(value) {}
 
     override val menuToggleState: Boolean get() = isRecommendationEnabled()
-    override val isEnabled: Boolean get() = !isRecommendationsLoading()
+    override val isEnabled: Boolean get() = isActionAvailable() && !isRecommendationsLoading()
 
     companion object {
         @Composable
         operator fun invoke(
             isRecommendationEnabled: () -> Boolean,
             isRecommendationsLoading: () -> Boolean,
-            onToggleRecommendation: () -> Unit
+            onToggleRecommendation: () -> Unit,
+            isActionAvailable: () -> Boolean = { true },
         ): SmartShuffle = SmartShuffle(
             isRecommendationEnabled,
             isRecommendationsLoading,
-            onToggleRecommendation
+            onToggleRecommendation,
+            isActionAvailable,
         )
     }
 
@@ -62,24 +65,24 @@ class SmartShuffle private constructor(
 
     @Composable
     override fun ToolBarButton() {
-        if (!isEnabled) {
+        if (isRecommendationsLoading()) {
             if (GlassToolbarLoading()) return
         } else if (GlassToolbarIcon(
             painterResource(iconId),
             if (isRecommendationEnabled()) colorPalette().text else colorPalette().textDisabled,
-            32.dp, true, onClick = ::onShortClick, contentDescription = menuIconTitle,
+            32.dp, isEnabled, onClick = ::onShortClick, contentDescription = menuIconTitle,
         )) return
         Box(
             modifier = Modifier.size(48.dp), // Standard IconButton size
             contentAlignment = Alignment.Center
         ) {
-            if (!isEnabled) {
+            if (isRecommendationsLoading()) {
                 InlineCircularLoader(
                     modifier = Modifier.size(24.dp),
                     color = colorPalette().text,
                 )
             } else {
-                IconButton(onClick = ::onShortClick, shape = uiRoundnessShape()) {
+                IconButton(onClick = ::onShortClick, enabled = isEnabled, shape = uiRoundnessShape()) {
                     Icon(
                         painter = painterResource(R.drawable.smart_shuffle),
                         contentDescription = stringResource(R.string.recommendations_action_smart_shuffle),

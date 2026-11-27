@@ -43,12 +43,20 @@ internal suspend fun loadHomeLibraryGroupSongs(
     load: suspend (List<String>) -> List<HomeParentSong>,
     isDeviceGroup: (String) -> Boolean,
     loadDeviceGroups: suspend () -> Map<String, Set<String>>,
-): List<Song> {
+): List<Song> = loadHomeLibraryGroupItems(ids, load, isDeviceGroup, loadDeviceGroups) { _, song -> song }
+
+internal suspend fun <T> loadHomeLibraryGroupItems(
+    ids: List<String>,
+    load: suspend (List<String>) -> List<HomeParentSong>,
+    isDeviceGroup: (String) -> Boolean,
+    loadDeviceGroups: suspend () -> Map<String, Set<String>>,
+    map: (String, Song) -> T,
+): List<T> {
     val deviceGroups = if (ids.any(isDeviceGroup)) loadDeviceGroups() else emptyMap()
-    return loadHomeParentSongs(ids, load) { id, song ->
+    return loadHomeParentItems(ids, load, include = { id, song ->
         if (isDeviceGroup(id)) song.isLocal && song.id in deviceGroups[id].orEmpty()
         else !song.isLocal
-    }
+    }, map = map)
 }
 
 internal class HomeSongAction<T>(

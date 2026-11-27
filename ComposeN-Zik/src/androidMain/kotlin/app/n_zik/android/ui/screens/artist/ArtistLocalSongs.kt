@@ -21,6 +21,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -97,6 +98,11 @@ import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.artist.FollowButton
 import app.n_zik.android.components.artist.artistStatisticsText
 import app.n_zik.android.components.ui.CollectionButtonToolbar
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.CollectionRecommendationSong
+import app.n_zik.android.components.ui.trackRows
+import app.n_zik.android.components.ui.rememberCollectionSmartShuffle
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.ui.CollectionFavoritesKind
 import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.components.tab.Locator
@@ -201,6 +207,12 @@ fun ArtistLocalSongs(
     }
     SearchEmptyFeedback(query, visibleSongs.isEmpty(), loading = songs == null || forceShimmer)
     val itemSelector = key(browseId) { ItemSelector<Song>() }
+    val smartShuffle = rememberCollectionSmartShuffle(
+        browseId,
+        songs.orEmpty(),
+        enabled = LocalThemePreview.current == null && !forceShimmer,
+        actionEnabled = !itemSelector.isActive,
+    )
     fun actionSongs() = itemSelector.actionTargets(visibleSongs, Song::id, Song::id)
     val offlineMode by OfflineMode.rememberEnabled()
     val addToPlaylist = PlaylistsMenu.forSongs(
@@ -216,7 +228,7 @@ fun ArtistLocalSongs(
         Database.artistSongs(browseId).collect { songs = it }
     }
 
-    val songCount = songs?.size ?: 0
+    val songCount = (songs?.size ?: 0) + smartShuffle.extraCount
 
     val songIds = remember(songs) { songs?.map { it.id }.orEmpty() }
     val likeStatesMap by remember(songIds) {
@@ -231,7 +243,10 @@ fun ArtistLocalSongs(
         likeStates = likeStatesMap,
     )
     // Header, actions, search and summary precede the song rows.
-    val locator = Locator(lazyListState, listItemOffset = 4) { visibleSongs }
+    val trackRows = remember(visibleSongs, smartShuffle.recommendations, query) { smartShuffle.trackRows(visibleSongs, query) }
+    val locator = Locator(lazyListState, listItemOffset = 4) {
+        trackRows.mapNotNull { it.recommendation ?: it.original?.value }
+    }
     val playlistStatesMap by remember(songIds) {
         PlaylistStateManager.getPlaylistStates(songIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
@@ -256,7 +271,8 @@ fun ArtistLocalSongs(
         }
     }
 
-    val totalDurationMs = songs?.sumOf { it.durationText?.let(::durationTextToMillis) ?: 0L } ?: 0L
+    val totalDurationMs = (songs?.sumOf { it.durationText?.let(::durationTextToMillis) ?: 0L } ?: 0L) +
+        smartShuffle.extraDuration
 
     // Hoisted swipe action preferences
     val playlistSwipeLeftAction by rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite)
@@ -323,8 +339,7 @@ fun ArtistLocalSongs(
                     val completeSelection = itemSelector.captureSelectionCompletion()
                     NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                         val items = withContext(NzikDispatchers.DATA) { snapshot.map(Song::asMediaItem) }
-                        player.addNextOffMain(items, context)
-                        completeSelection()
+                        if (player.addNextOffMain(items, context)) completeSelection()
                     }
                 },
                 ToolbarControl.ENQUEUE to artistLibraryToolbarAction(
@@ -337,8 +352,7 @@ fun ArtistLocalSongs(
                     val completeSelection = itemSelector.captureSelectionCompletion()
                     NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                         val items = withContext(NzikDispatchers.DATA) { snapshot.map(Song::asMediaItem) }
-                        player.enqueueOffMain(items, context)
-                        completeSelection()
+                        if (player.enqueueOffMain(items, context)) completeSelection()
                     }
                 },
                 ToolbarControl.SHUFFLE to artistLibraryToolbarAction(
@@ -348,8 +362,8 @@ fun ArtistLocalSongs(
                 ) {
                     val snapshot = actionSongs().toList()
                     if (snapshot.isNotEmpty() && binder != null) {
-                        binder.triggerShuffleOkFlash()
-                        Shuffler.play(binder, snapshot)
+                        val tracks = snapshot.map(Song::asMediaItem)
+                        Shuffler.play(binder, if (itemSelector.isActive) tracks else smartShuffle.mix(tracks), onQueueApplied = binder::triggerShuffleOkFlash)
                     }
                 },
                 ToolbarControl.SELECT to itemSelector,
@@ -360,12 +374,13 @@ fun ArtistLocalSongs(
                     onClick = addToPlaylist::onShortClick,
                 ),
             )
+            val availableActions = actions + (ToolbarControl.SMART_SHUFFLE to smartShuffle.action)
             CollectionButtonToolbar(
                 bookmark = { FollowButton { localArtist }.ToolBarButton() },
                 bookmarkWidth = 100.dp,
                 modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
                 buttons = ToolbarSurface.ARTIST_LIBRARY.ordered(
-                    if (offlineMode) actions - ToolbarControl.DOWNLOAD else actions,
+                    if (offlineMode) availableActions - ToolbarControl.DOWNLOAD else availableActions,
                 ),
             )
         }
@@ -383,7 +398,14 @@ fun ArtistLocalSongs(
                 val modifier = Modifier.padding(top = 12.dp, bottom = 5.dp)
                     .fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
                 if (forceShimmer) MeasuredMetadataPlaceholder(text, style, modifier, maxLines = 1)
-                else Text(text, style = style, color = colorPalette().text, modifier = modifier)
+                else Row(
+                    modifier = modifier,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(text, style = style, color = colorPalette().text)
+                    CollectionSmartShuffleCount(smartShuffle.active, smartShuffle.loading, smartShuffle.extraCount)
+                }
             }
         }
         if (songs == null) {
@@ -401,9 +423,16 @@ fun ArtistLocalSongs(
             }
         } else {
             itemsIndexed(
-                items = visibleSongs,
-                key = { _, song -> song.id }
-            ) { index, song ->
+                items = trackRows,
+                key = { _, track -> track.key(Song::id) }
+            ) { _, row ->
+                row.recommendation?.let { recommendation ->
+                    CollectionRecommendationSong(
+                        recommendation, smartShuffle, navController, itemSelector.isActive, Modifier.animateItem(),
+                    ) { visibleSongs.map(Song::asMediaItem) }
+                    return@itemsIndexed
+                }
+                val (index, song) = requireNotNull(row.original)
                 if (forceShimmer) {
                     SongItemPlaceholder(title = song.cleanTitle(), artist = song.cleanArtistsText())
                     return@itemsIndexed
@@ -434,10 +463,8 @@ fun ArtistLocalSongs(
                             onClick = {
                                 if (!itemSelector.isActive) {
                                     binder?.stopRadio()
-                                    binder?.player?.forcePlayAtIndex(
-                                        visibleSongs.map(Song::asMediaItem),
-                                        index,
-                                    )
+                                    val (tracks, start) = smartShuffle.mixPlayback(visibleSongs.map(Song::asMediaItem), index)
+                                    if (start >= 0) binder?.player?.forcePlayAtIndex(tracks, start)
                                 }
                             }
                         )
@@ -645,8 +672,7 @@ fun ArtistLocalSongs(
                                             songs?.let { songs ->
                                                 if (songs.isNotEmpty()) {
                                                     binder?.let {
-                                                        it.triggerShuffleOkFlash()
-                                                        Shuffler.play(it, songs)
+                                                        Shuffler.play(it, songs, onQueueApplied = it::triggerShuffleOkFlash)
                                                     }
                                                 }
                                             }
@@ -722,8 +748,7 @@ fun ArtistLocalSongs(
                         songs?.let { songs ->
                             if (songs.isNotEmpty()) {
                                 binder?.let {
-                                    it.triggerShuffleOkFlash()
-                                    Shuffler.play(it, songs)
+                                    Shuffler.play(it, songs, onQueueApplied = it::triggerShuffleOkFlash)
                                 }
                             }
                         }

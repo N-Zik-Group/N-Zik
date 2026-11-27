@@ -32,6 +32,37 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class CustomToolbarSettingsTest {
+    @Test fun `smart shuffle visibility is independent from shuffle on each music toolbar`() {
+        val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-smart-shuffle", Context.MODE_PRIVATE)
+        val supported = listOf(ToolbarSurface.ALBUM_ONLINE, ToolbarSurface.ARTIST_OVERVIEW, ToolbarSurface.ARTIST_LIBRARY, ToolbarSurface.ONLINE_PLAYLIST, ToolbarSurface.QUEUE)
+        for (surface in supported) {
+            val actions = surface.readVisibleActions(prefs)
+            assertEquals(ToolbarAction.SMART_SHUFFLE, actions[actions.indexOf(ToolbarAction.SHUFFLE) + 1])
+            assertTrue(SettingsNestedEntryTargets.any { it.nestedDestination?.itemId == "${surface.id}.smartShuffle" })
+            prefs.edit().putBoolean(surface.visibilityKey(ToolbarAction.SHUFFLE), false).apply()
+            assertTrue(ToolbarAction.SMART_SHUFFLE in surface.readVisibleActions(prefs))
+            prefs.edit().putBoolean(surface.visibilityKey(ToolbarAction.SMART_SHUFFLE), false).apply()
+            assertFalse(ToolbarAction.SMART_SHUFFLE in surface.readVisibleActions(prefs))
+        }
+        assertFalse(ToolbarAction.SMART_SHUFFLE in ToolbarSurface.PODCAST.actions)
+    }
+
+    @Test fun `home collection toolbar dialogs expose smart shuffle outside the device tab`() {
+        val collectionToolbars = listOf(
+            app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog.portableLists(),
+            HomeArtistsToolbarSettingsDialog.portableLists(),
+            app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog.portableLists(),
+        )
+        for (tabs in collectionToolbars) {
+            for ((tab, toolbar) in tabs) {
+                assertEquals(tab != "dev", "smart_shuffle" in toolbar.ids)
+                if (tab != "dev") {
+                    assertEquals("smart_shuffle", toolbar.ids[toolbar.ids.indexOf("shuffle") + 1])
+                }
+            }
+        }
+    }
+
     @Test fun `queue playlist actions take the position of the first visible member`() {
         val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-queue-playlist", Context.MODE_PRIVATE)
         val queue = ToolbarSurface.QUEUE
@@ -44,22 +75,16 @@ class CustomToolbarSettingsTest {
         assertEquals(ToolbarAction.ADD_TO_PLAYLIST, queue.readVisibleActions(prefs).queuePlaylistActionAnchor())
     }
 
-    @Test fun `playlist and podcast keep their default menu order and honor saved visibility and order`() {
+    @Test fun `playlist and podcast honor saved toolbar order with no reserved menu actions`() {
         val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-overflow", Context.MODE_PRIVATE)
-        val common = listOf(ToolbarAction.PLAY_NEXT, ToolbarAction.SELECT, ToolbarAction.FAVORITES)
-        val playlist = ToolbarSurface.ONLINE_PLAYLIST
-        val podcast = ToolbarSurface.PODCAST
-        val playlistMetadata = listOf(ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID)
-        assertEquals(common + playlistMetadata, playlist.readVisibleActions(prefs).filter(playlist.overflowActions::contains))
-        assertEquals(common, podcast.readVisibleActions(prefs).filter(podcast.overflowActions::contains))
-
-        prefs.edit().putString(playlist.orderKey, """["favorites","search","select"]""")
-            .putBoolean(playlist.visibilityKey(ToolbarAction.SELECT), false).apply()
-        assertEquals(
-            listOf(ToolbarAction.FAVORITES, ToolbarAction.PLAY_NEXT) + playlistMetadata,
-            playlist.readVisibleActions(prefs).filter(playlist.overflowActions::contains),
-        )
-        assertEquals(common, podcast.readVisibleActions(prefs).filter(podcast.overflowActions::contains))
+        for (surface in listOf(ToolbarSurface.ONLINE_PLAYLIST, ToolbarSurface.PODCAST)) {
+            prefs.edit().putString(surface.orderKey, """["favorites","search","select","playNext"]""")
+                .putBoolean(surface.visibilityKey(ToolbarAction.SELECT), false).apply()
+            assertEquals(
+                listOf(ToolbarAction.FAVORITES, ToolbarAction.SEARCH, ToolbarAction.PLAY_NEXT),
+                surface.readVisibleActions(prefs).filter { it != ToolbarAction.BOOKMARK }.take(3),
+            )
+        }
     }
 
     @Test fun `hidden controls retain their place and other tabs and profiles keep defaults`() {
@@ -165,13 +190,13 @@ class CustomToolbarSettingsTest {
         val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("artist-library-order", Context.MODE_PRIVATE)
         val surface = ToolbarSurface.ARTIST_LIBRARY
         assertEquals(
-            listOf("follow", "search", "locate", "shuffle", "playNext", "enqueue", "select", "favorites", "addToPlaylist", "download", "deleteDownloads"),
+            listOf("follow", "search", "locate", "shuffle", "smartShuffle", "playNext", "enqueue", "select", "favorites", "addToPlaylist", "download", "deleteDownloads"),
             surface.readVisibleActions(prefs).map(ToolbarAction::id),
         )
         prefs.edit().putString(surface.orderKey, """["download","enqueue","shuffle"]""")
             .putBoolean(surface.visibilityKey(ToolbarAction.DOWNLOAD), false).apply()
         assertEquals(
-            listOf("follow", "enqueue", "shuffle", "search", "locate", "playNext", "select", "favorites", "addToPlaylist", "deleteDownloads"),
+            listOf("follow", "enqueue", "shuffle", "search", "locate", "smartShuffle", "playNext", "select", "favorites", "addToPlaylist", "deleteDownloads"),
             surface.readVisibleActions(prefs).map(ToolbarAction::id),
         )
     }

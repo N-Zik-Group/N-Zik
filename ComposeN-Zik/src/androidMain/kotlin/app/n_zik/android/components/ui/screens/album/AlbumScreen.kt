@@ -108,6 +108,10 @@ import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.CollectionRecommendationSong
+import app.n_zik.android.components.ui.trackRows
+import app.n_zik.android.components.ui.rememberCollectionSmartShuffle
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.settings.ui.ordered
 import app.n_zik.android.ui.components.tab.toolbar.Button
@@ -600,7 +604,15 @@ fun AlbumDetails(
     fun getSongs() = itemSelector.actionTargets(visibleSongs, Song::id, Song::id, selectionOrder = true)
     fun hasSelection() = getSongs().isNotEmpty()
     fun albumMediaItem(song: Song) = song.asMediaItem.withPlaybackAlbum(browseId, album?.cleanTitle())
-    fun getMediaItems() = getSongs().map(::albumMediaItem)
+    val smartShuffle = rememberCollectionSmartShuffle(
+        browseId,
+        source = items,
+        enabled = preview == null && !initialSongsLoading && !forceSongPlaceholders,
+        actionEnabled = !itemSelector.isActive,
+    )
+    fun getMediaItems() = getSongs().map(::albumMediaItem).let {
+        if (itemSelector.isActive) it else smartShuffle.mix(it)
+    }
 
     val bookmark = AlbumBookmark(browseId)
     val albumSongIds = remember(items) { items.map(Song::id) }
@@ -620,21 +632,26 @@ fun AlbumDetails(
     val downloadALlDialog = DownloadAllSongsDialog(::getSongs)
     val shuffle = SongShuffler.fromMediaItems(::getMediaItems)
     val radio = Radio.fromMediaItem { getSongs().randomOrNull()?.let(::albumMediaItem) }
-    val locator = Locator(lazyListState, listItemOffset = ALBUM_SONGS_HEADER_ITEMS) { visibleSongs }
+    val trackRows = remember(visibleTracks, smartShuffle.recommendations, query) { smartShuffle.trackRows(visibleTracks, query) }
+    val locator = Locator(lazyListState, listItemOffset = ALBUM_SONGS_HEADER_ITEMS) {
+        trackRows.mapNotNull { it.recommendation ?: it.original?.value?.value }
+    }
     val playNext = PlayNext {
+        val player = binder?.player ?: return@PlayNext
         val songsToAdd = getSongs().ifEmpty { return@PlayNext }
-        itemSelector.isActive = false
+        val completeSelection = itemSelector.captureSelectionCompletion()
         coroutineScope.launch {
             val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(::albumMediaItem) }
-            binder?.player?.addNextOffMain(mediaItems, appContext())
+            if (player.addNextOffMain(mediaItems, appContext())) completeSelection()
         }
     }
     val enqueue = Enqueue {
+        val player = binder?.player ?: return@Enqueue
         val songsToAdd = getSongs().ifEmpty { return@Enqueue }
-        itemSelector.isActive = false
+        val completeSelection = itemSelector.captureSelectionCompletion()
         coroutineScope.launch {
             val mediaItems = withContext(NzikDispatchers.DATA) { songsToAdd.map(::albumMediaItem) }
-            binder?.player?.enqueueOffMain(mediaItems, appContext())
+            if (player.enqueueOffMain(mediaItems, appContext())) completeSelection()
         }
     }
     val addToPlaylist = PlaylistsMenu.forSongs(
@@ -780,10 +797,11 @@ fun AlbumDetails(
                             ) {
                                 val totalDuration = formatAsTime(items.sumOf {
                                     durationTextToMillis(it.durationText ?: "")
-                                })
+                                } + smartShuffle.extraDuration)
 
+                                val trackCount = items.size + smartShuffle.extraCount
                                 val summary = pluralStringResource(
-                                    R.plurals.library_song_count_with_duration, items.size, items.size, totalDuration,
+                                    R.plurals.library_song_count_with_duration, trackCount, trackCount, totalDuration,
                                 )
                                 val style = typography().xs.medium
                                 if (initialSongsLoading) BasicText(
@@ -795,6 +813,10 @@ fun AlbumDetails(
                                 )
                                 else if (forceSongPlaceholders) MeasuredMetadataPlaceholder(summary, style, maxLines = 1)
                                 else BasicText(summary, style = style, maxLines = 1)
+                                CollectionSmartShuffleCount(
+                                    smartShuffle.active, smartShuffle.loading, smartShuffle.extraCount,
+                                    Modifier.padding(start = 12.dp),
+                                )
                             }
                         }
 
@@ -826,8 +848,8 @@ fun AlbumDetails(
                                     )
                                     else bookmark.ToolBarButton()
                                 },
-                                actions = actions,
-                                enabled = !initialSongsLoading,
+                                actions = actions + (ToolbarControl.SMART_SHUFFLE to smartShuffle.action),
+                                enabled = !initialSongsLoading && !forceSongPlaceholders,
                                 radioActive = radio.active,
                             )
                         }
@@ -898,9 +920,17 @@ fun AlbumDetails(
                         if (initialSongsLoading) item("album-songs-preview") {
                             SongItemPlaceholders(count = 4, showThumbnail = false)
                         } else itemsIndexed(
-                            items = visibleTracks,
-                            key = { _, track -> track.value.id }
-                        ) { visibleIndex, (index, song) ->
+                            items = trackRows,
+                            key = { _, track -> track.key { it.value.id } }
+                        ) { _, row ->
+                            row.recommendation?.let { recommendation ->
+                                CollectionRecommendationSong(
+                                    recommendation, smartShuffle, navController, itemSelector.isActive, Modifier.animateItem(),
+                                ) { visibleSongs.map(::albumMediaItem) }
+                                return@itemsIndexed
+                            }
+                            val (visibleIndex, track) = requireNotNull(row.original)
+                            val (index, song) = track
                             if (forceSongPlaceholders) {
                                 SongItemPlaceholder(
                                     trackNumber = index + 1,
@@ -949,10 +979,8 @@ fun AlbumDetails(
                                     },
                                     onClick = {
                                         binder?.stopRadio()
-                                        binder?.player?.forcePlayAtIndex(
-                                            visibleSongs.map(::albumMediaItem),
-                                            visibleIndex,
-                                        )
+                                        val (tracks, start) = smartShuffle.mixPlayback(visibleSongs.map(::albumMediaItem), visibleIndex)
+                                        if (start >= 0) binder?.player?.forcePlayAtIndex(tracks, start)
                                     }
                                 )
                             }

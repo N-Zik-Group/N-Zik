@@ -162,7 +162,10 @@ import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.innertube.utils.from
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.rememberCollectionSmartShuffle
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.withPlaybackAlbum
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -390,23 +393,53 @@ fun HomeAlbums(
     val displayedGrid = rememberHomeFilteredGrid("albums", lazyGridState, gridReady, itemsOnDisplay) { it.id }
     val action = rememberHomeSongAction("HomeAlbum") {
         if (!gridReady || preview != null) return@rememberHomeSongAction null
-        val eligibleIds = actionTargets().map { it.id }
+        val targets = actionTargets()
+        val eligibleIds = targets.map { it.id }
+        val albumsById = targets.associateBy(Album::id)
         if (itemSelector.isActive && eligibleIds.isEmpty()) return@rememberHomeSongAction null
-        val load: suspend () -> List<Song> = {
-            loadHomeLibraryGroupSongs(eligibleIds, Database.songAlbumMapTable::songsForHomeAlbums, ::isDeviceAlbumId) {
-                context.scanDeviceLibrary().albumSongIds
+        val load: suspend () -> List<Pair<Song, Album>> = {
+            loadHomeLibraryGroupItems(
+                eligibleIds,
+                Database.songAlbumMapTable::songsForHomeAlbums,
+                ::isDeviceAlbumId,
+                loadDeviceGroups = { context.scanDeviceLibrary().albumSongIds },
+            ) { albumId, song ->
+                song to albumsById.getValue(albumId)
             }
         }
         load
     }
-    val shuffle = SongShuffler.deferred(action::snapshot)
+    val captureMediaItems = {
+        action.snapshot()?.let { load ->
+            suspend {
+                withContext(NzikDispatchers.DATA) {
+                    load()?.map { (song, album) ->
+                        val item = song.asMediaItem
+                        if (isDeviceAlbumId(album.id)) item else item.withPlaybackAlbum(album.id, album.cleanTitle())
+                    }
+                }
+            }
+        }
+    }
+    val smartShuffle = rememberCollectionSmartShuffle(
+        key = itemsOnDisplay,
+        enabled = gridReady && albumType != AlbumsType.OnDevice && preview == null &&
+            itemsOnDisplay.any { !isDeviceAlbumId(it.id) },
+        actionEnabled = !itemSelector.isActive,
+        loadSource = { action.snapshot()?.invoke().orEmpty().map { it.first } },
+    )
+    val shuffle = SongShuffler.deferredMediaItems {
+        val includeRecommendations = !itemSelector.isActive
+        val load = captureMediaItems()
+        load?.let { suspend { it()?.let { tracks -> if (includeRecommendations) smartShuffle.mix(tracks) else tracks } } }
+    }
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
-        val load = action.snapshot() ?: return
+        val load = captureMediaItems() ?: return
         val endSelection = itemSelector.captureSelectionCompletion()
         val menuKey = menuState.transitionKey
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            val items = withContext(NzikDispatchers.DATA) { load()?.map { it.asMediaItem } ?: emptyList() }
+            val items = load().orEmpty()
             val queued = if (playNext) player.addNextOffMain(items, context)
                 else player.enqueueOffMain(items, context)
             if (queued) {
@@ -420,9 +453,7 @@ fun HomeAlbums(
     val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
-        captureMediaItems = {
-            action.snapshot()?.let { load -> { load()?.map { it.asMediaItem } } }
-        },
+        captureMediaItems = captureMediaItems,
         onFailure = { error, preview ->
             Timber.tag("HomeAlbum").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
@@ -431,7 +462,7 @@ fun HomeAlbums(
     )
     val exportDialog = ExportSongsToCSVDialog.deferred(
         "Albums",
-        action::snapshot,
+        { action.snapshot()?.let { load -> suspend { load()?.map { it.first } } } },
         selectionActive = { itemSelector.isActive },
     )
     val eligibleSelection by remember(gridReady, albumType) {
@@ -516,6 +547,7 @@ fun HomeAlbums(
                             "search" -> add(search)
                             "randomizer" -> add(randomizer)
                             "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
+                            "smart_shuffle" -> add(smartShuffle.action)
                             "item_selector" -> add(itemSelector)
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
@@ -555,6 +587,10 @@ fun HomeAlbums(
                     exportDialog.Render()
                     GlassToolbarButtons( toolbarButtons )
                     search.SearchBar( this@Column )
+                    CollectionSmartShuffleCount(
+                        smartShuffle.active, smartShuffle.loading, smartShuffle.extraCount,
+                        Modifier.align(Alignment.CenterHorizontally),
+                    )
                 }
 
                 Column {

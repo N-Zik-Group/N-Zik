@@ -10,12 +10,14 @@ import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.enums.RecommendationsNumber
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
+import app.n_zik.android.playback.utils.smartShuffleInsertionPositions
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.requests.relatedSongs
 
 internal suspend fun loadLocalPlaylistRecommendations(
     items: List<Song>,
     recommendationsNumber: RecommendationsNumber,
+    allowSong: (Song) -> Boolean = { true },
 ): Map<Song, Int> {
     val remoteTracks = items.filterNot(Song::isLocal)
     if (remoteTracks.isEmpty()) return emptyMap()
@@ -53,7 +55,7 @@ internal suspend fun loadLocalPlaylistRecommendations(
                         thumbnailUrl = songItem.thumbnail?.url
                     )
 
-                    if (!allRelatedSongs.any { it.id == song.id }) {
+                    if (allowSong(song) && !allRelatedSongs.any { it.id == song.id }) {
                         allRelatedSongs.add(song)
                     }
                 }
@@ -70,8 +72,7 @@ internal suspend fun loadLocalPlaylistRecommendations(
     }
 
     // The service may return fewer distinct candidates than the target.
-    val finalRecommendations = allRelatedSongs.take(targetRecommendations)
-    return finalRecommendations.associate { song ->
-        song to (0..items.size).random()
-    }
+    val candidates = allRelatedSongs.take(targetRecommendations)
+    val positions = smartShuffleInsertionPositions(items.size, candidates)
+    return candidates.associateWith(positions::getValue)
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
@@ -25,11 +26,14 @@ class EllipsisMenuComponent private constructor(
     companion object {
         @JvmStatic
         @Composable
-        fun init( items: () -> List<Button> ) = EllipsisMenuComponent(
-            items,
-            LocalMenuState.current,
-            rememberPreference( menuStyleKey, MenuStyle.List )
-        )
+        fun init(items: () -> List<Button>): EllipsisMenuComponent {
+            val currentItems = rememberUpdatedState(items)
+            return EllipsisMenuComponent(
+                { currentItems.value() },
+                LocalMenuState.current,
+                rememberPreference(menuStyleKey, MenuStyle.List),
+            )
+        }
     }
 
     override val iconId: Int = R.drawable.ellipsis_horizontal

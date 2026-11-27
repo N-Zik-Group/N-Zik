@@ -235,6 +235,8 @@ import app.n_zik.android.utils.showMiniPlayerRadioKey
 import app.n_zik.android.utils.showMiniPlayerRepeatKey
 import app.n_zik.android.utils.showMiniPlayerShareKey
 import app.n_zik.android.utils.showMiniPlayerShuffleKey
+import app.n_zik.android.utils.showMiniPlayerSmartShuffleKey
+import app.n_zik.android.utils.showButtonPlayerSmartShuffleKey
 import app.n_zik.android.utils.showMiniPlayerSkipBackKey
 import app.n_zik.android.utils.showMiniPlayerSkipForwardKey
 import app.n_zik.android.utils.showMiniPlayerSleepTimerKey
@@ -821,12 +823,16 @@ private fun ThemeFields.player(schemaVersion: Int) {
     optional("miniPlayer") {
         group("miniPlayer") {
             option<MiniPlayerType>("type", miniPlayerTypeKey, MiniPlayerType.Essential)
-            order("buttonOrder", miniPlayerButtonOrderKey, miniPlayerButtons)
+            order("buttonOrder", miniPlayerButtonOrderKey, if (schemaVersion >= ThemeAppearanceV3) miniPlayerButtons
+                else miniPlayerButtons - "smart_shuffle")
             group("visibleButtons") {
                 flag("playPause", showMiniPlayerPlayPauseKey, true)
                 flag("skipBack", showMiniPlayerSkipBackKey, true)
                 flag("skipForward", showMiniPlayerSkipForwardKey, true)
                 flag("shuffle", showMiniPlayerShuffleKey, false)
+                if (schemaVersion >= ThemeAppearanceV3) {
+                    optional("smartShuffle") { flag("smartShuffle", showMiniPlayerSmartShuffleKey, false) }
+                }
                 flag("repeat", showMiniPlayerRepeatKey, false)
                 flag("like", showMiniPlayerLikeKey, false)
                 flag("addToPlaylist", showMiniPlayerAddToPlaylistKey, false)
@@ -882,8 +888,8 @@ private fun ThemeFields.player(schemaVersion: Int) {
     number("coverSpacing", thumbnailSpacingKey, -100.0..100.0, 0f)
     flag("showHeaderIcons", playerInfoShowIconsKey, true)
     val actionOrderField = if (schemaVersion >= ThemeAppearanceV3) "bottomActionOrder" else "actionBarOrder"
-    val legacyActionIds = playerActionBarThemeIds() - ToolbarAction.AUDIO_VIDEO.id
-    val actionIds = if (schemaVersion >= ThemeAppearanceV3) legacyActionIds + ToolbarAction.AUDIO_VIDEO.id else legacyActionIds
+    val legacyActionIds = playerActionBarThemeIds() - ToolbarAction.AUDIO_VIDEO.id - "smart_shuffle"
+    val actionIds = if (schemaVersion >= ThemeAppearanceV3) playerActionBarThemeIds() else legacyActionIds
     optional(actionOrderField) { order(actionOrderField, playerActionBarButtonOrderKey, actionIds) }
     if (schemaVersion >= ThemeAppearanceV3) {
         order(
@@ -903,6 +909,9 @@ private fun ThemeFields.player(schemaVersion: Int) {
         flag("loop", showButtonPlayerLoopKey, false)
         flag("lyrics", showButtonPlayerLyricsKey, true)
         flag("shuffle", showButtonPlayerShuffleKey, true)
+        if (schemaVersion >= ThemeAppearanceV3) {
+            optional("smartShuffle") { flag("smartShuffle", showButtonPlayerSmartShuffleKey, false) }
+        }
         flag("sleepTimer", showButtonPlayerSleepTimerKey, false)
         flag("menu", showButtonPlayerMenuKey, false)
         flag("startRadio", showButtonPlayerStartRadioKey, false)

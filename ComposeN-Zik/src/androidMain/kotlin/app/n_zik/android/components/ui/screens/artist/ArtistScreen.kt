@@ -47,8 +47,6 @@ import app.n_zik.android.R
 import app.n_zik.android.artistThumbnailShape
 import app.n_zik.android.components.OfflineContent
 import app.n_zik.android.components.artist.ArtistFollowButton
-import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
-import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.musicbrainz.InfoAndCommunity
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.dock.artistDockTabs
@@ -56,9 +54,6 @@ import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.navigation.rememberTopContentInsetProvider
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.themePreviewArtistPage
-import app.n_zik.android.components.tab.ItemSelector
-import app.n_zik.android.components.tab.Radio
-import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
 import app.n_zik.android.components.settings.ui.ToolbarSurface
@@ -79,10 +74,8 @@ import app.n_zik.android.extensions.musicbrainz.MBMetadataHelper
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.typography
-import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.screens.artist.artistLibraryToolbarAction
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
-import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.ui.screens.artist.ArtistLocalSongs
 import app.n_zik.android.ui.styling.Dimensions
@@ -340,6 +333,7 @@ private fun ArtistLoadingContent(
     overview: Boolean,
     cachedArtist: Artist? = null,
 ) {
+    val offline by OfflineMode.rememberEnabled()
     val follow: @Composable () -> Unit = {
         ArtistFollowButton(likeState = null, onClick = {}, enabled = false)
     }
@@ -359,37 +353,18 @@ private fun ArtistLoadingContent(
             }
             item("action_buttons") {
                 val padding = Modifier.padding(top = 12.dp, bottom = 8.dp)
-                if (overview) {
-                    val visible = ToolbarSurface.ARTIST_OVERVIEW.visibleActions()
-                    val actions = mapOf(
-                        ToolbarControl.SEARCH to artistLibraryToolbarAction(ToolbarControl.SEARCH),
-                        ToolbarControl.LOCATE to artistLibraryToolbarAction(ToolbarControl.LOCATE),
-                        ToolbarControl.SHUFFLE to SongShuffler { emptyList() },
-                        ToolbarControl.PLAY_NEXT to PlayNext {},
-                        ToolbarControl.ENQUEUE to Enqueue {},
-                        ToolbarControl.RADIO to Radio { emptyList() },
-                        ToolbarControl.SELECT to ItemSelector<Song>(),
-                        ToolbarControl.FAVORITES to artistLibraryToolbarAction(ToolbarControl.FAVORITES),
-                        ToolbarControl.ADD_TO_PLAYLIST to artistLibraryToolbarAction(ToolbarControl.ADD_TO_PLAYLIST),
-                        ToolbarControl.DOWNLOAD to DownloadAllSongsDialog { emptyList() },
-                        ToolbarControl.DELETE_DOWNLOADS to DeleteAllDownloadedSongsDialog { emptyList() },
-                    )
-                    CollectionButtonToolbar(
-                        bookmark = follow,
-                        buttons = visible.mapNotNull(actions::get),
-                        bookmarkWidth = 100.dp,
-                        enabled = false, modifier = padding,
-                    )
-                } else {
-                    val visible = ToolbarSurface.ARTIST_LIBRARY.visibleActions()
-                    val actions = visible.filterNot { it == ToolbarControl.FOLLOW }
-                    CollectionButtonToolbar(
-                        bookmark = follow,
-                        buttons = actions.map { artistLibraryToolbarAction(it) },
-                        enabled = false,
-                        bookmarkWidth = 100.dp, modifier = padding,
-                    )
+                val surface = if (overview) ToolbarSurface.ARTIST_OVERVIEW else ToolbarSurface.ARTIST_LIBRARY
+                val actions = surface.visibleActions().filterNot {
+                    it == ToolbarControl.FOLLOW ||
+                        (offline && it == ToolbarControl.DOWNLOAD)
                 }
+                CollectionButtonToolbar(
+                    bookmark = follow,
+                    buttons = actions.map { artistLibraryToolbarAction(it) },
+                    enabled = false,
+                    bookmarkWidth = 100.dp,
+                    modifier = padding,
+                )
             }
             if (overview) item("info_and_community") {
                 InfoAndCommunity(

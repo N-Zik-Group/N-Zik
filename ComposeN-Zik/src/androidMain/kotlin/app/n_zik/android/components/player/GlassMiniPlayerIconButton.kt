@@ -47,6 +47,8 @@ import app.n_zik.android.components.navigation.dock.LocalCompactMiniPlayerProgre
 import app.n_zik.android.components.ui.nativeControlIndication
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.uiRoundnessShape
+import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.components.menu.menuToggleSemantics
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -64,18 +66,25 @@ fun GlassMiniPlayerIconButton(
     // Glass seats stay uniform; this option preserves the native glyph size.
     preserveNativeGeometry: Boolean = false,
     keepGlyphContrast: Boolean = false,
+    loading: Boolean = false,
+    selected: Boolean? = null,
 ) {
     val glyphColor = miniPlayerGlyphColor(settings, color, enabled || keepGlyphContrast)
     MiniPlayerIconSurface(
         enabled, rotationAngle, alpha, contentDescription, onClick, onLongClick, settings, backdrop, preserveNativeGeometry,
         nativePressMotion = icon == R.drawable.play_skip_back || icon == R.drawable.play_skip_forward,
+        selected = selected,
     ) {
-        Image(
-            painter = painterResource(icon),
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(glyphColor),
-            modifier = Modifier.size(it).testTag("mini.player.glyph"),
-        )
+        if (loading) {
+            InlineCircularLoader(Modifier.size(it), color = color)
+        } else {
+            Image(
+                painter = painterResource(icon),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(glyphColor),
+                modifier = Modifier.size(it).testTag("mini.player.glyph"),
+            )
+        }
     }
 }
 
@@ -122,6 +131,7 @@ private fun MiniPlayerIconSurface(
     backdrop: Backdrop?,
     preserveNativeGeometry: Boolean,
     nativePressMotion: Boolean,
+    selected: Boolean? = null,
     icon: @Composable (androidx.compose.ui.unit.Dp) -> Unit,
 ) {
     val fold = LocalCompactMiniPlayerProgress.current
@@ -131,7 +141,7 @@ private fun MiniPlayerIconSurface(
     val shape = uiRoundnessShape()
     val interactionSource = remember { MutableInteractionSource() }
     MiniPlayerActionCanvas(geometry, Modifier.rotate(rotationAngle)) { canvas ->
-        val modifier = canvas.alpha(alpha).semantics {
+        val modifier = canvas.alpha(alpha).menuToggleSemantics(selected).semantics {
             contentDescription = description
             if (!enabled) disabled()
         }

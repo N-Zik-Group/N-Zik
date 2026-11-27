@@ -84,6 +84,7 @@ import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.utils.Preference
+import app.n_zik.android.playback.utils.asSmartShuffleRecommendation
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.builtInPlaylistKey
@@ -228,7 +229,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     }
     var isRecommendationEnabled by remember { mutableStateOf(false) }
-    val showRecommendations = isRecommendationEnabled &&
+    val showRecommendations = isRecommendationEnabled && !offlineMode &&
         "smart_shuffle" in HomeSongsToolbarSettingsDialog.tabAvailableIds[builtInPlaylist].orEmpty()
     var recommendationCount by remember { mutableStateOf(0) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
@@ -248,6 +249,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     var deleteDialogAction by remember { mutableStateOf({}) }
 
     val itemsOnDisplayState = remember { mutableStateListOf<Song>() }
+    val recommendationsOnDisplay = remember(builtInPlaylist) { mutableStateOf(emptySet<String>()) }
 
     val itemSelector = ItemSelector<Song>()
     fun visibleSongs() = itemsOnDisplayState.filter { song ->
@@ -494,7 +496,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         )
     }
 
-    val shuffle = SongShuffler(::getSongs)
+    val shuffle = SongShuffler.fromMediaItems {
+        val recommendationIds = recommendationsOnDisplay.value
+        getSongs().map { it.asMediaItem.asSmartShuffleRecommendation(it.id in recommendationIds) }
+    }
     val smartShuffle = SmartShuffle(
         isRecommendationEnabled = { isRecommendationEnabled },
         isRecommendationsLoading = { isRecommendationsLoading },
@@ -506,8 +511,11 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         if (songs.isEmpty()) return
         val endSelection = itemSelector.captureSelectionCompletion()
         val menuKey = queueMenuState.transitionKey
+        val recommendationIds = recommendationsOnDisplay.value
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            val items = withContext(NzikDispatchers.DATA) { songs.map(Song::asMediaItem) }
+            val items = withContext(NzikDispatchers.DATA) {
+                songs.map { it.asMediaItem.asSmartShuffleRecommendation(it.id in recommendationIds) }
+            }
             val queued = if (playNext) player.addNextOffMain(items, context)
                 else player.enqueueOffMain(items, context)
             if (queued) {
@@ -709,37 +717,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
                                 }
-                                if (showRecommendations) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.smart_shuffle),
-                                            contentDescription = null,
-                                            tint = colorPalette().textSecondary,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                        if (isRecommendationsLoading) {
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            InlineCircularLoader(
-                                                modifier = Modifier.size(12.dp),
-                                                color = colorPalette().textSecondary
-                                            )
-                                        } else if (recommendationCount > 0) {
-                                            BasicText(
-                                                text = recommendationCount.toString(),
-                                                style = TextStyle(
-                                                    color = colorPalette().textSecondary,
-                                                    fontStyle = typography().xxxs.semiBold.fontStyle,
-                                                    fontWeight = typography().xxxs.semiBold.fontWeight,
-                                                    fontSize = typography().xxxs.semiBold.fontSize
-                                                ),
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis,
-                                                modifier = Modifier.padding( start = 4.dp )
-                                            )
-                                        }
-                                        Spacer(modifier = Modifier.width(5.dp))
-                                    }
-                                }
+                                app.n_zik.android.components.ui.CollectionSmartShuffleCount(
+                                    showRecommendations, isRecommendationsLoading, recommendationCount,
+                                )
                             }
                         }
                     }
@@ -938,9 +918,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                         val songsContent: @Composable () -> Unit = {
                             HomeSongs(
                                 navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState,
+                                recommendationsOnDisplay = recommendationsOnDisplay,
                                 onRecommendationCountChange = { count -> recommendationCount = count },
                                 onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading },
-                                isRecommendationEnabled = isRecommendationEnabled,
+                                isRecommendationEnabled = showRecommendations,
                                 refreshKey = matchRefreshKey,
                                 onMatchClick = openMatch,
                                 headerPadding = headerPadding,

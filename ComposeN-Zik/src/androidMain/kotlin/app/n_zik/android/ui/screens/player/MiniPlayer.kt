@@ -13,6 +13,13 @@ import app.n_zik.android.utils.displayTrackTitle
 import app.n_zik.android.ui.saveable.TolerantBoolStateSaver
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
+import app.n_zik.android.playback.utils.isSmartShuffleRecommendation
+import app.n_zik.android.components.ui.screens.player.isQueuePodcast
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -282,7 +289,8 @@ fun MiniPlayer(
     val slot4Key = rememberPreference(miniPlayerSlot4Key, "")
 
     // Folding changes presentation only; every configured action keeps its node and handler.
-    val activeButtons = rememberMiniPlayerButtons()
+    val buttons = rememberMiniPlayerButtons()
+    val activeButtons = if (preview == null && mediaItem.isQueuePodcast) buttons - MiniPlayerButton.SmartShuffle else buttons
 
     val color = colorPalette()
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)
@@ -660,6 +668,18 @@ fun MiniPlayer(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    AnimatedVisibility(
+                        visible = mediaItem.isSmartShuffleRecommendation,
+                        enter = fadeIn() + expandHorizontally(),
+                        exit = fadeOut() + shrinkHorizontally(),
+                    ) {
+                        Icon(
+                            painterResource(R.drawable.smart_shuffle),
+                            contentDescription = stringResource(R.string.recommendations_action_smart_shuffle),
+                            tint = colorPalette.accent,
+                            modifier = Modifier.size(14.dp),
+                        )
+                    }
                     if ( mediaItem.isExplicit )
                         ExplicitBadge(
                             color = colorPalette.text,

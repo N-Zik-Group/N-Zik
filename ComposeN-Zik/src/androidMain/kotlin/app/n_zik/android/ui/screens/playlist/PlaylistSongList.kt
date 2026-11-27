@@ -114,6 +114,10 @@ import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.settings.ui.visibleActions
 import app.n_zik.android.components.ui.CollectionFavoritesKind
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.CollectionRecommendationSong
+import app.n_zik.android.components.ui.trackRows
+import app.n_zik.android.components.ui.rememberCollectionSmartShuffle
 import app.n_zik.android.components.ui.rememberCollectionFavoritesButton
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.utils.player.addNextOffMain
@@ -373,6 +377,16 @@ fun PlaylistSongList(
         LikeStateManager.getLikeStates(playlistSongIds)
     }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
     val itemSelector = key(browseId) { ItemSelector<Song>() }
+    val recommendationSource = remember(playlistSongs) { playlistSongs.map(Innertube.SongItem::asSong) }
+    val smartShuffle = rememberCollectionSmartShuffle(
+        browseId,
+        recommendationSource,
+        enabled = preview == null && !showSongPlaceholders && !ltGuestLocked,
+        actionEnabled = !itemSelector.isActive,
+    )
+    val trackRows = remember(filteredPageSongs, smartShuffle.recommendations, search.filterQuery) {
+        smartShuffle.trackRows(filteredPageSongs.orEmpty(), search.filterQuery)
+    }
     val collectionMediaItems = remember(playlistSongs) { playlistSongs.map(Innertube.SongItem::asMediaItem) }
     fun selectedSongs() = itemSelector.actionTargets(filteredPageSongs.orEmpty(), Song::id,
         { collectionFavoriteSongId(it.key) })
@@ -384,8 +398,8 @@ fun PlaylistSongList(
             return
         }
         binder?.let {
-            it.triggerShuffleOkFlash()
-            Shuffler.play(it, songs.map(Innertube.SongItem::asMediaItem))
+            val tracks = songs.map(Innertube.SongItem::asMediaItem)
+            Shuffler.play(it, if (itemSelector.isActive) tracks else smartShuffle.mix(tracks), onQueueApplied = it::triggerShuffleOkFlash)
         }
     }
     val actionSongs = selectedSongs()
@@ -505,11 +519,13 @@ fun PlaylistSongList(
             dismissMenu = false,
         ) {
             val items = playableSelection().map(Innertube.SongItem::asMediaItem)
+            val completeSelection = itemSelector.captureSelectionCompletion()
             val menuKey = menuState.transitionKey
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                if (queueMediaItemsOffMain(items, context, playNext = false) { binder?.player } &&
-                    menuState.isCurrentMenu(menuKey)
-                ) menuState.hide()
+                if (queueMediaItemsOffMain(items, context, playNext = false) { binder?.player }) {
+                    completeSelection()
+                    if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+                }
             }
         },
         ToolbarControl.SHUFFLE to collectionToolbarAction(
@@ -520,7 +536,7 @@ fun PlaylistSongList(
         ),
         ToolbarControl.RADIO to collectionToolbarAction(
             ToolbarControl.RADIO,
-            enabled = !toolbarLoading && canUseRadio && (!offlineMode || radioActive),
+            enabled = canUseRadio && (radioActive || (!toolbarLoading && !offlineMode)),
             icon = radioButtonIcon(),
             label = binder?.radioActionTextRes ?: R.string.radio_action_start,
             selected = radioActive,
@@ -534,8 +550,10 @@ fun PlaylistSongList(
         },
         ToolbarControl.ADD_TO_PLAYLIST to addAction,
     )
-    val toolbarButtons = toolbarOrder.mapNotNull { directToolbarActions[it] ?: overflowActions[it] }
-    val menuButtons = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull(overflowActions::get).toSet()
+    val toolbarButtons = toolbarOrder.mapNotNull {
+        if (it == ToolbarControl.SMART_SHUFFLE) smartShuffle.action
+        else directToolbarActions[it] ?: overflowActions[it]
+    }
 
     AboveMenuDialogPresence(menuState, visible = pendingDownloadSongs != null) {
         ConfirmationDialog(
@@ -707,12 +725,12 @@ fun PlaylistSongList(
                                     pluralStringResource(R.plurals.album_loading_song_count, loadedSongsCount, loadedSongsCount)
                                 } else stringResource(R.string.common_loading_message)
                             } else {
-                                val songCount = filteredPageSongs?.size ?: 0
+                                val songCount = (filteredPageSongs?.size ?: 0) + smartShuffle.extraCount
                                 pluralStringResource(
                                     R.plurals.library_song_count_with_duration,
                                     songCount,
                                     songCount,
-                                    formatAsTime(totalPlayTimes),
+                                    formatAsTime(totalPlayTimes + smartShuffle.extraDuration),
                                 )
                             }
                             if (!isInitialLoading && showSongPlaceholders) {
@@ -722,13 +740,19 @@ fun PlaylistSongList(
                                     modifier = Modifier.align(Alignment.BottomCenter),
                                     width = 0.32f,
                                 )
-                            } else BasicText(
-                                text = playlistSummary,
-                                style = if (isInitialLoading) typography().xs.medium.copy(color = colorPalette().textSecondary)
-                                    else typography().xs.medium,
-                                maxLines = 1,
+                            } else Row(
                                 modifier = Modifier.align(Alignment.BottomCenter),
-                            )
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                BasicText(
+                                    text = playlistSummary,
+                                    style = if (isInitialLoading) typography().xs.medium.copy(color = colorPalette().textSecondary)
+                                        else typography().xs.medium,
+                                    maxLines = 1,
+                                )
+                                CollectionSmartShuffleCount(smartShuffle.active, smartShuffle.loading, smartShuffle.extraCount)
+                            }
 
 
                             CollectionArtworkTopAction {
@@ -849,8 +873,7 @@ fun PlaylistSongList(
                             CollectionButtonToolbar(
                                 bookmark = bookmarkAction,
                                 buttons = toolbarButtons,
-                                menuButtons = menuButtons,
-                                overflowEnabled = !toolbarLoading,
+                                enabled = !toolbarLoading,
                             )
                         } else if (isInitialLoading) {
                             CollectionButtonToolbar(
@@ -861,8 +884,7 @@ fun PlaylistSongList(
                                     )
                                 },
                                 buttons = toolbarButtons,
-                                menuButtons = menuButtons,
-                                overflowEnabled = false,
+                                enabled = false,
                             )
                         } else {
                             BasicText(
@@ -1025,10 +1047,17 @@ fun PlaylistSongList(
                         SongItemPlaceholder(title = song?.cleanTitle(), artist = song?.cleanArtistsText())
                     }
                 } else items(
-                    items = filteredPageSongs.orEmpty(),
-                    key = Innertube.SongItem::key,
+                    items = trackRows,
+                    key = { it.key(Innertube.SongItem::key) },
                     contentType = { "song" },
-                ) { ytSong ->
+                ) { row ->
+                    row.recommendation?.let { recommendation ->
+                        CollectionRecommendationSong(
+                            recommendation, smartShuffle, navController, itemSelector.isActive, Modifier.animateItem(),
+                        ) { filteredPageSongs.orEmpty().filterNot { it.key in dislikedSongs }.map(Innertube.SongItem::asMediaItem) }
+                        return@items
+                    }
+                    val ytSong = requireNotNull(row.original).value
                     val storedSong = storedSongs[ytSong.key]
                     val song = remember(ytSong, storedSong) { resolveSongDisplayMetadata(ytSong.asSong, storedSong) }
 
@@ -1069,10 +1098,8 @@ fun PlaylistSongList(
                                         ?.let { (tracks, index) ->
                                             search.clearAndClose()
                                             binder?.stopRadio()
-                                            binder?.player?.forcePlayAtIndex(
-                                                tracks.map(Innertube.SongItem::asMediaItem),
-                                                index,
-                                            )
+                                            val (playback, start) = smartShuffle.mixPlayback(tracks.map(Innertube.SongItem::asMediaItem), index)
+                                            if (start >= 0) binder?.player?.forcePlayAtIndex(playback, start)
                                         }
                                 }
                             }

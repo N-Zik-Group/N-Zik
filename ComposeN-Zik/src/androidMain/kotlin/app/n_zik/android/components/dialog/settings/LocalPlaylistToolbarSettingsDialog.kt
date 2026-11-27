@@ -32,6 +32,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "insertion_position" to R.string.playlist_insertion_position,
         "pin" to R.string.playlist_action_toggle_pinned,
         "search" to R.string.search_title,
+        "smart_shuffle" to R.string.recommendations_action_smart_shuffle,
         "position_lock" to R.string.playlist_reorder_lock_toggle_label,
         "match" to R.string.song_matching_action_open,
         "renumber" to R.string.playlist_action_shuffle_positions,
@@ -58,7 +59,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
 
 
     val allButtonIds = listOf(
-        "insertion_position", "pin", "search", "position_lock",
+        "insertion_position", "pin", "search", "position_lock", "smart_shuffle",
         "play_next", "enqueue", "item_selector", "add_to_favorite", "add_to_playlist",
         "download_all", "delete_downloads", "match", "renumber",
         "sync", "refresh_on_open", "listen_on_yt",
@@ -149,6 +150,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 "insertion_position" -> ToggleItem(uid, R.drawable.sort_vertical, insertionPositionLabel, pk, true)
                 "pin" -> ToggleItem(uid, R.drawable.pin_filled, pinLabel, pk, true)
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
+                "smart_shuffle" -> ToggleItem(uid, R.drawable.smart_shuffle, stringResource(searchLabelResources.getValue(id)), pk, true)
                 "position_lock" -> ToggleItem(uid, R.drawable.locked, positionLockLabel, pk, true)
                 "match" -> ToggleItem(uid, R.drawable.alert, matchLabel, pk, true)
                 "renumber" -> ToggleItem(uid, R.drawable.position, renumberLabel, pk, true)

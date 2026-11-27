@@ -12,6 +12,7 @@ enum class MiniPlayerButton(
     SkipBack(R.drawable.play_skip_back, R.string.player_action_previous),
     SkipForward(R.drawable.play_skip_forward, R.string.player_action_next),
     Shuffle(R.drawable.shuffle, R.string.player_mini_action_shuffle),
+    SmartShuffle(R.drawable.smart_shuffle, R.string.recommendations_action_smart_shuffle),
     Repeat(R.drawable.repeat, R.string.player_action_repeat),
     Like(R.drawable.heart, R.string.player_action_like),
     AddToPlaylist(R.drawable.playlist, R.string.playlist_actions_title),

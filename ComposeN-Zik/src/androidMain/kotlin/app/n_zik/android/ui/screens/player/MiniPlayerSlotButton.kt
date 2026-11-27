@@ -35,6 +35,8 @@ import app.n_zik.android.LocalIsShowingLyrics
 import app.n_zik.android.LocalIsShowingVisualizer
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
+import app.n_zik.android.components.ui.screens.player.LocalQueueSmartShuffle
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
@@ -157,6 +159,23 @@ internal fun MiniPlayerSlotButton(
                 alpha = guestLockAlpha
             )
         }
+        MiniPlayerButton.SmartShuffle -> {
+            val smartShuffle = LocalQueueSmartShuffle.current.takeIf { LocalThemePreview.current == null }
+            GlassMiniPlayerIconButton(
+                icon = button.iconRes,
+                color = if (smartShuffle?.active == true || smartShuffle?.loading == true) {
+                    controlsColorText
+                } else colorPalette().textDisabled,
+                contentDescription = stringResource(button.labelRes),
+                enabled = smartShuffle?.enabled == true && !listenTogetherGuestLock && !smartShuffle.loading,
+                onClick = { smartShuffle?.toggle?.invoke() },
+                rotationAngle = rotationAngle,
+                alpha = guestLockAlpha,
+                preserveNativeGeometry = true,
+                loading = smartShuffle?.loading == true,
+                selected = smartShuffle?.active ?: false,
+            )
+        }
         MiniPlayerButton.Repeat -> {
             var currentRepeatMode by remember { mutableIntStateOf(player.repeatMode) }
             val queueLoopType = QueueLoopType.from(currentRepeatMode)
@@ -210,7 +229,8 @@ internal fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Download -> {
-            val downloadable = mediaItem?.takeUnless { it.isLocal }
+            val offlineMode by OfflineMode.rememberEnabled()
+            val downloadable = mediaItem?.takeUnless { it.isLocal || offlineMode }
             val visible = downloadable != null
             val visibility = remember { MutableTransitionState(visible) }.apply { targetState = visible }
             var previousItem by remember { mutableStateOf(downloadable) }
@@ -408,6 +428,8 @@ internal fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Discover -> {
+            val offlineMode by OfflineMode.rememberEnabled()
+            if (offlineMode) return
             val discoverIsEnabled by rememberPreference(discoverKey, false)
             val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
             val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled

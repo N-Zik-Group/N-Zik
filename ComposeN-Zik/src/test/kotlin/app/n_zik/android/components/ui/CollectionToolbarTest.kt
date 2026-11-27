@@ -65,17 +65,16 @@ class CollectionToolbarTest {
 
     @Test fun `one trailing More seat retains configured order on wide and narrow bars`() {
         val buttons = listOf("search", "playNext", "shuffle", "favorites", "enqueue")
-        val more = setOf("playNext", "favorites")
         assertEquals(
-            listOf("search", "shuffle", "enqueue") to listOf("playNext", "favorites"),
-            collectionToolbarPlacement(buttons, more, capacity = 4),
+            listOf("search", "playNext", "shuffle") to listOf("favorites", "enqueue"),
+            collectionToolbarPlacement(buttons, capacity = 4),
         )
         assertEquals(
             listOf("search") to listOf("playNext", "shuffle", "favorites", "enqueue"),
-            collectionToolbarPlacement(buttons, more, capacity = 2),
+            collectionToolbarPlacement(buttons, capacity = 2),
         )
-        assertEquals(emptyList<String>() to buttons, collectionToolbarPlacement(buttons, more, capacity = 1))
-        assertEquals(buttons to emptyList<String>(), collectionToolbarPlacement(buttons, emptySet(), capacity = 5))
+        assertEquals(emptyList<String>() to buttons, collectionToolbarPlacement(buttons, capacity = 1))
+        assertEquals(buttons to emptyList<String>(), collectionToolbarPlacement(buttons, capacity = 5))
     }
 
     @Test fun `last playlist heart stays visible and clickable in native and Glass at narrow width`() {

@@ -102,6 +102,8 @@ import app.n_zik.android.components.glass.rememberGlassFloatingActionBackdrop
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.PlayNext
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.rememberCollectionSmartShuffle
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.player.addNextOffMain
@@ -396,7 +398,18 @@ fun HomeArtists(
         }
         load
     }
-    val shuffle = SongShuffler.deferred(action::snapshot)
+    val smartShuffle = rememberCollectionSmartShuffle(
+        key = itemsOnDisplay,
+        enabled = gridReady && artistType != ArtistsType.OnDevice && preview == null &&
+            itemsOnDisplay.any { !isDeviceArtistId(it.id) },
+        actionEnabled = !itemSelector.isActive,
+        loadSource = { action.snapshot()?.invoke().orEmpty() },
+    )
+    val shuffle = SongShuffler.deferredMediaItems {
+        val includeRecommendations = !itemSelector.isActive
+        val load = action.snapshot()?.let { load -> suspend { load()?.map(Song::asMediaItem) } }
+        load?.let { suspend { it()?.let { tracks -> if (includeRecommendations) smartShuffle.mix(tracks) else tracks } } }
+    }
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
         val load = action.snapshot() ?: return
@@ -515,6 +528,7 @@ fun HomeArtists(
                             "search" -> add(search)
                             "randomizer" -> add(randomizer)
                             "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
+                            "smart_shuffle" -> add(smartShuffle.action)
                             "item_selector" -> add(itemSelector)
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
@@ -554,6 +568,10 @@ fun HomeArtists(
                     exportDialog.Render()
                         GlassToolbarButtons( toolbarButtons )
                     search.SearchBar( this@Column )
+                    CollectionSmartShuffleCount(
+                        smartShuffle.active, smartShuffle.loading, smartShuffle.extraCount,
+                        Modifier.align(Alignment.CenterHorizontally),
+                    )
                 }
 
                 Column {

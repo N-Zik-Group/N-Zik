@@ -34,6 +34,7 @@ import app.n_zik.android.utils.showButtonPlayerLoopKey
 import app.n_zik.android.utils.showButtonPlayerLyricsKey
 import app.n_zik.android.utils.showButtonPlayerMenuKey
 import app.n_zik.android.utils.showButtonPlayerShuffleKey
+import app.n_zik.android.utils.showButtonPlayerSmartShuffleKey
 import app.n_zik.android.utils.showButtonPlayerSleepTimerKey
 import app.n_zik.android.utils.showButtonPlayerStartRadioKey
 import app.n_zik.android.utils.showButtonPlayerSystemEqualizerKey
@@ -73,6 +74,7 @@ private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
     "add_to_playlist" to ButtonDef("add_to_playlist", showButtonPlayerAddToPlaylistKey, R.drawable.playlist, R.string.playlist_actions_title, true),
     "loop" to ButtonDef("loop", showButtonPlayerLoopKey, R.drawable.repeat, R.string.settings_player_action_bar_loop_visible_label, false),
     "shuffle" to ButtonDef("shuffle", showButtonPlayerShuffleKey, R.drawable.shuffle, R.string.settings_player_action_bar_shuffle_visible_label, true),
+    "smart_shuffle" to ButtonDef("smart_shuffle", showButtonPlayerSmartShuffleKey, R.drawable.smart_shuffle, R.string.recommendations_action_smart_shuffle, false),
     "lyrics" to ButtonDef("lyrics", showButtonPlayerLyricsKey, R.drawable.song_lyrics, R.string.settings_action_bar_show_lyrics_button, true),
     "visualizer" to ButtonDef("visualizer", visualizerEnabledKey, R.drawable.sound_effect, R.string.settings_player_action_bar_visualizer_visible_label, false),
     "expanded_player" to ButtonDef("expanded_player", expandedplayertoggleKey, R.drawable.maximize, R.string.settings_player_expanded_label, false),

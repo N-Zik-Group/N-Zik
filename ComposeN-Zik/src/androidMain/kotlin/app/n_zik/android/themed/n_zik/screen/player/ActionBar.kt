@@ -83,6 +83,9 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.ui.screens.player.LocalQueueSmartShuffle
+import app.n_zik.android.components.ui.screens.player.isQueuePodcast
+import app.n_zik.android.utils.showButtonPlayerSmartShuffleKey
 import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.QueueLoopType
@@ -642,6 +645,27 @@ internal fun playerActionBarActions(
                             )
                         })
                 }
+                "smart_shuffle" -> {
+                    val smartShuffle = LocalQueueSmartShuffle.current.takeIf { preview == null }
+                    val showSmartShuffle by rememberPreference(showButtonPlayerSmartShuffleKey, false)
+                    val label = stringResource(R.string.recommendations_action_smart_shuffle)
+                    if ((placedAtTop || showSmartShuffle) && (preview != null || !mediaItem.isQueuePodcast)) {
+                        playerActions.add(PlayerActionSlot(buttonId) {
+                            PlayerActionIcon(
+                                icon = R.drawable.smart_shuffle,
+                                color = if (smartShuffle?.active == true || smartShuffle?.loading == true) {
+                                    colorPalette().text
+                                } else colorPalette().textDisabled,
+                                enabled = !ltGuestLocked && smartShuffle?.enabled == true,
+                                onClick = { smartShuffle?.toggle?.invoke() },
+                                modifier = Modifier.size(24.dp),
+                                contentDescription = label,
+                                loading = smartShuffle?.loading == true && preview == null,
+                                selected = smartShuffle?.active ?: false,
+                            )
+                        })
+                    }
+                }
                 "lyrics" -> {
                     val showButtonPlayerLyrics by rememberPreference( showButtonPlayerLyricsKey, true )
                     if (placedAtTop || showButtonPlayerLyrics)
@@ -847,7 +871,7 @@ internal fun playerActionBarActions(
 }
 
 internal val defaultPlayerActionBarOrder = listOf(
-    "discover", "shuffle", "start_radio", "loop",
+    "discover", "shuffle", "smart_shuffle", "start_radio", "loop",
     "download", "add_to_playlist", "expanded_player", "lyrics", "visualizer",
     "sleep_timer", "equalizer", "audioVideo", "arrow", "menu",
 )

@@ -288,9 +288,11 @@ internal fun QueueSelectionCheckbox(windowUid: Any, itemSelector: ItemSelector<A
 @Composable
 fun QueueArrow(
     onShortClick: () -> Unit
-): Icon = object: Icon {
+): Icon = object: MenuIcon {
     override val isEnabled: Boolean by rememberPreference( showButtonPlayerArrowKey, true )
     override val iconId: Int = R.drawable.chevron_down
+    override val menuIconTitle: String
+        @Composable get() = stringResource(R.string.common_action_close)
 
     override fun onShortClick() = onShortClick()
 }

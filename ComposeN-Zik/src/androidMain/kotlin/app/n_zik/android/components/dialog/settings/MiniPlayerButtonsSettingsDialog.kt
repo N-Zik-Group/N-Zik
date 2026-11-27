@@ -25,6 +25,7 @@ import app.n_zik.android.utils.showMiniPlayerPlayPauseKey
 import app.n_zik.android.utils.showMiniPlayerSkipBackKey
 import app.n_zik.android.utils.showMiniPlayerSkipForwardKey
 import app.n_zik.android.utils.showMiniPlayerShuffleKey
+import app.n_zik.android.utils.showMiniPlayerSmartShuffleKey
 import app.n_zik.android.utils.showMiniPlayerRepeatKey
 import app.n_zik.android.utils.showMiniPlayerLikeKey
 import app.n_zik.android.utils.showMiniPlayerAddToPlaylistKey
@@ -61,6 +62,7 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
     "download" to MiniPlayerButtonDef("download", showMiniPlayerDownloadKey, R.drawable.download, R.string.player_mini_button_download, false),
     "audio_output" to MiniPlayerButtonDef("audio_output", showMiniPlayerAudioOutputKey, R.drawable.devices, R.string.audio_output_title, true),
     "shuffle" to MiniPlayerButtonDef("shuffle", showMiniPlayerShuffleKey, R.drawable.shuffle, R.string.player_mini_action_shuffle, false),
+    "smart_shuffle" to MiniPlayerButtonDef("smart_shuffle", showMiniPlayerSmartShuffleKey, R.drawable.smart_shuffle, R.string.recommendations_action_smart_shuffle, false),
     "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.player_action_repeat, false),
     "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.playlist, R.string.playlist_actions_title, false),
     "queue" to MiniPlayerButtonDef("queue", showMiniPlayerQueueKey, R.drawable.reorder, R.string.player_mini_button_queue, false),

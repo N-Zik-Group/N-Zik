@@ -121,7 +121,7 @@ object Shuffler {
                 val max = preferences
                     .getEnum(maxSongsInQueueKey, MaxSongs.Unlimited)
                     .toInt()
-                val toPlay = filteredMediaItems.shuffled().take(max)
+                val toPlay = spreadSmartShuffleRecommendations(filteredMediaItems.shuffled().take(max))
                 withContext(NzikDispatchers.UI) {
                     try {
                         val ready = CompletableDeferred<Unit>()
@@ -193,7 +193,7 @@ object Shuffler {
             val count = items.size
             if (current > 0) player.removeMediaItems(0, current)
             if (total - current > 1) player.removeMediaItems(1, total - current)
-            player.addMediaItems(items.shuffled())
+            player.addMediaItems(spreadSmartShuffleRecommendations(items.shuffled()))
             Toaster.s(R.string.player_queue_shuffled_count_format, formatArgs = *arrayOf(count))
             true
         } catch (e: Exception) {

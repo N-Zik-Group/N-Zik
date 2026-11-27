@@ -97,7 +97,6 @@ internal fun CollectionButtonToolbar(
     bookmarkWidth: Dp = GlassStandaloneActionSize,
     enabled: Boolean = true,
     showBookmark: Boolean = true,
-    menuButtons: Set<Button> = emptySet(),
     overflowEnabled: Boolean = enabled,
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
@@ -107,7 +106,7 @@ internal fun CollectionButtonToolbar(
             buttons.isNotEmpty(), CollectionActionTouchSize)
         val inlineWidth = if (showBookmark) width - primaryWidth - gap else width
         val capacity = (inlineWidth / CollectionActionTouchSize).toInt().coerceAtLeast(1)
-        val (visibleButtons, pendingOverflow) = collectionToolbarPlacement(buttons, menuButtons, capacity)
+        val (visibleButtons, pendingOverflow) = collectionToolbarPlacement(buttons, capacity)
         val currentOverflow by rememberUpdatedState(pendingOverflow)
         val canOpenOverflow = overflowEnabled || (enabled && pendingOverflow.any { (it as? Icon)?.isEnabled == true })
         val actions = visibleButtons.map { button ->
@@ -143,13 +142,10 @@ internal fun CollectionButtonToolbar(
     }
 }
 
-internal fun <T> collectionToolbarPlacement(
-    buttons: List<T>, menuButtons: Set<T>, capacity: Int,
-): Pair<List<T>, List<T>> {
-    val inline = buttons.filterNot(menuButtons::contains)
-    if (menuButtons.isEmpty() && inline.size <= capacity) return inline to emptyList()
-    val visible = inline.take(capacity - 1)
-    return visible to buttons.filterNot(visible.toSet()::contains)
+internal fun <T> collectionToolbarPlacement(buttons: List<T>, capacity: Int): Pair<List<T>, List<T>> {
+    if (buttons.size <= capacity) return buttons to emptyList()
+    val inlineCount = (capacity - 1).coerceAtLeast(0)
+    return buttons.take(inlineCount) to buttons.drop(inlineCount)
 }
 
 /** One control supplies its label and action to the toolbar and to either overflow layout. */

@@ -95,6 +95,10 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.enums.QueueLoopType
 import app.n_zik.android.enums.QueueType
 import app.n_zik.android.models.Song
+import app.n_zik.android.playback.utils.isSmartShuffleRecommendation
+import app.n_zik.android.components.ui.screens.player.LocalQueueSmartShuffle
+import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.SwipeableQueueItem
 import app.n_zik.android.ui.components.tab.toolbar.Dialog
@@ -247,6 +251,7 @@ fun Queue(
         LaunchedEffect(reorderableLazyListState.isAnyItemDragging) {
             if (reorderableLazyListState.isAnyItemDragging) {
                 isDragging = true
+                if (preview == null) QueueToolBarState.dragInProgress = true
             } else {
                 dragInfo?.let { (from, to) ->
                     // Queue reorder is host-only in a Listen Together room
@@ -254,6 +259,7 @@ fun Queue(
                     dragInfo = null
                 }
                 isDragging = false
+                if (preview == null) QueueToolBarState.dragInProgress = false
             }
         }
 
@@ -340,6 +346,8 @@ fun Queue(
         val discover = Discover( isDiscoverClickable, onDiscoverClick )
         // Full offline mode (spec-full-offline-mode): network queue actions removed
         val offlineMode by OfflineMode.rememberEnabled()
+        val smartShuffle = LocalQueueSmartShuffle.current.takeIf { preview == null }
+        val smartShuffleAction = smartShuffle?.toolbarAction(selectionAllowsAction = !itemSelector.isActive)
         val repeat = Repeat.init()
         val revealMenuDestination = onDestinationOpened?.let { reveal -> { reveal(repeat.type) } }
         val deleteDialog = DeleteFromQueue(player, itemSelector) {
@@ -424,6 +432,7 @@ fun Queue(
             put(ToolbarAction.POSITION_LOCK, positionLock)
             put(ToolbarAction.REPEAT, repeat)
             put(ToolbarAction.SHUFFLE, itemSelector.guard(shuffle) { selectedQueueWindows().size > 1 })
+            if (smartShuffleAction != null) put(ToolbarAction.SMART_SHUFFLE, smartShuffleAction)
             put(ToolbarAction.SELECT, itemSelector)
             put(ToolbarAction.FAVORITES, favorites)
             put(ToolbarAction.REMOVE, deleteDialog)
@@ -431,10 +440,15 @@ fun Queue(
             if (playlistAnchor != null) put(playlistAnchor, playlistActions)
         }
         val buttonsList = visibleToolbarActions.mapNotNull(actions::get)
+        val recommendedCount = smartShuffle?.count
+            ?: remember(windowsInQueue) { windowsInQueue.count { it.mediaItem.isSmartShuffleRecommendation } }
 
         val searchVisible = search.isVisible
         SideEffect {
             QueueToolBarState.mediaItemCount = player.mediaItemCount
+            QueueToolBarState.recommendationCount = recommendedCount
+            QueueToolBarState.smartShuffleLoading = smartShuffle?.loading == true
+            if (preview == null) QueueToolBarState.selectionActive = itemSelector.isActive
             QueueToolBarState.buttons = buttonsList
             QueueToolBarState.queueArrow = queueArrow
             QueueToolBarState.onBarClick = { onDismiss(repeat.type) }
@@ -679,6 +693,7 @@ fun Queue(
                                     playbackAlbumTitle = mediaItem.mediaMetadata.albumTitle?.toString(),
                                     podcastBrowseId = window.mediaItem.podcastBrowseId,
                                     sourceMediaItem = { window.mediaItem },
+                                    isRecommended = window.mediaItem.isSmartShuffleRecommendation,
                                     onMenuDestinationOpened = revealMenuDestination,
                                     trailingContent = {
                                         QueueSelectionCheckbox(window.uid, itemSelector)

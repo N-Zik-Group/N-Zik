@@ -391,11 +391,13 @@ fun Podcast(
             dismissMenu = false,
         ) {
             val items = targetMediaItems()
+            val completeSelection = itemSelector.captureSelectionCompletion()
             val menuKey = menuState.transitionKey
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                if (queueMediaItemsOffMain(items, context, playNext = false) { binder?.player } &&
-                    menuState.isCurrentMenu(menuKey)
-                ) menuState.hide()
+                if (queueMediaItemsOffMain(items, context, playNext = false) { binder?.player }) {
+                    completeSelection()
+                    if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+                }
             }
         },
         ToolbarControl.SHUFFLE to collectionToolbarAction(
@@ -406,7 +408,7 @@ fun Podcast(
         ),
         ToolbarControl.RADIO to collectionToolbarAction(
             ToolbarControl.RADIO,
-            enabled = !toolbarLoading && canUseRadio && (!offlineMode || radioActive),
+            enabled = canUseRadio && (radioActive || (!toolbarLoading && !offlineMode)),
             icon = radioButtonIcon(),
             label = binder?.radioActionTextRes ?: R.string.radio_action_start,
             selected = radioActive,
@@ -421,7 +423,6 @@ fun Podcast(
         ToolbarControl.ADD_TO_PLAYLIST to addAction,
     )
     val toolbarButtons = toolbarOrder.mapNotNull { directToolbarActions[it] ?: overflowActions[it] }
-    val menuButtons = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull(overflowActions::get).toSet()
 
     AboveMenuDialogPresence(menuState, visible = pendingDownloadSongs != null) {
         ConfirmationDialog(
@@ -637,15 +638,13 @@ fun Podcast(
                             CollectionButtonToolbar(
                                 bookmark = bookmarkAction,
                                 buttons = toolbarButtons,
-                                menuButtons = menuButtons,
-                                overflowEnabled = !toolbarLoading,
+                                enabled = !toolbarLoading,
                             )
                         } else {
                             CollectionButtonToolbar(
                                 bookmark = { DisabledPodcastAction(R.drawable.bookmark_outline) },
                                 buttons = toolbarButtons,
-                                menuButtons = menuButtons,
-                                overflowEnabled = false,
+                                enabled = false,
                             )
                         }
                     }

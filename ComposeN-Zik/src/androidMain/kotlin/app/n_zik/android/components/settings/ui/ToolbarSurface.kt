@@ -18,6 +18,7 @@ internal enum class ToolbarAction(val id: String, val label: Int, val icon: Int)
     DOWNLOAD("download", R.string.downloads_action_download_all, R.drawable.download),
     DELETE_DOWNLOADS("deleteDownloads", R.string.downloads_action_remove_all, R.drawable.downloaded),
     SHUFFLE("shuffle", R.string.player_action_shuffle_hint, R.drawable.shuffle),
+    SMART_SHUFFLE("smartShuffle", R.string.recommendations_action_smart_shuffle, R.drawable.smart_shuffle),
     RADIO("radio", R.string.radio_action_start_hint, R.drawable.radio),
     LOCATE("locate", R.string.player_action_locate_current_song, R.drawable.locate),
     SELECT("select", R.string.common_action_select, R.drawable.checked_filled),
@@ -51,7 +52,6 @@ private val onlinePlaylistActions = listOf(
     ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS, ToolbarAction.SELECT, ToolbarAction.FAVORITES,
 )
 
-private val playlistAndPodcastOverflowActions = setOf(ToolbarAction.PLAY_NEXT, ToolbarAction.FAVORITES, ToolbarAction.SELECT)
 internal val queuePlaylistActions = setOf(ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.EXPORT)
 
 internal fun List<ToolbarAction>.queuePlaylistActionAnchor(): ToolbarAction? =
@@ -63,10 +63,9 @@ internal enum class ToolbarSurface(
     val actions: List<ToolbarAction>,
     val locked: Set<ToolbarAction> = emptySet(),
     val defaultHidden: Set<ToolbarAction> = emptySet(),
-    val overflowActions: Set<ToolbarAction> = emptySet(),
 ) {
     ALBUM_ONLINE("albumOnline", R.string.search_online, listOf(
-        ToolbarAction.BOOKMARK, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.RADIO,
+        ToolbarAction.BOOKMARK, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.SMART_SHUFFLE, ToolbarAction.RADIO,
         ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT, ToolbarAction.FAVORITES, ToolbarAction.ADD_TO_PLAYLIST,
         ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS, ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_COVER,
     )),
@@ -75,24 +74,22 @@ internal enum class ToolbarSurface(
         ToolbarAction.ADD_TO_PLAYLIST,
     )),
     ARTIST_OVERVIEW("artistOverview", R.string.artist_overview_title, listOf(
-        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.RADIO, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
+        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.SMART_SHUFFLE, ToolbarAction.RADIO, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
         ToolbarAction.FAVORITES, ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
     )),
     ARTIST_LIBRARY("artistLibrary", R.string.library_title, listOf(
-        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
+        ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.SMART_SHUFFLE, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
         ToolbarAction.FAVORITES, ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
     )),
     ARTIST_DEVICE("artistDevice", R.string.library_on_device_title, listOf(
         ToolbarAction.FOLLOW, ToolbarAction.SEARCH, ToolbarAction.SHUFFLE, ToolbarAction.PLAY_NEXT, ToolbarAction.ENQUEUE, ToolbarAction.SELECT,
         ToolbarAction.ADD_TO_PLAYLIST,
     )),
-    ONLINE_PLAYLIST("onlinePlaylist", R.string.settings_toolbar_online_playlist, onlinePlaylistActions + listOf(
-        ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID,
-    ), overflowActions = playlistAndPodcastOverflowActions + setOf(
+    ONLINE_PLAYLIST("onlinePlaylist", R.string.settings_toolbar_online_playlist,
+        onlinePlaylistActions.toMutableList().apply { add(indexOf(ToolbarAction.SHUFFLE) + 1, ToolbarAction.SMART_SHUFFLE) } + listOf(
         ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID,
     )),
-    PODCAST("podcast", R.string.settings_toolbar_online_podcast, onlinePlaylistActions,
-        overflowActions = playlistAndPodcastOverflowActions),
+    PODCAST("podcast", R.string.settings_toolbar_online_podcast, onlinePlaylistActions),
     HEADER("header", R.string.settings_toolbar_global_header,
         listOf(ToolbarAction.NOTIFICATIONS, ToolbarAction.SEARCH, ToolbarAction.PROFILE_MENU), locked = setOf(ToolbarAction.PROFILE_MENU)),
     PLAYER_TOP("playerTop", R.string.settings_toolbar_player_top,
@@ -100,7 +97,7 @@ internal enum class ToolbarSurface(
         locked = setOf(ToolbarAction.COLLAPSE_PLAYER, ToolbarAction.MENU)),
     QUEUE("queue", R.string.settings_toolbar_queue_action_bar, listOf(
         ToolbarAction.LOCATE, ToolbarAction.SEARCH, ToolbarAction.DISCOVER, ToolbarAction.POSITION_LOCK,
-        ToolbarAction.REPEAT, ToolbarAction.SHUFFLE, ToolbarAction.SELECT, ToolbarAction.FAVORITES,
+        ToolbarAction.REPEAT, ToolbarAction.SHUFFLE, ToolbarAction.SMART_SHUFFLE, ToolbarAction.SELECT, ToolbarAction.FAVORITES,
         ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS,
         ToolbarAction.EXPORT, ToolbarAction.REMOVE,
     ), defaultHidden = setOf(ToolbarAction.DISCOVER)),

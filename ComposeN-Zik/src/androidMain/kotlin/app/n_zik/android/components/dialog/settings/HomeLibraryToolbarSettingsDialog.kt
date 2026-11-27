@@ -52,6 +52,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         "search" to R.string.search_title,
         "sync" to R.string.sync_imported_playlists_automatic_title,
         "shuffle" to R.string.player_action_shuffle_hint,
+        "smart_shuffle" to R.string.recommendations_action_smart_shuffle,
         "item_selector" to R.string.common_action_select,
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
@@ -63,11 +64,11 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
     )
 
     val allButtonIds = listOf(
-        "sort", "position_lock", "search", "shuffle", "play_next", "enqueue", "item_selector",
+        "sort", "position_lock", "search", "shuffle", "smart_shuffle", "play_next", "enqueue", "item_selector",
         "add_to_playlist", "sync", "import_menu", "export_dialog", "delete_playlists", "item_size"
     )
 
-    internal val onDeviceButtonIds = allButtonIds.filterNot { it in setOf("sync", "export_dialog", "import_menu") }
+    internal val onDeviceButtonIds = allButtonIds.filterNot { it in setOf("sync", "export_dialog", "import_menu", "smart_shuffle") }
 
     private fun portableButtonIds(tab: String): List<String> =
         if (tab == "dev") onDeviceButtonIds else allButtonIds
@@ -173,6 +174,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
                 "search" -> ToggleItem(uid, R.drawable.search_circle, searchLabel, pk, true)
                 "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 "shuffle" -> ToggleItem(uid, R.drawable.shuffle, shuffleLabel, pk, true)
+                "smart_shuffle" -> ToggleItem(uid, R.drawable.smart_shuffle, stringResource(searchLabelResources.getValue(id)), pk, true)
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)

@@ -175,6 +175,9 @@ import app.n_zik.android.appContext
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.PlayNext
+import app.n_zik.android.core.database.podcastSourceBrowseId
+import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.rememberCollectionSmartShuffle
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.withPodcastSource
 import app.n_zik.android.models.Song
@@ -430,7 +433,18 @@ fun HomeLibrary(
             }
         }
     }
-    val shuffle = SongShuffler.deferredMediaItems(captureMediaItems)
+    val smartShuffle = rememberCollectionSmartShuffle(
+        key = itemsOnDisplay,
+        enabled = gridReady && playlistType != PlaylistsType.OnDevice && previewSession == null &&
+            itemsOnDisplay.any { it.songCount > 0 && podcastSourceBrowseId(it.playlist.browseId) == null },
+        actionEnabled = !itemSelector.isActive,
+        loadSource = { action.snapshot()?.invoke().orEmpty().filter { podcastSourceBrowseId(it.second) == null }.map { it.first } },
+    )
+    val shuffle = SongShuffler.deferredMediaItems {
+        val includeRecommendations = !itemSelector.isActive
+        val load = captureMediaItems()
+        load?.let { suspend { it()?.let { tracks -> if (includeRecommendations) smartShuffle.mix(tracks) else tracks } } }
+    }
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
         val load = captureMediaItems() ?: return
@@ -626,6 +640,9 @@ fun HomeLibrary(
                             "sync" -> { if (isYouTubeSyncEnabled() && !offlineMode) add(sync) }
                             "search" -> add(search)
                             "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
+                            "smart_shuffle" -> if (playlistType != PlaylistsType.YTPlaylist ||
+                                youtubeLibraryFilter != YouTubeLibraryFilter.Podcasts
+                            ) add(smartShuffle.action)
                             "item_selector" -> add(itemSelector)
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
@@ -696,6 +713,10 @@ fun HomeLibrary(
                     
                     GlassToolbarButtons( toolbarButtons )
                     search.SearchBar( this@Column )
+                    CollectionSmartShuffleCount(
+                        smartShuffle.active, smartShuffle.loading, smartShuffle.extraCount,
+                        Modifier.align(Alignment.CenterHorizontally),
+                    )
                 }
 
                 Column {

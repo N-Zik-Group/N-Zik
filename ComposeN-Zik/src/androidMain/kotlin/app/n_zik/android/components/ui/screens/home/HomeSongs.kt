@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.cache
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -80,6 +81,9 @@ import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.addNext
 import app.n_zik.android.utils.align
+import app.n_zik.android.playback.utils.asSmartShuffleRecommendation
+import app.n_zik.android.playback.utils.smartShuffleInsertionPositions
+import app.n_zik.android.playback.utils.smartShuffleRecommendationIds
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.center
 import app.n_zik.android.utils.color
@@ -180,6 +184,7 @@ fun HomeSongs(
     search: Search,
     buttons: MutableList<Button>,
     itemsOnDisplay: SnapshotStateList<Song>,
+    recommendationsOnDisplay: MutableState<Set<String>>,
     matchButton: Button? = null,
     onRecommendationCountChange: (Int) -> Unit = {},
     onRecommendationsLoadingChange: (Boolean) -> Unit = {},
@@ -450,10 +455,7 @@ fun HomeSongs(
         }
 
         relatedSongs = allRelatedSongs.take(targetRecommendations)
-        val newPositions = relatedSongs.associate { song ->
-            song to (0..items.size).random()
-        }
-        relatedSongsPositions = newPositions
+        relatedSongsPositions = smartShuffleInsertionPositions(items.size, relatedSongs)
 
         isRecommendationsLoading = false
         onRecommendationsLoadingChange(false)
@@ -476,7 +478,6 @@ fun HomeSongs(
     var hasCompletedSongProjection by persist("home/streamed-songs/loaded", false)
     val filterScrollAnchor = persist("home/streamed-songs/filter-scroll", HomeFilterScrollAnchor()).value
     val recommendationIds = remember(relatedSongs) { relatedSongs.map(Song::id) }
-    val recommendationIdSet = remember(recommendationIds) { recommendationIds.toHashSet() }
     val storedRecommendations by rememberSongRowMetadata(recommendationIds)
     val displayRecommendations = remember(relatedSongsPositions, storedRecommendations) {
         relatedSongsPositions.mapKeys { (song, _) -> resolveSongDisplayMetadata(song, storedRecommendations[song.id]) }
@@ -489,14 +490,18 @@ fun HomeSongs(
         deviceSortOrder = songSort.sortOrder.takeIf { groupByDevice },
     )
     var baseSongs by remember { mutableStateOf(emptyList<Song>()) }
+    var baseRecommendationIds by remember { mutableStateOf(emptySet<String>()) }
     var baseReady by remember(baseInput, isLoading) { mutableStateOf(false) }
     LaunchedEffect(baseInput, isLoading) {
         if (isLoading) return@LaunchedEffect
         baseSongs = projectHomeSongsBase(baseInput)
+        baseRecommendationIds = if (baseInput.recommendationsEnabled) {
+            smartShuffleRecommendationIds(baseInput.items, baseInput.recommendations)
+        } else emptySet()
         baseReady = true
     }
     val query = search.filterQuery
-    LaunchedEffect(baseReady, baseSongs, query) {
+    LaunchedEffect(baseReady, baseSongs, baseRecommendationIds, query) {
         if (!baseReady) return@LaunchedEffect
         val candidates = baseSongs
         val newItems = searchHomeSongs(candidates, query)
@@ -514,6 +519,7 @@ fun HomeSongs(
                 itemsOnDisplay.clear()
                 itemsOnDisplay.addAll(newItems)
             }
+            recommendationsOnDisplay.value = baseRecommendationIds
             completedSearchQuery = query
             hasCompletedSongProjection = true
         }
@@ -620,7 +626,8 @@ fun HomeSongs(
                         reorderableLazyListState,
                         key = song.id
                     ) { isDraggingItem ->
-                        val mediaItem = remember(song) { song.asMediaItem }
+                        val isRecommended = song.id in recommendationsOnDisplay.value
+                        val mediaItem = remember(song, isRecommended) { song.asMediaItem.asSmartShuffleRecommendation(isRecommended) }
                         val isLocal = mediaItem.isLocal
                         val isDownloaded = isLocal || downloads.isDownloaded(mediaItem.mediaId)
 
@@ -651,7 +658,6 @@ fun HomeSongs(
                                 swipeLeftActionParam = playlistSwipeLeftAction,
                                 swipeRightActionParam = playlistSwipeRightAction
                             ) {
-                                val isRecommended = song.id in recommendationIdSet
                                 SongItem(
                                     song = song,
                                     isLiked = song.rowLikeState(),
@@ -662,6 +668,7 @@ fun HomeSongs(
                                     itemSelector = itemSelector,
                                     navController = navController,
                                     isRecommended = isRecommended,
+                                    sourceMediaItem = if (isRecommended) ({ mediaItem }) else null,
                                     modifier = Modifier.animateItem(),
                                     trailingContent = {
                                         if (preview == null && song.isUnmatched) {
@@ -719,10 +726,13 @@ fun HomeSongs(
                                                     itemsOnDisplay.toList(), Song::id, Song::id, selectionOrder = true,
                                                 )
                                                 if (itemSelector.isActive && targets.none { it.id == song.id }) return@SongItem
+                                                val recommendationIds = recommendationsOnDisplay.value
                                                 playbackJob?.cancel()
                                                 playbackJob = playbackScope.launch {
                                                     val mediaItems = withContext(NzikDispatchers.MEDIA) {
-                                                        targets.filter { includeDeviceSongs || !it.isLocal }.map(Song::asMediaItem)
+                                                        targets.filter { includeDeviceSongs || !it.isLocal }.map {
+                                                            it.asMediaItem.asSmartShuffleRecommendation(it.id in recommendationIds)
+                                                        }
                                                     }
                                                     val startIndex = mediaItems.indexOfFirst { it.mediaId == song.id }
                                                     if (startIndex >= 0) {

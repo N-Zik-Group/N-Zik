@@ -1,6 +1,9 @@
 @file:kotlin.OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.ui.items
 
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.utils.artistTextWithFallback
@@ -438,13 +441,11 @@ fun SongItem(
                 val binder = LocalPlayerServiceBinder.current
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isRecommended)
-                        IconButton(
-                            icon = R.drawable.smart_shuffle,
-                            color = colorPalette().accent,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
+                        Icon(
+                            painterResource(R.drawable.smart_shuffle),
+                            contentDescription = stringResource(R.string.recommendations_action_smart_shuffle),
+                            tint = colorPalette().accent,
+                            modifier = Modifier.size(18.dp),
                         )
 
                     if ( playlistindicator && isSongMappedToPlaylist ) {
@@ -516,13 +517,11 @@ fun SongItem(
 
                 val binder = LocalPlayerServiceBinder.current
                     if (isRecommended)
-                        IconButton(
-                            icon = R.drawable.smart_shuffle,
-                            color = colorPalette().accent,
-                            enabled = true,
-                            onClick = {},
-                            modifier = Modifier
-                                .size(18.dp)
+                        Icon(
+                            painterResource(R.drawable.smart_shuffle),
+                            contentDescription = stringResource(R.string.recommendations_action_smart_shuffle),
+                            tint = colorPalette().accent,
+                            modifier = Modifier.size(18.dp),
                         )
 
                     if ( mediaItem.isExplicit )

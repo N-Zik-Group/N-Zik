@@ -85,6 +85,9 @@ import app.n_zik.android.utils.DOWNLOAD_INDICATOR_STROKE_WIDTH
 import app.n_zik.android.utils.getDownloadProgress
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.colorPalette
+import app.n_zik.android.components.menu.menuToggleSemantics
+import app.n_zik.android.components.ui.InlineCircularLoader
+import app.n_zik.android.components.ui.UiIconButton
 import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassActionGroup
 import app.n_zik.android.components.glass.GlassActionGroupMotionHost
@@ -430,18 +433,32 @@ fun PlayerActionIcon(
     enabled: Boolean = true,
     onLongClick: (() -> Unit)? = null,
     contentDescription: String? = null,
+    loading: Boolean = false,
+    selected: Boolean? = null,
 ) {
     val style = LocalPlayerToolbar.current
+    val selectedModifier = modifier.menuToggleSemantics(selected)
+    val interactive = enabled && !loading
     if (style == null) {
-        IconButton(
-            onClick, icon, color, modifier, enabled,
-            onLongClick = onLongClick,
-            contentDescription = contentDescription,
-        )
+        if (loading) {
+            UiIconButton(onClick = onClick, enabled = false) {
+                InlineCircularLoader(selectedModifier, color = color)
+            }
+        } else {
+            IconButton(
+                onClick, icon, color, selectedModifier, interactive,
+                onLongClick = onLongClick,
+                contentDescription = contentDescription,
+            )
+        }
         return
     }
-    PlayerActionCell(enabled, onClick, onLongClick) {
-        Image(painterResource(icon), contentDescription, colorFilter = ColorFilter.tint(surfaceGlyphColor(color, LocalPlayerActionSurface.current)), modifier = modifier)
+    PlayerActionCell(interactive, onClick, onLongClick) {
+        if (loading) {
+            InlineCircularLoader(selectedModifier, color = color)
+        } else {
+            Image(painterResource(icon), contentDescription, colorFilter = ColorFilter.tint(surfaceGlyphColor(color, LocalPlayerActionSurface.current)), modifier = selectedModifier)
+        }
     }
 }
 

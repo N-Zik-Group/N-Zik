@@ -123,8 +123,10 @@ import app.n_zik.android.components.playlist.Reposition
 import app.n_zik.android.components.playlist.canEditPlaylistMembershipInView
 import app.n_zik.android.components.playlist.canOfferPlaylistDeleteAction
 import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
+import app.n_zik.android.components.playlist.launchSavedPlaylistBookmarkToggle
 import app.n_zik.android.components.playlist.localPlaylistHeaderSurface
 import app.n_zik.android.components.playlist.playlistMembershipSwipeAction
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
 import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
 import app.n_zik.android.components.rememberSongRowMetadata
@@ -132,7 +134,6 @@ import app.n_zik.android.components.rememberSongRowMetadata
 import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.song.resolveSongDisplayMetadata
 import app.n_zik.android.components.search.SearchEmptySpace
-import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
 import app.n_zik.android.components.shuffleButtonIcon
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistFormatDialog
@@ -181,12 +182,13 @@ import app.n_zik.android.enums.PlaylistSongSortBy
 import app.n_zik.android.enums.QueueSwipeAction
 import app.n_zik.android.enums.RecommendationsNumber
 import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.isUnmatched
 import app.n_zik.android.playback.utils.Shuffler
+import app.n_zik.android.playback.utils.asSmartShuffleRecommendation
+import app.n_zik.android.playback.utils.smartShuffleRecommendationIds
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
@@ -198,7 +200,6 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.themed.Bookmark
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
-import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.IconInfo
@@ -233,8 +234,6 @@ import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.getActiveProfile
-import app.n_zik.android.utils.getSyncDirection
-import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.localPlaylistToolbarOrderKey
 import app.n_zik.android.utils.startPlaylistRowDownload
 import app.n_zik.android.utils.parentalControlEnabledKey
@@ -246,8 +245,6 @@ import app.n_zik.android.utils.recommendationsNumberKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
-import app.n_zik.android.utils.syncPushPlaylistKey
-import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.requests.relatedSongs
 
 @KotlinCsvExperimental
@@ -303,7 +300,10 @@ fun LocalPlaylistSongs(
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     val playlist = playlistResult?.getOrNull()
     val podcastBrowseId = podcastSourceBrowseId(playlist?.browseId)
-    fun playbackItem(song: Song) = song.asMediaItem.withPodcastSource(podcastBrowseId)
+    var recommendationsOnDisplay by remember(playlistId) { mutableStateOf(emptySet<String>()) }
+    fun playbackItem(song: Song) = song.asMediaItem
+        .withPodcastSource(podcastBrowseId)
+        .asSmartShuffleRecommendation(song.id in recommendationsOnDisplay)
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
     // the "Rewind Top" sort option; declared before the sort wiring that consumes it
@@ -384,48 +384,20 @@ fun LocalPlaylistSongs(
 
     val search = Search.detail()
 
-    val isSpecialPlaylist = playlist?.browseId?.removePrefix("VL") in listOf("LM", "SE")
-    
-    var isBookmarked by remember(playlist) { mutableStateOf(isPlaylistBookmarked(playlist)) }
-
-    val bookmark = Bookmark(isBookmarked = isBookmarked) {
-        if (!canBookmarkPlaylist(playlist)) return@Bookmark
+    var bookmarkPending by remember(playlistId) { mutableStateOf(false) }
+    val bookmark = Bookmark(isBookmarked = isPlaylistBookmarked(playlist)) {
+        val target = playlist ?: return@Bookmark
+        val browseId = target.browseId ?: return@Bookmark
+        if (bookmarkPending || !canBookmarkPlaylist(target)) return@Bookmark
+        bookmarkPending = true
         if (launchSavedPodcastBookmarkToggle(
-                playlist, coroutineScope,
+                target, coroutineScope,
                 onRemoved = { navController.popBackStack() },
-                onExistingImport = { playlist?.browseId?.let { NavRoutes.podcast.navigateHere(navController, it) } },
+                onExistingImport = { NavRoutes.podcast.navigateHere(navController, browseId) },
+                onFinished = { bookmarkPending = false },
             )) return@Bookmark
-        if (isSpecialPlaylist) {
-            Toaster.e(R.string.playlist_bookmark_unsupported_message)
-            return@Bookmark
-        }
-        val wasBookmarked = isBookmarked
-        coroutineScope.launch(NzikDispatchers.DATA) {
-            val p = playlist ?: return@launch
-            val browseId = p.browseId
-            val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
-            val syncDir = getSyncDirection()
-            if (browseId != null && isYouTubeSyncEnabled() && pushPlaylist && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
-                runCatching {
-                    if (wasBookmarked) {
-                        YtMusic.removelikePlaylistOrAlbum(browseId.removePrefix("VL"))
-                    } else {
-                        YtMusic.likePlaylistOrAlbum(browseId.removePrefix("VL"))
-                    }
-                }.onFailure { e ->
-                    Timber.tag("LocalPlaylistSongs").e(e, "Failed to toggle YTM bookmark")
-                }
-            }
-            val updated = Database.playlistTable.update(
-                p.copy(isYoutubePlaylist = !wasBookmarked)
-            )
-            if (!wasBookmarked && updated > 0) {
-                MyDownloadHelper.downloadBookmarkedPlaylist(context, p.browseId, p)
-            }
-            withContext(NzikDispatchers.UI) {
-                isBookmarked = !wasBookmarked
-            }
-            Toaster.s( if (!wasBookmarked) R.string.library_favorites_added else R.string.library_favorites_removed )
+        launchSavedPlaylistBookmarkToggle(context, target, browseId) {
+            bookmarkPending = false
         }
     }
 
@@ -496,6 +468,8 @@ fun LocalPlaylistSongs(
     ) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     var deleteSelectionMode by remember { mutableStateOf(false) }
+    val mappedSongIds = remember(items) { items.mapTo(HashSet(), Song::id) }
+    fun selectedStoredSongs() = getSongs().filter { it.id in mappedSongIds }
     val deleteDialog =
         object : MenuIcon, Descriptive, Dialog {
             override val iconId: Int = R.drawable.trash
@@ -506,7 +480,7 @@ fun LocalPlaylistSongs(
             override fun onShortClick() {
                 val selectionActive = itemSelector.isActive
                 if (!canOfferPlaylistDeleteAction(playlist, selectionActive)) return
-                if (selectionActive && getSongs().isEmpty()) return
+                if (selectionActive && selectedStoredSongs().isEmpty()) return
                 deleteSelectionMode = selectionActive
                 showDeleteConfirmDialog = true
             }
@@ -520,7 +494,7 @@ fun LocalPlaylistSongs(
                 AboveMenuDialogPresence(queueMenuState, visible = showDeleteConfirmDialog) {
                     val hasSelection = deleteSelectionMode
                     val text = if (hasSelection) {
-                        stringResource(R.string.playlist_remove_songs_confirmation, getSongs().size)
+                        stringResource(R.string.playlist_remove_songs_confirmation, selectedStoredSongs().size)
                     } else {
                         playlistDeletionConfirmationText(
                             stringResource(R.string.playlist_delete_confirmation), listOfNotNull(playlist),
@@ -536,21 +510,22 @@ fun LocalPlaylistSongs(
                             if (itemSelector.isActive != hasSelection) return@ConfirmationDialog
                             if (hasSelection) {
                                 if (!membershipEditable) return@ConfirmationDialog
-                                val selectedSongs = getSongs()
+                                val selectedSongs = selectedStoredSongs()
                                 if (selectedSongs.isEmpty()) return@ConfirmationDialog
                                 val endSelection = itemSelector.captureSelectionCompletion()
                                 coroutineScope.launch(NzikDispatchers.DATA) {
-                                    val removed = editStoredPlaylistMembership(playlistId) {
+                                    var removed = 0
+                                    editStoredPlaylistMembership(playlistId) {
                                         selectedSongs.forEach { song ->
-                                            songPlaylistMapTable.deleteBySongId(song.id, playlistId)
+                                            removed += songPlaylistMapTable.deleteBySongId(song.id, playlistId)
                                         }
                                     }
-                                    if (removed) withContext(NzikDispatchers.UI) {
+                                    if (removed > 0) withContext(NzikDispatchers.UI) {
                                         Toaster.s(
                                             context.getString(
                                                 R.string.playlist_remove_songs_success_format,
                                                 context.getString(R.string.common_delete_success),
-                                                selectedSongs.size,
+                                                removed,
                                             ),
                                         )
                                         endSelection()
@@ -596,8 +571,14 @@ fun LocalPlaylistSongs(
         if (songs.isEmpty()) return
         val endSelection = itemSelector.captureSelectionCompletion()
         val menuKey = queueMenuState.transitionKey
+        val recommendationIds = recommendationsOnDisplay
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            val items = withContext(NzikDispatchers.DATA) { songs.map(::playbackItem) }
+            val items = withContext(NzikDispatchers.DATA) {
+                songs.map { song ->
+                    song.asMediaItem.withPodcastSource(podcastBrowseId)
+                        .asSmartShuffleRecommendation(song.id in recommendationIds)
+                }
+            }
             val queued = if (playNext) player.addNextOffMain(items, context)
                 else player.enqueueOffMain(items, context)
             if (queued) {
@@ -656,20 +637,37 @@ fun LocalPlaylistSongs(
     var isRecommendationsLoading by rememberSaveable { mutableStateOf(false) }
 
     val networkAvailable by NetworkQualityHelper.isNetworkAvailableComposable(context)
-    val hasRecommendationSeeds = remember(items) { items.any { !it.isLocal } }
-    val canStartRecommendations = !onDeviceOnly && !offlineMode && networkAvailable && hasRecommendationSeeds
+    val recommendationSeedIds = remember(items) {
+        items.asSequence().filterNot(Song::isLocal).map(Song::id).toSet()
+    }
+    val canStartRecommendations = podcastBrowseId == null && !onDeviceOnly && !offlineMode && networkAvailable &&
+        recommendationSeedIds.isNotEmpty()
     val showRecommendationButton = isRecommendationEnabled || canStartRecommendations
+    val recommendationButton = object : MenuIcon {
+        override val iconId = R.drawable.smart_shuffle
+        override val menuToggleState: Boolean get() = isRecommendationEnabled
+        override val menuIconTitle: String
+            @Composable get() = stringResource(R.string.recommendations_action_smart_shuffle)
+        override val color
+            @Composable get() = if (isRecommendationEnabled) colorPalette().accent else colorPalette().text
+        override fun onShortClick() {
+            if (isRecommendationEnabled || canStartRecommendations) isRecommendationEnabled = !isRecommendationEnabled
+        }
+    }
 
-    LaunchedEffect(isRecommendationEnabled, canStartRecommendations) {
+    LaunchedEffect(isRecommendationEnabled, canStartRecommendations, recommendationSeedIds, items.size, recommendationsNumber, parentalControlEnabled) {
         relatedSongs = emptyMap()
         if (!isRecommendationEnabled || !canStartRecommendations) {
             isRecommendationsLoading = false
+            if (!canStartRecommendations) isRecommendationEnabled = false
             return@LaunchedEffect
         }
 
         isRecommendationsLoading = true
         try {
-            relatedSongs = loadLocalPlaylistRecommendations(items, recommendationsNumber)
+            relatedSongs = loadLocalPlaylistRecommendations(items, recommendationsNumber) {
+                !parentalControlEnabled || !it.title.hasExplicitPrefix()
+            }
             positionLock.isFirstIcon = true
         } finally {
             isRecommendationsLoading = false
@@ -680,7 +678,9 @@ fun LocalPlaylistSongs(
     val recommendationIds = remember(relatedSongs) { relatedSongs.keys.map(Song::id) }
     val storedRecommendations by rememberSongRowMetadata(recommendationIds)
     val displayRecommendations = remember(relatedSongs, storedRecommendations) {
-        relatedSongs.mapKeys { (song, _) -> resolveSongDisplayMetadata(song, storedRecommendations[song.id]) }
+        relatedSongs.entries.sortedByDescending { it.value }.associate { (song, position) ->
+            resolveSongDisplayMetadata(song, storedRecommendations[song.id]) to position
+        }
     }
     var songProjectionReady by remember(items, displayRecommendations, query, parentalControlEnabled, onDeviceOnly, isRecommendationEnabled, deviceSortOrder, sourceScan) {
         mutableStateOf(false)
@@ -697,6 +697,9 @@ fun LocalPlaylistSongs(
         itemsOnDisplay = if (deviceSortOrder != null) {
             visible.groupByDeviceAvailability(deviceSortOrder) { it.id in availableIds }
         } else visible
+        recommendationsOnDisplay = if (isRecommendationEnabled && !onDeviceOnly) {
+            smartShuffleRecommendationIds(items, displayRecommendations)
+        } else emptySet()
         filteredQuery = query
         songProjectionReady = true
     }
@@ -992,29 +995,13 @@ fun LocalPlaylistSongs(
                         Spacer(modifier = Modifier.height(30.dp))
                     }
 
-                    val recommendationButton: @Composable () -> Unit = {
-                        HeaderIconButton(
-                            icon = R.drawable.smart_shuffle,
-                            enabled = showRecommendationButton,
-                            color = if (isRecommendationEnabled) colorPalette().text else colorPalette().textDisabled,
-                            modifier = Modifier.clip(uiRoundnessShape()),
-                            onClick = {
-                                if (isRecommendationEnabled || canStartRecommendations) {
-                                    isRecommendationEnabled = !isRecommendationEnabled
-                                }
-                            },
-                            onLongClick = { Toaster.i(R.string.recommendations_action_smart_shuffle) },
-                        )
-                    }
-
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(end = 12.dp)
                     ) {
                         if (glassActions) {
-                            GlassToolbarColumn(actionCount = if (showRecommendationButton) 2 else 1, settings = glassSettings) {
-                                if (showRecommendationButton) recommendationButton()
+                            GlassToolbarColumn(actionCount = 1, settings = glassSettings) {
                                 shuffle.ToolBarButton()
                             }
                             if (canBookmarkPlaylist(playlist)) {
@@ -1024,13 +1011,6 @@ fun LocalPlaylistSongs(
                                 }
                             }
                         } else {
-                            Box(
-                                modifier = Modifier.size(48.dp), // Standard IconButton size
-                                contentAlignment = Alignment.Center
-                            ) {
-                                if (showRecommendationButton) recommendationButton()
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
                             shuffle.ToolBarButton()
                             // Bookmarking saves to the YouTube Music library: meaningless for a local playlist
                             if (canBookmarkPlaylist(playlist)) {
@@ -1077,6 +1057,7 @@ fun LocalPlaylistSongs(
                             "insertion_position" -> if (!forceOnDevice && playlist?.supportsInsertionPosition() == true) add(insertionDialog)
                             "pin" -> if (!forceOnDevice && playlist != null && playlistNotMonthlyType) add(pin)
                             "search" -> add( search )
+                            "smart_shuffle" -> if (showRecommendationButton) add(recommendationButton)
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
                             "position_lock" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )
                             "match" -> if (!onDeviceOnly &&
@@ -1224,17 +1205,23 @@ fun LocalPlaylistSongs(
                                 }
                             }
 
+                            val isRecommended = song.id in recommendationsOnDisplay
+                            val sourceMediaItem = remember(song, podcastBrowseId, isRecommended) {
+                                song.asMediaItem.withPodcastSource(podcastBrowseId).asSmartShuffleRecommendation(isRecommended)
+                            }
                             SwipeableQueueItem(
-                        mediaItem = song.asMediaItem,
+                        mediaItem = sourceMediaItem,
                         onPlayNext = {
-                            binder?.player?.addNext(playbackItem(song))
+                            binder?.player?.addNext(sourceMediaItem)
                         },
                         onRemoveFromQueue = {
-                            if (membershipEditable) {
+                            if (membershipEditable && !isRecommended) {
                                 Database.asyncTransaction {
-                                    if (editStoredPlaylistMembership(playlistId) {
-                                        songPlaylistMapTable.deleteBySongId(song.id, playlistId)
-                                    }) {
+                                    var removed = 0
+                                    editStoredPlaylistMembership(playlistId) {
+                                        removed = songPlaylistMapTable.deleteBySongId(song.id, playlistId)
+                                    }
+                                    if (removed > 0) {
                                         Toaster.s(
                                             "${context.resources.getString(R.string.common_delete_success)} \"${cleanPrefix(song.title)}\""
                                         )
@@ -1247,14 +1234,14 @@ fun LocalPlaylistSongs(
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(
-                                playbackItem(song),
+                                sourceMediaItem,
                                 context
                             )
                         },
                         downloadStateParam = downloadsMapState[song.id]?.state ?: Download.STATE_STOPPED,
                         downloadedStateMediaParam = downloadStatesMap[song.id] ?: DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED,
-                        swipeLeftActionParam = playlistMembershipSwipeAction(membershipEditable, queueSwipeLeftAction),
-                        swipeRightActionParam = playlistMembershipSwipeAction(membershipEditable, queueSwipeRightAction),
+                        swipeLeftActionParam = playlistMembershipSwipeAction(membershipEditable && !isRecommended, queueSwipeLeftAction),
+                        swipeRightActionParam = playlistMembershipSwipeAction(membershipEditable && !isRecommended, queueSwipeRightAction),
                     ) {
                         SongItem(
                             song = song,
@@ -1264,7 +1251,8 @@ fun LocalPlaylistSongs(
                             itemSelector = itemSelector,
                             navController = navController,
                             podcastBrowseId = podcastBrowseId,
-                            isRecommended = song in relatedSongs,
+                            isRecommended = isRecommended,
+                            sourceMediaItem = if (isRecommended) ({ sourceMediaItem }) else null,
                             modifier = Modifier,
 
                             trailingContent = {
@@ -1349,8 +1337,7 @@ fun LocalPlaylistSongs(
                         val playableSongs = songs.filter { !it.isUnmatched }
                         if (playableSongs.isNotEmpty()) {
                             binder?.let {
-                                it.triggerShuffleOkFlash()
-                                Shuffler.play(it, playableSongs.map(::playbackItem))
+                                Shuffler.play(it, playableSongs.map(::playbackItem), onQueueApplied = it::triggerShuffleOkFlash)
                             }
                         } else {
                             Toaster.w(R.string.player_matching_required_message)

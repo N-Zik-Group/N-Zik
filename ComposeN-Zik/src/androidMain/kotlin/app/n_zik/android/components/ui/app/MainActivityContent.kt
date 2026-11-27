@@ -940,9 +940,11 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
             } else {
                     var playlistActions by remember { mutableStateOf<PlaylistActionsRequest?>(null) }
                     CompositionLocalProvider(LocalGlassMenuHost provides glassMenuHost) {
+                    val queueSmartShuffle = app.n_zik.android.components.ui.screens.player.rememberQueueSmartShuffle(binder)
                     val importMenu = rememberLibraryPlaylistImportMenu(offlineMode)
                     CompositionLocalProvider(
                     LocalLibraryPlaylistImport provides importMenu,
+                    app.n_zik.android.components.ui.screens.player.LocalQueueSmartShuffle provides queueSmartShuffle,
                     LocalPlaylistAddChoice provides { playlistActions = it },
                     LocalIndication provides ripple(bounded = true),
                     app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive provides

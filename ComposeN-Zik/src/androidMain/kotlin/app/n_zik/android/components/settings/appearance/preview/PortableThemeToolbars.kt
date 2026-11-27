@@ -38,8 +38,14 @@ internal fun stockLibraryToolbarKeys(): List<String> =
 internal fun ThemeFields.toolbars(schemaVersion: Int) {
     optional("toolbars") {
         group("toolbars") {
-            libraryToolbarLists().forEach { (field, lists) -> controlLists(field, lists) }
-            controlList("localPlaylist", LocalPlaylistToolbarSettingsDialog.portableList())
+            libraryToolbarLists().forEach { (field, lists) ->
+                val compatibleLists = if (field == "songs" || schemaVersion >= ThemeAppearanceV3) lists
+                    else lists.mapValues { (_, list) -> list.copy(ids = list.ids - "smart_shuffle") }
+                controlLists(field, compatibleLists)
+            }
+            val localPlaylist = LocalPlaylistToolbarSettingsDialog.portableList()
+            controlList("localPlaylist", if (schemaVersion >= ThemeAppearanceV3) localPlaylist
+                else localPlaylist.copy(ids = localPlaylist.ids.filterNot { it == "smart_shuffle" }))
             optional("dockOrder") {
                 order("dockOrder", DockToolbarPreferences.orderKey)
             }
@@ -61,8 +67,11 @@ internal fun ThemeFields.toolbars(schemaVersion: Int) {
 private fun PortableControlList.withoutDeviceSort() = copy(ids = ids.filterNot { it == "OnDevice" })
 
 private fun ThemeFields.customToolbars(schemaVersion: Int) {
+    fun acceptsAction(action: ToolbarAction): Boolean =
+        schemaVersion >= ThemeAppearanceV3 || action != ToolbarAction.SMART_SHUFFLE
+
     fun acceptsVisibility(surface: ToolbarSurface, action: ToolbarAction): Boolean =
-        (this is ImportThemeFields || surface != ToolbarSurface.PLAYER_TOP || action !in surface.locked) &&
+        acceptsAction(action) && (this is ImportThemeFields || surface != ToolbarSurface.PLAYER_TOP || action !in surface.locked) &&
             acceptsPortableKey(surface.visibilityKey(action))
 
     val surfaces = ToolbarSurface.entries.filter { surface ->
@@ -79,7 +88,7 @@ private fun ThemeFields.customToolbars(schemaVersion: Int) {
                     group(surface.id) {
                         (this as? ImportThemeFields)?.requireNonEmptyGroup()
                         if (acceptsPortableKey(surface.orderKey)) optional("order") {
-                            order("order", surface.orderKey, surface.ids.toSet())
+                            order("order", surface.orderKey, surface.actions.filter(::acceptsAction).mapTo(mutableSetOf(), ToolbarAction::id))
                         }
                         val actions = surface.actions.filter { acceptsVisibility(surface, it) }
                         if (actions.isNotEmpty()) optional("visibility") {
