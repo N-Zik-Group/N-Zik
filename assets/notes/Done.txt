@@ -1864,3 +1864,7 @@ Settings:
 Menus:
 - fix(menu): share visible handle behavior and contrasting media headers
   - Keep one usable handle per sheet, adapt Information and media headers to custom Glass films, and put waveform refresh under Management.
+
+Menus / Queue:
+- fix(queue): share resizing and accessibility actions
+  - Use the same thresholds and accessible resize and close actions in both player queues.

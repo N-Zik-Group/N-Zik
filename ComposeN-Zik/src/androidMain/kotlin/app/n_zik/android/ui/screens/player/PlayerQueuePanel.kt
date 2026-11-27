@@ -9,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -39,7 +38,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -60,6 +58,7 @@ import app.n_zik.android.components.glass.glassQueuePanelBackground
 import app.n_zik.android.components.glass.usesQueueToolbarGlass
 import app.n_zik.android.components.menu.MenuDragHandleBar
 import app.n_zik.android.components.player.queuePanelAtExpandedEndpoint
+import app.n_zik.android.components.player.queuePanelDragHandle
 import app.n_zik.android.components.player.rememberPlayerQueueBackdrop
 import app.n_zik.android.enums.QueueLoopType
 import app.n_zik.android.enums.QueueType
@@ -211,32 +210,10 @@ internal fun BoxScope.PlayerQueuePanel(
                         .align(Alignment.TopCenter)
                         .clip(topUiRoundnessShape())
                         .background(colorPalette().background0.copy(alpha = handleAlpha))
-                        .pointerInput(Unit) {
-                            detectVerticalDragGestures(
-                                onDragEnd = {
-                                    queuePanelCoroutineScope.launch {
-                                        val currentFraction = queuePanelHeightFraction.value
-                                        when {
-                                            currentFraction > 0.85f -> queuePanelHeightFraction.animateTo(
-                                                maxFraction,
-                                                spring(dampingRatio = 0.8f, stiffness = 300f)
-                                            )
-                                            currentFraction < 0.4f -> showQueue = false
-                                            else -> queuePanelHeightFraction.animateTo(
-                                                0.65f,
-                                                spring(dampingRatio = 0.8f, stiffness = 300f)
-                                            )
-                                        }
-                                    }
-                                },
-                                onVerticalDrag = { _, dragAmount ->
-                                    queuePanelCoroutineScope.launch {
-                                        val newFraction = (queuePanelHeightFraction.value - dragAmount / screenHeightPx)
-                                            .coerceIn(0.1f, maxFraction)
-                                        queuePanelHeightFraction.snapTo(newFraction)
-                                    }
-                                }
-                            )
+                        .queuePanelDragHandle(
+                            queuePanelHeightFraction, maxFraction, screenHeightPx, queuePanelCoroutineScope,
+                        ) {
+                            showQueue = false
                         },
                     contentAlignment = Alignment.Center
                 ) {
