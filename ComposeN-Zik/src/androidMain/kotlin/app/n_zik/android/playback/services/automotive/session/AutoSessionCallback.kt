@@ -71,6 +71,7 @@ import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
+import app.n_zik.android.playback.services.automotive.browse.loadAutoDeviceSortedFavorites
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
@@ -947,7 +948,13 @@ class AutoSessionCallback(
 
     /** Resolves local, generated or online playlist songs for legacy selection IDs. */
     private suspend fun playlistSongs(playlistId: String): List<Song> = when (playlistId) {
-        AutoSessionConstants.ID_FAVORITES -> database.songTable.allFavorites().map { it.reversed() }.first()
+        AutoSessionConstants.ID_FAVORITES -> {
+            val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY
+            if (context.preferences.getEnum(sortBy.key, sortBy.default) == SongSortBy.OnDevice) {
+                val order = Preference.HOME_SONGS_FAVORITES_SORT_ORDER
+                loadAutoDeviceSortedFavorites(context, database, context.preferences.getEnum(order.key, order.default))
+            } else database.songTable.allFavorites().map { it.reversed() }.first()
+        }
         AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> ::binder.isInitialized && binder.cache.hasCachedStream(itf.song.id, itf.format.contentLength) }.reversed().fastMap { itf -> itf.song } }.first()
         AutoSessionConstants.ID_TOP -> database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()
         AutoSessionConstants.ID_ONDEVICE -> database.songTable.allOnDevice().first()
@@ -965,7 +972,7 @@ class AutoSessionCallback(
             when {
                 deviceGroup != null -> autoBrowseTree.deviceGroupsHandler.songs(deviceGroup, context, database)
                 devicePlaylistId != null -> if (showAutoDevicePlaylists(context)) {
-                    loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId).filter { it.isLocal }
+                    loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId, onDeviceOnly = true).filter { it.isLocal }
                 } else emptyList()
                 localId != null -> loadAutoPlaylistSongs(context, database, downloadHelper, localId)
                 else -> AutoSearchState.playlistSongsById[playlistId].orEmpty()

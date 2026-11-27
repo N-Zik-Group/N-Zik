@@ -2,6 +2,9 @@ package app.n_zik.android.playback.services.automotive.browse
 
 import android.content.Context
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.components.ui.screens.home.availableDevicePlaylistSongCounts
 import app.n_zik.android.utils.showOnDevicePlaylistsKey
 import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.PlaylistsType
@@ -85,7 +88,18 @@ internal suspend fun loadAutoLibraryPlaylists(
     val devicePlaylistIds = if (scope.type == PlaylistsType.OnDevice) {
         database.songPlaylistMapTable.onDeviceOnlyPlaylistIds().first().toSet()
     } else emptySet()
-    return visibleAutoLibraryPlaylists(scope, parentId, database.playlistTable.sortPreviews(sortBy, sortOrder).first(), devicePlaylistIds)
+    val groupByDevice = sortBy == PlaylistSortBy.OnDevice && context.isDeviceLibraryEnabled() &&
+        (scope.type == PlaylistsType.Playlist || scope.type == PlaylistsType.PinnedPlaylist)
+    val databaseSort = if (sortBy == PlaylistSortBy.OnDevice) PlaylistSortBy.Name else sortBy
+    val databaseOrder = if (groupByDevice) SortOrder.Ascending else sortOrder
+    val visible = visibleAutoLibraryPlaylists(
+        scope, parentId, database.playlistTable.sortPreviews(databaseSort, databaseOrder).first(), devicePlaylistIds,
+    )
+    if (!groupByDevice) return visible
+    val availableIds = availableDevicePlaylistSongCounts(
+        database.songPlaylistMapTable.observeDeviceTrackMappings().first(), context.scanDeviceLibrary().songIds,
+    ).keys
+    return visible.groupByDeviceAvailability(sortOrder) { it.playlist.id in availableIds }
 }
 
 internal fun showAutoDevicePlaylists(context: Context): Boolean =

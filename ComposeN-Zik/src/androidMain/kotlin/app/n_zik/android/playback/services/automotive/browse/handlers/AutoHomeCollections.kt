@@ -16,7 +16,11 @@ import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.enums.AlbumSortBy
+import app.n_zik.android.enums.ArtistSortBy
 import app.n_zik.android.enums.FilterBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
@@ -101,25 +105,39 @@ internal suspend fun loadAutoHomeAlbums(
         val snapshot = if (forCount) context.cachedAutoDeviceLibrary() else context.scanDeviceLibrary()
         snapshot?.albumIds.orEmpty()
     } else emptySet()
+    val (byKey, orderKey) = when (base) {
+        AutoSessionConstants.ID_ALBUMS_FAVORITES -> Preference.HOME_ALBUMS_FAVORITES_SORT_BY to Preference.HOME_ALBUMS_FAVORITES_SORT_ORDER
+        AutoSessionConstants.ID_ALBUMS_DISLIKED -> Preference.HOME_ALBUMS_DISLIKED_SORT_BY to Preference.HOME_ALBUMS_DISLIKED_SORT_ORDER
+        else -> Preference.HOME_ALBUMS_LIBRARY_SORT_BY to Preference.HOME_ALBUMS_LIBRARY_SORT_ORDER
+    }
+    val sortBy = prefs.getEnum(byKey.key, byKey.default)
+    val order = prefs.getEnum(orderKey.key, orderKey.default)
+    val groupByDevice = sortBy == AlbumSortBy.OnDevice && source != FilterBy.YoutubeLibrary &&
+        context.isDeviceLibraryEnabled()
+    val databaseSort = if (sortBy == AlbumSortBy.OnDevice) AlbumSortBy.Title else sortBy
+    val databaseOrder = if (groupByDevice) SortOrder.Ascending else order
     val albums = when (base) {
         AutoSessionConstants.ID_ALBUMS_LIBRARY -> database.albumTable.sortInLibrary(
-            prefs.getEnum(Preference.HOME_ALBUMS_LIBRARY_SORT_BY.key, Preference.HOME_ALBUMS_LIBRARY_SORT_BY.default),
-            prefs.getEnum(Preference.HOME_ALBUMS_LIBRARY_SORT_ORDER.key, Preference.HOME_ALBUMS_LIBRARY_SORT_ORDER.default),
+            databaseSort,
+            databaseOrder,
             includeDeviceGroups = localIds.isNotEmpty(),
         ).first()
         AutoSessionConstants.ID_ALBUMS_FAVORITES -> database.albumTable.sortBookmarked(
-            prefs.getEnum(Preference.HOME_ALBUMS_FAVORITES_SORT_BY.key, Preference.HOME_ALBUMS_FAVORITES_SORT_BY.default),
-            prefs.getEnum(Preference.HOME_ALBUMS_FAVORITES_SORT_ORDER.key, Preference.HOME_ALBUMS_FAVORITES_SORT_ORDER.default),
+            databaseSort,
+            databaseOrder,
             includeDeviceGroups = localIds.isNotEmpty(),
         ).first()
-        AutoSessionConstants.ID_ALBUMS_DISLIKED -> database.albumTable.allDisliked().first()
+        AutoSessionConstants.ID_ALBUMS_DISLIKED -> database.albumTable.allDisliked().first().let { rows ->
+            if (groupByDevice) rows.sortedBy { it.title.orEmpty().lowercase() } else rows
+        }
         else -> emptyList()
     }
-    return albums.filter { album ->
+    val visible = albums.filter { album ->
         (!isDeviceAlbumId(album.id) || album.id in localIds) &&
             (base == AutoSessionConstants.ID_ALBUMS_DISLIKED || album.dislikedAt == null) &&
             source.matchesOrigin(album.isYoutubeAlbum)
     }
+    return if (groupByDevice) visible.groupByDeviceAvailability(order) { it.id in localIds } else visible
 }
 
 internal suspend fun loadAutoHomeArtists(
@@ -137,23 +155,37 @@ internal suspend fun loadAutoHomeArtists(
         val snapshot = if (forCount) context.cachedAutoDeviceLibrary() else context.scanDeviceLibrary()
         snapshot?.artistIds.orEmpty()
     } else emptySet()
+    val (byKey, orderKey) = when (base) {
+        AutoSessionConstants.ID_ARTISTS_FAVORITES -> Preference.HOME_ARTISTS_FAVORITES_SORT_BY to Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER
+        AutoSessionConstants.ID_ARTISTS_DISLIKED -> Preference.HOME_ARTISTS_DISLIKED_SORT_BY to Preference.HOME_ARTISTS_DISLIKED_SORT_ORDER
+        else -> Preference.HOME_ARTISTS_LIBRARY_SORT_BY to Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER
+    }
+    val sortBy = prefs.getEnum(byKey.key, byKey.default)
+    val order = prefs.getEnum(orderKey.key, orderKey.default)
+    val groupByDevice = sortBy == ArtistSortBy.OnDevice && source != FilterBy.YoutubeLibrary &&
+        context.isDeviceLibraryEnabled()
+    val databaseSort = if (sortBy == ArtistSortBy.OnDevice) ArtistSortBy.Name else sortBy
+    val databaseOrder = if (groupByDevice) SortOrder.Ascending else order
     val artists = when (base) {
         AutoSessionConstants.ID_ARTISTS_LIBRARY -> database.artistTable.sortInLibrary(
-            prefs.getEnum(Preference.HOME_ARTISTS_LIBRARY_SORT_BY.key, Preference.HOME_ARTISTS_LIBRARY_SORT_BY.default),
-            prefs.getEnum(Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER.key, Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER.default),
+            databaseSort,
+            databaseOrder,
             includeDeviceGroups = localIds.isNotEmpty(),
         ).first()
         AutoSessionConstants.ID_ARTISTS_FAVORITES -> database.artistTable.sortFollowing(
-            prefs.getEnum(Preference.HOME_ARTISTS_FAVORITES_SORT_BY.key, Preference.HOME_ARTISTS_FAVORITES_SORT_BY.default),
-            prefs.getEnum(Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER.key, Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER.default),
+            databaseSort,
+            databaseOrder,
             includeDeviceGroups = localIds.isNotEmpty(),
         ).first()
-        AutoSessionConstants.ID_ARTISTS_DISLIKED -> database.artistTable.allDisliked().first()
+        AutoSessionConstants.ID_ARTISTS_DISLIKED -> database.artistTable.allDisliked().first().let { rows ->
+            if (groupByDevice) rows.sortedBy { it.name.orEmpty().lowercase() } else rows
+        }
         else -> emptyList()
     }
-    return artists.filter { artist ->
+    val visible = artists.filter { artist ->
         (!isDeviceArtistId(artist.id) || artist.id in localIds) &&
             (base == AutoSessionConstants.ID_ARTISTS_DISLIKED || artist.dislikedAt == null) &&
             source.matchesOrigin(artist.isYoutubeArtist)
     }
+    return if (groupByDevice) visible.groupByDeviceAvailability(order) { it.id in localIds } else visible
 }

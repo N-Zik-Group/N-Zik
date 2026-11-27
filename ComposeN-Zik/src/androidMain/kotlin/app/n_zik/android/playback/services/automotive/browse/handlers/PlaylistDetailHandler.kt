@@ -22,6 +22,7 @@ import app.n_zik.android.utils.asSong
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.playback.services.automotive.browse.loadAutoDeviceSortedFavorites
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -58,7 +59,8 @@ class PlaylistDetailHandler : BrowseHandler {
         val playlistId = parts[1]
         playlistId.toLongOrNull()?.let { localId ->
             val section = parts.getOrNull(2)
-            val songs = loadAutoPlaylistSongs(context, database, downloadHelper, localId)
+            val deviceOnly = section == AutoMediaIdContract.PLAYLIST_SECTION_DEVICE
+            val songs = loadAutoPlaylistSongs(context, database, downloadHelper, localId, onDeviceOnly = deviceOnly)
             val deviceSongs = if (showAutoDevicePlaylists(context)) songs.filter { it.isLocal } else emptyList()
             if (section == null && deviceSongs.isNotEmpty()) {
                 fun folder(sectionId: String, label: Int, icon: Int, count: Int) = browsableMediaItem(
@@ -70,7 +72,6 @@ class PlaylistDetailHandler : BrowseHandler {
                     folder(AutoMediaIdContract.PLAYLIST_SECTION_DEVICE, R.string.library_on_device_title, R.drawable.folder, deviceSongs.size),
                 )
             }
-            val deviceOnly = section == AutoMediaIdContract.PLAYLIST_SECTION_DEVICE
             val visible = if (deviceOnly) deviceSongs else songs
             if (visible.isEmpty()) return emptyList()
             val action = if (deviceOnly) AutoMediaIdContract.devicePlaylistAction(localId) else playlistId
@@ -84,7 +85,9 @@ class PlaylistDetailHandler : BrowseHandler {
             AutoSessionConstants.ID_FAVORITES -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending)
-                database.songTable.sortFavorites(sortBy, sortOrder)
+                if (sortBy == SongSortBy.OnDevice) {
+                    flowOf(loadAutoDeviceSortedFavorites(context, database, sortOrder))
+                } else database.songTable.sortFavorites(sortBy, sortOrder)
             }
             AutoSessionConstants.ID_CACHED -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title)

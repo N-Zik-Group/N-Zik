@@ -10,6 +10,7 @@ import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSong
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.enums.FilterBy
 import app.n_zik.android.enums.DurationInMinutes
@@ -115,8 +116,16 @@ internal suspend fun loadAutoHomeSongs(
     val sort = prefs.getEnum(sortKey.key, sortKey.default)
     val order = prefs.getEnum(orderKey.key, orderKey.default)
     val sortByDownload = sort == SongSortBy.Downloaded
-    val baseSort = if (sortByDownload) SongSortBy.Title else sort
-    val baseOrder = if (sortByDownload && category != AutoSessionConstants.ID_SONGS_DOWNLOADED) SortOrder.Ascending else order
+    val groupByDevice = sort == SongSortBy.OnDevice && explicitOrigin != FilterBy.YoutubeLibrary &&
+        context.isDeviceLibraryEnabled() && when (category) {
+            AutoSessionConstants.ID_SONGS_ALL, AutoSessionConstants.ID_SONGS_FAVORITES,
+            AutoSessionConstants.ID_SONGS_DISLIKED -> true
+            else -> false
+        }
+    val baseSort = if (sortByDownload || sort == SongSortBy.OnDevice) SongSortBy.Title else sort
+    val baseOrder = if (groupByDevice || (sortByDownload && category != AutoSessionConstants.ID_SONGS_DOWNLOADED)) {
+        SortOrder.Ascending
+    } else order
     val downloadedIds = if (sortByDownload || category == AutoSessionConstants.ID_SONGS_DOWNLOADED) {
         downloadHelper.getDownloadManager(context)
         downloadHelper.downloads.value.filterValues { it.state == Download.STATE_COMPLETED }.keys
@@ -164,6 +173,7 @@ internal suspend fun loadAutoHomeSongs(
         eligible && localAllowed && source.matchesOrigin(it.isYoutubeSong) &&
             (!parentalControl || !it.title.startsWith(EXPLICIT_PREFIX, ignoreCase = true))
     }
+    if (groupByDevice) return filtered.groupByDeviceAvailability(order) { it.id in localIds }
     if (!sortByDownload || category in setOf(AutoSessionConstants.ID_SONGS_ONDEVICE, AutoSessionConstants.ID_SONGS_DOWNLOADED)) {
         return filtered
     }

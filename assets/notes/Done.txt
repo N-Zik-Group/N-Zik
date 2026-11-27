@@ -1,4 +1,7 @@
 Added:
+- feat(auto): use the on-device sort in mixed browse lists
+  - Apply the saved sort in Android Auto browse and playback using current device availability.
+  - Keep device-only playlist ordering consistent across browse and playback, and cover direction changes and scan refresh.
 - feat(library): sort mixed collections by device availability
   - Group scanned device items in songs, albums, artists, playlists, the playlist picker and listening history.
   - Reverse group priority without reversing the secondary order. Exclude Cached, Downloaded, On device and provider-only lists.

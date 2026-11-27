@@ -16,20 +16,30 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.ArtistTable
+import app.n_zik.android.core.database.SongTable
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.SongSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import app.n_zik.android.playback.services.automotive.browse.handlers.QuickPicksBrowseHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.RootBrowseHandler
+import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeSongs
+import app.n_zik.android.utils.Preference
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,6 +122,39 @@ class AutoOfflineNavigationTest {
 
     @Test fun `forced offline with validated wifi removes discovery and disabling restores capabilities`() =
         assertPolicyRoundTrip(forced = true)
+
+    @Test fun `Android Auto All uses the saved device priority and reevaluates available files`() {
+        val songs = mockk<SongTable>()
+        every { database.songTable } returns songs
+        val candidates = listOf("a-online", "local:b", "c-online", "local:d").map { id ->
+            Song(id, id, null, null, null, totalPlayTimeMs = 1L)
+        }
+        every { songs.sortAll(SongSortBy.Title, SortOrder.Ascending, any(), false, false) } returns flowOf(candidates)
+        var snapshot = DeviceLibrarySnapshot(songIds = setOf("local:b", "local:d"))
+        mockkStatic("app.n_zik.android.core.ondevice.DeviceLibraryKt")
+        coEvery { app.scanDeviceLibrary(false) } answers { snapshot }
+
+        val by = Preference.HOME_SONGS_SORT_BY.key
+        val order = Preference.HOME_SONGS_SORT_ORDER.key
+        val prefs = app.preferences
+        prefs.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).putString(by, SongSortBy.OnDevice.name).commit()
+        try {
+            // The test invokes the same suspend loader used by Auto browse and playback.
+            fun load(direction: SortOrder): List<String> {
+                prefs.edit().putString(order, direction.name).commit()
+                return runBlocking {
+                    loadAutoHomeSongs(app, database, downloads, null, AutoSessionConstants.ID_SONGS_ALL, emptySet())
+                        .map(Song::id)
+                }
+            }
+            assertEquals(listOf("local:b", "local:d", "a-online", "c-online"), load(SortOrder.Ascending))
+            assertEquals(listOf("a-online", "c-online", "local:b", "local:d"), load(SortOrder.Descending))
+            snapshot = DeviceLibrarySnapshot(songIds = setOf("local:d"))
+            assertEquals(listOf("local:d", "a-online", "c-online"), load(SortOrder.Ascending))
+        } finally {
+            prefs.edit().remove(DEVICE_LIBRARY_ENABLED_KEY).remove(by).remove(order).commit()
+        }
+    }
 
     private fun assertPolicyRoundTrip(forced: Boolean) {
         assertTrue(NetworkQualityHelper.isNetworkConnected(app))
