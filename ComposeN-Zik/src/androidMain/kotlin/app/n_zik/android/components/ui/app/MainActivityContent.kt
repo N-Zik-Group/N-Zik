@@ -75,7 +75,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import enums.VisualizerWhiteColorOption
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -146,6 +145,7 @@ import app.n_zik.android.components.player.miniPlayerTopPaddingPx
 import app.n_zik.android.components.player.presentMiniplayerCollapsed
 import app.n_zik.android.components.player.presentMiniplayerThenExpand
 import app.n_zik.android.components.player.rememberArtworkDisplayResult
+import app.n_zik.android.components.player.resolvePlayerSheetMediaPresence
 import app.n_zik.android.components.player.shouldComposePlayerSheet
 import app.n_zik.android.components.player.showMiniplayerIfDismissed
 import app.n_zik.android.components.theme.DYNAMIC_THEME_RESPECT_BRIGHTNESS_DEFAULT
@@ -986,8 +986,8 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     var toastNeedsLiveBackdrop by remember { mutableStateOf(false) }
                     var miniQueueMounted by remember { mutableStateOf(false) }
                     val miniQueueVisible = showQueueOverlay || miniQueueMounted
-                    // Shared by overlay freshness and the debounced media-presence gate below.
-                    val currentMediaId by (binder?.player?.currentMediaItemIdAsState() ?: remember { mutableStateOf<String?>(null) })
+                    val sheetPlayer = binder?.player
+                    val currentMediaId = sheetPlayer?.currentMediaItemIdAsState(key1 = sheetPlayer)?.value
                     GlassSceneContent(glassMenuHost,
                         enabled = sceneGlassSettings.enabled && glassRenderer(sceneGlassSettings) != GlassRenderer.Tint,
                         needsLiveBackdrop = toastNeedsLiveBackdrop || miniQueueVisible,
@@ -1034,32 +1034,22 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     val ltGuestLocked by app.n_zik.android.listentogether.listenTogetherGuestLock
                     checkIfAppIsRunningInBackground()
 
-                    // Debounced media presence: Listen Together replaces the whole queue on
-                    // every track change (setMediaItems), which briefly clears the current
-                    // media item. Reacting to that transient null would close the player
-                    // sheet on each track change (user-reported), so "no media" is only
-                    // accepted once the absence persists.
-                    var mediaPresent by remember(binder) {
-                        mutableStateOf(binder?.player?.currentMediaItem != null)
+                    var mediaPresent by remember {
+                        mutableStateOf(sheetPlayer?.currentMediaItem != null)
                     }
 
-                    // Keyed on the sheet too: a rebuilt sheet (rotation, insets) starts from
-                    // its last anchor and must be re-checked against the current media
-                    LaunchedEffect(currentMediaId, playerSheetState) {
-                        if (currentMediaId == null) {
-                            delay(400)
-                            if (binder?.player?.currentMediaItem != null) return@LaunchedEffect
-                            mediaPresent = false
+                    LaunchedEffect(sheetPlayer, currentMediaId, playerSheetState) {
+                        val presence = resolvePlayerSheetMediaPresence {
+                            binder?.player?.takeIf { it === sheetPlayer }?.let { it.currentMediaItem != null }
+                        } ?: return@LaunchedEffect
+                        mediaPresent = presence
+                        if (presence) {
+                            playerSheetState.showMiniplayerIfDismissed()
+                        } else {
                             if (!playerSheetState.isDismissed) {
                                 playerSheetState.dismiss()
                             }
                             showQueueOverlay = false
-                        } else {
-                            mediaPresent = true
-                            // After recreate() the player service is not bound yet, so media
-                            // reads as absent and the sheet is dismissed above; bring the
-                            // mini-player back once media returns
-                            playerSheetState.showMiniplayerIfDismissed()
                         }
                     }
 

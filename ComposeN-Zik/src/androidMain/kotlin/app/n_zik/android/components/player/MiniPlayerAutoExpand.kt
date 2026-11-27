@@ -36,18 +36,7 @@ fun CoroutineScope.presentMiniplayerThenExpand(
     }
 }
 
-/**
- * Brings the mini-player back when media is available but the sheet is in the dismissed zone.
- *
- * A UI preference change recreates the activity: the player service is not bound yet, so media
- * reads as absent and the sheet is dismissed, and nothing presents it again once media returns.
- * Call this when media is present; a sheet that is showing or expanded is left untouched.
- * The mini-player slides into place using the same spring as Metrolist.
- *
- * The condition is the sheet value, not [PlayerSheetState.isDismissed]: a dismiss animation still in flight
- * has not reached the dismissed bound, and a stop-then-quick-resume must still restore the
- * mini-player instead of letting that animation settle to a hidden sheet.
- */
+/** Brings back the mini-player when media arrives, including during a dismiss animation. */
 fun PlayerSheetState.showMiniplayerIfDismissed() {
     if (value < collapsedBound) collapse(miniPlayerAppearanceSpring())
 }

@@ -840,13 +840,16 @@ class MainActivity :
         return true
     }
 
+    @UnstableApi
     override fun onStop() {
-        unbindLibraryUi()
+        // Keep the active player's artwork and controls mounted while this task is in the background.
+        if (binder?.player?.currentMediaItem == null) unbindLibraryUi()
         super.onStop()
     }
 
     @UnstableApi
     override fun onDestroy() {
+        unbindLibraryUi()
         screenCapturePolicy?.close()
         screenCapturePolicy = null
         super.onDestroy()
