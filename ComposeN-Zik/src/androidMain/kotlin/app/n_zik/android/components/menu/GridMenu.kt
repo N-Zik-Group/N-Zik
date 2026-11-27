@@ -159,7 +159,7 @@ object GridMenu {
             modifier = modifier
                 .clip(shape)
                 .menuEntryClick(shape, enabled, onClick, onLongClick)
-                .padding(12.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

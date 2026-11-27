@@ -1104,3 +1104,7 @@ Menus:
 Menus:
 - fix(toolbar): name visible controls for accessibility
   - Expose action labels on the toolbar and overflow in Normal and Glass.
+
+Interface:
+- style(ui): add breathing room inside menu and settings rows
+  - Add 2 dp of horizontal content padding while keeping press feedback inset at 6 dp.
