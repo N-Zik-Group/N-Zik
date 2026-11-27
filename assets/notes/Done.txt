@@ -1184,3 +1184,7 @@ Menus:
 Menus:
 - fix(downloads): count only eligible tracks in batches
   - Skip device files and completed downloads in batch progress, and report a missing network or service.
+
+Settings:
+- fix(network): apply authenticated proxy per profile
+  - Load profile proxy credentials securely, accept valid hostnames and reconfigure supported clients when settings change.

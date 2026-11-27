@@ -27,8 +27,6 @@ import app.n_zik.innertube.models.PlaylistPanelVideoRenderer
 import app.n_zik.innertube.models.Runs
 import app.n_zik.innertube.models.Thumbnail
 import app.n_zik.innertube.utils.InnertubeLogger
-import app.n_zik.innertube.utils.ProxyPreferences
-import app.n_zik.innertube.utils.getProxy
 import app.n_zik.innertube.utils.parseCookieString
 import app.n_zik.innertube.utils.sha1
 import kotlin.concurrent.Volatile
@@ -60,11 +58,15 @@ object Innertube {
     var offlineGate: (() -> Boolean)? = null
 
     private var transportCache: Cache? = null
+    private var transportProxy: Proxy? = null
+    private var transportProxyAuthenticator: okhttp3.Authenticator = okhttp3.Authenticator.NONE
 
-    /** The host owns the cache and may share it with other clients for the same profile. */
+    /** The host owns the proxy and cache for the current profile. */
     @Synchronized
-    fun bindTransportCache(cache: Cache?) {
-        if (transportCache === cache) return
+    fun configureTransport(proxy: Proxy?, proxyAuthenticator: okhttp3.Authenticator, cache: Cache?) {
+        if (transportProxy == proxy && transportProxyAuthenticator == proxyAuthenticator && transportCache === cache) return
+        transportProxy = proxy
+        transportProxyAuthenticator = proxyAuthenticator
         transportCache = cache
         recreateTransport()
     }
@@ -91,9 +93,10 @@ object Innertube {
             socketTimeoutMillis = 60_000
         }
 
-        val p = proxy ?: ProxyPreferences.preference?.let { getProxy(it) }
         engine {
+            proxy = transportProxy
             config {
+                proxyAuthenticator(transportProxyAuthenticator)
                 // Enable HTTP/2 for better compatibility with YouTube servers
                 protocols(listOf(okhttp3.Protocol.HTTP_2, okhttp3.Protocol.HTTP_1_1))
                 // Retry on connection failure (like Metrolist)
@@ -134,36 +137,6 @@ object Innertube {
                     response
                 }
             }
-            if (p != null) {
-                proxy = p
-                // Add proxy authentication if credentials are provided
-                proxyAuth?.let { auth ->
-                    if (auth.isNotBlank()) {
-                        config {
-                            proxyAuthenticator(okhttp3.Authenticator { _, response ->
-                                // Track failed attempts to prevent infinite retries
-                                val request = response.request
-                                val retryCount = request.header("X-Proxy-Retry-Count")?.toIntOrNull() ?: 0
-
-                                if (retryCount >= 3) {
-                                    InnertubeLogger.w("Innertube", "Proxy auth failed after $retryCount attempts, clearing credentials")
-                                    proxyAuth = null
-                                    return@Authenticator null
-                                }
-
-                                val credential = okhttp3.Credentials.basic(
-                                    auth.substringBefore(":"),
-                                    auth.substringAfter(":")
-                                )
-                                request.newBuilder()
-                                    .header("Proxy-Authorization", credential)
-                                    .header("X-Proxy-Retry-Count", (retryCount + 1).toString())
-                                    .build()
-                            })
-                        }
-                    }
-                }
-            }
         }
 
         defaultRequest {
@@ -180,20 +153,6 @@ object Innertube {
     // the app module cannot reach it, so the module's public API is unchanged
     internal var innerTubeX = com.metrolist.innertubex.InnerTube(client)
     private var transportGeneration = 0L
-
-    var proxy: Proxy? = null
-        set(value) {
-            if (field == value) return
-            field = value
-            recreateTransport()
-        }
-
-    var proxyAuth: String? = null
-        set(value) {
-            if (field == value) return
-            field = value
-            if (proxy != null) recreateTransport()
-        }
 
     var regionOverrideActive: Boolean = false
         set(value) {

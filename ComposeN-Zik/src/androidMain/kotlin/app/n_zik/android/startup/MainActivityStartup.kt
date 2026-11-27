@@ -1,7 +1,5 @@
 package app.n_zik.android.startup
 
-import java.net.Proxy
-
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Build
@@ -12,26 +10,15 @@ import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
-import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
-import app.n_zik.android.core.settings.readProxyPort
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.closeWithBackButtonKey
-import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.isKeepScreenOnEnabledKey
-import app.n_zik.android.utils.isProxyEnabledKey
-import app.n_zik.android.utils.isValidIP
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.proxyHostnameKey
-import app.n_zik.android.utils.proxyModeKey
-import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.utils.ProxyPreferenceItem
-import app.n_zik.innertube.utils.getProxy
 
 internal fun Context.initializeLaunchPreferences() {
     // A cold profile shortcut can change the active store after application startup.
@@ -61,29 +48,4 @@ internal fun applyKeepScreenOnPreference(window: Window, preferences: SharedPref
     if (preferences.getBoolean(isKeepScreenOnEnabledKey, false)) {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
-}
-
-internal fun applyStartupProxy(context: Context, preferences: SharedPreferences) {
-    val proxy = with(preferences) {
-        if (getBoolean(isProxyEnabledKey, false)) {
-            val host = getString(proxyHostnameKey, null)
-            val port = readProxyPort()
-            val mode = getEnum(proxyModeKey, Proxy.Type.HTTP)
-            if (isValidIP(host) && host != null) {
-                getProxy(ProxyPreferenceItem(host, port, mode))
-            } else {
-                Timber.tag("MainActivity").w("Proxy preference is null or invalid, running without proxy")
-                null
-            }
-        } else {
-            Timber.tag("MainActivity").w("Proxy preference is null, running without proxy")
-            null
-        }
-    }
-
-    NetworkClientFactory.configure(
-        proxy = proxy,
-        cacheDir = NetworkClientFactory.profileCacheDirectory(context),
-    )
-    Innertube.proxy = proxy
 }

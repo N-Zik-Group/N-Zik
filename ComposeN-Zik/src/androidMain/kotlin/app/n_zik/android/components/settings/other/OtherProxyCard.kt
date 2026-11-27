@@ -1,15 +1,14 @@
 package app.n_zik.android.components.settings.other
 
+import app.n_zik.android.core.network.client.applyProfileProxy
 import app.n_zik.android.core.settings.defaultProxyPort
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
-import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,8 +21,6 @@ import app.n_zik.android.utils.isProxyEnabledKey
 import app.n_zik.android.utils.proxyHostnameKey
 import app.n_zik.android.utils.proxyModeKey
 import app.n_zik.android.utils.proxyPasswordEncryptedKey
-import app.n_zik.android.utils.proxyPasswordKey
-import app.n_zik.android.utils.proxyPasswordMigratedKey
 import app.n_zik.android.utils.proxyPortKey
 import app.n_zik.android.utils.proxyUsernameKey
 import app.n_zik.android.utils.regionOverrideKey
@@ -50,21 +47,7 @@ internal fun OtherProxyCard(search: Search) {
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var proxyUsername by rememberPreference(proxyUsernameKey, "")
 
-    var isPasswordMigrated by rememberPreference(proxyPasswordMigratedKey, false)
-    val oldPassword by rememberPreference(proxyPasswordKey, "")
     var proxyPassword by rememberEncryptedPreference(proxyPasswordEncryptedKey, "")
-
-    LaunchedEffect(Unit) {
-        if (!isPasswordMigrated && oldPassword.isNotEmpty()) {
-            proxyPassword = oldPassword
-            isPasswordMigrated = true
-
-            context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                .edit()
-                .remove(proxyPasswordKey)
-                .apply()
-        }
-    }
 
     var regionOverride by rememberPreference(regionOverrideKey, "")
     val usernameTitle = stringResource(R.string.settings_proxy_username)
@@ -217,7 +200,10 @@ internal fun OtherProxyCard(search: Search) {
                             allowEmpty = true,
                             isPassword = true,
                             onDismiss = { showProxyPasswordDialog = false },
-                            onSetValue = { proxyPassword = it }
+                            onSetValue = {
+                                proxyPassword = it
+                                applyProfileProxy(context)
+                            }
                         ).apply {
                             showDialog()
                             Render()

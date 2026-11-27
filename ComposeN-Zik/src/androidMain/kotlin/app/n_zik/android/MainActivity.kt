@@ -76,6 +76,7 @@ import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.backup.LibraryStartupState
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.selectColdStorageProfile
+import app.n_zik.android.core.network.client.applyProfileProxy
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.services.withProfileDownloadCommandOwner
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -107,7 +108,6 @@ import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.PermissionUsageJournal
 import app.n_zik.android.startup.applyKeepScreenOnPreference
-import app.n_zik.android.startup.applyStartupProxy
 import app.n_zik.android.startup.initializeLaunchPreferences
 import app.n_zik.android.startup.registerStartupBackCallback
 import app.n_zik.android.startup.registerStartupCookieWarning
@@ -543,7 +543,7 @@ class MainActivity :
 
         val startupPreferences = preferences
         applyKeepScreenOnPreference(window, startupPreferences)
-        applyStartupProxy(this, startupPreferences)
+        applyProfileProxy(this)
 
         setInterfaceContent { MainActivityContent(launchedFromNotification) }
     }

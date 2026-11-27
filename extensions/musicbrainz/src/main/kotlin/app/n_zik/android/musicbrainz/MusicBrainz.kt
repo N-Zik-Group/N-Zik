@@ -30,7 +30,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import java.net.Proxy
 import java.net.URLEncoder
 import okhttp3.Protocol
 import okhttp3.Response
@@ -149,7 +148,7 @@ class MusicBrainz {
 
     private val client = ProxyBoundClient(::createClient, HttpClient::close)
 
-    private fun createClient(proxy: Proxy?): HttpClient =
+    private fun createClient(proxyConfiguration: MBNetwork.ProxyConfiguration): HttpClient =
         HttpClient(OkHttp) {
             expectSuccess = true
 
@@ -169,16 +168,12 @@ class MusicBrainz {
                 deflate()
             }
 
-            proxy?.let {
-                engine {
-                    this.proxy = it
-                }
-            }
-
             // Root-level offline gate (app-wired): fast-fail synthetic 503 while offline.
             // Reads the companion's [offlineGate] (accessible unqualified from instance scope).
             engine {
+                proxy = proxyConfiguration.proxy
                 config {
+                    proxyAuthenticator(proxyConfiguration.authenticator)
                     addInterceptor { chain ->
                         val gate = offlineGate
                         if (gate != null && !gate()) {

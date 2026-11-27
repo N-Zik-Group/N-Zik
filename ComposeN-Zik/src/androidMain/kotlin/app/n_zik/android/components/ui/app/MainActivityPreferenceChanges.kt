@@ -1,6 +1,5 @@
 package app.n_zik.android.components.ui.app
 
-import java.net.Proxy
 
 import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
@@ -19,8 +18,7 @@ import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.forPaletteMode
 import app.n_zik.android.components.theme.withColor
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.network.client.NetworkClientFactory
-import app.n_zik.android.core.settings.readProxyPort
+import app.n_zik.android.core.network.client.applyProfileProxy
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.enums.ColorPaletteName
@@ -63,7 +61,6 @@ import app.n_zik.android.utils.fontTypeKey
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.isProxyEnabledKey
-import app.n_zik.android.utils.isValidIP
 import app.n_zik.android.utils.languageAppKey
 import app.n_zik.android.utils.localeListForAppLanguage
 import app.n_zik.android.utils.miniPlayerTypeKey
@@ -76,6 +73,7 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.proxyHostnameKey
 import app.n_zik.android.utils.proxyModeKey
 import app.n_zik.android.utils.proxyPortKey
+import app.n_zik.android.utils.proxyUsernameKey
 import app.n_zik.android.utils.restartActivityKey
 import app.n_zik.android.utils.shouldRecreateActivity
 import app.n_zik.android.utils.showSearchTabKey
@@ -85,11 +83,6 @@ import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.widget.NZikWidgetManager
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.Innertube.proxy
-import app.n_zik.android.musicbrainz.MBNetwork
-import app.n_zik.innertube.utils.ProxyPreferenceItem
-import app.n_zik.innertube.utils.ProxyPreferences
-import app.n_zik.innertube.utils.getProxy
 
 internal fun MainActivity.mainActivityPreferenceChanges(
     coroutineScope: CoroutineScope,
@@ -137,32 +130,10 @@ internal fun MainActivity.mainActivityPreferenceChanges(
                 }
             }
 
-            isProxyEnabledKey, proxyHostnameKey, proxyPortKey, proxyModeKey -> {
-                val isProxyEnabled = sharedPreferences.getBoolean(isProxyEnabledKey, false)
-                var proxy: Proxy? = null
-
-                if (isProxyEnabled) {
-                    val hostName = sharedPreferences.getString(proxyHostnameKey, null)
-                    val proxyPort = sharedPreferences.readProxyPort()
-                    val proxyMode = sharedPreferences.getEnum(proxyModeKey, Proxy.Type.HTTP)
-                    if (isValidIP(hostName)) {
-                        hostName?.let { hName ->
-                            ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                            proxy = ProxyPreferences.preference?.let { pref -> getProxy(pref) }
-                        }
-                    } else {
-                        Toaster.e(R.string.network_proxy_invalid_hostname)
-                    }
-                } else {
-                    ProxyPreferences.preference = null
+            isProxyEnabledKey, proxyHostnameKey, proxyPortKey, proxyModeKey, proxyUsernameKey -> {
+                if (!applyProfileProxy(this@mainActivityPreferenceChanges)) {
+                    Toaster.e(R.string.network_proxy_invalid_hostname)
                 }
-
-                NetworkClientFactory.configure(
-                    proxy = proxy,
-                    cacheDir = NetworkClientFactory.profileCacheDirectory(this@mainActivityPreferenceChanges)
-                )
-                Innertube.proxy = proxy
-                MBNetwork.proxy = proxy
             }
 
             dynamicThemeRespectBrightnessKey -> {

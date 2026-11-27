@@ -16,7 +16,7 @@ class ProxyBoundClientTest {
         val proxy = Proxy(Proxy.Type.HTTP, InetSocketAddress.createUnresolved("proxy.example", 8080))
         val created = mutableListOf<Proxy?>()
         val closed = mutableListOf<Int>()
-        val clients = ProxyBoundClient({ configuredProxy ->
+        val clients = ProxyBoundClient({ (configuredProxy) ->
             created.add(configuredProxy)
             created.size
         }, { closed.add(it) })

@@ -5,6 +5,7 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.innertube.Innertube
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
+import okhttp3.Authenticator
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
@@ -17,6 +18,7 @@ object NetworkClientFactory {
         val cacheDir: File?,
         val connectTimeout: Long,
         val readTimeout: Long,
+        val proxyAuthenticator: Authenticator,
     )
 
     internal fun profileCacheDirectory(context: Context, profileId: String = getActiveProfile(context)): File =
@@ -37,10 +39,11 @@ object NetworkClientFactory {
         proxy: Proxy?,
         cacheDir: File?,
         connectTimeout: Long = 30L,
-        readTimeout: Long = 30L
+        readTimeout: Long = 30L,
+        proxyAuthenticator: Authenticator = Authenticator.NONE,
     ) {
         synchronized(this) {
-            val requested = Configuration(proxy, cacheDir, connectTimeout, readTimeout)
+            val requested = Configuration(proxy, cacheDir, connectTimeout, readTimeout, proxyAuthenticator)
             if (appliedConfiguration == requested) return
             // A failed reconfiguration can leave the clients partially updated.
             appliedConfiguration = null
@@ -51,6 +54,7 @@ object NetworkClientFactory {
                     .connectTimeout(connectTimeout, TimeUnit.SECONDS)
                     .readTimeout(readTimeout, TimeUnit.SECONDS)
                     .proxy(proxy)
+                    .proxyAuthenticator(proxyAuthenticator)
                     .addInterceptor(NetworkGate.interceptor)
                 
                 if (cacheDir != null) {
@@ -64,13 +68,14 @@ object NetworkClientFactory {
                 }
                 client = currentClient.newBuilder()
                     .proxy(proxy)
+                    .proxyAuthenticator(proxyAuthenticator)
                     .cache(cache)
                     .build()
             }
             // Reset Ktor clients to force reconfiguration with new proxy/settings
             ktorClient = null
             ktorCachelessClient = null
-            Innertube.bindTransportCache(client?.cache)
+            Innertube.configureTransport(proxy, proxyAuthenticator, client?.cache)
             appliedConfiguration = requested
         }
     }

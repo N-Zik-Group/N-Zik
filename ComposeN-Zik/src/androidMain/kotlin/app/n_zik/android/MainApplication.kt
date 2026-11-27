@@ -1,7 +1,6 @@
 package app.n_zik.android
 
 import java.io.File
-import java.net.Proxy
 
 import android.app.ActivityManager
 import android.app.Application
@@ -44,7 +43,7 @@ import app.n_zik.android.core.migration.MonthlyPlaylistCleanup
 import app.n_zik.android.core.migration.NameConvergence
 import app.n_zik.android.core.migration.RemovedSettingsMigration
 import app.n_zik.android.core.migration.SameNameArtistDedup
-import app.n_zik.android.core.network.client.NetworkClientFactory
+import app.n_zik.android.core.network.client.applyProfileProxy
 import app.n_zik.android.core.network.client.NetworkGate
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.core.ondevice.SCAN_DEVICE_LIBRARY_ON_STARTUP_KEY
@@ -55,7 +54,6 @@ import app.n_zik.android.core.rescue.RescueProcess
 import app.n_zik.android.core.rewind.scheduleRewindWork
 import app.n_zik.android.core.settings.ensureDefaultColorPaletteMode
 import app.n_zik.android.core.settings.ensurePlayerBehaviorDefaults
-import app.n_zik.android.core.settings.readProxyPort
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.services.withProfileDownloadCommandOwner
 import app.n_zik.android.extensions.audiobar.VisualizerCaptureCoordinator
@@ -84,15 +82,9 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.isDiscordBrowsingEnabledKey
 import app.n_zik.android.utils.isDiscordPresenceEnabledKey
-import app.n_zik.android.utils.isProxyEnabledKey
-import app.n_zik.android.utils.isValidIP
 import app.n_zik.android.utils.mbCircuitFailuresKey
 import app.n_zik.android.utils.mbCircuitOpenUntilKey
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.proxyHostnameKey
-import app.n_zik.android.utils.proxyModeKey
-import app.n_zik.android.utils.proxyPasswordKey
-import app.n_zik.android.utils.proxyUsernameKey
 import app.n_zik.android.utils.readProfileIds
 import app.n_zik.android.utils.regionOverrideKey
 import app.n_zik.android.utils.saveProfileLastUsed
@@ -113,8 +105,6 @@ import app.n_zik.innertube.YouTubeSession
 import app.n_zik.innertube.hasYouTubeAuthCookie
 import app.n_zik.innertube.models.ArtistConjunctions
 import app.n_zik.innertube.utils.InnertubeLogger
-import app.n_zik.innertube.utils.ProxyPreferenceItem
-import app.n_zik.innertube.utils.ProxyPreferences
 import app.n_zik.kugou.KuGou
 import app.n_zik.lastfm.LastFm
 import app.n_zik.lrclib.LrcLib
@@ -331,27 +321,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         // Setup session BEFORE prewarm — ensures session is stable when IO thread starts
         val oldPolicy = StrictMode.allowThreadDiskReads()
         try {
-            var proxy: Proxy? = null
-            if (preferences.getBoolean(isProxyEnabledKey, false)) {
-                val hostName = preferences.getString(proxyHostnameKey, null)
-                val proxyPort = preferences.readProxyPort()
-                val proxyMode = preferences.getEnum(proxyModeKey, Proxy.Type.HTTP)
-                val proxyUsername = preferences.getString(proxyUsernameKey, "")
-                val proxyPassword = preferences.getString(proxyPasswordKey, "")
-                if (isValidIP(hostName)) {
-                    hostName?.let { hName ->
-                        ProxyPreferences.preference = ProxyPreferenceItem(hName, proxyPort, proxyMode)
-                        proxy = ProxyPreferences.preference?.let { pref -> app.n_zik.innertube.utils.getProxy(pref) }
-                        if (!proxyUsername.isNullOrBlank() && !proxyPassword.isNullOrBlank()) {
-                            Innertube.proxyAuth = "$proxyUsername:$proxyPassword"
-                        }
-                    }
-                } else {
-                    Timber.tag("MainApplication").w("Proxy preference is null or invalid, running without proxy")
-                }
-            } else {
-                Timber.tag("MainApplication").w("Proxy preference is null, running without proxy")
-            }
+            applyProfileProxy(this)
             val regionOverride = preferences.getString(regionOverrideKey, "")
             if (!regionOverride.isNullOrBlank()) {
                 Innertube.regionOverrideActive = true
@@ -362,13 +332,6 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             val youtubeLoginEnabled = encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)
             applyUseLoginForSearch(this, youtubeLoginEnabled)
             
-            NetworkClientFactory.configure(
-                proxy = proxy,
-                cacheDir = NetworkClientFactory.profileCacheDirectory(this),
-            )
-            Innertube.proxy = proxy
-            MBNetwork.proxy = proxy
-
             // The JVM modules use this app-provided connectivity gate because they have no Android context.
             Innertube.offlineGate = NetworkGate::isOnline
             LrcLib.offlineGate = NetworkGate::isOnline

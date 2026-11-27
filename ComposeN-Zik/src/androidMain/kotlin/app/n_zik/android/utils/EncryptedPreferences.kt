@@ -21,11 +21,9 @@ var encryptedPreferencesUpdateTrigger by mutableStateOf(0)
 private var cachedEncryptedPreferences: Pair<String, SharedPreferences>? = null
 
 @Synchronized
-private fun getOrCreateEncryptedPreferences(context: Context): SharedPreferences {
-    val app = context.applicationContext
-    val profile = getActiveProfile(app)
+internal fun Context.encryptedPreferencesForProfile(profile: String): SharedPreferences {
     cachedEncryptedPreferences?.takeIf { it.first == profile }?.let { return it.second }
-    val preferences = app.getEncryptedSharedPreferencesResult(profile).onFailure {
+    val preferences = getEncryptedSharedPreferencesResult(profile).onFailure {
         Timber.tag("EncryptedPreferences").w(it, "Could not open encrypted preferences; preserving the stored credentials")
     }.getOrThrow()
     cachedEncryptedPreferences = profile to preferences
@@ -74,7 +72,7 @@ inline fun <reified T : Enum<T>> EncryptedSharedPreferences.getEnum(
 
 
 val Context.encryptedPreferences: SharedPreferences
-    get() = getOrCreateEncryptedPreferences(this)
+    get() = encryptedPreferencesForProfile(getActiveProfile(applicationContext))
 
 fun Context.getEncryptedSharedPreferencesResult(
     profile: String = getActiveProfile(applicationContext),
