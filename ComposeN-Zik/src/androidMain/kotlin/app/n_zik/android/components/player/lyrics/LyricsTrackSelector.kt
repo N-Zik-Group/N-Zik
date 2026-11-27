@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -43,7 +44,9 @@ import app.n_zik.android.ui.components.themed.IconButton
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.GridMenu
+import app.n_zik.android.components.menu.LocalListMenuRowOutset
 import app.n_zik.android.components.menu.MenuConstants
+import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.uiRoundnessShape
@@ -140,17 +143,21 @@ internal fun LyricsTrackSelector(
     val style by rememberPreference(menuStyleKey, MenuStyle.List)
     val menuTitle = stringResource(R.string.lyrics_title)
     val showCancel = LocalMenuBack.current == null
+    val searchHorizontalPadding = if (style == MenuStyle.List) MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp
+        else MenuConstants.CONTENT_HORIZONTAL_PADDING.dp
     val configuration = LocalConfiguration.current
     // Keep the fields in the scroll area on short screens without moving focus as the IME opens.
     val pinSearch = configuration.orientation == Configuration.ORIENTATION_PORTRAIT &&
         configuration.screenHeightDp >= 480 * configuration.fontScale.coerceAtLeast(1f)
     val searchFields: @Composable () -> Unit = {
         if (showCancel) {
-            ListMenu.Entry(
-                text = stringResource(R.string.common_action_cancel),
-                icon = { SettingIcon(R.drawable.chevron_back) },
-                onClick = menuState::pop,
-            )
+            CompositionLocalProvider(LocalListMenuRowOutset provides (searchHorizontalPadding - PressFeedbackHorizontalInset)) {
+                ListMenu.Entry(
+                    text = stringResource(R.string.common_action_cancel),
+                    icon = { SettingIcon(R.drawable.chevron_back) },
+                    onClick = menuState::pop,
+                )
+            }
         }
         Row(modifier = Modifier.fillMaxWidth()) {
             TextField(
@@ -212,9 +219,7 @@ internal fun LyricsTrackSelector(
     }
     val searchHeader: (@Composable ColumnScope.() -> Unit)? = if (pinSearch) {
         {
-            val horizontal = if (style == MenuStyle.List) MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING
-                else MenuConstants.CONTENT_HORIZONTAL_PADDING
-            Column(Modifier.fillMaxWidth().padding(horizontal = horizontal.dp, vertical = 8.dp)) {
+            Column(Modifier.fillMaxWidth().padding(horizontal = searchHorizontalPadding, vertical = 8.dp)) {
                 searchFields()
             }
         }
