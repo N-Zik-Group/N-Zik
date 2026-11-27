@@ -477,7 +477,8 @@ fun SettingsCategoryPage(
     val showInterfaceShortcuts = categoryId == "interface" && !isSearching
     val settingsHeaderItems = if (showInterfaceShortcuts) 2 else 1
     val profileShortcutIndex = if (categoryId == "system") rememberProfileShortcutSettingsIndex(context) else null
-    val entryMatches = searchSettingsEntries(context, search.inputValue, profileShortcutIndex)
+    val hasAudioPermission = if (categoryId == "data") rememberSettingsAudioPermission(context) else null
+    val entryMatches = searchSettingsEntries(context, search.inputValue, profileShortcutIndex, hasAudioPermission)
         .filter { it.parentCard(categoryId).categoryId() == categoryId }
     val resetEntryScopes = entryMatches.filter { it.labelRes == R.string.settings_reset }.map { it.tab }.toSet()
     val matches = searchSettingsCardResults(context, search.inputValue).filter {

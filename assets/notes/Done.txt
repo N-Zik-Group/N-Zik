@@ -1484,3 +1484,7 @@ Onboarding:
 Menus:
 - fix(menu): respect guest lock for playback tuning
   - Disable speed and pitch for guests before changing playback preferences.
+
+Settings:
+- fix(search): refresh audio permission results on resume
+  - Reevaluate the audio permission shortcut in global and Data search.

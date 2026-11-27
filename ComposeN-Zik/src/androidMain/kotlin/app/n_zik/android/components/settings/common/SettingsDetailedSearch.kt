@@ -5,8 +5,16 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.lang.ref.WeakReference
 import app.n_zik.android.components.search.normalizeSearchText
 import app.n_zik.android.components.search.filterSearchHistory
@@ -93,8 +101,27 @@ internal fun searchSettingsEntries(
     context: Context,
     query: String,
     profileShortcutIndex: SettingsEntrySearchIndex?,
+    hasAudioPermission: Boolean? = null,
 ): List<SettingsEntryTarget> =
-    searchSettingsEntries(context, query, isYouTubeSyncBuild(), profileShortcutIndex = profileShortcutIndex)
+    searchSettingsEntries(
+        context, query, isYouTubeSyncBuild(),
+        profileShortcutIndex = profileShortcutIndex,
+        hasAudioPermission = hasAudioPermission,
+    )
+
+@Composable
+internal fun rememberSettingsAudioPermission(context: Context): Boolean {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var granted by remember(context) { mutableStateOf(context.hasDeviceAudioPermission()) }
+    DisposableEffect(context, lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) granted = context.hasDeviceAudioPermission()
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    return granted
+}
 
 internal fun searchSettingsEntries(
     context: Context,
@@ -102,6 +129,7 @@ internal fun searchSettingsEntries(
     youtubeSyncSupported: Boolean,
     lastFmSupported: Boolean = isLastFmSettingsAvailable(),
     profileShortcutIndex: SettingsEntrySearchIndex? = null,
+    hasAudioPermission: Boolean? = null,
 ): List<SettingsEntryTarget> {
     if (query.isBlank()) return emptyList()
     val resources = context.resources
@@ -120,7 +148,7 @@ internal fun searchSettingsEntries(
             result.id.startsWith("general.picture_in_picture.") &&
                 result.id != "general.picture_in_picture.settings_enable_pip" -> supportsPictureInPicture(context)
             result.cardTitleRes == R.string.glass_effect_title -> isGlassSearchLabelSupported(context, result.labelRes)
-            result.id == LocalMusicPermissionTarget -> !context.hasDeviceAudioPermission()
+            result.id == LocalMusicPermissionTarget -> !(hasAudioPermission ?: context.hasDeviceAudioPermission())
             PlayerSongSwipeSetting.entries.any { it.target == result.id } -> result.id == activeSwipeSetting.target
             else -> true
         }

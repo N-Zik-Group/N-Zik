@@ -113,8 +113,9 @@ fun SettingsGlobalPage(
     val otherItems = itemResults - exactItems.toSet()
     val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val profileShortcutIndex = rememberProfileShortcutSettingsIndex(context)
-    val entryResults = remember(context, configuration, query, playerType, profileShortcutIndex) {
-        searchSettingsEntries(context, query, profileShortcutIndex)
+    val hasAudioPermission = rememberSettingsAudioPermission(context)
+    val entryResults = remember(context, configuration, query, playerType, profileShortcutIndex, hasAudioPermission) {
+        searchSettingsEntries(context, query, profileShortcutIndex, hasAudioPermission)
     }
     val categoryResults = remember(context, configuration, query) {
         searchSettingsCategories(context, query)
