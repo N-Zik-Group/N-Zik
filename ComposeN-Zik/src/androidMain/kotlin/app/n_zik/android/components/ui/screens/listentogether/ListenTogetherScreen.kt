@@ -464,7 +464,10 @@ internal fun JoinCreateRoomSection(
         icon = R.drawable.people,
         content = {
             Column(
-                modifier = Modifier.fillMaxWidth().settingsCardAlignedInset(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .settingsCardAlignedInset()
+                    .padding(bottom = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {

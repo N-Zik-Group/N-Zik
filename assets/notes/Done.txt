@@ -1224,3 +1224,7 @@ Menus:
 Menus:
 - test(menu): preserve a saved menu without separators
   - Update the order tests for explicit removal of the separator, keeping the default fallback assertions.
+
+Settings:
+- fix(listen-together): balance room form spacing
+  - Match the gap below the room code input with the room header spacing.
