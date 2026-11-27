@@ -1312,3 +1312,7 @@ Settings:
 Android Auto:
 - fix(auto): show device playlist folders and scoped playback
   - Share the full All library, show device playlists and detail folders, and map each action to its own contents with visible folder and artwork icons.
+
+Menus:
+- fix(playlists): show picker origins and device sort
+  - Show matching playlist source icons and use the library sort for the device group.

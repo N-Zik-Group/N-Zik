@@ -20,7 +20,6 @@ import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.navigation.navigateToPickedPlaylist
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -83,7 +82,6 @@ import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.compositeOver
 
 import app.n_zik.android.components.menu.GridMenu
@@ -243,10 +241,28 @@ internal data class PlaylistPickerSections(
     val pinned: List<PlaylistPreview>,
     val youtube: List<PlaylistPreview>,
     val local: List<PlaylistPreview>,
-)
+    val device: List<PlaylistPreview>,
+) {
+    fun groups(): List<Pair<Int, List<PlaylistPreview>>> = listOf(
+        R.string.playlist_pinned_title to pinned,
+        R.string.sync_youtube_playlists_title to youtube,
+        R.string.library_on_device_title to device,
+        R.string.library_playlists_title to local,
+    )
+}
 
-internal fun playlistPickerSections(previews: List<PlaylistPreview>, online: Boolean): PlaylistPickerSections {
+internal fun playlistPickerSections(
+    previews: List<PlaylistPreview>,
+    online: Boolean,
+    devicePlaylistIds: Set<Long> = emptySet(),
+): PlaylistPickerSections {
     val visible = previews.filter { isPlaylistPickerVisible(it.playlist) }
+    val ordinary = visible.filter {
+        !it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
+            !it.playlist.name.startsWith(MONTHLY_PREFIX, ignoreCase = true) &&
+            !RewindPlaylists.isRewind(it.playlist.name) &&
+            !isYouTubePlaylistPickerEntry(it.playlist)
+    }
     return PlaylistPickerSections(
         pinned = visible.filter { isPinnedPlaylistPickerVisible(it.playlist, online) },
         youtube = visible.filter {
@@ -254,12 +270,8 @@ internal fun playlistPickerSections(previews: List<PlaylistPreview>, online: Boo
                 !it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
                 (online || !canEditPlaylistMembership(it.playlist))
         },
-        local = visible.filter {
-            !it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
-                !it.playlist.name.startsWith(MONTHLY_PREFIX, ignoreCase = true) &&
-                !RewindPlaylists.isRewind(it.playlist.name) &&
-                !isYouTubePlaylistPickerEntry(it.playlist)
-        },
+        local = ordinary.filterNot { it.playlist.id in devicePlaylistIds },
+        device = ordinary.filter { it.playlist.id in devicePlaylistIds },
     )
 }
 
@@ -288,6 +300,24 @@ internal fun reportPlaylistAddResult(result: PlaylistAddResult, localDestination
             warnPlaylistPickerLocked()
         }
     }
+}
+
+@Composable
+internal fun PlaylistPickerOrigin(playlist: Playlist, onDevice: Boolean) {
+    val browseId = playlist.browseId.orEmpty()
+    val (icon, tint) = when {
+        isYouTubePlaylistPickerEntry(playlist) -> R.drawable.ytmusic to Color.Red.copy(0.75f).compositeOver(Color.White)
+        onDevice -> R.drawable.folder to colorPalette().textSecondary
+        browseId.startsWith("SPOTIFY_IMPORT") -> R.drawable.spotify to Color.Unspecified
+        browseId.startsWith("RIPLAY_IMPORT") -> R.drawable.riplay to Color.Unspecified
+        else -> R.drawable.ic_launcher to Color.Unspecified
+    }
+    Icon(
+        painterResource(icon),
+        contentDescription = stringResource(if (onDevice) R.string.library_on_device_title else R.string.accessibility_origin_indicator),
+        tint = tint,
+        modifier = Modifier.size(18.dp),
+    )
 }
 
 @Composable
@@ -429,7 +459,12 @@ class PlaylistsMenu private constructor(
     }
 
     @Composable
-    private fun PlaylistCard(playlistPreview: PlaylistPreview, containsSong: Boolean, onAdd: () -> Unit) {
+    private fun PlaylistCard(
+        playlistPreview: PlaylistPreview,
+        containsSong: Boolean,
+        onDevice: Boolean,
+        onAdd: () -> Unit,
+    ) {
         val playlist = playlistPreview.playlist
         val locked = !isPlaylistPickerTarget(playlist, localDestinationsOnly)
 
@@ -447,16 +482,7 @@ class PlaylistsMenu private constructor(
             trailingContent = {
                 if (locked) PlaylistPickerLockIcon()
                 if (containsSong) SongInPlaylistIcon()
-                if (isYouTubePlaylistPickerEntry(playlist)) {
-                    Image(
-                        painter = painterResource(R.drawable.ytmusic),
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(
-                            Color.Red.copy(0.75f).compositeOver(Color.White)
-                        ),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                PlaylistPickerOrigin(playlist, onDevice)
                 IconButton(
                     icon = R.drawable.open,
                     contentDescription = stringResource(R.string.playlist_action_open),
@@ -497,15 +523,9 @@ class PlaylistsMenu private constructor(
     private fun PlaylistPicker(request: AddRequest) {
         val playlistRead = rememberPlaylistPickerRead()
         val online = isNetworkConnected(LocalContext.current)
-        val sections = playlistPickerSections(playlistRead.previews, online)
+        val sections = playlistPickerSections(playlistRead.previews, online, playlistRead.devicePlaylistIds)
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
         val search = Search()
-        val groups = listOf(
-            R.string.playlist_pinned_title to sections.pinned,
-            R.string.sync_youtube_playlists_title to sections.youtube,
-            R.string.library_playlists_title to sections.local,
-        )
-
         val menuKey = menuState.transitionKey
         fun add(preview: PlaylistPreview) {
             if (!menuState.isCurrentMenu(menuKey)) return
@@ -522,7 +542,7 @@ class PlaylistsMenu private constructor(
             style = menuStyle,
             playlistRead = playlistRead,
             search = search,
-            groups = groups,
+            groups = sections.groups(),
             header = {
                 PlaylistPickerHeader(
                     title = stringResource(R.string.playlist_action_add),
@@ -541,7 +561,10 @@ class PlaylistsMenu private constructor(
                 )
             },
             entry = { _, preview ->
-                PlaylistCard(preview, preview.playlist.id in songPlaylistIds) {
+                PlaylistCard(
+                    preview, preview.playlist.id in songPlaylistIds,
+                    onDevice = preview.playlist.id in playlistRead.devicePlaylistIds,
+                ) {
                     add(preview)
                 }
             },

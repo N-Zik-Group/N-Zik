@@ -14,7 +14,6 @@ import app.n_zik.android.ui.components.themed.rememberSongPlaylistIds
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,7 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,7 +34,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.core.database.PlaylistAddResult
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.themed.isPlaylistPickerTarget
-import app.n_zik.android.ui.components.themed.isYouTubePlaylistPickerEntry
+import app.n_zik.android.ui.components.themed.PlaylistPickerOrigin
 import app.n_zik.android.ui.components.themed.reportPlaylistAddResult
 import app.n_zik.android.R
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
@@ -72,7 +70,6 @@ import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.utils.semiBold
 import androidx.compose.material3.Icon
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Alignment
 import app.n_zik.android.components.tab.Search
@@ -220,7 +217,7 @@ fun AddToPlaylistItemMenu(
     }
 
     val online = isNetworkConnected(context)
-    val (pinnedPlaylists, youtubePlaylists, unpinnedPlaylists) = playlistPickerSections(playlistPreviews, online)
+    val sections = playlistPickerSections(playlistPreviews, online, playlistRead.devicePlaylistIds)
 
     val search = Search()
     val style by rememberPreference(menuStyleKey, MenuStyle.List)
@@ -228,11 +225,7 @@ fun AddToPlaylistItemMenu(
         style = style,
         playlistRead = playlistRead,
         search = search,
-        groups = listOf(
-            R.string.playlist_pinned_title to pinnedPlaylists,
-            R.string.sync_youtube_playlists_title to youtubePlaylists,
-            R.string.library_playlists_title to unpinnedPlaylists,
-        ),
+        groups = sections.groups(),
         header = {
             val menuState = LocalMenuState.current
             PlaylistPickerHeader(
@@ -261,14 +254,7 @@ fun AddToPlaylistItemMenu(
                 trailingContent = {
                     if (!isPlaylistPickerTarget(playlist, localDestinationsOnly)) PlaylistPickerLockIcon()
                     if (playlist.id in playlistIds) SongInPlaylistIcon()
-                    if (isYouTubePlaylistPickerEntry(playlist)) {
-                        Image(
-                            painter = painterResource(R.drawable.ytmusic),
-                            contentDescription = null,
-                            colorFilter = ColorFilter.tint(Color.Red.copy(0.75f).compositeOver(Color.White)),
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
+                    PlaylistPickerOrigin(playlist, playlist.id in playlistRead.devicePlaylistIds)
                     PlaylistPickerOpenButton(playlist.id, onDismiss, openPlaylist)
                 },
             )
