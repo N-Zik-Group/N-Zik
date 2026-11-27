@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -44,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -65,7 +63,7 @@ import app.n_zik.android.components.dialog.logs.CrashLogDialog
 import app.n_zik.android.components.dialog.logs.DebugLogDialog
 import app.n_zik.android.components.glass.SampledMenuSheet
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.menu.menuSectionHeading
+import app.n_zik.android.components.menu.MenuSectionTitle
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.ui.UiIconButton as IconButton
@@ -901,22 +899,6 @@ private fun ColumnScope.MaintenanceListContent(
                 }
             }
         },
-    )
-}
-
-@Composable
-internal fun MenuSectionTitle(title: String) {
-    BasicText(
-        text = title,
-        style = typography().xxs.semiBold.copy(
-            color = colorPalette().accent,
-            textAlign = TextAlign.Start,
-        ),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading(),
     )
 }
 

@@ -1664,3 +1664,7 @@ Playlist:
 Playlist:
 - fix(playlist): restore collection actions when returning from the picker
   - Keep the action dialog tied to the menu entry and let available online album tracks be added when pagination fails.
+
+Menus:
+- refactor(menu): share maintenance section headers
+  - Use the common menu heading for maintenance groups, including its Glass contrast and accessibility semantics.
