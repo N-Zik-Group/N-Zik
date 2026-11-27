@@ -1716,3 +1716,7 @@ Playlist:
 Settings:
 - fix(settings): explain actionable search prerequisites
   - Identify the necessary switch, mode, permission or account action without changing settings during search.
+
+Settings / Player:
+- fix(player): apply crossfade settings to pending transitions
+  - Rearm pending crossfades from current settings and preserve playback and handoffs already in flight.

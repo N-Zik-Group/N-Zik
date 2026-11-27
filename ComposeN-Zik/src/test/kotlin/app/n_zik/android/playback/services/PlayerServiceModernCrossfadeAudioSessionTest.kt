@@ -11,6 +11,7 @@ import androidx.media3.common.C
 import androidx.media3.common.FlagSet
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
@@ -22,6 +23,7 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.utils.crossfadeDurationKey
 import app.n_zik.android.utils.crossfadeEnabledKey
+import app.n_zik.android.utils.crossfadeGaplessKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.appContext
 import io.mockk.every
@@ -79,7 +81,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         (field("coroutineScope").get(service) as CoroutineScope).cancel()
         field("coroutineScope").set(service, scope)
         field("crossfadeClockMs").set(service, { scheduler.currentTime })
-        service.preferences.edit().clear().commit()
+        service.preferences.edit().clear().putBoolean(crossfadeEnabledKey, true).commit()
         field("mediaSession").set(service, mockk<MediaLibrarySession>(relaxed = true))
         // Keep the real handoff and identity publication without the unrelated DB/artwork pipeline.
         every { service.onMediaItemTransition(any(), any()) } answers {
@@ -106,7 +108,10 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val staleOutgoingListener = outgoing.listeners.single()
         assertSessions(open(41))
 
-        invoke("startCrossfade")
+        startPreparedCrossfade()
+        val preferences = service.preferences
+        preferences.edit().putBoolean(crossfadeEnabledKey, false).commit()
+        service.onSharedPreferenceChanged(preferences, crossfadeEnabledKey)
         assertSame(incoming.player, service.player)
         assertEquals("B", service.currentMediaItem.value?.mediaId)
         assertTrue(field("isCrossfading").getBoolean(service))
@@ -159,7 +164,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             Unit
         }
 
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.runCurrent()
         // Metrolist quadratic ramp: at progress 0.125, fadeIn = 1 - 0.875^2.
         val fadeInAtOneEighth = 1f - 0.875f * 0.875f
@@ -198,7 +203,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             Unit
         }
 
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         val startedAtMs = overheadMs
         scheduler.advanceTimeBy(8001L)
         scheduler.runCurrent()
@@ -218,7 +223,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val incoming = Target("B", 41)
         prepareHandoff(outgoing, incoming)
         service.preferences.edit().putInt(crossfadeDurationKey, 8000).commit()
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(1000L)
         scheduler.runCurrent()
         incoming.readyToPlay = false
@@ -252,7 +257,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val incoming = Target("B", 41)
         prepareHandoff(outgoing, incoming)
         service.preferences.edit().putInt(crossfadeDurationKey, 8000).commit()
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(1000L)
         scheduler.runCurrent()
         incoming.readyToPlay = false
@@ -305,7 +310,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             publicationElapsedMs += publicationDelayMs
             Unit
         }
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         val syncListener = incoming.listeners.first()
         scheduler.runCurrent()
 
@@ -330,7 +335,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         prepareHandoff(outgoing, incoming)
         val outgoingAnalytics = outgoing.analyticsListeners.single()
         val incomingAnalytics = incoming.analyticsListeners.single()
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.runCurrent()
         assertObserved(outgoing, incoming)
 
@@ -376,7 +381,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val preloaded = Target("B", 42)
         prepareHandoff(primary, preloaded)
 
-        invoke("startCrossfade")
+        startPreparedCrossfade()
 
         // Per-player sessions are the Metrolist model: distinct session ids no longer block
         // the swap, and the effect session announcement moves close-old/open-new.
@@ -411,7 +416,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             Unit
         }
 
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.runCurrent()
         assertEquals(2, attempts)
         assertSame(outgoing.player, underlyingPlayer(session.player))
@@ -445,7 +450,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             Unit
         }
 
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.runCurrent()
         invoke("cleanupCrossfade")
         scheduler.runCurrent()
@@ -487,7 +492,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         prepareHandoff(outgoing, incoming)
         val session = field("mediaSession").get(service) as MediaLibrarySession
         every { session.player = any() } throws IllegalStateException("Session unavailable")
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(20_000L)
         scheduler.runCurrent()
         verify(exactly = 8) { session.player = any() } // Two initial, one cleanup, five delayed.
@@ -512,7 +517,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             sessionPlayer = firstArg()
             Unit
         }
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         invoke("cancelCrossfadeAndReset")
         scheduler.runCurrent()
         service.player = replacement.player
@@ -537,7 +542,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             every { target.player.stop() } answers { assertTrue(detached); Unit }
             every { target.player.release() } answers { assertTrue(detached); Unit }
         }
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(3000L)
         scheduler.runCurrent()
         val recovery = field("sessionRebindRecoveryJob").get(service) as Job
@@ -580,7 +585,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         every { incoming.player.hasNextMediaItem() } returns true
         every { incoming.player.nextMediaItemIndex } returns 1
         every { incoming.player.getMediaItemAt(1) } returns MediaItem.Builder().setMediaId("C").build()
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(600L)
         scheduler.runCurrent()
         assertTrue(field("isCrossfading").getBoolean(service))
@@ -608,7 +613,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         outgoing.speed = PlaybackParameters(2f)
         prepareHandoff(outgoing, incoming)
         service.preferences.edit().putInt(crossfadeDurationKey, 8000).commit()
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(2000L)
         scheduler.runCurrent()
         assertEquals(0.6f, incoming.currentVolume, 0.0001f)
@@ -647,7 +652,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
             service.player = outgoing
             invoke("preloadCrossfade")
             assertEquals("track-3", incoming.currentMediaItem?.mediaId)
-            invoke("startCrossfade")
+            startPreparedCrossfade()
             assertSame(incoming, service.player)
             // Queue traversal is real; unrelated Discord callbacks require full service startup.
             incoming.removeListener(service)
@@ -669,7 +674,7 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
         val incoming = Target("B", 41)
         prepareHandoff(outgoing, incoming)
         service.preferences.edit().putInt(crossfadeDurationKey, 8000).commit()
-        invoke("startCrossfade")
+        startPreparedCrossfade()
         scheduler.advanceTimeBy(1000L)
         scheduler.runCurrent()
         val volumeBeforeBuffering = incoming.currentVolume
@@ -837,6 +842,87 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
     }
 
     @Test
+    fun `disabling crossfade releases only the pending player`() {
+        val outgoing = Target("A", 41)
+        val incoming = Target("B", 42)
+        configureScheduledCrossfade(outgoing, incoming)
+        every { service["createCrossfadeExoPlayer"]() } returns incoming.player
+        every { outgoing.player.currentPosition } answers { 95_000L + scheduler.currentTime }
+
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        assertSame(incoming.player, field("secondaryPlayer").get(service))
+
+        val preferences = service.preferences
+        preferences.edit().putBoolean(crossfadeEnabledKey, false).commit()
+        service.onSharedPreferenceChanged(preferences, crossfadeEnabledKey)
+        assertNull(field("secondaryPlayer").get(service))
+        scheduler.advanceTimeBy(3_000L)
+        scheduler.runCurrent()
+
+        assertSame(outgoing.player, service.player)
+        assertTrue(outgoing.player.isPlaying)
+        verify(exactly = 1) { incoming.player.release() }
+        verify(exactly = 0) { outgoing.player.release() }
+        verify(exactly = 0) { service.onMediaItemTransition(any(), any()) }
+    }
+
+    @Test
+    fun `a new duration moves the pending trigger and retains the preload`() {
+        val outgoing = Target("A", 41)
+        val incoming = Target("B", 42)
+        configureScheduledCrossfade(outgoing, incoming)
+        every { service["createCrossfadeExoPlayer"]() } returns incoming.player
+        every { outgoing.player.currentPosition } answers { 95_000L + scheduler.currentTime }
+
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        assertSame(incoming.player, field("secondaryPlayer").get(service))
+
+        val preferences = service.preferences
+        preferences.edit().putInt(crossfadeDurationKey, 1_000).commit()
+        service.onSharedPreferenceChanged(preferences, crossfadeDurationKey)
+        scheduler.runCurrent()
+        scheduler.advanceTimeBy(2_000L)
+        scheduler.runCurrent()
+        assertSame(outgoing.player, service.player)
+        assertSame(incoming.player, field("secondaryPlayer").get(service))
+
+        scheduler.advanceTimeBy(2_000L)
+        scheduler.runCurrent()
+        assertSame(incoming.player, service.player)
+        verify(exactly = 1) { incoming.player.prepare() }
+        verify(exactly = 0) { incoming.player.release() }
+    }
+
+    @Test
+    fun `the handoff checks newly enabled gapless even before its preference callback`() {
+        val outgoing = Target("A", 41)
+        val incoming = Target("B", 42)
+        val sameAlbum = MediaMetadata.Builder().setAlbumTitle("Album").build()
+        every { outgoing.player.currentMediaItem } returns
+            MediaItem.Builder().setMediaId("A").setMediaMetadata(sameAlbum).build()
+        every { incoming.player.currentMediaItem } returns
+            MediaItem.Builder().setMediaId("B").setMediaMetadata(sameAlbum).build()
+        configureScheduledCrossfade(outgoing, incoming)
+        every { service["createCrossfadeExoPlayer"]() } returns incoming.player
+        every { outgoing.player.currentPosition } answers { 95_000L + scheduler.currentTime }
+
+        invoke("scheduleCrossfade")
+        scheduler.runCurrent()
+        assertSame(incoming.player, field("secondaryPlayer").get(service))
+        // This fixture calls preference callbacks explicitly. Leave the callback pending here.
+        service.preferences.edit().putBoolean(crossfadeGaplessKey, true).commit()
+        scheduler.advanceTimeBy(2_000L)
+        scheduler.runCurrent()
+
+        assertSame(outgoing.player, service.player)
+        assertNull(field("secondaryPlayer").get(service))
+        verify(exactly = 1) { incoming.player.release() }
+        verify(exactly = 0) { service.onMediaItemTransition(any(), any()) }
+    }
+
+    @Test
     fun `scheduled handoff leaves the primary playing when the preload is still buffering`() {
         val outgoing = Target("A", 41)
         val incoming = Target("B", 42).apply { state = Player.STATE_BUFFERING }
@@ -943,6 +1029,12 @@ class PlayerServiceModernCrossfadeAudioSessionTest {
     private fun close(id: Int) = AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION to id
 
     private fun field(name: String) = PlayerServiceModern::class.java.getDeclaredField(name).apply { isAccessible = true }
+
+    private fun startPreparedCrossfade() {
+        val duration = service.preferences.getInt(crossfadeDurationKey, 3_000)
+        PlayerServiceModern::class.java.getDeclaredMethod("startCrossfade", Int::class.javaPrimitiveType)
+            .apply { isAccessible = true }.invoke(service, duration)
+    }
 
     private fun invoke(name: String) = PlayerServiceModern::class.java.getDeclaredMethod(name).apply {
         isAccessible = true

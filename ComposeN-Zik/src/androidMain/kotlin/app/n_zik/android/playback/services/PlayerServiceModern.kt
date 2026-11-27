@@ -1352,7 +1352,11 @@ class PlayerServiceModern : MediaLibraryService(),
                 mediaLibrarySessionCallback.refreshArtwork(mediaSession)
             }
             fullOfflineModeKey -> refreshSessionAccess()
-            pauseBetweenSongsKey, crossfadeEnabledKey -> refreshTrackBoundaryPause()
+            pauseBetweenSongsKey -> refreshTrackBoundaryPause()
+            crossfadeEnabledKey, crossfadeDurationKey, crossfadeGaplessKey -> {
+                if (key == crossfadeEnabledKey) refreshTrackBoundaryPause()
+                armCrossfade(reusePendingPreparation = true)
+            }
             // Issue #866 (gh-866): the discover state lives in this preference — NZikRadio
             // .toggleDiscover (in-app buttons, AA, notification), the settings toggle, and the
 //
@@ -1648,7 +1652,7 @@ class PlayerServiceModern : MediaLibraryService(),
         super.onPlaybackParametersChanged(playbackParameters)
         if (playbackParameters.speed != lastPlaybackSpeed) {
             lastPlaybackSpeed = playbackParameters.speed
-            armCrossfade(rearmForSpeedChange = true)
+            armCrossfade(reusePendingPreparation = true)
             if (encryptedPreferences.getBoolean(isDiscordPresenceEnabledKey, false)) {
                 coroutineScope.launch {
                     delay(1000L)
@@ -3169,11 +3173,11 @@ class PlayerServiceModern : MediaLibraryService(),
         preload.release()
     }
 
-    private fun scheduleCrossfade() = armCrossfade(rearmForSpeedChange = false)
+    private fun scheduleCrossfade() = armCrossfade(reusePendingPreparation = false)
 
-    private fun armCrossfade(rearmForSpeedChange: Boolean) {
-        if (isCrossfading) return
-        val ownsPreviousSchedule = rearmForSpeedChange && crossfadePositionScheduler.stillOwnsSchedule()
+    private fun armCrossfade(reusePendingPreparation: Boolean) {
+        if (isCrossfading || !::player.isInitialized) return
+        val ownsPreviousSchedule = reusePendingPreparation && crossfadePositionScheduler.stillOwnsSchedule()
         val duration = crossfadeDuration
         val owner = player
         if (isDestroying || !crossfadeEnabled || duration <= 0 || !owner.isPlaying || listenTogetherGuestLock.value) {
@@ -3218,7 +3222,7 @@ class PlayerServiceModern : MediaLibraryService(),
                     }
                 }
             },
-            beginFade = ::startCrossfade,
+            beginFade = { startCrossfade(duration) },
             onOwnershipLost = ::discardCrossfadePreparation,
         )
     }
@@ -3333,8 +3337,11 @@ class PlayerServiceModern : MediaLibraryService(),
         crossfadeAudioDiagnostics[secPlayer]?.mark("PRELOAD_PREPARED")
     }
 
-    private fun startCrossfade() {
+    private fun startCrossfade(armedDuration: Int) {
         if (isCrossfading) return
+        if (!crossfadeEnabled || crossfadeDuration != armedDuration || (crossfadeGapless && isNextItemGapless())) {
+            return discardCrossfadePreparation()
+        }
 
         val nextPlayer = secondaryPlayer ?: return
         if (nextPlayer.playbackState != Player.STATE_READY || nextPlayer.playerError != null) {
@@ -3436,7 +3443,7 @@ class PlayerServiceModern : MediaLibraryService(),
         // Include transition publication and dispatcher lateness in the fade's elapsed time.
         // Metrolist model: the fade duration is corrected by the playback speed.
         val fadeSpeed = nextPlayer.playbackParameters.speed.coerceAtLeast(0.1f)
-        val durationMs = (crossfadeDuration.toLong() / fadeSpeed).toLong().coerceAtLeast(0L)
+        val durationMs = (armedDuration.toLong() / fadeSpeed).toLong().coerceAtLeast(0L)
         val timeline = CrossfadeTimeline(crossfadeClockMs(), nextPlayer.isPlaying)
         handoff.timeline = timeline
         markCrossfadeAudio("FADE_BEGIN", currentPlayer, nextPlayer)
