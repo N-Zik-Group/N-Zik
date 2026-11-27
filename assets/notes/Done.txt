@@ -1780,3 +1780,7 @@ Settings:
 Menus:
 - fix(menu): share Listen Together section headings
   - Use the shared section heading so both menu styles adapt text contrast to the active surface.
+
+Menus:
+- fix(menu): update the player external playback action live
+  - Reflect offline changes while the player menu stays open.

@@ -629,7 +629,7 @@ class PlayerItemMenu private constructor(
         }
 
         // Re-order to match SongItemMenu layout exactly
-        val updatedButtons = remember(song, albumLink, menuArtists, showLastFmSection) {
+        val updatedButtons = remember(song, albumLink, menuArtists, showLastFmSection, listenOnButton) {
             buildList<Button> {
                 add(infoButton)           // 0
                 add(refreshAudioWavesButton) // 1
