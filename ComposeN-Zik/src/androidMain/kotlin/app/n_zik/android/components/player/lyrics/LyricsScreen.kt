@@ -83,6 +83,7 @@ import app.n_zik.android.enums.lyrics.LyricsFontSize
 import app.n_zik.android.enums.lyrics.LyricsHighlight
 import app.n_zik.android.enums.lyrics.LyricsAlignment
 import app.n_zik.android.models.Lyrics
+import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.components.glass.GlassOverlayIconButton as IconButton
 import app.n_zik.android.components.glass.LocalGlassMenuHost
@@ -152,6 +153,7 @@ import kotlinx.coroutines.flow.emptyFlow
 import app.n_zik.android.utils.resolvePlayerTrackName
 import app.n_zik.android.utils.resolveTrackArtistName
 import app.n_zik.android.components.menu.lyrics.LyricsSettingsMenu
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.components.dialog.player.ShowOffsetDialog
 import app.n_zik.android.components.player.rememberArtworkDisplayColors
 import app.n_zik.android.components.player.LocalPlayerArtworkPaint
@@ -196,6 +198,12 @@ fun LyricsScreen(
         val context = LocalContext.current
         val forceShimmer = forceLoadingShimmerPreview()
         val menuState = LocalMenuState.current
+        val ownedLyricsMenu = remember(menuState, mediaId) { mutableStateOf<MenuState.Entry?>(null) }
+        DisposableEffect(menuState, mediaId) {
+            onDispose {
+                if (ownedLyricsMenu.value?.let(menuState::containsEntry) == true) menuState.hide()
+            }
+        }
         val currentView = LocalView.current
         val binder = LocalPlayerServiceBinder.current
         val preview = LocalThemePreview.current
@@ -797,7 +805,7 @@ fun LyricsScreen(
                                     LyricsSettingsMenu(
                                         isLandscape = isLandscape,
                                         translateEnabled = translateEnabledState,
-                                        isLyricsNotNull = { lyrics != null },
+                                        canRefetchLyrics = { lyrics?.isEdited == false },
                                         actualLyricsType = {
                                             lyrics?.type?.let { typeString ->
                                                 LyricsType.entries.find { it.name == typeString }
@@ -807,7 +815,8 @@ fun LyricsScreen(
                                         onEditLyrics = { editLyricsDialog.onShortClick() },
                                         canCopyLyrics = { !lyrics?.data.isNullOrBlank() },
                                         onCopyLyrics = { copyToClipboard = true },
-                                        onSearchLyricsOnline = {
+                                        onSearchLyricsOnline = searchOnline@{
+                                            if (OfflineMode.enabled(context)) return@searchOnline
                                             val mediaMetadata = mediaMetadataProvider()
                                             try {
                                                 context.startActivity(
@@ -818,27 +827,19 @@ fun LyricsScreen(
                                                         )
                                                     }
                                                 )
+                                                menuState.hide()
                                             } catch (e: ActivityNotFoundException) {
                                                 Toaster.e( R.string.lyrics_browser_application_unavailable_message )
                                             }
                                         },
-                                        onFetchLyricsAgain = {
+                                        onFetchLyricsAgain = refetch@{
+                                            if (OfflineMode.enabled(context) || lyrics?.isEdited != false) return@refetch
                                             resetGlobalAttemptForType(lyricsType)
                                             checkedLyricsLrc = false
                                             checkedLyricsKugou = false
                                             checkedLyricsInnertube = false
                                             checkLyrics = !checkLyrics
-                                            fetchAgainRowType(lyrics?.type, lyricsType)?.let { targetType ->
-                                                Database.asyncTransaction {
-                                                    lyricsTable.upsert(
-                                                        Lyrics(
-                                                            songId = mediaId,
-                                                            type = targetType,
-                                                            data = null
-                                                        )
-                                                    )
-                                                }
-                                            }
+
                                         },
                                         onPickFromLrcLib = {
                                             menuState.display {
@@ -859,6 +860,7 @@ fun LyricsScreen(
                                         onShowOffsetDialog = { showOffsetDialog.onShortClick() }
                                     ).MenuComponent()
                                 }
+                                ownedLyricsMenu.value = menuState.presentationState.second
                         }
                     )
                 }

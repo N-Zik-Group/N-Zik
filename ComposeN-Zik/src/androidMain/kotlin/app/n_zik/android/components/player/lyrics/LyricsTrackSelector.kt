@@ -1,5 +1,6 @@
 package app.n_zik.android.components.player.lyrics
 
+import app.n_zik.android.components.ui.LeadingIconBadge
 import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
@@ -63,24 +64,7 @@ private val trackSelectorTextFieldColors: TextFieldColors
     )
 
 @Composable
-private fun SettingIcon(@DrawableRes icon: Int) {
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .iconBadgeBackground(
-                color = colorPalette().accent.copy(alpha = 0.1f),
-                shape = uiRoundnessShape()
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(icon),
-            tint = colorPalette().accent,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp)
-        )
-    }
-}
+private fun SettingIcon(@DrawableRes icon: Int) = LeadingIconBadge(icon, contentDescription = null)
 
 private fun pickedRow(track: Track, lyricsType: LyricsType): Pair<LyricsType, String>? =
     when (lyricsType) {

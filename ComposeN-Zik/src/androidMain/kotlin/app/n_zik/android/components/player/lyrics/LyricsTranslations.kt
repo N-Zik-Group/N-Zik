@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
 import androidx.compose.runtime.Composable
+import app.n_zik.android.core.network.OfflineMode
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -28,8 +29,9 @@ internal fun <T> rememberLyricsTranslations(
         mutableStateMapOf<Int, String>()
     }
 
-    LaunchedEffect(lines, showSecondLine, translateEnabled, romanizationEnabled, languageDestination) {
-        if (!showSecondLine && !translateEnabled && !romanizationEnabled) return@LaunchedEffect
+    val offlineMode = OfflineMode.rememberEnabled().value
+    LaunchedEffect(lines, showSecondLine, translateEnabled, romanizationEnabled, languageDestination, offlineMode) {
+        if (offlineMode || (!translateEnabled && !romanizationEnabled)) return@LaunchedEffect
 
         val linesToTranslate = mutableListOf<Pair<Int, String>>()
         lines.forEachIndexed { index, line ->
@@ -120,6 +122,8 @@ internal fun <T> rememberLyricsTranslations(
                         Toaster.s(R.string.lyrics_translation_success_message)
                     }
                 }
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 Timber.tag(logTag).e("sync translation error: ${e.message}")
                 if (translateEnabled) {

@@ -90,7 +90,7 @@ class LyricsFetchWorker(
     ) = withContext(dataDispatcher) {
         // Room emissions from our own writes must not retry a stale row during this collection.
         val attempted = mutableSetOf<Lookup>()
-        var pendingAutoRetry = forceAutoRetry && lyricsType == LyricsType.Auto
+        var pendingAutoRetry = forceAutoRetry
         Database.lyricsTable.findAllBySongId(mediaId).collect { allLyrics ->
             val needs = LyricsDecisionMaker.evaluateFetchNeeds(
                 mediaId = mediaId,

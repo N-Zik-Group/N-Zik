@@ -22,7 +22,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -64,20 +63,6 @@ internal fun SettingIcon(icon: Int) {
     }
 }
 
-@Composable
-internal fun SectionTitle(title: String) {
-    BasicText(
-        text = title,
-        style = typography().xxs.semiBold.copy(
-            color = surfaceGlyphColor(colorPalette().accent, minimum = TextContrast),
-            textAlign = TextAlign.Start
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp)
-            .menuSectionHeading()
-    )
-}
 
 @Composable
 internal fun LyricsSettingsMenu.ToggleSettingEntry(
@@ -110,6 +95,7 @@ internal fun LyricsSettingsMenu.ToggleSettingEntry(
         GridMenu.Entry(
             text = title,
             icon = { SettingIcon(icon) },
+            iconHasOwnBackground = true,
             subtitle = subtitle,
             modifier = Modifier.menuToggleSemantics(isChecked),
             onClick = { onCheckedChange(!isChecked) },
@@ -154,6 +140,7 @@ internal fun LyricsSettingsMenu.ActionSettingEntry(
         GridMenu.Entry(
             text = title,
             icon = { SettingIcon(icon) },
+            iconHasOwnBackground = true,
             enabled = enabled,
             onClick = onClick,
             trailingContent = {
@@ -213,6 +200,7 @@ internal fun <T : Enum<T>> LyricsSettingsMenu.EnumSettingEntry(
         GridMenu.Entry(
             text = title,
             icon = { SettingIcon(icon) },
+            iconHasOwnBackground = true,
             subtitle = valueText(selectedValue),
             onClick = { isShowingDialog = true },
             trailingContent = trailingContent
@@ -234,7 +222,7 @@ internal fun LyricsSettingsMenu.LyricsTypeEntry(
     onValueSelected: (LyricsType) -> Unit,
 ) {
     EnumSettingEntry(
-        title = stringResource(R.string.recommendations_show_section_label),
+        title = stringResource(R.string.lyrics_mode_label),
         icon = R.drawable.time,
         selectedValue = selected,
         values = LyricsType.entries.toList(),

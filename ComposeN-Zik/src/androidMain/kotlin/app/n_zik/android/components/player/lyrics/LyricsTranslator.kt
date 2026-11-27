@@ -1,6 +1,7 @@
 package app.n_zik.android.components.player.lyrics
 
 import androidx.compose.runtime.Composable
+import app.n_zik.android.core.network.OfflineMode
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import app.n_zik.android.core.utils.Toaster
@@ -24,7 +25,13 @@ fun TranslateLyricsWithRomanization(
     onPlaceholderDismissed: () -> Unit,
     destinationLanguage: Language = Language.AUTO
 ) {
-    LaunchedEffect(showSecondLine, romanizationEnabled, textToTranslate, destinationLanguage, translateEnabled){
+    val offlineMode = OfflineMode.rememberEnabled().value
+    LaunchedEffect(showSecondLine, romanizationEnabled, textToTranslate, destinationLanguage, translateEnabled, offlineMode) {
+        if (offlineMode || textToTranslate.isBlank() || (!translateEnabled && !romanizationEnabled)) {
+            output.value = textToTranslate
+            onPlaceholderDismissed()
+            return@LaunchedEffect
+        }
         if (translateEnabled && textToTranslate.isNotEmpty()) {
             withContext(NzikDispatchers.UI) {
                 Toaster.i(R.string.lyrics_translation_in_progress_message)
@@ -111,6 +118,8 @@ fun TranslateLyricsWithRomanization(
                     interleaved.toString()
                 }
                 outputText?.replace("\\r","\r")?.replace("\\n","\n")
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 if(isSync){
                     Timber.tag("LyricsTranslator").e("sync translation ${e.stackTraceToString()}")

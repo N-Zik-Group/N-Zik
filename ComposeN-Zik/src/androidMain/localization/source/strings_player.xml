@@ -115,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Karaoke will replace it if found.</string>
     <string name="lyrics_mode_automatic_label">auto lyrics</string>
     <string name="lyrics_mode_karaoke_label">karaoke lyrics</string>
+    <string name="lyrics_mode_label">Lyrics mode</string>
     <string name="lyrics_mode_synchronized_label">synchronized lyrics</string>
     <string name="lyrics_mode_unsynchronized_label">unsynchronized lyrics</string>
     <string name="lyrics_not_available">No lyrics available. Please try again or enter them manually.</string>
@@ -414,6 +415,7 @@
     <string name="audio_output_bluetooth_device_label">Bluetooth device</string>
     <string name="audio_output_usb_audio_label">USB audio</string>
     <string name="audio_output_external_speaker_label">External speaker</string>
+    <string name="audio_output_device_unavailable">This audio output is no longer available.</string>
     <string name="audio_output_load_failed">Failed to load devices: %1$s</string>
     <string name="player_audio_mode">Audio</string>
     <string name="player_video_mode">Video</string>

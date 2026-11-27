@@ -74,7 +74,8 @@ object LyricsDecisionMaker {
                 dedupOk = karaokeNotAttempted,
                 absentRowCondition = lyricsType != LyricsType.Synced || !hasWordTimings(currentLyrics?.data),
                 isUnsynced = false,
-                now = now
+                now = now,
+                forceRetry = forceAutoRetry,
             )
 
         val needSyncedFetch = lyricsType == LyricsType.Synced &&
@@ -83,7 +84,8 @@ object LyricsDecisionMaker {
                 dedupOk = syncedNotAttempted,
                 absentRowCondition = true,
                 isUnsynced = false,
-                now = now
+                now = now,
+                forceRetry = forceAutoRetry,
             )
 
         val needUnsyncedFetch = lyricsType == LyricsType.Unsynced &&
@@ -92,7 +94,8 @@ object LyricsDecisionMaker {
                 dedupOk = unsyncedNotAttempted,
                 absentRowCondition = true,
                 isUnsynced = true,
-                now = now
+                now = now,
+                forceRetry = forceAutoRetry,
             )
 
         return FetchNeeds(
@@ -119,10 +122,12 @@ object LyricsDecisionMaker {
         dedupOk: Boolean,
         absentRowCondition: Boolean,
         isUnsynced: Boolean,
-        now: Long
+        now: Long,
+        forceRetry: Boolean,
     ): Boolean = when {
         row == null || row.data.isNullOrEmpty() -> dedupOk && absentRowCondition
         row.isEdited -> false
+        forceRetry -> dedupOk
         hasWordTimings(row.data) -> isTtlExpired(row.lastFetchedAt, now)
         isUnsynced -> isTtlExpired(row.lastFetchedAt, now)
         else -> dedupOk

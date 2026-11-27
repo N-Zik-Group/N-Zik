@@ -1612,3 +1612,7 @@ Playlist:
 Playlist:
 - fix(playlist): route collection and toolbar actions through the shared dialog
   - Remove the legacy menu paths, keep supported import and export behavior, and disable operations on empty collections.
+
+Menus / Lyrics:
+- fix(lyrics): preserve cached lyrics and current-track actions
+  - Keep cached or edited lyrics safe during refresh and use the actual lyrics format and network mode for menu choices.

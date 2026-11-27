@@ -2,6 +2,7 @@
 
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
@@ -67,7 +68,6 @@ import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
@@ -352,7 +352,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             )
             if (menuStyle == MenuStyle.List) {
                 ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
-                    SectionTitle(stringResource(R.string.audio_output_title))
+                    MenuSectionTitle(stringResource(R.string.audio_output_title))
                     if (isLoading) {
                         AudioDeviceListLoadingRows()
                     } else shownDevices.forEach { dev ->
@@ -411,7 +411,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                                 onClick = { selectDevice(dev) }
                             )
                     }
-                    SectionTitle(stringResource(R.string.player_statistics_volume_label))
+                    MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
                     VolumeRow(
                         currentVolume = currentVolume,
                         maxVolume = maxVolume.toFloat(),
@@ -429,7 +429,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             isUserDragging = false
                         }
                     )
-                    SectionTitle(stringResource(R.string.audio_quality_format))
+                    MenuSectionTitle(stringResource(R.string.audio_quality_format))
                     qualityOptions.forEach { (format, label) ->
                         val isSelected = audioQualityFormat == format
                         ListMenu.Entry(
@@ -475,7 +475,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
             } else {
                 GridMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        SectionTitle(stringResource(R.string.audio_output_title))
+                        MenuSectionTitle(stringResource(R.string.audio_output_title))
                     }
                     if (isLoading) {
                         items(count = AudioDeviceLoadingCount, key = { "audio-device-loading-$it" }) { index ->
@@ -544,7 +544,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         )
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        SectionTitle(stringResource(R.string.player_statistics_volume_label))
+                        MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
                     }
                     item {
                         VolumeGridEntry(
@@ -566,7 +566,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                         )
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        SectionTitle(stringResource(R.string.audio_quality_format))
+                        MenuSectionTitle(stringResource(R.string.audio_quality_format))
                     }
                     items(
                         count = qualityOptions.size,
@@ -637,7 +637,7 @@ internal fun AudioDeviceStatusMenu(
                 item(span = { GridItemSpan(maxLineSpan) }) { AudioDeviceRetry(error, onRetry) }
             } else {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.audio_output_title))
+                    MenuSectionTitle(stringResource(R.string.audio_output_title))
                 }
                 items(count = AudioDeviceLoadingCount, key = { "audio-device-loading-$it" }) { index ->
                     AudioDeviceGridLoadingTile(
@@ -650,7 +650,7 @@ internal fun AudioDeviceStatusMenu(
         ListMenu.Menu(title = title) {
             if (error != null) AudioDeviceRetry(error, onRetry)
             else {
-                SectionTitle(stringResource(R.string.audio_output_title))
+                MenuSectionTitle(stringResource(R.string.audio_output_title))
                 AudioDeviceListLoadingRows()
             }
         }
@@ -716,19 +716,4 @@ private fun AudioDeviceGridLoadingTile(modifier: Modifier = Modifier) {
 @Composable
 private fun AudioDeviceIconPlaceholder() {
     Spacer(Modifier.size(32.dp).clip(uiRoundnessShape()).shimmerEffect())
-}
-
-@Composable
-private fun SectionTitle(title: String) {
-    BasicText(
-        text = title,
-        style = typography().xxs.semiBold.copy(
-            color = colorPalette().accent,
-            textAlign = TextAlign.Start
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 12.dp)
-            .menuSectionHeading()
-    )
 }
