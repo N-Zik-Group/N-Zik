@@ -2,6 +2,8 @@ package app.n_zik.android.components.menu.player
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
+import android.media.AudioManager
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +37,6 @@ import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.loudnessBaseGainKey
-import app.n_zik.android.utils.playbackDeviceVolumeKey
 import app.n_zik.android.utils.playbackPitchKey
 import app.n_zik.android.utils.playbackSpeedKey
 import app.n_zik.android.utils.preferences
@@ -140,19 +141,26 @@ class PlaybackSettingsMenuDefaultsTest {
     @Test
     fun `open grid device volume dialog follows external volume changes`() {
         val label = context.getString(R.string.player_controls_device_volume_title)
-        context.preferences.edit().putFloat(playbackDeviceVolumeKey, 0.25f).commit()
+        val audioManager = context.getSystemService(AudioManager::class.java)
+        val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val initial = max / 4
+        val updated = max * 3 / 4
+        val initialLabel = "${(initial.toFloat() / max * 100).toInt()}%"
+        val updatedLabel = "${(updated.toFloat() / max * 100).toInt()}%"
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, initial, 0)
         show(MenuStyle.Grid)
         compose.onNode(hasScrollAction()).performScrollToNode(hasText(label))
         compose.onNodeWithText(label).performClick()
         val inDialog = hasAnyAncestor(hasTestTag("dialogFrameCard"))
-        compose.onNode(hasText("25%") and inDialog, useUnmergedTree = true).assertExists()
+        compose.onNode(hasText(initialLabel) and inDialog, useUnmergedTree = true).assertExists()
 
         compose.runOnIdle {
-            context.preferences.edit().putFloat(playbackDeviceVolumeKey, 0.75f).apply()
+            audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, updated, 0)
+            context.sendBroadcast(Intent("android.media.VOLUME_CHANGED_ACTION"))
         }
 
-        compose.onNode(hasText("25%") and inDialog, useUnmergedTree = true).assertDoesNotExist()
-        compose.onNode(hasText("75%") and inDialog, useUnmergedTree = true).assertExists()
+        compose.onNode(hasText(initialLabel) and inDialog, useUnmergedTree = true).assertDoesNotExist()
+        compose.onNode(hasText(updatedLabel) and inDialog, useUnmergedTree = true).assertExists()
     }
 
     @Test

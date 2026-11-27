@@ -739,7 +739,6 @@ private fun FullscreenVideoControls(
             dynamicColorPalette = colorPalette().let { palette ->
                 session.controlArtworkAccent?.value?.let { palette.copy(accent = it) } ?: palette
             },
-            installMedleyEffect = false,
         )
     }
     Column(

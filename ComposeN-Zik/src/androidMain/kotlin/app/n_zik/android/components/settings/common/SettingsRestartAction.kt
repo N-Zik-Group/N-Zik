@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.ui.styling.primaryButton
@@ -22,6 +24,8 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.restartActivityKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.MainActivity
+import app.n_zik.android.utils.findActivity
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassCustomChip
@@ -30,6 +34,8 @@ import app.n_zik.android.typography
 @OptIn(UnstableApi::class)
 @Composable
 internal fun RestartPlayerService(restartService: Boolean, onRestart: () -> Unit) {
+    val context = LocalContext.current
+    val activity = remember(context) { runCatching { context.findActivity() }.getOrNull() as? MainActivity }
     val binder = LocalPlayerServiceBinder.current
     SettingsRestartAction(
         visible = restartService,
@@ -38,9 +44,15 @@ internal fun RestartPlayerService(restartService: Boolean, onRestart: () -> Unit
         enabled = binder != null,
     ) {
         val connectedBinder = binder ?: return@SettingsRestartAction
-        connectedBinder.restartForegroundOrStop()
-        onRestart()
-        Toaster.done()
+        val host = activity ?: return@SettingsRestartAction
+        host.restartSettingsPlayer(connectedBinder) { restarted ->
+            if (restarted) {
+                onRestart()
+                Toaster.done()
+            } else {
+                Toaster.e(R.string.common_error_title)
+            }
+        }
     }
 }
 

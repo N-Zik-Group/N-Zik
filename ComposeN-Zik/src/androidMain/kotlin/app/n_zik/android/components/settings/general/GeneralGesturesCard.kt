@@ -16,7 +16,6 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 @Composable
 fun GeneralGesturesCard(
     visible: Boolean,
-    onRestartServiceSet: () -> Unit,
 ) {
     var useVolumeKeysToChangeSong by rememberPreference(useVolumeKeysToChangeSongKey, false)
 
@@ -30,10 +29,7 @@ fun GeneralGesturesCard(
                 title = stringResource(R.string.settings_gestures_volume_keys_skip_label),
                 text = stringResource(R.string.settings_gestures_volume_keys_skip_description),
                 isChecked = useVolumeKeysToChangeSong,
-                onCheckedChange = {
-                    useVolumeKeysToChangeSong = it
-                    onRestartServiceSet()
-                },
+                onCheckedChange = { useVolumeKeysToChangeSong = it },
                 icon = R.drawable.volume_control
             )
         }

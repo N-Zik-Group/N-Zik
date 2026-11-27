@@ -37,7 +37,6 @@ import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.screens.player.components.controls.ControlsEssential
 import app.n_zik.android.ui.screens.player.components.controls.ControlsModern
-import kotlin.math.roundToInt
 import app.n_zik.android.ui.styling.ColorPalette
 
 @Composable
@@ -52,7 +51,6 @@ fun GetControls(
     onBlurScaleChange: (Float) -> Unit,
     dynamicColorPalette: ColorPalette,
     timelineHorizontalInset: Dp = 0.dp,
-    installMedleyEffect: Boolean = true,
 ) {
     val playerControlsType by rememberPreference(playerControlsTypeKey, PlayerControlsType.Essential)
     val playerPlayButtonType by rememberPreference(
@@ -74,7 +72,6 @@ fun GetControls(
             playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient
 
     var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
-    var playbackDuration by rememberPreference(playbackDurationKey, 0f)
     var setPlaybackDuration by remember { mutableStateOf(false) }
 
     val menuState = LocalMenuState.current
@@ -91,10 +88,7 @@ fun GetControls(
     }
 
 
-        if (installMedleyEffect && binder != null) MedleyMode(
-            binder = binder,
-            seconds = if (playbackDuration < 1f) 0 else playbackDuration.roundToInt()
-        )
+
 
     var transportRegion by remember { mutableStateOf<Rect?>(null) }
     val surface = rememberPlayerBackdropRegionColor(transportRegion, useLocalSample = true)

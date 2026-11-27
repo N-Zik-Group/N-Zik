@@ -210,7 +210,6 @@ internal fun GeneralSettingsContent(
             SettingsCardSlot(R.string.settings_gestures_title, modifier = { cardModifier(R.string.settings_gestures_title) }) {
                 GeneralGesturesCard(
                     visible = visibleCards.contains(R.string.settings_gestures_title),
-                    onRestartServiceSet = { restartService = true },
                 )
             }
         }

@@ -2,6 +2,8 @@ package app.n_zik.android.playback.services
 
 import app.n_zik.android.appTextResources
 import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.utils.playbackDurationKey
+import kotlin.math.roundToInt
 import app.n_zik.android.playback.utils.playPreviousIfAvailable
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -317,9 +319,11 @@ class PlayerServiceModern : MediaLibraryService(),
     OnAudioVolumeChangedListener {
 
     private val coroutineScope = NzikDispatchers.fireAndForget(NzikDispatchers.DATA)
+    private var medleyJob: Job? = null
     private val trackBoundaryPause = TrackBoundaryPause(CoroutineScope(coroutineScope.coroutineContext + NzikDispatchers.UI))
     private lateinit var mediaSession: MediaLibrarySession
     private val playbackReady = CompletableDeferred<Unit>()
+    private val destructionCompleted = CompletableDeferred<Unit>()
 
     /**
      * One-shot "open player" token of the session activity (spec-notification-click-opens-player,
@@ -776,12 +780,7 @@ class PlayerServiceModern : MediaLibraryService(),
         refreshTrackBoundaryPause()
 
         // Internal service init MUST bypass the guard (spine AD-7) — the raw player is used.
-        player.playbackParameters = PlaybackParameters(
-            preferences.getFloat(playbackSpeedKey, 1f),
-            preferences.getFloat(playbackPitchKey, 1f)
-        )
-        player.volume = preferences.getFloat(playbackVolumeKey, 1f)
-        player.setGlobalVolume(player.volume)
+        applyPlaybackTuning(preferences)
 
         // Keep a connected controller so that notification works
         val sessionToken = SessionToken(this, ComponentName(this, PlayerServiceModern::class.java))
@@ -1182,6 +1181,8 @@ class PlayerServiceModern : MediaLibraryService(),
         if (isDestroying) return
         isDestroying = true
         trackBoundaryPause.cancel()
+        medleyJob?.cancel()
+        unregisterPlaybackDeviceCallback()
         pendingPlaybackStarts.clear()
         playbackReady.cancel()
         if (!playbackInitializationStarted) {
@@ -1189,6 +1190,7 @@ class PlayerServiceModern : MediaLibraryService(),
             mediaLibrarySessionCallback.release()
             coroutineScope.cancel()
             super.onDestroy()
+            destructionCompleted.complete(Unit)
             return
         }
         runCatching { maybeSavePlayerQueue(finalSnapshot = true) }.onFailure {
@@ -1262,6 +1264,7 @@ class PlayerServiceModern : MediaLibraryService(),
         releasePlaybackPlayersOnDestroy()
         coroutineScope.cancel()
         super.onDestroy()
+        destructionCompleted.complete(Unit)
     }
 
     private fun releasePlaybackPlayersOnDestroy() {
@@ -1319,7 +1322,27 @@ class PlayerServiceModern : MediaLibraryService(),
         }
     }
 
+    private fun applyPlaybackTuning(source: SharedPreferences, key: String? = null) {
+        if (key == null || key == playbackSpeedKey || key == playbackPitchKey) {
+            player.playbackParameters = PlaybackParameters(
+                source.getFloat(playbackSpeedKey, 1f),
+                source.getFloat(playbackPitchKey, 1f),
+            )
+        }
+        if (key == null || key == playbackVolumeKey) {
+            val volume = source.getFloat(playbackVolumeKey, 1f)
+            player.setGlobalVolume(volume)
+            if (!isCrossfading) player.volume = volume
+        }
+    }
+
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (sharedPreferences != null &&
+            (key == null || key == playbackSpeedKey || key == playbackPitchKey || key == playbackVolumeKey)
+        ) {
+            applyPlaybackTuning(sharedPreferences, key)
+        }
+        if (key == null || key == playbackDurationKey) refreshMedley()
         when (key) {
             dynamicThemeRespectBrightnessKey, colorPaletteModeKey,
             uiRoundnessDpKey, thumbnailRoundnessDpKey, artistThumbnailRoundnessDpKey, null -> refreshArtworkWidgets()
@@ -1991,6 +2014,8 @@ class PlayerServiceModern : MediaLibraryService(),
         }
         if (events.containsAny(
                 Player.EVENT_IS_PLAYING_CHANGED,
+                Player.EVENT_MEDIA_ITEM_TRANSITION,
+                Player.EVENT_AVAILABLE_COMMANDS_CHANGED,
                 Player.EVENT_POSITION_DISCONTINUITY,
                 Player.EVENT_PLAYBACK_PARAMETERS_CHANGED,
                 Player.EVENT_PLAYBACK_STATE_CHANGED,
@@ -1998,6 +2023,7 @@ class PlayerServiceModern : MediaLibraryService(),
             )
         ) {
             updateWidgets()
+            refreshMedley()
         }
     }
 
@@ -2154,10 +2180,9 @@ class PlayerServiceModern : MediaLibraryService(),
         if (!isAtLeastAndroid6) return
 
         if (preferences.getBoolean(resumePlaybackWhenDeviceConnectedKey, false)) {
-            if (audioManager == null) {
-                audioManager = getSystemService(AUDIO_SERVICE) as AudioManager?
-            }
-
+            if (audioDeviceCallback != null) return
+            val manager = audioManager ?: (getSystemService(AUDIO_SERVICE) as? AudioManager)?.also { audioManager = it } ?: return
+            val connectedIds = manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).mapTo(mutableSetOf()) { it.id }
             audioDeviceCallback = object : AudioDeviceCallback() {
                 private fun canPlayMusic(audioDeviceInfo: AudioDeviceInfo): Boolean {
                     if (!audioDeviceInfo.isSink) return false
@@ -2169,7 +2194,8 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
 
                 override fun onAudioDevicesAdded(addedDevices: Array<AudioDeviceInfo>) {
-                    if (!player.isPlaying && addedDevices.any(::canPlayMusic)) {
+                    val newlyConnected = addedDevices.filter { connectedIds.add(it.id) }
+                    if (!isDestroying && !player.isPlaying && newlyConnected.any(::canPlayMusic)) {
                         // Guarded facade: for a locked Listen Together guest the play intent is
                         // registered, so the manager resyncs them to the host position
 //
@@ -2178,15 +2204,23 @@ class PlayerServiceModern : MediaLibraryService(),
                     }
                 }
 
-                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) = Unit
+                override fun onAudioDevicesRemoved(removedDevices: Array<AudioDeviceInfo>) {
+                    removedDevices.forEach { connectedIds.remove(it.id) }
+                }
             }
 
-            audioManager?.registerAudioDeviceCallback(audioDeviceCallback, null) // null = main looper
+            manager.registerAudioDeviceCallback(audioDeviceCallback, null) // null = main looper
 
         } else {
-            audioManager?.unregisterAudioDeviceCallback(audioDeviceCallback)
-            audioDeviceCallback = null
+            unregisterPlaybackDeviceCallback()
         }
+    }
+
+    @SuppressLint("NewApi")
+    private fun unregisterPlaybackDeviceCallback() {
+        if (!isAtLeastAndroid6) return
+        audioDeviceCallback?.let { audioManager?.unregisterAudioDeviceCallback(it) }
+        audioDeviceCallback = null
     }
 
     private fun createRendersFactory() = object : DefaultRenderersFactory(this) {
@@ -2933,6 +2967,8 @@ class PlayerServiceModern : MediaLibraryService(),
         /**
          * This method should ONLY be called when the application (sc. activity) is in the foreground!
          */
+        internal suspend fun awaitDestruction() = destructionCompleted.await()
+
         fun restartForegroundOrStop() {
             player.pause()
             stopSelf()
@@ -3063,6 +3099,26 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private fun nextTrackIndex(owner: Player): Int =
         if (owner.repeatMode == Player.REPEAT_MODE_ONE) owner.currentMediaItemIndex else owner.nextMediaItemIndex
+
+    private fun refreshMedley() {
+        medleyJob?.cancel()
+        if (isDestroying || !::player.isInitialized || listenTogetherGuestLock.value) return
+        val duration = preferences.getFloat(playbackDurationKey, 0f)
+        if (!duration.isFinite() || duration < 1f) return
+        val owner = player
+        if (!owner.isPlaying || !owner.isCommandAvailable(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)) return
+        val limitMs = duration.roundToInt().toLong() * 1_000
+        medleyJob = coroutineScope.launch(NzikDispatchers.UI) {
+            while (owner === player && owner.isPlaying && !listenTogetherGuestLock.value) {
+                val remaining = limitMs - owner.currentPosition
+                if (remaining <= 0) {
+                    owner.playNextIfAvailable()
+                    break
+                }
+                delay((remaining / owner.playbackParameters.speed).toLong().coerceAtLeast(50))
+            }
+        }
+    }
 
     private fun refreshTrackBoundaryPause() {
         if (isDestroying || !::player.isInitialized) return

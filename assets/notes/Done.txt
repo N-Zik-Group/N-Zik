@@ -1584,3 +1584,7 @@ Menus / Settings:
 Settings:
 - fix(settings): index available values and reveal prerequisites
   - Reuse backup and opening choices in search and direct unavailable font, theme and artwork controls to the setting that enables them.
+
+Settings / Playback:
+- fix(player): apply live controls and restart the bound service
+  - Drive Medley from playback position, ignore existing audio connections on registration, wire volume-key skips, and wait for player shutdown before rebinding.

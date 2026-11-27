@@ -6,17 +6,12 @@ import android.content.Context.AUDIO_SERVICE
 import android.media.AudioManager
 import androidx.annotation.MainThread
 import androidx.annotation.OptIn
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import app.n_zik.android.playback.services.PlayerServiceModern
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import kotlin.time.Duration.Companion.seconds
 import timber.log.Timber
 
 var volume = 0f
@@ -30,20 +25,7 @@ fun getDeviceVolume(context: Context): Float {
 
 fun setDeviceVolume(context: Context, volume: Float) {
     val audioManager = context.getSystemService(AUDIO_SERVICE) as AudioManager
-    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (volume * audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)).toInt(), AudioManager.FLAG_SHOW_UI)
-}
-
-@Composable
-@OptIn(UnstableApi::class)
-fun MedleyMode(binder: PlayerServiceModern.Binder?, seconds: Int) {
-    if (binder == null || seconds <= 0) return
-
-    LaunchedEffect(binder, seconds) {
-        while (isActive) {
-            delay(seconds.seconds)
-            if (binder.player.isPlaying) binder.player.playNext()
-        }
-    }
+    audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, kotlin.math.round(volume.coerceIn(0f, 1f) * audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)).toInt(), AudioManager.FLAG_SHOW_UI)
 }
 
 @MainThread

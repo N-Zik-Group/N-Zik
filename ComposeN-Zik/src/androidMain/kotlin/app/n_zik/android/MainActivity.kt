@@ -6,6 +6,10 @@ import android.Manifest
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
+import android.view.KeyEvent
+import app.n_zik.android.playback.utils.playNextIfAvailable
+import app.n_zik.android.playback.utils.playPreviousIfAvailable
+import app.n_zik.android.utils.useVolumeKeysToChangeSongKey
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.res.Configuration
@@ -44,6 +48,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withStarted
 import androidx.media3.common.util.UnstableApi
@@ -56,6 +61,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -255,6 +261,7 @@ class MainActivity :
     private var screenCapturePolicy: app.n_zik.android.privacy.ScreenCapturePolicy? = null
 
     private var libraryUiStarted = false
+    private var libraryUiBound = false
     private val deferredLaunchIntents = DeferredLibraryIntents()
     private var waitingColdLaunch = false
     private var awaitingDeferredNavigation = false
@@ -269,12 +276,28 @@ class MainActivity :
     }
 
     private fun bindLibraryUi() {
+        if (libraryUiBound) return
         if (screenCapturePolicy == null) screenCapturePolicy = app.n_zik.android.privacy.ScreenCapturePolicy.bind(this)
 
         runCatching {
-            bindService(intent<PlayerServiceModern>(), serviceConnection, Context.BIND_AUTO_CREATE)
+            libraryUiBound = bindService(intent<PlayerServiceModern>(), serviceConnection, Context.BIND_AUTO_CREATE)
         }.onFailure {
             Timber.tag("MainActivity").e("onStart bindService ${it.stackTraceToString()}")
+        }
+    }
+
+    @UnstableApi
+    internal fun restartSettingsPlayer(service: PlayerServiceModern.Binder, onComplete: (Boolean) -> Unit) {
+        if (!libraryUiBound || binder !== service) {
+            onComplete(false)
+            return
+        }
+        lifecycleScope.launch(NzikDispatchers.UI.immediate) {
+            service.restartForegroundOrStop()
+            unbindLibraryUi()
+            val stopped = withTimeoutOrNull(2_000L) { service.awaitDestruction(); true } ?: false
+            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) bindLibraryUi()
+            onComplete(stopped)
         }
     }
 
@@ -752,12 +775,33 @@ class MainActivity :
         }
     }
 
-    override fun onStop() {
-        runCatching {
-            if (libraryUiStarted) unbindService(serviceConnection)
-        }.onFailure {
-            Timber.tag("MainActivity").e("onStop unbindService ${it.stackTraceToString()}")
+    private fun unbindLibraryUi() {
+        if (!libraryUiBound) return
+        runCatching { unbindService(serviceConnection) }.onFailure {
+            Timber.tag("MainActivity").e(it, "Failed to unbind the player service")
         }
+        libraryUiBound = false
+        binder = null
+    }
+
+    @UnstableApi
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode != KeyEvent.KEYCODE_VOLUME_UP && event.keyCode != KeyEvent.KEYCODE_VOLUME_DOWN) {
+            return super.dispatchKeyEvent(event)
+        }
+        val player = binder?.player
+        if (player?.currentMediaItem == null || !preferences.getBoolean(useVolumeKeysToChangeSongKey, false)) {
+            return super.dispatchKeyEvent(event)
+        }
+        if (event.action == KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+            if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP) player.playNextIfAvailable()
+            else player.playPreviousIfAvailable()
+        }
+        return true
+    }
+
+    override fun onStop() {
+        unbindLibraryUi()
         super.onStop()
     }
 
