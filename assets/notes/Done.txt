@@ -1588,3 +1588,7 @@ Settings:
 Settings / Playback:
 - fix(player): apply live controls and restart the bound service
   - Drive Medley from playback position, ignore existing audio connections on registration, wire volume-key skips, and wait for player shutdown before rebinding.
+
+Menus:
+- refactor(menu): share the list and grid frame
+  - Reuse the same material, heading, separator and empty state for both menu layouts.
