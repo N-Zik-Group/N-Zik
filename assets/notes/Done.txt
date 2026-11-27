@@ -1524,3 +1524,7 @@ Menus:
 Menus:
 - fix(player): apply medley duration changes live
   - Restart the playback timer with the selected duration without retaining the previous timer.
+
+Menus:
+- fix(menu): label debug log cleanup explicitly
+  - State that disabling debug logs also clears them.

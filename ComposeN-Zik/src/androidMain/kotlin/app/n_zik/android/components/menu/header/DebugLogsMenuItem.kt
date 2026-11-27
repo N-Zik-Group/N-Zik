@@ -42,15 +42,14 @@ fun DebugLogsMenuItem(
 ) {
     val context = LocalContext.current
     var logDebugEnabled by rememberPreference(logDebugEnabledKey, false)
-    // The "Rescue Center" label is the width reference of the burger menu: this label
-    // is clamped to its rendered width and scrolls in a marquee when longer (same
-    // width-cap pattern as the header badges' "DEBUG" cap).
     val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
     val labelStyle = MaterialTheme.typography.labelLarge
-    val labelMaxWidth = clampedLabelMaxWidth(stringResource(R.string.recovery_center), labelStyle)
-    // The label follows the live state so the item reads as reactive: "Enable" while
-    // off, "Disable" while on (flips without a restart, like the header badge).
-    val labelRes = if (logDebugEnabled) R.string.settings_logging_disabled_label else R.string.maintenance_debug_logging_title
+    val disableLabel = stringResource(R.string.navigation_action_disable_and_clear_debug_logs)
+    val labelMaxWidth = maxOf(
+        clampedLabelMaxWidth(stringResource(R.string.recovery_center), labelStyle),
+        clampedLabelMaxWidth(disableLabel, labelStyle),
+    )
+    val label = if (logDebugEnabled) disableLabel else stringResource(R.string.maintenance_debug_logging_title)
 
     DropdownMenuRowFeedback(
         modifier = modifier.fillMaxWidth(),
@@ -78,7 +77,7 @@ fun DebugLogsMenuItem(
                 modifier = Modifier.size(24.dp),
             )
             Text(
-                text = stringResource(labelRes),
+                text = label,
                 style = labelStyle,
                 color = colorPalette().textSecondary,
                 overflow = TextOverflow.Ellipsis,

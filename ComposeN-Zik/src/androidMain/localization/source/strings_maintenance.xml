@@ -3,6 +3,7 @@
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
 
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Disable and clear debug logs</string>
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
     <string name="logs_action_export_crash">Export crash log</string>

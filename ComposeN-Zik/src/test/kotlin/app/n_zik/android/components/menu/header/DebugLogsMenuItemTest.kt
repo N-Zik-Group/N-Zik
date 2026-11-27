@@ -41,12 +41,6 @@ import java.io.File
  * Covers the spec's burger-item matrix rows: the label follows the live state (enable
  * off / disable on, no restart), the tap toggles debug logging with the same side effects
  * as the header badge (log files purged on disable) and flips the label.
- *
- * The width clamp of the label (capped at the rendered "Rescue Center" label width,
- * `clampedLabelMaxWidth`) is shared with the header badges and covered through
- * [app.n_zik.android.components.ui.header.HeaderVersionBadgeTest]; it is not observable
- * through this item's own semantics because the clickable Row merges its descendants
- * (material3 convention) and Robolectric's text measurement is degenerate.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
@@ -60,7 +54,7 @@ class DebugLogsMenuItemTest {
     private val logsDir: File get() = profileDiagnosticsDir(context)
 
     private val enableLabel: String get() = context.getString(R.string.maintenance_debug_logging_title)
-    private val disableLabel: String get() = context.getString(R.string.settings_logging_disabled_label)
+    private val disableLabel: String get() = context.getString(R.string.navigation_action_disable_and_clear_debug_logs)
 
     private val appearance = Appearance(
         colorPalette = DefaultDarkColorPalette,
