@@ -3,8 +3,6 @@ package app.n_zik.android.playback.services.automotive.browse.handlers
 import android.content.Context
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import androidx.media3.common.MediaItem
-import app.n_zik.android.R
-import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.core.database.Database
@@ -49,9 +47,9 @@ internal class AutoDeviceGroupsBrowseHandler(
             if (category == ID_ALBUMS_ONDEVICE) showOnDeviceAlbumsKey else showOnDeviceArtistsKey, true,
         )
 
-    suspend fun albums(context: Context, database: Database): List<Album> {
+    suspend fun albums(context: Context, database: Database, snapshot: DeviceLibrarySnapshot? = null): List<Album> {
         if (!visible(context, ID_ALBUMS_ONDEVICE)) return emptyList()
-        val ids = scan(context).albumIds
+        val ids = (snapshot ?: scan(context)).albumIds
         if (ids.isEmpty()) return emptyList()
         val sort = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ALBUMS_SORT_BY.key, AlbumSortBy.Title)
         val order = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ALBUMS_SORT_ORDER.key, SortOrder.Ascending)
@@ -59,9 +57,9 @@ internal class AutoDeviceGroupsBrowseHandler(
             .filter { it.id in ids && it.dislikedAt == null }
     }
 
-    suspend fun artists(context: Context, database: Database): List<Artist> {
+    suspend fun artists(context: Context, database: Database, snapshot: DeviceLibrarySnapshot? = null): List<Artist> {
         if (!visible(context, ID_ARTISTS_ONDEVICE)) return emptyList()
-        val ids = scan(context).artistIds
+        val ids = (snapshot ?: scan(context)).artistIds
         if (ids.isEmpty()) return emptyList()
         val sort = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ARTISTS_SORT_BY.key, ArtistSortBy.Name)
         val order = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ARTISTS_SORT_ORDER.key, SortOrder.Ascending)
@@ -70,6 +68,17 @@ internal class AutoDeviceGroupsBrowseHandler(
     }
 
     suspend fun songs(parentId: String, context: Context, database: Database): List<Song> {
+        if (parentId == ID_ALBUMS_ONDEVICE || parentId == ID_ARTISTS_ONDEVICE) {
+            if (!visible(context, parentId)) return emptyList()
+            val snapshot = scan(context)
+            val songIds = if (parentId == ID_ALBUMS_ONDEVICE) {
+                albums(context, database, snapshot).flatMap { snapshot.albumSongIds[it.id].orEmpty() }
+            } else {
+                artists(context, database, snapshot).flatMap { snapshot.artistSongIds[it.id].orEmpty() }
+            }
+            val songsById = database.songTable.allOnDevice().first().associateBy(Song::id)
+            return songIds.distinct().mapNotNull(songsById::get)
+        }
         val category = detailParent(parentId) ?: return emptyList()
         if (!visible(context, category)) return emptyList()
         val groupId = parentId.substringAfter('/')
@@ -88,31 +97,24 @@ internal class AutoDeviceGroupsBrowseHandler(
         database: Database,
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?,
-    ): List<MediaItem> = when (parentId) {
-        ID_ALBUMS_ONDEVICE -> albums(context, database).map { album ->
-            CancellableAutoMediaItemMapper.mapAlbumToMediaItem(
-                parentId, album.id, album.title.orEmpty(), album.authorsText, album.thumbnailUrl,
-            ).withDeviceGroupFallback(context)
-        }
-        ID_ARTISTS_ONDEVICE -> artists(context, database).map { artist ->
-            CancellableAutoMediaItemMapper.mapArtistToMediaItem(
-                parentId, artist.id, artist.name.orEmpty(), artist.thumbnailUrl,
-            ).withDeviceGroupFallback(context)
-        }
-        else -> {
-            val visibleSongs = songs(parentId, context, database)
-            if (visibleSongs.isEmpty()) emptyList() else {
-                val action = AutoMediaIdContract.playlistShuffle(AutoMediaIdContract.deviceGroupAction(parentId))
-                listOf(AutoSessionConstants.shuffleItem(context, action)) + visibleSongs.map { song ->
-                    CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = true)
-                }
+    ): List<MediaItem> {
+        val entries = when (parentId) {
+            ID_ALBUMS_ONDEVICE -> albums(context, database).map { album ->
+                CancellableAutoMediaItemMapper.mapAlbumToMediaItem(
+                    parentId, album.id, album.title.orEmpty(), album.authorsText, album.thumbnailUrl,
+                )
+            }
+            ID_ARTISTS_ONDEVICE -> artists(context, database).map { artist ->
+                CancellableAutoMediaItemMapper.mapArtistToMediaItem(
+                    parentId, artist.id, artist.name.orEmpty(), artist.thumbnailUrl,
+                )
+            }
+            else -> songs(parentId, context, database).map { song ->
+                CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = true)
             }
         }
+        if (entries.isEmpty()) return emptyList()
+        val action = AutoMediaIdContract.playlistShuffle(AutoMediaIdContract.deviceGroupAction(parentId))
+        return listOf(AutoSessionConstants.shuffleItem(context, action)) + entries
     }
-
-    private fun MediaItem.withDeviceGroupFallback(context: Context): MediaItem =
-        if (mediaMetadata.artworkUri != null || mediaMetadata.artworkData != null) this
-        else buildUpon().setMediaMetadata(
-            mediaMetadata.buildUpon().setArtworkUri(drawableUri(context, R.drawable.ic_launcher_box)).build()
-        ).build()
 }

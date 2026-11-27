@@ -23,6 +23,14 @@ object AutoMediaIdContract {
     internal fun deviceGroupFromAction(token: String): String? =
         token.takeIf { it.startsWith(DEVICE_GROUP_ACTION) }?.removePrefix(DEVICE_GROUP_ACTION)?.let(Uri::decode)
 
+    internal fun isDeviceGroupCategoryAction(mediaId: String): Boolean {
+        val action = parsePlaylistShuffle(mediaId) ?: parsePlaylistPlayAll(mediaId) ?: return false
+        return when (deviceGroupFromAction(action)) {
+            AutoSessionConstants.ID_ALBUMS_ONDEVICE, AutoSessionConstants.ID_ARTISTS_ONDEVICE -> true
+            else -> false
+        }
+    }
+
     internal fun isPlaylistSection(value: String): Boolean =
         value == PLAYLIST_SECTION_ALL || value == PLAYLIST_SECTION_DEVICE
 

@@ -1332,3 +1332,7 @@ Menus:
 Menus:
 - fix(playlists): lock remote destinations for device selections
   - Match destination availability to on-device album and artist selections.
+
+Android Auto:
+- fix(auto): align device folders and playlist icons
+  - Add scoped playback for device album and artist folders and use the folder icon on device playlists.

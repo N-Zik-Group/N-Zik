@@ -79,12 +79,13 @@ class PlaylistsBrowseHandler : BrowseHandler {
             AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL,
             AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH,
             AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR -> {
+                val deviceIds = database.songPlaylistMapTable.onDeviceOnlyPlaylistIds().first().toSet()
                 val playlists = loadAutoLibraryPlaylists(context, database, parentId).map { preview ->
                     browsableMediaItem(
                         "${PlayerServiceModern.PLAYLIST}/${preview.playlist.id}",
                         context.rewindDisplayName(preview.playlist.name),
                         preview.songCount.toString(),
-                        drawableUri(context, localPlaylistIcon(preview.playlist)),
+                        drawableUri(context, localPlaylistIcon(preview.playlist, preview.playlist.id in deviceIds)),
                         MediaMetadata.MEDIA_TYPE_PLAYLIST,
                     )
                 }
@@ -101,7 +102,7 @@ class PlaylistsBrowseHandler : BrowseHandler {
         } else emptySet()
         fun count(id: String) = visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews, deviceIds).size
         val categories = mapOf(
-            "all" to folder(context, AutoSessionConstants.ID_PLAYLISTS_LOCAL, R.string.library_title,
+            "all" to folder(context, AutoSessionConstants.ID_PLAYLISTS_LOCAL, R.string.common_option_all,
                 R.drawable.library, count(AutoSessionConstants.ID_PLAYLISTS_LOCAL)),
             "on_device" to folder(context, AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE, R.string.library_on_device_title,
                 R.drawable.folder, count(AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE)),
@@ -156,7 +157,8 @@ class PlaylistsBrowseHandler : BrowseHandler {
         RewindPlaylists.Filter.All -> R.drawable.musical_notes
     }
 
-    private fun localPlaylistIcon(playlist: Playlist): Int = when {
+    private fun localPlaylistIcon(playlist: Playlist, onDevice: Boolean): Int = when {
+        onDevice -> R.drawable.folder
         playlistLinkKind(playlist.browseId) == PlaylistLinkKind.YouTubePodcast -> R.drawable.podcast
         playlist.name.startsWith(PINNED_PREFIX, true) -> R.drawable.pin_filled
         RewindPlaylists.isMonthly(playlist.name) -> R.drawable.stat_month
