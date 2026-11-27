@@ -1200,3 +1200,7 @@ Settings:
 Settings:
 - fix(settings): reveal color theme prerequisites from search
   - Highlight the theme selector for conditional dark mode and custom color settings and show the required choice.
+
+Menus:
+- fix(menu): preserve removal of the last separator
+  - Keep intentionally removed separators out of the saved burger menu while still adding new actions to existing profiles.

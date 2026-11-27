@@ -39,10 +39,11 @@ import timber.log.Timber
 object BurgerMenuSettingsDialog : ContentFramedDialog {
 
     private const val addSeparatorOptionId = "addSeparator"
+    private const val firstSeparatorOptionId = "separator#1"
 
     /** Exact searchable options from the same definitions used by this dialog. */
     internal fun searchOptions(): List<SettingsNestedOption> =
-        allItemIds.map { SettingsNestedOption(if (it == "separator") "separator#1" else it, searchLabelResources.getValue(it)) } +
+        allItemIds.map { SettingsNestedOption(if (it == "separator") firstSeparatorOptionId else it, searchLabelResources.getValue(it)) } +
             SettingsNestedOption(addSeparatorOptionId, R.string.settings_navigation_menu_action_add_separator)
 
     private val searchLabelResources = mapOf(
@@ -75,7 +76,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
      * Defensive parse: blank or corrupt -> default order; every "separator" instance is
      * kept in count and position (capped at [DataStoreUtils.MAX_BURGER_MENU_SEPARATORS],
      * the first N positions kept), every other id de-duplicated, unknown ids dropped and
-     * every missing id (separator included) appended at the END of the list.
+     * missing actions appended at the end. An existing order can have no separators.
      */
     fun parseOrder(saved: String): List<String> {
         val available = allItemIds
@@ -97,9 +98,7 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
                     order.add(id)
                 }
             }
-            // A stored order without any separator gets one back at the end,
-            // like every other missing id.
-            order + (available - order.toSet())
+            if (order.isEmpty()) available else order + available.filter { it != "separator" && it !in seen }
         }.onFailure {
             Timber.tag("BurgerMenu").w("Stored burger order is corrupt, falling back to the default")
         }.getOrDefault(available)
@@ -165,8 +164,10 @@ object BurgerMenuSettingsDialog : ContentFramedDialog {
         // logical id, so all instances share one switch. The footer button multiplies
         // the instances and disables at the cap.
         val separatorCount = workingOrder.count { it == "separator" }
-        val addSeparatorTarget = LocalSettingsTargets.current?.nestedTarget
-            ?.takeIf { it.nestedDestination?.itemId == addSeparatorOptionId }
+        val addSeparatorTarget = LocalSettingsTargets.current?.nestedTarget?.takeIf { target ->
+            val itemId = target.nestedDestination?.itemId
+            itemId == addSeparatorOptionId || (separatorCount == 0 && itemId == firstSeparatorOptionId)
+        }
         val keys = rowKeys(workingOrder)
         val items = workingOrder.mapIndexedNotNull { index, id ->
             itemSpec(
