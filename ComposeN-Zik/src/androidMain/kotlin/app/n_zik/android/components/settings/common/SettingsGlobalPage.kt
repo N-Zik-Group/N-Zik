@@ -112,8 +112,9 @@ fun SettingsGlobalPage(
     val exactItems = itemResults.filter { it.hasPrioritySearchMatch(context, normalizedQuery) }
     val otherItems = itemResults - exactItems.toSet()
     val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
-    val entryResults = remember(context, configuration, query, playerType) {
-        searchSettingsEntries(context, query)
+    val profileShortcutIndex = rememberProfileShortcutSettingsIndex(context)
+    val entryResults = remember(context, configuration, query, playerType, profileShortcutIndex) {
+        searchSettingsEntries(context, query, profileShortcutIndex)
     }
     val categoryResults = remember(context, configuration, query) {
         searchSettingsCategories(context, query)

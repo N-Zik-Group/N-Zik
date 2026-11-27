@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Build
 import androidx.core.content.edit
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -36,6 +37,7 @@ internal suspend fun applyAllSettingsDefaults(
         val applied = withContext(NzikDispatchers.DATA) {
             DatabaseRestoreJournal.withProfileStorageMutation(context) {
                 if (!applyDataDefaults(context, profileId, onDownloadLimitRetained)) return@withProfileStorageMutation false
+                applyPrivacyDefaults(profileDataPrefs(context, profileId))
                 applyRemainingSettingsDefaults(context)
                 true
             }

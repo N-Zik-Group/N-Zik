@@ -2,6 +2,13 @@ package app.n_zik.android.components.settings.common
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.core.content.edit
+import app.n_zik.android.components.search.SearchHistoryStore
+import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
+import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
+import app.n_zik.android.utils.pauseListenHistoryKey
+import app.n_zik.android.utils.pauseSearchHistoryKey
+import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.checkUpdateStateKey
 import app.n_zik.android.utils.checkBetaUpdatesKey
 import app.n_zik.android.utils.otherLanguageAppUpdateKey
@@ -19,7 +26,6 @@ import app.n_zik.android.privacy.blockScreenCaptureKey
 import app.n_zik.android.utils.DataStoreUtils
 
 private val additionalProfileSettingKeys = setOf(
-    blockScreenCaptureKey, PermissionUsageJournal.PAUSED_KEY,
     checkUpdateStateKey, checkBetaUpdatesKey, otherLanguageAppUpdateKey, "updateTranslationActive",
     // Player menu controls are profile settings; leave the device's physical volume alone.
     playbackSpeedKey, playbackPitchKey, playbackVolumeKey, playbackDurationKey, playerBackdropKey,
@@ -48,6 +54,17 @@ internal fun resetAdditionalSettingsDefaults(context: Context) {
     DataStoreUtils.prefs(context).removeSettings(additionalGlobalSettingKeys)
     scheduleRewindWork(context)
     resetListenTogetherSettingsDefaults(context)
+}
+
+internal fun applyPrivacyDefaults(preferences: SharedPreferences) {
+    preferences.edit {
+        putBoolean(pauseSearchHistoryKey, false)
+        putBoolean(pauseListenHistoryKey, false)
+        putEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
+        SearchHistoryStore.pages.forEach { page -> remove(SearchHistoryStore.enabledKey(page)) }
+        remove(blockScreenCaptureKey)
+        remove(PermissionUsageJournal.PAUSED_KEY)
+    }
 }
 
 /** Restores device-wide room controls while preserving the server, session and blocklist. */

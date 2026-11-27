@@ -4,6 +4,9 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.net.Uri
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalConfiguration
 import java.lang.ref.WeakReference
 import app.n_zik.android.components.search.normalizeSearchText
 import app.n_zik.android.components.search.filterSearchHistory
@@ -29,6 +32,8 @@ import app.n_zik.android.utils.isAtLeastAndroid13
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.playerTypeKey
 import app.n_zik.android.utils.preferences
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.withContext
 
 val AllSettingsEntryTargets: List<SettingsEntryTarget> by lazy {
     val entriesByCard = (SettingsEntryTargets + EmbeddedSettingsEntryTargets + AboutSettingsEntryTargets +
@@ -86,8 +91,16 @@ fun searchSettingsEntries(context: Context, query: String): List<SettingsEntryTa
 internal fun searchSettingsEntries(
     context: Context,
     query: String,
+    profileShortcutIndex: SettingsEntrySearchIndex?,
+): List<SettingsEntryTarget> =
+    searchSettingsEntries(context, query, isYouTubeSyncBuild(), profileShortcutIndex = profileShortcutIndex)
+
+internal fun searchSettingsEntries(
+    context: Context,
+    query: String,
     youtubeSyncSupported: Boolean,
     lastFmSupported: Boolean = isLastFmSettingsAvailable(),
+    profileShortcutIndex: SettingsEntrySearchIndex? = null,
 ): List<SettingsEntryTarget> {
     if (query.isBlank()) return emptyList()
     val resources = context.resources
@@ -96,7 +109,7 @@ internal fun searchSettingsEntries(
         context.preferences.getEnum(playerTypeKey, PlayerType.Essential),
         isLandscape,
     )
-    return settingsEntrySearchIndex(resources).search(query) { id, count ->
+    return settingsEntrySearchIndex(resources).search(query, profileShortcutIndex) { id, count ->
         resources.getQuantityString(id, count, count)
     }.filter { result ->
         when {
@@ -145,7 +158,9 @@ internal class SettingsEntrySearchIndex(
                 normalizedSettingsText(aboutAuthorSearchLabel(::resource)),
                 normalizedSettingsText(UpdateEndpoints.REAL_OWNER),
             ).distinct() else listOfNotNull(
-                if (entry.labelFormatRes != null) normalizedSettingsText(entry.searchLabel(::resource)) else normalizedResource(entry.labelRes),
+                if (entry.displayLabel != null || entry.labelFormatRes != null) {
+                    normalizedSettingsText(entry.searchLabel(::resource))
+                } else normalizedResource(entry.labelRes),
                 buttonField?.let { normalizedSettingsText(it.title(::resource)) },
                 buttonField?.let { normalizedSettingsText(it.title(::resource, separator = " ")) },
             ).distinct()
@@ -170,14 +185,21 @@ internal class SettingsEntrySearchIndex(
         }
     }
 
-    fun search(query: String, resolveCountedLabel: ((Int, Int) -> String)? = null): List<SettingsEntryTarget> {
+    fun search(query: String, resolveCountedLabel: ((Int, Int) -> String)? = null): List<SettingsEntryTarget> =
+        search(query, additionalIndex = null, resolveCountedLabel = resolveCountedLabel)
+
+    fun search(
+        query: String,
+        additionalIndex: SettingsEntrySearchIndex?,
+        resolveCountedLabel: ((Int, Int) -> String)? = null,
+    ): List<SettingsEntryTarget> {
         val needle = normalizedSettingsText(query)
         if (needle.isEmpty()) return emptyList()
         val tokens = needle.split(' ').sortedByDescending(String::length)
         val count = settingsCountedLabelNumber.find(needle)?.value?.takeUnless { it == needle }?.toIntOrNull()
         // Keep the original four ranks; available choices are a lower-priority fallback.
         val matches = Array(5) { mutableListOf<SettingsEntryTarget>() }
-        entries.forEach { entry ->
+        (entries.asSequence() + additionalIndex?.entries.orEmpty().asSequence()).forEach { entry ->
             val labels = entry.labels
             val countedLabel = if (count != null && resolveCountedLabel != null) {
                 entry.target.countedLabelRes?.let { normalizedSettingsText(resolveCountedLabel(it, count)) }
@@ -256,7 +278,7 @@ fun SettingsEntryTarget.locationDescription(context: Context, searchCategoryId: 
     val nested = nestedDestination
     val opener = nested?.let { destination -> AllSettingsEntryTargets.firstOrNull { it.id == destination.openerId } }
     if (id in setOf(SettingsResetDownloadsTarget, SettingsResetAllTarget, SettingsResetChooserTarget,
-            SettingsResetGlassTarget, SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget)
+            SettingsResetGlassTarget, SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget, SettingsResetPrivacyTarget)
     ) {
         return listOf(R.string.settings_title, category.labelRes, R.string.settings_reset)
             .joinToString(" › ", transform = context::getString)
@@ -293,14 +315,14 @@ fun SettingsEntryTarget.searchResultTitle(context: Context): String {
 }
 
 private fun SettingsEntryTarget.searchLabel(resolveString: (Int) -> String): String {
-    val label = resolveString(labelRes)
+    val label = displayLabel ?: resolveString(labelRes)
     return labelFormatRes?.let { resolveString(it).format(label) } ?: label
 }
 
 private fun SettingsEntryTarget.searchScopeTitleRes(): Int? =
     when {
         id.startsWith("glass.") -> R.string.glass_effect_title
-        id == SettingsResetListenTogetherTarget || id == SettingsResetPlaybackTarget -> R.string.settings_reset
+        id in setOf(SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget, SettingsResetPrivacyTarget) -> R.string.settings_reset
         labelRes == R.string.github_app_installation -> R.string.common_brand_github
         else -> paletteTitleRes ?: nestedDestination?.sectionTitleRes
     }
@@ -323,3 +345,25 @@ private fun SettingsEntryTarget.qualifiedSearchTitleResources(): List<Int> {
 }
 
 private val settingsEntriesById by lazy { AllSettingsEntryTargets.associateBy { it.id } }
+
+@Composable
+internal fun rememberProfileShortcutSettingsIndex(context: Context): SettingsEntrySearchIndex? {
+    val configuration = LocalConfiguration.current
+    return produceState<SettingsEntrySearchIndex?>(null, context, configuration) {
+        value = withContext(NzikDispatchers.DATA) {
+            SettingsEntrySearchIndex(
+                entries = profileShortcutSettingsTargets(context),
+                descriptions = emptyMap(),
+                scopeTitles = SettingsEntryTarget::qualifiedSearchTitleResources,
+                resolveString = context::getString,
+            )
+        }
+    }.value
+}
+
+internal suspend fun findSettingsEntryTarget(context: Context, id: String): SettingsEntryTarget? =
+    settingsEntriesById[id] ?: if (isProfileShortcutSettingsTarget(id)) {
+        withContext(NzikDispatchers.DATA) {
+            profileShortcutSettingsTargets(context).firstOrNull { it.id == id }
+        }
+    } else null

@@ -133,6 +133,10 @@ object AppShortcutsSettingsDialog : ContentFramedDialog {
     /** Exact searchable options from the same definitions used by this dialog. */
     internal fun searchOptions(): List<SettingsNestedOption> = buildShortcutDefs().values.map { SettingsNestedOption(it.id, it.labelRes) }
 
+    internal fun profileSearchOptions(context: Context): List<SettingsNestedOption> =
+        profileShortcutDefs(context).values.map { def ->
+            SettingsNestedOption(def.id, def.labelRes, displayLabel = def.dynamicLabel)
+        }
 
     override val dialogTitle: String
         @Composable

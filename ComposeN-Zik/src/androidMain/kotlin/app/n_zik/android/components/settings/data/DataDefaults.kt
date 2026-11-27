@@ -6,21 +6,16 @@ import app.n_zik.android.enums.CoilDiskCacheMaxSize
 import app.n_zik.android.enums.ExoPlayerCacheLocation
 import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
 import app.n_zik.android.enums.ExoPlayerDiskDownloadCacheMaxSize
-import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.core.coil.PROFILE_IMAGE_CACHE_CUSTOM_MB
 import app.n_zik.android.utils.coilDiskCacheMaxSizeKey
 import app.n_zik.android.utils.exoPlayerCustomCacheKey
 import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
 import app.n_zik.android.utils.exoPlayerDiskDownloadCacheMaxSizeKey
-import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
-import app.n_zik.android.utils.pauseListenHistoryKey
-import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.putEnum
 import app.n_zik.android.components.image.ORIGINAL_IMAGE_QUALITY_KEY
 import app.n_zik.android.components.image.readOriginalImageQuality
-import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
@@ -46,7 +41,7 @@ internal fun hasPendingDataResetCacheMove(context: Context, profileId: String): 
     return ProfileCacheLocationMigration.requested(context, target) == ExoPlayerCacheLocation.System
 }
 
-/** Restores storage, history and automatic backup defaults for the active profile. */
+/** Restores storage and automatic backup defaults for the active profile. */
 internal fun applyDataDefaults(
     context: Context,
     profileId: String = getActiveProfile(context),
@@ -76,10 +71,6 @@ internal fun applyDataDefaults(
             ProfileCacheLocationMigration.stageRequest(preferences, this, target, ExoPlayerCacheLocation.System)
             putInt(exoPlayerCustomCacheKey, 32)
             putInt(PROFILE_IMAGE_CACHE_CUSTOM_MB, 32)
-            putBoolean(pauseSearchHistoryKey, false)
-            putBoolean(pauseListenHistoryKey, false)
-            putEnum(exoPlayerMinTimeForEventKey, ExoPlayerMinTimeForEvent.`20s`)
-            SearchHistoryStore.pages.forEach { page -> remove(SearchHistoryStore.enabledKey(page)) }
         }
         if (backupWasEnabled) cancelAutoBackup(target)
         if (usedOriginalArtwork != readOriginalImageQuality(preferences)) ImageCacheFactory.refreshArtworkQuality()

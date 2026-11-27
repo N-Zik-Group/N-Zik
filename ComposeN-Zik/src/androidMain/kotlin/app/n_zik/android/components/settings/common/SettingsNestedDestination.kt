@@ -17,4 +17,5 @@ data class SettingsNestedOption(
     val sectionTitleRes: Int? = null,
     val descriptionRes: Int? = null,
     val labelFormatRes: Int? = null,
+    val displayLabel: String? = null,
 )

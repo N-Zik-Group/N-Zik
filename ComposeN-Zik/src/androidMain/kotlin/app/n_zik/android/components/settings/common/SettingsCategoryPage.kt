@@ -391,7 +391,8 @@ fun SettingsCategoryPage(
     val isSearching = search.inputValue.isNotBlank()
     val showInterfaceShortcuts = categoryId == "interface" && !isSearching
     val settingsHeaderItems = if (showInterfaceShortcuts) 2 else 1
-    val entryMatches = searchSettingsEntries(context, search.inputValue)
+    val profileShortcutIndex = if (categoryId == "system") rememberProfileShortcutSettingsIndex(context) else null
+    val entryMatches = searchSettingsEntries(context, search.inputValue, profileShortcutIndex)
         .filter { it.parentCard(categoryId).categoryId() == categoryId }
     val resetEntryScopes = entryMatches.filter { it.labelRes == R.string.settings_reset }.map { it.tab }.toSet()
     val matches = searchSettingsCardResults(context, search.inputValue).filter {
@@ -423,7 +424,7 @@ fun SettingsCategoryPage(
         isSearching -> emptyList()
         categoryId == "downloads" -> listOf(DOWNLOAD_RESET_SCOPE)
         categoryId == "system" -> cards.filter { it.titleRes == R.string.settings_reset }.map { it.tab } +
-            listOf(DOWNLOAD_RESET_SCOPE, LISTEN_TOGETHER_RESET_SCOPE, PLAYBACK_RESET_SCOPE)
+            listOf(DOWNLOAD_RESET_SCOPE, LISTEN_TOGETHER_RESET_SCOPE, PLAYBACK_RESET_SCOPE, PRIVACY_RESET_SCOPE)
         else -> emptyList()
     }
     SettingsSearchEmptyFeedback(search.inputValue, matches.isEmpty() && entryMatches.isEmpty() && interfacePageMatches.isEmpty())
@@ -487,7 +488,7 @@ fun SettingsCategoryPage(
             }
             else -> rawTarget
         }
-        val entry = AllSettingsEntryTargets.firstOrNull { it.id == requestedTarget }
+        val entry = findSettingsEntryTarget(context, requestedTarget)
         val storageEntry = entry?.cardTitleRes == R.string.storage_breakdown_title
         val profileStorageTarget = requestedTarget.startsWith("data.cache.") ||
             requestedTarget.startsWith("embedded.auto_backup.") || requestedTarget.startsWith("other.on_device.") ||
@@ -556,7 +557,8 @@ fun SettingsCategoryPage(
         }
         if (requestedTarget == SettingsResetChooserTarget || requestedTarget == SettingsResetAllTarget ||
             requestedTarget == SettingsResetGlassTarget || requestedTarget == SettingsResetDownloadsTarget ||
-            requestedTarget == SettingsResetListenTogetherTarget || requestedTarget == SettingsResetPlaybackTarget
+            requestedTarget == SettingsResetListenTogetherTarget || requestedTarget == SettingsResetPlaybackTarget ||
+            requestedTarget == SettingsResetPrivacyTarget
         ) {
             searchTargetHandled = true
             return@LaunchedEffect

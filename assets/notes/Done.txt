@@ -1276,3 +1276,7 @@ Menus:
 Menus:
 - fix(playlists): reject partial adds to remote playlists
   - Keep mixed selections local when they contain device tracks and guard persistence against partial remote adds.
+
+Settings:
+- fix(settings): scope privacy resets and find profile shortcuts
+  - Separate history preferences from Data, keep stored histories and accounts, and resolve profile shortcuts from settings search.

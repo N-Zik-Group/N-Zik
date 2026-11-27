@@ -21,6 +21,7 @@ data class SettingsEntryTarget(
     @PluralsRes val countedLabelRes: Int? = null,
     val labelFormatRes: Int? = null,
     val innerCardTitleRes: Int? = null,
+    val displayLabel: String? = null,
 )
 
 private fun paletteEntry(id: String, labelRes: Int, paletteTitleRes: Int, keywordRes: List<Int> = emptyList()) =
@@ -54,6 +55,10 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     ),
     SettingsEntryTarget(
         SettingsResetPlaybackTarget, 7, R.string.settings_reset, R.string.settings_reset_playback_description,
+    ),
+    SettingsEntryTarget(
+        SettingsResetPrivacyTarget, 7, R.string.settings_reset, R.string.settings_category_privacy,
+        listOf(R.string.settings_restore_default_settings),
     ),
     SettingsEntryTarget("general.playback.section.automatic", 0, R.string.common_playback_section_title, R.string.settings_group_automatic_playback),
     SettingsEntryTarget("general.playback.section.transitions", 0, R.string.common_playback_section_title, R.string.settings_group_track_transitions),

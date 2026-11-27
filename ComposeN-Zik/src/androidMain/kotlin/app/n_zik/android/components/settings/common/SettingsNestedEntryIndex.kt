@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.common
 
+import android.content.Context
 import app.n_zik.android.components.dialog.common.Dialog
 import app.n_zik.android.components.dialog.settings.AppShortcutsSettingsDialog
 import app.n_zik.android.components.dialog.settings.BurgerMenuSettingsDialog
@@ -34,8 +35,15 @@ private data class NestedDialogRegistration(
     val dialog: Dialog,
 )
 
+private val appShortcutsRegistration = NestedDialogRegistration(
+    "AppShortcutsSettingsDialog",
+    "general.app_shortcuts_settings.app_shortcuts_settings",
+    AppShortcutsSettingsDialog::searchOptions,
+    AppShortcutsSettingsDialog,
+)
+
 private val nestedDialogRegistrations = listOf(
-    NestedDialogRegistration("AppShortcutsSettingsDialog", "general.app_shortcuts_settings.app_shortcuts_settings", AppShortcutsSettingsDialog::searchOptions, AppShortcutsSettingsDialog),
+    appShortcutsRegistration,
     NestedDialogRegistration("HomeTabsSettingsDialog", "ui.user_interface.home_tabs_settings", HomeTabsSettingsDialog::searchOptions, HomeTabsSettingsDialog),
     NestedDialogRegistration("HomeSongsSettingsDialog", "ui.home_tabs_settings.songs", HomeSongsSettingsDialog::searchOptions, HomeSongsSettingsDialog),
     NestedDialogRegistration("HomeArtistsSettingsDialog", "ui.home_tabs_settings.artists", HomeArtistsSettingsDialog::searchOptions, HomeArtistsSettingsDialog),
@@ -64,31 +72,43 @@ private val nestedDialogRegistrations = listOf(
     NestedDialogRegistration(dialog.dialogId, dialog.entryId, dialog::searchOptions, dialog)
 }
 
-/** Dialog options derive their IDs, resources and availability from the actual configuration source. */
-val SettingsNestedEntryTargets: List<SettingsEntryTarget> by lazy {
-    val openers = (SettingsEntryTargets + EmbeddedSettingsEntryTargets + PrivacySettingsEntryTargets).associateBy { it.id }
-    nestedDialogRegistrations.flatMap { registration ->
-        val opener = openers.getValue(registration.openerId)
-        registration.options().map { option ->
-            SettingsEntryTarget(
-                id = "nested.${opener.id}.${option.tabIndex}.${option.itemId}",
-                tab = opener.tab,
-                cardTitleRes = opener.cardTitleRes,
-                labelRes = option.labelRes,
-                labelFormatRes = option.labelFormatRes,
-                keywordRes = listOfNotNull(option.descriptionRes),
-                groupTitleRes = opener.groupTitleRes,
-                nestedDestination = SettingsNestedDestination(
-                    openerId = opener.id,
-                    dialogId = registration.dialogId,
-                    tabIndex = option.tabIndex,
-                    itemId = option.itemId,
-                    sectionTitleRes = option.sectionTitleRes,
-                ),
-            )
-        }
+private val nestedDialogOpeners by lazy {
+    (SettingsEntryTargets + EmbeddedSettingsEntryTargets + PrivacySettingsEntryTargets).associateBy { it.id }
+}
+
+private fun NestedDialogRegistration.targets(options: List<SettingsNestedOption>): List<SettingsEntryTarget> {
+    val opener = nestedDialogOpeners.getValue(openerId)
+    return options.map { option ->
+        SettingsEntryTarget(
+            id = "nested.${opener.id}.${option.tabIndex}.${option.itemId}",
+            tab = opener.tab,
+            cardTitleRes = opener.cardTitleRes,
+            labelRes = option.labelRes,
+            labelFormatRes = option.labelFormatRes,
+            displayLabel = option.displayLabel,
+            keywordRes = listOfNotNull(option.descriptionRes),
+            groupTitleRes = opener.groupTitleRes,
+            nestedDestination = SettingsNestedDestination(
+                openerId = opener.id,
+                dialogId = dialogId,
+                tabIndex = option.tabIndex,
+                itemId = option.itemId,
+                sectionTitleRes = option.sectionTitleRes,
+            ),
+        )
     }
 }
+
+/** Dialog options derive their IDs, resources and availability from the actual configuration source. */
+val SettingsNestedEntryTargets: List<SettingsEntryTarget> by lazy {
+    nestedDialogRegistrations.flatMap { it.targets(it.options()) }
+}
+
+internal fun profileShortcutSettingsTargets(context: Context): List<SettingsEntryTarget> =
+    appShortcutsRegistration.targets(AppShortcutsSettingsDialog.profileSearchOptions(context))
+
+internal fun isProfileShortcutSettingsTarget(id: String): Boolean =
+    id.startsWith("nested.${appShortcutsRegistration.openerId}.")
 
 /** Returns only configuration dialogs available from registered Settings rows. */
 fun settingsNestedDialog(dialogId: String): Dialog? =

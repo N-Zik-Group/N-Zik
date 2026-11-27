@@ -34,6 +34,7 @@ import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.settings.network.applyDownloadDefaults
 import app.n_zik.android.components.settings.data.hasPendingDataResetCacheMove
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.components.settings.general.applyPlaybackDefaults
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
@@ -44,12 +45,14 @@ private const val ALL_RESET_SCOPE = -2
 internal const val DOWNLOAD_RESET_SCOPE = -3
 internal const val LISTEN_TOGETHER_RESET_SCOPE = -4
 internal const val PLAYBACK_RESET_SCOPE = -5
+internal const val PRIVACY_RESET_SCOPE = -6
 internal const val SettingsResetChooserTarget = "settings.reset.choose_scope"
 internal const val SettingsResetAllTarget = "settings.reset.all"
 internal const val SettingsResetGlassTarget = "settings.reset.glass"
 internal const val SettingsResetDownloadsTarget = "settings.reset.downloads"
 internal const val SettingsResetListenTogetherTarget = "settings.reset.listen_together"
 internal const val SettingsResetPlaybackTarget = "settings.reset.playback"
+internal const val SettingsResetPrivacyTarget = "settings.reset.privacy"
 internal val LocalSettingsResetRestart = staticCompositionLocalOf<(() -> Unit)?> { null }
 
 internal fun showDataResetFeedback(downloadLimitRetained: Boolean) {
@@ -65,6 +68,7 @@ internal fun resetScopeForTarget(target: String): Int? = when (target) {
     SettingsResetDownloadsTarget -> DOWNLOAD_RESET_SCOPE
     SettingsResetListenTogetherTarget -> LISTEN_TOGETHER_RESET_SCOPE
     SettingsResetPlaybackTarget -> PLAYBACK_RESET_SCOPE
+    SettingsResetPrivacyTarget -> PRIVACY_RESET_SCOPE
     else -> resetScopeNames.indices.firstOrNull { tab ->
         target == "card.$tab.settings_reset" || target == "${resetScopeNames[tab]}.settings_reset.settings_reset"
     }
@@ -79,6 +83,7 @@ private fun resetScopeLabel(scope: Int): Int = when (scope) {
     DOWNLOAD_RESET_SCOPE -> R.string.downloads_title
     LISTEN_TOGETHER_RESET_SCOPE -> R.string.listen_together_title
     PLAYBACK_RESET_SCOPE -> R.string.common_playback_section_title
+    PRIVACY_RESET_SCOPE -> R.string.settings_category_privacy
     else -> SettingsCategories.first { it.tab == scope }.labelRes
 }
 
@@ -118,7 +123,9 @@ internal fun SettingsResetCard(
         // Render the retained step until the shared dialog fade reaches its invisible midpoint.
         val scope = step.scope
         DialogFrame(
-            onDismiss = { open = false },
+            onDismiss = {
+                if (selectedScope == null) open = false else selectedScope = null
+            },
             bodyPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
             title = scope?.let { scope ->
                 stringResource(resetScopeLabel(scope))
@@ -191,7 +198,8 @@ internal fun SettingsResetCard(
                             title = stringResource(label),
                             text = when (tab) {
                                 LISTEN_TOGETHER_RESET_SCOPE -> stringResource(R.string.settings_reset_listen_together_preservation_notice)
-                                DOWNLOAD_RESET_SCOPE, PLAYBACK_RESET_SCOPE -> stringResource(R.string.settings_restore_default_settings)
+                                DOWNLOAD_RESET_SCOPE, PLAYBACK_RESET_SCOPE, PRIVACY_RESET_SCOPE ->
+                                    stringResource(R.string.settings_restore_default_settings)
                                 else -> stringResource(R.string.settings_reset_scope, stringResource(label))
                             },
                             icon = R.drawable.refresh,
@@ -242,6 +250,19 @@ internal fun SettingsResetCard(
                             if (open && selectedScope == PLAYBACK_RESET_SCOPE) {
                                 applyPlaybackDefaults(context)
                                 onRestartRequired()
+                                Toaster.done()
+                            }
+                        },
+                    )
+                } else if (scope == PRIVACY_RESET_SCOPE) {
+                    OtherSettingsEntry(
+                        title = stringResource(R.string.settings_reset),
+                        text = stringResource(R.string.settings_restore_default_settings),
+                        icon = R.drawable.refresh,
+                        modifier = Modifier.testTag("settings.reset.privacy.action"),
+                        onClick = {
+                            if (open && selectedScope == PRIVACY_RESET_SCOPE) {
+                                applyPrivacyDefaults(context.preferences)
                                 Toaster.done()
                             }
                         },
