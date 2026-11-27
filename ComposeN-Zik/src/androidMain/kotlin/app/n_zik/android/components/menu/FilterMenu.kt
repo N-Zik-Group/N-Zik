@@ -14,6 +14,15 @@ internal val FilterBy.originLabelRes: Int
         FilterBy.Local -> R.string.library_filter_nzik_origin_label
     }
 
+internal val libraryOriginFilters = listOf(FilterBy.All, FilterBy.YoutubeLibrary, FilterBy.Local)
+
+internal val FilterBy.originIconRes: Int
+    get() = when (this) {
+        FilterBy.All -> R.drawable.musical_notes
+        FilterBy.YoutubeLibrary -> R.drawable.ytmusic
+        FilterBy.Local -> R.drawable.library
+    }
+
 @Composable
 internal fun FilterMenu(
     selected: FilterBy,
@@ -21,16 +30,10 @@ internal fun FilterMenu(
 ) {
     SelectionMenu(
         title = stringResource(R.string.library_filter_by_title),
-        choices = listOf(FilterBy.All, FilterBy.YoutubeLibrary, FilterBy.Local),
+        choices = libraryOriginFilters,
         selectedChoice = selected,
         label = { filter -> stringResource(filter.originLabelRes) },
-        icon = { filter ->
-            when (filter) {
-                FilterBy.All -> R.drawable.musical_notes
-                FilterBy.YoutubeLibrary -> R.drawable.ytmusic
-                FilterBy.Local -> R.drawable.library
-            }
-        },
+        icon = { filter -> filter.originIconRes },
         onSelected = onSelected,
     )
 }

@@ -5,9 +5,6 @@ import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
-import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.utils.Preference
-import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.homeArtistsOrderKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.showFavoritesArtistKey
@@ -20,8 +17,6 @@ import app.n_zik.android.playback.services.automotive.session.AutoSessionConstan
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
-import kotlinx.coroutines.flow.first
-import app.n_zik.android.enums.ArtistSortBy
 
 class ArtistsBrowseHandler internal constructor(
     private val onDevice: AutoDeviceGroupsBrowseHandler = AutoDeviceGroupsBrowseHandler(),
@@ -36,7 +31,7 @@ class ArtistsBrowseHandler internal constructor(
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
-        return when (parentId) {
+        return when (autoOriginParent(parentId)) {
             PlayerServiceModern.ARTIST -> {
                 // Mirror the phone's HomeArtist tabs: same order (homeArtistsOrderKey)
                 // and visibility (showFavoritesArtistKey) as the in-app settings
@@ -49,11 +44,11 @@ class ArtistsBrowseHandler internal constructor(
                 val onDeviceCount = if (context.isDeviceLibraryEnabled() && context.preferences.getBoolean(showOnDeviceArtistsKey, true)) {
                     onDevice.artists(context, database).size
                 } else null
-                val libraryCount = database.artistTable.allInLibrary().first().count { it.dislikedAt == null && !isDeviceArtistId(it.id) }
-                val favoritesCount = database.artistTable.allFollowing().first().count { it.dislikedAt == null && !isDeviceArtistId(it.id) }
-                val dislikedCount = database.artistTable.allDisliked().first().size
+                val libraryCount = loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_LIBRARY).size
+                val favoritesCount = loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_FAVORITES).size
+                val dislikedCount = loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_DISLIKED).size
                 val categoryItems = mutableMapOf(
-                    "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.library_title), libraryCount.toString(), drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+                    "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.common_option_all), libraryCount.toString(), drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
                     "favorites" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
                     "disliked" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_DISLIKED, context.getString(R.string.library_disliked_title), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS)
                 )
@@ -66,24 +61,21 @@ class ArtistsBrowseHandler internal constructor(
                 homeCategoryOrder(context, homeArtistsOrderKey, listOf("all", "favorites", "disliked", "on_device"))
                     .mapNotNull { id -> if (id == "favorites" && !showFavoritesArtist) null else categoryItems[id] }
             }
-            AutoSessionConstants.ID_ARTISTS_LIBRARY -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_ARTISTS_LIBRARY_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_ARTISTS_LIBRARY_SORT_BY.key, ArtistSortBy.Name)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER.key, SortOrder.Ascending)
-                val artists = database.artistTable.sortInLibrary(sortBy, sortOrder).first().filter { it.dislikedAt == null && !isDeviceArtistId(it.id) }.map { artist -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
-                listOf(shuffleItem) + artists
-            }
-            AutoSessionConstants.ID_ARTISTS_FAVORITES -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_ARTISTS_FAVORITES_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_ARTISTS_FAVORITES_SORT_BY.key, ArtistSortBy.Name)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending)
-                val artists = database.artistTable.sortFollowing(sortBy, sortOrder).first().filter { it.dislikedAt == null && !isDeviceArtistId(it.id) }.map { artist -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
-                listOf(shuffleItem) + artists
-            }
+            AutoSessionConstants.ID_ARTISTS_LIBRARY,
+            AutoSessionConstants.ID_ARTISTS_FAVORITES,
             AutoSessionConstants.ID_ARTISTS_DISLIKED -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_ARTISTS_DISLIKED_SHUFFLE)
-                val artists = database.artistTable.allDisliked().first()
-                listOf(shuffleItem) + artists.map { artist -> CancellableAutoMediaItemMapper.mapArtistToMediaItem(PlayerServiceModern.ARTIST, artist.id, artist.name ?: "", artist.thumbnailUrl) }
+                val collections = loadAutoHomeArtists(context, database, parentId)
+                if (autoOriginParent(parentId) == parentId && autoOriginAvailable(parentId)) {
+                    return autoOriginFolders(context, parentId, collections) { it.isYoutubeArtist }
+                }
+                val entries = collections.map { artist ->
+                    val category = if (isDeviceArtistId(artist.id)) AutoSessionConstants.ID_ARTISTS_ONDEVICE
+                        else PlayerServiceModern.ARTIST
+                    CancellableAutoMediaItemMapper.mapArtistToMediaItem(
+                        category, artist.id, artist.name.orEmpty(), artist.thumbnailUrl,
+                    )
+                }
+                listOf(AutoSessionConstants.shuffleItem(context, "${parentId}_SHUFFLE")) + entries
             }
             else -> emptyList()
         }

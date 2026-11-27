@@ -43,7 +43,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import app.n_zik.android.enums.MaxSongs
 import app.n_zik.android.enums.MaxTopPlaylistItems
-import app.n_zik.android.enums.OnDeviceSongSortBy
 import app.n_zik.android.enums.SongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
@@ -57,12 +56,19 @@ import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.withPlaybackAlbum
-import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.PaginationHelper
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
+import app.n_zik.android.playback.services.automotive.browse.handlers.autoOriginParent
+import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeAlbums
+import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeArtists
+import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeSongs
+import app.n_zik.android.components.ui.screens.home.loadHomeLibraryGroupSongs
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
@@ -735,57 +741,48 @@ class AutoSessionCallback(
             }.distinctBy { it.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
             if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
         }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONG_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ALL_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONG_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ALL_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val sortBy = try { context.preferences.getEnum(Preference.HOME_SONGS_SORT_BY.key, SongSortBy.Title) } catch (e: Exception) { SongSortBy.Title }
-            val sortOrder = try { context.preferences.getEnum(Preference.HOME_SONGS_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val allSongs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).first().filter { it.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_FAVORITES_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_FAVORITES_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val sortBy = try { context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_BY.key, SongSortBy.Title) } catch (e: Exception) { SongSortBy.Title }
-            val sortOrder = try { context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val allSongs = database.songTable.sortFavorites(sortBy, sortOrder).first().filter { it.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_DOWNLOADED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_DOWNLOADED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val downloads = downloadHelper.downloads.value
-            val sortBy = try { context.preferences.getEnum(Preference.HOME_SONGS_DOWNLOADED_SORT_BY.key, SongSortBy.Title) } catch (e: Exception) { SongSortBy.Title }
-            val sortOrder = try { context.preferences.getEnum(Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val allSongs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = false).first().fastFilter { song -> downloads[song.id]?.state == Download.STATE_COMPLETED && song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val sortBy = try { context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title) } catch (e: Exception) { OnDeviceSongSortBy.Title }
-            val sortOrder = try { context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val onDeviceSongs = context.getProfileLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
-            val allSongs = if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) onDeviceSongs.shuffled() else onDeviceSongs
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_CACHED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_CACHED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val sortBy = try { context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title) } catch (e: Exception) { SongSortBy.Title }
-            val sortOrder = try { context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Ascending) } catch (e: Exception) { SortOrder.Ascending }
-            val allSongs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first().fastFilter { itf -> val contentLength = itf.format.contentLength; itf.song.id !in excludedIds && binder.cache.hasCachedStream(itf.song.id, contentLength) }.fastMap { itf -> itf.song }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_TOP_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_TOP_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first().filter { it.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUM_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_LIBRARY_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUM_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_LIBRARY_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.albumTable.allInLibrary().first().flatMap { album -> database.songAlbumMapTable.allSongsOf(album.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_FAVORITES_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_FAVORITES_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.albumTable.allBookmarked().first().flatMap { album -> database.songAlbumMapTable.allSongsOf(album.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTIST_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTISTS_LIBRARY_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTIST_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTISTS_LIBRARY_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.artistTable.allInLibrary().first().flatMap { artist -> database.songArtistMapTable.allSongsBy(artist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTISTS_FAVORITES_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTISTS_FAVORITES_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.artistTable.allFollowing().first().flatMap { artist -> database.songArtistMapTable.allSongsBy(artist.id).first() }.distinctBy { song -> song.id }.filter { song -> song.id !in excludedIds }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
+        if (AutoMediaIdContract.isQueueAction(selectedId) && !selectedId.contains('/')) {
+            val category = when (val target = selectedId.removeSuffix("_SHUFFLE").removeSuffix("_PLAY_ALL")) {
+                AutoSessionConstants.ID_SONG_SHUFFLE.removeSuffix("_SHUFFLE") -> AutoSessionConstants.ID_SONGS_ALL
+                AutoSessionConstants.ID_ALBUM_SHUFFLE.removeSuffix("_SHUFFLE") -> AutoSessionConstants.ID_ALBUMS_LIBRARY
+                AutoSessionConstants.ID_ARTIST_SHUFFLE.removeSuffix("_SHUFFLE") -> AutoSessionConstants.ID_ARTISTS_LIBRARY
+                else -> target
+            }
+            val base = autoOriginParent(category)
+            val queue = when (base) {
+                AutoSessionConstants.ID_SONGS_ALL,
+                AutoSessionConstants.ID_SONGS_FAVORITES,
+                AutoSessionConstants.ID_SONGS_DOWNLOADED,
+                AutoSessionConstants.ID_SONGS_ONDEVICE,
+                AutoSessionConstants.ID_SONGS_CACHED,
+                AutoSessionConstants.ID_SONGS_TOP,
+                AutoSessionConstants.ID_SONGS_DISLIKED -> loadAutoHomeSongs(
+                    context, database, downloadHelper, if (::binder.isInitialized) binder else null, category, excludedIds,
+                )
+                AutoSessionConstants.ID_ALBUMS_LIBRARY,
+                AutoSessionConstants.ID_ALBUMS_FAVORITES,
+                AutoSessionConstants.ID_ALBUMS_DISLIKED -> {
+                    val albums = loadAutoHomeAlbums(context, database, category)
+                    loadHomeLibraryGroupSongs(albums.map { it.id }, database.songAlbumMapTable::songsForHomeAlbums, ::isDeviceAlbumId) {
+                        context.scanDeviceLibrary().albumSongIds
+                    }.filter { base == AutoSessionConstants.ID_ALBUMS_DISLIKED || it.id !in excludedIds }
+                }
+                AutoSessionConstants.ID_ARTISTS_LIBRARY,
+                AutoSessionConstants.ID_ARTISTS_FAVORITES,
+                AutoSessionConstants.ID_ARTISTS_DISLIKED -> {
+                    val artists = loadAutoHomeArtists(context, database, category)
+                    loadHomeLibraryGroupSongs(artists.map { it.id }, database.songArtistMapTable::songsForHomeArtists, ::isDeviceArtistId) {
+                        context.scanDeviceLibrary().artistSongIds
+                    }.filter { base == AutoSessionConstants.ID_ARTISTS_DISLIKED || it.id !in excludedIds }
+                }
+                else -> null
+            }
+            if (queue != null) {
+                val ordered = if (AutoMediaIdContract.isShuffle(selectedId)) queue.shuffled() else queue
+                val items = ordered.map { CancellableAutoMediaItemMapper.mapSongToMediaItem(it, loadArtwork = it.isLocal) }
+                val eligible = accessPolicy().eligible(items, category).map { it.value }
+                return MediaSession.MediaItemsWithStartPosition(eligible, 0, 0)
+            }
         }
         if (playlistCategory != null) {
             val items = loadAutoLibraryPlaylists(context, database, playlistCategory)
@@ -796,19 +793,6 @@ class AutoSessionCallback(
             val allowed = accessPolicy().eligible(items, playlistCategory).map { it.value }
             val queue = if (AutoMediaIdContract.isShuffle(selectedId)) allowed.shuffled() else allowed
             return MediaSession.MediaItemsWithStartPosition(queue, 0, 0)
-        }
-        // Disliked category shuffle: only the songs flagged as disliked (likedAt == -1L).
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_DISLIKED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_SONGS_DISLIKED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = dislikedSongs().let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_DISLIKED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ALBUMS_DISLIKED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.albumTable.allDisliked().first().flatMap { album -> database.songAlbumMapTable.allSongsOf(album.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
-        }
-        if (mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTISTS_DISLIKED_SHUFFLE || mediaItems.firstOrNull()?.mediaId == AutoSessionConstants.ID_ARTISTS_DISLIKED_SHUFFLE.replace("_SHUFFLE", "_PLAY_ALL")) {
-            val allSongs = database.artistTable.allDisliked().first().flatMap { artist -> database.songArtistMapTable.allSongsBy(artist.id).first() }.distinctBy { song -> song.id }.let { if (mediaItems.firstOrNull()?.mediaId?.endsWith("_SHUFFLE") == true) it.shuffled() else it }
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
         }
         // The shuffle item carries the playlist id ("PLAYLIST_SHUFFLE/{playlistId}")
         // so the right song list can be resolved (issue #777).
@@ -826,7 +810,7 @@ class AutoSessionCallback(
             var songId = ""
             val mediaId = mediaItems.first().mediaId
             val paths = mediaId.split("/")
-            when (paths.first()) {
+            when (autoOriginParent(paths.first())) {
                 AutoSessionConstants.ID_QUICK_PICKS -> {
                     songId = paths[1]
                     val trending = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = 500).first()
@@ -846,23 +830,17 @@ class AutoSessionCallback(
                 AutoSessionConstants.ID_SEARCH_VIDEOS -> { songId = AutoMediaIdContract.parseSearchSelection(mediaId).orEmpty(); queryList = AutoSearchState.searchedVideos.map { it.asSong } }
                 PlayerServiceModern.SEARCHED -> { songId = paths[1]; queryList = AutoSearchState.searchedSongs.filter { it.id !in excludedIds } }
                 PlayerServiceModern.SONG -> { songId = paths[1]; queryList = database.songTable.all().first().filter { it.id !in excludedIds } }
-                AutoSessionConstants.ID_SONGS_ALL -> { songId = paths[1]; queryList = database.songTable.sortAll(SongSortBy.DateAdded, SortOrder.Descending, excludeHidden = true).first().filter { it.id !in excludedIds } }
-                AutoSessionConstants.ID_SONGS_FAVORITES -> { songId = paths[1]; queryList = database.songTable.allFavorites().first().filter { it.id !in excludedIds }.reversed() }
-                AutoSessionConstants.ID_SONGS_DOWNLOADED -> {
-                    val downloads = downloadHelper.downloads.value
-                    queryList = database.songTable.all(excludeHidden = false).first().fastFilter { song -> downloads[song.id]?.state == Download.STATE_COMPLETED && song.id !in excludedIds }.sortedByDescending { song -> downloads[song.id]?.updateTimeMs ?: 0L }
+                AutoSessionConstants.ID_SONGS_ALL,
+                AutoSessionConstants.ID_SONGS_FAVORITES,
+                AutoSessionConstants.ID_SONGS_DOWNLOADED,
+                AutoSessionConstants.ID_SONGS_ONDEVICE,
+                AutoSessionConstants.ID_SONGS_CACHED,
+                AutoSessionConstants.ID_SONGS_TOP,
+                AutoSessionConstants.ID_SONGS_DISLIKED -> {
                     songId = paths[1]
+                    queryList = loadAutoHomeSongs(context, database, downloadHelper,
+                        if (::binder.isInitialized) binder else null, paths.first(), excludedIds)
                 }
-                AutoSessionConstants.ID_SONGS_ONDEVICE -> { songId = paths[1]; queryList = database.songTable.allOnDevice().first().filter { it.id !in excludedIds } }
-                AutoSessionConstants.ID_SONGS_CACHED -> {
-                    queryList = database.formatTable.allWithSongs().first().fastFilter { itf -> itf.song.id !in excludedIds && ::binder.isInitialized && binder.cache.hasCachedStream(itf.song.id, itf.format.contentLength) }.reversed().fastMap { itf -> itf.song }
-                    songId = paths[1]
-                }
-                AutoSessionConstants.ID_SONGS_TOP -> {
-                    queryList = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first().filter { it.id !in excludedIds }
-                    songId = paths[1]
-                }
-                AutoSessionConstants.ID_SONGS_DISLIKED -> { songId = paths[1]; queryList = dislikedSongs() }
                 AutoSessionConstants.ID_ALBUMS_ONDEVICE, AutoSessionConstants.ID_ARTISTS_ONDEVICE -> {
                     val selection = AutoMediaIdContract.parseSongSelection(mediaId, paths.first())
                     if (selection != null && selection.section == null) {
@@ -960,7 +938,6 @@ class AutoSessionCallback(
     }
 
     /** Uses the same disliked-song list as the browse category. */
-    private suspend fun dislikedSongs(): List<Song> = DislikedExclusion.dislikedSongs(context, database)
 
     override fun onAddMediaItems(
         mediaSession: MediaSession,

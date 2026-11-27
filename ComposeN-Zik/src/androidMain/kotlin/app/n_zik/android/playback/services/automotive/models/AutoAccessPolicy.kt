@@ -1,6 +1,7 @@
 package app.n_zik.android.playback.services.automotive.models
 
 import android.content.Context
+import app.n_zik.android.playback.services.automotive.browse.handlers.autoOriginParent
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.core.database.Database
@@ -83,6 +84,6 @@ class AutoAccessPolicy(
         )
 
         /** Direct detail, Disliked and Quick Picks retain their deliberately separate policies. */
-        fun reappliesExclusions(parentId: String): Boolean = parentId.removeSuffix("_SHUFFLE").removeSuffix("_PLAY_ALL").substringBefore('/') in FILTERED_CATEGORIES
+        fun reappliesExclusions(parentId: String): Boolean = autoOriginParent(parentId.removeSuffix("_SHUFFLE").removeSuffix("_PLAY_ALL").substringBefore('/')) in FILTERED_CATEGORIES
     }
 }

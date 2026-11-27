@@ -53,8 +53,8 @@ internal class AutoDeviceGroupsBrowseHandler(
         if (ids.isEmpty()) return emptyList()
         val sort = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ALBUMS_SORT_BY.key, AlbumSortBy.Title)
         val order = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ALBUMS_SORT_ORDER.key, SortOrder.Ascending)
-        return database.albumTable.sortInLibrary(sort, order).first()
-            .filter { it.id in ids && it.dislikedAt == null }
+        return database.albumTable.sortInLibrary(sort, order, includeDeviceGroups = true).first()
+            .filter { it.id in ids }
     }
 
     suspend fun artists(context: Context, database: Database, snapshot: DeviceLibrarySnapshot? = null): List<Artist> {
@@ -63,8 +63,8 @@ internal class AutoDeviceGroupsBrowseHandler(
         if (ids.isEmpty()) return emptyList()
         val sort = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ARTISTS_SORT_BY.key, ArtistSortBy.Name)
         val order = context.preferences.getEnum(Preference.HOME_ON_DEVICE_ARTISTS_SORT_ORDER.key, SortOrder.Ascending)
-        return database.artistTable.sortInLibrary(sort, order).first()
-            .filter { it.id in ids && it.dislikedAt == null }
+        return database.artistTable.sortInLibrary(sort, order, includeDeviceGroups = true).first()
+            .filter { it.id in ids }
     }
 
     suspend fun songs(parentId: String, context: Context, database: Database): List<Song> {
@@ -80,7 +80,7 @@ internal class AutoDeviceGroupsBrowseHandler(
             return songIds.distinct().mapNotNull(songsById::get)
         }
         val category = detailParent(parentId) ?: return emptyList()
-        if (!visible(context, category)) return emptyList()
+        if (!context.isDeviceLibraryEnabled()) return emptyList()
         val groupId = parentId.substringAfter('/')
         val snapshot = scan(context)
         val album = category == ID_ALBUMS_ONDEVICE

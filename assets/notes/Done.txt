@@ -1424,3 +1424,7 @@ Menus:
 Android Auto:
 - fix(auto): match library labels, order and rewind filters
   - Keep All first, use YT/YTM, and show only applicable Rewind filters.
+
+Android Auto:
+- fix(auto): share library scope and origin folders
+  - Include verified device media in All and preserve origin, sort, and playback scope across folders.

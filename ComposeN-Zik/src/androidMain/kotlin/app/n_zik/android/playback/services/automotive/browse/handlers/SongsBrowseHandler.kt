@@ -1,185 +1,172 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
-import app.n_zik.android.playback.services.hasCachedStream
 import android.content.Context
-import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.offline.Download
+import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.R
+import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
+import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.FilterBy
+import app.n_zik.android.enums.DurationInMinutes
 import app.n_zik.android.enums.MaxTopPlaylistItems
 import app.n_zik.android.enums.SongSortBy
 import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Song
+import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.automotive.DislikedExclusion
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
+import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
+import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
+import app.n_zik.android.playback.services.hasCachedStream
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.durationTextToMillis
+import app.n_zik.android.utils.excludeSongsWithDurationLimitKey
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.homeSongsOrderKey
+import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.showCachedPlaylistKey
 import app.n_zik.android.utils.showDownloadedPlaylistKey
 import app.n_zik.android.utils.showFavoritesPlaylistKey
 import app.n_zik.android.utils.showMyTopPlaylistKey
 import app.n_zik.android.utils.showOnDevicePlaylistKey
-import app.n_zik.android.R
-import app.n_zik.android.core.database.Database
-import app.n_zik.android.download.utils.MyDownloadHelper
-import app.n_zik.android.playback.services.automotive.DislikedExclusion
-import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
-import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
-import app.n_zik.android.playback.services.PlayerServiceModern
-import app.n_zik.android.playback.services.isLocal
-import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
-import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
-import app.n_zik.android.components.ui.screens.home.onDevice.getProfileLocalSongs
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import app.n_zik.android.enums.OnDeviceSongSortBy
 
 class SongsBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == PlayerServiceModern.SONG ||
-            parentId.startsWith("SONGS_")
+        parentId.startsWith("SONGS_")
 
     override suspend fun getChildren(
         parentId: String,
         context: Context,
         database: Database,
         downloadHelper: MyDownloadHelper,
-        binder: PlayerServiceModern.Binder?
+        binder: PlayerServiceModern.Binder?,
     ): List<MediaItem> {
-        // Triple dislike exclusion mirroring the phone shuffler (Shuffler):
-        // disliked songs + songs by disliked artists + songs from disliked
-//
-        // albums, each gated by its phone DislikeMode (default Enabled).
-        // Every song category is filtered with it; the Disliked category
-//
-        // itself is never filtered. Empty set = no filter.
         val excludedIds = DislikedExclusion.excludedSongIds(context, database)
-        return when (parentId) {
-            PlayerServiceModern.SONG -> {
-                val showFavoritesPlaylist = try { context.preferences.getBoolean(showFavoritesPlaylistKey, true) } catch (e: Exception) { true }
-                val showDownloadedPlaylist = try { context.preferences.getBoolean(showDownloadedPlaylistKey, true) } catch (e: Exception) { true }
-                val showCachedPlaylist = try { context.preferences.getBoolean(showCachedPlaylistKey, true) } catch (e: Exception) { true }
-                val showOnDevicePlaylist = context.isDeviceLibraryEnabled() && try { context.preferences.getBoolean(showOnDevicePlaylistKey, true) } catch (e: Exception) { true }
-                val showTopPlaylist = try { context.preferences.getBoolean(showMyTopPlaylistKey, true) } catch (e: Exception) { true }
-                // Phone/AA consistency: every song category below is filtered with
-                // the shuffler exclusions (excludedIds); the excluded songs only
-//
-                // live in the dedicated Disliked folder. Exception: Top is
-                // excluded at the SQL level — EventTable.findSongsMostPlayedBetween
-//
-                // already drops likedAt == -1 (pre-existing, identical on the
-//
-                // phone) — so its in-memory exclusion guard is redundant (kept
-                // defensively) and Top does NOT re-include them when the songs
-//
-                // DislikeMode is Disabled.
-                val dislikedSongs = database.songTable.allDisliked().first().filter { it.likedAt == -1L }
-                val allCount = database.songTable.sortAll(SongSortBy.DateAdded, SortOrder.Descending, excludeHidden = true).first().count { it.id !in excludedIds }
-                val favoritesCount = database.songTable.allFavorites().first().count { it.id !in excludedIds }
-                val downloadedCount = getCountDownloadedSongs(downloadHelper, context, excludedIds).first()
-                val onDeviceCount = database.songTable.allOnDevice().first().count { it.id !in excludedIds }
-                val cachedCount = getCountCachedSongs(database, binder, excludedIds).first()
-                val topCount = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first().count { it.id !in excludedIds }
-                val dislikedCount = dislikedSongs.size
-                // Order and visibility mirror the in-app HomeSongs settings
-                // (homeSongsOrderKey + the HomeSongsSettingsDialog toggles).
-//
-                // Deliberate visibility divergence from the phone: there the
-                // Disliked chip is hidden when the songs DislikeMode is
-//
-                // disabled, while AA always shows this folder (user decision:
-//
-                // the Disliked category is always shown, never filtered).
-                val categoryItems = mapOf(
-                    "all" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ALL, context.getString(R.string.common_option_all), allCount.toString(), drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_SONGS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DISLIKED, context.getString(R.string.library_disliked_title), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "cached" to browsableMediaItem(AutoSessionConstants.ID_SONGS_CACHED, context.getString(R.string.library_cached_title), cachedCount.toString(), drawableUri(context, R.drawable.download), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "downloaded" to browsableMediaItem(AutoSessionConstants.ID_SONGS_DOWNLOADED, context.getString(R.string.library_downloaded_title), downloadedCount.toString(), drawableUri(context, R.drawable.downloaded), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "top" to browsableMediaItem(AutoSessionConstants.ID_SONGS_TOP, context.getString(R.string.playlist_top), topCount.toString(), drawableUri(context, R.drawable.trending), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                    "on_device" to browsableMediaItem(AutoSessionConstants.ID_SONGS_ONDEVICE, context.getString(R.string.library_on_device_title), onDeviceCount.toString(), drawableUri(context, R.drawable.folder), MediaMetadata.MEDIA_TYPE_PLAYLIST)
-                )
-                homeCategoryOrder(context, homeSongsOrderKey, listOf("all", "favorites", "disliked", "cached", "downloaded", "top", "on_device"))
-                    .mapNotNull { id ->
-                        when (id) {
-                            "favorites" -> if (showFavoritesPlaylist) categoryItems[id] else null
-                            "cached" -> if (showCachedPlaylist) categoryItems[id] else null
-                            "downloaded" -> if (showDownloadedPlaylist) categoryItems[id] else null
-                            "top" -> if (showTopPlaylist) categoryItems[id] else null
-                            "on_device" -> if (showOnDevicePlaylist) categoryItems[id] else null
-                            else -> categoryItems[id]
-                        }
-                    }
+        if (parentId == PlayerServiceModern.SONG) {
+            val prefs = context.preferences
+            val categories = linkedMapOf(
+                "all" to SongFolder(AutoSessionConstants.ID_SONGS_ALL, R.string.common_option_all, R.drawable.musical_notes),
+                "favorites" to SongFolder(AutoSessionConstants.ID_SONGS_FAVORITES, R.string.library_favorites_title, R.drawable.heart, prefs.getBoolean(showFavoritesPlaylistKey, true)),
+                // Rejected items remain reachable in Android Auto so the user can undo a dislike.
+                "disliked" to SongFolder(AutoSessionConstants.ID_SONGS_DISLIKED, R.string.library_disliked_title, R.drawable.heart_dislike),
+                "cached" to SongFolder(AutoSessionConstants.ID_SONGS_CACHED, R.string.library_cached_title, R.drawable.download, prefs.getBoolean(showCachedPlaylistKey, true)),
+                "downloaded" to SongFolder(AutoSessionConstants.ID_SONGS_DOWNLOADED, R.string.library_downloaded_title, R.drawable.downloaded, prefs.getBoolean(showDownloadedPlaylistKey, true)),
+                "top" to SongFolder(AutoSessionConstants.ID_SONGS_TOP, R.string.playlist_top, R.drawable.trending, prefs.getBoolean(showMyTopPlaylistKey, true)),
+                "on_device" to SongFolder(AutoSessionConstants.ID_SONGS_ONDEVICE, R.string.library_on_device_title, R.drawable.folder, showDeviceSongs(context)),
+            )
+            return homeCategoryOrder(context, homeSongsOrderKey, categories.keys.toList()).mapNotNull { key ->
+                val folder = categories[key]?.takeIf { it.visible } ?: return@mapNotNull null
+                val count = loadAutoHomeSongs(context, database, downloadHelper, binder, folder.id, excludedIds).size
+                browsableMediaItem(folder.id, context.getString(folder.label), count.toString(),
+                    drawableUri(context, folder.icon), MediaMetadata.MEDIA_TYPE_PLAYLIST)
             }
-            AutoSessionConstants.ID_SONGS_TOP -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_TOP_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_TOP_SORT_BY.key, SongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_TOP_SORT_ORDER.key, SortOrder.Ascending)
-                val topIds = database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first().map { it.id }.toSet()
-                val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).first().filter { it.id in topIds && it.id !in excludedIds }
-                listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-            }
-            AutoSessionConstants.ID_SONGS_ALL -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_ALL_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_SORT_BY.key, SongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = true).first().filter { it.id !in excludedIds }.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-                listOf(shuffleItem) + songs
-            }
-            AutoSessionConstants.ID_SONGS_FAVORITES -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_FAVORITES_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_BY.key, SongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = database.songTable.sortFavorites(sortBy, sortOrder).first().filter { it.id !in excludedIds }.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-                listOf(shuffleItem) + songs
-            }
-            AutoSessionConstants.ID_SONGS_DOWNLOADED -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_DOWNLOADED_SHUFFLE)
-                downloadHelper.getDownloadManager(context)
-                val downloads = downloadHelper.downloads.value
-                val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_DOWNLOADED_SORT_BY.key, SongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = database.songTable.sortAll(sortBy, sortOrder, excludeHidden = false).first()
-                    .filter { song -> downloads[song.id]?.state == Download.STATE_COMPLETED && song.id !in excludedIds }
-                listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-            }
-            AutoSessionConstants.ID_SONGS_ONDEVICE -> {
-                if (!context.isDeviceLibraryEnabled()) return emptyList()
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_ONDEVICE_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_BY.key, OnDeviceSongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = context.getProfileLocalSongs(sortBy, sortOrder).first().keys.filter { it.id !in excludedIds }.toList()
-                listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-            }
-            AutoSessionConstants.ID_SONGS_CACHED -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_CACHED_SHUFFLE)
-                val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Ascending)
-                val songs = database.formatTable.sortAllWithSongs(sortBy, sortOrder).first()
-                    .filter { itf -> itf.song.id !in excludedIds && binder?.cache?.hasCachedStream(itf.song.id, itf.format.contentLength) == true }
-                    .map { itf -> itf.song }
-                listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-            }
-            AutoSessionConstants.ID_SONGS_DISLIKED -> {
-                val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoSessionConstants.ID_SONGS_DISLIKED_SHUFFLE)
-                val songs = DislikedExclusion.dislikedSongs(context, database)
-                listOf(shuffleItem) + songs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
-            }
-            else -> emptyList()
         }
+        val songs = loadAutoHomeSongs(context, database, downloadHelper, binder, parentId, excludedIds)
+        if (autoOriginParent(parentId) == parentId && autoOriginAvailable(parentId)) {
+            return autoOriginFolders(context, parentId, songs, Song::isYoutubeSong)
+        }
+        if (songs.isEmpty()) return emptyList()
+        return listOf(AutoSessionConstants.shuffleItem(context, "${parentId}_SHUFFLE")) +
+            songs.map { CancellableAutoMediaItemMapper.mapSongToMediaItem(it, parentId, loadArtwork = it.isLocal) }
     }
 
-    private fun getCountCachedSongs(database: Database, binder: PlayerServiceModern.Binder?, dislikedIds: Set<String>): Flow<Int> = database.formatTable.allWithSongs().map { flist ->
-        if (binder == null) return@map 0
-        flist.filter { itf ->
-            val contentLength = itf.format.contentLength
-            itf.song.id !in dislikedIds && binder.cache.hasCachedStream(itf.song.id, contentLength)
-        }.size
-    }
+    private data class SongFolder(val id: String, val label: Int, val icon: Int, val visible: Boolean = true)
+}
 
-    private fun getCountDownloadedSongs(downloadHelper: MyDownloadHelper, context: Context, dislikedIds: Set<String>): Flow<Int> {
+private fun showDeviceSongs(context: Context): Boolean =
+    context.isDeviceLibraryEnabled() && context.preferences.getBoolean(showOnDevicePlaylistKey, true)
+
+/** Browse, counts and playback resolve the same category, including its playback exclusions. */
+internal suspend fun loadAutoHomeSongs(
+    context: Context,
+    database: Database,
+    downloadHelper: MyDownloadHelper,
+    binder: PlayerServiceModern.Binder?,
+    parentId: String,
+    excludedIds: Set<String>,
+): List<Song> {
+    val prefs = context.preferences
+    val category = autoOriginParent(parentId)
+    val explicitOrigin = autoOriginSelection(parentId)
+    if (category != parentId && (explicitOrigin == null || !autoOriginAvailable(category))) return emptyList()
+    val (sortKey, orderKey) = when (category) {
+        AutoSessionConstants.ID_SONGS_FAVORITES -> Preference.HOME_SONGS_FAVORITES_SORT_BY to Preference.HOME_SONGS_FAVORITES_SORT_ORDER
+        AutoSessionConstants.ID_SONGS_DISLIKED -> Preference.HOME_SONGS_DISLIKED_SORT_BY to Preference.HOME_SONGS_DISLIKED_SORT_ORDER
+        AutoSessionConstants.ID_SONGS_CACHED -> Preference.HOME_SONGS_OFFLINE_SORT_BY to Preference.HOME_SONGS_OFFLINE_SORT_ORDER
+        AutoSessionConstants.ID_SONGS_DOWNLOADED -> Preference.HOME_SONGS_DOWNLOADED_SORT_BY to Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER
+        AutoSessionConstants.ID_SONGS_TOP -> Preference.HOME_SONGS_TOP_SORT_BY to Preference.HOME_SONGS_TOP_SORT_ORDER
+        else -> Preference.HOME_SONGS_SORT_BY to Preference.HOME_SONGS_SORT_ORDER
+    }
+    val sort = prefs.getEnum(sortKey.key, sortKey.default)
+    val order = prefs.getEnum(orderKey.key, orderKey.default)
+    val sortByDownload = sort == SongSortBy.Downloaded
+    val baseSort = if (sortByDownload) SongSortBy.Title else sort
+    val baseOrder = if (sortByDownload && category != AutoSessionConstants.ID_SONGS_DOWNLOADED) SortOrder.Ascending else order
+    val downloadedIds = if (sortByDownload || category == AutoSessionConstants.ID_SONGS_DOWNLOADED) {
         downloadHelper.getDownloadManager(context)
-        return downloadHelper.downloads.map { dm -> dm.filter { ite -> ite.value.state == Download.STATE_COMPLETED && ite.key !in dislikedIds }.size }
+        downloadHelper.downloads.value.filterValues { it.state == Download.STATE_COMPLETED }.keys
+    } else emptySet()
+    val localIds = if (category == AutoSessionConstants.ID_SONGS_ALL && context.isDeviceLibraryEnabled()) {
+        context.scanDeviceLibrary().songIds
+    } else emptySet()
+    val songs = when (category) {
+        AutoSessionConstants.ID_SONGS_ALL -> database.songTable.sortAll(baseSort, baseOrder,
+            excludeHidden = localIds.isEmpty()).first().filter {
+                if (it.isLocal) it.id in localIds && it.totalPlayTimeMs >= 0 else it.totalPlayTimeMs > 0
+            }
+        AutoSessionConstants.ID_SONGS_FAVORITES -> database.songTable.sortFavorites(baseSort, baseOrder).first()
+        AutoSessionConstants.ID_SONGS_DISLIKED -> database.songTable.sortAll(baseSort, baseOrder, dislikedOnly = true).first()
+        AutoSessionConstants.ID_SONGS_CACHED -> database.formatTable.sortAllWithSongs(baseSort, baseOrder, excludeHidden = true)
+            .first().filter { binder?.cache?.hasCachedStream(it.song.id, it.format.contentLength) == true }.map { it.song }
+        AutoSessionConstants.ID_SONGS_DOWNLOADED -> database.songTable.sortAll(baseSort, baseOrder).first()
+            .filter { it.id in downloadedIds }
+        AutoSessionConstants.ID_SONGS_TOP -> loadAutoTopSongs(context, database)
+        AutoSessionConstants.ID_SONGS_ONDEVICE -> {
+            if (!showDeviceSongs(context)) return emptyList()
+            val deviceSort = Preference.HOME_ON_DEVICE_SONGS_SORT_BY
+            val deviceOrder = Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER
+            val storedById = database.songTable.allOnDevice().first().associateBy(Song::id)
+            context.getProfileLocalSongs(prefs.getEnum(deviceSort.key, deviceSort.default),
+                prefs.getEnum(deviceOrder.key, deviceOrder.default)).first().keys.map { storedById[it.id] ?: it }
+        }
+        else -> return emptyList()
+    }
+    val disliked = category == AutoSessionConstants.ID_SONGS_DISLIKED
+    val source = explicitOrigin ?: FilterBy.All
+    val parentalControl = prefs.getBoolean(parentalControlEnabledKey, false)
+    val filtered = songs.filter {
+        val eligible = if (disliked) it.likedAt == -1L else it.likedAt != -1L && it.id !in excludedIds
+        val localAllowed = category == AutoSessionConstants.ID_SONGS_ALL || category == AutoSessionConstants.ID_SONGS_ONDEVICE || !it.isLocal
+        eligible && localAllowed && source.matchesOrigin(it.isYoutubeSong) &&
+            (!parentalControl || !it.title.startsWith(EXPLICIT_PREFIX, ignoreCase = true))
+    }
+    if (!sortByDownload || category in setOf(AutoSessionConstants.ID_SONGS_ONDEVICE, AutoSessionConstants.ID_SONGS_DOWNLOADED)) {
+        return filtered
+    }
+    return if (order == SortOrder.Ascending) filtered.sortedByDescending { it.id in downloadedIds }
+        else filtered.sortedBy { it.id in downloadedIds }
+}
+
+private suspend fun loadAutoTopSongs(context: Context, database: Database): List<Song> {
+    val prefs = context.preferences
+    val key = Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD
+    val from = prefs.getEnum(key.key, key.default).timeStampInMillis()
+    val count = prefs.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
+        .toInt(prefs.getInt(MaxTopPlaylistItemsCustomValueKey, 10))
+    val durationLimit = prefs.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
+    return database.eventTable.findSongsMostPlayedBetween(from = from, limit = count).first().filter { song ->
+        durationLimit == DurationInMinutes.Disabled ||
+            song.durationText?.let { durationTextToMillis(it) < durationLimit.asMillis } == true
     }
 }
