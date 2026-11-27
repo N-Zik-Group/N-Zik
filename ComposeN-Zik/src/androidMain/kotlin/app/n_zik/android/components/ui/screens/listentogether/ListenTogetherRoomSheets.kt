@@ -85,7 +85,10 @@ internal fun CreateRoomSheet(
                     .fillMaxWidth()
                     .heightIn(max = (screenHeightDp * 0.5f).dp),
         ) {
-            ListMenu.Menu(title = stringResource(R.string.listen_together_create_room)) {
+            ListMenu.Menu(
+                title = stringResource(R.string.listen_together_create_room),
+                headerTrailing = managementBackButton(onDismiss),
+            ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(
                         value = tempUsername,
@@ -190,7 +193,10 @@ internal fun JoinRoomSheet(
                     .fillMaxWidth()
                     .heightIn(max = (screenHeightDp * 0.5f).dp),
         ) {
-            ListMenu.Menu(title = stringResource(R.string.listen_together_join_room)) {
+            ListMenu.Menu(
+                title = stringResource(R.string.listen_together_join_room),
+                headerTrailing = managementBackButton(onDismiss),
+            ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(
                         value = tempCode,

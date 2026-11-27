@@ -1,12 +1,4 @@
-// Listen Together settings card embedded in the room screen (Metrolist port, N-Zik
-// styling): built from the app's own components (SettingsSectionCard,
-//
-// OtherSettingsEntry, OtherSwitchSettingEntry); logs / blocked users go through the
-//
-// shared MenuState; server URL and username are form sheets following the app's own
-// form-sheet pattern (LastFm login / display name) with ListMenu.Menu chrome.
-//
-// Reference: docs/Metrolist app/src/main/kotlin/com/metrolist/music/ui/screens/settings/integrations/ListenTogetherSettings.kt
+// Ported from Metrolist's ListenTogetherSettings.kt.
 package app.n_zik.android.components.settings
 
 import app.n_zik.android.components.settings.common.CardCategoryLabel
@@ -66,6 +58,7 @@ import app.n_zik.android.components.dialog.common.InputDialog
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherBlockedUsersMenu
 import app.n_zik.android.components.ui.screens.listentogether.ListenTogetherLogsMenu
+import app.n_zik.android.components.ui.screens.listentogether.managementBackButton
 import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherServers
@@ -78,15 +71,7 @@ import timber.log.Timber
 private const val TAG = "ListenTogetherSettings"
 private const val PREF_USERNAME = "listen_together_username"
 
-/**
- * Listen Together configuration card, rendered inside the room screen.
- *
- * Preferences are read straight from [DataStoreUtils] (SharedPreferences) on every
- * composition, so a value saved elsewhere (e.g. the username field in the room screen)
- * stays in sync without shared state. Writes go through the same keys the client
- * reads, so changes apply on the next connection attempt. [onOpenScreen] optionally
- * adds the "Open" row (deep link to the Listen Together screen) as the first entry.
- */
+/** Reads the client's preferences on composition so edits from the room screen appear here. */
 @Composable
 fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     val context = LocalContext.current
@@ -324,14 +309,6 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     )
 }
 
-/**
- * Server chooser sheet following the app's own form-sheet pattern (LastFm login /
- * display name): a transparent [CustomModalBottomSheet] with an empty drag handle,
- * [ListMenu.Menu] as the only chrome, app field colors ([InputDialog]) and a
- * full-width accent button. The sheet anchor is content-driven
- * (skipPartiallyExpanded), so it grows with the keyboard instead of getting stuck
- * after the keyboard closes.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun ServerChooserSheet(
@@ -373,13 +350,7 @@ internal fun ServerChooserSheet(
             ) {}
         },
     ) {
-        // Cap the content at ~50% of the screen: ListMenu.Menu stretches to the
-        // full screen height on its own, which would make the Expanded sheet
-//
-        // cover the whole window. Bounded to half the screen, the sheet keeps
-//
-        // its half-screen look at rest while the anchor stays content-driven
-        // (it grows with the keyboard).
+        // Keep the form's anchor content-driven so it can grow with the keyboard.
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
         Box(
             modifier =
@@ -387,7 +358,10 @@ internal fun ServerChooserSheet(
                     .fillMaxWidth()
                     .heightIn(max = (screenHeightDp * 0.5f).dp),
         ) {
-            ListMenu.Menu(title = stringResource(R.string.listen_together_choose_server)) {
+            ListMenu.Menu(
+                title = stringResource(R.string.listen_together_choose_server),
+                headerTrailing = managementBackButton(onDismiss),
+            ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     ListenTogetherServers.servers.forEach { server ->
                         val isSelected = server.url == currentUrl
@@ -467,13 +441,7 @@ internal fun ServerChooserSheet(
     }
 }
 
-/**
- * Username edit sheet (Metrolist username dialog port) following the app's own
- * form-sheet pattern (LastFm login / display name): a transparent
- * [CustomModalBottomSheet] with [ListMenu.Menu] as the only chrome, app field
- * colors ([InputDialog]) and a full-width accent button. Saving an empty value
- * resets the username (the user then types one before joining).
- */
+/** Saving an empty value resets the username and requires a new name when joining. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun UsernameSheet(
@@ -513,13 +481,7 @@ internal fun UsernameSheet(
             ) {}
         },
     ) {
-        // Cap the content at ~50% of the screen: ListMenu.Menu stretches to the
-        // full screen height on its own, which would make the Expanded sheet
-//
-        // cover the whole window. Bounded to half the screen, the sheet keeps
-//
-        // its half-screen look at rest while the anchor stays content-driven
-        // (it grows with the keyboard).
+        // Keep the form's anchor content-driven so it can grow with the keyboard.
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
         Box(
             modifier =
@@ -527,7 +489,10 @@ internal fun UsernameSheet(
                     .fillMaxWidth()
                     .heightIn(max = (screenHeightDp * 0.5f).dp),
         ) {
-            ListMenu.Menu(title = stringResource(R.string.listen_together_username)) {
+            ListMenu.Menu(
+                title = stringResource(R.string.listen_together_username),
+                headerTrailing = managementBackButton(onDismiss),
+            ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(
                         value = tempUsername,
@@ -578,7 +543,6 @@ internal fun UsernameSheet(
     }
 }
 
-/** Standard menu icon chip (same pattern as the other app menus): tinted rounded 32dp square with an 18dp icon. */
 @Composable
 private fun SettingIcon(@DrawableRes icon: Int, color: Color) {
     Box(

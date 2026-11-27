@@ -1372,3 +1372,7 @@ Menus:
 Menus:
 - fix(lyrics): preserve the menu behind dialogs
   - Keep provider, edit, and offset dialogs above the originating menu and remove redundant back actions.
+
+Menus:
+- fix(menu): return from room forms to their parent
+  - Give each form a back action that closes only its own sheet.
