@@ -75,6 +75,7 @@ import app.n_zik.android.components.settings.appearance.preview.LocalThemePrevie
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.navigation.shouldShowSearchShortcut
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.extensions.pip.isPipSupported
@@ -287,7 +288,13 @@ private fun HamburgerMenu(
                     BurgerMenuItem(
                         iconRes = R.drawable.images_sharp,
                         label = stringResource(R.string.navigation_action_picture_in_picture),
-                        onShortTap = { pipHandler.enterPictureInPictureMode() },
+                        onShortTap = {
+                            if (pipHandler.enterPictureInPictureMode()) {
+                                onItemConsumed()
+                            } else {
+                                Toaster.e(R.string.settings_picture_in_picture_open_failed)
+                            }
+                        },
                         onLongTap = {
                             navController.navigate("${NavRoutes.settings.name}?tab=0&focus=pip")
                             onItemConsumed()

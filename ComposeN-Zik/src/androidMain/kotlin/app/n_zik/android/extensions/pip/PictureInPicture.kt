@@ -8,7 +8,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.graphics.drawable.Icon
-import android.util.Log
 import android.util.Rational
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -56,8 +55,11 @@ fun Activity.maybeEnterPip() = when {
     !packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE) -> false
     else -> runCatching {
         if (isAtLeastAndroid8) enterPictureInPictureMode(PictureInPictureParams.Builder().build())
-        else enterPictureInPictureMode()
-    }.onFailure(::logError).isSuccess
+        else {
+            enterPictureInPictureMode()
+            true
+        }
+    }.onFailure(::logError).getOrDefault(false)
 }
 
 fun Activity.setAutoEnterPip(autoEnterIfPossible: Boolean) = if (isAtLeastAndroid12) setPictureInPictureParams(

@@ -1512,3 +1512,7 @@ Settings:
 Settings:
 - fix(history): apply pause without player restart
   - Use the preference immediately when recording a playback event.
+
+Menus:
+- fix(menu): handle refused picture-in-picture requests
+  - Show the existing failure message when Android refuses entry and close the menu when it succeeds.
