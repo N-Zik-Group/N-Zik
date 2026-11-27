@@ -324,13 +324,14 @@ object YtMusic {
         ).body<BrowseResponse>()
 
 
-        if (response.header != null)
-            getPlaylistPreviousMode(playlistIdChecked, response)
-        else
-            getPlaylistNewMode(playlistIdChecked, response)
+        parsePlaylistFirstPage(playlistIdChecked, response)
     }.onFailure {
         InnertubeLogger.e("YtMusic", "getPlaylist error", it)
     }
+
+    internal fun parsePlaylistFirstPage(playlistId: String, response: BrowseResponse): PlaylistPage =
+        if (response.header != null) getPlaylistPreviousMode(playlistId, response)
+        else getPlaylistNewMode(playlistId, response)
 
     internal fun playlistChannel(header: Runs?): Innertube.Info<NavigationEndpoint.Endpoint.Browse>? =
         header?.runs.orEmpty().mapNotNull { run ->
@@ -359,18 +360,13 @@ object YtMusic {
 
         val editable = response.header?.musicEditablePlaylistDetailHeaderRenderer != null
 
-        val songs = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-            ?.musicPlaylistShelfRenderer?.contents?.mapNotNull {
-                it.musicResponsiveListItemRenderer?.let { it1 ->
-                    PlaylistPage.fromMusicResponsiveListItemRenderer(
-                        it1
-                    )
-                }
-            }!!
-        val songsContinuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
-            ?.tabRenderer?.content?.sectionListRenderer?.contents?.firstOrNull()
-            ?.musicPlaylistShelfRenderer?.continuations?.getContinuation()
+        val section = response.contents?.singleColumnBrowseResultsRenderer?.tabs?.firstOrNull()
+            ?.tabRenderer?.content?.sectionListRenderer
+        val shelf = requireNotNull(section?.contents?.firstOrNull()?.musicPlaylistShelfRenderer)
+        val shelfContents = requireNotNull(shelf.contents)
+        val songs = shelfContents.mapNotNull { it.musicResponsiveListItemRenderer }
+            .mapNotNull { PlaylistPage.fromMusicResponsiveListItemRenderer(it) }
+        val songsContinuation = shelf.continuations?.getContinuation() ?: shelfContents.getContinuation()
 
         return PlaylistPage(
             playlist = Innertube.PlaylistItem(
@@ -399,8 +395,7 @@ object YtMusic {
                 ?.description?.musicDescriptionShelfRenderer?.description?.text,
             songs = songs,
             songsContinuation = songsContinuation,
-            continuation = response.contents.singleColumnBrowseResultsRenderer.tabs.firstOrNull()
-                ?.tabRenderer?.content?.sectionListRenderer?.continuations?.getContinuation()
+            continuation = section?.continuations?.getContinuation()
         )
     }
 
@@ -483,6 +478,10 @@ object YtMusic {
         val section = continuationContents?.sectionListContinuation
         val playlistShelf = continuationContents?.musicPlaylistShelfContinuation
         val musicShelf = continuationContents?.musicShelfContinuation
+        val nestedShelfContinuation = section?.contents?.firstNotNullOfOrNull { content ->
+            content.musicPlaylistShelfRenderer?.continuations?.getContinuation()
+                ?: content.musicShelfRenderer?.continuations?.getContinuation()
+        }
         val mainContents: List<MusicShelfRenderer.Content> = section?.contents
             ?.mapNotNull { content ->
                 content.musicPlaylistShelfRenderer?.contents
@@ -504,6 +503,7 @@ object YtMusic {
         val nextContinuation = section?.continuations?.getContinuation()
             ?: playlistShelf?.continuations?.getContinuation()
             ?: musicShelf?.continuations?.getContinuation()
+            ?: nestedShelfContinuation
             ?: allShelfContents.getContinuation()
             ?: appendedContinuation?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
         require(nextContinuation == null || nextContinuation.isNotBlank()) { "Empty playlist continuation token" }

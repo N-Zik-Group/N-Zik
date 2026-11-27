@@ -1848,3 +1848,7 @@ Playlists:
 Settings / Accounts:
 - fix(sync): honor YouTube history direction during playback
   - Skip upload probes and playback reporting in import-only mode while preserving local playback history.
+
+Playlists:
+- fix(innertube): keep nested and legacy playlist continuation tokens
+  - Preserve the next page from nested sections and historical first-page layouts.

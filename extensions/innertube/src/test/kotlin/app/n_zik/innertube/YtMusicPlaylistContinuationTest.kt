@@ -28,6 +28,60 @@ class YtMusicPlaylistContinuationTest {
     }
 
     @Test
+    fun `empty continuation section follows a token on its nested playlist shelf`() {
+        val response = json.decodeFromString<BrowseResponse>(
+            """
+            {
+                "continuationContents": {
+                    "sectionListContinuation": {
+                        "contents": [{"musicPlaylistShelfRenderer": {
+                            "contents": [],
+                            "continuations": [{"nextContinuationData": {"continuation": "next-nested"}}]
+                        }}]
+                    }
+                }
+            }
+            """.trimIndent(),
+        )
+
+        val page = YtMusic.parsePlaylistContinuation(response)
+
+        assertEquals(emptyList<Innertube.SongItem>(), page.songs)
+        assertEquals("next-nested", page.continuation)
+    }
+
+    @Test
+    fun `legacy first page follows its continuation item even without tracks`() {
+        val response = json.decodeFromString<BrowseResponse>(
+            """
+            {
+                "header": {"musicDetailHeaderRenderer": {
+                    "title": {"runs": [{"text": "Playlist"}]},
+                    "subtitle": {},
+                    "secondSubtitle": {},
+                    "thumbnail": {},
+                    "menu": {"menuRenderer": {}}
+                }},
+                "contents": {"singleColumnBrowseResultsRenderer": {
+                    "tabs": [{"tabRenderer": {"content": {"sectionListRenderer": {
+                        "contents": [{"musicPlaylistShelfRenderer": {
+                            "contents": [{"continuationItemRenderer": {
+                                "continuationEndpoint": {"continuationCommand": {"token": "next-legacy"}}
+                            }}]
+                        }}]
+                    }}}}]
+                }}
+            }
+            """.trimIndent(),
+        )
+
+        val page = YtMusic.parsePlaylistFirstPage("VLPLexample", response)
+
+        assertEquals(emptyList<Innertube.SongItem>(), page.songs)
+        assertEquals("next-legacy", page.songsContinuation)
+    }
+
+    @Test
     fun `playlist page with only an append continuation retains its token`() {
         val response = json.decodeFromString<BrowseResponse>(
             """
