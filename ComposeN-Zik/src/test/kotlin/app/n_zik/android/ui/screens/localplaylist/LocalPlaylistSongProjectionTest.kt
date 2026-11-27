@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongPlaylistMap
 
 class LocalPlaylistSongProjectionTest {
     @Test
@@ -74,6 +75,20 @@ class LocalPlaylistSongProjectionTest {
                 parentalControlEnabled = false,
             ),
         )
+    }
+
+    @Test
+    fun `reordering visible songs preserves hidden positions and mapping metadata`() {
+        val first = SongPlaylistMap("first", 1, 0, setVideoId = "remote", dateAdded = 12)
+        val hidden = SongPlaylistMap("hidden", 1, 1)
+        val last = SongPlaylistMap("last", 1, 4, dateAdded = 14)
+
+        val changes = reorderVisiblePlaylistMappings(
+            mappings = listOf(first, hidden, last),
+            visibleSongIds = listOf("last", "recommendation", "first"),
+        )
+
+        assertEquals(listOf(last.copy(position = 0), first.copy(position = 4)), changes)
     }
 
     private fun song(id: String, title: String, artist: String? = null): Song =

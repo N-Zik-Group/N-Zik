@@ -1908,3 +1908,7 @@ Menus / Search:
 Menus:
 - fix(menu): return to the parent when deletion is canceled
   - Keep the item menu open after canceling a deletion confirmation.
+
+Playlists:
+- fix(playlist): keep local playlist actions aligned with visible tracks
+  - Refresh the downloaded sort and protect hidden positions and stale Add or Export scopes.

@@ -2,6 +2,7 @@ package app.n_zik.android.ui.screens.localplaylist
 
 import app.n_zik.android.EXPLICIT_PREFIX
 import app.n_zik.android.models.Song
+import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.playback.services.isLocal
 
 internal fun projectLocalPlaylistSongs(
@@ -29,5 +30,19 @@ internal fun projectLocalPlaylistSongs(
             (!parentalControlEnabled || !song.title.startsWith(EXPLICIT_PREFIX)) &&
             (song.cleanTitle().contains(query, ignoreCase = true) ||
                 song.cleanArtistsText().contains(query, ignoreCase = true))
+    }
+}
+
+/** Assigns the requested order to its existing slots, leaving hidden entries at their positions. */
+internal fun reorderVisiblePlaylistMappings(
+    mappings: List<SongPlaylistMap>,
+    visibleSongIds: List<String>,
+): List<SongPlaylistMap> {
+    val mappingsById = mappings.associateBy(SongPlaylistMap::songId)
+    val visibleMappings = visibleSongIds.distinct().mapNotNull(mappingsById::get)
+    val slots = visibleMappings.map(SongPlaylistMap::position).sorted()
+    return visibleMappings.mapIndexedNotNull { index, mapping ->
+        val slot = slots[index]
+        mapping.copy(position = slot).takeIf { slot != mapping.position }
     }
 }

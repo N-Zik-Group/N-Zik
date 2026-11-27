@@ -226,6 +226,10 @@ interface SongPlaylistMapTable {
     @Query("SELECT songId FROM SongPlaylistMap WHERE playlistId = :playlistId")
     suspend fun songIdsInPlaylist(playlistId: Long): List<String>
 
+    /** Loads the current slots before reordering a visible subset of the playlist. */
+    @Query("SELECT * FROM SongPlaylistMap WHERE playlistId = :playlistId ORDER BY position")
+    suspend fun mappingsByPosition(playlistId: Long): List<SongPlaylistMap>
+
     /** Reserves the beginning of canonical order without changing existing relative order. */
     @Query("UPDATE SongPlaylistMap SET position = position + :count WHERE playlistId = :playlistId")
     suspend fun shiftPositions(playlistId: Long, count: Int)

@@ -65,6 +65,7 @@ import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -166,6 +167,7 @@ import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.download.utils.completedDownloadRequestIds
 import app.n_zik.android.components.playlist.rememberPlaylistDownloadStates
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.NavRoutes
@@ -310,15 +312,14 @@ fun LocalPlaylistSongs(
     val loadedItems by remember( sort.sortBy, sort.sortOrder, preview ) {
         if (preview != null) kotlinx.coroutines.flow.flowOf(app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo.queue)
         else if (sort.sortBy == PlaylistSongSortBy.Downloaded) {
-            val downloaded: List<String> = MyDownloadHelper.downloads
-                                                           .value
-                                                           .values
-                                                           .filter { it.state == Download.STATE_COMPLETED }
-                                                           .map { it.request.id }
+            val sortOrder = sort.sortOrder
+            val completedIds = MyDownloadHelper.downloads
+                .map { it.completedDownloadRequestIds() }
+                .distinctUntilChanged()
             Database.songPlaylistMapTable
                     .sortSongs( playlistId, PlaylistSongSortBy.Title, SortOrder.Ascending )
-                    .map { list ->
-                        if (sort.sortOrder == SortOrder.Ascending) {
+                    .combine(completedIds) { list, downloaded ->
+                        if (sortOrder == SortOrder.Ascending) {
                             list.sortedByDescending { it.id in downloaded }
                         } else {
                             list.sortedBy { it.id in downloaded }
@@ -343,8 +344,10 @@ fun LocalPlaylistSongs(
     val scan by remember(context, profile, onDeviceOnly) {
         if (onDeviceOnly) context.observeDeviceLibrary() else kotlinx.coroutines.flow.flowOf(null)
     }.collectAsStateWithLifecycle(DeviceLibraryResults.current(profile))
-    val items = loadedItems.orEmpty().let { songs ->
-        if (onDeviceOnly) songs.filter { it.isLocal && it.id in scan?.songIds.orEmpty() } else songs
+    val sourceTracks = loadedItems
+    val sourceScan = scan
+    val items = sourceTracks.orEmpty().let { songs ->
+        if (onDeviceOnly) songs.filter { it.isLocal && it.id in sourceScan?.songIds.orEmpty() } else songs
     }
     var filteredQuery by remember { mutableStateOf<String?>(null) }
     var itemsOnDisplay by persistList<Song>("localPlaylist/$playlistId/${if (forceOnDevice) "on_device/" else ""}songs/on_display")
@@ -602,21 +605,6 @@ fun LocalPlaylistSongs(
 
     val playNext = PlayNext(dismissOnClick = false) { queueSelection(playNext = true) }
     val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
-    val addToPlaylist = PlaylistsMenu.deferred(
-        navController = navController,
-        captureMediaItems = {
-            val songs = getSongs().toList()
-            if (itemSelector.isActive && songs.isEmpty()) null else ({ songs.map(::playbackItem) })
-        },
-        onFailure = { throwable, preview ->
-            Timber.tag("LocalPlaylistSongs").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
-        },
-        itemSelector = itemSelector,
-        localDestinationsOnly = onDeviceOnly || getSongs().any(Song::isLocal),
-        allowImportChoice = false,
-    )
-
-
     fun sync() {
         launchPlaylistSourceRefresh(playlist, coroutineScope)
     }
@@ -702,13 +690,36 @@ fun LocalPlaylistSongs(
         filteredQuery = query
         songProjectionReady = true
     }
-    val exportReady = playlist != null && preview == null && !forceShimmer && loadedItems != null &&
-        (!onDeviceOnly || scan != null) && songProjectionReady
+    fun currentPlaylistActionSongs(): List<Song> {
+        if (playlist == null || forceShimmer || !songProjectionReady) return emptyList()
+        // A click can arrive after the source changes and before the new projection is published.
+        if (sourceTracks == null || loadedItems !== sourceTracks ||
+            search.filterQuery != query || onDeviceOnly != (forceOnDevice || onDeviceSelected)
+        ) return emptyList()
+        if (onDeviceOnly && (sourceScan == null || scan !== sourceScan)) return emptyList()
+        return getSongs()
+    }
+    val capturePlaylistActionSongs by rememberUpdatedState(::currentPlaylistActionSongs)
+    val playlistActionSongs = currentPlaylistActionSongs()
+    val addToPlaylist = PlaylistsMenu.deferred(
+        navController = navController,
+        captureMediaItems = {
+            val songs = capturePlaylistActionSongs().toList()
+            if (songs.isEmpty()) null else ({ songs.map(::playbackItem) })
+        },
+        onFailure = { throwable, preview ->
+            Timber.tag("LocalPlaylistSongs").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
+        },
+        itemSelector = itemSelector,
+        localDestinationsOnly = onDeviceOnly || playlistActionSongs.any(Song::isLocal),
+        allowImportChoice = false,
+    )
+    val currentAddToPlaylist by rememberUpdatedState(addToPlaylist)
     val exportDialog = ExportSongsToCSVDialog.deferred(
         playlistBrowseId = playlist?.browseId.orEmpty(),
         playlistName = playlist?.name.orEmpty(),
         capture = {
-            val displayedSongs = if (exportReady) getSongs().toList() else emptyList()
+            val displayedSongs = if (preview == null) capturePlaylistActionSongs().toList() else emptyList()
             if (displayedSongs.isEmpty()) null else suspend { displayedSongs }
         },
         selectionActive = { itemSelector.isActive },
@@ -735,7 +746,10 @@ fun LocalPlaylistSongs(
     val reorderingState = rememberReorderableLazyListState(
         lazyListState = lazyListState
     ) { from, to ->
-        if (onDeviceOnly || query.isNotBlank()) return@rememberReorderableLazyListState
+        if (onDeviceOnly || search.filterQuery.isNotBlank() || !songProjectionReady ||
+            positionLock.isLocked() || sort.sortBy != PlaylistSongSortBy.Custom ||
+            sort.sortOrder != SortOrder.Ascending
+        ) return@rememberReorderableLazyListState
         val mutableItems = itemsOnDisplay.toMutableList()
         val fromIndex = mutableItems.indexOfFirst { it.id == from.key }
         val toIndex = mutableItems.indexOfFirst { it.id == to.key }
@@ -745,11 +759,13 @@ fun LocalPlaylistSongs(
             mutableItems.add( toIndex, movedSong )
             itemsOnDisplay = mutableItems
 
-            // asyncTransaction is non-suspending: its block runs on the Room transaction executor, not on NzikDispatchers.MEDIA (the launch is a no-op).
-            NzikDispatchers.fireAndForget(NzikDispatchers.MEDIA).launch {
-                Database.asyncTransaction {
-                    mutableItems.forEachIndexed { index, song ->
-                        Database.songPlaylistMapTable.updatePosition( playlistId, song.id, index )
+            val visibleSongIds = mutableItems.map(Song::id)
+            Database.asyncTransaction {
+                transaction {
+                    val mappings = songPlaylistMapTable.mappingsByPosition(playlistId)
+                    val changes = reorderVisiblePlaylistMappings(mappings, visibleSongIds)
+                    if (changes.isNotEmpty()) {
+                        songPlaylistMapTable.updateReplace(changes)
                     }
                 }
             }
@@ -1033,12 +1049,12 @@ fun LocalPlaylistSongs(
                     sourceId = playlistId.toString(),
                     menuState = queueMenuState,
                     canImportCollection = "import_menu" in visibleToolbarOrder && !onDeviceOnly && membershipEditable,
-                    hasTracks = "add_to_playlist" in visibleToolbarOrder && getSongs().isNotEmpty(),
+                    hasTracks = "add_to_playlist" in visibleToolbarOrder && playlistActionSongs.isNotEmpty(),
                     importFromCurrentCollection = false,
-                    canExport = "export" in visibleToolbarOrder && exportReady && getSongs().isNotEmpty(),
+                    canExport = "export" in visibleToolbarOrder && preview == null && playlistActionSongs.isNotEmpty(),
                     importDialogOpen = importMenu.isOpen,
                     openImport = importMenu::open,
-                    openPicker = addToPlaylist::openPicker,
+                    openPicker = { onReturn -> currentAddToPlaylist.openPicker(onReturn) },
                     openExport = exportDialog::onShortClick,
                 )
                 val toolbarButtons = buildList {
