@@ -1180,3 +1180,7 @@ Menus:
 Menus:
 - fix(extensions): keep installed modules visible during updates
   - Keep the installed version and its actions available during an update or after a failed download.
+
+Menus:
+- fix(downloads): count only eligible tracks in batches
+  - Skip device files and completed downloads in batch progress, and report a missing network or service.

@@ -10,22 +10,24 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.appContext
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.models.Song
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.completedDownloadRequestIds
 import app.n_zik.android.playback.services.PlayerServiceModern
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.asMediaItem
-import app.n_zik.android.core.network.utils.isNetworkAvailable
 import app.n_zik.android.components.dialog.media.MediaDownloadDialog
+import app.n_zik.android.utils.isNetworkConnected
 
 @UnstableApi
 class DownloadAllSongsDialog(
     pendingSongs: MutableState<List<Song>?>,
-    getSongs: () -> List<Song>,
+    sourceSongs: () -> List<Song>,
     binder: PlayerServiceModern.Binder?
-) : MediaDownloadDialog(pendingSongs, getSongs, binder), MenuIcon, Descriptive {
+) : MediaDownloadDialog(pendingSongs, { sourceSongs().filterNot { it.isLocal } }, binder), MenuIcon, Descriptive {
 
     companion object {
         @Composable
@@ -76,10 +78,16 @@ class DownloadAllSongsDialog(
         MyDownloadHelper.startBatchDownload( count )
     }
 
+    override fun onConfirm() {
+        if (!isNetworkConnected(appContext())) {
+            Toaster.noInternet()
+            return
+        }
+        super.onConfirm()
+    }
+
     override fun onAction( media: Song ) {
-        // Starts download only when network is available
-        if( appContext().isNetworkAvailable )
-            MyDownloadHelper.addDownload( appContext(), media.asMediaItem )
+        MyDownloadHelper.addDownload(appContext(), media.asMediaItem)
     }
 }
 

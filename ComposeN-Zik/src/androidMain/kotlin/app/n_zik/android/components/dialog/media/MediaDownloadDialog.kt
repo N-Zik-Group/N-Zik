@@ -6,7 +6,9 @@ import kotlinx.coroutines.launch
 
 import androidx.compose.runtime.MutableState
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.download.utils.completedDownloadRequestIds
 import app.n_zik.android.models.Song
@@ -53,25 +55,19 @@ abstract class MediaDownloadDialog(
             !isDownloaded
         }
 
-        val skippedCount = allSongs.size - songsToDownload.size
-
         if (songsToDownload.isEmpty()) {
             Timber.tag("MediaDownloadDialog").d("All songs already downloaded, nothing to do")
             onDismiss()
             return
         }
 
-        onBatchStart(songsToDownload.size)
-
-        // Count skipped songs toward batch progress
-        if (skippedCount > 0) {
-            MyDownloadHelper.skipBatchCompleted(skippedCount)
+        if (binder == null) {
+            Toaster.e(R.string.common_error_title)
+            return
         }
 
-        // binder has to be non-null for remove from cache to work
-        if( binder == null ) return
-
         val cache = binder.cache
+        onBatchStart(songsToDownload.size)
         onDismiss()
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             runDownloadBatch( songsToDownload, cache ) { onAction( it ) }
