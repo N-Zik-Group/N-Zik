@@ -43,6 +43,7 @@ import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
+import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.utils.activeProfileKey
@@ -52,9 +53,15 @@ import app.n_zik.android.utils.putEnum
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassAreaMode
+import app.n_zik.android.components.glass.GlassSettings
 import app.n_zik.android.components.glass.GlassStore
+import app.n_zik.android.components.glass.GlassTintSource
+import app.n_zik.android.components.glass.LocalGlassPreviewSettings
+import app.n_zik.android.components.glass.TextContrast
+import app.n_zik.android.components.glass.contrastAgainst
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassTintStrengthKey
@@ -196,6 +203,43 @@ class MenuSheetSurfaceTest {
                     assertEquals(palette.background0.toArgb(), body)
                 }
             }
+        }
+    }
+
+    @Test
+    @Config(sdk = [32])
+    fun `media and song headers adapt their text to a custom film`() {
+        val customGlass = mutableStateOf(false)
+        val shape = RoundedCornerShape(24.dp)
+        val appearance = Appearance(DefaultDarkColorPalette, Typography.fallback, shape, shape, shape)
+        var mediaText = Color.Unspecified
+        var songText = Color.Unspecified
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance,
+                LocalGlassPreviewSettings provides GlassSettings(
+                    enabled = customGlass.value,
+                    source = GlassTintSource.Custom,
+                    customColor = Color.White.toArgb(),
+                    tintStrength = 1f,
+                    film = 1f,
+                    rim = 0f,
+                ),
+            ) {
+                MenuSheetSurface {
+                    MenuMediaHeader { mediaText = colorPalette().text }
+                }
+                SongMenuSurface(header = { songText = colorPalette().text }, content = {})
+            }
+        }
+        composeRule.runOnIdle {
+            assertEquals(appearance.colorPalette.text, mediaText)
+            assertEquals(appearance.colorPalette.text, songText)
+            customGlass.value = true
+        }
+        composeRule.runOnIdle {
+            assertTrue(contrastAgainst(mediaText, Color.White) >= TextContrast)
+            assertTrue(contrastAgainst(songText, Color.White) >= TextContrast)
         }
     }
 

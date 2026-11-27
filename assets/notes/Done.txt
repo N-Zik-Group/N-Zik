@@ -1880,3 +1880,7 @@ Playlists:
 Settings / Accounts:
 - fix(settings): keep account checks read only
   - Preserve saved credentials and sync preferences when opening cards and distinguish a Discord authorization refusal from temporary errors.
+
+Menus:
+- fix(menu): adapt media and loading headers to Glass surfaces
+  - Share media header foreground treatment and retain a readable handle on the actual loading surface.

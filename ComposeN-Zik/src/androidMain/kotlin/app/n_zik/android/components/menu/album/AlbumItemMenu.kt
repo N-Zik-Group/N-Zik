@@ -101,12 +101,12 @@ import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
+import app.n_zik.android.components.menu.MenuMediaHeader
 import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.OpenEntityMenuAction
 import app.n_zik.android.components.menu.navigateToMenuEntity
 import app.n_zik.android.components.menu.menuLikeActionDescription
-import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
@@ -114,7 +114,6 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.components.menu.withMenuClick
@@ -259,12 +258,7 @@ class AlbumItemMenu private constructor(
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
         val showDisliked by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .fillMaxWidth()
-                .menuSheetSectionBackground(surfaceColor(colorPalette().background1))
-        ) {
+        MenuMediaHeader(modifier.fillMaxWidth()) {
             MenuMediaHeaderDragHandle()
 
             Row(

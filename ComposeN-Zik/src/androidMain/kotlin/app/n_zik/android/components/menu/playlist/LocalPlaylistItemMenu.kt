@@ -104,10 +104,10 @@ import app.n_zik.android.components.menu.ObserveEntityMenuSnapshot
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
+import app.n_zik.android.components.menu.MenuMediaHeader
 import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.menuLikeActionDescription
-import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.menu.openExternalMenuLink
 import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
 import app.n_zik.android.components.playlist.DeletePlaylistConfirmation
@@ -133,7 +133,6 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.utils.ToastRelay
@@ -267,12 +266,7 @@ class LocalPlaylistItemMenu private constructor(
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
         val context = LocalContext.current
         
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .fillMaxWidth()
-                .menuSheetSectionBackground(surfaceColor(colorPalette().background1))
-        ) {
+        MenuMediaHeader(modifier.fillMaxWidth()) {
             MenuMediaHeaderDragHandle()
 
             Row(

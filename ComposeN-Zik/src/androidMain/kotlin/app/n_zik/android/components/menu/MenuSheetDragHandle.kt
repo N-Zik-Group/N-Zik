@@ -36,17 +36,10 @@ import kotlinx.coroutines.launch
 
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassTintSource
 import app.n_zik.android.components.glass.IconContrast
 import app.n_zik.android.components.glass.LocalGlassOverlayPaintScope
 import app.n_zik.android.components.glass.contrastAgainst
-import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.neutralForeground
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.surfaceBackdropColor
-import app.n_zik.android.components.glass.usesGlassMaterial
-import app.n_zik.android.surfaceColor
 
 private const val DRAG_HANDLE_TOP_PADDING = 18
 private const val DRAG_HANDLE_BOTTOM_PADDING = 6
@@ -71,19 +64,21 @@ internal fun MenuSheetDragHandle(
     color: Color = menuHandleColor(),
     minTouchHeight: Dp = 0.dp,
     centeredVertically: Boolean = false,
+    surface: Color? = null,
 ) {
     val centeredPadding = (DRAG_HANDLE_TOP_PADDING + DRAG_HANDLE_BOTTOM_PADDING).dp / 2
     val topPadding = if (centeredVertically) centeredPadding else DRAG_HANDLE_TOP_PADDING.dp
     val bottomPadding = if (centeredVertically) centeredPadding else DRAG_HANDLE_BOTTOM_PADDING.dp
     val actions = currentMenuSheetHandleActions()?.takeIf { it.appliesToContentHandle }
     val interaction = if (actions == null) Modifier else menuSheetHandleActions(actions.sheetState, actions.onDismiss)
+    val ink = if (surface != null && contrastAgainst(color, surface) < IconContrast) neutralForeground(surface) else color
     Box(Modifier.fillMaxWidth().then(interaction), contentAlignment = Alignment.Center) {
         Box(
             Modifier.heightIn(min = minTouchHeight)
                 .padding(top = topPadding, bottom = bottomPadding),
             contentAlignment = Alignment.Center,
         ) {
-            MenuDragHandleBar(color)
+            MenuDragHandleBar(ink)
         }
     }
 }
@@ -104,14 +99,8 @@ private fun menuHandleColor(): Color = colorPalette().let { if (it.isDark) Color
 
 /** Matches the handle to the custom Glass film painted by a media header. */
 @Composable
-internal fun MenuMediaHeaderDragHandle(preferred: Color = menuHandleColor()) {
-    val glass = rememberGlassSettings()
-    val ink = if (glass.usesGlassMaterial(GlassArea.Menus) && glass.source == GlassTintSource.Custom) {
-        val film = menuSheetSectionColor(surfaceColor(colorPalette().background1))
-        val surface = effectiveSurfaceColor(surfaceBackdropColor(), film)
-        if (contrastAgainst(preferred, surface) < IconContrast) neutralForeground(surface) else preferred
-    } else preferred
-    MenuSheetDragHandle(color = ink)
+internal fun MenuMediaHeaderDragHandle() {
+    MenuSheetDragHandle(surface = LocalMenuMediaHeaderSurface.current)
 }
 
 /** Reuses the same bar inside a queue's existing draggable header. */

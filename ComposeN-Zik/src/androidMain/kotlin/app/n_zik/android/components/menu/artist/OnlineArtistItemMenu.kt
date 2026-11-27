@@ -83,12 +83,12 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
+import app.n_zik.android.components.menu.MenuMediaHeader
 import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.PendingLibraryItemMenu
 import app.n_zik.android.components.menu.OpenEntityMenuAction
 import app.n_zik.android.components.menu.menuLikeActionDescription
-import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.navigation.LibraryBrowseKind
 import app.n_zik.android.components.navigation.rememberLibraryBrowseDestination
 import app.n_zik.android.components.shuffleButtonIconRes
@@ -99,7 +99,6 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.PropUtils
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.utils.Shuffler
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.utils.ToastRelay
@@ -188,12 +187,7 @@ class OnlineArtistItemMenu private constructor(
             else -> null
         }
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .fillMaxWidth()
-                .menuSheetSectionBackground(surfaceColor(colorPalette().background1))
-        ) {
+        MenuMediaHeader(modifier.fillMaxWidth()) {
             MenuMediaHeaderDragHandle()
 
             Row(

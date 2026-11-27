@@ -22,6 +22,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
 import app.n_zik.android.components.menu.LocalMenuSheetSurface
+import app.n_zik.android.components.menu.MenuMediaHeaderForeground
 import app.n_zik.android.components.menu.menuSheetMaterial
 import app.n_zik.android.components.menu.menuSheetFilmOpacity
 import app.n_zik.android.recessedSurfaceColor
@@ -49,6 +50,7 @@ internal fun SongMenuSurface(
     val headerColor = sectionColor(nativeHeaderColor)
     val bodyColor = sectionColor(nativeBodyColor)
     val filmOpacity = if (useGlass) menuSheetFilmOpacity(glass) else 1f
+    val headerFilm = headerColor.copy(alpha = headerColor.alpha * filmOpacity)
     GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(if (useGlass) 0f else bodyColor.alpha).then(
         if (useGlass) Modifier else Modifier.background(bodyColor).glassAreaContour(glass, GlassArea.Menus, topUiRoundnessShape())
     ), sectionFilm = if (useGlass) null else bodyColor,
@@ -59,13 +61,14 @@ internal fun SongMenuSurface(
     ) {
         GlassMaterialContainerColumn(
             includeParent = true,
-            sectionFilm = headerColor.copy(alpha = headerColor.alpha * filmOpacity),
+            sectionFilm = headerFilm,
             sectionFilmIsMaterial = useGlass,
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxWidth().background(headerColor.copy(alpha = headerColor.alpha * filmOpacity))
-                .glassOverlayPaint(headerColor.alpha * filmOpacity),
+            modifier = Modifier.fillMaxWidth().background(headerFilm).glassOverlayPaint(headerFilm.alpha),
         ) {
-            CompositionLocalProvider(LocalMenuSheetSurface provides (useGlass || glass.usesGlassContour(GlassArea.Menus))) { header() }
+            CompositionLocalProvider(LocalMenuSheetSurface provides (useGlass || glass.usesGlassContour(GlassArea.Menus))) {
+                MenuMediaHeaderForeground(headerFilm) { header() }
+            }
             GlassHorizontalSeparator(Modifier.height(1.dp))
         }
         GlassMaterialContainerColumn(

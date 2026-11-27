@@ -75,6 +75,7 @@ import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackd
 import app.n_zik.android.components.menu.GlassDropdownMenu
 import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.PendingLibraryItemMenu
 import app.n_zik.android.components.menu.song.SongMenuSurface
 import app.n_zik.android.components.menu.straightBottomMenuShape
 import app.n_zik.android.components.theme.AppearanceMenuSheet
@@ -462,6 +463,28 @@ class MenuSheetPresentationTest {
             pixels[pixels.width / 2, y].toArgb() == Color.White.toArgb()
         }
         assertEquals(Color.Black.toArgb(), pixels[pixels.width / 4, barY].toArgb())
+    }
+
+    @Test fun `light pending library menu handle contrasts with its unpainted glass underlay`() {
+        compose.setContent {
+            val shape = RoundedCornerShape(32.dp)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(
+                    DefaultLightColorPalette, Typography.fallback, shape, shape, shape,
+                ),
+                LocalGlassPreviewSettings provides GlassSettings(
+                    enabled = true, quality = GlassQuality.Performance, rim = 0f,
+                ),
+                LocalSurfaceBackdropColor provides Color.Black,
+            ) {
+                Box(Modifier.width(300.dp).background(Color.Black).testTag("pending.menu")) {
+                    PendingLibraryItemMenu()
+                }
+            }
+        }
+        val pixels = compose.onNodeWithTag("pending.menu").captureToImage().toPixelMap()
+        assertEquals(Color.White.toArgb(), pixels[pixels.width / 2, 20].toArgb())
+        assertEquals(Color.Black.toArgb(), pixels[pixels.width / 4, 20].toArgb())
     }
 
     @Test fun `floating dropdowns preserve lower corners in both native and shared hosts`() {

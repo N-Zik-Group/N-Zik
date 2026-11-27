@@ -1,12 +1,16 @@
 package app.n_zik.android.components.menu
 
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassArtworkContent
+import app.n_zik.android.components.glass.GlassTintSource
+import app.n_zik.android.components.glass.effectiveSurfaceColor
 import app.n_zik.android.components.glass.glassOverlayPaint
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.glass.usesGlassContour
 import app.n_zik.android.components.glass.glassAreaContour
 import androidx.compose.foundation.background
 import app.n_zik.android.components.glass.GlassMaterialContainerColumn
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
@@ -15,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,18 +29,23 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.glassNativeSurfaceTint
+import app.n_zik.android.components.glass.surfaceBackdropColor
 import app.n_zik.android.recessedSurfaceColor
+import app.n_zik.android.surfaceColor
 import app.n_zik.android.topUiRoundnessShape
 
 /** A custom media header and its list/grid share one optical surface and outer rim. */
 internal val LocalMenuSheetSurface = staticCompositionLocalOf { false }
+internal val LocalMenuMediaHeaderSurface = compositionLocalOf<Color?> { null }
 
 /** Reserve the menu's sheet anchors while a saved browse alias is being resolved. */
 @Composable
 internal fun PendingLibraryItemMenu() {
     val menuHeight = (LocalConfiguration.current.screenHeightDp * MenuConstants.CONTENT_HEIGHT_FRACTION).dp
     MenuSheetSurface(Modifier.heightIn(min = menuHeight)) {
-        MenuSheetDragHandle()
+        // This loading surface has no section film. The handle sits on the sheet underlay.
+        val surface = if (rememberGlassSettings().usesGlassMaterial(GlassArea.Menus)) surfaceBackdropColor() else null
+        MenuSheetDragHandle(surface = surface)
         CircularProgressIndicator(
             modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp).size(24.dp),
             color = colorPalette().accent,
@@ -75,9 +85,32 @@ internal fun menuSheetSectionColor(color: Color): Color {
         .copy(alpha = color.alpha * menuSheetFilmOpacity(settings))
 }
 
-/** The custom media header owns this paint, separately from the list/grid body below it. */
 @Composable
-internal fun Modifier.menuSheetSectionBackground(color: Color): Modifier {
-    val film = menuSheetSectionColor(color)
-    return background(film).glassOverlayPaint(film.alpha)
+internal fun MenuMediaHeader(
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val film = menuSheetSectionColor(surfaceColor(colorPalette().background1))
+    MenuMediaHeaderForeground(film) {
+        Column(
+            modifier = modifier.background(film).glassOverlayPaint(film.alpha),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            content = content,
+        )
+    }
+}
+
+@Composable
+internal fun MenuMediaHeaderForeground(film: Color, content: @Composable () -> Unit) {
+    val glass = rememberGlassSettings()
+    if (!LocalMenuSheetSurface.current || !glass.usesGlassMaterial(GlassArea.Menus) ||
+        glass.source != GlassTintSource.Custom
+    ) {
+        content()
+        return
+    }
+    val surface = effectiveSurfaceColor(surfaceBackdropColor(), film)
+    CompositionLocalProvider(LocalMenuMediaHeaderSurface provides surface) {
+        GlassArtworkContent(glass, surface = surface, content = content)
+    }
 }

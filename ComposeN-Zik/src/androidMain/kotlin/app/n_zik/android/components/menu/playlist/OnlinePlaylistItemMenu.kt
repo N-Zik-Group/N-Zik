@@ -103,11 +103,11 @@ import app.n_zik.android.components.menu.ObserveMenuProfile
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
+import app.n_zik.android.components.menu.MenuMediaHeader
 import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.PendingLibraryItemMenu
 import app.n_zik.android.components.menu.menuLikeActionDescription
-import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.menu.openExternalMenuLink
 import app.n_zik.android.components.podcast.PodcastBookmarkOperation
 import app.n_zik.android.components.podcast.togglePodcastBookmark
@@ -129,7 +129,6 @@ import app.n_zik.android.core.database.findMusicBookmarkRows
 import app.n_zik.android.core.database.canBookmarkPlaylist
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isPodcastBrowseId
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.utils.ToastRelay
@@ -202,12 +201,7 @@ class OnlinePlaylistItemMenu private constructor(
         val context = LocalContext.current
         val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = modifier
-                .fillMaxWidth()
-                .menuSheetSectionBackground(surfaceColor(colorPalette().background1))
-        ) {
+        MenuMediaHeader(modifier.fillMaxWidth()) {
             MenuMediaHeaderDragHandle()
 
             Row(

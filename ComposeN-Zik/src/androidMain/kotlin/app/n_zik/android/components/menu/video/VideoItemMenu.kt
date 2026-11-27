@@ -20,7 +20,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -89,9 +88,9 @@ import app.n_zik.android.components.menu.rememberListenTogetherTrackMenuActions
 import app.n_zik.android.components.menu.rememberListenOnMenuAction
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.components.menu.MenuMediaHeader
 import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
-import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
 import app.n_zik.android.components.menu.song.SongMenuSnapshot
 import app.n_zik.android.components.song.GoToAlbum
@@ -112,7 +111,6 @@ import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.playback.services.isLocal
-import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -491,10 +489,7 @@ class VideoItemMenu private constructor(
         buttons = updatedButtons
 
         MenuSheetSurface {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.menuSheetSectionBackground(surfaceColor(colorPalette().background1))
-            ) {
+            MenuMediaHeader {
                 MenuMediaHeaderDragHandle()
 
                 SongItem(
