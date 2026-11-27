@@ -79,7 +79,7 @@ internal fun RewindLibraryFilterChip(
                     label = { labels.getValue(it) },
                     icon = { icons.getValue(it) },
                     onSelected = { filter ->
-                        menuState.hide()
+                        menuState.pop()
                         onSelected(filter)
                     },
                 )

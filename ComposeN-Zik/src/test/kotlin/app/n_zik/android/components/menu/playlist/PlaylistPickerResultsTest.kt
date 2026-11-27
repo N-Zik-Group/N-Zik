@@ -5,7 +5,6 @@ import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.ui.components.themed.isPinnedPlaylistPickerVisible
 import app.n_zik.android.ui.components.themed.isPlaylistPickerTarget
-import app.n_zik.android.ui.components.themed.openPlaylistPickerDestination
 import app.n_zik.android.ui.components.themed.playlistPickerSections
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
@@ -22,7 +21,7 @@ import org.junit.jupiter.api.Test
 class PlaylistPickerResultsTest {
     @Test
     fun `a completed empty read resolves successfully`() = runTest {
-        val result = playlistPickerResults(flowOf(emptyList())).first()
+        val result = playlistPickerResults(flowOf(emptyList<PlaylistPreview>())).first()
 
         assertEquals(emptyList<PlaylistPreview>(), result.getOrThrow())
     }
@@ -30,7 +29,7 @@ class PlaylistPickerResultsTest {
     @Test
     fun `a read failure resolves separately from an empty library`() = runTest {
         val failure = IllegalStateException("unavailable")
-        val result = playlistPickerResults(flow { throw failure }).first()
+        val result = playlistPickerResults(flow<List<PlaylistPreview>> { throw failure }).first()
 
         assertSame(failure, result.exceptionOrNull())
     }
@@ -46,7 +45,7 @@ class PlaylistPickerResultsTest {
     @Test
     fun `cancelling the read does not emit a failure status`() = runTest {
         val cancellation = CancellationException("picker closed")
-        val result = runCatching { playlistPickerResults(flow { throw cancellation }).first() }
+        val result = runCatching { playlistPickerResults(flow<List<PlaylistPreview>> { throw cancellation }).first() }
 
         assertTrue(result.exceptionOrNull() is CancellationException)
     }
@@ -91,17 +90,5 @@ class PlaylistPickerResultsTest {
         assertTrue(playlist.matchesPickerQuery("LATE NIGHT"))
         assertTrue(playlist.matchesPickerQuery(""))
         assertFalse(playlist.matchesPickerQuery("pinned"))
-    }
-
-    @Test
-    fun `opening a destination navigates once before closing the picker`() {
-        val events = mutableListOf<String>()
-        val dismiss = { events += "dismiss" }
-        val fallback: (Long) -> Unit = { events += "default $it" }
-
-        openPlaylistPickerDestination(7, { events += "custom $it" }, dismiss, fallback)
-        openPlaylistPickerDestination(8, null, dismiss, fallback)
-
-        assertEquals(listOf("custom 7", "dismiss", "default 8", "dismiss"), events)
     }
 }

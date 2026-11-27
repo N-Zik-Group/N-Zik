@@ -44,7 +44,7 @@ internal fun YouTubeLibraryFilterChip(
                     label = { stringResource(it.labelRes) },
                     icon = { it.iconRes },
                     onSelected = { filter ->
-                        menuState.hide()
+                        menuState.pop()
                         onSelected(filter)
                     },
                 )

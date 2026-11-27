@@ -88,7 +88,7 @@ import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.components.discoverButtonIconRes
 import app.n_zik.android.components.radioButtonIcon
 import app.n_zik.android.components.shuffleButtonIcon
-import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.menu.player.PlayerMenu
 import app.n_zik.android.components.menu.player.PlayerStatsMenuControl
@@ -577,23 +577,14 @@ internal fun playerActionBarActions(
                         val isSongMappedToPlaylist by remember( mediaItem.mediaId ) {
                             if (preview != null) flowOf(false) else Database.songPlaylistMapTable.isMapped( mediaItem.mediaId )
                         }.collectAsStateWithLifecycle(false, context = NzikDispatchers.DATA)
+                        val picker = PlaylistsMenu.forSong(mediaItem, navController, onDismiss)
                         playerActions.add(PlayerActionSlot(buttonId) {
                             val color = colorPalette()
                             PlayerActionIcon(
                                 icon = R.drawable.add_in_playlist,
                                 contentDescription = stringResource(R.string.playlist_action_add),
                                 color = if (isSongMappedToPlaylist && showPlaylistIndicator) Color.White else color.accent,
-                                onClick = {
-                                    menuState.display {
-                                        AddToPlaylistPlayerMenu(
-                                            navController = navController,
-                                            onDismiss = menuState::hide,
-                                            mediaItem = mediaItem,
-                                            binder = binder ?: return@display,
-                                            onClosePlayer = onDismiss,
-                                        )
-                                    }
-                                },
+                                onClick = picker::openMenu,
                                 modifier = Modifier
                                     .size(24.dp)
                                     .conditional(isSongMappedToPlaylist && showPlaylistIndicator) {

@@ -34,7 +34,7 @@ import app.n_zik.android.LocalIsShowingVisualizer
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.discoverButtonIconRes
-import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.player.GlassMiniPlayerIconButton
 import app.n_zik.android.components.player.rememberPlayerSkipAvailability
 import app.n_zik.android.components.radioButtonIcon
@@ -193,21 +193,16 @@ internal fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.AddToPlaylist -> {
+            val picker = if (mediaItem != null && navController != null && menuState != null) {
+                PlaylistsMenu.forSong(mediaItem, navController, onClosePlayer)
+            } else null
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
                 icon = R.drawable.add_in_playlist,
                 color = controlsColorText,
                 onClick = {
-                    menuState?.display {
-                        AddToPlaylistPlayerMenu(
-                            navController = navController ?: return@display,
-                            onDismiss = menuState::hide,
-                            mediaItem = mediaItem ?: return@display,
-                            binder = binder ?: return@display,
-                            onClosePlayer = onClosePlayer
-                        )
-                    }
+                    picker?.openMenu()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 rotationAngle = rotationAngle

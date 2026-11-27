@@ -1352,3 +1352,7 @@ Settings:
 Playlists:
 - fix(playlists): protect rewind membership and show lock badges
   - Apply the same lock policy and badge to protected library thumbnails and playlist headers.
+
+Menus:
+- fix(playlists): share the library picker and subfilters
+  - Remove the old inline picker and use the same groups, controls, and filters across media entry points.

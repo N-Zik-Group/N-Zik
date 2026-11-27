@@ -95,6 +95,11 @@ class Search private constructor(
         @Composable
         internal fun detail() = forHome()
 
+        @Composable
+        internal fun retained(input: MutableState<TextFieldValue>, visible: MutableState<Boolean>) = Search(
+            input, visible, remember { mutableStateOf(false) }, null, null,
+        )
+
         /** Hosts may retain input across nested destinations without restoring keyboard focus. */
         @Composable
         operator fun invoke(

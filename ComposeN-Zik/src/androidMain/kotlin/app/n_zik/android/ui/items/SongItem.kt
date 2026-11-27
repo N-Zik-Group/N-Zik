@@ -66,8 +66,7 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.download.services.MyDownloadService
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.typography
-import app.n_zik.android.ui.components.LocalMenuState
-import app.n_zik.android.components.menu.player.AddToPlaylistPlayerMenu
+import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.NowPlayingSongIndicator
@@ -435,7 +434,7 @@ fun SongItem(
 
         ItemInfoContainer {
             trailingContent?.let {
-                val menuState = LocalMenuState.current
+
                 val binder = LocalPlayerServiceBinder.current
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (isRecommended)
@@ -449,24 +448,14 @@ fun SongItem(
                         )
 
                     if ( playlistindicator && isSongMappedToPlaylist ) {
+                        val picker = PlaylistsMenu.forSong(mediaItem)
                         IconButton(
                             icon = R.drawable.add_in_playlist,
                             contentDescription = stringResource(R.string.playlist_action_add),
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {
-                                menuState.display {
-                                    if (binder != null) {
-                                        AddToPlaylistPlayerMenu(
-                                            onDismiss = {
-                                                menuState.hide()
-                                            },
-                                            mediaItem = mediaItem,
-                                            binder = binder,
-                                            onClosePlayer = {},
-                                        )
-                                    }
-                                }
+                                if (binder != null) picker.openMenu()
                             },
                             onLongClick = {
                                 Toaster.i( R.string.playlist_song_already_present )
@@ -524,7 +513,7 @@ fun SongItem(
                     it()
                 }
             } ?: Row(verticalAlignment = Alignment.CenterVertically) {
-                val menuState = LocalMenuState.current
+
                 val binder = LocalPlayerServiceBinder.current
                     if (isRecommended)
                         IconButton(
@@ -550,24 +539,14 @@ fun SongItem(
                             .weight(1f)
                     )
                 if ( playlistindicator && isSongMappedToPlaylist ) {
+                    val picker = PlaylistsMenu.forSong(mediaItem)
                     IconButton(
                         icon = R.drawable.add_in_playlist,
                         contentDescription = stringResource(R.string.playlist_action_add),
                         color = colorPalette().text,
                         enabled = true,
                         onClick = {
-                            menuState.display {
-                                if (binder != null) {
-                                    AddToPlaylistPlayerMenu(
-                                        onDismiss = {
-                                            menuState.hide()
-                                        },
-                                        mediaItem = mediaItem,
-                                        binder = binder,
-                                        onClosePlayer = {},
-                                    )
-                                }
-                            }
+                            if (binder != null) picker.openMenu()
                         },
                         onLongClick = {
                             Toaster.i( R.string.playlist_song_already_present )
