@@ -18,14 +18,20 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.MenuStyle
@@ -48,7 +54,9 @@ import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassTintStrengthKey
-import app.n_zik.android.components.menu.player.AudioDeviceStatusMenu
+import app.n_zik.android.components.menu.player.AudioDevice
+import app.n_zik.android.components.menu.player.AudioDeviceMenuOptions
+import app.n_zik.android.components.menu.player.AudioDeviceType
 import app.n_zik.android.components.menu.song.SongMenuSurface
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistFormatDialog
 import org.junit.After
@@ -222,8 +230,9 @@ class MenuSheetSurfaceTest {
     @Test
     // Exercise real blur and menu geometry without Robolectric's API 33 RuntimeShader compiler.
     @Config(sdk = [32])
-    fun `audio device loading and error keep the shared glass menu and retry`() {
+    fun `audio discovery failure keeps quality choices and retry in both menu layouts`() {
         val error = mutableStateOf<String?>(null)
+        val style = mutableStateOf(MenuStyle.List)
         val backdrop = Color(0xFF00C853)
         val shape = RoundedCornerShape(32.dp)
         val appearance = Appearance(
@@ -238,12 +247,27 @@ class MenuSheetSurfaceTest {
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 Box(Modifier.size(300.dp, 390.dp).background(backdrop).testTag("audio-device-sheet")) {
-                    AudioDeviceStatusMenu(error.value, onRetry = { error.value = null })
+                    AudioDeviceMenuOptions(
+                        menuStyle = style.value,
+                        isLoading = error.value == null,
+                        error = error.value,
+                        shownDevices = listOf(AudioDevice(name = "Stale device", type = AudioDeviceType.PC, isConnected = true)),
+                        isCarProjectionActive = false,
+                        currentVolume = 5f,
+                        maxVolume = 10f,
+                        selectDevice = { throw AssertionError("Stale device became selectable") },
+                        onRetry = { error.value = null },
+                        onVolumeChange = { throw AssertionError("Disabled volume changed") },
+                        onVolumeChangeComplete = {},
+                    )
                 }
             }
         }
         val title = composeRule.onNodeWithText(context.getString(R.string.audio_devices))
-        val spinner = composeRule.onNode(SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo))
+        val loadingPlaceholder = SemanticsMatcher.expectValue(
+            SemanticsProperties.ProgressBarRangeInfo, ProgressBarRangeInfo.Indeterminate,
+        )
+        val spinner = composeRule.onNode(loadingPlaceholder)
         spinner.assertIsDisplayed()
         for (message in listOf(null, "Bluetooth permission denied")) {
             composeRule.runOnIdle { error.value = message }
@@ -253,7 +277,24 @@ class MenuSheetSurfaceTest {
             assertNotEquals(backdrop.toArgb(), pixels[pixels.width / 4, 20].toArgb())
         }
         composeRule.onNodeWithText("Bluetooth permission denied").assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.common_action_retry)).performClick()
+        composeRule.onNodeWithText("Stale device").assertDoesNotExist()
+        val high = context.getString(R.string.audio_quality_format_high)
+        composeRule.onNodeWithText(high).performScrollTo().performClick().assertIsSelected()
+
+        composeRule.runOnIdle { style.value = MenuStyle.Grid }
+        composeRule.onNodeWithText("Bluetooth permission denied").assertIsDisplayed()
+        composeRule.onNodeWithText("Stale device").assertDoesNotExist()
+        val grid = composeRule.onNode(hasScrollAction())
+        grid.performScrollToNode(hasText(high))
+        composeRule.onNodeWithText(high).assertIsSelected()
+        val low = context.getString(R.string.audio_quality_format_low)
+        grid.performScrollToNode(hasText(low))
+        composeRule.onNodeWithText(low).performClick().assertIsSelected()
+
+        val retry = context.getString(R.string.common_action_retry)
+        grid.performScrollToNode(hasText(retry))
+        composeRule.onNodeWithText(retry).performClick()
+        grid.performScrollToNode(loadingPlaceholder)
         spinner.assertIsDisplayed()
         title.assertIsDisplayed()
     }

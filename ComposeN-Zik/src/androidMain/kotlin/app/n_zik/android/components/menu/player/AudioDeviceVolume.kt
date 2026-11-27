@@ -128,6 +128,7 @@ internal fun VolumeGridEntry(
     GridMenu.Entry(
         text = stringResource(R.string.player_statistics_volume_label),
         enabled = enabled,
+        iconHasOwnBackground = true,
         icon = {
             Box(
                 modifier = Modifier

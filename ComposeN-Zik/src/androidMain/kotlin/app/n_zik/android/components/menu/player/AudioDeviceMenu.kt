@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.progressSemantics
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -46,7 +45,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -99,7 +97,6 @@ import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.audioQualityFormatKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getBottomSheetDeviceIcon
-import app.n_zik.android.utils.isCar
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
@@ -174,8 +171,6 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     val shownDevices = remember(audioDevices, bridgePc, bridgeOutput, bridgePcFallbackName) {
         withBridgePcEntry(audioDevices, bridgePc, bridgeOutput, bridgePcFallbackName)
     }
-
-    val bridgePcSubtitle = stringResource(R.string.bridge_audio_output_pc_subtitle)
 
     fun selectBridgeOutput(output: AudioOutput) {
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
@@ -333,328 +328,310 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
     }
 
     val menuStyle by rememberPreference(menuStyleKey, MenuStyle.List)
-
     Column(modifier = Modifier.glassAwareContentSize()) {
-        val error = errorMessage
-        if (!isLoading && error != null) {
-            AudioDeviceStatusMenu(error = error, menuStyle = menuStyle) {
+        AudioDeviceMenuOptions(
+            menuStyle = menuStyle,
+            isLoading = isLoading,
+            error = errorMessage,
+            shownDevices = shownDevices,
+            isCarProjectionActive = isCarProjectionActive,
+            currentVolume = currentVolume,
+            maxVolume = maxVolume.toFloat(),
+            selectDevice = ::selectDevice,
+            onRetry = {
                 errorMessage = null
                 isLoading = true
                 refreshDevices()
-            }
-        } else {
-            var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
-            val selectedRowBackground = Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
-            val qualityOptions = listOf(
-                AudioQualityFormat.Auto to stringResource(R.string.audio_quality_automatic),
-                AudioQualityFormat.High to stringResource(R.string.audio_quality_format_high),
-                AudioQualityFormat.Low to stringResource(R.string.audio_quality_format_low)
-            )
-            if (menuStyle == MenuStyle.List) {
-                ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
-                    MenuSectionTitle(stringResource(R.string.audio_output_title))
-                    if (isLoading) {
-                        AudioDeviceListLoadingRows()
-                    } else shownDevices.forEach { dev ->
-                            ListMenu.Entry(
-                                text = dev.name,
-                                enabled = !isCarProjectionActive || dev.isActive,
-                                icon = {
-                                    val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
-                                    val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
-                                    Box(
-                                        modifier = Modifier
-                                            .size(32.dp)
-                                            .iconBadgeBackground(
-                                                color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                                shape = uiRoundnessShape()
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
-                                        if (iconRes is ImageVector) {
-                                            Icon(
-                                                imageVector = iconRes,
-                                                contentDescription = null,
-                                                tint = iconColor,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        } else if (iconRes is Int) {
-                                            Icon(
-                                                painter = painterResource(id = iconRes),
-                                                contentDescription = null,
-                                                tint = iconColor,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.audioOptionSelection(dev.isActive)
-                                    .then(if (dev.isActive) selectedRowBackground else Modifier),
-                                subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
-                                trailingContent = {
-                                    AnimatedVisibility(
-                                        visible = dev.isActive,
-                                        enter = fadeIn() + scaleIn(),
-                                        exit = fadeOut() + scaleOut()
-                                    ) {
-                                        RadioButton(
-                                            selected = true,
-                                            onClick = null,
-                                            colors = RadioButtonDefaults.colors(
-                                                selectedColor = colorPalette().accent,
-                                                unselectedColor = colorPalette().textSecondary
-                                            )
-                                        )
-                                    }
-                                },
-                                onClick = { selectDevice(dev) }
-                            )
-                    }
-                    MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
-                    VolumeRow(
-                        currentVolume = currentVolume,
-                        maxVolume = maxVolume.toFloat(),
-                        enabled = !isLoading && !isCarProjectionActive,
-                        onVolumeChange = { newVolume ->
-                            isUserDragging = true
-                            currentVolume = newVolume
-                            audioManager.setStreamVolume(
-                                AudioManager.STREAM_MUSIC,
-                                newVolume.toInt(),
-                                0
-                            )
-                        },
-                        onVolumeChangeComplete = {
-                            isUserDragging = false
-                        }
-                    )
-                    MenuSectionTitle(stringResource(R.string.audio_quality_format))
-                    qualityOptions.forEach { (format, label) ->
-                        val isSelected = audioQualityFormat == format
-                        ListMenu.Entry(
-                            text = label,
-                            icon = {
-                                val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .iconBadgeBackground(
-                                            color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                            shape = uiRoundnessShape()
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.audio_quality),
-                                        contentDescription = null,
-                                        tint = iconColor,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            },
-                            modifier = Modifier.audioOptionSelection(isSelected)
-                                .then(if (isSelected) selectedRowBackground else Modifier),
-                            trailingContent = {
-                                if (isSelected) {
-                                    RadioButton(
-                                        selected = isSelected,
-                                        onClick = null,
-                                        colors = RadioButtonDefaults.colors(
-                                            selectedColor = colorPalette().accent,
-                                            unselectedColor = colorPalette().textSecondary
-                                        )
-                                    )
-                                }
-                            },
-                            onClick = { audioQualityFormat = format }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(32.dp))
-                }
-            } else {
-                GridMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        MenuSectionTitle(stringResource(R.string.audio_output_title))
-                    }
-                    if (isLoading) {
-                        items(count = AudioDeviceLoadingCount, key = { "audio-device-loading-$it" }) { index ->
-                            AudioDeviceGridLoadingTile(
-                                modifier = if (index == 0) Modifier.progressSemantics() else Modifier,
-                            )
-                        }
-                    } else items(
-                        count = shownDevices.size,
-                        key = { index -> "${shownDevices[index].deviceId}_${shownDevices[index].isCar}_${index}" }
-                    ) { index ->
-                        val dev = shownDevices[index]
-                        val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
-                        GridMenu.Entry(
-                            text = dev.name,
-                            enabled = !isCarProjectionActive || dev.isActive,
-                            modifier = Modifier.audioOptionSelection(dev.isActive),
-                            iconHasOwnBackground = true,
-                            selected = dev.isActive,
-                            icon = {
-                                val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .iconBadgeBackground(
-                                            color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                            shape = uiRoundnessShape()
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
-                                    if (iconRes is ImageVector) {
-                                        Icon(
-                                            imageVector = iconRes,
-                                            contentDescription = null,
-                                            tint = iconColor,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    } else if (iconRes is Int) {
-                                        Icon(
-                                            painter = painterResource(id = iconRes),
-                                            contentDescription = null,
-                                            tint = iconColor,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                }
-                            },
-                            subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
-                            trailingContent = {
-                                AnimatedVisibility(
-                                    visible = dev.isActive,
-                                    enter = fadeIn() + scaleIn(),
-                                    exit = fadeOut() + scaleOut()
-                                ) {
-                                    RadioButton(
-                                        selected = true,
-                                        onClick = null,
-                                        colors = RadioButtonDefaults.colors(
-                                            selectedColor = colorPalette().accent,
-                                            unselectedColor = colorPalette().textSecondary
-                                        )
-                                    )
-                                }
-                            },
-                            onClick = { selectDevice(dev) }
-                        )
-                    }
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
-                    }
-                    item {
-                        VolumeGridEntry(
-                            currentVolume = currentVolume,
-                            maxVolume = maxVolume.toFloat(),
-                            enabled = !isLoading && !isCarProjectionActive,
-                            onVolumeChange = { newVolume ->
-                                isUserDragging = true
-                                currentVolume = newVolume
-                                audioManager.setStreamVolume(
-                                    AudioManager.STREAM_MUSIC,
-                                    newVolume.toInt(),
-                                    0
-                                )
-                            },
-                            onVolumeChangeComplete = {
-                                isUserDragging = false
-                            }
-                        )
-                    }
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        MenuSectionTitle(stringResource(R.string.audio_quality_format))
-                    }
-                    items(
-                        count = qualityOptions.size,
-                        key = { index -> qualityOptions[index].first.name }
-                    ) { index ->
-                        val (format, label) = qualityOptions[index]
-                        val isSelected = audioQualityFormat == format
-                        GridMenu.Entry(
-                            text = label,
-                            modifier = Modifier.audioOptionSelection(isSelected),
-                            iconHasOwnBackground = true,
-                            selected = isSelected,
-                            icon = {
-                                val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .iconBadgeBackground(
-                                            color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
-                                            shape = uiRoundnessShape()
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(R.drawable.audio_quality),
-                                        contentDescription = null,
-                                        tint = iconColor,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
-                            },
-                            trailingContent = {
-                                AnimatedVisibility(
-                                    visible = isSelected,
-                                    enter = fadeIn() + scaleIn(),
-                                    exit = fadeOut() + scaleOut()
-                                ) {
-                                    RadioButton(
-                                        selected = true,
-                                        onClick = null,
-                                        colors = RadioButtonDefaults.colors(
-                                            selectedColor = colorPalette().accent,
-                                            unselectedColor = colorPalette().textSecondary
-                                        )
-                                    )
-                                }
-                            },
-                            onClick = { audioQualityFormat = format }
-                        )
-                    }
-                    item(span = { GridItemSpan(maxLineSpan) }) { Spacer(modifier = Modifier.height(32.dp)) }
-                }
-            }
-        }
+            },
+            onVolumeChange = { newVolume ->
+                isUserDragging = true
+                currentVolume = newVolume
+                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, newVolume.toInt(), 0)
+            },
+            onVolumeChangeComplete = { isUserDragging = false },
+        )
     }
 }
 
-/** Uses the same menu surface for the progress and retry content. */
 @Composable
-internal fun AudioDeviceStatusMenu(
+internal fun AudioDeviceMenuOptions(
+    menuStyle: MenuStyle,
+    isLoading: Boolean,
     error: String?,
-    menuStyle: MenuStyle = MenuStyle.List,
+    shownDevices: List<AudioDevice>,
+    isCarProjectionActive: Boolean,
+    currentVolume: Float,
+    maxVolume: Float,
+    selectDevice: (AudioDevice) -> Unit,
     onRetry: () -> Unit,
+    onVolumeChange: (Float) -> Unit,
+    onVolumeChangeComplete: () -> Unit,
 ) {
-    val title = stringResource(R.string.audio_devices)
-    if (menuStyle == MenuStyle.Grid) {
-        GridMenu.Menu(title = title) {
-            if (error != null) {
-                item(span = { GridItemSpan(maxLineSpan) }) { AudioDeviceRetry(error, onRetry) }
+    val context = LocalContext.current
+    val volumeEnabled = !isLoading && error == null && !isCarProjectionActive
+    val bridgePcSubtitle = stringResource(R.string.bridge_audio_output_pc_subtitle)
+    var audioQualityFormat by rememberPreference(audioQualityFormatKey, AudioQualityFormat.Auto)
+    val selectedRowBackground = Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape())
+    val qualityOptions = listOf(
+        AudioQualityFormat.Auto to stringResource(R.string.audio_quality_automatic),
+        AudioQualityFormat.High to stringResource(R.string.audio_quality_format_high),
+        AudioQualityFormat.Low to stringResource(R.string.audio_quality_format_low)
+    )
+    if (menuStyle == MenuStyle.List) {
+        ListMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
+            MenuSectionTitle(stringResource(R.string.audio_output_title))
+            if (isLoading) {
+                AudioDeviceListLoadingRows()
+            } else if (error != null) {
+                AudioDeviceRetry(error, onRetry)
             } else {
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    MenuSectionTitle(stringResource(R.string.audio_output_title))
+                shownDevices.forEach { dev ->
+                    ListMenu.Entry(
+                        text = dev.name,
+                        enabled = !isCarProjectionActive || dev.isActive,
+                        icon = {
+                            val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
+                            val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .iconBadgeBackground(
+                                        color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                        shape = uiRoundnessShape()
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
+                                if (iconRes is ImageVector) {
+                                    Icon(
+                                        imageVector = iconRes,
+                                        contentDescription = null,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                } else if (iconRes is Int) {
+                                    Icon(
+                                        painter = painterResource(id = iconRes),
+                                        contentDescription = null,
+                                        tint = iconColor,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        },
+                        modifier = Modifier.audioOptionSelection(dev.isActive)
+                            .then(if (dev.isActive) selectedRowBackground else Modifier),
+                        subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
+                        trailingContent = {
+                            AnimatedVisibility(
+                                visible = dev.isActive,
+                                enter = fadeIn() + scaleIn(),
+                                exit = fadeOut() + scaleOut()
+                            ) {
+                                RadioButton(
+                                    selected = true,
+                                    onClick = null,
+                                    colors = RadioButtonDefaults.colors(
+                                        selectedColor = colorPalette().accent,
+                                        unselectedColor = colorPalette().textSecondary
+                                    )
+                                )
+                            }
+                        },
+                        onClick = { selectDevice(dev) }
+                    )
                 }
+            }
+            MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
+            VolumeRow(
+                currentVolume = currentVolume,
+                maxVolume = maxVolume,
+                enabled = volumeEnabled,
+                onVolumeChange = onVolumeChange,
+                onVolumeChangeComplete = onVolumeChangeComplete,
+            )
+            MenuSectionTitle(stringResource(R.string.audio_quality_format))
+            qualityOptions.forEach { (format, label) ->
+                val isSelected = audioQualityFormat == format
+                ListMenu.Entry(
+                    text = label,
+                    icon = {
+                        val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .iconBadgeBackground(
+                                    color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                    shape = uiRoundnessShape()
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.audio_quality),
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    },
+                    modifier = Modifier.audioOptionSelection(isSelected)
+                        .then(if (isSelected) selectedRowBackground else Modifier),
+                    trailingContent = {
+                        if (isSelected) {
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = null,
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = colorPalette().accent,
+                                    unselectedColor = colorPalette().textSecondary
+                                )
+                            )
+                        }
+                    },
+                    onClick = { audioQualityFormat = format }
+                )
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    } else {
+        GridMenu.Menu(title = stringResource(R.string.audio_devices), showDragHandle = true) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                MenuSectionTitle(stringResource(R.string.audio_output_title))
+            }
+            if (isLoading) {
                 items(count = AudioDeviceLoadingCount, key = { "audio-device-loading-$it" }) { index ->
                     AudioDeviceGridLoadingTile(
                         modifier = if (index == 0) Modifier.progressSemantics() else Modifier,
                     )
                 }
+            } else if (error != null) {
+                item(span = { GridItemSpan(maxLineSpan) }) { AudioDeviceRetry(error, onRetry) }
+            } else items(
+                count = shownDevices.size,
+                key = { index -> "${shownDevices[index].deviceId}_${shownDevices[index].isCar}_${index}" }
+            ) { index ->
+                val dev = shownDevices[index]
+                val isActuallyCar = dev.isCar || (dev.type != AudioDeviceType.PC && dev.isActive && isCarProjectionActive)
+                GridMenu.Entry(
+                    text = dev.name,
+                    enabled = !isCarProjectionActive || dev.isActive,
+                    modifier = Modifier.audioOptionSelection(dev.isActive),
+                    iconHasOwnBackground = true,
+                    selected = dev.isActive,
+                    icon = {
+                        val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .iconBadgeBackground(
+                                    color = if (dev.isActive) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                    shape = uiRoundnessShape()
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            val iconRes = getBottomSheetDeviceIcon(dev.type, dev.name, isActuallyCar)
+                            if (iconRes is ImageVector) {
+                                Icon(
+                                    imageVector = iconRes,
+                                    contentDescription = null,
+                                    tint = iconColor,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            } else if (iconRes is Int) {
+                                Icon(
+                                    painter = painterResource(id = iconRes),
+                                    contentDescription = null,
+                                    tint = iconColor,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    },
+                    subtitle = if (dev.type == AudioDeviceType.PC) bridgePcSubtitle else dev.batteryLevel?.let { formatAudioDeviceBattery(context, it) },
+                    trailingContent = {
+                        AnimatedVisibility(
+                            visible = dev.isActive,
+                            enter = fadeIn() + scaleIn(),
+                            exit = fadeOut() + scaleOut()
+                        ) {
+                            RadioButton(
+                                selected = true,
+                                onClick = null,
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = colorPalette().accent,
+                                    unselectedColor = colorPalette().textSecondary
+                                )
+                            )
+                        }
+                    },
+                    onClick = { selectDevice(dev) }
+                )
             }
-        }
-    } else {
-        ListMenu.Menu(title = title) {
-            if (error != null) AudioDeviceRetry(error, onRetry)
-            else {
-                MenuSectionTitle(stringResource(R.string.audio_output_title))
-                AudioDeviceListLoadingRows()
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
             }
+            item {
+                VolumeGridEntry(
+                    currentVolume = currentVolume,
+                    maxVolume = maxVolume,
+                    enabled = volumeEnabled,
+                    onVolumeChange = onVolumeChange,
+                    onVolumeChangeComplete = onVolumeChangeComplete,
+                )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                MenuSectionTitle(stringResource(R.string.audio_quality_format))
+            }
+            items(
+                count = qualityOptions.size,
+                key = { index -> qualityOptions[index].first.name }
+            ) { index ->
+                val (format, label) = qualityOptions[index]
+                val isSelected = audioQualityFormat == format
+                GridMenu.Entry(
+                    text = label,
+                    modifier = Modifier.audioOptionSelection(isSelected),
+                    iconHasOwnBackground = true,
+                    selected = isSelected,
+                    icon = {
+                        val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .iconBadgeBackground(
+                                    color = if (isSelected) colorPalette().accent.copy(alpha = 0.2f) else colorPalette().accent.copy(alpha = 0.1f),
+                                    shape = uiRoundnessShape()
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.audio_quality),
+                                contentDescription = null,
+                                tint = iconColor,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        AnimatedVisibility(
+                            visible = isSelected,
+                            enter = fadeIn() + scaleIn(),
+                            exit = fadeOut() + scaleOut()
+                        ) {
+                            RadioButton(
+                                selected = true,
+                                onClick = null,
+                                colors = RadioButtonDefaults.colors(
+                                    selectedColor = colorPalette().accent,
+                                    unselectedColor = colorPalette().textSecondary
+                                )
+                            )
+                        }
+                    },
+                    onClick = { audioQualityFormat = format }
+                )
+            }
+            item(span = { GridItemSpan(maxLineSpan) }) { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
 }

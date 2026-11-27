@@ -1676,3 +1676,7 @@ Menus:
 Settings:
 - fix(settings): guide search to sync and artwork prerequisites
   - Point search results to available account controls and to the Modern player when artwork hides the requested setting.
+
+Menus:
+- fix(menu): keep audio quality available after device discovery failure
+  - Retain retry and local quality controls in both layouts and draw the volume badge only once.
