@@ -1075,6 +1075,7 @@ fun LocalPlaylistSongs(
                     openPicker = { onReturn -> currentAddToPlaylist.openPicker(onReturn) },
                     openExport = exportDialog::onShortClick,
                 )
+                val canManageDownloads = !onDeviceOnly && !deviceOnlyPlaylist && getSongs().any { !it.isLocal }
                 val toolbarButtons = buildList {
                     visibleToolbarOrder.forEach { id ->
 
@@ -1088,8 +1089,8 @@ fun LocalPlaylistSongs(
                                 (matchAction.isRunning || (membershipEditable && !offlineMode && hasUnmatchedSongs))
                             ) add(itemSelector.guard(matchAction.button) { matchAction.isRunning || getSongs().any(Song::isUnmatched) })
                             "renumber" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( renumberDialog )
-                            "download_all" -> if (!onDeviceOnly && !offlineMode) add(itemSelector.guard(downloadAllDialog, hasEligibleSelection))
-                            "delete_downloads" -> if (!onDeviceOnly) add(itemSelector.guard(deleteDownloadsDialog, hasEligibleSelection))
+                            "download_all" -> if (canManageDownloads && !offlineMode) add(downloadAllDialog)
+                            "delete_downloads" -> if (canManageDownloads) add(deleteDownloadsDialog)
                             "item_selector" -> add( itemSelector )
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
