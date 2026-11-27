@@ -5,6 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import app.n_zik.android.core.database.HomeParentSong
 import app.n_zik.android.models.Song
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
@@ -25,6 +26,19 @@ internal suspend fun <Id> loadHomeParentSongs(
                 }
             }
         }
+    }
+}
+
+internal suspend fun loadHomeLibraryGroupSongs(
+    ids: List<String>,
+    load: suspend (List<String>) -> List<HomeParentSong>,
+    isDeviceGroup: (String) -> Boolean,
+    loadDeviceGroups: suspend () -> Map<String, Set<String>>,
+): List<Song> {
+    val deviceGroups = if (ids.any(isDeviceGroup)) loadDeviceGroups() else emptyMap()
+    return loadHomeParentSongs(ids, load) { id, song ->
+        if (isDeviceGroup(id)) song.isLocal && song.id in deviceGroups[id].orEmpty()
+        else !song.isLocal
     }
 }
 

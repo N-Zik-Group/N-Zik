@@ -30,6 +30,24 @@ class HomeSongsProjectionTest {
     }
 
     @Test
+    fun `all keeps its sort order while adding only scanned device songs`() {
+        val songs = listOf(
+            song("remote-played").copy(totalPlayTimeMs = 1L),
+            song("local:1"),
+            song("remote-hidden"),
+            song("local:2"),
+        )
+        assertEquals(
+            listOf("remote-played", "local:1"),
+            projectAllHomeSongs(songs, setOf("local:1"), excludeHidden = true).map(Song::id),
+        )
+        assertEquals(
+            listOf("remote-played", "remote-hidden"),
+            projectAllHomeSongs(songs, emptySet(), excludeHidden = false).map(Song::id),
+        )
+    }
+
+    @Test
     fun `preserves sequential clamped insertion and first occurrence before filtering`() = runTest {
         val explicit = song("duplicate", EXPLICIT_PREFIX + "Hidden")
         val input = HomeSongsBaseInput(

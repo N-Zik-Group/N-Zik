@@ -141,9 +141,13 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.components.LocalSongRowCachedIds
 import app.n_zik.android.components.LocalSongRowDownloads
 import app.n_zik.android.components.rememberSongRowCache
@@ -186,6 +190,7 @@ fun HomeSongs(
     visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding },
     topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp },
     sourceFilter: FilterBy = FilterBy.All,
+    includeDeviceSongs: Boolean = false,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -247,7 +252,7 @@ fun HomeSongs(
     var relatedSongsPositions by remember { mutableStateOf(emptyMap<Song, Int>()) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, sourceFilter,
+    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, sourceFilter, includeDeviceSongs,
         binder.takeIf { builtInPlaylist == BuiltInPlaylist.Offline }, downloadedIds ) {
         if (preview != null) {
             isLoading = false
@@ -259,6 +264,8 @@ fun HomeSongs(
             if (songSort.sortOrder == SortOrder.Ascending) sortedByDescending { it.id in downloadedIds }
             else sortedBy { it.id in downloadedIds }
 
+        val excludeHidden = hiddenSongs.isHiddenExcluded()
+        val showDeviceSongs = builtInPlaylist == BuiltInPlaylist.All && includeDeviceSongs
         val retrievedSongs = when( builtInPlaylist ) {
             BuiltInPlaylist.All, BuiltInPlaylist.Disliked -> {
                 val dislikedOnly = builtInPlaylist == BuiltInPlaylist.Disliked
@@ -266,13 +273,13 @@ fun HomeSongs(
                     Database.songTable
                         .sortAll(
                             SongSortBy.Title, SortOrder.Ascending,
-                            excludeHidden = hiddenSongs.isHiddenExcluded(), dislikedOnly = dislikedOnly,
+                            excludeHidden = excludeHidden && !showDeviceSongs, dislikedOnly = dislikedOnly,
                         )
                         .map { it.sortByDownload() }
                 } else {
                     Database.songTable.sortAll(
                         songSort.sortBy, songSort.sortOrder,
-                        excludeHidden = hiddenSongs.isHiddenExcluded(), dislikedOnly = dislikedOnly,
+                        excludeHidden = excludeHidden && !showDeviceSongs, dislikedOnly = dislikedOnly,
                     )
                 }
             }
@@ -348,8 +355,14 @@ fun HomeSongs(
         }
 
         val selectedPlaylist = builtInPlaylist
-        retrievedSongs.map { retrieved ->
-                val songs = retrieved.filterNot(Song::isLocal)
+        val librarySongs = if (showDeviceSongs) {
+            val deviceLibrary = context.observeDeviceLibrary().onStart { emit(DeviceLibrarySnapshot()) }
+            retrievedSongs.combine(deviceLibrary) { songs, device ->
+                projectAllHomeSongs(songs, device.songIds, excludeHidden)
+            }
+        } else retrievedSongs.map { it.filterNot(Song::isLocal) }
+
+        librarySongs.map { songs ->
                 when(sourceFilter) {
                     FilterBy.All -> songs
                     FilterBy.YoutubeLibrary -> songs.filter { song -> song.isYoutubeSong }
@@ -369,7 +382,8 @@ fun HomeSongs(
     }
 
     LaunchedEffect(isRecommendationEnabled, items) {
-        if (!isRecommendationEnabled || items.isEmpty()) {
+        val remoteSongs = items.filterNot(Song::isLocal)
+        if (!isRecommendationEnabled || remoteSongs.isEmpty()) {
             relatedSongs = emptyList()
             isRecommendationsLoading = false
             onRecommendationsLoadingChange(false)
@@ -396,7 +410,7 @@ fun HomeSongs(
             else -> 10
         }
 
-        val seedSongs = items.shuffled().take(numberOfRequests)
+        val seedSongs = remoteSongs.shuffled().take(numberOfRequests)
 
         for (seedSong in seedSongs) {
             try {
@@ -636,17 +650,16 @@ fun HomeSongs(
                                 mediaItem = mediaItem,
                                 onPlayNext = { binder?.player?.addNext( mediaItem ) },
                                 onDownload = {
-                                    if( builtInPlaylist != BuiltInPlaylist.OnDevice ) {
+                                    if (!isLocal) {
                                         binder?.cache?.removeResource(mediaItem.mediaId)
                                         Database.asyncTransaction {
                                             formatTable.updateContentLengthOf( mediaItem.mediaId )
                                         }
-                                        if ( !isLocal )
-                                            manageDownload(
-                                                context = context,
-                                                mediaItem = mediaItem,
-                                                downloadState = isDownloaded
-                                            )
+                                        manageDownload(
+                                            context = context,
+                                            mediaItem = mediaItem,
+                                            downloadState = isDownloaded
+                                        )
                                     }
                                 },
                                 onEnqueue = { binder?.player?.enqueue(mediaItem) },
@@ -726,7 +739,7 @@ fun HomeSongs(
                                                 playbackJob?.cancel()
                                                 playbackJob = playbackScope.launch {
                                                     val mediaItems = withContext(NzikDispatchers.MEDIA) {
-                                                        targets.filterNot(Song::isLocal).map(Song::asMediaItem)
+                                                        targets.filter { includeDeviceSongs || !it.isLocal }.map(Song::asMediaItem)
                                                     }
                                                     val startIndex = mediaItems.indexOfFirst { it.mediaId == song.id }
                                                     if (startIndex >= 0) {

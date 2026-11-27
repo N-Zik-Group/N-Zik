@@ -181,6 +181,7 @@ import app.n_zik.android.utils.homeSongsToolbarOrderKey
 import app.n_zik.android.utils.homeSongsFavoritesToolbarOrderKey
 import app.n_zik.android.utils.homeSongsOnDeviceToolbarOrderKey
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
+import app.n_zik.android.components.ui.screens.home.onDevice.DeviceLibraryPullRefresh
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.utils.homeSongsTopToolbarOrderKey
 import app.n_zik.android.utils.homeSongsOfflineToolbarOrderKey
@@ -213,7 +214,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val showOriginFilter = builtInPlaylist.hasSongOriginFilter(isYouTubeSyncEnabled())
     val sourceFilter = if (showOriginFilter) filterBy else FilterBy.All
     val onDeviceTabEnabled by rememberPreference(showOnDevicePlaylistKey, true)
-    val showOnDeviceChip = deviceLibraryEnabled() && onDeviceTabEnabled
+    val deviceLibraryAvailable = deviceLibraryEnabled()
+    val showOnDeviceChip = deviceLibraryAvailable && onDeviceTabEnabled
+    val includeDeviceSongs = deviceLibraryAvailable && builtInPlaylist == BuiltInPlaylist.All &&
+        sourceFilter != FilterBy.YoutubeLibrary
     LaunchedEffect(showOnDeviceChip, builtInPlaylist) {
         if (!showOnDeviceChip && builtInPlaylist == BuiltInPlaylist.OnDevice) {
             builtInPlaylist = BuiltInPlaylist.All
@@ -240,9 +244,13 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val itemsOnDisplayState = remember { mutableStateListOf<Song>() }
 
     val itemSelector = ItemSelector<Song>()
-    fun visibleSongs() = itemsOnDisplayState.filter { it.isLocal == (builtInPlaylist == BuiltInPlaylist.OnDevice) }
+    fun visibleSongs() = itemsOnDisplayState.filter { song ->
+        if (builtInPlaylist == BuiltInPlaylist.OnDevice) song.isLocal
+        else includeDeviceSongs || !song.isLocal
+    }
     fun getSongs() = itemSelector.actionTargets(visibleSongs(), Song::id, Song::id, selectionOrder = true)
-    val eligibleSelection by remember(builtInPlaylist) {
+    fun getRemoteSongs() = getSongs().filterNot(Song::isLocal)
+    val eligibleSelection by remember(builtInPlaylist, includeDeviceSongs) {
         derivedStateOf { itemSelector.isNotEmpty() && getSongs().isNotEmpty() }
     }
     val hasEligibleSelection = { eligibleSelection }
@@ -520,7 +528,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     )
     val smartTrash = SmartTrash(
         builtInPlaylist = { builtInPlaylist },
-        getSongs = ::getSongs,
+        getSongs = ::getRemoteSongs,
         isSelectionActive = { itemSelector.isActive }
     )
 
@@ -554,9 +562,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     }
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
     val topPlaylists = PeriodSelector( Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )
-    val downloadAllDialog = DownloadAllSongsDialog( ::getSongs )
-    val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog( ::getSongs )
-    val updateSongsDialog = UpdateSongDialog( batchTargets = ::getSongs )
+    val downloadAllDialog = DownloadAllSongsDialog(::getRemoteSongs)
+    val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog(::getRemoteSongs)
+    val updateSongsDialog = UpdateSongDialog(batchTargets = ::getRemoteSongs)
 
     val hasUnmatchedSongs by remember {
         derivedStateOf {
@@ -639,9 +647,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 "position_lock" -> if ( builtInPlaylist != BuiltInPlaylist.Top && songSort.sortBy == SongSortBy.Custom ) add( positionLock )
                 "search" -> add( search )
                 "locator" -> add( locator )
-                "download_all" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(downloadAllDialog, hasEligibleSelection))
-                "delete_downloads" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(deleteDownloadsDialog, hasEligibleSelection))
-                "update" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(updateSongsDialog, hasEligibleSelection))
+                "download_all" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(downloadAllDialog) { getRemoteSongs().isNotEmpty() })
+                "delete_downloads" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(deleteDownloadsDialog) { getRemoteSongs().isNotEmpty() })
+                "update" -> if (!offlineMode && builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(updateSongsDialog) { getRemoteSongs().isNotEmpty() })
                 "shuffle" -> add(itemSelector.guard(shuffle, hasEligibleSelection))
                 "smart_shuffle" -> if (!offlineMode) add( smartShuffle )
                 "item_selector" -> add( itemSelector )
@@ -669,7 +677,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                         override fun onLongClick() {}
                     }, hasEligibleSelection)
                 )
-                "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(smartTrash, hasEligibleSelection))
+                "smart_trash" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(smartTrash) { getRemoteSongs().isNotEmpty() })
                 "match" -> if (!isThemePreview && builtInPlaylist != BuiltInPlaylist.OnDevice &&
                     (runningMatch != null || (!offlineMode && hasUnmatchedSongs))
                 ) add(itemSelector.guard(localMatchButton) { runningMatch != null || getSongs().any(Song::isUnmatched) })
@@ -909,17 +917,24 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
                 when( builtInPlaylist ) {
                     BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, headerPadding, scrollContentInsetProvider )
-                    else -> HomeSongs(
-                        navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState,
-                        onRecommendationCountChange = { count -> recommendationCount = count },
-                        onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading },
-                        isRecommendationEnabled = isRecommendationEnabled,
-                        refreshKey = matchRefreshKey,
-                        onMatchClick = openMatch,
-                        headerPadding = headerPadding,
-                        topContentInsetProvider = scrollContentInsetProvider,
-                        sourceFilter = sourceFilter,
-                    )
+                    else -> {
+                        val songsContent: @Composable () -> Unit = {
+                            HomeSongs(
+                                navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState,
+                                onRecommendationCountChange = { count -> recommendationCount = count },
+                                onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading },
+                                isRecommendationEnabled = isRecommendationEnabled,
+                                refreshKey = matchRefreshKey,
+                                onMatchClick = openMatch,
+                                headerPadding = headerPadding,
+                                topContentInsetProvider = scrollContentInsetProvider,
+                                sourceFilter = sourceFilter,
+                                includeDeviceSongs = includeDeviceSongs,
+                            )
+                        }
+                        if (includeDeviceSongs && !isThemePreview) DeviceLibraryPullRefresh(enabled = true, content = songsContent)
+                        else songsContent()
+                    }
                 }
             }
         }

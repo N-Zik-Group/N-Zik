@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Update
 import androidx.room.Upsert
+import app.n_zik.android.core.ondevice.DEVICE_ALBUM_PREFIX
 import app.n_zik.android.enums.AlbumSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Album
@@ -636,11 +637,12 @@ interface AlbumTable {
         JOIN SongAlbumMap sam ON sam.albumId = A.id
         JOIN Song S ON S.id = sam.songId
         WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+            OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*' AND S.id LIKE 'local:%')
         ORDER BY 
             CASE WHEN A.position = -1 THEN A.ROWID ELSE A.position END ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByPosition( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortInLibraryByPosition(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     fun sortInLibraryByTitle( limit: Int = Int.MAX_VALUE ): Flow<List<Album>> =
         allInLibrary( limit ).map { list ->
@@ -663,37 +665,40 @@ interface AlbumTable {
         JOIN SongAlbumMap sam ON sam.songId = S.id
         JOIN Album A ON A.id = sam.albumId
         WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+            OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*' AND S.id LIKE 'local:%')
         GROUP BY A.id
         ORDER BY COUNT(sam.songId) ASC
         LIMIT :limit
     """)
-    fun sortInLibraryBySongsCount( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortInLibraryBySongsCount(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT A.*
         FROM Album A
         JOIN SongAlbumMap sam ON sam.albumId = A.id
         JOIN Song S ON S.id = sam.songId
-        JOIN Event E ON E.songId = sam.songId
-        WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+        LEFT JOIN Event E ON E.songId = sam.songId
+        WHERE ((S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL) AND E.id IS NOT NULL)
+            OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*' AND S.id LIKE 'local:%')
         GROUP BY A.id
-        ORDER BY SUM(E.playtime) ASC
+        ORDER BY COALESCE(SUM(E.playtime), 0) ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByListeningTime( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortInLibraryByListeningTime(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT A.*
         FROM Album A
         JOIN SongAlbumMap sam ON sam.albumId = A.id
         JOIN Song S ON S.id = sam.songId
-        JOIN Event E ON E.songId = sam.songId
-        WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+        LEFT JOIN Event E ON E.songId = sam.songId
+        WHERE ((S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL) AND E.id IS NOT NULL)
+            OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*' AND S.id LIKE 'local:%')
         GROUP BY A.id
         ORDER BY COUNT(E.id) ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortInLibraryByPlayCount(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT A.*
@@ -701,6 +706,7 @@ interface AlbumTable {
         JOIN SongAlbumMap sam ON sam.songId = S.id
         JOIN Album A ON A.id = sam.albumId
         WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+            OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*' AND S.id LIKE 'local:%')
         GROUP BY A.id
         ORDER BY SUM(
             CASE 
@@ -717,7 +723,7 @@ interface AlbumTable {
         ) ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByDuration( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortInLibraryByDuration(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     /**
      * All albums whose songs are mapped to at least one library playlist, sorted
@@ -731,17 +737,18 @@ interface AlbumTable {
     fun sortInLibrary(
         sortBy: AlbumSortBy,
         sortOrder: SortOrder,
-        limit: Int = Int.MAX_VALUE
+        limit: Int = Int.MAX_VALUE,
+        includeDeviceGroups: Boolean = false,
     ): Flow<List<Album>> = when( sortBy ) {
         AlbumSortBy.Title       -> sortInLibraryByTitle()
         AlbumSortBy.Year        -> sortInLibraryByYear()
         AlbumSortBy.DateAdded   -> allInLibrary()        // Already sorted by ROWID
         AlbumSortBy.Artist      -> sortInLibraryByArtist()
-        AlbumSortBy.Songs       -> sortInLibraryBySongsCount()
-        AlbumSortBy.Duration    -> sortInLibraryByDuration()
-        AlbumSortBy.PlayCount   -> sortInLibraryByPlayCount( limit )
-        AlbumSortBy.ListeningTime -> sortInLibraryByListeningTime( limit )
-        AlbumSortBy.Custom      -> sortInLibraryByPosition( limit )
+        AlbumSortBy.Songs       -> sortInLibraryBySongsCount(includeDeviceGroups = includeDeviceGroups)
+        AlbumSortBy.Duration    -> sortInLibraryByDuration(includeDeviceGroups = includeDeviceGroups)
+        AlbumSortBy.PlayCount   -> sortInLibraryByPlayCount(limit, includeDeviceGroups)
+        AlbumSortBy.ListeningTime -> sortInLibraryByListeningTime(limit, includeDeviceGroups)
+        AlbumSortBy.Custom      -> sortInLibraryByPosition(limit, includeDeviceGroups)
     }.map( sortOrder::applyTo ).take( limit )
     //</editor-fold>
 }

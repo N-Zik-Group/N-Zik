@@ -140,7 +140,6 @@ import app.n_zik.android.utils.color
 import app.n_zik.android.utils.showFavoritesAlbumKey
 import app.n_zik.android.utils.showOnDeviceAlbumsKey
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
-import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.enums.DislikeMode
@@ -256,7 +255,8 @@ fun HomeAlbums(
 
     val scope = rememberCoroutineScope()
     val showOnDeviceTab by rememberPreference(showOnDeviceAlbumsKey, true)
-    val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
+    val deviceLibraryAvailable = deviceLibraryEnabled()
+    val showOnDevice = deviceLibraryAvailable && showOnDeviceTab
     val onDeviceLabel = stringResource(R.string.library_on_device_title)
     val showFavoritesAlbum by rememberPreference(showFavoritesAlbumKey, true)
     val showDislikedAlbum by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
@@ -293,6 +293,8 @@ fun HomeAlbums(
 
     val showOriginFilter = albumType != AlbumsType.OnDevice && isYouTubeSyncEnabled()
     val sourceFilter = if (showOriginFilter) filterBy else FilterBy.All
+    val includeDeviceGroups = deviceLibraryAvailable && (albumType == AlbumsType.OnDevice ||
+        (albumType == AlbumsType.Library && sourceFilter != FilterBy.YoutubeLibrary))
 
     val context = LocalContext.current
     val preview = LocalThemePreview.current
@@ -301,8 +303,8 @@ fun HomeAlbums(
     var eligibleDeviceGroups by remember(profile) {
         mutableStateOf(if (preview == null) DeviceLibraryResults.current(profile)?.albumIds else emptySet())
     }
-    LaunchedEffect(context, lifecycleOwner, albumType) {
-        if (preview != null || albumType != AlbumsType.OnDevice) return@LaunchedEffect
+    LaunchedEffect(context, lifecycleOwner, profile, includeDeviceGroups, preview) {
+        if (preview != null || !includeDeviceGroups) return@LaunchedEffect
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             context.observeDeviceLibrary().collect { eligibleDeviceGroups = it.albumIds }
         }
@@ -311,7 +313,7 @@ fun HomeAlbums(
     var searchDataReady by remember(sort.sortBy, sort.sortOrder, albumType) { mutableStateOf(false) }
     val groupsReady = albumType != AlbumsType.OnDevice || eligibleDeviceGroups != null
     val forceShimmer = forceLoadingShimmerPreview()
-    LaunchedEffect( sort.sortBy, sort.sortOrder, albumType ) {
+    LaunchedEffect(sort.sortBy, sort.sortOrder, albumType, includeDeviceGroups) {
         if (preview != null) {
             val demoItems = ThemePreviewDemo.albums
             itemsToFilter = sort.sortOrder.applyTo(when (sort.sortBy) {
@@ -326,14 +328,9 @@ fun HomeAlbums(
         }
         when ( albumType ) {
             AlbumsType.Favorites -> Database.albumTable.sortBookmarked( sort.sortBy, sort.sortOrder )
-            AlbumsType.Library -> Database.albumTable.sortInLibrary( sort.sortBy, sort.sortOrder )
-            AlbumsType.OnDevice -> {
-                val sorted = Database.albumTable.sortInLibrary(sort.sortBy, sort.sortOrder)
-                if (sort.sortBy == AlbumSortBy.Title) sorted else kotlinx.coroutines.flow.combine(
-                    sorted,
-                    Database.albumTable.sortInLibrary(AlbumSortBy.Title, sort.sortOrder),
-                ) { selected, alphabetical -> (selected + alphabetical).distinctBy { it.id } }
-            }
+            AlbumsType.Library, AlbumsType.OnDevice -> Database.albumTable.sortInLibrary(
+                sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
+            )
             AlbumsType.Disliked -> Database.albumTable.allDisliked()
         }.flowOn(NzikDispatchers.DATA).collect {
             itemsToFilter = it
@@ -341,18 +338,18 @@ fun HomeAlbums(
         }
     }
     val groups = eligibleDeviceGroups
-    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups) {
+    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups, includeDeviceGroups) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups) {
+    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups, includeDeviceGroups) {
         if (!searchDataReady || !groupsReady) return@LaunchedEffect
         val type = albumType
         val source = sourceFilter
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
             candidates.filter { item ->
-                if (type == AlbumsType.OnDevice) item.id in groups.orEmpty()
-                else !isDeviceAlbumId(item.id) &&
+                if (isDeviceAlbumId(item.id)) includeDeviceGroups && item.id in groups.orEmpty()
+                else type != AlbumsType.OnDevice &&
                     (type == AlbumsType.Disliked || item.dislikedAt == null) &&
                     when (source) {
                         FilterBy.All -> true
@@ -380,13 +377,11 @@ fun HomeAlbums(
     val displayedGrid = rememberHomeFilteredGrid("albums", lazyGridState, gridReady, itemsOnDisplay) { it.id }
     val action = rememberHomeSongAction("HomeAlbum") {
         if (!gridReady || preview != null) return@rememberHomeSongAction null
-        val deviceOnly = albumType == AlbumsType.OnDevice
-        val eligibleIds = actionTargets().map { it.id }.filter { isDeviceAlbumId(it) == deviceOnly }
+        val eligibleIds = actionTargets().map { it.id }
         if (itemSelector.isActive && eligibleIds.isEmpty()) return@rememberHomeSongAction null
         val load: suspend () -> List<Song> = {
-            val groups = if (deviceOnly) context.scanDeviceLibrary().albumSongIds else emptyMap()
-            loadHomeParentSongs(eligibleIds, Database.songAlbumMapTable::songsForHomeAlbums) { id, song ->
-                song.isLocal == deviceOnly && (!deviceOnly || song.id in groups[id].orEmpty())
+            loadHomeLibraryGroupSongs(eligibleIds, Database.songAlbumMapTable::songsForHomeAlbums, ::isDeviceAlbumId) {
+                context.scanDeviceLibrary().albumSongIds
             }
         }
         load
@@ -419,7 +414,7 @@ fun HomeAlbums(
             Timber.tag("HomeAlbum").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
-        localDestinationsOnly = albumType == AlbumsType.OnDevice,
+        localDestinationsOnly = actionTargets().any { isDeviceAlbumId(it.id) },
     )
     val exportDialog = ExportSongsToCSVDialog.deferred(
         "Albums",
@@ -427,10 +422,7 @@ fun HomeAlbums(
         selectionActive = { itemSelector.isActive },
     )
     val eligibleSelection by remember(gridReady, albumType) {
-        derivedStateOf {
-            gridReady && itemSelector.isNotEmpty() &&
-                actionTargets().any { isDeviceAlbumId(it.id) == (albumType == AlbumsType.OnDevice) }
-        }
+        derivedStateOf { gridReady && itemSelector.isNotEmpty() && actionTargets().isNotEmpty() }
     }
     val hasEligibleSelection = { eligibleSelection }
 
@@ -466,7 +458,7 @@ fun HomeAlbums(
 
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
-    DeviceLibraryPullRefresh(albumType == AlbumsType.OnDevice) {
+    DeviceLibraryPullRefresh(includeDeviceGroups) {
         Box(
             modifier = Modifier
                 .background(colorPalette().background0)

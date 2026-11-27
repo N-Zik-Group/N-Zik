@@ -4,7 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.core.database.DatabaseInitializer
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.ondevice.isDeviceArtistId
+import app.n_zik.android.enums.AlbumSortBy
+import app.n_zik.android.enums.ArtistSortBy
+import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -15,6 +21,59 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class HomeParentRoomTest {
+    // runBlocking bridges the suspend Room calls to the JUnit test.
+    @Test fun `all mixes sorted remote and verified device groups without requiring local playback history`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = Room.inMemoryDatabaseBuilder(context, DatabaseInitializer::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            val localAlbum = "LOCAL_ALBUM_DEVICE_1"
+            val localArtist = "LOCAL_ARTIST_DEVICE_1"
+            database.songTable.upsert(listOf(
+                Song.makePlaceholder("remote").copy(totalPlayTimeMs = 1L),
+                Song.makePlaceholder("local:1"),
+                Song.makePlaceholder("local:2"),
+            ))
+            val sql = database.openHelper.writableDatabase
+            sql.execSQL("INSERT INTO Album (id) VALUES ('remote-album'), ('$localAlbum')")
+            sql.execSQL(
+                "INSERT INTO SongAlbumMap (songId, albumId, position) VALUES " +
+                    "('remote', 'remote-album', 0), ('local:1', '$localAlbum', 0), ('local:2', '$localAlbum', 1)",
+            )
+            sql.execSQL("INSERT INTO Artist (id) VALUES ('remote-artist'), ('$localArtist')")
+            sql.execSQL(
+                "INSERT INTO SongArtistMap (songId, artistId) VALUES " +
+                    "('remote', 'remote-artist'), ('local:1', '$localArtist'), ('local:2', '$localArtist')",
+            )
+            sql.execSQL("INSERT INTO Event (songId, timestamp, playTime) VALUES ('remote', 1000, 1)")
+
+            val albumTable = database.albumTable
+            assertEquals(listOf("remote-album"), albumTable.sortInLibrary(AlbumSortBy.PlayCount, SortOrder.Ascending)
+                .first().map { it.id })
+            assertEquals(listOf(localAlbum, "remote-album"), albumTable.sortInLibrary(
+                AlbumSortBy.PlayCount, SortOrder.Ascending, includeDeviceGroups = true,
+            ).first().map { it.id })
+            val artistTable = database.artistTable
+            assertEquals(listOf("remote-artist"), artistTable.sortInLibrary(ArtistSortBy.ListeningTime, SortOrder.Ascending)
+                .first().map { it.id })
+            assertEquals(listOf(localArtist, "remote-artist"), artistTable.sortInLibrary(
+                ArtistSortBy.ListeningTime, SortOrder.Ascending, includeDeviceGroups = true,
+            ).first().map { it.id })
+
+            val albumSongs = loadHomeLibraryGroupSongs(
+                listOf(localAlbum, "remote-album"), database.songAlbumMapTable::songsForHomeAlbums, ::isDeviceAlbumId,
+            ) { mapOf(localAlbum to setOf("local:1")) }
+            val artistSongs = loadHomeLibraryGroupSongs(
+                listOf(localArtist, "remote-artist"), database.songArtistMapTable::songsForHomeArtists, ::isDeviceArtistId,
+            ) { mapOf(localArtist to setOf("local:1")) }
+            assertEquals(listOf("local:1", "remote"), albumSongs.map(Song::id))
+            assertEquals(listOf("local:1", "remote"), artistSongs.map(Song::id))
+        } finally {
+            database.close()
+        }
+    }
+
     // runBlocking bridges the suspend Room calls to the JUnit test.
     @Test fun `album artist and playlist batches keep parent and track order`() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()

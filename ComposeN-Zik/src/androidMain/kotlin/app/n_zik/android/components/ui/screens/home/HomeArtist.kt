@@ -151,7 +151,6 @@ import app.n_zik.android.utils.color
 import app.n_zik.android.utils.showFavoritesArtistKey
 import app.n_zik.android.utils.showOnDeviceArtistsKey
 import app.n_zik.android.core.ondevice.isDeviceArtistId
-import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.utils.excludeDislikedArtistsKey
 import app.n_zik.android.enums.DislikeMode
@@ -258,7 +257,8 @@ fun HomeArtists(
     }
 
     val showOnDeviceTab by rememberPreference(showOnDeviceArtistsKey, true)
-    val showOnDevice = deviceLibraryEnabled() && showOnDeviceTab
+    val deviceLibraryAvailable = deviceLibraryEnabled()
+    val showOnDevice = deviceLibraryAvailable && showOnDeviceTab
     val onDeviceLabel = stringResource(R.string.library_on_device_title)
     val showFavoritesArtist by rememberPreference(showFavoritesArtistKey, true)
     val showDislikedArtist by rememberPreference(excludeDislikedArtistsKey, DislikeMode.Enabled)
@@ -295,6 +295,8 @@ fun HomeArtists(
 
     val showYouTubeOrigin by YouTubeArtistProvenance.showOrigin.collectAsStateWithLifecycle()
     val sourceFilter = if (showYouTubeOrigin) filterBy else FilterBy.All
+    val includeDeviceGroups = deviceLibraryAvailable && (artistType == ArtistsType.OnDevice ||
+        (artistType == ArtistsType.Library && sourceFilter != FilterBy.YoutubeLibrary))
 
     val context = LocalContext.current
     val preview = LocalThemePreview.current
@@ -303,8 +305,8 @@ fun HomeArtists(
     var eligibleDeviceGroups by remember(profile) {
         mutableStateOf(if (preview == null) DeviceLibraryResults.current(profile)?.artistIds else emptySet())
     }
-    LaunchedEffect(context, lifecycleOwner, artistType) {
-        if (preview != null || artistType != ArtistsType.OnDevice) return@LaunchedEffect
+    LaunchedEffect(context, lifecycleOwner, profile, includeDeviceGroups, preview) {
+        if (preview != null || !includeDeviceGroups) return@LaunchedEffect
         lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
             context.observeDeviceLibrary().collect { eligibleDeviceGroups = it.artistIds }
         }
@@ -313,7 +315,7 @@ fun HomeArtists(
     var searchDataReady by remember(sort.sortBy, sort.sortOrder, artistType) { mutableStateOf(false) }
     val groupsReady = artistType != ArtistsType.OnDevice || eligibleDeviceGroups != null
     val forceShimmer = forceLoadingShimmerPreview()
-    LaunchedEffect( Unit, sort.sortBy, sort.sortOrder, artistType ) {
+    LaunchedEffect(sort.sortBy, sort.sortOrder, artistType, includeDeviceGroups) {
         if (preview != null) {
             val demoItems = ThemePreviewDemo.artists
             itemsToFilter = sort.sortOrder.applyTo(when (sort.sortBy) {
@@ -325,14 +327,9 @@ fun HomeArtists(
         }
         when( artistType ) {
             ArtistsType.Favorites -> Database.artistTable.sortFollowing( sort.sortBy, sort.sortOrder )
-            ArtistsType.Library -> Database.artistTable.sortInLibrary( sort.sortBy, sort.sortOrder )
-            ArtistsType.OnDevice -> {
-                val sorted = Database.artistTable.sortInLibrary(sort.sortBy, sort.sortOrder)
-                if (sort.sortBy == ArtistSortBy.Name) sorted else kotlinx.coroutines.flow.combine(
-                    sorted,
-                    Database.artistTable.sortInLibrary(ArtistSortBy.Name, sort.sortOrder),
-                ) { selected, alphabetical -> (selected + alphabetical).distinctBy { it.id } }
-            }
+            ArtistsType.Library, ArtistsType.OnDevice -> Database.artistTable.sortInLibrary(
+                sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
+            )
             ArtistsType.Disliked -> Database.artistTable.allDisliked()
         }.flowOn(NzikDispatchers.DATA).collect {
             itemsToFilter = it
@@ -340,18 +337,18 @@ fun HomeArtists(
         }
     }
     val groups = eligibleDeviceGroups
-    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, artistType, sourceFilter, groups) {
+    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, artistType, sourceFilter, groups, includeDeviceGroups) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, artistType, sourceFilter, groups) {
+    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, artistType, sourceFilter, groups, includeDeviceGroups) {
         if (!searchDataReady || !groupsReady) return@LaunchedEffect
         val type = artistType
         val source = sourceFilter
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
             candidates.filter { item ->
-                if (type == ArtistsType.OnDevice) item.id in groups.orEmpty()
-                else !isDeviceArtistId(item.id) &&
+                if (isDeviceArtistId(item.id)) includeDeviceGroups && item.id in groups.orEmpty()
+                else type != ArtistsType.OnDevice &&
                     (type == ArtistsType.Disliked || item.dislikedAt == null) &&
                     when (source) {
                         FilterBy.All -> true
@@ -376,13 +373,11 @@ fun HomeArtists(
     val displayedGrid = rememberHomeFilteredGrid("artists", lazyGridState, gridReady, itemsOnDisplay) { it.id }
     val action = rememberHomeSongAction("HomeArtist") {
         if (!gridReady || preview != null) return@rememberHomeSongAction null
-        val deviceOnly = artistType == ArtistsType.OnDevice
-        val eligibleIds = actionTargets().map { it.id }.filter { isDeviceArtistId(it) == deviceOnly }
+        val eligibleIds = actionTargets().map { it.id }
         if (itemSelector.isActive && eligibleIds.isEmpty()) return@rememberHomeSongAction null
         val load: suspend () -> List<Song> = {
-            val groups = if (deviceOnly) context.scanDeviceLibrary().artistSongIds else emptyMap()
-            loadHomeParentSongs(eligibleIds, Database.songArtistMapTable::songsForHomeArtists) { id, song ->
-                song.isLocal == deviceOnly && (!deviceOnly || song.id in groups[id].orEmpty())
+            loadHomeLibraryGroupSongs(eligibleIds, Database.songArtistMapTable::songsForHomeArtists, ::isDeviceArtistId) {
+                context.scanDeviceLibrary().artistSongIds
             }
         }
         load
@@ -415,7 +410,7 @@ fun HomeArtists(
             Timber.tag("HomeArtist").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
-        localDestinationsOnly = artistType == ArtistsType.OnDevice,
+        localDestinationsOnly = actionTargets().any { isDeviceArtistId(it.id) },
     )
     val exportDialog = ExportSongsToCSVDialog.deferred(
         "Artists",
@@ -423,10 +418,7 @@ fun HomeArtists(
         selectionActive = { itemSelector.isActive },
     )
     val eligibleSelection by remember(gridReady, artistType) {
-        derivedStateOf {
-            gridReady && itemSelector.isNotEmpty() &&
-                actionTargets().any { isDeviceArtistId(it.id) == (artistType == ArtistsType.OnDevice) }
-        }
+        derivedStateOf { gridReady && itemSelector.isNotEmpty() && actionTargets().isNotEmpty() }
     }
     val hasEligibleSelection = { eligibleSelection }
 
@@ -464,7 +456,7 @@ fun HomeArtists(
 
     val floatingBackdrop = rememberGlassFloatingActionBackdrop()
 
-    DeviceLibraryPullRefresh(artistType == ArtistsType.OnDevice) {
+    DeviceLibraryPullRefresh(includeDeviceGroups) {
         Box (
             modifier = Modifier
                 .background(colorPalette().background0)

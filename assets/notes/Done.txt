@@ -1412,3 +1412,7 @@ Android Auto:
 Settings:
 - fix(backup): await settings export completion
   - Report failed writes and keep the backup flow retryable.
+
+Library:
+- fix(library): include device media in the All tabs
+  - Use current device membership and keep the existing sort and local detail routes.

@@ -9,6 +9,7 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
+import app.n_zik.android.core.ondevice.DEVICE_ARTIST_PREFIX
 import app.n_zik.android.enums.ArtistSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Album
@@ -598,11 +599,12 @@ interface ArtistTable {
         JOIN SongArtistMap sam ON sam.artistId = A.id
         JOIN Song S ON S.id = sam.songId
         WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+            OR (:includeDeviceGroups AND (A.id GLOB '$DEVICE_ARTIST_PREFIX*' OR A.id LIKE 'local:%') AND S.id LIKE 'local:%')
         ORDER BY 
             CASE WHEN A.position = -1 THEN A.ROWID ELSE A.position END ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByPosition( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
+    fun sortInLibraryByPosition(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Artist>>
 
     fun sortInLibraryByName( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>> =
         allInLibrary( limit ).map { list ->
@@ -614,26 +616,28 @@ interface ArtistTable {
         FROM Artist A
         JOIN SongArtistMap sam ON sam.artistId = A.id
         JOIN Song S ON S.id = sam.songId
-        JOIN Event E ON E.songId = sam.songId
-        WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+        LEFT JOIN Event E ON E.songId = sam.songId
+        WHERE ((S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL) AND E.id IS NOT NULL)
+            OR (:includeDeviceGroups AND (A.id GLOB '$DEVICE_ARTIST_PREFIX*' OR A.id LIKE 'local:%') AND S.id LIKE 'local:%')
         GROUP BY A.id
-        ORDER BY SUM(E.playtime) ASC
+        ORDER BY COALESCE(SUM(E.playtime), 0) ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByListeningTime( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
+    fun sortInLibraryByListeningTime(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Artist>>
 
     @Query("""
         SELECT DISTINCT A.*
         FROM Artist A
         JOIN SongArtistMap sam ON sam.artistId = A.id
         JOIN Song S ON S.id = sam.songId
-        JOIN Event E ON E.songId = sam.songId
-        WHERE S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL
+        LEFT JOIN Event E ON E.songId = sam.songId
+        WHERE ((S.totalPlayTimeMs >= 1 OR S.likedAt IS NOT NULL) AND E.id IS NOT NULL)
+            OR (:includeDeviceGroups AND (A.id GLOB '$DEVICE_ARTIST_PREFIX*' OR A.id LIKE 'local:%') AND S.id LIKE 'local:%')
         GROUP BY A.id
         ORDER BY COUNT(E.id) ASC
         LIMIT :limit
     """)
-    fun sortInLibraryByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
+    fun sortInLibraryByPlayCount(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Artist>>
 
     /**
      * All library artists, sorted by [sortBy] (an [ArtistSortBy] property)
@@ -646,13 +650,14 @@ interface ArtistTable {
     fun sortInLibrary(
         sortBy: ArtistSortBy,
         sortOrder: SortOrder,
-        limit: Int = Int.MAX_VALUE
+        limit: Int = Int.MAX_VALUE,
+        includeDeviceGroups: Boolean = false,
     ): Flow<List<Artist>> = when( sortBy ) {
         ArtistSortBy.Name       -> sortInLibraryByName()
         ArtistSortBy.DateAdded  -> allInLibrary()     // Already sorted by ROWID
-        ArtistSortBy.PlayCount -> sortInLibraryByPlayCount( limit )
-        ArtistSortBy.ListeningTime -> sortInLibraryByListeningTime( limit )
-        ArtistSortBy.Custom    -> sortInLibraryByPosition( limit )
+        ArtistSortBy.PlayCount -> sortInLibraryByPlayCount(limit, includeDeviceGroups)
+        ArtistSortBy.ListeningTime -> sortInLibraryByListeningTime(limit, includeDeviceGroups)
+        ArtistSortBy.Custom    -> sortInLibraryByPosition(limit, includeDeviceGroups)
     }.map( sortOrder::applyTo ).take( limit )
     //</editor-fold>
 }
