@@ -1356,3 +1356,7 @@ Playlists:
 Menus:
 - fix(playlists): share the library picker and subfilters
   - Remove the old inline picker and use the same groups, controls, and filters across media entry points.
+
+Menus:
+- fix(menu): highlight the current filter choice
+  - Use the selection background and accent treatment from the sorting menu.
