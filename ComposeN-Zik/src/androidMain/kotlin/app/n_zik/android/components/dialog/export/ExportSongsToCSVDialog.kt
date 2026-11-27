@@ -21,6 +21,7 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import app.n_zik.android.core.utils.TimeDateUtils
 import app.n_zik.android.core.utils.Toaster
@@ -98,24 +99,32 @@ class ExportSongsToCSVDialog private constructor(
                 selectionAtOpen.value = false
                 if (uri == null) return@rememberLauncherForActivityResult
                 val load = resolveExportPayload(selectedExport, captured) { latestCapture.value() }
-                if (load == null && !selectedExport) return@rememberLauncherForActivityResult
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                    val songs = load?.invoke()
-                    if (songs == null) {
-                        if (selectedExport) {
-                            Toaster.e(R.string.export_selection_lost)
-                            removeEmptyExport(uri)
+                    try {
+                        val songs = load?.invoke()
+                        if (songs == null) {
+                            if (selectedExport) {
+                                if (load == null) Toaster.e(R.string.export_selection_lost)
+                                removeEmptyExport(uri)
+                            }
+                            return@launch
                         }
-                        return@launch
-                    }
-                    if (songs.isEmpty()) {
-                        removeEmptyExport(uri)
-                        Toaster.w(R.string.player_no_song_found)
-                        return@launch
-                    }
-                    val songsToWrite = songs.map { SongCSV(it, playlistBrowseId, playlistName) }
-                    appContext().contentResolver.openOutputStream(uri)?.use { output ->
-                        writeToCsvFile(output, songsToWrite)
+                        if (songs.isEmpty()) {
+                            removeEmptyExport(uri)
+                            Toaster.w(R.string.player_no_song_found)
+                            return@launch
+                        }
+                        val songsToWrite = songs.map { SongCSV(it, playlistBrowseId, playlistName) }
+                        val stream = checkNotNull(appContext().contentResolver.openOutputStream(uri)) {
+                            "Document provider did not open the playlist export"
+                        }
+                        stream.use { output -> writeToCsvFile(output, songsToWrite) }
+                        Toaster.done()
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (error: Exception) {
+                        Timber.tag("ExportSongsToCSVDialog").e(error, "Could not write the playlist CSV")
+                        Toaster.e(R.string.common_error_title)
                     }
                 }
             }

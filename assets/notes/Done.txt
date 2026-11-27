@@ -1744,3 +1744,7 @@ Playlist:
 Menus:
 - fix(menu): open album and artist dialogs above their menus
   - Apply the shared native and Glass window policy to confirmed collection toolbar actions.
+
+Playlist:
+- fix(playlist): confirm CSV export only after writing the document
+  - Report open, write and close failures, and preserve selection restoration and output policy.

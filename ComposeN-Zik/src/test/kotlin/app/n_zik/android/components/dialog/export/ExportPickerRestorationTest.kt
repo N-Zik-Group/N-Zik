@@ -2,10 +2,15 @@ package app.n_zik.android.components.dialog.export
 
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.IOException
+import java.io.OutputStream
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 import android.app.Application
+import android.content.ContentResolver
+import android.content.ContextWrapper
 import android.net.Uri
 import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.activity.result.ActivityResultRegistry
@@ -20,6 +25,7 @@ import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
+import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.unmockkObject
@@ -48,11 +54,13 @@ class ExportPickerRestorationTest {
     @Test fun `the document picker exports only the captured selection after leaving selection mode`() {
         val application = RuntimeEnvironment.getApplication()
         val uri = Uri.parse("content://test.documents/selected.csv")
-        val outputClosed = CountDownLatch(1)
+        val outputClosed = AtomicBoolean()
+        val notifiedAfterClose = AtomicBoolean()
+        val successDelivered = CountDownLatch(1)
         val output = object : ByteArrayOutputStream() {
             override fun close() {
                 super.close()
-                outputClosed.countDown()
+                outputClosed.set(true)
             }
         }
         Shadows.shadowOf(application.contentResolver).registerOutputStream(uri, output)
@@ -62,8 +70,13 @@ class ExportPickerRestorationTest {
         var browsingReads = 0
         lateinit var dialog: ExportSongsToCSVDialog
         val registry = DocumentRegistry()
+        mockkObject(Toaster)
         mockkStatic(::appContext)
         every { appContext() } returns application
+        every { Toaster.done() } answers {
+            notifiedAfterClose.set(outputClosed.get())
+            successDelivered.countDown()
+        }
         try {
             compose.setContent {
                 CompositionLocalProvider(LocalActivityResultRegistryOwner provides registry) {
@@ -83,13 +96,61 @@ class ExportPickerRestorationTest {
             }
             compose.runOnIdle { registry.complete(uri) }
 
-            assertTrue("The selected CSV output was not closed", outputClosed.await(5, TimeUnit.SECONDS))
+            assertTrue("The CSV export did not report success", successDelivered.await(5, TimeUnit.SECONDS))
+            assertTrue("Success was reported before closing the CSV", notifiedAfterClose.get())
             val rows = output.toByteArray().inputStream().use { csvReader().readAllWithHeader(it) }
             assertEquals(listOf("checked"), rows.map { it["MediaId"] })
             assertEquals(listOf("Songs"), rows.map { it["PlaylistName"] })
             assertEquals(0, browsingReads)
         } finally {
             unmockkStatic(::appContext)
+            unmockkObject(Toaster)
+        }
+    }
+
+    @Test fun `a document provider without an output stream reports an export failure`() =
+        assertExportFailure(output = null)
+
+    @Test fun `an output stream that fails to write reports an export failure`() =
+        assertExportFailure(object : OutputStream() {
+            override fun write(value: Int) = throw IOException("Cannot write test document")
+        })
+
+    @Test fun `an output stream that fails to close reports an export failure`() =
+        assertExportFailure(object : ByteArrayOutputStream() {
+            override fun close() = throw IOException("Cannot close test document")
+        })
+
+    private fun assertExportFailure(output: OutputStream?) {
+        val uri = Uri.parse("content://test.documents/failed.csv")
+        val resolver = mockk<ContentResolver>()
+        every { resolver.openOutputStream(uri) } returns output
+        val context = object : ContextWrapper(RuntimeEnvironment.getApplication()) {
+            override fun getContentResolver(): ContentResolver = resolver
+        }
+        val registry = DocumentRegistry()
+        lateinit var dialog: ExportSongsToCSVDialog
+        mockkObject(Toaster)
+        mockkStatic(::appContext)
+        every { appContext() } returns context
+        every { Toaster.e(R.string.common_error_title, duration = any()) } just Runs
+        every { Toaster.done() } just Runs
+        try {
+            compose.setContent {
+                CompositionLocalProvider(LocalActivityResultRegistryOwner provides registry) {
+                    dialog = ExportSongsToCSVDialog("Songs", { listOf(Song.makePlaceholder("track")) })
+                }
+            }
+            compose.runOnIdle {
+                dialog.onShortClick()
+                dialog.onSet("failed")
+                registry.complete(uri)
+            }
+            verify(timeout = 5_000, exactly = 1) { Toaster.e(R.string.common_error_title, duration = any()) }
+            verify(exactly = 0) { Toaster.done() }
+        } finally {
+            unmockkStatic(::appContext)
+            unmockkObject(Toaster)
         }
     }
 
