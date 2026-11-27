@@ -32,6 +32,24 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33], application = Application::class)
 class CustomToolbarSettingsTest {
+    @Test fun `playlist and podcast keep their default menu order and honor saved visibility and order`() {
+        val prefs = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-overflow", Context.MODE_PRIVATE)
+        val common = listOf(ToolbarAction.PLAY_NEXT, ToolbarAction.SELECT, ToolbarAction.FAVORITES)
+        val playlist = ToolbarSurface.ONLINE_PLAYLIST
+        val podcast = ToolbarSurface.PODCAST
+        val playlistMetadata = listOf(ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID)
+        assertEquals(common + playlistMetadata, playlist.readVisibleActions(prefs).filter(playlist.overflowActions::contains))
+        assertEquals(common, podcast.readVisibleActions(prefs).filter(podcast.overflowActions::contains))
+
+        prefs.edit().putString(playlist.orderKey, """["favorites","search","select"]""")
+            .putBoolean(playlist.visibilityKey(ToolbarAction.SELECT), false).apply()
+        assertEquals(
+            listOf(ToolbarAction.FAVORITES, ToolbarAction.PLAY_NEXT) + playlistMetadata,
+            playlist.readVisibleActions(prefs).filter(playlist.overflowActions::contains),
+        )
+        assertEquals(common, podcast.readVisibleActions(prefs).filter(podcast.overflowActions::contains))
+    }
+
     @Test fun `hidden controls retain their place and other tabs and profiles keep defaults`() {
         val first = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-first", Context.MODE_PRIVATE)
         val second = RuntimeEnvironment.getApplication().getSharedPreferences("toolbar-second", Context.MODE_PRIVATE)

@@ -366,8 +366,9 @@ fun Podcast(
             onLongClick = { Toaster.i(R.string.playlist_actions_title) },
         )
     }
-    val toolbarOrder = ToolbarSurface.PODCAST.visibleActions()
-    val overflowActions = toolbarOrder.mapNotNull {
+    val toolbarSurface = ToolbarSurface.PODCAST
+    val toolbarOrder = toolbarSurface.visibleActions()
+    val overflowActions = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull {
         when (it) {
             ToolbarControl.PLAY_NEXT -> playNext
             ToolbarControl.FAVORITES -> favorites
@@ -379,8 +380,7 @@ fun Podcast(
     val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
     val hasOverflowActions = overflowActions.isNotEmpty()
     val inlineActionIds = toolbarOrder.filterNot {
-        it == ToolbarControl.BOOKMARK || it == ToolbarControl.PLAY_NEXT ||
-            it == ToolbarControl.FAVORITES || it == ToolbarControl.SELECT
+        it == ToolbarControl.BOOKMARK || it in toolbarSurface.overflowActions
     } + listOfNotNull(ToolbarControl.MENU.takeIf { hasOverflowActions })
 
     LayoutWithAdaptiveThumbnail(

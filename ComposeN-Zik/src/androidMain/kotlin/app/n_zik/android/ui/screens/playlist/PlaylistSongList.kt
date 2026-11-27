@@ -477,8 +477,9 @@ fun PlaylistSongList(
             onLongClick = { Toaster.i(R.string.playlist_actions_title) },
         )
     }
-    val toolbarOrder = ToolbarSurface.ONLINE_PLAYLIST.visibleActions()
-    val overflowActions = toolbarOrder.mapNotNull {
+    val toolbarSurface = ToolbarSurface.ONLINE_PLAYLIST
+    val toolbarOrder = toolbarSurface.visibleActions()
+    val overflowActions = toolbarOrder.filter(toolbarSurface.overflowActions::contains).mapNotNull {
         when (it) {
             ToolbarControl.PLAY_NEXT -> playNext
             ToolbarControl.FAVORITES -> favorites
@@ -493,10 +494,7 @@ fun PlaylistSongList(
     val moreActions = EllipsisMenuComponent.init { currentOverflowActions }
     val hasOverflowActions = overflowActions.isNotEmpty()
     val inlineActionIds = toolbarOrder.filterNot {
-        it == ToolbarControl.BOOKMARK || it == ToolbarControl.PLAY_NEXT ||
-            it == ToolbarControl.FAVORITES || it == ToolbarControl.SELECT ||
-            it == ToolbarControl.CHANGE_TITLE || it == ToolbarControl.CHANGE_ARTISTS ||
-            it == ToolbarControl.CHANGE_PLAYLIST_BROWSE_ID
+        it == ToolbarControl.BOOKMARK || it in toolbarSurface.overflowActions
     } + listOfNotNull(ToolbarControl.MENU.takeIf { hasOverflowActions })
     val playlistStatesMap by remember(playlistSongIds) {
         PlaylistStateManager.getPlaylistStates(playlistSongIds)

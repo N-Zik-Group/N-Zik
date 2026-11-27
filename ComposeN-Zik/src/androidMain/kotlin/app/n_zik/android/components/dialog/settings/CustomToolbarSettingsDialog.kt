@@ -43,7 +43,14 @@ internal open class CustomToolbarSettingsDialog(
 
     fun searchOptions(): List<SettingsNestedOption> = surfaces.flatMapIndexed { index, surface ->
         surface.editableActions.map { action ->
-            SettingsNestedOption(itemId(surface, action), action.label, index, surface.label.takeIf { surfaces.size > 1 })
+            SettingsNestedOption(
+                itemId(surface, action), action.label, index, surface.label.takeIf { surfaces.size > 1 },
+                descriptionRes = when {
+                    action == ToolbarAction.ADD_TO_PLAYLIST -> R.string.playlist_action_add
+                    action in surface.overflowActions -> R.string.common_menu_label
+                    else -> null
+                },
+            )
         }
     }
 
@@ -78,8 +85,11 @@ internal open class CustomToolbarSettingsDialog(
             }
         }
         val items = order.map { action ->
-            ToggleItem(itemId(surface, action), action.icon, stringResource(action.label),
-                surface.visibilityKey(action), surface.defaultVisible(prefs, action))
+            ToggleItem(
+                itemId(surface, action), action.icon, stringResource(action.label),
+                surface.visibilityKey(action), surface.defaultVisible(prefs, action),
+                description = if (action in surface.overflowActions) stringResource(R.string.common_menu_label) else null,
+            )
         }
         ToggleListDialog(
             items = items,

@@ -51,12 +51,15 @@ private val onlinePlaylistActions = listOf(
     ToolbarAction.ADD_TO_PLAYLIST, ToolbarAction.DOWNLOAD, ToolbarAction.DELETE_DOWNLOADS, ToolbarAction.SELECT, ToolbarAction.FAVORITES,
 )
 
+private val playlistAndPodcastOverflowActions = setOf(ToolbarAction.PLAY_NEXT, ToolbarAction.FAVORITES, ToolbarAction.SELECT)
+
 internal enum class ToolbarSurface(
     val id: String,
     val label: Int,
     val actions: List<ToolbarAction>,
     val locked: Set<ToolbarAction> = emptySet(),
     val defaultHidden: Set<ToolbarAction> = emptySet(),
+    val overflowActions: Set<ToolbarAction> = emptySet(),
 ) {
     ALBUM_ONLINE("albumOnline", R.string.search_online, listOf(
         ToolbarAction.BOOKMARK, ToolbarAction.SEARCH, ToolbarAction.LOCATE, ToolbarAction.SHUFFLE, ToolbarAction.RADIO,
@@ -81,8 +84,11 @@ internal enum class ToolbarSurface(
     )),
     ONLINE_PLAYLIST("onlinePlaylist", R.string.settings_toolbar_online_playlist, onlinePlaylistActions + listOf(
         ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID,
+    ), overflowActions = playlistAndPodcastOverflowActions + setOf(
+        ToolbarAction.CHANGE_TITLE, ToolbarAction.CHANGE_ARTISTS, ToolbarAction.CHANGE_PLAYLIST_BROWSE_ID,
     )),
-    PODCAST("podcast", R.string.settings_toolbar_online_podcast, onlinePlaylistActions),
+    PODCAST("podcast", R.string.settings_toolbar_online_podcast, onlinePlaylistActions,
+        overflowActions = playlistAndPodcastOverflowActions),
     HEADER("header", R.string.settings_toolbar_global_header,
         listOf(ToolbarAction.NOTIFICATIONS, ToolbarAction.SEARCH, ToolbarAction.PROFILE_MENU), locked = setOf(ToolbarAction.PROFILE_MENU)),
     PLAYER_TOP("playerTop", R.string.settings_toolbar_player_top,
