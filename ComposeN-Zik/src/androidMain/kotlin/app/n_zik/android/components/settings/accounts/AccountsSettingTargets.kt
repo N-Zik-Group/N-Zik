@@ -10,7 +10,6 @@ import app.n_zik.android.utils.discordUsernameKey
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
 import app.n_zik.android.utils.isDiscordPresenceEnabledKey
-import app.n_zik.android.utils.streamClientRestartNeededKey
 import app.n_zik.android.utils.syncBackgroundGuardKey
 import app.n_zik.android.utils.syncCooldownKey
 import app.n_zik.android.utils.syncDirectionKey
@@ -77,7 +76,7 @@ internal object AccountsSettingTargets {
             actions = listOf("editFace", "openProfiles"),
         ),
         AccountsCardTargets("accounts.card.youtube",
-            preferenceKeys = listOf(ytVisitorDataKey, ytDataSyncIdKey, ytAuthUserKey, ytCookieKey, ytAccountNameKey, ytAccountEmailKey, ytAccountChannelHandleKey, ytAccountThumbnailKey, enableYouTubeLoginKey, enableYouTubeSyncKey, streamClientRestartNeededKey, useLoginForBrowseKey, useLoginForSearchKey),
+            preferenceKeys = listOf(ytVisitorDataKey, ytDataSyncIdKey, ytAuthUserKey, ytCookieKey, ytAccountNameKey, ytAccountEmailKey, ytAccountChannelHandleKey, ytAccountThumbnailKey, enableYouTubeLoginKey, enableYouTubeSyncKey, useLoginForBrowseKey, useLoginForSearchKey),
             actions = listOf("connect", "changeAccount", "disconnect"),
         ),
         AccountsCardTargets("accounts.card.sync",

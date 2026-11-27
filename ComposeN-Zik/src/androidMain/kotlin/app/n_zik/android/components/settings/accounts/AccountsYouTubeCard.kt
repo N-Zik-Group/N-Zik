@@ -51,7 +51,6 @@ import app.n_zik.android.utils.quickPicsHomePageKey
 import app.n_zik.android.utils.quickPicsYtmQuickPicksKey
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.streamClientRestartNeededKey
 import app.n_zik.android.utils.syncImportEpisodesKey
 import app.n_zik.android.utils.syncImportHistoryKey
 import app.n_zik.android.utils.syncImportLibrarySongsKey
@@ -189,19 +188,21 @@ internal fun AccountsYouTubeCard(search: Search) {
                             } else {
                                 // Re-enable: restore Innertube from saved preferences
                                 val savedCookie = appContext().encryptedPreferences.getString(ytCookieKey, "") ?: ""
-                                applyUseLoginForSearch(context)
+                                applyUseLoginForSearch(context, isLoginEnabled = hasYouTubeAuthCookie(savedCookie))
                                 if (savedCookie.isNotEmpty()) {
                                     Store.initSession(context)
                                 }
                                 Innertube.useLoginForBrowse = hasYouTubeAuthCookie(savedCookie) &&
                                     context.preferences.getBoolean(useLoginForBrowseKey, true)
-                                // Reset cookie status — will be revalidated on next playback
-                                app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                                MainApplication.cookieStatus = when {
+                                    hasYouTubeAuthCookie(savedCookie) -> CookieStatus.VALID
+                                    savedCookie.isBlank() -> CookieStatus.NOT_LOGGED_IN
+                                    else -> CookieStatus.INVALID
+                                }
                                 appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
                             }
                             // Clear stream caches and mark restart needed
                             clearStreamCaches()
-                            appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
                             requestPlayerRestart()
                             // Clear audio cache
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
@@ -459,7 +460,6 @@ internal fun AccountsYouTubeCard(search: Search) {
                             context.preferences.edit {
                                 remove(ytCookieExpiredKey)
                                 putBoolean(useLoginForBrowseKey, false)
-                                putBoolean(streamClientRestartNeededKey, true)
                             }
                             requestPlayerRestart()
                             Toaster.done()

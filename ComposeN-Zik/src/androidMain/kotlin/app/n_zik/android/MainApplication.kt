@@ -329,8 +329,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
             val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, true)
             val youtubeLoginEnabled = encryptedPreferences.getBoolean(enableYouTubeLoginKey, false)
-            Innertube.useLoginForBrowse = youtubeLoginEnabled && useLoginForBrowse
-            applyUseLoginForSearch(this, youtubeLoginEnabled)
+            Innertube.useLoginForBrowse = false
+            applyUseLoginForSearch(this, isLoginEnabled = false)
             
             // The JVM modules use this app-provided connectivity gate because they have no Android context.
             Innertube.offlineGate = NetworkGate::isOnline
@@ -350,10 +350,9 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             val savedCookie = Innertube.cookie
             if (!savedCookie.isNullOrBlank()) {
                 val hasAuthCookie = hasYouTubeAuthCookie(savedCookie)
-                val hasLoginInfo = savedCookie.contains("LOGIN_INFO")
                 val wasExpired = preferences.getBoolean(ytCookieExpiredKey, false)
-                if (!hasAuthCookie && !hasLoginInfo) {
-                    Timber.tag("MainApplication").w("YouTube cookie present but missing SAPISID/LOGIN_INFO — session may be expired, disabling useLoginForBrowse")
+                if (!hasAuthCookie) {
+                    Timber.tag("MainApplication").w("YouTube cookie has no authentication token; disabling authenticated browsing")
                     cookieStatus = CookieStatus.INVALID
                     Innertube.useLoginForBrowse = false
                     preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
@@ -365,6 +364,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 } else {
                     Timber.tag("MainApplication").d("YouTube cookie loaded")
                     cookieStatus = CookieStatus.VALID
+                    Innertube.useLoginForBrowse = useLoginForBrowse
+                    applyUseLoginForSearch(this, isLoginEnabled = true)
                 }
             } else {
                 Timber.tag("MainApplication").w("No YouTube cookie — disabling useLoginForBrowse")
