@@ -1,6 +1,7 @@
 package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -127,6 +128,7 @@ internal fun <T> ValueSelectorDialog(
 
             values.forEach { value ->
                 val isLocked = value in lockedValues
+                val isSelected = selectedValue == value
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -135,7 +137,7 @@ internal fun <T> ValueSelectorDialog(
                         .clip(uiRoundnessShape())
                         .then(valueModifier(value))
                         .selectable(
-                            selected = selectedValue == value,
+                            selected = isSelected,
                             enabled = !isLocked,
                             role = Role.RadioButton,
                         ) {
@@ -143,10 +145,11 @@ internal fun <T> ValueSelectorDialog(
                             onValueSelected(value)
                         }
                         .alpha(if (isLocked && lockedLabel != null) 0.4f else 1f)
+                        .then(if (isSelected) Modifier.background(palette.accent.copy(alpha = 0.1f)) else Modifier)
                         .padding(vertical = 8.dp, horizontal = 12.dp)
                 ) {
                     SettingsChoiceRadio(
-                        selected = selectedValue == value,
+                        selected = isSelected,
                         enabled = !isLocked,
                     )
 
@@ -185,7 +188,7 @@ internal fun SettingsChoiceRadio(selected: Boolean, onClick: (() -> Unit)? = nul
         selected = selected,
         onClick = onClick,
         enabled = enabled,
-        colors = RadioButtonDefaults.colors(selectedColor = palette.text, unselectedColor = palette.textSecondary),
+        colors = RadioButtonDefaults.colors(selectedColor = palette.accent, unselectedColor = palette.textSecondary),
         modifier = Modifier.size(20.dp),
     )
 }

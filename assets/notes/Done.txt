@@ -1236,3 +1236,7 @@ Settings:
 Settings:
 - fix(settings): explain thumbnail prerequisites in search
   - Focus the thumbnail toggle or its background prerequisite for hidden cover animation and blur controls.
+
+Settings:
+- fix(dialog): highlight the selected value like sorting menus
+  - Use the current accent on the selected radio and a subtle background on its row.
