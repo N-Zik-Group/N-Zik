@@ -7,7 +7,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Modifier
 import app.n_zik.android.R
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
@@ -51,13 +50,6 @@ internal fun AccountsSyncCards(
             rememberEncryptedPreference(enableYouTubeSyncKey, false)
         }
         val isSyncEnabled = isYouTubeSyncEnabled && canEnableSync
-
-        // Re-sync state when Login for Browse changes (prefs reset externally)
-        LaunchedEffect(useLoginForBrowseSync) {
-            if (!useLoginForBrowseSync) {
-                isYouTubeSyncEnabled = false
-            }
-        }
 
         Column {
             if (selectedCards == null || R.string.sync_data_with_ytm_account in selectedCards) {

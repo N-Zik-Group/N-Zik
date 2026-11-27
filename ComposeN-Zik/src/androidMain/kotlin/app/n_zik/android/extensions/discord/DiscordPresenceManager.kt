@@ -27,6 +27,7 @@ import okhttp3.Request
 import timber.log.Timber
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import java.io.IOException
+import java.net.HttpURLConnection.HTTP_UNAUTHORIZED
 import com.metrolist.music.discordrpc.SuperProperties
 import android.os.Build
 import java.util.Locale
@@ -186,22 +187,17 @@ class DiscordPresenceManager(
             .get()
             .build()
 
-        runCatching {
+        try {
             client.newCall(request).execute().use { response ->
-                response.isSuccessful
-            }
-        }.getOrElse { exception ->
-            if (exception.message?.contains("429") == true || exception.message?.contains("Too Many Requests") == true) {
-                Timber.tag(tag).d("Rate limited by Discord API during token validation")
-                null // Treat as network error to retry later
-            } else {
-                Timber.tag(tag).e(exception, "Error validating token: ${exception.message}")
-                if (exception is IOException) {
-                    null
-                } else {
-                    false
+                when {
+                    response.isSuccessful -> true
+                    response.code == HTTP_UNAUTHORIZED -> false
+                    else -> null
                 }
             }
+        } catch (exception: IOException) {
+            Timber.tag(tag).w(exception, "Could not validate Discord token")
+            null
         }
     }
 

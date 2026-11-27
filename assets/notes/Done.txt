@@ -1876,3 +1876,7 @@ Menus / Lyrics:
 Playlists:
 - fix(playlist): share available device playlists and loading state
   - Use the same scan in Library and the picker, preserve All and block pin and insertion settings in the forced view.
+
+Settings / Accounts:
+- fix(settings): keep account checks read only
+  - Preserve saved credentials and sync preferences when opening cards and distinguish a Discord authorization refusal from temporary errors.

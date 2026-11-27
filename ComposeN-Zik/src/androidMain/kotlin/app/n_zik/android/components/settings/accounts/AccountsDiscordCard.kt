@@ -124,26 +124,14 @@ internal fun AccountsDiscordCard(search: Search) {
                         key = discordUsernameKey,
                         defaultValue = ""
                     )
-                    var showTokenError by remember { mutableStateOf(false) }
+                    var showTokenError by remember(isDiscordPresenceEnabled, discordPersonalAccessToken) {
+                        mutableStateOf(false)
+                    }
 
                     LaunchedEffect(isDiscordPresenceEnabled, discordPersonalAccessToken) {
                         if (isDiscordPresenceEnabled && discordPersonalAccessToken.isNotEmpty()) {
                             val presenceManager = DiscordPresenceManager(context, { discordPersonalAccessToken })
-                            when (presenceManager.validateToken(discordPersonalAccessToken)) {
-                                true -> {
-                                    showTokenError = false
-                                }
-                                false -> {
-                                    showTokenError = true
-                                    discordPersonalAccessToken = ""
-                                    discordUsername = ""
-                                    discordAvatar = ""
-                                    Toaster.e(R.string.discord_token_text_invalid)
-                                }
-                                null -> { // Network error
-                                    showTokenError = false
-                                }
-                            }
+                            showTokenError = presenceManager.validateToken(discordPersonalAccessToken) == false
                         }
                     }
 
@@ -171,7 +159,6 @@ internal fun AccountsDiscordCard(search: Search) {
                                     discordPersonalAccessToken = ""
                                     discordUsername = ""
                                     discordAvatar = ""
-                                    showTokenError = false
                                 } else {
                                     loginDiscord = true
                                 }

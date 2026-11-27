@@ -229,6 +229,29 @@ class AccountsSettingsEmbeddingWiringTest {
     }
 
     @Test
+    fun openingYouTubeCardsDoesNotRewriteSavedSync() {
+        val secure = seedEnabledYouTubeSync()
+        secure.edit().putBoolean(enableYouTubeLoginKey, false).apply()
+        context.preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
+        mockkStatic(::isYouTubeSyncBuild)
+        every { isYouTubeSyncBuild(any()) } returns true
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column {
+                    AccountsYouTubeCard(search = Search(initialVisible = false))
+                    AccountsSyncCards(selectedCards = setOf(R.string.sync_data_with_ytm_account))
+                }
+            }
+        }
+
+        composeRule.waitForIdle()
+
+        assertTrue(secure.getBoolean(enableYouTubeSyncKey, false))
+        assertTrue(context.preferences.getBoolean(syncImportHistoryKey, false))
+        verify(exactly = 0) { cancelAllSyncs() }
+    }
+
+    @Test
     fun disablingTheSyncMasterCancelsQueuedAndRunningSync() {
         val secure = seedEnabledYouTubeSync()
         mockkStatic(::isYouTubeSyncBuild)

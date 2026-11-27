@@ -15,7 +15,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -130,18 +129,9 @@ internal fun AccountsYouTubeCard(search: Search) {
                 var isYouTubeLoginEnabled by key(encryptedPreferencesUpdateTrigger) {
                     rememberEncryptedPreference(enableYouTubeLoginKey, false)
                 }
-                var isYouTubeSyncEnabled by key(encryptedPreferencesUpdateTrigger) {
-                    rememberEncryptedPreference(enableYouTubeSyncKey, false)
-                }
                 var loginYouTube by remember { mutableStateOf(false) }
                 var changingAccount by remember { mutableStateOf(false) }
                 val binder = LocalPlayerServiceBinder.current
-
-                LaunchedEffect(isYouTubeLoginEnabled) {
-                    if (!isYouTubeLoginEnabled && isYouTubeSyncEnabled) {
-                        isYouTubeSyncEnabled = false
-                    }
-                }
 
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_youtube_login_enabled_label).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
