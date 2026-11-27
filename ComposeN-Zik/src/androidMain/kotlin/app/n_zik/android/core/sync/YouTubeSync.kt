@@ -77,12 +77,7 @@ object YouTubeSync {
         }
 
         val (previous, current) = change
-        val message = when {
-            current == true -> R.string.library_favorites_added
-            current == false -> R.string.library_dislikes_added
-            previous == false -> R.string.library_dislikes_removed
-            else -> R.string.library_favorites_removed
-        }
+        showFavoriteChange(previous, current, item.mediaMetadata.title?.toString())
         val shouldPush = youtubeVideoId.matches(id) && current != false &&
             isYouTubeSyncEnabled() && canPushToYTM() &&
             context.preferences.getBoolean(syncPushSongLikeKey, false) && isNetworkConnected(context)
@@ -90,14 +85,9 @@ object YouTubeSync {
             val response = if (current == true) likeVideoOrSong(id) else removelikeVideoOrSong(id)
             val error = response.exceptionOrNull()
             if (error is CancellationException) throw error
-            if (response.isSuccess) {
-                Toaster.s(if (current == true) R.string.sync_youtube_like_success else R.string.sync_youtube_unlike_success)
-            } else {
-                Toaster.s(message)
+            if (error != null && ProfileWorkOwner.isBound(context, owner)) {
                 Toaster.e(if (current == true) R.string.sync_youtube_like_failed else R.string.sync_youtube_unlike_failed)
             }
-        } else {
-            Toaster.s(message)
         }
     }
 
@@ -148,3 +138,18 @@ internal enum class FavoriteAction {
 }
 
 private data class FavoriteChange(val previous: Boolean?, val current: Boolean?)
+
+internal fun showFavoriteChange(previous: Boolean?, current: Boolean?, name: String?) {
+    when {
+        current == true -> Toaster.s(R.string.library_favorites_added)
+        current == false -> {
+            if (name.isNullOrBlank()) Toaster.s(R.string.library_dislikes_added_generic)
+            else Toaster.s(R.string.library_dislikes_added, "\"$name\"")
+        }
+        previous == false -> {
+            if (name.isNullOrBlank()) Toaster.s(R.string.library_dislikes_removed_generic)
+            else Toaster.s(R.string.library_dislikes_removed, "\"$name\"")
+        }
+        else -> Toaster.s(R.string.library_favorites_removed)
+    }
+}

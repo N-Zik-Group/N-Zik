@@ -1,5 +1,6 @@
 package app.n_zik.android.components.ui.screens.album
 
+import app.n_zik.android.core.sync.showFavoriteChange
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 
 import app.n_zik.android.components.glass.GlassDescriptionTranslate
@@ -36,7 +37,6 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.appContext
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.core.utils.Toaster
 import app.n_zik.innertube.YtMusic
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.first
@@ -161,24 +161,7 @@ fun AlbumBookmark(
                     null -> true  // neutral → bookmarked
                 }
             }
-            val messageId = if (showDisliked) {
-                when(newState) {
-                    true -> R.string.library_favorites_added
-                    false -> R.string.library_dislikes_added
-                    null -> R.string.library_favorites_removed
-                }
-            } else {
-                when(newState) {
-                    true -> R.string.library_favorites_added
-                    null -> R.string.library_favorites_removed
-                    else -> R.string.library_favorites_added
-                }
-            }
-            val albumName = album?.title
-            if( albumName != null )
-                Toaster.s( messageId, "\"$albumName\"" )
-            else
-                Toaster.s( messageId )
+            showFavoriteChange(likeState, newState, album?.title)
         }
     }
 }

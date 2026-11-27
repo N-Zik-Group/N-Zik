@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.artist
 
+import app.n_zik.android.core.sync.showFavoriteChange
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
@@ -295,24 +296,7 @@ class OnlineArtistItemMenu private constructor(
                                     null -> true  // neutral → bookmarked
                                 }
                             }
-                            val messageId = if (showDisliked.isEnabled) {
-                                when(newState) {
-                                    true -> R.string.library_favorites_added
-                                    false -> R.string.library_dislikes_added
-                                    null -> R.string.library_favorites_removed
-                                }
-                            } else {
-                                when(newState) {
-                                    true -> R.string.library_favorites_added
-                                    null -> R.string.library_favorites_removed
-                                    else -> R.string.library_favorites_added
-                                }
-                            }
-                            val artistName = entity.cleanName()
-                            if (artistName.isNotBlank())
-                                Toaster.s(messageId, "\"$artistName\"")
-                            else
-                                Toaster.s(messageId)
+                            showFavoriteChange(likeState, newState, entity.cleanName())
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)

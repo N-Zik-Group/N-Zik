@@ -1456,3 +1456,7 @@ Android Auto:
 Playback:
 - fix(player): label the next favorite action
   - Use the same add, dislike and remove actions for media controls as in the player.
+
+Favorites:
+- fix(library): confirm all favorite state changes
+  - Show persisted changes immediately and supply the name required by dislike messages.

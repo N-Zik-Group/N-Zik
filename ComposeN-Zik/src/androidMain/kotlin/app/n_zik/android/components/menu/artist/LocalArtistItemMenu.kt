@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.artist
 
+import app.n_zik.android.core.sync.showFavoriteChange
 import android.content.Intent
 import app.n_zik.android.MODIFIED_PREFIX
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -297,25 +298,7 @@ class LocalArtistItemMenu private constructor(
                                     null -> true  // neutral → bookmarked
                                 }
                             }
-                            val messageId = if (showDisliked.isEnabled) {
-                                when(newState) {
-                                    true -> R.string.library_favorites_added
-                                    false -> R.string.library_dislikes_added
-                                    null -> R.string.library_favorites_removed
-                                }
-                            } else {
-                                when(newState) {
-                                    true -> R.string.library_favorites_added
-                                    null -> R.string.library_favorites_removed
-                                    else -> R.string.library_favorites_added
-                                }
-                            }
-                            with( artist ) {
-                                if( name != null )
-                                    Toaster.s( messageId, "\"$name\"" )
-                                else
-                                    Toaster.s( messageId )
-                            }
+                            showFavoriteChange(likeState, newState, artist.name)
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)

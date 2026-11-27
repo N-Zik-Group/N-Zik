@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.album
 
+import app.n_zik.android.core.sync.showFavoriteChange
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -360,11 +361,6 @@ class OnlineAlbumItemMenu private constructor(
                                 false -> if (dislikesEnabled) null else true
                                 null -> true
                             }
-                            val messageId = when (newState) {
-                                true -> R.string.library_favorites_added
-                                false -> R.string.library_dislikes_added
-                                null -> R.string.library_favorites_removed
-                            }
                             coroutineScope.launch(NzikDispatchers.DATA) {
                                 try {
                                     Database.albumTable.insertIgnore(
@@ -391,9 +387,7 @@ class OnlineAlbumItemMenu private constructor(
                                         Toaster.e(R.string.common_error_title)
                                         return@launch
                                     }
-                                    val albumName = title
-                                    if (albumName != null) Toaster.s(messageId, "\"$albumName\"")
-                                    else Toaster.s(messageId)
+                                    showFavoriteChange(previous, newState, title)
                                     if (Database.albumTable.isBookmarked(browseId).first()) {
                                         MyDownloadHelper.downloadBookmarkedAlbum(appContext(), browseId, cachedFetch)
                                     }

@@ -106,6 +106,8 @@
     <string name="library_dislikes_action_remove">Remove from dislikes</string>
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
+    <string name="library_dislikes_added_generic">Added to dislikes</string>
+    <string name="library_dislikes_removed_generic">Removed from dislikes</string>
     <string name="library_favorites_action_add">Add to favorites</string>
     <string name="library_favorites_action_remove">Remove from favorites</string>
     <string name="library_favorites_already_added">Already in favorites.</string>

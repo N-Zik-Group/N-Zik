@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.album
 
+import app.n_zik.android.core.sync.showFavoriteChange
 import android.net.Uri
 
 import android.content.Intent
@@ -76,7 +77,6 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.syncPushAlbumBookmarkKey
-import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.R
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
@@ -407,25 +407,7 @@ class AlbumItemMenu private constructor(
                                     null -> true  // neutral → bookmarked
                                 }
                             }
-                            val messageId = if (showDisliked.isEnabled) {
-                                when(newState) {
-                                    true -> R.string.library_favorites_added
-                                    false -> R.string.library_dislikes_added
-                                    null -> R.string.library_favorites_removed
-                                }
-                            } else {
-                                when(newState) {
-                                    true -> R.string.library_favorites_added
-                                    null -> R.string.library_favorites_removed
-                                    else -> R.string.library_favorites_added
-                                }
-                            }
-                            with( album ) {
-                                if( title != null )
-                                    Toaster.s( messageId, "\"$title\"" )
-                                else
-                                    Toaster.s( messageId )
-                            }
+                            showFavoriteChange(likeState, newState, album.title)
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)

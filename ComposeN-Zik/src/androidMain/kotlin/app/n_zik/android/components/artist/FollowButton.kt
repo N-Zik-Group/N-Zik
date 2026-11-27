@@ -1,5 +1,6 @@
 package app.n_zik.android.components.artist
 
+import app.n_zik.android.core.sync.showFavoriteChange
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -105,26 +106,7 @@ class FollowButton private constructor(
                     null -> true  // neutral → followed
                 }
             }
-            val messageId = if (showDisliked) {
-                when(newState) {
-                    true -> R.string.library_favorites_added
-                    false -> R.string.library_dislikes_added
-                    null -> R.string.library_favorites_removed
-                }
-            } else {
-                when(newState) {
-                    true -> R.string.library_favorites_added
-                    null -> R.string.library_favorites_removed
-                    else -> R.string.library_favorites_added
-                }
-            }
-            with( artist ) {
-                if( name != null )
-                    Toaster.s( messageId, "\"$name\"" )
-                else
-                    Toaster.s( messageId )
-            }
-
+            showFavoriteChange(currentState, newState, artist.name)
             // Only sync to YouTube if NOT disliked (dislike is local only)
             if (!localOnly && newState != false) {
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
