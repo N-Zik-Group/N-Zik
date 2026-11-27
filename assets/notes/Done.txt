@@ -1340,3 +1340,7 @@ Android Auto:
 Android Auto:
 - fix(auto): provide artwork fallback on collection rows
   - Attach artwork for album and artist rows that lack a thumbnail.
+
+Settings:
+- fix(settings): validate the proxy port
+  - Preserve the stored port when input is invalid and distinguish port and hostname errors.

@@ -18,6 +18,7 @@ import app.n_zik.android.components.theme.dynamicThemeRespectBrightnessKey
 import app.n_zik.android.components.theme.forPaletteMode
 import app.n_zik.android.components.theme.withColor
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.network.client.ProfileProxyError
 import app.n_zik.android.core.network.client.applyProfileProxy
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.ColorPaletteMode
@@ -131,8 +132,14 @@ internal fun MainActivity.mainActivityPreferenceChanges(
             }
 
             isProxyEnabledKey, proxyHostnameKey, proxyPortKey, proxyModeKey, proxyUsernameKey -> {
-                if (!applyProfileProxy(this@mainActivityPreferenceChanges)) {
-                    Toaster.e(R.string.network_proxy_invalid_hostname)
+                when (applyProfileProxy(this@mainActivityPreferenceChanges)) {
+                    ProfileProxyError.InvalidPort -> {
+                        val port = getString(R.string.settings_proxy_port_label)
+                        val error = getString(R.string.common_validation_invalid_input)
+                        Toaster.e("$port · $error")
+                    }
+                    ProfileProxyError.InvalidHostname -> Toaster.e(R.string.network_proxy_invalid_hostname)
+                    null -> Unit
                 }
             }
 

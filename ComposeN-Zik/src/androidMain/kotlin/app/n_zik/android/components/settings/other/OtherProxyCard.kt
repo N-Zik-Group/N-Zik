@@ -2,6 +2,8 @@ package app.n_zik.android.components.settings.other
 
 import app.n_zik.android.core.network.client.applyProfileProxy
 import app.n_zik.android.core.settings.defaultProxyPort
+import app.n_zik.android.core.settings.parseProxyPort
+import app.n_zik.android.core.settings.validProxyPorts
 
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -16,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.utils.isProxyEnabledKey
 import app.n_zik.android.utils.proxyHostnameKey
@@ -136,7 +139,10 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_port"),
                             title = stringResource(R.string.settings_proxy_port_label),
-                            text = stringResource(R.string.network_proxy_port_description),
+                            text = stringResource(
+                                if (proxyPort in validProxyPorts) R.string.network_proxy_port_description
+                                else R.string.common_validation_invalid_input
+                            ),
                             selectedValueText = proxyPort.toString(),
                             icon = R.drawable.server,
                             onClick = { showProxyPortDialog = true }
@@ -148,8 +154,10 @@ internal fun OtherProxyCard(search: Search) {
                             title = stringResource(R.string.settings_proxy_port_label),
                             initialValue = proxyPort.toString(),
                             placeholder = stringResource(R.string.settings_proxy_port_label),
+                            keyboardType = KeyboardType.Number,
+                            isValid = { parseProxyPort(it) != null },
                             onDismiss = { showProxyPortDialog = false },
-                            onSetValue = { proxyPort = it.toIntOrNull() ?: defaultProxyPort }
+                            onSetValue = { parseProxyPort(it)?.let { port -> proxyPort = port } }
                         ).apply {
                             showDialog()
                             Render()

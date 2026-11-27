@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.settings.readProxyPort
+import app.n_zik.android.core.settings.validProxyPorts
 import app.n_zik.android.musicbrainz.MBNetwork
 import app.n_zik.android.utils.encryptedPreferencesForProfile
 import app.n_zik.android.utils.getActiveProfile
@@ -24,9 +25,11 @@ import okhttp3.Response
 import okhttp3.Route
 import timber.log.Timber
 
+internal enum class ProfileProxyError { InvalidPort, InvalidHostname }
+
 /** Reapplies the active profile's proxy after startup, a profile switch or a settings change. */
 @Synchronized
-internal fun applyProfileProxy(context: Context): Boolean {
+internal fun applyProfileProxy(context: Context): ProfileProxyError? {
     val profileId = getActiveProfile(context)
     val preferences = profileDataPrefs(context, profileId)
     val enabled = preferences.getBoolean(isProxyEnabledKey, false)
@@ -45,7 +48,7 @@ internal fun applyProfileProxy(context: Context): Boolean {
         HttpProxyAuthenticator(checkNotNull(proxy), Credentials.basic(username, password))
     } else Authenticator.NONE
 
-    if (getActiveProfile(context) != profileId) return true
+    if (getActiveProfile(context) != profileId) return null
     NetworkClientFactory.configure(
         proxy = proxy,
         cacheDir = NetworkClientFactory.profileCacheDirectory(context, profileId),
@@ -54,14 +57,14 @@ internal fun applyProfileProxy(context: Context): Boolean {
     MBNetwork.configureProxy(proxy, authenticator)
     if (enabled && proxy == null) {
         Timber.tag("ProfileProxy").w("Invalid proxy endpoint")
-        return false
+        return if (port in validProxyPorts) ProfileProxyError.InvalidHostname else ProfileProxyError.InvalidPort
     }
-    return true
+    return null
 }
 
 internal fun profileProxyEndpoint(mode: Proxy.Type, host: String, port: Int): Proxy? {
     if (mode == Proxy.Type.DIRECT) return Proxy.NO_PROXY
-    if (port !in 1..65535) return null
+    if (port !in validProxyPorts) return null
     val canonicalHost = runCatching {
         HttpUrl.Builder().scheme("http").host(host.trim()).build().host
     }.getOrNull() ?: return null
