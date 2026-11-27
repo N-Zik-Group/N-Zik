@@ -142,6 +142,9 @@ Improved:
   - Remove the legacy loader.xml and its references; retain a transparent status glyph in Rescue. Wavy and animated control loaders remain unchanged.
 
 Fixed:
+- fix(settings): reset on-device collection sort preferences
+  - Clear the saved criteria and directions for on-device albums, artists and playlists on interface reset.
+  - Exercise the active-profile reset and verify that other profiles retain their choices.
 - fix(lyrics): recover timed lyrics when track credits become available
   - Restart the current lookup when the title, artist or album changes after playback starts.
   - Keep provider choices and try higher-priority formats when a fallback is cached. Explain the synced fallback when karaoke is unavailable.

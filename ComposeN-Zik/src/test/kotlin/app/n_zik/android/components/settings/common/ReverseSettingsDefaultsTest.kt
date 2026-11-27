@@ -80,6 +80,9 @@ class ReverseSettingsDefaultsTest {
         Preference.HOME_SONGS_TOP_SORT_BY,
         Preference.HOME_SONGS_DISLIKED_SORT_BY,
         Preference.HOME_ON_DEVICE_SONGS_SORT_BY,
+        Preference.HOME_ON_DEVICE_ARTISTS_SORT_BY,
+        Preference.HOME_ON_DEVICE_ALBUMS_SORT_BY,
+        Preference.HOME_ON_DEVICE_PLAYLISTS_SORT_BY,
         Preference.HOME_ARTISTS_FAVORITES_SORT_BY,
         Preference.HOME_ARTISTS_LIBRARY_SORT_BY,
         Preference.HOME_ARTISTS_DISLIKED_SORT_BY,
@@ -98,6 +101,9 @@ class ReverseSettingsDefaultsTest {
         Preference.HOME_SONGS_TOP_SORT_ORDER,
         Preference.HOME_SONGS_DISLIKED_SORT_ORDER,
         Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER,
+        Preference.HOME_ON_DEVICE_ARTISTS_SORT_ORDER,
+        Preference.HOME_ON_DEVICE_ALBUMS_SORT_ORDER,
+        Preference.HOME_ON_DEVICE_PLAYLISTS_SORT_ORDER,
         Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER,
         Preference.HOME_ARTISTS_LIBRARY_SORT_ORDER,
         Preference.HOME_ARTISTS_DISLIKED_SORT_ORDER,
@@ -120,7 +126,7 @@ class ReverseSettingsDefaultsTest {
         }
 
     @Test fun `interface restores every live registry fallback and mounted selected sort in the active profile`() {
-        assertEquals(41, liveRegistry.size)
+        assertEquals(47, liveRegistry.size)
         val fresh = liveRegistry.associate { it.key to readRegistry(prefs, it) }
         val untouched = store("preferences_other-reset")
         val editor = prefs.edit()
