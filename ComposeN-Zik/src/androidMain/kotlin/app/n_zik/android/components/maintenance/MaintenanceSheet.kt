@@ -443,13 +443,13 @@ fun MaintenanceSheet(
         crashViewVisible = crashViewVisible,
         debugStatus = debugStatus,
         debugButtonsVisible = snap?.debugLogsEnabled == true,
-        onViewDebug = { DebugLogDialog.showDialog() },
+        onViewDebug = { onDismissRequest(); DebugLogDialog.showDialog() },
         lastfmStatus = lastfmStatus,
         lastfmColor = lastfmColor,
-        onExportLogs = { CopyLogsDialog.showDialog() },
-        onViewCrash = { CrashLogDialog.showDialog() },
+        onExportLogs = { onDismissRequest(); CopyLogsDialog.showDialog() },
+        onViewCrash = { onDismissRequest(); CrashLogDialog.showDialog() },
         // The export dialog opens pre-selected on the crash option (the row's context)
-        onExportCrash = { CopyLogsDialog.showDialogFor(1) },
+        onExportCrash = { onDismissRequest(); CopyLogsDialog.showDialogFor(1) },
     )
 
     // The menu handles its own background and opens partially expanded.

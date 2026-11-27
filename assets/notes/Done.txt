@@ -1556,3 +1556,7 @@ Settings / Menus:
 Settings:
 - fix(settings): apply window and startup preferences live
   - Apply the back-button and keep-screen-on settings without restarting and open Search when selected as the default page.
+
+Menus:
+- fix(menu): show diagnostics dialogs above maintenance
+  - Dismiss the Maintenance sheet when opening the related debug and crash log dialogs.
