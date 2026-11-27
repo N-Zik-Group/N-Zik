@@ -70,6 +70,7 @@ fun GlassToastHost(
     settings: GlassSettings = rememberGlassSettings(GlassScope.Toast),
     onPresenceChanged: (Boolean) -> Unit = {},
 ) {
+    BottomNavigationToastPlacement.TrackKeyboard()
     val settings = settings.inScope(GlassScope.Toast)
     val enabled by rememberUpdatedState(settings.enabled && settings.mode(GlassArea.Menus) != GlassAreaMode.Disabled &&
         (!settings.mode(GlassArea.Menus).hasMaterial || backdrop != null || glassRenderer(settings) == GlassRenderer.Tint))

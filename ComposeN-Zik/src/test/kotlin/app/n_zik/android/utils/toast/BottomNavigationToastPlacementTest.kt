@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.graphics.Insets
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import org.junit.Assert.assertEquals
@@ -38,6 +39,35 @@ import kotlin.math.roundToInt
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")
 class BottomNavigationToastPlacementTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test
+    fun `open keyboard anchors toasts even without a bottom bar`() {
+        lateinit var view: View
+        var extraGap = 0
+        composeRule.setContent {
+            view = LocalView.current
+            extraGap = with(LocalDensity.current) { 4.dp.roundToPx() }
+            BottomNavigationToastPlacement.TrackKeyboard()
+            Box(Modifier.fillMaxSize())
+        }
+        fun dispatchKeyboard(height: Int) = composeRule.runOnIdle {
+            ViewCompat.dispatchApplyWindowInsets(view, WindowInsetsCompat.Builder()
+                .setInsets(WindowInsetsCompat.Type.ime(), Insets.of(0, 0, 0, height))
+                .setVisible(WindowInsetsCompat.Type.ime(), height > 0)
+                .build())
+        }
+        composeRule.runOnIdle {
+            val attachInfo = ReflectionHelpers.getField<Any>(view, "mAttachInfo")
+            ReflectionHelpers.setField(attachInfo, "mWindowVisibility", View.VISIBLE)
+        }
+        dispatchKeyboard(220)
+        composeRule.runOnIdle {
+            val bottom = view.context.getSystemService(WindowManager::class.java).currentWindowMetrics.bounds.height()
+            assertEquals((bottom - 220 - extraGap).toFloat(), BottomNavigationToastPlacement.topInWindow())
+        }
+        dispatchKeyboard(0)
+        composeRule.runOnIdle { assertEquals(null, BottomNavigationToastPlacement.topInWindow()) }
+    }
 
     @Test
     fun `rendered bar height changes placement and disposal restores default`() {

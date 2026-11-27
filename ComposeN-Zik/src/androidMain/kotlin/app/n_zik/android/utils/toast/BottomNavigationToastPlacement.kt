@@ -1,5 +1,6 @@
 package app.n_zik.android.utils.toast
 
+import android.graphics.Rect
 import android.view.Gravity
 import android.view.View
 import android.view.WindowManager
@@ -7,8 +8,12 @@ import android.view.ViewTreeObserver
 import android.widget.Toast
 import android.os.Build
 import androidx.annotation.MainThread
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -42,6 +47,42 @@ private class NavigationMeasurement(view: View, lifecycle: Lifecycle) {
 object BottomNavigationToastPlacement {
     private val measurements = mutableStateListOf<NavigationMeasurement>()
 
+    private fun windowBottom(view: View): Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        view.context.getSystemService(WindowManager::class.java).currentWindowMetrics.bounds.height()
+    } else {
+        val root = view.rootView
+        val location = IntArray(2)
+        root.getLocationInWindow(location)
+        location[1] + root.height
+    }
+
+    @Composable
+    internal fun TrackKeyboard() {
+        val view = LocalView.current
+        val density = LocalDensity.current
+        val lifecycle = LocalLifecycleOwner.current.lifecycle
+        val measurement = remember(view, lifecycle) { NavigationMeasurement(view, lifecycle) }
+        val ime = WindowInsets.ime.getBottom(density)
+        val systemBottom = WindowInsets.systemBars.getBottom(density)
+        DisposableEffect(measurement) {
+            measurements.add(measurement)
+            onDispose { measurements.remove(measurement) }
+        }
+        SideEffect {
+            measurement.minimumGap = with(density) { 8.dp.roundToPx() }
+            val keyboardTop = if (ime <= systemBottom) null else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                windowBottom(view) - ime
+            } else {
+                val visible = Rect().also(view::getWindowVisibleDisplayFrame)
+                val screen = IntArray(2).also(view::getLocationOnScreen)
+                val window = IntArray(2).also(view::getLocationInWindow)
+                visible.bottom - screen[1] + window[1]
+            }
+            val extraGap = with(density) { 4.dp.roundToPx() }
+            measurement.top = keyboardTop?.takeIf { it >= 0 }?.let { (it - extraGap).coerceAtLeast(0).toFloat() }
+        }
+    }
+
     /** Compose observes the same measured chrome top that positions native Toast windows. */
     internal fun topInWindow(): Float? = measurements.mapNotNull { measurement ->
         val view = measurement.view.get() ?: return@mapNotNull null
@@ -60,22 +101,13 @@ object BottomNavigationToastPlacement {
                 measurement.lifecycle.get()?.currentState?.isAtLeast(Lifecycle.State.RESUMED) != true
             ) return@mapNotNull null
             val top = measurement.top ?: return@mapNotNull null
-            val root = view.rootView
-            val location = IntArray(2)
-            root.getLocationInWindow(location)
-            // WindowMetrics includes the full task window, even if adjustResize shrinks content.
-            val windowBottom = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                view.context.getSystemService(WindowManager::class.java).currentWindowMetrics.bounds.height()
-            } else {
-                location[1] + root.height
-            }
             // ToastPresenter fits system bars even when immersive mode hides them.
             val insets = ViewCompat.getRootWindowInsets(view)?.getInsetsIgnoringVisibility(
                 WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
             ) ?: return@mapNotNull null
             toastOffsetAboveNavigation(
                 toast.yOffset,
-                BottomNavigationGeometry(top, windowBottom, insets.bottom, measurement.standardHeight, measurement.minimumGap),
+                BottomNavigationGeometry(top, windowBottom(view), insets.bottom, measurement.standardHeight, measurement.minimumGap),
             )
         }
         val offset = offsets.maxOrNull()

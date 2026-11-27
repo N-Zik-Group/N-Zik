@@ -1984,3 +1984,7 @@ Settings / Appearance:
 Settings / Search:
 - fix(settings): index cover dimming descriptions in display order
   - Make the lyrics dimming description searchable and match the visualizer control order.
+
+UI / Toast:
+- fix(toast): place notifications above the keyboard
+  - Use the highest visible obstruction and give the keyboard a 12 dp gap.
