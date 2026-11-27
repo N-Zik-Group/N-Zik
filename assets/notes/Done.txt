@@ -1432,3 +1432,7 @@ Android Auto:
 Library:
 - fix(library): include eligible device media across tabs
   - Keep device favorites, dislikes and listening-based lists tied to verified files and the device library setting.
+
+Android Auto:
+- fix(auto): preserve category navigation and local favorites
+  - Show the folders even when a count fails and include eligible device tracks and collections across compatible filters.

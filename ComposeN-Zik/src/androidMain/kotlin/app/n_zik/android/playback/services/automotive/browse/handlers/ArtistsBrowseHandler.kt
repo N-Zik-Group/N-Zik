@@ -44,13 +44,19 @@ class ArtistsBrowseHandler internal constructor(
                 val onDeviceCount = if (context.isDeviceLibraryEnabled() && context.preferences.getBoolean(showOnDeviceArtistsKey, true)) {
                     onDevice.artists(context, database).size
                 } else null
-                val libraryCount = loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_LIBRARY).size
-                val favoritesCount = loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_FAVORITES).size
-                val dislikedCount = loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_DISLIKED).size
+                val libraryCount = countAutoFolder(AutoSessionConstants.ID_ARTISTS_LIBRARY) {
+                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_LIBRARY, forCount = true).size
+                }
+                val favoritesCount = countAutoFolder(AutoSessionConstants.ID_ARTISTS_FAVORITES) {
+                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_FAVORITES, forCount = true).size
+                }
+                val dislikedCount = countAutoFolder(AutoSessionConstants.ID_ARTISTS_DISLIKED) {
+                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_DISLIKED, forCount = true).size
+                }
                 val categoryItems = mutableMapOf(
-                    "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.common_option_all), libraryCount.toString(), drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount.toString(), drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_DISLIKED, context.getString(R.string.library_disliked_title), dislikedCount.toString(), drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS)
+                    "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.common_option_all), libraryCount, drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+                    "favorites" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount, drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+                    "disliked" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_DISLIKED, context.getString(R.string.library_disliked_title), dislikedCount, drawableUri(context, R.drawable.heart_dislike), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS)
                 )
                 if (onDeviceCount != null) {
                     categoryItems["on_device"] = browsableMediaItem(

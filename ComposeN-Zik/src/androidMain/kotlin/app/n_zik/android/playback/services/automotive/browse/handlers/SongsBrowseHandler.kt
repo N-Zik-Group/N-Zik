@@ -54,21 +54,24 @@ class SongsBrowseHandler : BrowseHandler {
     ): List<MediaItem> {
         val excludedIds = DislikedExclusion.excludedSongIds(context, database)
         if (parentId == PlayerServiceModern.SONG) {
-            val prefs = context.preferences
+            val prefs = context.preferences.all
+            fun shown(key: String) = prefs[key] as? Boolean ?: true
             val categories = linkedMapOf(
                 "all" to SongFolder(AutoSessionConstants.ID_SONGS_ALL, R.string.common_option_all, R.drawable.musical_notes),
-                "favorites" to SongFolder(AutoSessionConstants.ID_SONGS_FAVORITES, R.string.library_favorites_title, R.drawable.heart, prefs.getBoolean(showFavoritesPlaylistKey, true)),
+                "favorites" to SongFolder(AutoSessionConstants.ID_SONGS_FAVORITES, R.string.library_favorites_title, R.drawable.heart, shown(showFavoritesPlaylistKey)),
                 // Rejected items remain reachable in Android Auto so the user can undo a dislike.
                 "disliked" to SongFolder(AutoSessionConstants.ID_SONGS_DISLIKED, R.string.library_disliked_title, R.drawable.heart_dislike),
-                "cached" to SongFolder(AutoSessionConstants.ID_SONGS_CACHED, R.string.library_cached_title, R.drawable.download, prefs.getBoolean(showCachedPlaylistKey, true)),
-                "downloaded" to SongFolder(AutoSessionConstants.ID_SONGS_DOWNLOADED, R.string.library_downloaded_title, R.drawable.downloaded, prefs.getBoolean(showDownloadedPlaylistKey, true)),
-                "top" to SongFolder(AutoSessionConstants.ID_SONGS_TOP, R.string.playlist_top, R.drawable.trending, prefs.getBoolean(showMyTopPlaylistKey, true)),
+                "cached" to SongFolder(AutoSessionConstants.ID_SONGS_CACHED, R.string.library_cached_title, R.drawable.download, shown(showCachedPlaylistKey)),
+                "downloaded" to SongFolder(AutoSessionConstants.ID_SONGS_DOWNLOADED, R.string.library_downloaded_title, R.drawable.downloaded, shown(showDownloadedPlaylistKey)),
+                "top" to SongFolder(AutoSessionConstants.ID_SONGS_TOP, R.string.playlist_top, R.drawable.trending, shown(showMyTopPlaylistKey)),
                 "on_device" to SongFolder(AutoSessionConstants.ID_SONGS_ONDEVICE, R.string.library_on_device_title, R.drawable.folder, showDeviceSongs(context)),
             )
             return homeCategoryOrder(context, homeSongsOrderKey, categories.keys.toList()).mapNotNull { key ->
                 val folder = categories[key]?.takeIf { it.visible } ?: return@mapNotNull null
-                val count = loadAutoHomeSongs(context, database, downloadHelper, binder, folder.id, excludedIds).size
-                browsableMediaItem(folder.id, context.getString(folder.label), count.toString(),
+                val count = countAutoFolder(folder.id) {
+                    loadAutoHomeSongs(context, database, downloadHelper, binder, folder.id, excludedIds, forCount = true).size
+                }
+                browsableMediaItem(folder.id, context.getString(folder.label), count,
                     drawableUri(context, folder.icon), MediaMetadata.MEDIA_TYPE_PLAYLIST)
             }
         }
@@ -85,7 +88,7 @@ class SongsBrowseHandler : BrowseHandler {
 }
 
 private fun showDeviceSongs(context: Context): Boolean =
-    context.isDeviceLibraryEnabled() && context.preferences.getBoolean(showOnDevicePlaylistKey, true)
+    context.isDeviceLibraryEnabled() && (context.preferences.all[showOnDevicePlaylistKey] as? Boolean ?: true)
 
 /** Browse, counts and playback resolve the same category, including its playback exclusions. */
 internal suspend fun loadAutoHomeSongs(
@@ -95,6 +98,7 @@ internal suspend fun loadAutoHomeSongs(
     binder: PlayerServiceModern.Binder?,
     parentId: String,
     excludedIds: Set<String>,
+    forCount: Boolean = false,
 ): List<Song> {
     val prefs = context.preferences
     val category = autoOriginParent(parentId)
@@ -117,8 +121,12 @@ internal suspend fun loadAutoHomeSongs(
         downloadHelper.getDownloadManager(context)
         downloadHelper.downloads.value.filterValues { it.state == Download.STATE_COMPLETED }.keys
     } else emptySet()
-    val localIds = if (category == AutoSessionConstants.ID_SONGS_ALL && context.isDeviceLibraryEnabled()) {
-        context.scanDeviceLibrary().songIds
+    val useDeviceTracks = explicitOrigin != FilterBy.YoutubeLibrary && context.isDeviceLibraryEnabled() &&
+        (category == AutoSessionConstants.ID_SONGS_ALL || category == AutoSessionConstants.ID_SONGS_FAVORITES ||
+            category == AutoSessionConstants.ID_SONGS_DISLIKED || category == AutoSessionConstants.ID_SONGS_TOP)
+    val localIds = if (useDeviceTracks) {
+        val snapshot = if (forCount) context.cachedAutoDeviceLibrary() else context.scanDeviceLibrary()
+        snapshot?.songIds.orEmpty()
     } else emptySet()
     val songs = when (category) {
         AutoSessionConstants.ID_SONGS_ALL -> database.songTable.sortAll(baseSort, baseOrder,
@@ -131,14 +139,19 @@ internal suspend fun loadAutoHomeSongs(
             .first().filter { binder?.cache?.hasCachedStream(it.song.id, it.format.contentLength) == true }.map { it.song }
         AutoSessionConstants.ID_SONGS_DOWNLOADED -> database.songTable.sortAll(baseSort, baseOrder).first()
             .filter { it.id in downloadedIds }
-        AutoSessionConstants.ID_SONGS_TOP -> loadAutoTopSongs(context, database)
+        AutoSessionConstants.ID_SONGS_TOP -> loadAutoTopSongs(context, database, localIds)
         AutoSessionConstants.ID_SONGS_ONDEVICE -> {
             if (!showDeviceSongs(context)) return emptyList()
             val deviceSort = Preference.HOME_ON_DEVICE_SONGS_SORT_BY
             val deviceOrder = Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER
             val storedById = database.songTable.allOnDevice().first().associateBy(Song::id)
-            context.getProfileLocalSongs(prefs.getEnum(deviceSort.key, deviceSort.default),
-                prefs.getEnum(deviceOrder.key, deviceOrder.default)).first().keys.map { storedById[it.id] ?: it }
+            if (forCount) {
+                val verifiedIds = context.cachedAutoDeviceLibrary()?.songIds.orEmpty()
+                verifiedIds.mapNotNull(storedById::get)
+            } else {
+                context.getProfileLocalSongs(prefs.getEnum(deviceSort.key, deviceSort.default),
+                    prefs.getEnum(deviceOrder.key, deviceOrder.default)).first().keys.map { storedById[it.id] ?: it }
+            }
         }
         else -> return emptyList()
     }
@@ -147,7 +160,7 @@ internal suspend fun loadAutoHomeSongs(
     val parentalControl = prefs.getBoolean(parentalControlEnabledKey, false)
     val filtered = songs.filter {
         val eligible = if (disliked) it.likedAt == -1L else it.likedAt != -1L && it.id !in excludedIds
-        val localAllowed = category == AutoSessionConstants.ID_SONGS_ALL || category == AutoSessionConstants.ID_SONGS_ONDEVICE || !it.isLocal
+        val localAllowed = !it.isLocal || category == AutoSessionConstants.ID_SONGS_ONDEVICE || it.id in localIds
         eligible && localAllowed && source.matchesOrigin(it.isYoutubeSong) &&
             (!parentalControl || !it.title.startsWith(EXPLICIT_PREFIX, ignoreCase = true))
     }
@@ -158,15 +171,20 @@ internal suspend fun loadAutoHomeSongs(
         else filtered.sortedBy { it.id in downloadedIds }
 }
 
-private suspend fun loadAutoTopSongs(context: Context, database: Database): List<Song> {
+private suspend fun loadAutoTopSongs(context: Context, database: Database, localIds: Set<String>): List<Song> {
     val prefs = context.preferences
     val key = Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD
     val from = prefs.getEnum(key.key, key.default).timeStampInMillis()
     val count = prefs.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`)
         .toInt(prefs.getInt(MaxTopPlaylistItemsCustomValueKey, 10))
     val durationLimit = prefs.getEnum(excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled)
-    return database.eventTable.findSongsMostPlayedBetween(from = from, limit = count).first().filter { song ->
-        durationLimit == DurationInMinutes.Disabled ||
-            song.durationText?.let { durationTextToMillis(it) < durationLimit.asMillis } == true
-    }
+    return database.eventTable.findSongsMostPlayedBetween(from = from).first()
+        .asSequence()
+        .filter { !it.isLocal || it.id in localIds }
+        .take(count)
+        .filter { song ->
+            durationLimit == DurationInMinutes.Disabled ||
+                song.durationText?.let { durationTextToMillis(it) < durationLimit.asMillis } == true
+        }
+        .toList()
 }
