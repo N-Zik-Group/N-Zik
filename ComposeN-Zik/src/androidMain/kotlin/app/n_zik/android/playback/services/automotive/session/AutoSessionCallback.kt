@@ -997,11 +997,11 @@ class AutoSessionCallback(
 
     private suspend fun playlistSongs(playlistId: String): List<Song> = when (playlistId) {
         AutoSessionConstants.ID_FAVORITES -> {
-            val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY
-            if (context.preferences.getEnum(sortBy.key, sortBy.default) == SongSortBy.OnDevice) {
-                val order = Preference.HOME_SONGS_FAVORITES_SORT_ORDER
-                loadAutoDeviceSortedFavorites(context, database, context.preferences.getEnum(order.key, order.default))
-            } else database.songTable.allFavorites().map { it.reversed() }.first()
+            val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY.let { context.preferences.getEnum(it.key, it.default) }
+            val order = Preference.HOME_SONGS_FAVORITES_SORT_ORDER.let { context.preferences.getEnum(it.key, it.default) }
+            if (sortBy == SongSortBy.OnDevice) {
+                loadAutoDeviceSortedFavorites(context, database, order)
+            } else database.songTable.sortFavorites(sortBy, order).first()
         }
         AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> ::binder.isInitialized && binder.cache.hasCachedStream(itf.song.id, itf.format.contentLength) }.reversed().fastMap { itf -> itf.song } }.first()
         AutoSessionConstants.ID_TOP -> database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()

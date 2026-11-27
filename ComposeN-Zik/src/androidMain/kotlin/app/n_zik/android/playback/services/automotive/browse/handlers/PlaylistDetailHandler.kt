@@ -100,8 +100,8 @@ class PlaylistDetailHandler internal constructor(
         val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoMediaIdContract.playlistShuffle(playlistId))
         val listFlow = when (playlistId) {
             AutoSessionConstants.ID_FAVORITES -> {
-                val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_BY.key, SongSortBy.Title)
-                val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_FAVORITES_SORT_ORDER.key, SortOrder.Ascending)
+                val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY.let { context.preferences.getEnum(it.key, it.default) }
+                val sortOrder = Preference.HOME_SONGS_FAVORITES_SORT_ORDER.let { context.preferences.getEnum(it.key, it.default) }
                 if (sortBy == SongSortBy.OnDevice) {
                     flowOf(loadAutoDeviceSortedFavorites(context, database, sortOrder))
                 } else database.songTable.sortFavorites(sortBy, sortOrder)
