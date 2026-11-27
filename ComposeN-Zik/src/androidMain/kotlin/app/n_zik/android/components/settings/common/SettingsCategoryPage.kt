@@ -87,6 +87,7 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.navigation.LocalPageNavigationEntry
 import app.n_zik.android.core.profiles.profileStorageIdentity
+import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.enums.PlayerBackgroundColors
@@ -125,6 +126,7 @@ private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show
 private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
 private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
 private const val PlayerTypeSettingsTarget = "appearance.player_presets_and_layout.playertype"
+private const val ThemeSettingsTarget = "ui.theme.theme"
 private const val SwipeActionsSettingsTarget = "ui.swipe_to_action.swipe_to_action"
 private const val AutoBackupEnabledTarget = "embedded.auto_backup.enabled"
 private const val AutoBackupContentTarget = "embedded.auto_backup.auto_backup_target"
@@ -144,6 +146,13 @@ private fun settingsSearchPrerequisite(
     preferences: SharedPreferences,
     hasTarget: (String) -> Boolean,
 ): SearchPrerequisite? {
+    val requiredTheme = when (target) {
+        "ui.theme.respect_brightness" -> ColorPaletteName.Dynamic
+        "ui.theme.customcolor" -> ColorPaletteName.CustomColor
+        else -> null
+    }
+    if (requiredTheme != null) return SearchPrerequisite(ThemeSettingsTarget, listOf(requiredTheme.textId))
+
     if (target == "appearance.colors_and_background.albumCoverRotation" &&
         preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient) == PlayerBackgroundColors.BlurredCoverColor
     ) {
@@ -579,7 +588,7 @@ fun SettingsCategoryPage(
         }
         val resolved = if (unavailable) {
             val prerequisite = searchPrerequisite?.target ?: hiddenSettingPrerequisites[requestedTarget] ?: when {
-                entry?.paletteTitleRes != null -> "ui.theme.theme"
+                entry?.paletteTitleRes != null -> ThemeSettingsTarget
                 requestedTarget == "appearance.cover_and_thumbnail.cover_thumbnail_animation_type" -> listOf(
                     "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",
                     ShowCoverSettingsTarget,

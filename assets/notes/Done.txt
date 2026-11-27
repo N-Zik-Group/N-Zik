@@ -1196,3 +1196,7 @@ Menus:
 Settings:
 - test(network): cover profile proxy migration and challenges
   - Cover legacy password migration, hostname support and authentication challenge boundaries.
+
+Settings:
+- fix(settings): reveal color theme prerequisites from search
+  - Highlight the theme selector for conditional dark mode and custom color settings and show the required choice.

@@ -395,6 +395,28 @@ class SettingsSearchTargetTest {
         )
     }
 
+    @Test fun `search for keep dark mode points to the dynamic theme`() {
+        context.preferences.edit().putString(colorPaletteNameKey, ColorPaletteName.Default.name).commit()
+
+        assertSearchHighlightsPrerequisite(
+            category = "interface",
+            target = "ui.theme.respect_brightness",
+            prerequisite = "ui.theme.theme",
+            requiredChoice = ColorPaletteName.Dynamic.textId,
+        )
+    }
+
+    @Test fun `search for custom colors points to the custom colors theme`() {
+        context.preferences.edit().putString(colorPaletteNameKey, ColorPaletteName.Dynamic.name).commit()
+
+        assertSearchHighlightsPrerequisite(
+            category = "interface",
+            target = "ui.theme.customcolor",
+            prerequisite = "ui.theme.theme",
+            requiredChoice = ColorPaletteName.CustomColor.textId,
+        )
+    }
+
     @Test fun `search for a hidden queue preview count highlights the enable switch`() {
         context.preferences.edit().putBoolean(showNextSongsInPlayerKey, false).commit()
 
@@ -439,7 +461,12 @@ class SettingsSearchTargetTest {
         assertEquals(before, context.preferences.all)
     }
 
-    private fun assertSearchHighlightsPrerequisite(category: String, target: String, prerequisite: String) {
+    private fun assertSearchHighlightsPrerequisite(
+        category: String,
+        target: String,
+        prerequisite: String,
+        requiredChoice: Int? = null,
+    ) {
         val before = context.preferences.all.toMap()
         show(category, target, parent = "")
         pumpUntil("The setting that reveals the hidden result must be highlighted") {
@@ -448,7 +475,14 @@ class SettingsSearchTargetTest {
         composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, prerequisite), useUnmergedTree = true)
             .assertIsDisplayed()
         composeRule.onNodeWithTag("settings.target.$target", useUnmergedTree = true).assertDoesNotExist()
-        assertEquals(listOf(context.getString(R.string.settings_target_unavailable)), messages)
+        val expectedMessage = if (requiredChoice != null) {
+            val label = context.getString(R.string.common_color_source_theme)
+            val choice = context.getString(requiredChoice)
+            context.getString(R.string.settings_target_prerequisite, "$label › $choice")
+        } else {
+            context.getString(R.string.settings_target_unavailable)
+        }
+        assertEquals(listOf(expectedMessage), messages)
         assertEquals(before, context.preferences.all)
     }
 
