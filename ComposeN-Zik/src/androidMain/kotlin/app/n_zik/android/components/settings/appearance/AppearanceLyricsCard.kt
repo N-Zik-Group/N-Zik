@@ -187,22 +187,20 @@ internal fun AppearanceLyricsCard(search: Search) {
                 )
             }
 
-            if (showthumbnail && showlyricsthumbnail)
-                if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(
-                        search.inputValue,
-                        true
-                    )
+            val backgroundTitle = stringResource(R.string.settings_lyrics_match_player_background_label)
+            SettingsEntryVisibility(
+                visible = showthumbnail && showlyricsthumbnail &&
+                    (search.inputValue.isBlank() || backgroundTitle.contains(search.inputValue, ignoreCase = true)),
+            ) {
+                OtherSwitchSettingEntry(
+                    modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_background_in_lyrics"),
+                    icon = R.drawable.image,
+                    title = backgroundTitle,
+                    text = stringResource(R.string.lyrics_background_enabled_description),
+                    isChecked = showBackgroundLyrics,
+                    onCheckedChange = { showBackgroundLyrics = it },
                 )
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true)) {
-                        OtherSwitchSettingEntry(
-                        modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.show_background_in_lyrics"),
-                        icon = R.drawable.image,
-                            title = stringResource(R.string.settings_lyrics_match_player_background_label),
-                            text = stringResource(R.string.lyrics_background_enabled_description),
-                            isChecked = showBackgroundLyrics,
-                            onCheckedChange = { showBackgroundLyrics = it }
-                        )
-                    }
+            }
 
                 if (search.inputValue.isBlank() || stringResource(R.string.lyrics_color).contains(search.inputValue, true)) {
                     OtherEnumValueSelectorSettingsEntry(

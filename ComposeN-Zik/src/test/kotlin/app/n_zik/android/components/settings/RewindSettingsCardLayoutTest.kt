@@ -199,7 +199,7 @@ class RewindSettingsCardLayoutTest {
         composeRule.mainClock.advanceTimeBy(64)
         composeRule.waitForIdle()
         assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true))
-        yearly.assertExists()
+        yearly.assertDoesNotExist()
 
         composeRule.mainClock.advanceTimeBy(250)
         yearly.assertDoesNotExist()

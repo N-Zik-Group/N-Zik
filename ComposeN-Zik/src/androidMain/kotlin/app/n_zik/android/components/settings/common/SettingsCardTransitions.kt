@@ -19,6 +19,7 @@ import app.n_zik.android.components.glass.isGlassMotionAllowed
 import app.n_zik.android.components.glass.mode
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
+import app.n_zik.android.components.menu.menuPageInteraction
 
 internal const val SETTINGS_CARD_ENTER_MILLIS = 280
 internal const val SETTINGS_CARD_EXIT_MILLIS = 200
@@ -58,7 +59,9 @@ internal fun SettingsEntryVisibility(visible: Boolean, content: @Composable () -
         enter = if (overflow) settingsCardOverflowEnter else settingsEntryEnter,
         exit = if (overflow) settingsCardOverflowExit else settingsEntryExit,
     ) {
-        Column(if (overflow) glassOverflowFade(SETTINGS_CARD_ENTER_MILLIS, SETTINGS_CARD_EXIT_MILLIS) else Modifier) {
+        val interaction = Modifier.menuPageInteraction(visible)
+        val fade = if (overflow) glassOverflowFade(SETTINGS_CARD_ENTER_MILLIS, SETTINGS_CARD_EXIT_MILLIS) else Modifier
+        Column(interaction.then(fade)) {
             content()
         }
     }

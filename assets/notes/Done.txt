@@ -1976,3 +1976,7 @@ Menus / Information:
 Playlists / On device:
 - fix(playlist): refresh On device tracks after MediaStore changes
   - Invalidate the active profile's cached scan on audio change notifications.
+
+Settings / Appearance:
+- fix(settings): retire controls while their exit animation runs
+  - Animate the dependent lyrics background control and prevent interaction with outgoing settings.
