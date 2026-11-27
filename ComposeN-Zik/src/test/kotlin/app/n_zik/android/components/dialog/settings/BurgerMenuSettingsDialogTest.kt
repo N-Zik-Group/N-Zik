@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test
 class BurgerMenuSettingsDialogTest {
 
     private val defaultOrder = DataStoreUtils.DEFAULT_BURGER_MENU_ORDER
+    private val actionOrder = defaultOrder.filterNot { it == "separator" }
 
     @Test
     fun `parseOrder with no stored value gives the default order`() {
@@ -31,8 +32,8 @@ class BurgerMenuSettingsDialogTest {
         assertEquals("history", order.first())
         assertEquals("profiles", order[1])
         assertEquals("settings", order[2])
-        assertTrue(order.containsAll(defaultOrder))
-        assertEquals(defaultOrder.size, order.size)
+        assertTrue(order.containsAll(actionOrder))
+        assertEquals(actionOrder.size, order.size)
     }
 
     @Test
@@ -40,7 +41,7 @@ class BurgerMenuSettingsDialogTest {
         val order = BurgerMenuSettingsDialog.parseOrder(serialize("history", "nope", "settings"))
 
         assertFalse("nope" in order)
-        assertEquals(defaultOrder.size, order.size)
+        assertEquals(actionOrder.size, order.size)
     }
 
     @Test
@@ -48,7 +49,7 @@ class BurgerMenuSettingsDialogTest {
         val order = BurgerMenuSettingsDialog.parseOrder(serialize("history", "history", "settings"))
 
         assertEquals(1, order.count { it == "history" })
-        assertEquals(defaultOrder.size, order.size)
+        assertEquals(actionOrder.size, order.size)
     }
 
     @Test
@@ -102,12 +103,12 @@ class BurgerMenuSettingsDialogTest {
     }
 
     @Test
-    fun `parseOrder appends a default separator when none is stored`() {
+    fun `parseOrder preserves intentional removal of all separators`() {
         val order = BurgerMenuSettingsDialog.parseOrder(serialize("history", "settings"))
 
-        assertEquals(1, order.count { it == "separator" })
-        assertTrue("separator" in order)
-        assertEquals(defaultOrder.size, order.size)
+        assertFalse("separator" in order)
+        assertTrue(order.containsAll(actionOrder))
+        assertEquals(actionOrder.size, order.size)
     }
 
     @Test

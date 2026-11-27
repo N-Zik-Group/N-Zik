@@ -1220,3 +1220,7 @@ Settings:
 Menus:
 - fix(menu): avoid duplicate destinations from profile menu
   - Use single-top navigation for direct menu routes such as Notifications and Settings.
+
+Menus:
+- test(menu): preserve a saved menu without separators
+  - Update the order tests for explicit removal of the separator, keeping the default fallback assertions.
