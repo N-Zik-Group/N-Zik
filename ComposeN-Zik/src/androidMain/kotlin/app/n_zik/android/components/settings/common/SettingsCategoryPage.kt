@@ -138,6 +138,22 @@ private val rewindNotificationPrerequisites = mapOf(
     "embedded.rewind.rw_settings_playlists_yearly_notification" to "embedded.rewind.rw_settings_playlists_yearly",
 )
 
+private val rewindNotificationParentLabels = mapOf(
+    DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED to R.string.rewind_settings_monthly,
+    DataStoreUtils.KEY_REWIND_YEARLY_ENABLED to R.string.rewind_settings_yearly,
+    DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED to R.string.rewind_settings_playlists_monthly,
+    DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED to R.string.rewind_settings_playlists_yearly,
+)
+
+internal fun unavailableRewindNotificationParents(
+    target: String,
+    isEnabled: (String) -> Boolean,
+): List<Int> =
+    if ((target == RewindNotificationSectionTarget || target == "embedded.rewind.section.alerts") &&
+        isEnabled(DataStoreUtils.KEY_REWIND_ENABLED) &&
+        rewindNotificationParentLabels.keys.none(isEnabled)
+    ) rewindNotificationParentLabels.values.toList() else emptyList()
+
 private const val LyricsOnCoverSettingsTarget = "appearance.txt_lyrics.show_lyrics_thumbnail"
 private const val LyricsBackgroundSettingsTarget = "appearance.txt_lyrics.show_background_in_lyrics"
 private const val ShowCoverSettingsTarget = "appearance.cover_and_thumbnail.show_thumbnail"
@@ -864,7 +880,19 @@ fun SettingsCategoryPage(
                     if (choices.isEmpty()) label else "$label › $choices"
                 }
             }
-            showMessage(requirement?.let { context.getString(R.string.settings_target_prerequisite, it) } ?: unavailableMessage)
+            val rewindParents = if (unavailable) unavailableRewindNotificationParents(requestedTarget) {
+                DataStoreUtils.getBoolean(context, it, true)
+            } else emptyList()
+            showMessage(
+                when {
+                    rewindParents.isNotEmpty() -> context.getString(
+                        R.string.settings_target_rewind_notification_prerequisite,
+                        rewindParents.joinToString(" / ", transform = context::getString),
+                    )
+                    requirement != null -> context.getString(R.string.settings_target_prerequisite, requirement)
+                    else -> unavailableMessage
+                },
+            )
         }
         val resolved = if (unavailable) {
             val prerequisite = searchPrerequisite?.target ?: when {

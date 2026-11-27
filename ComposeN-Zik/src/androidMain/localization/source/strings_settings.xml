@@ -584,6 +584,7 @@
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
     <string name="settings_target_unavailable">This setting is unavailable with the current configuration. Its section is shown instead.</string>
     <string name="settings_target_prerequisite">To use this setting, configure %1$s first.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Turn on at least one of these settings to show Rewind notifications.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Color accent</string>
     <string name="settings_theme_background_1_color_label">Background 1</string>
     <string name="settings_theme_background_2_color_label">Background 2</string>
