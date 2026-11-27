@@ -1,8 +1,12 @@
 package app.n_zik.android.playback.services.automotive.browse
 
 import android.content.Context
-import androidx.room.Room
+import androidx.media3.common.MediaMetadata
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.components.menu.playlist.OnlinePlaylistContent
+import app.n_zik.android.components.menu.playlist.loadOnlinePlaylistContent
+import app.n_zik.android.components.menu.playlist.toOnlinePlaylistMenuContent
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Playlist
@@ -12,18 +16,31 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.handlers.AlbumDetailHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.ArtistDetailHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.PlaylistDetailHandler
+import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
+import app.n_zik.android.ui.screens.playlist.loadPlaylistContinuations
+import app.n_zik.android.utils.podcastBrowseId
+import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
+import app.n_zik.innertube.requests.PlaylistContinuationPage
+import app.n_zik.innertube.requests.PlaylistPage
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import java.io.IOException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -55,11 +72,15 @@ class AutoBrowseDetailHandlersMediaIdTest {
         every { mainApplication.applicationContext } returns app
         Dependencies.init(mainApplication)
         context = app
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         runBlocking { onDatabase { DatabaseInitializer.Instance.clearAllTables() } }
     }
 
     @After
     fun tearDown() {
+        AutoSearchState.clear()
+        unmockkObject(NetworkQualityHelper)
         runBlocking { onDatabase { DatabaseInitializer.Instance.clearAllTables() } }
     }
 
@@ -123,4 +144,83 @@ class AutoBrowseDetailHandlersMediaIdTest {
         // The songs carry the full playlist context.
         assertEquals(setOf("playlist/777/pl-a", "playlist/777/pl-b"), items.drop(1).map { it.mediaId }.toSet())
     }
+
+    @Test
+    fun `online playlist detail exposes all fetched source pages in order even after a continuation fails`() = runBlocking {
+        var failLastPage = true
+        val firstPage = PlaylistPage(
+            playlist = Innertube.PlaylistItem(info = null, channel = null, songCount = null, isEditable = null, thumbnail = null),
+            songs = listOf(onlineSong("first")),
+            songsContinuation = "second",
+            description = null,
+            continuation = null,
+        )
+        val handler = PlaylistDetailHandler { id, allowed ->
+            loadOnlinePlaylistContent(id, fetchAllowed = allowed, playlistLoader = { loadedId ->
+                assertEquals("VLonlinemix", loadedId)
+                loadPlaylistContinuations(firstPage, requestNextPage = { token ->
+                    when (token) {
+                        "second" -> Result.success(PlaylistContinuationPage(listOf(onlineSong("second")), "third"))
+                        "third" -> if (failLastPage) Result.failure(IOException("failed source page"))
+                            else Result.success(PlaylistContinuationPage(listOf(onlineSong("second"), onlineSong("third")), null))
+                        else -> error("Unexpected continuation $token")
+                    }
+                }).toOnlinePlaylistMenuContent()
+            })
+        }
+
+        suspend fun trackIds() = handler.getChildren("playlist/VLonlinemix", context, Database, downloadHelper, null)
+            .drop(1).map { it.mediaId.substringAfterLast('/') }
+
+        assertEquals(listOf("first", "second"), trackIds())
+        assertEquals(listOf("first", "second"), AutoSearchState.playlistSongsById.getValue("VLonlinemix").map { it.id })
+        failLastPage = false
+        assertEquals(listOf("first", "second", "third"), trackIds())
+        assertEquals(listOf("first", "second", "third"), AutoSearchState.playlistSongsById.getValue("VLonlinemix").map { it.id })
+    }
+
+    @Test
+    fun `online podcast detail publishes available episodes with exact source metadata`() = runBlocking {
+        val podcastId = "MPSPfeed"
+        val decoratedId = "$MODIFIED_PREFIX$podcastId"
+        val handler = PlaylistDetailHandler { id, allowed ->
+            loadOnlinePlaylistContent(
+                id, fetchAllowed = allowed,
+                playlistLoader = { error("Podcast endpoint sent to playlist API") },
+                podcastLoader = { loadedId ->
+                    assertEquals(podcastId, loadedId)
+                    OnlinePlaylistContent(
+                        title = null, author = null, thumbnailUrl = null, songs = null,
+                        availableSongs = listOf(Song.makePlaceholder("episode")),
+                    )
+                },
+            )
+        }
+        val items = handler.getChildren("playlist/$decoratedId", context, Database, downloadHelper, null)
+        assertEquals(AutoMediaIdContract.playlistShuffle(decoratedId), items.first().mediaId)
+        val episode = items[1]
+        assertEquals("playlist/$decoratedId/episode", episode.mediaId)
+        assertEquals(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE, episode.mediaMetadata.mediaType)
+        assertEquals(podcastId, episode.podcastBrowseId)
+    }
+
+    @Test
+    fun `cancelled online source cannot publish a result`() {
+        val handler = PlaylistDetailHandler { _, _ -> throw CancellationException("Source was cancelled") }
+        assertThrows(CancellationException::class.java) {
+            runBlocking {
+                handler.getChildren("playlist/VLcancelled", context, Database, downloadHelper, null)
+            }
+        }
+        assertEquals(null, AutoSearchState.playlistSongsById["VLcancelled"])
+    }
+
+    private fun onlineSong(id: String) = Innertube.SongItem(
+        info = Innertube.Info(name = id, endpoint = NavigationEndpoint.Endpoint.Watch(videoId = id)),
+        authors = null,
+        album = null,
+        durationText = null,
+        thumbnail = null,
+        explicit = false,
+    )
 }

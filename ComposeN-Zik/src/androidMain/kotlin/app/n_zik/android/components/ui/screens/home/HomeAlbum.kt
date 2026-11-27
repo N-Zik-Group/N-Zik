@@ -89,6 +89,7 @@ import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
 import app.n_zik.android.components.menu.playlist.playlistActionsAnchor
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.sortDisliked
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.colorPalette
@@ -339,9 +340,7 @@ fun HomeAlbums(
             AlbumsType.Library, AlbumsType.OnDevice -> Database.albumTable.sortInLibrary(
                 sort.sortBy, databaseOrder, includeDeviceGroups = includeDeviceGroups,
             )
-            AlbumsType.Disliked -> Database.albumTable.allDisliked().map { rows ->
-                if (deviceSortOrder != null) rows.sortedBy { it.title.orEmpty().lowercase() } else rows
-            }
+            AlbumsType.Disliked -> Database.albumTable.sortDisliked(sort.sortBy, databaseOrder)
         }.flowOn(NzikDispatchers.DATA).collect {
             itemsToFilter = it
             searchDataReady = true

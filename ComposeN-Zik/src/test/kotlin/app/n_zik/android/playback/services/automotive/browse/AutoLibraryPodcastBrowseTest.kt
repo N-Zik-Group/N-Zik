@@ -8,6 +8,7 @@ import androidx.media3.exoplayer.offline.DownloadRequest
 import androidx.media3.session.MediaSession
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.R
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.enums.PlaylistSongSortBy
 import app.n_zik.android.enums.PlaylistSortBy
@@ -16,6 +17,7 @@ import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
+import app.n_zik.android.utils.podcastBrowseId
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
@@ -215,7 +217,7 @@ class AutoLibraryPodcastBrowseTest {
     }
 
     @Test
-    fun `rewind generation combinations gate dedicated counts and groups but not general library`() {
+    fun `rewind generation combinations mirror phone visibility and subgroup availability`() {
         seed(
             Playlist(id = 1, name = "rewind-monthly:202609"),
             Playlist(id = 2, name = "rewind-yearly:2026"),
@@ -236,17 +238,27 @@ class AutoLibraryPodcastBrowseTest {
             assertEquals(expected, folderIds(AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL).toSet())
             assertEquals(if (monthly) listOf("playlist/1") else emptyList<String>(), folderIds(AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH))
             assertEquals(if (yearly) listOf("playlist/2") else emptyList<String>(), folderIds(AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR))
-            val counts = children(AutoSessionConstants.ID_PLAYLISTS_REWIND).associate { it.mediaId to it.mediaMetadata.subtitle.toString() }
-            assertEquals(expected.size.toString(), counts[AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL])
-            assertEquals(if (monthly) "1" else "0", counts[AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH])
-            assertEquals(if (yearly) "1" else "0", counts[AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR])
+            val rewindRows = folders(AutoSessionConstants.ID_PLAYLISTS_REWIND)
+            if (monthly && yearly) {
+                assertEquals(
+                    mapOf(
+                        AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL to "3",
+                        AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH to "1",
+                        AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR to "1",
+                    ),
+                    rewindRows.associate { it.mediaId to it.mediaMetadata.subtitle.toString() },
+                )
+            } else {
+                assertEquals(expected, rewindRows.map { it.mediaId }.toSet())
+            }
             assertEquals(expected.size.toString(), children(PlayerServiceModern.PLAYLIST)
                 .single { it.mediaId == AutoSessionConstants.ID_PLAYLISTS_REWIND }.mediaMetadata.subtitle)
-            assertEquals((1..5).map { "playlist/$it" }.toSet(), folderIds(AutoSessionConstants.ID_PLAYLISTS_LOCAL).toSet())
+            assertEquals(expected + setOf("playlist/4", "playlist/5"),
+                folderIds(AutoSessionConstants.ID_PLAYLISTS_LOCAL).toSet())
             assertEquals(before, DataStoreUtils.prefs(context).all)
         }
         context.preferences.edit().putBoolean(showMonthlyPlaylistsKey, false).putBoolean(showPinnedPlaylistsKey, false).commit()
-        assertEquals(listOf("playlist/4"), folderIds(AutoSessionConstants.ID_PLAYLISTS_LOCAL))
+        assertEquals(setOf("playlist/4", "playlist/5"), folderIds(AutoSessionConstants.ID_PLAYLISTS_LOCAL).toSet())
         assertTrue(children(PlayerServiceModern.PLAYLIST).none {
             it.mediaId in setOf(AutoSessionConstants.ID_PLAYLISTS_REWIND, AutoSessionConstants.ID_PLAYLISTS_PINNED)
         })
@@ -257,10 +269,28 @@ class AutoLibraryPodcastBrowseTest {
         seed(Playlist(id = 42, name = "Empty podcast", browseId = "MPSPempty", isYoutubePlaylist = false))
         val podcast = browse(AutoSessionConstants.ID_PLAYLISTS_YT_PODCASTS).single { it.mediaMetadata.isBrowsable == true }
         assertEquals("playlist/42", podcast.mediaId)
-        assertEquals("0", podcast.mediaMetadata.subtitle)
+        assertEquals(context.resources.getQuantityString(R.plurals.sync_detail_episodes, 0, 0), podcast.mediaMetadata.subtitle)
         val detail = browse(podcast.mediaId)
-        assertTrue(detail.all { AutoMediaIdContract.isQueueAction(it.mediaId) })
-        assertTrue(select(detail.first()).mediaItems.isEmpty())
+        assertTrue(detail.isEmpty())
+        val previouslyPublishedAction = MediaItem.Builder().setMediaId(AutoMediaIdContract.playlistPlayAll("42")).build()
+        assertTrue(select(previouslyPublishedAction).mediaItems.isEmpty())
+    }
+
+    @Test
+    fun `modified saved podcast keeps its source on legacy and scoped playback routes`() {
+        val podcastId = "MPSPmodified"
+        seed(Playlist(id = 42, name = "Modified podcast", browseId = "$MODIFIED_PREFIX$podcastId"))
+        onDatabase {
+            Database.songTable.upsert(Song.makePlaceholder("episode"))
+            Database.songPlaylistMapTable.map("episode", 42)
+        }
+        val legacy = MediaItem.Builder().setMediaId("playlist/42/episode").build()
+        val legacyQueue = select(legacy)
+        assertEquals(podcastId, legacyQueue.mediaItems.single().podcastBrowseId)
+
+        val scoped = browse("playlist/42").single { AutoMediaIdContract.isScopedSelection(it.mediaId) }
+        assertEquals(podcastId, scoped.podcastBrowseId)
+        assertEquals(podcastId, select(scoped).mediaItems.single().podcastBrowseId)
     }
 
     @Test

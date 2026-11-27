@@ -7,7 +7,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.n_zik.android.utils.homeArtistsOrderKey
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.utils.showFavoritesArtistKey
 import app.n_zik.android.utils.showOnDeviceArtistsKey
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
@@ -40,19 +39,20 @@ class ArtistsBrowseHandler internal constructor(
                 // and always shown in their dedicated folder — opening one + the
 //
                 // DISLIKE_ARTIST command removes its dislike (toggle).
-                val showFavoritesArtist = try { context.preferences.getBoolean(showFavoritesArtistKey, true) } catch (e: Exception) { true }
+                val showFavorites = autoHomeCollectionVisible(context, AutoSessionConstants.ID_ARTISTS_FAVORITES)
+                val showDisliked = autoHomeCollectionVisible(context, AutoSessionConstants.ID_ARTISTS_DISLIKED)
                 val onDeviceCount = if (context.isDeviceLibraryEnabled() && context.preferences.getBoolean(showOnDeviceArtistsKey, true)) {
                     onDevice.artists(context, database).size
                 } else null
                 val libraryCount = countAutoFolder(AutoSessionConstants.ID_ARTISTS_LIBRARY) {
-                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_LIBRARY, forCount = true).size
+                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_LIBRARY).size
                 }
-                val favoritesCount = countAutoFolder(AutoSessionConstants.ID_ARTISTS_FAVORITES) {
-                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_FAVORITES, forCount = true).size
-                }
-                val dislikedCount = countAutoFolder(AutoSessionConstants.ID_ARTISTS_DISLIKED) {
-                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_DISLIKED, forCount = true).size
-                }
+                val favoritesCount = if (showFavorites) countAutoFolder(AutoSessionConstants.ID_ARTISTS_FAVORITES) {
+                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_FAVORITES).size
+                } else null
+                val dislikedCount = if (showDisliked) countAutoFolder(AutoSessionConstants.ID_ARTISTS_DISLIKED) {
+                    loadAutoHomeArtists(context, database, AutoSessionConstants.ID_ARTISTS_DISLIKED).size
+                } else null
                 val categoryItems = mutableMapOf(
                     "all" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_LIBRARY, context.getString(R.string.common_option_all), libraryCount, drawableUri(context, R.drawable.artist), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
                     "favorites" to browsableMediaItem(AutoSessionConstants.ID_ARTISTS_FAVORITES, context.getString(R.string.library_favorites_title), favoritesCount, drawableUri(context, R.drawable.heart), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
@@ -65,11 +65,18 @@ class ArtistsBrowseHandler internal constructor(
                     )
                 }
                 homeCategoryOrder(context, homeArtistsOrderKey, listOf("all", "favorites", "disliked", "on_device"))
-                    .mapNotNull { id -> if (id == "favorites" && !showFavoritesArtist) null else categoryItems[id] }
+                    .mapNotNull { id ->
+                        when (id) {
+                            "favorites" -> categoryItems[id].takeIf { showFavorites }
+                            "disliked" -> categoryItems[id].takeIf { showDisliked }
+                            else -> categoryItems[id]
+                        }
+                    }
             }
             AutoSessionConstants.ID_ARTISTS_LIBRARY,
             AutoSessionConstants.ID_ARTISTS_FAVORITES,
             AutoSessionConstants.ID_ARTISTS_DISLIKED -> {
+                if (!autoHomeCollectionVisible(context, autoOriginParent(parentId))) return emptyList()
                 val collections = loadAutoHomeArtists(context, database, parentId)
                 if (autoOriginParent(parentId) == parentId && autoOriginAvailable(parentId)) {
                     return autoOriginFolders(context, parentId, collections) { it.isYoutubeArtist }

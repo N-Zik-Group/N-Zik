@@ -53,6 +53,7 @@ import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.withPodcastSource
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.withPlaybackAlbum
@@ -66,11 +67,13 @@ import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHo
 import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeArtists
 import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeSongs
 import app.n_zik.android.components.ui.screens.home.loadHomeLibraryGroupSongs
+import app.n_zik.android.components.ui.screens.home.loadHomeParentItems
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
-import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
+import app.n_zik.android.playback.services.automotive.browse.isUnmatchedPlaylistImport
 import app.n_zik.android.playback.services.automotive.browse.loadAutoDeviceSortedFavorites
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
@@ -719,12 +722,20 @@ class AutoSessionCallback(
                 return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             }
             val allowed = accessPolicy().eligible(selection.items, selection.parentId).let { eligible ->
-                if (autoBrowseTree.deviceGroupsHandler.detailParent(selection.parentId) == null) eligible
-                else {
-                    val currentIds = autoBrowseTree.deviceGroupsHandler.songs(selection.parentId, context, database)
-                        .mapTo(HashSet()) { it.id }
-                    eligible.filter { (_, item) -> AutoAccessPolicy.canonicalId(item) in currentIds }
+                val playlistDetail = selection.parentId.split('/')
+                val playlistId = playlistDetail.getOrNull(1)?.toLongOrNull()
+                    ?.takeIf { playlistDetail.firstOrNull() == PlayerServiceModern.PLAYLIST }
+                val currentSongs = when {
+                    autoBrowseTree.deviceGroupsHandler.detailParent(selection.parentId) != null ->
+                        autoBrowseTree.deviceGroupsHandler.songs(selection.parentId, context, database)
+                    playlistId != null -> loadAutoPlaylistSongs(
+                        context, database, downloadHelper, playlistId,
+                        onDeviceOnly = AutoMediaIdContract.isDevicePlaylistSection(playlistDetail.getOrNull(2)),
+                    )
+                    else -> null
                 }
+                val currentIds = currentSongs?.mapTo(HashSet()) { it.id }
+                if (currentIds == null) eligible else eligible.filter { (_, item) -> AutoAccessPolicy.canonicalId(item) in currentIds }
             }
             val currentSelection = if (scopedAction) autoBrowseTree.selectionStore.resolveAction(selectedId)
                 else autoBrowseTree.selectionStore.resolve(selectedId)
@@ -732,15 +743,19 @@ class AutoSessionCallback(
                 Timber.tag("AutoSessionCallback").w("Automotive selection invalidated during queue resolution")
                 return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             }
-            val selectedIndex = if (scopedAction && allowed.isNotEmpty()) 0
-                else allowed.indexOfFirst { it.index == selection.startIndex }
+            val shuffle = scopedAction && AutoMediaIdContract.isShuffle(selectedId)
+            val playable = if (shuffle && selection.parentId.startsWith("${PlayerServiceModern.PLAYLIST}/")) {
+                val excluded = DislikedExclusion.excludedSongIds(context, database)
+                allowed.filter { AutoAccessPolicy.canonicalId(it.value) !in excluded }
+            } else allowed
+            val selectedIndex = if (scopedAction && playable.isNotEmpty()) 0
+                else playable.indexOfFirst { it.index == selection.startIndex }
             if (selectedIndex < 0) {
                 Timber.tag("AutoSessionCallback").w("Selected song excluded from automotive queue: %s", selectedId)
                 return MediaSession.MediaItemsWithStartPosition(emptyList(), 0, startPositionMs)
             }
-            val queue = allowed.map { it.value }.let {
-                if (scopedAction && AutoMediaIdContract.isShuffle(selectedId)) it.shuffled() else it
-            }
+            val ordered = playable.map { it.value }
+            val queue = if (shuffle) ordered.shuffled() else ordered
             return MediaSession.MediaItemsWithStartPosition(queue, selectedIndex, if (scopedAction) 0 else startPositionMs)
         }
         val playlistShuffle = AutoMediaIdContract.parsePlaylistShuffle(selectedId)
@@ -758,14 +773,19 @@ class AutoSessionCallback(
         if (actionParent != null && playlistCategory == null) {
             val displayed = autoBrowseTree.selectionStore.itemsForParent(actionParent)
             if (!displayed.isNullOrEmpty()) {
-                val allowed = accessPolicy().eligible(displayed, actionParent).map { it.value }
+                val allowed = accessPolicy().eligible(displayed, actionParent).map { it.value }.let { eligible ->
+                    if (playlistShuffle == null) eligible else {
+                        val excluded = DislikedExclusion.excludedSongIds(context, database)
+                        eligible.filter { AutoAccessPolicy.canonicalId(it) !in excluded }
+                    }
+                }
                 val queue = if (AutoMediaIdContract.isShuffle(selectedId)) allowed.shuffled() else allowed
                 return MediaSession.MediaItemsWithStartPosition(queue, 0, 0)
             }
         }
         if (playlistPlayAll != null) {
             return MediaSession.MediaItemsWithStartPosition(
-                playlistSongs(playlistPlayAll).map { CancellableAutoMediaItemMapper.mapSongToMediaItem(it, loadArtwork = it.isLocal) }, 0, 0,
+                playlistQueueItems(playlistPlayAll, playlistSongs(playlistPlayAll)), 0, 0,
             )
         }
         val excludedIds = DislikedExclusion.excludedSongIds(context, database)
@@ -822,11 +842,23 @@ class AutoSessionCallback(
             }
         }
         if (playlistCategory != null) {
-            val items = loadAutoLibraryPlaylists(context, database, playlistCategory)
-                .flatMap { preview -> playlistSongs(preview.playlist.id.toString()) }
-                .distinctBy { song -> song.id }
-                .filter { song -> song.id !in excludedIds }
-                .map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }
+            val availableDeviceSongs = if (playlistCategory == AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE) {
+                context.scanDeviceLibrary().songIds
+            } else null
+            val playlists = loadAutoLibraryPlaylists(context, database, playlistCategory, availableDeviceSongs)
+            val sources = playlists.associate { it.playlist.id to it.playlist.browseId }
+            val parentalControl = context.preferences.getBoolean(parentalControlEnabledKey, false)
+            val tracks = loadHomeParentItems(
+                sources.keys.toList(), database.songPlaylistMapTable::songsForHomePlaylists,
+                include = { _, song ->
+                    song.id !in excludedIds && !song.isUnmatchedPlaylistImport() &&
+                        (!parentalControl || !song.title.hasExplicitPrefix()) &&
+                        (availableDeviceSongs == null || (song.isLocal && song.id in availableDeviceSongs))
+                },
+            ) { id, song -> song to sources[id] }
+            val items = tracks.map { (song, source) ->
+                CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal).withPodcastSource(source)
+            }
             val allowed = accessPolicy().eligible(items, playlistCategory).map { it.value }
             val queue = if (AutoMediaIdContract.isShuffle(selectedId)) allowed.shuffled() else allowed
             return MediaSession.MediaItemsWithStartPosition(queue, 0, 0)
@@ -835,14 +867,15 @@ class AutoSessionCallback(
         // so the right song list can be resolved (issue #777).
         val playlistShuffleId = AutoMediaIdContract.parsePlaylistShuffle(mediaItems.firstOrNull()?.mediaId)
         if (playlistShuffleId != null) {
-            val allSongs = playlistSongs(playlistShuffleId).shuffled()
-            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(allSongs.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal) }, 0, 0)
+            val allSongs = playlistSongs(playlistShuffleId).filter { it.id !in excludedIds }.shuffled()
+            if (allSongs.isNotEmpty()) return MediaSession.MediaItemsWithStartPosition(playlistQueueItems(playlistShuffleId, allSongs), 0, 0)
             Timber.tag("AutoSessionCallback").w("Empty playlist shuffle queue: mediaId=%s", mediaItems.first().mediaId)
         }
 
         var queryList = emptyList<Song>()
         var startIdx = startIndex
         var selectedAlbumId: String? = null
+        var selectedPlaylistToken: String? = null
         runCatching {
             var songId = ""
             val mediaId = mediaItems.first().mediaId
@@ -918,9 +951,10 @@ class AutoSessionCallback(
                     } else {
                         val playlistId = selection.containerId
                         songId = selection.songId
-                        val token = if (selection.section == AutoMediaIdContract.PLAYLIST_SECTION_DEVICE) {
+                        val token = if (AutoMediaIdContract.isDevicePlaylistSection(selection.section)) {
                             playlistId.toLongOrNull()?.let(AutoMediaIdContract::devicePlaylistAction)
                         } else playlistId
+                        selectedPlaylistToken = token
                         queryList = token?.let { playlistSongs(it) }.orEmpty()
                     }
                 }
@@ -939,14 +973,27 @@ class AutoSessionCallback(
         }
         val albumId = selectedAlbumId
         val albumTitle = albumId?.let { database.albumTable.findByIdDirect(it)?.cleanTitle() }
+        val playlistSource = selectedPlaylistToken?.takeIf { queryList.isNotEmpty() }?.let { playlistBrowseId(it) }
         val queue = queryList.map { song ->
             val item = CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal)
-            if (albumId != null) item.withPlaybackAlbum(albumId, albumTitle) else item
+            if (albumId != null) item.withPlaybackAlbum(albumId, albumTitle) else item.withPodcastSource(playlistSource)
         }
         return MediaSession.MediaItemsWithStartPosition(queue, startIdx, startPositionMs)
     }
 
-    /** Resolves local, generated or online playlist songs for legacy selection IDs. */
+    private suspend fun playlistBrowseId(playlistId: String): String? {
+        val storedId = playlistId.toLongOrNull()
+        return if (storedId != null) database.playlistTable.findById(storedId).first()?.browseId else playlistId
+    }
+
+    private suspend fun playlistQueueItems(playlistId: String, songs: List<Song>): List<MediaItem> {
+        if (songs.isEmpty()) return emptyList()
+        val browseId = playlistBrowseId(playlistId)
+        return songs.map { song ->
+            CancellableAutoMediaItemMapper.mapSongToMediaItem(song, loadArtwork = song.isLocal).withPodcastSource(browseId)
+        }
+    }
+
     private suspend fun playlistSongs(playlistId: String): List<Song> = when (playlistId) {
         AutoSessionConstants.ID_FAVORITES -> {
             val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY
@@ -971,9 +1018,8 @@ class AutoSessionCallback(
             val localId = playlistId.toLongOrNull()
             when {
                 deviceGroup != null -> autoBrowseTree.deviceGroupsHandler.songs(deviceGroup, context, database)
-                devicePlaylistId != null -> if (showAutoDevicePlaylists(context)) {
-                    loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId, onDeviceOnly = true).filter { it.isLocal }
-                } else emptyList()
+                devicePlaylistId != null ->
+                    loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId, onDeviceOnly = true)
                 localId != null -> loadAutoPlaylistSongs(context, database, downloadHelper, localId)
                 else -> AutoSearchState.playlistSongsById[playlistId].orEmpty()
             }

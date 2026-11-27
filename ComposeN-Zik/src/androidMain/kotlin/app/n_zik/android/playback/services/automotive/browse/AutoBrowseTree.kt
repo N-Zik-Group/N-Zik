@@ -189,7 +189,10 @@ class AutoBrowseTree(
         val parts = mediaId.split('/')
         val playlistParent = if (parts.size == 3 && parts[0] == PlayerServiceModern.PLAYLIST &&
             parts[1].toLongOrNull() != null && AutoMediaIdContract.isPlaylistSection(parts[2])
-        ) parts.take(2).joinToString("/") else null
+        ) {
+            if (parts[2] == AutoMediaIdContract.ON_DEVICE_PLAYLIST_ROW) AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE
+            else parts.take(2).joinToString("/")
+        } else null
         val parent = STATIC_PARENTS[mediaId] ?: deviceGroupsHandler.detailParent(mediaId) ?: playlistParent ?: return null
         return handlers.firstOrNull { it.handles(parent) }
             ?.getChildren(parent, context, database, downloadHelper, binder)

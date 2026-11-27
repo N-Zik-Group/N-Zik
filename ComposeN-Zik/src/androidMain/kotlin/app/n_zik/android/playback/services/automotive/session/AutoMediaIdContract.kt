@@ -12,6 +12,7 @@ object AutoMediaIdContract {
     private const val DEVICE_GROUP_ACTION = "device-group:"
     internal const val PLAYLIST_SECTION_ALL = "all"
     internal const val PLAYLIST_SECTION_DEVICE = "on_device"
+    internal const val ON_DEVICE_PLAYLIST_ROW = "on_device_playlist"
 
     internal fun devicePlaylistAction(id: Long): String = "$DEVICE_PLAYLIST_ACTION$id"
 
@@ -31,8 +32,11 @@ object AutoMediaIdContract {
         }
     }
 
+    internal fun isDevicePlaylistSection(value: String?): Boolean =
+        value == PLAYLIST_SECTION_DEVICE || value == ON_DEVICE_PLAYLIST_ROW
+
     internal fun isPlaylistSection(value: String): Boolean =
-        value == PLAYLIST_SECTION_ALL || value == PLAYLIST_SECTION_DEVICE
+        value == PLAYLIST_SECTION_ALL || isDevicePlaylistSection(value)
 
     /** A song selection within a detail container. */
     data class ParsedSongSelection(val containerId: String, val section: String?, val songId: String)

@@ -2,7 +2,12 @@ package app.n_zik.android.playback.services.automotive.browse
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.PINNED_PREFIX
+import app.n_zik.android.enums.AlbumSortBy
+import app.n_zik.android.enums.ArtistSortBy
+import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.utils.Preference
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
@@ -81,6 +86,8 @@ class AutoBrowseRewindDislikedSectionsTest {
         every { mainApplication.applicationContext } returns app
         Dependencies.init(mainApplication)
         context = app
+        mockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
+        every { isYouTubeSyncEnabled() } returns false
         val devicePrefs = profileDataPrefs(context, getActiveProfile(context))
         originalDeviceLibraryEnabled = if (devicePrefs.contains(DEVICE_LIBRARY_ENABLED_KEY))
             devicePrefs.getBoolean(DEVICE_LIBRARY_ENABLED_KEY, false) else null
@@ -97,6 +104,7 @@ class AutoBrowseRewindDislikedSectionsTest {
 
     @After
     fun tearDown() {
+        unmockkStatic("app.n_zik.android.components.settings.accounts.AccountsSettingsKt")
         profileDataPrefs(context, getActiveProfile(context)).edit().apply {
             originalDeviceLibraryEnabled?.let { putBoolean(DEVICE_LIBRARY_ENABLED_KEY, it) }
                 ?: remove(DEVICE_LIBRARY_ENABLED_KEY)
@@ -336,24 +344,25 @@ class AutoBrowseRewindDislikedSectionsTest {
     }
 
     @Test
-    fun `disliked songs reappear in the all songs list when phone DislikeMode is disabled`() {
+    fun `disabling dislike hides the dedicated folder and All still follows the phone list`() {
         runBlocking { seedSongs() }
-        // Phone settings: "exclude disliked" off -> the general categories keep them.
+        // The phone's All screen still excludes rows marked as disliked.
         context.preferences.edit().putString(excludeDislikedSongsKey, DislikeMode.Disabled.name).apply()
         try {
             val items = runBlocking {
                 onDatabase { songsHandler.getChildren(AutoSessionConstants.ID_SONGS_ALL, context, Database, downloadHelper, null) }
             }
             val ids = items.map { it.mediaId }
-            assertTrue(ids.any { it.contains("dis-1") })
-            assertTrue(ids.any { it.contains("dis-2") })
+            assertTrue(ids.none { it.contains("dis-1") })
+            assertTrue(ids.none { it.contains("dis-2") })
             assertTrue(ids.any { it.contains("ok-1") })
 
-            // The Disliked category itself is never filtered, in either mode.
+            val root = runBlocking { songsRoot() }
+            assertTrue(root.none { it.mediaId == AutoSessionConstants.ID_SONGS_DISLIKED })
             val disliked = runBlocking {
                 onDatabase { songsHandler.getChildren(AutoSessionConstants.ID_SONGS_DISLIKED, context, Database, downloadHelper, null) }
             }
-            assertEquals(setOf("SONGS_DISLIKED/dis-1", "SONGS_DISLIKED/dis-2"), disliked.drop(1).map { it.mediaId }.toSet())
+            assertTrue(disliked.isEmpty())
         } finally {
             context.preferences.edit().remove(excludeDislikedSongsKey).apply()
         }
@@ -388,6 +397,32 @@ class AutoBrowseRewindDislikedSectionsTest {
         }
     }
 
+    @Test
+    fun `disliked collections use the selected phone sort`() = runBlocking<Unit> {
+        onDatabase {
+            Database.albumTable.insertIgnore(Album(id = "za", title = "Z", year = "1989", dislikedAt = 3L))
+            Database.albumTable.insertIgnore(Album(id = "aa", title = "A", year = "2005", dislikedAt = 5L))
+            Database.artistTable.insertIgnore(Artist(id = "zt", name = "Z", timestamp = 10L, dislikedAt = 3L))
+            Database.artistTable.insertIgnore(Artist(id = "at", name = "A", timestamp = 20L, dislikedAt = 5L))
+        }
+        val albumSort = Preference.HOME_ALBUMS_DISLIKED_SORT_BY.key
+        val artistSort = Preference.HOME_ARTISTS_DISLIKED_SORT_BY.key
+        val artistOrder = Preference.HOME_ARTISTS_DISLIKED_SORT_ORDER.key
+        context.preferences.edit().putString(albumSort, AlbumSortBy.Year.name)
+            .putString(artistSort, ArtistSortBy.DateAdded.name)
+            .putString(artistOrder, SortOrder.Descending.name).commit()
+        try {
+            onDatabase {
+                val albums = albumsHandler.getChildren(AutoSessionConstants.ID_ALBUMS_DISLIKED, context, Database, downloadHelper, null)
+                val artists = artistsHandler.getChildren(AutoSessionConstants.ID_ARTISTS_DISLIKED, context, Database, downloadHelper, null)
+                assertEquals(listOf("Z", "A"), albums.filter { it.mediaMetadata.isBrowsable == true }.map { it.mediaMetadata.title })
+                assertEquals(listOf("A", "Z"), artists.filter { it.mediaMetadata.isBrowsable == true }.map { it.mediaMetadata.title })
+            }
+        } finally {
+            context.preferences.edit().remove(albumSort).remove(artistSort).remove(artistOrder).commit()
+        }
+    }
+
     // ---------- Albums / Artists: container hiding + detail triple filter ----------
 
     /** Seeds the dislike fixtures shared by the album/artist tests: s-ok (plain), s-dis (disliked song), s-art (by a disliked artist), s-alb (in a disliked album) — all in the normal album LOCAL_ALBUM_OK; s-ok/s-dis/s-alb by the normal artist, s-art by the disliked one. */

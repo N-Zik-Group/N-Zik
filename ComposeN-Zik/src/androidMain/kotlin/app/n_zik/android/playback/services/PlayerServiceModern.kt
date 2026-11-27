@@ -20,6 +20,8 @@ import app.n_zik.android.privacy.PermissionFeature
 import app.n_zik.android.privacy.JournalPermission
 import app.n_zik.android.privacy.PermissionEventKind
 
+import app.n_zik.android.playback.services.automotive.browse.handlers.isAutoHomeBrowsePreference
+import app.n_zik.android.playback.services.automotive.browse.handlers.isAutoRewindPreference
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.listentogether.ListenTogetherClient
@@ -634,6 +636,7 @@ class PlayerServiceModern : MediaLibraryService(),
         boundSessionPreferences = preferences
         boundSessionPreferences?.registerOnSharedPreferenceChangeListener(this)
         profilePreferences.registerOnSharedPreferenceChangeListener(sessionProfileListener)
+        DataStoreUtils.prefs(this).registerOnSharedPreferenceChangeListener(autoRewindPreferenceListener)
 
         isPersistentQueueEnabled = preferences.getBoolean(persistentQueueKey, false)
 
@@ -1232,6 +1235,8 @@ class PlayerServiceModern : MediaLibraryService(),
             profilePreferences.unregisterOnSharedPreferenceChangeListener(sessionProfileListener)
             boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
             encryptedPreferences.unregisterOnSharedPreferenceChangeListener(encryptedPrefsListener)
+            DataStoreUtils.prefs(this).unregisterOnSharedPreferenceChangeListener(autoRewindPreferenceListener)
+            autoBrowseRefreshJob?.cancel()
             stopService(intent<MyDownloadService>())
             stopService(intent<PlayerServiceModern>())
             mediaLibrarySessionCallback.release()
@@ -1258,8 +1263,8 @@ class PlayerServiceModern : MediaLibraryService(),
             //downloadCache.release()
             loudnessEnhancer?.release()
             audioVolumeObserver.unregister()
-            notificationManager?.cancel(NotificationId)
-            notificationManager?.cancelAll()
+            notificationManager?.cancel(DefaultMediaNotificationProvider.DEFAULT_NOTIFICATION_ID)
+            notificationManager?.cancel(SleepTimerNotificationId)
             notificationManager = null
             guestLockObserverJob?.cancel()
             guestLockObserverJob = null
@@ -1313,6 +1318,10 @@ class PlayerServiceModern : MediaLibraryService(),
     private var sessionArtworkJob: Job? = null
     private var playbackIdentityJob: Job? = null
     private var boundSessionPreferences: SharedPreferences? = null
+    private var autoBrowseRefreshJob: Job? = null
+    private val autoRewindPreferenceListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (isAutoRewindPreference(key)) refreshAutomotiveBrowse()
+    }
     private val sessionProfileListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == activeProfileKey) {
             menuQueueEdits.invalidate()
@@ -1323,6 +1332,17 @@ class PlayerServiceModern : MediaLibraryService(),
             refreshTrackBoundaryPause()
             refreshSessionAccess()
             refreshArtworkWidgets()
+        }
+    }
+
+    private fun refreshAutomotiveBrowse() {
+        if (!::mediaSession.isInitialized || isDestroying) return
+        autoBrowseRefreshJob?.cancel()
+        autoBrowseRefreshJob = coroutineScope.launch(NzikDispatchers.UI) {
+            // The editor and reset write several related keys as one operation.
+            delay(100)
+            mediaLibrarySessionCallback.invalidatePublication()
+            mediaLibrarySessionCallback.publishAccess(mediaSession)
         }
     }
 
@@ -1351,6 +1371,7 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
+        if (isAutoHomeBrowsePreference(key)) refreshAutomotiveBrowse()
         if (sharedPreferences != null &&
             (key == null || key == playbackSpeedKey || key == playbackPitchKey || key == playbackVolumeKey)
         ) {
@@ -2987,6 +3008,8 @@ class PlayerServiceModern : MediaLibraryService(),
          */
         internal suspend fun awaitDestruction() = destructionCompleted.await()
 
+        internal suspend fun awaitPlaybackReady() = playbackReady.await()
+
         fun restartForegroundOrStop() {
             player.pause()
             stopSelf()
@@ -3687,7 +3710,6 @@ class PlayerServiceModern : MediaLibraryService(),
         // Issue #866 (gh-866): transient shuffle confirmation duration on the command buttons.
         private const val SHUFFLE_OK_FLASH_MS = 1000L
 
-        const val NotificationId = 1001
         const val NotificationChannelId = "default_channel_id"
 
         /**

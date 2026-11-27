@@ -24,6 +24,7 @@ import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
 import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.SongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
@@ -31,8 +32,16 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
 import app.n_zik.android.playback.services.automotive.browse.handlers.QuickPicksBrowseHandler
 import app.n_zik.android.playback.services.automotive.browse.handlers.RootBrowseHandler
+import app.n_zik.android.playback.services.automotive.browse.handlers.isAutoHomeBrowsePreference
+import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeAlbums
+import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeArtists
 import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeSongs
 import app.n_zik.android.utils.Preference
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.utils.excludeDislikedSongsKey
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.showFavoritesArtistKey
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.Called
@@ -122,6 +131,55 @@ class AutoOfflineNavigationTest {
 
     @Test fun `forced offline with validated wifi removes discovery and disabling restores capabilities`() =
         assertPolicyRoundTrip(forced = true)
+
+    @Test fun `root respects saved phone tab order and visibility`() {
+        val preferences = app.preferences
+        val disabledArtistKey = "hometab_artists_enabled"
+        preferences.edit()
+            .putString(homeTabsOrderKey, """["playlists","artists","albums","songs","quickpicks"]""")
+            .putBoolean(enableQuickPicksPageKey, false)
+            .putBoolean(disabledArtistKey, false)
+            .commit()
+        try {
+            assertEquals(listOf(PlayerServiceModern.PLAYLIST, PlayerServiceModern.ALBUM, PlayerServiceModern.SONG), rootIds())
+            preferences.edit().putBoolean(disabledArtistKey, true).commit()
+            assertEquals(
+                listOf(PlayerServiceModern.PLAYLIST, PlayerServiceModern.ARTIST, PlayerServiceModern.ALBUM, PlayerServiceModern.SONG),
+                rootIds(),
+            )
+        } finally {
+            preferences.edit().remove(homeTabsOrderKey).remove(enableQuickPicksPageKey).remove(disabledArtistKey).commit()
+        }
+    }
+
+    @Test fun `disabled phone categories cannot be opened through a retained automotive route`() {
+        val prefs = app.preferences
+        prefs.edit()
+            .putString(excludeDislikedSongsKey, DislikeMode.Disabled.name)
+            .putString(excludeDislikedAlbumsKey, DislikeMode.Disabled.name)
+            .putBoolean(showFavoritesArtistKey, false)
+            .commit()
+        try {
+            // Exercise the suspend category loaders used by browse and queue fallback.
+            runBlocking {
+                assertTrue(loadAutoHomeSongs(app, database, downloads, null, AutoSessionConstants.ID_SONGS_DISLIKED, emptySet()).isEmpty())
+                assertTrue(loadAutoHomeAlbums(app, database, AutoSessionConstants.ID_ALBUMS_DISLIKED).isEmpty())
+                assertTrue(loadAutoHomeArtists(app, database, AutoSessionConstants.ID_ARTISTS_FAVORITES).isEmpty())
+            }
+            verify { database wasNot Called }
+        } finally {
+            prefs.edit().remove(excludeDislikedSongsKey).remove(excludeDislikedAlbumsKey).remove(showFavoritesArtistKey).commit()
+        }
+    }
+
+    @Test fun `home preference changes invalidate automotive browse while unrelated settings do not`() {
+        assertTrue(isAutoHomeBrowsePreference(homeTabsOrderKey))
+        assertTrue(isAutoHomeBrowsePreference(Preference.HOME_ON_DEVICE_ALBUMS_SORT_ORDER.key))
+        assertTrue(isAutoHomeBrowsePreference("PlaylistSongsSortBy_42"))
+        assertTrue(isAutoHomeBrowsePreference(excludeDislikedSongsKey))
+        assertFalse(isAutoHomeBrowsePreference("homeSongsToolbarOrder"))
+        assertFalse(isAutoHomeBrowsePreference("coverDimmingOpacity"))
+    }
 
     @Test fun `Android Auto All uses the saved device priority and reevaluates available files`() {
         val songs = mockk<SongTable>()

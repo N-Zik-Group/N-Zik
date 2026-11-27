@@ -516,6 +516,16 @@ interface ArtistTable {
     """)
     fun allDisliked( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
 
+    @Query("""
+        SELECT A.* FROM Artist A
+        LEFT JOIN SongArtistMap M ON M.artistId = A.id
+        LEFT JOIN Event E ON E.songId = M.songId
+        WHERE A.dislikedAt IS NOT NULL
+        GROUP BY A.id
+        ORDER BY CASE WHEN :byPlayCount THEN COUNT(E.id) ELSE COALESCE(SUM(E.playtime), 0) END, A.id
+    """)
+    fun sortDislikedByPlayback(byPlayCount: Boolean): Flow<List<Artist>>
+
     @Query("UPDATE Artist SET position = :position WHERE id = :artistId")
     suspend fun updatePosition( artistId: String, position: Int ): Int
 

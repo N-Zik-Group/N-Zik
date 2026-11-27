@@ -11,6 +11,7 @@ import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.R
 import app.n_zik.android.enums.PlaylistSongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Playlist
@@ -18,6 +19,7 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.showMonthlyPlaylistsKey
+import app.n_zik.android.utils.showOnDevicePlaylistsKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
@@ -25,15 +27,21 @@ import app.n_zik.android.components.ui.screens.home.YOUTUBE_LIBRARY_FILTER_KEY
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
+import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
+import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.mockkStatic
 import io.mockk.unmockkObject
+import io.mockk.unmockkStatic
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
@@ -129,7 +137,7 @@ class AutoLibraryPlaylistActionsTest {
         assertEquals(before, context.preferences.all)
     }
 
-    @Test fun `aggregate playback respects playlist name ordering and per-playlist song order`() {
+    @Test fun `aggregate playback follows library order and detail keeps its own sort`() {
         seed(Playlist(1, "Z podcast", "MPSPz"), "z-last", "z-first")
         seed(Playlist(2, "A podcast", "MPSPa"), "a-first", "a-last")
         context.preferences.edit()
@@ -137,9 +145,58 @@ class AutoLibraryPlaylistActionsTest {
             .putString("PlaylistSongsSortOrder_2", SortOrder.Descending.name)
             .commit()
         val before = context.preferences.all.toMap()
-        assertEquals(listOf("a-last", "a-first", "z-first", "z-last"), action("PLAYLISTS_YT_PODCASTS_PLAY_ALL"))
+        assertEquals(listOf("a-first", "a-last", "z-last", "z-first"), action("PLAYLISTS_YT_PODCASTS_PLAY_ALL"))
         assertEquals(listOf("a-last", "a-first"), action("PLAYLIST_PLAY_ALL/2"))
         assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun `playlist shuffle excludes disliked songs while direct selection remains possible`() {
+        seed(Playlist(1, "Mixed tastes"), "liked", "disliked")
+        onDatabase { Database.songTable.upsert(song("disliked").copy(likedAt = -1L)) }
+        val children = callback.onGetChildren(
+            mockk<MediaLibrarySession>(), mockk<MediaSession.ControllerInfo>(),
+            "${PlayerServiceModern.PLAYLIST}/1", 0, 200, null,
+        ).get(15, TimeUnit.SECONDS).value.orEmpty()
+        val shuffle = children.single { AutoMediaIdContract.isShuffle(it.mediaId) }
+        assertEquals(listOf("liked"), action(shuffle.mediaId))
+        assertEquals(listOf("liked"), action("PLAYLIST_SHUFFLE/1"))
+        val direct = children.single { it.mediaMetadata.title == "disliked" }
+        assertTrue("disliked" in action(direct.mediaId))
+    }
+
+    @Test fun `first Auto browse and playback keep imported order until a sort is chosen`() {
+        seed(Playlist(1, "Linked import", "VLimported"), "z-linked-01", "a-linked")
+        seed(Playlist(2, "Provider import", "SPOTIFY_IMPORT_HOMESONGS"), "z-provider", "spotify:track:unmatched", "a-provider")
+        seed(Playlist(3, "Manual"), "z-manual", "a-manual")
+        seed(Playlist(4, "Empty"))
+        onDatabase {
+            Database.songTable.upsert(song("z-linked-01").copy(totalPlayTimeMs = 1L))
+            Database.songTable.upsert(song("spotify:track:unmatched").copy(totalPlayTimeMs = 1L))
+        }
+
+        fun tracks(id: Long): List<MediaItem> = callback.onGetChildren(
+            mockk<MediaLibrarySession>(), mockk<MediaSession.ControllerInfo>(),
+            "${PlayerServiceModern.PLAYLIST}/$id", 0, 200, null,
+        ).get(15, TimeUnit.SECONDS).value.orEmpty().filter { AutoMediaIdContract.isScopedSelection(it.mediaId) }
+
+        val before = context.preferences.all.toMap()
+        mapOf(
+            1L to listOf("z-linked-01", "a-linked"),
+            2L to listOf("z-provider", "a-provider"),
+            3L to listOf("a-manual", "z-manual"),
+        ).forEach { (id, expected) ->
+            val rows = tracks(id)
+            assertEquals(expected, rows.map { it.mediaMetadata.title.toString() })
+            assertEquals(expected, action(rows.first().mediaId))
+        }
+        assertTrue(tracks(4).isEmpty())
+        assertEquals(before, context.preferences.all)
+
+        context.preferences.edit().putString("PlaylistSongsSortBy_1", PlaylistSongSortBy.Title.name).commit()
+        val explicitlySorted = tracks(1)
+        assertEquals(listOf("a-linked", "z-linked-01"), explicitlySorted.map { it.mediaMetadata.title.toString() })
+        assertEquals(listOf("a-linked", "z-linked-01"), action(explicitlySorted.first().mediaId))
+        assertEquals(PlaylistSongSortBy.Title.name, context.preferences.getString("PlaylistSongsSortBy_1", null))
     }
 
     @Test fun `empty or fully disliked podcast groups return an empty queue`() = runBlocking<Unit> {
@@ -150,7 +207,7 @@ class AutoLibraryPlaylistActionsTest {
         assertTrue(action("PLAYLISTS_YT_PLAY_ALL").isEmpty())
     }
 
-    @Test fun `Downloaded direct and aggregate actions group only completed downloads in both directions`() {
+    @Test fun `Downloaded detail sort groups completed downloads and aggregate keeps library order`() {
         seed(Playlist(1, "A local"), "d-completed", "c-queued", "b-completed", "a-missing")
         seed(Playlist(2, "B local"), "z-next-playlist")
         MyDownloadHelper.downloads.value = mapOf(
@@ -167,14 +224,17 @@ class AutoLibraryPlaylistActionsTest {
                 .putString("PlaylistSongsSortOrder_1", order.name).commit()
             val before = context.preferences.all.toMap()
             assertEquals(order.name, expected, action("PLAYLIST_PLAY_ALL/1"))
-            assertEquals(order.name, expected + "z-next-playlist", action("PLAYLISTS_LOCAL_PLAY_ALL"))
+            assertEquals(
+                order.name, listOf("d-completed", "c-queued", "b-completed", "a-missing", "z-next-playlist"),
+                action("PLAYLISTS_LOCAL_PLAY_ALL"),
+            )
             assertEquals(order.name, expected.toSet(), action("PLAYLIST_SHUFFLE/1").toSet())
             assertEquals(order.name, (expected + "z-next-playlist").toSet(), action("PLAYLISTS_LOCAL_SHUFFLE").toSet())
             assertEquals(before, context.preferences.all)
         }
     }
 
-    @Test fun `Downloaded grouping happens before direct and aggregate queue caps in both directions`() {
+    @Test fun `queue caps apply after Downloaded detail order or library aggregate order`() {
         val ids = (0 until 55).map { "song-%02d".format(it) }
         seed(Playlist(1, "A local"), *ids.reversed().toTypedArray())
         seed(Playlist(2, "B local"), "next-playlist")
@@ -188,7 +248,7 @@ class AutoLibraryPlaylistActionsTest {
         ).forEach { (order, expected) ->
             context.preferences.edit().putString("PlaylistSongsSortOrder_1", order.name).commit()
             assertEquals(order.name, expected.take(50), action("PLAYLIST_PLAY_ALL/1"))
-            assertEquals(order.name, expected.take(50), action("PLAYLISTS_LOCAL_PLAY_ALL"))
+            assertEquals(order.name, ids.reversed().take(50), action("PLAYLISTS_LOCAL_PLAY_ALL"))
         }
     }
 
@@ -212,7 +272,7 @@ class AutoLibraryPlaylistActionsTest {
         actions.forEach { assertEquals(listOf("b-downloaded"), action(it)) }
     }
 
-    @Test fun `Rewind action rereads generation toggles and local actions honor hidden sections`() {
+    @Test fun `Rewind actions reread generation toggles and All retains pinned rows`() {
         seed(Playlist(1, "rewind-monthly:202601"), "month")
         seed(Playlist(2, "rewind-yearly:2026"), "year")
         seed(Playlist(3, "rewind-alltime"), "all-time")
@@ -226,7 +286,53 @@ class AutoLibraryPlaylistActionsTest {
         yearlyEnabled = true
         assertEquals(listOf("year"), action("PLAYLISTS_REWIND_ALL_PLAY_ALL"))
         context.preferences.edit().putBoolean(showMonthlyPlaylistsKey, false).putBoolean(showPinnedPlaylistsKey, false).commit()
-        assertEquals(listOf("plain"), action("PLAYLISTS_LOCAL_PLAY_ALL"))
+        assertEquals(listOf("pinned", "plain", "year"), action("PLAYLISTS_LOCAL_PLAY_ALL"))
+        assertTrue(action("PLAYLISTS_PINNED_PLAY_ALL").isEmpty())
+        assertTrue(action("PLAYLISTS_REWIND_ALL_PLAY_ALL").isEmpty())
+    }
+
+    @Test fun `On device browse counts and playback use one scoped device selection`() {
+        seed(Playlist(1, "Mixed"), "local:101", "local:102", "online")
+        seed(Playlist(2, "Unavailable"), "local:103")
+        seed(Playlist(3, "YouTube", "VLplaylist"), "local:101")
+        val category = AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE
+        val detail = "${PlayerServiceModern.PLAYLIST}/1/${AutoMediaIdContract.ON_DEVICE_PLAYLIST_ROW}"
+        val deviceSection = "${PlayerServiceModern.PLAYLIST}/1/${AutoMediaIdContract.PLAYLIST_SECTION_DEVICE}"
+        var snapshot = DeviceLibrarySnapshot(songIds = setOf("local:101"))
+        val deviceLibrary = "app.n_zik.android.core.ondevice.DeviceLibraryKt"
+        mockkStatic(deviceLibrary)
+        every { any<Context>().isDeviceLibraryEnabled(any()) } returns true
+        coEvery { any<Context>().scanDeviceLibrary(false) } answers { snapshot }
+        try {
+            fun children(parent: String): List<MediaItem> = callback.onGetChildren(
+                mockk<MediaLibrarySession>(), mockk<MediaSession.ControllerInfo>(), parent, 0, 200, null,
+            ).get(15, TimeUnit.SECONDS).value.orEmpty()
+            fun item(mediaId: String): MediaItem? = callback.onGetItem(
+                mockk<MediaLibrarySession>(), mockk<MediaSession.ControllerInfo>(), mediaId,
+            ).get(15, TimeUnit.SECONDS).value
+
+            assertEquals("Mixed", item(detail)?.mediaMetadata?.title)
+            assertEquals(context.getString(R.string.library_on_device_title), item(deviceSection)?.mediaMetadata?.title)
+            val row = children(category).single { it.mediaMetadata.isBrowsable == true }
+            assertEquals(detail, row.mediaId)
+            assertEquals("Mixed", row.mediaMetadata.title)
+            assertEquals(listOf("local:101"), action("${category}_PLAY_ALL"))
+            assertEquals(listOf("local:101"), action("${category}_SHUFFLE"))
+
+            val capturedTrack = children(detail).single { AutoMediaIdContract.isScopedSelection(it.mediaId) }
+            assertEquals(listOf("local:101"), action(capturedTrack.mediaId))
+            context.preferences.edit().putBoolean(showOnDevicePlaylistsKey, false).commit()
+            assertTrue(children(category).isEmpty())
+            assertTrue(children("${PlayerServiceModern.PLAYLIST}/1").any { it.mediaId == deviceSection })
+            assertTrue(children(deviceSection).any { AutoMediaIdContract.isScopedSelection(it.mediaId) })
+            context.preferences.edit().remove(showOnDevicePlaylistsKey).commit()
+            snapshot = DeviceLibrarySnapshot()
+            assertTrue(action(capturedTrack.mediaId).isEmpty())
+            assertTrue(action("${category}_PLAY_ALL").isEmpty())
+            assertTrue(children(category).isEmpty())
+        } finally {
+            unmockkStatic(deviceLibrary)
+        }
     }
 
     @Test fun `disabled Rewind hides its library folders and aggregate queue without changing playlist choices`() {

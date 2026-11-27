@@ -4,13 +4,18 @@ import android.content.Context
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
-import app.n_zik.android.R
+import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
+import app.n_zik.android.components.dialog.settings.buildHomeTabDefs
+import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.homeTabsOrderKey
+import app.n_zik.android.utils.preferences
 
 class RootBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == PlayerServiceModern.ROOT
@@ -22,16 +27,27 @@ class RootBrowseHandler : BrowseHandler {
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
-        return buildList {
-            if (AutoAccessPolicy(context, database, downloadHelper, binder).online) {
-                add(browsableMediaItem(AutoSessionConstants.ID_QUICK_PICKS, context.getString(R.string.recommendations_title), null, drawableUri(context, R.drawable.sparkles), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED))
+        val prefs = context.preferences
+        val categories = buildHomeTabDefs()
+        val active = activeHomeTabIds(
+            HomeTabsSettingsDialog.parseOrder(prefs.getString(homeTabsOrderKey, "").orEmpty()).distinct(),
+            quickPicks = prefs.getBoolean(enableQuickPicksPageKey, true),
+            songs = prefs.getBoolean("hometab_songs_enabled", true),
+            artists = prefs.getBoolean("hometab_artists_enabled", true),
+            albums = prefs.getBoolean("hometab_albums_enabled", true),
+            playlists = prefs.getBoolean("hometab_playlists_enabled", true),
+            offlineMode = !AutoAccessPolicy(context, database, downloadHelper, binder).online,
+        )
+        return active.map { tab ->
+            val (id, type) = when (tab) {
+                "quickpicks" -> AutoSessionConstants.ID_QUICK_PICKS to MediaMetadata.MEDIA_TYPE_FOLDER_MIXED
+                "artists" -> PlayerServiceModern.ARTIST to MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS
+                "albums" -> PlayerServiceModern.ALBUM to MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS
+                "playlists" -> PlayerServiceModern.PLAYLIST to MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS
+                else -> PlayerServiceModern.SONG to MediaMetadata.MEDIA_TYPE_PLAYLIST
             }
-            addAll(listOf(
-                browsableMediaItem(PlayerServiceModern.SONG, context.getString(R.string.library_songs_title), null, drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_PLAYLIST),
-                browsableMediaItem(PlayerServiceModern.ARTIST, context.getString(R.string.library_artists_title), null, drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-                browsableMediaItem(PlayerServiceModern.ALBUM, context.getString(R.string.library_albums_title), null, drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
-                browsableMediaItem(PlayerServiceModern.PLAYLIST, context.getString(R.string.library_playlists_title), null, drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS)
-            ))
+            val category = categories.getValue(tab)
+            browsableMediaItem(id, context.getString(category.labelRes), null, drawableUri(context, category.iconRes), type)
         }
     }
 }

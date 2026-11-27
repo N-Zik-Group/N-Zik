@@ -12,6 +12,7 @@ import app.n_zik.innertube.utils.from
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.core.database.podcastSourceBrowseId
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
@@ -109,36 +110,34 @@ class SearchBrowseHandler(
             val items = result.items.orEmpty()
             AutoSearchWindowStore.Batch(items.map { CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, it.key ?: "", it.info?.name ?: "", it.authors.artistEntryNames().joinToString(", "), it.thumbnail?.url, category) }, result.continuation)
         }
-        AutoSessionConstants.ID_SEARCH_PLAYLISTS -> {
-            val page = if (continuation == null) {
-                Innertube.searchPage<Innertube.PlaylistItem>(query, Innertube.SearchFilter.CommunityPlaylist.value) { Innertube.PlaylistItem.from(it) }
-            } else {
-                Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation) { Innertube.PlaylistItem.from(it) }
-            }
-            val result = page?.getOrThrow() ?: error("Search batch unavailable")
-            val items = result.items.orEmpty()
-            AutoSearchWindowStore.Batch(items.map { browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${it.key}", it.info?.name ?: "", null, it.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, category) }, result.continuation)
-        }
-        AutoSessionConstants.ID_SEARCH_FEATURED -> {
-            val page = if (continuation == null) {
-                Innertube.searchPage<Innertube.PlaylistItem>(query, Innertube.SearchFilter.FeaturedPlaylist.value) { Innertube.PlaylistItem.from(it) }
-            } else {
-                Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation) { Innertube.PlaylistItem.from(it) }
-            }
-            val result = page?.getOrThrow() ?: error("Search batch unavailable")
-            val items = result.items.orEmpty()
-            AutoSearchWindowStore.Batch(items.map { browsableMediaItem("${PlayerServiceModern.PLAYLIST}/${it.key}", it.info?.name ?: "", null, it.thumbnail?.url?.toUri(), MediaMetadata.MEDIA_TYPE_PLAYLIST, category) }, result.continuation)
-        }
+        AutoSessionConstants.ID_SEARCH_PLAYLISTS,
+        AutoSessionConstants.ID_SEARCH_FEATURED,
         AutoSessionConstants.ID_SEARCH_PODCASTS -> {
+            val filter = when (category) {
+                AutoSessionConstants.ID_SEARCH_FEATURED -> Innertube.SearchFilter.FeaturedPlaylist
+                AutoSessionConstants.ID_SEARCH_PODCASTS -> Innertube.SearchFilter.Podcast
+                else -> Innertube.SearchFilter.CommunityPlaylist
+            }
             val page = if (continuation == null) {
-                Innertube.searchPage<Innertube.AlbumItem>(query, Innertube.SearchFilter.Podcast.value) { Innertube.AlbumItem.from(it) }
+                Innertube.searchPage<Innertube.PlaylistItem>(query, filter.value) { Innertube.PlaylistItem.from(it) }
             } else {
-                Innertube.searchPageContinuation<Innertube.AlbumItem>(continuation) { Innertube.AlbumItem.from(it) }
+                Innertube.searchPageContinuation<Innertube.PlaylistItem>(continuation) { Innertube.PlaylistItem.from(it) }
             }
             val result = page?.getOrThrow() ?: error("Search batch unavailable")
-            val items = result.items.orEmpty()
-            AutoSearchWindowStore.Batch(items.map { CancellableAutoMediaItemMapper.mapAlbumToMediaItem(PlayerServiceModern.ALBUM, it.key ?: "", it.info?.name ?: "", it.authors.artistEntryNames().joinToString(", "), it.thumbnail?.url, category) }, result.continuation)
+            AutoSearchWindowStore.Batch(result.items.orEmpty().mapNotNull(::autoSearchPlaylistRow), result.continuation)
         }
         else -> AutoSearchWindowStore.Batch(emptyList(), null)
     }
+}
+
+internal fun autoSearchPlaylistRow(item: Innertube.PlaylistItem): MediaItem? {
+    val browseId = item.info?.endpoint?.browseId?.takeIf(String::isNotBlank) ?: return null
+    val podcastId = podcastSourceBrowseId(browseId)
+    return browsableMediaItem(
+        "${PlayerServiceModern.PLAYLIST}/${podcastId ?: browseId}",
+        item.info?.name.orEmpty(),
+        item.channel?.name,
+        item.thumbnail?.url?.toUri(),
+        if (podcastId == null) MediaMetadata.MEDIA_TYPE_PLAYLIST else MediaMetadata.MEDIA_TYPE_PODCAST,
+    )
 }

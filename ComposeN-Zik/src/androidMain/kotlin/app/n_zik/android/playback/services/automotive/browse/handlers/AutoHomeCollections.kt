@@ -9,9 +9,7 @@ import app.n_zik.android.components.menu.originLabelRes
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.ondevice.DeviceLibraryResults
-import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
-import app.n_zik.android.core.ondevice.hasDeviceAudioPermission
+import app.n_zik.android.core.database.sortDisliked
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
@@ -19,6 +17,7 @@ import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.enums.AlbumSortBy
 import app.n_zik.android.enums.ArtistSortBy
 import app.n_zik.android.enums.FilterBy
+import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.core.ondevice.groupByDeviceAvailability
 import app.n_zik.android.models.Album
@@ -26,8 +25,12 @@ import app.n_zik.android.models.Artist
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.YouTubeArtistProvenance
-import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
+import app.n_zik.android.utils.excludeDislikedAlbumsKey
+import app.n_zik.android.utils.excludeDislikedArtistsKey
+import app.n_zik.android.utils.showFavoritesAlbumKey
+import app.n_zik.android.utils.showFavoritesArtistKey
+import app.n_zik.android.utils.filterByKey
 import app.n_zik.android.utils.preferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
@@ -54,20 +57,34 @@ internal fun autoOriginAvailable(category: String): Boolean = when (autoOriginPa
     else -> false
 }
 
+internal fun autoHomeCollectionVisible(context: Context, category: String): Boolean {
+    val prefs = context.preferences
+    return when (category) {
+        AutoSessionConstants.ID_ALBUMS_FAVORITES -> prefs.getBoolean(showFavoritesAlbumKey, true)
+        AutoSessionConstants.ID_ARTISTS_FAVORITES -> prefs.getBoolean(showFavoritesArtistKey, true)
+        AutoSessionConstants.ID_ALBUMS_DISLIKED -> prefs.getEnum(excludeDislikedAlbumsKey, DislikeMode.Enabled).isEnabled
+        AutoSessionConstants.ID_ARTISTS_DISLIKED -> prefs.getEnum(excludeDislikedArtistsKey, DislikeMode.Enabled).isEnabled
+        else -> true
+    }
+}
+
 internal fun <T> autoOriginFolders(
     context: Context,
     category: String,
     items: List<T>,
     isYouTube: (T) -> Boolean,
-): List<MediaItem> = libraryOriginFilters.map { filter ->
-    AutoMediaItemMapper.browsableMediaItem(
-        "$category$ORIGIN_SEPARATOR${filter.name}",
-        context.getString(filter.originLabelRes),
-        items.count { filter.matchesOrigin(isYouTube(it)) }.toString(),
-        AutoMediaItemMapper.drawableUri(context, filter.originIconRes),
-        MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
-        category,
-    )
+): List<MediaItem> {
+    val selected = context.preferences.getEnum(filterByKey, FilterBy.All)
+    return libraryOriginFilters.sortedByDescending { it == selected }.map { filter ->
+        AutoMediaItemMapper.browsableMediaItem(
+            "$category$ORIGIN_SEPARATOR${filter.name}",
+            context.getString(filter.originLabelRes),
+            items.count { filter.matchesOrigin(isYouTube(it)) }.toString(),
+            AutoMediaItemMapper.drawableUri(context, filter.originIconRes),
+            MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+            category,
+        )
+    }
 }
 
 internal fun FilterBy.matchesOrigin(youtube: Boolean): Boolean = when (this) {
@@ -75,11 +92,6 @@ internal fun FilterBy.matchesOrigin(youtube: Boolean): Boolean = when (this) {
     FilterBy.Local -> !youtube
     FilterBy.YoutubeLibrary -> youtube
 }
-
-internal fun Context.cachedAutoDeviceLibrary(): DeviceLibrarySnapshot? =
-    if (isDeviceLibraryEnabled() && hasDeviceAudioPermission()) {
-        DeviceLibraryResults.current(getActiveProfile(this))
-    } else null
 
 internal suspend fun countAutoFolder(id: String, count: suspend () -> Int): String? = try {
     count().toString()
@@ -94,16 +106,15 @@ internal suspend fun loadAutoHomeAlbums(
     context: Context,
     database: Database,
     category: String,
-    forCount: Boolean = false,
 ): List<Album> {
     val prefs = context.preferences
     val base = autoOriginParent(category)
+    if (!autoHomeCollectionVisible(context, base)) return emptyList()
     val explicitOrigin = autoOriginSelection(category)
     if (base != category && (explicitOrigin == null || !autoOriginAvailable(base))) return emptyList()
     val source = explicitOrigin ?: FilterBy.All
     val localIds = if (source != FilterBy.YoutubeLibrary && context.isDeviceLibraryEnabled()) {
-        val snapshot = if (forCount) context.cachedAutoDeviceLibrary() else context.scanDeviceLibrary()
-        snapshot?.albumIds.orEmpty()
+        context.scanDeviceLibrary().albumIds
     } else emptySet()
     val (byKey, orderKey) = when (base) {
         AutoSessionConstants.ID_ALBUMS_FAVORITES -> Preference.HOME_ALBUMS_FAVORITES_SORT_BY to Preference.HOME_ALBUMS_FAVORITES_SORT_ORDER
@@ -127,9 +138,7 @@ internal suspend fun loadAutoHomeAlbums(
             databaseOrder,
             includeDeviceGroups = localIds.isNotEmpty(),
         ).first()
-        AutoSessionConstants.ID_ALBUMS_DISLIKED -> database.albumTable.allDisliked().first().let { rows ->
-            if (groupByDevice) rows.sortedBy { it.title.orEmpty().lowercase() } else rows
-        }
+        AutoSessionConstants.ID_ALBUMS_DISLIKED -> database.albumTable.sortDisliked(databaseSort, databaseOrder).first()
         else -> emptyList()
     }
     val visible = albums.filter { album ->
@@ -144,16 +153,15 @@ internal suspend fun loadAutoHomeArtists(
     context: Context,
     database: Database,
     category: String,
-    forCount: Boolean = false,
 ): List<Artist> {
     val prefs = context.preferences
     val base = autoOriginParent(category)
+    if (!autoHomeCollectionVisible(context, base)) return emptyList()
     val explicitOrigin = autoOriginSelection(category)
     if (base != category && (explicitOrigin == null || !autoOriginAvailable(base))) return emptyList()
     val source = explicitOrigin ?: FilterBy.All
     val localIds = if (source != FilterBy.YoutubeLibrary && context.isDeviceLibraryEnabled()) {
-        val snapshot = if (forCount) context.cachedAutoDeviceLibrary() else context.scanDeviceLibrary()
-        snapshot?.artistIds.orEmpty()
+        context.scanDeviceLibrary().artistIds
     } else emptySet()
     val (byKey, orderKey) = when (base) {
         AutoSessionConstants.ID_ARTISTS_FAVORITES -> Preference.HOME_ARTISTS_FAVORITES_SORT_BY to Preference.HOME_ARTISTS_FAVORITES_SORT_ORDER
@@ -177,9 +185,7 @@ internal suspend fun loadAutoHomeArtists(
             databaseOrder,
             includeDeviceGroups = localIds.isNotEmpty(),
         ).first()
-        AutoSessionConstants.ID_ARTISTS_DISLIKED -> database.artistTable.allDisliked().first().let { rows ->
-            if (groupByDevice) rows.sortedBy { it.name.orEmpty().lowercase() } else rows
-        }
+        AutoSessionConstants.ID_ARTISTS_DISLIKED -> database.artistTable.sortDisliked(databaseSort, databaseOrder).first()
         else -> emptyList()
     }
     val visible = artists.filter { artist ->

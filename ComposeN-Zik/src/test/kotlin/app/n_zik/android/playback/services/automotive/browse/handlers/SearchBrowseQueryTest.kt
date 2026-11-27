@@ -1,12 +1,14 @@
 package app.n_zik.android.playback.services.automotive.browse.handlers
 
 import android.content.Context
+import androidx.media3.common.MediaMetadata
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.innertube.requests.searchPage
 import app.n_zik.innertube.requests.searchPageContinuation
 import kotlinx.coroutines.test.runTest
@@ -94,5 +96,20 @@ class SearchBrowseQueryTest {
         }
         assertTrue(handler.getChildren("SEARCH_UNKNOWN/query", context, Database, downloadHelper, null).isEmpty())
         coVerify(exactly = 0) { Innertube.searchPage<Innertube.Item>(any(), any(), any()) }
+    }
+
+    @Test
+    fun `podcast search rows preserve the provider's podcast detail route`() {
+        val source = Innertube.PlaylistItem(
+            info = Innertube.Info("Show", NavigationEndpoint.Endpoint.Browse(browseId = "MPSPfeed")),
+            channel = null,
+            songCount = null,
+            isEditable = null,
+            thumbnail = null,
+        )
+        val row = requireNotNull(autoSearchPlaylistRow(source))
+        assertEquals("playlist/MPSPfeed", row.mediaId)
+        assertEquals(MediaMetadata.MEDIA_TYPE_PODCAST, row.mediaMetadata.mediaType)
+        assertTrue(PlaylistDetailHandler().handles(row.mediaId))
     }
 }

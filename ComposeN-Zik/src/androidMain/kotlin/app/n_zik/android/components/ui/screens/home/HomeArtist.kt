@@ -93,6 +93,7 @@ import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.utils.from
 import app.n_zik.innertube.YtMusic
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.sortDisliked
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActions
@@ -339,9 +340,7 @@ fun HomeArtists(
             ArtistsType.Library, ArtistsType.OnDevice -> Database.artistTable.sortInLibrary(
                 sort.sortBy, databaseOrder, includeDeviceGroups = includeDeviceGroups,
             )
-            ArtistsType.Disliked -> Database.artistTable.allDisliked().map { rows ->
-                if (deviceSortOrder != null) rows.sortedBy { it.name.orEmpty().lowercase() } else rows
-            }
+            ArtistsType.Disliked -> Database.artistTable.sortDisliked(sort.sortBy, databaseOrder)
         }.flowOn(NzikDispatchers.DATA).collect {
             itemsToFilter = it
             searchDataReady = true

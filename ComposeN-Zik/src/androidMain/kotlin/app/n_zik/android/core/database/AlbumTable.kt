@@ -465,6 +465,33 @@ interface AlbumTable {
     """)
     fun allDisliked( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
 
+    @Query("""
+        SELECT A.* FROM Album A
+        LEFT JOIN SongAlbumMap M ON M.albumId = A.id
+        WHERE A.dislikedAt IS NOT NULL
+        GROUP BY A.id
+        ORDER BY COUNT(M.songId), A.id
+    """)
+    fun sortDislikedBySongCount(): Flow<List<Album>>
+
+    @Query("""
+        SELECT A.* FROM Album A
+        LEFT JOIN SongAlbumMap M ON M.albumId = A.id
+        LEFT JOIN Event E ON E.songId = M.songId
+        WHERE A.dislikedAt IS NOT NULL
+        GROUP BY A.id
+        ORDER BY CASE WHEN :byPlayCount THEN COUNT(E.id) ELSE COALESCE(SUM(E.playtime), 0) END, A.id
+    """)
+    fun sortDislikedByPlayback(byPlayCount: Boolean): Flow<List<Album>>
+
+    @Query("""
+        SELECT M.albumId, S.durationText FROM SongAlbumMap M
+        JOIN Album A ON A.id = M.albumId
+        JOIN Song S ON S.id = M.songId
+        WHERE A.dislikedAt IS NOT NULL
+    """)
+    fun dislikedAlbumTrackDurations(): Flow<List<DislikedAlbumTrackDuration>>
+
     /**
      * @param albumId identifier of [Album]
      * @param thumbnailUrl new url to thumbnail
