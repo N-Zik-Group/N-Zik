@@ -9,11 +9,14 @@ import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.os.Looper
 import androidx.media3.common.FlagSet
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.SimpleBasePlayer
+import androidx.media3.common.Timeline
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
+import androidx.media3.exoplayer.analytics.PlaybackStats
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaController
@@ -25,13 +28,19 @@ import app.n_zik.android.MainActivity
 import app.n_zik.android.MainApplication
 import app.n_zik.android.appContext
 import app.n_zik.android.awaitLibraryReady
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.core.backup.LibraryStartup
 import app.n_zik.android.core.backup.LibraryStartupException
 import app.n_zik.android.core.backup.LibraryStartupState
 import app.n_zik.android.core.backup.isLibraryReady
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.playback.services.diagnostics.DiagExoPlayer
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
+import app.n_zik.android.utils.isNetworkConnected
+import app.n_zik.android.utils.pauseListenHistoryKey
+import app.n_zik.android.utils.syncDirectionKey
+import app.n_zik.android.utils.syncPushHistoryKey
 import io.mockk.every
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -118,6 +127,33 @@ class PlayerServiceModernAudioStartupTest {
         runCatching { service.cache.release() }
         PlayerServiceModern.isRunning = false
         unmockkAll()
+    }
+
+    @Test
+    fun `import-only sync skips the network path for YouTube playback history`() {
+        mockkStatic(::isYouTubeSyncEnabled)
+        every { isYouTubeSyncEnabled() } returns true
+        mockkStatic(::isNetworkConnected)
+        every { isNetworkConnected(service) } returns false
+        service.preferences.edit()
+            .putBoolean(pauseListenHistoryKey, true)
+            .putBoolean(syncPushHistoryKey, true)
+            .putString(syncDirectionKey, SyncDirection.YT_TO_APP.name)
+            .commit()
+
+        val window = Timeline.Window().apply { mediaItem = MediaItem.fromUri("https://example.com/track") }
+        val timeline = mockk<Timeline> {
+            every { getWindow(0, any()) } returns window
+        }
+        val eventTime = AnalyticsListener.EventTime(0, timeline, 0, null, 0, timeline, 0, null, 0, 0)
+        val stats = mockk<PlaybackStats> { every { totalPlayTimeMs } returns 30_000L }
+
+        service.onPlaybackStatsReady(eventTime, stats)
+        verify(exactly = 0) { isNetworkConnected(service) }
+
+        service.preferences.edit().putString(syncDirectionKey, SyncDirection.TWO_WAY.name).commit()
+        service.onPlaybackStatsReady(eventTime, stats)
+        verify(exactly = 1) { isNetworkConnected(service) }
     }
 
     @Test

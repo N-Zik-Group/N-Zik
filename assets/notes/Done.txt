@@ -1844,3 +1844,7 @@ Settings / Accounts:
 Playlists:
 - fix(innertube): follow playlist continuations without parsed tracks
   - Preserve continuation tokens from empty batches and reject unrecognized payloads before import.
+
+Settings / Accounts:
+- fix(sync): honor YouTube history direction during playback
+  - Skip upload probes and playback reporting in import-only mode while preserving local playback history.

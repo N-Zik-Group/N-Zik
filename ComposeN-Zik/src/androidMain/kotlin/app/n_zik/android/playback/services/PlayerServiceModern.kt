@@ -178,6 +178,7 @@ import app.n_zik.android.utils.audioReverbPresetKey
 import app.n_zik.android.utils.bassboostEnabledKey
 import app.n_zik.android.utils.bassboostLevelKey
 import app.n_zik.android.utils.broadCastPendingIntent
+import app.n_zik.android.utils.canPushToYTM
 import app.n_zik.android.utils.closebackgroundPlayerKey
 import app.n_zik.android.utils.discordPersonalAccessTokenKey
 import app.n_zik.android.utils.encryptedPreferences
@@ -1104,10 +1105,12 @@ class PlayerServiceModern : MediaLibraryService(),
                 }
             }
 
-            // YTM history push (gated by sync enabled + push toggle + network)
             val pushHistoryEnabled = preferences.getBoolean(syncPushHistoryKey, false)
-            if (totalPlayTimeMs > minTimeForEvent.asMillis && isYouTubeSyncEnabled() && pushHistoryEnabled && isNetworkConnected(this@PlayerServiceModern)) {
+            if (totalPlayTimeMs > minTimeForEvent.asMillis && pushHistoryEnabled &&
+                isYouTubeSyncEnabled() && canPushToYTM() && isNetworkConnected(this@PlayerServiceModern)
+            ) {
                 coroutineScope.launch(NzikDispatchers.DATA) {
+                    if (!canPushToYTM()) return@launch
                     val playbackData = playbackDataCache[songId]
                     val streamClient = playbackData?.streamClient
                     val originalUrl = playbackData?.playbackTracking?.videostatsPlaybackUrl?.baseUrl
@@ -1139,6 +1142,8 @@ class PlayerServiceModern : MediaLibraryService(),
                         }
                     }
 
+                    // The tracking URL request may have suspended while the sync direction changed.
+                    if (!canPushToYTM()) return@launch
                     Timber.tag("PlayerServiceModern").d("registerPlayback for $songId: streamClient=$streamClient")
                     runCatching {
                         Timber.tag("PlayerServiceModern").d("onPlaybackStatsReady: calling Innertube.registerPlayback for $songId")
