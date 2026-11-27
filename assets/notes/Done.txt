@@ -1112,3 +1112,7 @@ Interface:
 Settings:
 - fix(settings): guide searches to prerequisites and group roundness in interface
   - Keep unavailable controls in their real context and place global roundness settings in Interface.
+
+Interface:
+- style(settings): align search and card titles
+  - Match search badge and field alignment to the cards, and render primary card titles with the main foreground.

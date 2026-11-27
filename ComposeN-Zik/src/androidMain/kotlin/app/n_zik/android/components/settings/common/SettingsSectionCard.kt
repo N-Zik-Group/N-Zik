@@ -170,7 +170,7 @@ fun SettingsSectionCard(
                                     MeasuredMetadataPlaceholder(displayTitle, typography().xs.semiBold, maxLines = 1)
                                 } else BasicText(
                                     text = displayTitle,
-                                    style = typography().xs.semiBold.copy(color = colorPalette().accent),
+                                    style = typography().xs.semiBold.copy(color = colorPalette().text),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )

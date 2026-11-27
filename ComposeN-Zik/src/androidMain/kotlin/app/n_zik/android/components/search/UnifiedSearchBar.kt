@@ -192,7 +192,7 @@ fun UnifiedSearchBar(
                     .clip(barShape)
                     // Padding taps must focus search instead of reaching the underlying list.
                     .clickable { focusRequester.requestFocus() }
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .padding(horizontal = 18.dp, vertical = 16.dp)
                     .testTag("unified_search_bar"),
             ) {
                 SearchBarForegroundContent(barSurface.takeIf { glassBar }) {
@@ -201,7 +201,7 @@ fun UnifiedSearchBar(
                             LeadingIconBadge(
                                 iconRes = R.drawable.search,
                                 contentDescription = stringResource(R.string.search_title),
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(width = 32.dp, height = 20.dp),
                             )
 
                             Spacer(modifier = Modifier.width(12.dp))
