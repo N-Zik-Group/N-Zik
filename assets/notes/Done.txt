@@ -1688,3 +1688,7 @@ Playlist:
 Settings:
 - fix(settings): surface paired PC devices in search
   - Focus the existing Paired devices card from Settings search without starting the PC server.
+
+Playlist:
+- fix(playlist): prevent source import for manually unlinked albums
+  - Apply the same local-album eligibility rule to the detail toolbar and context menu.

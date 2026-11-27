@@ -1,11 +1,23 @@
 package app.n_zik.android.components.menu.album
 
 import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.components.menu.playlist.CollectionImportStatus
+import app.n_zik.android.components.menu.playlist.canImportAlbumCollection
 import app.n_zik.android.models.Song
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class OnlineAlbumPlaylistActionsTest {
+    @Test
+    fun `only online albums can import the collection even if local tracks are ready`() {
+        assertFalse(canImportAlbumCollection("LOCAL_ALBUM_unlinked", CollectionImportStatus.Ready))
+        assertFalse(canImportAlbumCollection("LOCAL_ALBUM_DEVICE_group", CollectionImportStatus.Ready))
+        assertTrue(canImportAlbumCollection("MPREb_source", CollectionImportStatus.Ready))
+        assertTrue(canImportAlbumCollection("MPREb_source", CollectionImportStatus.Loading))
+    }
+
     @Test
     fun `settled partial tracks can be added with parental control applied`() {
         val clean = Song.makePlaceholder("clean")

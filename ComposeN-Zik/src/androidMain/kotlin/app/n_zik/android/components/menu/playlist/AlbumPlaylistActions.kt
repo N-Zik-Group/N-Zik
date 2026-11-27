@@ -18,7 +18,7 @@ internal fun rememberAlbumPlaylistActions(
     title: String?,
     author: String?,
     menuState: MenuState,
-    importAvailable: Boolean,
+    importAvailable: Boolean = true,
     loading: Boolean,
     loadedTracks: List<Song>?,
     canAdd: Boolean,
@@ -50,7 +50,7 @@ internal fun rememberAlbumPlaylistActions(
     rememberCollectionAddAction(
         sourceId = sourceId,
         menuState = menuState,
-        canImportCollection = importAvailable && status.canOpenImport,
+        canImportCollection = importAvailable && canImportAlbumCollection(sourceId, status),
         hasTracks = canAdd,
         importDialogOpen = importDialog.isActive,
         menuEntry = menuEntry,
@@ -58,3 +58,6 @@ internal fun rememberAlbumPlaylistActions(
         openPicker = openPicker,
     )
 }
+
+internal fun canImportAlbumCollection(sourceId: String, status: CollectionImportStatus): Boolean =
+    !sourceId.startsWith("LOCAL_ALBUM_") && status.canOpenImport

@@ -579,7 +579,6 @@ class OnlineAlbumItemMenu private constructor(
             title = displayedAlbum.title,
             author = displayAuthors,
             menuState = menuState,
-            importAvailable = !isLocalAlbum,
             loading = fetchedSongs == null && !songsLoadFailed && !offlineMode && !isLocalAlbum,
             loadedTracks = importTracks,
             canAdd = pickerSongs.isNotEmpty(),
