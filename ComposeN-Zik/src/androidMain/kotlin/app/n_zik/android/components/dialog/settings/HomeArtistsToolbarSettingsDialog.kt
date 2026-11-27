@@ -26,6 +26,10 @@ import app.n_zik.android.utils.homeArtistsFavoritesToolbarOrderKey
 import app.n_zik.android.utils.homeArtistsLibraryToolbarOrderKey
 import app.n_zik.android.utils.homeArtistsOnDeviceToolbarOrderKey
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.homeArtistsDislikedSortMenuOrderKey
+import app.n_zik.android.utils.homeArtistsFavoritesSortMenuOrderKey
+import app.n_zik.android.utils.homeArtistsLibrarySortMenuOrderKey
+import app.n_zik.android.utils.homeArtistsOnDeviceSortMenuOrderKey
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -63,8 +67,13 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
 
     internal val onDeviceButtonIds = allButtonIds.filterNot { it in setOf("sync", "export_dialog") }
 
-    private fun availableButtonIds(tab: String): List<String> =
+    private fun portableButtonIds(tab: String): List<String> =
         if (tab == "dev") onDeviceButtonIds else allButtonIds
+
+    private fun availableButtonIds(tab: String): List<String> {
+        val sortKey = toolbarTabs.first { it.first == tab }.third
+        return portableButtonIds(tab).withoutUnsupportedPositionLock(HomeArtistsSortSettingsDialog.menuIds(sortKey))
+    }
 
     private fun getTabPrefix(tab: String): String = when (tab) {
         "dev" -> "dev"
@@ -79,15 +88,15 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private val toolbarTabs = listOf(
-        "lib" to homeArtistsLibraryToolbarOrderKey,
-        "favs" to homeArtistsFavoritesToolbarOrderKey,
-        "disliked" to homeArtistsDislikedToolbarOrderKey,
-        "dev" to homeArtistsOnDeviceToolbarOrderKey
+        Triple("lib", homeArtistsLibraryToolbarOrderKey, homeArtistsLibrarySortMenuOrderKey),
+        Triple("favs", homeArtistsFavoritesToolbarOrderKey, homeArtistsFavoritesSortMenuOrderKey),
+        Triple("disliked", homeArtistsDislikedToolbarOrderKey, homeArtistsDislikedSortMenuOrderKey),
+        Triple("dev", homeArtistsOnDeviceToolbarOrderKey, homeArtistsOnDeviceSortMenuOrderKey),
     )
 
     internal fun portableLists(): Map<String, PortableControlList> = toolbarTabs.associate { (tab, key) ->
         val prefix = getTabPrefix(tab)
-        prefix to PortableControlList(key, availableButtonIds(tab), "${prefix}_art_", "")
+        prefix to PortableControlList(key, portableButtonIds(tab), "${prefix}_art_", "")
     }
 
     @Composable
@@ -149,7 +158,8 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
             }
         }
 
-        val items = currentWorkingOrder.distinct().map { id ->
+        val availableIds = availableButtonIds(currentTabKey).toSet()
+        val items = currentWorkingOrder.distinct().filter { it in availableIds }.map { id ->
             val pk = "${tabPrefix}_art_$id"
             val uid = "${tabPrefix}_$id"
             when (id) {
@@ -192,7 +202,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTabKey] = m }
             },
             onReset = {
-                val availableIds = availableButtonIds(currentTabKey)
+                val availableIds = portableButtonIds(currentTabKey)
                 val m = availableIds.associateWith { true }.toMutableMap()
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTabKey] = m }
                 workingOrders = workingOrders.toMutableMap().apply { this[currentTabKey] = availableIds.toMutableList() }
@@ -222,7 +232,7 @@ object HomeArtistsToolbarSettingsDialog : ContentFramedDialog {
         val edit = prefs.edit()
         toolbarTabs.forEach { (tab, key) ->
             val tp = getTabPrefix(tab)
-            val availableIds = availableButtonIds(tab)
+            val availableIds = portableButtonIds(tab)
             availableIds.forEach { id ->
                 edit.putBoolean("${tp}_art_$id", true)
             }

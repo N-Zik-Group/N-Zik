@@ -1936,3 +1936,7 @@ Menus / Navigation:
 Menus / Playback:
 - fix(menu): align Customize sliders and values
   - Align the tracks and values in List and keep Grid labels readable.
+
+Toolbars:
+- fix(toolbar): hide unsupported Home controls
+  - Keep historical toolbar preferences and omit the position lock or smart shuffle where unavailable.

@@ -78,7 +78,8 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
 
     private val portableAllButtonIds = allButtonIds.filterNot { it == "export_cache" }
 
-    val tabAvailableIds = mapOf(
+    // Keep stored and portable IDs even when a source cannot offer the action.
+    private val tabPreferenceIds = mapOf(
         BuiltInPlaylist.All to portableAllButtonIds.filterNot { it == "sync_ytm_likes" },
         BuiltInPlaylist.Favorites to allButtonIds.filter { it != "export_cache" },
         BuiltInPlaylist.Offline to allButtonIds.filter { it != "import_menu" && it != "sync_ytm_likes" },
@@ -87,6 +88,11 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         BuiltInPlaylist.OnDevice to allButtonIds.filter { it !in setOf("import_menu", "export_dialog", "export_cache", "smart_trash", "match", "download_all", "delete_downloads", "sync_ytm_likes", "update") },
         BuiltInPlaylist.Disliked to allButtonIds.filter { it != "export_cache" && it != "sync_ytm_likes" && it != "import_menu" }
     )
+
+    val tabAvailableIds = tabPreferenceIds.mapValues { (tab, ids) ->
+        val supported = ids.withoutUnsupportedPositionLock(HomeSongsSortSettingsDialog.tabAvailableIds.getValue(tab))
+        if (tab == BuiltInPlaylist.OnDevice) supported - "smart_shuffle" else supported
+    }
 
     /** Toolbar buttons that must remain available. */
     val lockedIds = setOf("sort", "position_lock", "match", "sync_ytm_likes")
@@ -106,7 +112,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
     override var isActive: Boolean by mutableStateOf(false)
 
     private fun parseOrder(s: String, tab: BuiltInPlaylist): List<String> {
-        val available = tabAvailableIds[tab] ?: allButtonIds
+        val available = tabPreferenceIds[tab] ?: allButtonIds
         if (s.isBlank()) return available
         return try {
             val a = JSONArray(s)
@@ -136,7 +142,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
     internal fun portableLists(): Map<String, PortableControlList> = toolbarTabs.associate { (tab, key) ->
         val prefix = getTabPrefix(tab)
         // Published themes include this legacy All-tab ID even though it only renders in Favorites.
-        val portableIds = if (tab == BuiltInPlaylist.All) portableAllButtonIds else tabAvailableIds.getValue(tab)
+        val portableIds = if (tab == BuiltInPlaylist.All) portableAllButtonIds else tabPreferenceIds.getValue(tab)
         prefix to PortableControlList(key, portableIds, "${prefix}_ts_", "")
     }
 
@@ -160,7 +166,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
             mutableStateOf(
                 tabs.associate { (tab, _) ->
                     val tp = getTabPrefix(tab)
-                    val available = tabAvailableIds[tab] ?: allButtonIds
+                    val available = tabPreferenceIds[tab] ?: allButtonIds
                     tab to available.associateWith { id ->
                         prefs.getBoolean("${tp}_ts_$id", true)
                     }.toMutableMap()
@@ -216,7 +222,8 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
             }
         }
 
-        val items = currentWorkingOrder.distinct().map { id ->
+        val availableIds = tabAvailableIds.getValue(currentTab).toSet()
+        val items = currentWorkingOrder.distinct().filter { it in availableIds }.map { id ->
             val pk = "${tabPrefix}_ts_$id"
             val uid = "${tabPrefix}_$id"
             when (id) {
@@ -268,7 +275,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
             },
             onReset = {
-                val available = tabAvailableIds[currentTab] ?: allButtonIds
+                val available = tabPreferenceIds[currentTab] ?: allButtonIds
                 val m = available.associateWith { true }.toMutableMap()
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTab] = m }
                 workingOrders = workingOrders.toMutableMap().apply { this[currentTab] = available.toMutableList() }
@@ -308,7 +315,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         )
         tabs.forEach { (tab, key) ->
             val tp = getTabPrefix(tab)
-            val available = tabAvailableIds[tab] ?: allButtonIds
+            val available = tabPreferenceIds[tab] ?: allButtonIds
             available.forEach { id ->
                 edit.putBoolean("${tp}_ts_$id", true)
             }

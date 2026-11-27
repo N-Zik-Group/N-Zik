@@ -27,6 +27,11 @@ import app.n_zik.android.utils.homeLibraryToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryOnDeviceToolbarOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistToolbarOrderKey
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
+import app.n_zik.android.utils.homeLibraryOnDeviceSortMenuOrderKey
+import app.n_zik.android.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
+import app.n_zik.android.utils.homeLibraryPlaylistSortMenuOrderKey
+import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
 import app.n_zik.android.components.dialog.common.ContentFramedDialog
 import app.n_zik.android.components.dialog.common.ToggleItem
 import app.n_zik.android.components.dialog.common.ToggleListDialog
@@ -64,8 +69,13 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
 
     internal val onDeviceButtonIds = allButtonIds.filterNot { it in setOf("sync", "export_dialog", "import_menu") }
 
-    private fun availableButtonIds(tab: String): List<String> =
+    private fun portableButtonIds(tab: String): List<String> =
         if (tab == "dev") onDeviceButtonIds else allButtonIds
+
+    private fun availableButtonIds(tab: String): List<String> {
+        val sortKey = toolbarTabs.first { it.first == tab }.third
+        return portableButtonIds(tab).withoutUnsupportedPositionLock(HomeLibrarySortSettingsDialog.menuIds(sortKey))
+    }
 
     private fun getTabPrefix(tab: String): String = when (tab) {
         "dev" -> "dev"
@@ -81,16 +91,16 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     private val toolbarTabs = listOf(
-        "all" to homeLibraryToolbarOrderKey,
-        "pin" to homeLibraryPinnedPlaylistToolbarOrderKey,
-        "rw" to homeLibraryMonthlyPlaylistToolbarOrderKey,
-        "yt" to homeLibraryYTPlaylistToolbarOrderKey,
-        "dev" to homeLibraryOnDeviceToolbarOrderKey
+        Triple("all", homeLibraryToolbarOrderKey, homeLibraryPlaylistSortMenuOrderKey),
+        Triple("pin", homeLibraryPinnedPlaylistToolbarOrderKey, homeLibraryPinnedPlaylistSortMenuOrderKey),
+        Triple("rw", homeLibraryMonthlyPlaylistToolbarOrderKey, homeLibraryMonthlyPlaylistSortMenuOrderKey),
+        Triple("yt", homeLibraryYTPlaylistToolbarOrderKey, homeLibraryYTPlaylistSortMenuOrderKey),
+        Triple("dev", homeLibraryOnDeviceToolbarOrderKey, homeLibraryOnDeviceSortMenuOrderKey),
     )
 
     internal fun portableLists(): Map<String, PortableControlList> = toolbarTabs.associate { (tab, key) ->
         val prefix = getTabPrefix(tab)
-        prefix to PortableControlList(key, availableButtonIds(tab), "${prefix}_lib_", "")
+        prefix to PortableControlList(key, portableButtonIds(tab), "${prefix}_lib_", "")
     }
 
     @Composable
@@ -153,7 +163,8 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
             }
         }
 
-        val items = currentWorkingOrder.distinct().map { id ->
+        val availableIds = availableButtonIds(currentTabKey).toSet()
+        val items = currentWorkingOrder.distinct().filter { it in availableIds }.map { id ->
             val pk = "${tabPrefix}_lib_$id"
             val uid = "${tabPrefix}_$id"
             when (id) {
@@ -197,7 +208,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTabKey] = m }
             },
             onReset = {
-                val availableIds = availableButtonIds(currentTabKey)
+                val availableIds = portableButtonIds(currentTabKey)
                 val m = availableIds.associateWith { true }.toMutableMap()
                 workingToggles = workingToggles.toMutableMap().apply { this[currentTabKey] = m }
                 workingOrders = workingOrders.toMutableMap().apply { this[currentTabKey] = availableIds.toMutableList() }
@@ -234,7 +245,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         )
         tabs.forEach { (tab, key) ->
             val tp = getTabPrefix(tab)
-            val availableIds = availableButtonIds(tab)
+            val availableIds = portableButtonIds(tab)
             availableIds.forEach { id ->
                 edit.putBoolean("${tp}_lib_$id", true)
             }

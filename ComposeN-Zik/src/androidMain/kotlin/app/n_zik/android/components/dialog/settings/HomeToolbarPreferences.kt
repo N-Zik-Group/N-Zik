@@ -12,6 +12,9 @@ import app.n_zik.android.utils.preferences
 
 internal val homeToolbarLockedIds = setOf("sort", "sync", "position_lock")
 
+internal fun List<String>.withoutUnsupportedPositionLock(sortIds: List<String>): List<String> =
+    if ("Custom" in sortIds) this else this - "position_lock"
+
 internal data class HomeToolbarConfiguration(
     val order: List<String>,
     val visibility: Map<String, Boolean>,

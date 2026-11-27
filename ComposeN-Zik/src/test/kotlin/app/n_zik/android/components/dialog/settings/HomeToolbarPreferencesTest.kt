@@ -41,6 +41,34 @@ class HomeToolbarPreferencesTest {
         assertTrue(syncId in dialog.tabAvailableIds.getValue(BuiltInPlaylist.Favorites))
     }
 
+    @Test fun positionLockIsOnlyAvailableWhereTheSortSupportsCustomOrder() {
+        val positionLock = "position_lock"
+        val albums = HomeAlbumsToolbarSettingsDialog
+        val artists = HomeArtistsToolbarSettingsDialog
+        val library = HomeLibraryToolbarSettingsDialog
+        val songs = HomeSongsToolbarSettingsDialog
+
+        val expected = listOf("all_position_lock", "dev_position_lock")
+        assertEquals(expected, albums.searchOptions().map { it.itemId }.filter { it.endsWith("_$positionLock") })
+        assertEquals(expected, artists.searchOptions().map { it.itemId }.filter { it.endsWith("_$positionLock") })
+        assertEquals(expected, library.searchOptions().map { it.itemId }.filter { it.endsWith("_$positionLock") })
+        assertFalse(positionLock in songs.tabAvailableIds.getValue(BuiltInPlaylist.OnDevice))
+
+        assertTrue(positionLock in albums.portableLists().getValue("favs").ids)
+        assertTrue(positionLock in artists.portableLists().getValue("disliked").ids)
+        assertTrue(positionLock in library.portableLists().getValue("yt").ids)
+        assertTrue(positionLock in songs.portableLists().getValue("dev").ids)
+    }
+
+    @Test fun smartShuffleKeepsItsPortableIdButIsUnavailableOnDevice() {
+        val smartShuffle = "smart_shuffle"
+        val dialog = HomeSongsToolbarSettingsDialog
+
+        assertFalse(smartShuffle in dialog.tabAvailableIds.getValue(BuiltInPlaylist.OnDevice))
+        assertTrue(smartShuffle in dialog.tabAvailableIds.getValue(BuiltInPlaylist.All))
+        assertTrue(smartShuffle in dialog.portableLists().getValue("dev").ids)
+    }
+
     @Test fun explicitVisibilityAppliesWithoutASavedOrder() {
         lists.forEach { list ->
             prefs.edit().putBoolean(list.visibilityKey("shuffle"), false)

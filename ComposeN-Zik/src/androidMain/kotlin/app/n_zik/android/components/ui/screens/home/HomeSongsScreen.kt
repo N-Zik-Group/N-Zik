@@ -228,6 +228,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     }
     var isRecommendationEnabled by remember { mutableStateOf(false) }
+    val showRecommendations = isRecommendationEnabled &&
+        "smart_shuffle" in HomeSongsToolbarSettingsDialog.tabAvailableIds[builtInPlaylist].orEmpty()
     var recommendationCount by remember { mutableStateOf(0) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
@@ -714,7 +716,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     HeaderInfo( itemsOnDisplayState.size.toString(), R.drawable.musical_notes )
                                 }
-                                if (isRecommendationEnabled) {
+                                if (showRecommendations) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(
                                             painter = painterResource(R.drawable.smart_shuffle),
