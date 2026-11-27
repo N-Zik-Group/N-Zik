@@ -17,7 +17,16 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
+import app.n_zik.android.R
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.models.Song
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import io.mockk.verify
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
@@ -32,6 +41,34 @@ import org.robolectric.annotation.Config
 @Config(sdk = [32], application = Application::class)
 class HomeLibraryActionSourceTest {
     @get:Rule val compose = createComposeRule()
+
+    // runBlocking executes the captured suspend read for synchronous JUnit assertions.
+    @Test fun `a failed playlist source read reports the error and yields no tracks`() = runBlocking {
+        mockkObject(Toaster)
+        every { Toaster.e(R.string.common_load_failed, duration = any()) } just Runs
+        try {
+            val load = requireNotNull(HomeSongAction("HomeLibrary") { { error("Read failed") } }.snapshot())
+
+            assertNull(load())
+            verify(exactly = 1) { Toaster.e(R.string.common_load_failed, duration = any()) }
+        } finally {
+            unmockkObject(Toaster)
+        }
+    }
+
+    // runBlocking executes the captured suspend read for synchronous JUnit assertions.
+    @Test fun `cancelling a playlist source read propagates without reporting an error`() = runBlocking {
+        val cancelled = CancellationException("Read cancelled")
+        mockkObject(Toaster)
+        try {
+            val load = requireNotNull(HomeSongAction("HomeLibrary") { { throw cancelled } }.snapshot())
+
+            assertSame(cancelled, runCatching { load() }.exceptionOrNull())
+            verify(exactly = 0) { Toaster.e(R.string.common_load_failed, duration = any()) }
+        } finally {
+            unmockkObject(Toaster)
+        }
+    }
 
     @Test fun `playlist tile exposes selection only while selecting`() {
         val selection = mutableStateOf<Boolean?>(null)

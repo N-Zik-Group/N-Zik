@@ -3,7 +3,9 @@ package app.n_zik.android.components.ui.screens.home
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import app.n_zik.android.R
 import app.n_zik.android.core.database.HomeParentSong
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -55,6 +57,7 @@ internal class HomeSongAction(
                 throw error
             } catch (error: Exception) {
                 Timber.tag(tag).e(error, "Failed to load songs for Home action")
+                Toaster.e(R.string.common_load_failed)
                 null
             }
         }
