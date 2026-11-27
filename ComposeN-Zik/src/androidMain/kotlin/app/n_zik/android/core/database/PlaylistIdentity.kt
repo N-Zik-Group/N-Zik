@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.isLocal
@@ -81,7 +82,8 @@ fun isReadOnlyPlaylistSource(playlist: Playlist): Boolean =
     !playlist.isEditable && playlistLinkKind(playlist.browseId) != PlaylistLinkKind.Local
 
 /** User membership edits are separate from playback order and trusted source refresh. */
-fun canEditPlaylistMembership(playlist: Playlist): Boolean = !isReadOnlyPlaylistSource(playlist)
+fun canEditPlaylistMembership(playlist: Playlist): Boolean =
+    !isReadOnlyPlaylistSource(playlist) && !RewindPlaylists.isRewind(playlist.cleanName())
 
 /** Rechecks an existing target inside the caller's database transaction. */
 suspend fun canEditStoredPlaylistMembership(playlistId: Long): Boolean =

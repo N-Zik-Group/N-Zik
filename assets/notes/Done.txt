@@ -1348,3 +1348,7 @@ Settings:
 Settings:
 - fix(settings): explain search prerequisites and align results
   - Guide users to the required option and let shortcut cards follow the search animation.
+
+Playlists:
+- fix(playlists): protect rewind membership and show lock badges
+  - Apply the same lock policy and badge to protected library thumbnails and playlist headers.

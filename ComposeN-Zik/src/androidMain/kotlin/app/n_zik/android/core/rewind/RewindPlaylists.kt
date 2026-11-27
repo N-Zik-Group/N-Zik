@@ -74,6 +74,13 @@ object RewindPlaylists {
     /** Whether [name] belongs to the "Rewind" category (monthly, yearly or all-time). */
     fun isRewind(name: String): Boolean = isMonthly(name) || isYearly(name) || isAlltime(name)
 
+    fun iconForPlaylist(name: String): Int? = when {
+        isMonthly(name) -> R.drawable.stat_month
+        isYearly(name) -> R.drawable.stat_year
+        isAlltime(name) -> R.drawable.musical_notes
+        else -> null
+    }
+
     /** Builds the database name of a monthly rewind playlist: `rewind-monthly:YYYYMM` (month zero-padded — spec 2 normalizes the legacy unpadded `monthValue`). */
     fun monthlyName(year: Int, month: Int): String =
         String.format(Locale.ROOT, "%s%04d%02d", MONTHLY_PREFIX, year, month)

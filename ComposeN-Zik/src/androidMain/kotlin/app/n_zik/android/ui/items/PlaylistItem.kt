@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.innertube.Innertube
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.MONTHLY_PREFIX
@@ -177,6 +178,25 @@ internal fun rememberPlaylistSongThumbnails(
 }
 
 @Composable
+internal fun PlaylistReadOnlyBadge(playlist: Playlist) {
+    if (canEditPlaylistMembership(playlist)) return
+
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomStart) {
+        Image(
+            painter = painterResource(R.drawable.locked),
+            contentDescription = stringResource(R.string.playlist_add_destination_locked),
+            colorFilter = ColorFilter.tint(Color.Red),
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .padding(5.dp)
+                .background(colorPalette().text, CircleShape)
+                .padding(5.dp)
+                .size(18.dp),
+        )
+    }
+}
+
+@Composable
 fun PlaylistItem(
     playlist: PlaylistPreview,
     thumbnailSizePx: Int,
@@ -217,7 +237,10 @@ fun PlaylistItem(
         isYoutubePlaylist = isPlaylistBookmarked(playlist.playlist, isYoutubePlaylist),
         showInfo = showInfo,
         isEditable = isEditable,
-        thumbnailOverlay = thumbnailOverlay
+        thumbnailOverlay = {
+            thumbnailOverlay()
+            PlaylistReadOnlyBadge(playlist.playlist)
+        },
     )
 }
 
@@ -331,6 +354,7 @@ fun PlaylistItem(
                     }
 
                     if (name != null) {
+                        val rewindIcon = RewindPlaylists.iconForPlaylist(name)
                         val (icon, color) = when {
                             name.startsWith( PINNED_PREFIX, true ) ->
                                 painterResource( R.drawable.pin_filled ) to colorPalette().accent
@@ -338,15 +362,8 @@ fun PlaylistItem(
                             name.startsWith( MONTHLY_PREFIX, true ) ->
                                 painterResource( R.drawable.stat_month ) to colorPalette().accent
 
-                            // Spec 2: origin icons of the generated rewind-* playlists
-                            RewindPlaylists.isMonthly( name ) ->
-                                painterResource( R.drawable.stat_month ) to colorPalette().accent
-
-                            RewindPlaylists.isYearly( name ) ->
-                                painterResource( R.drawable.stat_year ) to colorPalette().accent
-
-                            RewindPlaylists.isAlltime( name ) ->
-                                painterResource( R.drawable.musical_notes ) to colorPalette().accent
+                            rewindIcon != null ->
+                                painterResource(rewindIcon) to colorPalette().accent
 
                             browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT") == true ->
                                 painterResource( R.drawable.spotify ) to Color.Unspecified
