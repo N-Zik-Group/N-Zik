@@ -295,8 +295,8 @@ fun HomeArtists(
 
     val showYouTubeOrigin by YouTubeArtistProvenance.showOrigin.collectAsStateWithLifecycle()
     val sourceFilter = if (showYouTubeOrigin) filterBy else FilterBy.All
-    val includeDeviceGroups = deviceLibraryAvailable && (artistType == ArtistsType.OnDevice ||
-        (artistType == ArtistsType.Library && sourceFilter != FilterBy.YoutubeLibrary))
+    val includeDeviceGroups = deviceLibraryAvailable &&
+        (artistType == ArtistsType.OnDevice || sourceFilter != FilterBy.YoutubeLibrary)
 
     val context = LocalContext.current
     val preview = LocalThemePreview.current
@@ -326,7 +326,9 @@ fun HomeArtists(
             return@LaunchedEffect
         }
         when( artistType ) {
-            ArtistsType.Favorites -> Database.artistTable.sortFollowing( sort.sortBy, sort.sortOrder )
+            ArtistsType.Favorites -> Database.artistTable.sortFollowing(
+                sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
+            )
             ArtistsType.Library, ArtistsType.OnDevice -> Database.artistTable.sortInLibrary(
                 sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
             )
@@ -347,14 +349,16 @@ fun HomeArtists(
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
             candidates.filter { item ->
-                if (isDeviceArtistId(item.id)) includeDeviceGroups && item.id in groups.orEmpty()
-                else type != ArtistsType.OnDevice &&
-                    (type == ArtistsType.Disliked || item.dislikedAt == null) &&
-                    when (source) {
+                when {
+                    type != ArtistsType.OnDevice && type != ArtistsType.Disliked && item.dislikedAt != null -> false
+                    isDeviceArtistId(item.id) -> includeDeviceGroups && item.id in groups.orEmpty()
+                    type == ArtistsType.OnDevice -> false
+                    else -> when (source) {
                         FilterBy.All -> true
                         FilterBy.YoutubeLibrary -> item.isYoutubeArtist
                         else -> !item.isYoutubeArtist
                     }
+                }
             }
         }
         baseReady = true

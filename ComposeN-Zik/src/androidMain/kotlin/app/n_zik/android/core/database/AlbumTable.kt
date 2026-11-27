@@ -559,25 +559,27 @@ interface AlbumTable {
         SELECT DISTINCT A.*
         FROM Album A
         JOIN SongAlbumMap sam ON sam.albumId = A.id
-        JOIN Event E ON E.songId = sam.songId
+        LEFT JOIN Event E ON E.songId = sam.songId
         WHERE A.bookmarkedAt IS NOT NULL
+            AND (E.id IS NOT NULL OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*'))
         GROUP BY A.id
-        ORDER BY SUM(E.playtime) ASC
+        ORDER BY COALESCE(SUM(E.playtime), 0) ASC
         LIMIT :limit
     """)
-    fun sortBookmarkedByListeningTime( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortBookmarkedByListeningTime(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT A.*
         FROM Album A
         JOIN SongAlbumMap sam ON sam.albumId = A.id
-        JOIN Event E ON E.songId = sam.songId
+        LEFT JOIN Event E ON E.songId = sam.songId
         WHERE A.bookmarkedAt IS NOT NULL
+            AND (E.id IS NOT NULL OR (:includeDeviceGroups AND A.id GLOB '$DEVICE_ALBUM_PREFIX*'))
         GROUP BY A.id
         ORDER BY COUNT(E.id) ASC
         LIMIT :limit
     """)
-    fun sortBookmarkedByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<Album>>
+    fun sortBookmarkedByPlayCount(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Album>>
 
     @Query("""
         SELECT DISTINCT A.*
@@ -616,7 +618,8 @@ interface AlbumTable {
     fun sortBookmarked(
         sortBy: AlbumSortBy,
         sortOrder: SortOrder,
-        limit: Int = Int.MAX_VALUE
+        limit: Int = Int.MAX_VALUE,
+        includeDeviceGroups: Boolean = false,
     ): Flow<List<Album>> = when( sortBy ) {
         AlbumSortBy.Title       -> sortBookmarkedByTitle()
         AlbumSortBy.Year        -> sortBookmarkedByYear()
@@ -624,8 +627,8 @@ interface AlbumTable {
         AlbumSortBy.Artist      -> sortBookmarkedByArtist()
         AlbumSortBy.Songs       -> sortBookmarkedBySongsCount()
         AlbumSortBy.Duration    -> sortBookmarkedByDuration()
-        AlbumSortBy.PlayCount   -> sortBookmarkedByPlayCount( limit )
-        AlbumSortBy.ListeningTime -> sortBookmarkedByListeningTime( limit )
+        AlbumSortBy.PlayCount   -> sortBookmarkedByPlayCount(limit, includeDeviceGroups)
+        AlbumSortBy.ListeningTime -> sortBookmarkedByListeningTime(limit, includeDeviceGroups)
         AlbumSortBy.Custom      -> sortBookmarkedByPosition( limit )
     }.map( sortOrder::applyTo ).take( limit )
     //</editor-fold>

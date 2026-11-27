@@ -12,7 +12,12 @@ import kotlinx.coroutines.withContext
 internal fun BuiltInPlaylist.hasSongOriginFilter(youtubeSyncEnabled: Boolean): Boolean =
     youtubeSyncEnabled && (this == BuiltInPlaylist.Favorites || this == BuiltInPlaylist.Disliked)
 
-internal fun projectAllHomeSongs(songs: List<Song>, deviceSongIds: Set<String>, excludeHidden: Boolean): List<Song> =
+internal fun BuiltInPlaylist.includesDeviceLibrarySongs(): Boolean = when (this) {
+    BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked, BuiltInPlaylist.Top -> true
+    BuiltInPlaylist.Downloaded, BuiltInPlaylist.Offline, BuiltInPlaylist.OnDevice -> false
+}
+
+internal fun projectHomeLibrarySongs(songs: List<Song>, deviceSongIds: Set<String>, excludeHidden: Boolean = false): List<Song> =
     songs.filter { song ->
         if (song.isLocal) song.id in deviceSongIds
         else !excludeHidden || song.totalPlayTimeMs >= 1L

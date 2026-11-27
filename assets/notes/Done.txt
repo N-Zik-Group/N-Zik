@@ -1428,3 +1428,7 @@ Android Auto:
 Android Auto:
 - fix(auto): share library scope and origin folders
   - Include verified device media in All and preserve origin, sort, and playback scope across folders.
+
+Library:
+- fix(library): include eligible device media across tabs
+  - Keep device favorites, dislikes and listening-based lists tied to verified files and the device library setting.

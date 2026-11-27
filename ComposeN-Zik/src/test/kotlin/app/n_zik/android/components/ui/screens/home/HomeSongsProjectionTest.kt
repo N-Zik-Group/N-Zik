@@ -39,11 +39,19 @@ class HomeSongsProjectionTest {
         )
         assertEquals(
             listOf("remote-played", "local:1"),
-            projectAllHomeSongs(songs, setOf("local:1"), excludeHidden = true).map(Song::id),
+            projectHomeLibrarySongs(songs, setOf("local:1"), excludeHidden = true).map(Song::id),
         )
         assertEquals(
             listOf("remote-played", "remote-hidden"),
-            projectAllHomeSongs(songs, emptySet(), excludeHidden = false).map(Song::id),
+            projectHomeLibrarySongs(songs, emptySet()).map(Song::id),
+        )
+    }
+
+    @Test
+    fun `device songs join tabs based on library activity without counting as cached or downloaded`() {
+        assertEquals(
+            setOf(BuiltInPlaylist.All, BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked, BuiltInPlaylist.Top),
+            BuiltInPlaylist.entries.filter { it.includesDeviceLibrarySongs() }.toSet(),
         )
     }
 

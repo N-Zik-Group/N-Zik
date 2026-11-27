@@ -558,36 +558,39 @@ interface ArtistTable {
         SELECT DISTINCT A.*
         FROM Artist A
         JOIN SongArtistMap SAM ON SAM.artistId = A.id
-        JOIN Event E ON E.songId = SAM.songId
+        LEFT JOIN Event E ON E.songId = SAM.songId
         WHERE A.bookmarkedAt IS NOT NULL
+            AND (E.id IS NOT NULL OR (:includeDeviceGroups AND (A.id GLOB '$DEVICE_ARTIST_PREFIX*' OR A.id LIKE 'local:%')))
         GROUP BY A.id
-        ORDER BY SUM(E.playtime) ASC
+        ORDER BY COALESCE(SUM(E.playtime), 0) ASC
         LIMIT :limit
     """)
-    fun sortFollowingByListeningTime( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
+    fun sortFollowingByListeningTime(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Artist>>
 
     @Query("""
         SELECT DISTINCT A.*
         FROM Artist A
         JOIN SongArtistMap SAM ON SAM.artistId = A.id
-        JOIN Event E ON E.songId = SAM.songId
+        LEFT JOIN Event E ON E.songId = SAM.songId
         WHERE A.bookmarkedAt IS NOT NULL
+            AND (E.id IS NOT NULL OR (:includeDeviceGroups AND (A.id GLOB '$DEVICE_ARTIST_PREFIX*' OR A.id LIKE 'local:%')))
         GROUP BY A.id
         ORDER BY COUNT(E.id) ASC
         LIMIT :limit
     """)
-    fun sortFollowingByPlayCount( limit: Int = Int.MAX_VALUE ): Flow<List<Artist>>
+    fun sortFollowingByPlayCount(limit: Int = Int.MAX_VALUE, includeDeviceGroups: Boolean = false): Flow<List<Artist>>
 
     /** Fetch all following artists sorted per [sortBy]/[sortOrder]: [sortBy] picks the artist property ([ArtistSortBy.Name], [ArtistSortBy.DateAdded], etc.), [sortOrder] the A-to-Z / 0-to-9 direction. @param limit stop once results reach this count @return a continuously-updated **SORTED** [Flow] of [Artist]s */
     fun sortFollowing(
         sortBy: ArtistSortBy,
         sortOrder: SortOrder,
-        limit: Int = Int.MAX_VALUE
+        limit: Int = Int.MAX_VALUE,
+        includeDeviceGroups: Boolean = false,
     ): Flow<List<Artist>> = when( sortBy ) {
         ArtistSortBy.Name       -> sortFollowingByName()
         ArtistSortBy.DateAdded  -> allFollowing()
-        ArtistSortBy.PlayCount -> sortFollowingByPlayCount( limit )
-        ArtistSortBy.ListeningTime -> sortFollowingByListeningTime( limit )
+        ArtistSortBy.PlayCount -> sortFollowingByPlayCount(limit, includeDeviceGroups)
+        ArtistSortBy.ListeningTime -> sortFollowingByListeningTime(limit, includeDeviceGroups)
         ArtistSortBy.Custom    -> sortFollowingByPosition( limit )
     }.map( sortOrder::applyTo ).take( limit )
     //</editor-fold>

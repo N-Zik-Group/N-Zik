@@ -252,7 +252,8 @@ fun HomeSongs(
     var relatedSongsPositions by remember { mutableStateOf(emptyMap<Song, Int>()) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, sourceFilter, includeDeviceSongs,
+    val topLimit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)
+    LaunchedEffect( builtInPlaylist, topPlaylists.period, topLimit, excludeSongWithDurationLimit, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, sourceFilter, includeDeviceSongs,
         binder.takeIf { builtInPlaylist == BuiltInPlaylist.Offline }, downloadedIds ) {
         if (preview != null) {
             isLoading = false
@@ -265,7 +266,6 @@ fun HomeSongs(
             else sortedBy { it.id in downloadedIds }
 
         val excludeHidden = hiddenSongs.isHiddenExcluded()
-        val showDeviceSongs = builtInPlaylist == BuiltInPlaylist.All && includeDeviceSongs
         val retrievedSongs = when( builtInPlaylist ) {
             BuiltInPlaylist.All, BuiltInPlaylist.Disliked -> {
                 val dislikedOnly = builtInPlaylist == BuiltInPlaylist.Disliked
@@ -273,13 +273,13 @@ fun HomeSongs(
                     Database.songTable
                         .sortAll(
                             SongSortBy.Title, SortOrder.Ascending,
-                            excludeHidden = excludeHidden && !showDeviceSongs, dislikedOnly = dislikedOnly,
+                            excludeHidden = excludeHidden && !includeDeviceSongs, dislikedOnly = dislikedOnly,
                         )
                         .map { it.sortByDownload() }
                 } else {
                     Database.songTable.sortAll(
                         songSort.sortBy, songSort.sortOrder,
-                        excludeHidden = excludeHidden && !showDeviceSongs, dislikedOnly = dislikedOnly,
+                        excludeHidden = excludeHidden && !includeDeviceSongs, dislikedOnly = dislikedOnly,
                     )
                 }
             }
@@ -314,59 +314,36 @@ fun HomeSongs(
                 }
             }
 
-            BuiltInPlaylist.Top -> {
-                if (songSort.sortBy == SongSortBy.Downloaded) {
-                    Database.eventTable
-                        .findSongsMostPlayedBetween(
-                            from = topPlaylists.period.timeStampInMillis(),
-                            limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)
-                        )
-                        .map { list ->
-                            list.fastFilter { song ->
-                                excludeSongWithDurationLimit == DurationInMinutes.Disabled
-                                        || song.durationText
-                                    ?.let { durationTextToMillis(it) < excludeSongWithDurationLimit.asMillis } == true
-                            }.let { filtered ->
-                                if (songSort.sortOrder == SortOrder.Ascending) {
-                                    filtered.sortedByDescending { it.id in downloadedIds }
-                                } else {
-                                    filtered.sortedBy { it.id in downloadedIds }
-                                }
-                            }
-                        }
-                } else {
-                    Database.eventTable
-                        .findSongsMostPlayedBetween(
-                            from = topPlaylists.period.timeStampInMillis(),
-                            limit = maxTopPlaylistItems.toInt(maxTopPlaylistItemsCustomValue)
-                        )
-                        .map { list ->
-                            list.fastFilter { song ->
-                                excludeSongWithDurationLimit == DurationInMinutes.Disabled
-                                        || song.durationText
-                                    ?.let { durationTextToMillis(it) < excludeSongWithDurationLimit.asMillis } == true
-                            }
-                        }
-                }
-            }
+            BuiltInPlaylist.Top -> Database.eventTable.findSongsMostPlayedBetween(
+                from = topPlaylists.period.timeStampInMillis(),
+                limit = if (includeDeviceSongs) Int.MAX_VALUE else topLimit,
+            )
 
             BuiltInPlaylist.OnDevice -> flowOf( emptyList() )
 
         }
 
         val selectedPlaylist = builtInPlaylist
-        val librarySongs = if (showDeviceSongs) {
+        val librarySongs = if (includeDeviceSongs) {
             val deviceLibrary = context.observeDeviceLibrary().onStart { emit(DeviceLibrarySnapshot()) }
             retrievedSongs.combine(deviceLibrary) { songs, device ->
-                projectAllHomeSongs(songs, device.songIds, excludeHidden)
+                projectHomeLibrarySongs(songs, device.songIds, excludeHidden = selectedPlaylist == BuiltInPlaylist.All && excludeHidden)
             }
         } else retrievedSongs.map { it.filterNot(Song::isLocal) }
 
         librarySongs.map { songs ->
+                val tabSongs = if (selectedPlaylist == BuiltInPlaylist.Top) {
+                    val rankedSongs = if (includeDeviceSongs) songs.take(topLimit) else songs
+                    val durationFiltered = rankedSongs.fastFilter { song ->
+                        excludeSongWithDurationLimit == DurationInMinutes.Disabled ||
+                            song.durationText?.let { durationTextToMillis(it) < excludeSongWithDurationLimit.asMillis } == true
+                    }
+                    if (songSort.sortBy == SongSortBy.Downloaded) durationFiltered.sortByDownload() else durationFiltered
+                } else songs
                 when(sourceFilter) {
-                    FilterBy.All -> songs
-                    FilterBy.YoutubeLibrary -> songs.filter { song -> song.isYoutubeSong }
-                    FilterBy.Local -> songs.filterNot { song -> song.isYoutubeSong }
+                    FilterBy.All -> tabSongs
+                    FilterBy.YoutubeLibrary -> tabSongs.filter { song -> song.isYoutubeSong }
+                    FilterBy.Local -> tabSongs.filterNot { song -> song.isYoutubeSong }
                 }.let { list ->
                     if (selectedPlaylist != BuiltInPlaylist.Disliked) {
                         list.filter { song -> song.likedAt != -1L }

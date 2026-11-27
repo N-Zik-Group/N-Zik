@@ -216,7 +216,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val onDeviceTabEnabled by rememberPreference(showOnDevicePlaylistKey, true)
     val deviceLibraryAvailable = deviceLibraryEnabled()
     val showOnDeviceChip = deviceLibraryAvailable && onDeviceTabEnabled
-    val includeDeviceSongs = deviceLibraryAvailable && builtInPlaylist == BuiltInPlaylist.All &&
+    val includeDeviceSongs = deviceLibraryAvailable && builtInPlaylist.includesDeviceLibrarySongs() &&
         sourceFilter != FilterBy.YoutubeLibrary
     LaunchedEffect(showOnDeviceChip, builtInPlaylist) {
         if (!showOnDeviceChip && builtInPlaylist == BuiltInPlaylist.OnDevice) {

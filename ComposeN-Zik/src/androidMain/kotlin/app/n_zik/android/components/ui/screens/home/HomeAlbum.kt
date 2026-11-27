@@ -293,8 +293,7 @@ fun HomeAlbums(
 
     val showOriginFilter = albumType != AlbumsType.OnDevice && isYouTubeSyncEnabled()
     val sourceFilter = if (showOriginFilter) filterBy else FilterBy.All
-    val includeDeviceGroups = deviceLibraryAvailable && (albumType == AlbumsType.OnDevice ||
-        (albumType == AlbumsType.Library && sourceFilter != FilterBy.YoutubeLibrary))
+    val includeDeviceGroups = deviceLibraryAvailable && sourceFilter != FilterBy.YoutubeLibrary
 
     val context = LocalContext.current
     val preview = LocalThemePreview.current
@@ -327,7 +326,9 @@ fun HomeAlbums(
             return@LaunchedEffect
         }
         when ( albumType ) {
-            AlbumsType.Favorites -> Database.albumTable.sortBookmarked( sort.sortBy, sort.sortOrder )
+            AlbumsType.Favorites -> Database.albumTable.sortBookmarked(
+                sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
+            )
             AlbumsType.Library, AlbumsType.OnDevice -> Database.albumTable.sortInLibrary(
                 sort.sortBy, sort.sortOrder, includeDeviceGroups = includeDeviceGroups,
             )
@@ -348,14 +349,16 @@ fun HomeAlbums(
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
             candidates.filter { item ->
-                if (isDeviceAlbumId(item.id)) includeDeviceGroups && item.id in groups.orEmpty()
-                else type != AlbumsType.OnDevice &&
-                    (type == AlbumsType.Disliked || item.dislikedAt == null) &&
-                    when (source) {
+                when {
+                    type != AlbumsType.OnDevice && type != AlbumsType.Disliked && item.dislikedAt != null -> false
+                    isDeviceAlbumId(item.id) -> includeDeviceGroups && item.id in groups.orEmpty()
+                    type == AlbumsType.OnDevice -> false
+                    else -> when (source) {
                         FilterBy.All -> true
                         FilterBy.YoutubeLibrary -> item.isYoutubeAlbum
                         else -> !item.isYoutubeAlbum
                     }
+                }
             }
         }
         baseReady = true

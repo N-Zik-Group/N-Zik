@@ -61,6 +61,21 @@ class HomeParentRoomTest {
                 ArtistSortBy.ListeningTime, SortOrder.Ascending, includeDeviceGroups = true,
             ).first().map { it.id })
 
+            sql.execSQL("UPDATE Album SET bookmarkedAt = 1")
+            sql.execSQL("UPDATE Artist SET bookmarkedAt = 1")
+            assertEquals(listOf("remote-album"), albumTable.sortBookmarked(
+                AlbumSortBy.PlayCount, SortOrder.Ascending,
+            ).first().map { it.id })
+            assertEquals(listOf(localAlbum, "remote-album"), albumTable.sortBookmarked(
+                AlbumSortBy.PlayCount, SortOrder.Ascending, includeDeviceGroups = true,
+            ).first().map { it.id })
+            assertEquals(listOf("remote-artist"), artistTable.sortFollowing(
+                ArtistSortBy.ListeningTime, SortOrder.Ascending,
+            ).first().map { it.id })
+            assertEquals(listOf(localArtist, "remote-artist"), artistTable.sortFollowing(
+                ArtistSortBy.ListeningTime, SortOrder.Ascending, includeDeviceGroups = true,
+            ).first().map { it.id })
+
             val albumSongs = loadHomeLibraryGroupSongs(
                 listOf(localAlbum, "remote-album"), database.songAlbumMapTable::songsForHomeAlbums, ::isDeviceAlbumId,
             ) { mapOf(localAlbum to setOf("local:1")) }
