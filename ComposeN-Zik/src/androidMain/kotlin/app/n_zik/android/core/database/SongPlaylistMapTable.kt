@@ -51,6 +51,9 @@ interface SongPlaylistMapTable {
     """)
     fun onDeviceOnlyPlaylistIds(): Flow<List<Long>>
 
+    @Query("SELECT DISTINCT playlistId FROM SongPlaylistMap WHERE songId LIKE 'local:%'")
+    fun playlistIdsWithDeviceTracks(): Flow<List<Long>>
+
     /** All [Song]s mapped to the playlist whose [Playlist.id] equals [playlistId]. */
     @Query("""
         SELECT DISTINCT S.*

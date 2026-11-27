@@ -25,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.R
-import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
@@ -33,13 +32,11 @@ import app.n_zik.android.components.search.SearchEmptyFeedback
 import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.search.SearchNoResults
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.SortOrder
-import app.n_zik.android.ui.components.themed.isYouTubePlaylistPickerEntry
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.Preference
@@ -74,7 +71,9 @@ internal fun <T> playlistPickerResults(source: Flow<T>): Flow<Result<T>> =
 
 internal data class PlaylistPickerPreviews(
     val library: List<PlaylistPreview>,
-    val grouped: List<PlaylistPreview>,
+    val pinnedRank: Map<Long, Int> = emptyMap(),
+    val youtubeRank: Map<Long, Int> = emptyMap(),
+    val deviceRank: Map<Long, Int> = emptyMap(),
 )
 
 internal class PlaylistPickerRead(
@@ -82,7 +81,6 @@ internal class PlaylistPickerRead(
     val devicePlaylistIds: Set<Long>,
     val retry: () -> Unit,
 ) {
-    val previews: List<PlaylistPreview> get() = result?.getOrNull()?.grouped.orEmpty()
     val libraryPreviews: List<PlaylistPreview> get() = result?.getOrNull()?.library.orEmpty()
 }
 
@@ -99,16 +97,13 @@ internal fun rememberPlaylistPickerRead(): PlaylistPickerRead {
     val devicePlaylistIds by remember {
         Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds().map { it.toSet() }
     }.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA)
-    val rewindBy by Preference.remember(Preference.HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY)
-    val rewindOrder by Preference.remember(Preference.HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER)
-    val rewindSort = rewindBy to rewindOrder
     val librarySort = libraryBy to libraryOrder
     val pinnedSort = pinnedBy to pinnedOrder
     val youtubeSort = youtubeBy to youtubeOrder
     val deviceSort = deviceBy to deviceOrder
     var retry by remember { mutableIntStateOf(0) }
-    val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, rewindSort, devicePlaylistIds, retry) {
-        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort, rewindSort, devicePlaylistIds))
+    val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, devicePlaylistIds, retry) {
+        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort, devicePlaylistIds))
     }
     return key(retry) {
         val result by results.collectAsStateWithLifecycle<Result<PlaylistPickerPreviews>?>(
@@ -124,30 +119,20 @@ private fun sortedPlaylistPickerPreviews(
     pinnedSort: Pair<PlaylistSortBy, SortOrder>,
     youtubeSort: Pair<PlaylistSortBy, SortOrder>,
     deviceSort: Pair<PlaylistSortBy, SortOrder>,
-    rewindSort: Pair<PlaylistSortBy, SortOrder>,
     devicePlaylistIds: Set<Long>,
 ): Flow<PlaylistPickerPreviews> {
-    val sorts = (listOf(librarySort, pinnedSort, youtubeSort, rewindSort) + listOfNotNull(deviceSort.takeIf { devicePlaylistIds.isNotEmpty() })).distinct()
+    val sorts = (listOf(librarySort, pinnedSort, youtubeSort) + listOfNotNull(deviceSort.takeIf { devicePlaylistIds.isNotEmpty() })).distinct()
     val flows = sorts.map { (sortBy, sortOrder) -> Database.playlistTable.sortPreviews(sortBy, sortOrder) }
-    if (flows.size == 1) return flows.single().map { PlaylistPickerPreviews(it, it) }
+    if (flows.size == 1) return flows.single().map { PlaylistPickerPreviews(it) }
     return combine(flows) { previews ->
         val library = previews[sorts.indexOf(librarySort)]
-        val (pinned, unpinned) = library.partition { it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) }
-        val (rewind, ordinary) = unpinned.partition { RewindPlaylists.isRewind(it.playlist.cleanName()) }
-        val (youtube, deviceAndLocal) = ordinary.partition { isYouTubePlaylistPickerEntry(it.playlist) }
-        val (device, local) = deviceAndLocal.partition { it.playlist.id in devicePlaylistIds }
-
-        // Room can deliver the independently sorted views at different times. Classify using
-        // one snapshot and use the other views only to order the IDs already in that snapshot.
-        fun List<PlaylistPreview>.inOrder(sort: Pair<PlaylistSortBy, SortOrder>): List<PlaylistPreview> {
-            if (sort == librarySort || size < 2) return this
-            val rankById = previews[sorts.indexOf(sort)].mapIndexed { index, item -> item.playlist.id to index }.toMap()
-            return sortedBy { rankById[it.playlist.id] ?: Int.MAX_VALUE }
+        // Other Room views provide ordering only; membership comes from the same library snapshot.
+        fun rank(sort: Pair<PlaylistSortBy, SortOrder>): Map<Long, Int> {
+            val index = sorts.indexOf(sort)
+            if (sort == librarySort || index < 0) return emptyMap()
+            return previews[index].mapIndexed { rank, preview -> preview.playlist.id to rank }.toMap()
         }
-
-        val grouped = pinned.inOrder(pinnedSort) + rewind.inOrder(rewindSort) +
-            youtube.inOrder(youtubeSort) + device.inOrder(deviceSort) + local
-        PlaylistPickerPreviews(library, grouped)
+        PlaylistPickerPreviews(library, rank(pinnedSort), rank(youtubeSort), rank(deviceSort))
     }
 }
 

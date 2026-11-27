@@ -66,21 +66,21 @@ class PlaylistPickerNavigationTest {
 
     @Test fun `track row picker opens the selected playlist through the latest host before dismissal`() {
         val events = mutableListOf<String>()
-        val destination = mutableStateOf<((Long) -> Unit)?>(null)
+        val destination = mutableStateOf<((Long, Boolean) -> Unit)?>(null)
         val app = ApplicationProvider.getApplicationContext<Application>()
         val open = hasClickAction() and hasContentDescription(app.getString(R.string.playlist_action_open))
         compose.setContent {
             val appearance = Appearance(ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape)
             CompositionLocalProvider(LocalAppearance provides appearance, LocalPlaylistPickerNavigation provides destination.value) {
-                PlaylistPickerOpenButton(42L, onDismiss = { events += "dismissed" })
+                PlaylistPickerOpenButton(42L, onDismiss = { events += "dismissed" }, onDevice = true)
             }
         }
         compose.onNode(open).assertDoesNotExist()
-        compose.runOnIdle { destination.value = { id -> events += "previous $id" } }
+        compose.runOnIdle { destination.value = { id, _ -> events += "previous $id" } }
         compose.onNode(open).assertExists()
-        compose.runOnIdle { destination.value = { id -> events += "latest $id" } }
+        compose.runOnIdle { destination.value = { id, onDevice -> events += "latest $id $onDevice" } }
         compose.onNode(open).performClick()
-        compose.runOnIdle { assertEquals(listOf("latest 42", "dismissed"), events) }
+        compose.runOnIdle { assertEquals(listOf("latest 42 true", "dismissed"), events) }
     }
 
     @Test fun `player picker keeps its explicit navigation ahead of the row host`() {
@@ -89,7 +89,7 @@ class PlaylistPickerNavigationTest {
         val open = hasClickAction() and hasContentDescription(app.getString(R.string.playlist_action_open))
         compose.setContent {
             val appearance = Appearance(ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape)
-            CompositionLocalProvider(LocalAppearance provides appearance, LocalPlaylistPickerNavigation provides { events += "host $it" }) {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalPlaylistPickerNavigation provides { id, _ -> events += "host $id" }) {
                 PlaylistPickerOpenButton(17L, onDismiss = { events += "dismissed" }) { id -> events += "player $id" }
             }
         }

@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -65,7 +64,8 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.MONTHLY_PREFIX
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.core.rewind.RewindPlaylists
-import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
+import app.n_zik.android.core.ondevice.deviceLibraryEnabled
+import app.n_zik.android.utils.showOnDevicePlaylistsKey
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.uiRoundnessShape
@@ -95,13 +95,9 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.components.ui.screens.home.HomeLibrarySubfilter
 import app.n_zik.android.components.ui.screens.home.HomeLibrarySubfilterRow
-import app.n_zik.android.components.ui.screens.home.RewindLibraryFilterChip
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilterChip
 import app.n_zik.android.components.ui.screens.home.matchesYouTubeLibraryFilter
-import app.n_zik.android.utils.DataStoreUtils
-import app.n_zik.android.utils.rememberDataStoreBooleanPreference
-import app.n_zik.android.utils.showMonthlyPlaylistsKey
 import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -109,7 +105,6 @@ import androidx.compose.ui.graphics.compositeOver
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.isCurrentMenu
-import app.n_zik.android.components.menu.menuSectionHeading
 import app.n_zik.android.components.menu.openDestination
 import androidx.compose.material3.Icon
 
@@ -203,7 +198,6 @@ private fun PlaylistPickerHeader(
 private class PlaylistPickerFilters {
     var group by mutableIntStateOf(R.string.common_option_all)
     var youtube by mutableStateOf(YouTubeLibraryFilter.All)
-    var rewind by mutableStateOf(RewindPlaylists.Filter.All)
     val input = mutableStateOf(TextFieldValue(""))
     val searchVisible = mutableStateOf(false)
 }
@@ -215,16 +209,16 @@ private fun PlaylistPickerMenu(
     search: Search,
     groups: List<Pair<Int, List<PlaylistPreview>>>,
     filters: PlaylistPickerFilters,
-    showRewindSubfilter: Boolean,
+    showDeviceTab: Boolean,
     header: @Composable ColumnScope.() -> Unit,
-    heading: @Composable (Int) -> Unit,
-    entry: @Composable (Int, PlaylistPreview) -> Unit,
+    entry: @Composable (PlaylistPreview) -> Unit,
 ) {
     val all = R.string.common_option_all
-    val availableGroups = groups.filter { (_, previews) -> previews.isNotEmpty() }.map { it.first }
+    val availableGroups = groups.filter { (label, previews) ->
+        previews.isNotEmpty() && (label != R.string.library_on_device_title || showDeviceTab)
+    }.map { it.first }
     val activeGroup = filters.group.takeIf { it in availableGroups } ?: all
-    val context = LocalContext.current
-    val query = search.inputValue
+    val query = search.filterQuery
     val searchAndFilters: @Composable ColumnScope.() -> Unit = {
         search.SearchBar(this)
         if (availableGroups.isNotEmpty()) {
@@ -235,63 +229,38 @@ private fun PlaylistPickerMenu(
                 },
                 currentValue = activeGroup,
                 onValueUpdate = { filters.group = it },
-                modifier = Modifier.padding(vertical = 6.dp),
-                contentPadding = PaddingValues(horizontal = 18.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 28.dp),
             )
-            val subfilter = when (activeGroup) {
-                R.string.sync_youtube_playlists_title -> HomeLibrarySubfilter.YouTube
-                R.string.rewind_title -> HomeLibrarySubfilter.Rewind.takeIf { showRewindSubfilter }
-                else -> null
+            val subfilter = HomeLibrarySubfilter.YouTube.takeIf {
+                activeGroup == R.string.sync_youtube_playlists_title
             }
-            HomeLibrarySubfilterRow(subfilter) { kind ->
-                when (kind) {
-                    HomeLibrarySubfilter.YouTube -> YouTubeLibraryFilterChip(filters.youtube) { filters.youtube = it }
-                    HomeLibrarySubfilter.Rewind -> RewindLibraryFilterChip(filters.rewind) { filters.rewind = it }
-                }
+            HomeLibrarySubfilterRow(subfilter) {
+                YouTubeLibraryFilterChip(filters.youtube) { filters.youtube = it }
             }
         }
     }
-    val displayedGroups = if (activeGroup == all) {
+    val displayed = if (activeGroup == all) {
         val visibleIds = groups.flatMap { it.second }.mapTo(HashSet()) { it.playlist.id }
-        listOf(all to playlistRead.libraryPreviews.filter { it.playlist.id in visibleIds })
-    } else groups
-    val matchingGroups = displayedGroups.map { (label, previews) ->
-        label to if (activeGroup == all || activeGroup == label) {
-            previews.filter { preview ->
-                val playlist = preview.playlist
-                val matchesQuery = playlist.matchesPickerQuery(query) ||
-                    (RewindPlaylists.isRewind(playlist.cleanName()) && context.rewindDisplayName(playlist.cleanName()).contains(query, ignoreCase = true))
-                matchesQuery && when (activeGroup) {
-                    R.string.sync_youtube_playlists_title -> matchesYouTubeLibraryFilter(playlist, filters.youtube)
-                    R.string.rewind_title -> !showRewindSubfilter || RewindPlaylists.matches(filters.rewind, playlist.cleanName())
-                    else -> true
-                }
-            }
-        } else emptyList()
+        playlistRead.libraryPreviews.filter { it.playlist.id in visibleIds }
+    } else groups.first { it.first == activeGroup }.second
+    val matches = displayed.filter { preview ->
+        val playlist = preview.playlist
+        playlist.matchesPickerQuery(query) &&
+            (activeGroup != R.string.sync_youtube_playlists_title ||
+                matchesYouTubeLibraryFilter(playlist, filters.youtube))
     }
-    val empty = matchingGroups.all { (_, matches) -> matches.isEmpty() }
+    val empty = matches.isEmpty()
     val emptyBody = playlistPickerEmptyBody(playlistRead, query, empty)
     if (style == MenuStyle.List) {
         ListMenu.Menu(headerContent = header, bodyHeader = searchAndFilters, emptyBody = emptyBody) {
             PlaylistPickerFeedback(playlistRead, query, empty)
-            displayedGroups.zip(matchingGroups).forEach { (group, matchingGroup) ->
-                val (label, previews) = group
-                val (_, matches) = matchingGroup
-                if (previews.isNotEmpty()) {
-                    if (label != all) SearchHeaderVisibility(matches.isNotEmpty()) { heading(label) }
-                    PlaylistPickerSearchRows(previews, matches) { entry(label, it) }
-                }
-            }
+            PlaylistPickerSearchRows(displayed, matches, entry)
         }
     } else {
         GridMenu.Menu(headerContent = header, bodyHeader = searchAndFilters, emptyBody = emptyBody) {
             playlistPickerGridFeedback(playlistRead, query, empty)
-            matchingGroups.forEach { (label, matches) ->
-                if (matches.isNotEmpty()) {
-                    if (label != all) item(span = { GridItemSpan(maxLineSpan) }) { heading(label) }
-                    items(matches, key = { it.playlist.id }) { entry(label, it) }
-                }
-            }
+            items(matches, key = { it.playlist.id }) { entry(it) }
         }
     }
 }
@@ -305,7 +274,7 @@ private fun PlaylistPickerEntry(
     onClick: () -> Unit,
     trailingContent: @Composable () -> Unit,
 ) {
-    val text = LocalContext.current.rewindDisplayName(preview.playlist.cleanName())
+    val text = preview.playlist.cleanName()
     val subtitle = preview.menuItemCount()
     if (style == MenuStyle.List) {
         ListMenu.Entry(
@@ -328,11 +297,9 @@ internal data class PlaylistPickerSections(
     val youtube: List<PlaylistPreview>,
     val local: List<PlaylistPreview>,
     val device: List<PlaylistPreview>,
-    val rewind: List<PlaylistPreview>,
 ) {
     fun groups(): List<Pair<Int, List<PlaylistPreview>>> = listOf(
         R.string.playlist_pinned_title to pinned,
-        R.string.rewind_title to rewind,
         R.string.sync_youtube_playlists_title to youtube,
         R.string.library_on_device_title to device,
         R.string.library_playlists_title to local,
@@ -343,35 +310,24 @@ internal fun playlistPickerSections(
     previews: List<PlaylistPreview>,
     online: Boolean,
     devicePlaylistIds: Set<Long> = emptySet(),
-    rewindMonthly: Boolean = false,
-    rewindYearly: Boolean = false,
 ): PlaylistPickerSections {
     val visible = previews.filter {
         val playlist = it.playlist
-        val name = playlist.cleanName()
-        if (RewindPlaylists.isRewind(name)) {
-            RewindPlaylists.isShown(name, rewindMonthly, rewindYearly, RewindPlaylists.Filter.All)
-        } else isPlaylistPickerVisible(playlist)
+        !RewindPlaylists.isRewind(playlist.cleanName()) && isPlaylistPickerVisible(playlist)
     }
     val ordinary = visible.filter {
         !it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
             !it.playlist.name.startsWith(MONTHLY_PREFIX, ignoreCase = true) &&
-            !RewindPlaylists.isRewind(it.playlist.cleanName()) &&
             !isYouTubePlaylistPickerEntry(it.playlist)
     }
     return PlaylistPickerSections(
         pinned = visible.filter { isPinnedPlaylistPickerVisible(it.playlist, online) },
         youtube = visible.filter {
             isYouTubePlaylistPickerEntry(it.playlist) &&
-                !it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
                 (online || !canEditPlaylistMembership(it.playlist))
         },
         local = ordinary.filterNot { it.playlist.id in devicePlaylistIds },
-        device = ordinary.filter { it.playlist.id in devicePlaylistIds },
-        rewind = visible.filter {
-            !it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
-                RewindPlaylists.isRewind(it.playlist.cleanName())
-        },
+        device = visible.filter { it.playlist.id in devicePlaylistIds },
     )
 }
 
@@ -395,9 +351,7 @@ internal fun reportPlaylistAddResult(result: PlaylistAddResult, localDestination
 @Composable
 private fun PlaylistPickerOrigin(playlist: Playlist, onDevice: Boolean) {
     val browseId = playlist.browseId.orEmpty()
-    val rewindIcon = RewindPlaylists.iconForPlaylist(playlist.cleanName())
     val (icon, tint) = when {
-        rewindIcon != null -> rewindIcon to colorPalette().accent
         isYouTubePlaylistPickerEntry(playlist) -> R.drawable.ytmusic to Color.Red.copy(0.75f).compositeOver(Color.White)
         onDevice -> R.drawable.folder to colorPalette().textSecondary
         browseId.startsWith("SPOTIFY_IMPORT") -> R.drawable.spotify to Color.Unspecified
@@ -457,6 +411,7 @@ class PlaylistsMenu private constructor(
         val onComplete: suspend (PlaylistPreview) -> Unit,
     ) {
         val filters = PlaylistPickerFilters()
+        var isAdding = false
     }
 
     companion object {
@@ -599,13 +554,14 @@ class PlaylistsMenu private constructor(
                 PlaylistPickerOrigin(playlist, onDevice)
                 PlaylistPickerOpenButton(
                     playlistId = playlist.id,
+                    onDevice = onDevice,
                     onDismiss = {
                         onOpenPlaylist()
                         menuState.hide()
                     },
                     openDestination = { navigate -> menuState.openDestination(navigate = navigate) },
                     openPlaylist = navController?.let { controller ->
-                        { id: Long -> navigateToPickedPlaylist(controller, id) }
+                        { id: Long -> navigateToPickedPlaylist(controller, id, onDevice) }
                     },
                 )
             }
@@ -636,22 +592,29 @@ class PlaylistsMenu private constructor(
     private fun PlaylistPicker(request: AddRequest) {
         val playlistRead = rememberPlaylistPickerRead()
         val online = isNetworkConnected(LocalContext.current)
-        val showRewind by rememberPreference(showMonthlyPlaylistsKey, true)
-        val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
-        val monthlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
-        val yearlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
-        val sections = playlistPickerSections(
-            playlistRead.previews, online, playlistRead.devicePlaylistIds,
-            rewindMonthly = showRewind && rewindEnabled && monthlyEnabled,
-            rewindYearly = showRewind && rewindEnabled && yearlyEnabled,
+        val previews = playlistRead.result?.getOrNull()
+        val showOnDevice by rememberPreference(showOnDevicePlaylistsKey, true)
+        val showDeviceTab = deviceLibraryEnabled() && showOnDevice
+        val base = playlistPickerSections(playlistRead.libraryPreviews, online, playlistRead.devicePlaylistIds)
+        fun List<PlaylistPreview>.ordered(rank: Map<Long, Int>?): List<PlaylistPreview> =
+            if (rank.isNullOrEmpty()) this else sortedBy { rank[it.playlist.id] ?: Int.MAX_VALUE }
+        val sections = base.copy(
+            pinned = base.pinned.ordered(previews?.pinnedRank),
+            youtube = base.youtube.ordered(previews?.youtubeRank),
+            device = base.device.ordered(previews?.deviceRank),
         )
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
         val search = Search.retained(request.filters.input, request.filters.searchVisible)
         val menuKey = menuState.transitionKey
         fun add(preview: PlaylistPreview) {
-            if (!menuState.isCurrentMenu(menuKey)) return
-            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                addToPlaylist(preview, request, menuKey)
+            if (request.isAdding || !menuState.isCurrentMenu(menuKey)) return
+            request.isAdding = true
+            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
+                try {
+                    withContext(NzikDispatchers.DATA) { addToPlaylist(preview, request, menuKey) }
+                } finally {
+                    request.isAdding = false
+                }
             }
         }
         val newPlaylistButton = NewPlaylistDialog(localOnly = localDestinationsOnly) { playlist ->
@@ -665,7 +628,7 @@ class PlaylistsMenu private constructor(
             search = search,
             groups = sections.groups(),
             filters = request.filters,
-            showRewindSubfilter = RewindPlaylists.rowVisible(monthlyEnabled, yearlyEnabled),
+            showDeviceTab = showDeviceTab,
             header = {
                 PlaylistPickerHeader(
                     title = stringResource(R.string.playlist_action_add),
@@ -674,16 +637,7 @@ class PlaylistsMenu private constructor(
                     onCreate = newPlaylistButton::onShortClick,
                 )
             },
-            heading = { label ->
-                BasicText(
-                    text = stringResource(label),
-                    style = typography().xxs.semiBold.copy(color = colorPalette().accent),
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                        .menuSectionHeading(),
-                )
-            },
-            entry = { _, preview ->
+            entry = { preview ->
                 PlaylistCard(
                     preview, preview.playlist.id in songPlaylistIds,
                     onDevice = preview.playlist.id in playlistRead.devicePlaylistIds,
@@ -699,13 +653,15 @@ class PlaylistsMenu private constructor(
 internal fun PlaylistPickerOpenButton(
     playlistId: Long,
     onDismiss: () -> Unit,
+    onDevice: Boolean = false,
     openDestination: (() -> Unit) -> Boolean = { navigate ->
         navigate()
         true
     },
     openPlaylist: ((Long) -> Unit)? = null,
 ) {
-    val navigate = openPlaylist ?: LocalPlaylistPickerNavigation.current ?: return
+    val host = LocalPlaylistPickerNavigation.current
+    val navigate = openPlaylist ?: host?.let { { id: Long -> it(id, onDevice) } } ?: return
     IconButton(
         icon = R.drawable.open,
         color = colorPalette().accent,

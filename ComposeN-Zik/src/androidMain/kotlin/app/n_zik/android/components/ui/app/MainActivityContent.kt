@@ -952,8 +952,8 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     LocalPendingMiniPlayerAction provides pendingMiniPlayerAction,
                     app.n_zik.android.core.navigation.LocalMiniPlayerQueueRequest provides
                         { showQueueOverlay = true },
-                    LocalPlaylistPickerNavigation provides { id ->
-                        navigateToPickedPlaylist(navController, id)
+                    LocalPlaylistPickerNavigation provides { id, onDevice ->
+                        navigateToPickedPlaylist(navController, id, onDevice)
                     },
                     LocalIsShowingLyrics provides isShowingLyrics,
                     LocalIsShowingVisualizer provides isShowingVisualizer,

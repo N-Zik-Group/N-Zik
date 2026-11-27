@@ -1392,3 +1392,7 @@ Settings:
 Settings:
 - fix(backup): honor proxy password export opt-in
   - Keep legacy passwords out of exports unless inclusion is enabled.
+
+Menus:
+- fix(playlists): respect library sorting and device availability
+  - Flatten the picker, align filters with Home, omit locked Rewind destinations, and preserve device navigation.

@@ -255,6 +255,10 @@ fun HomeLibrary(
         else Database.songPlaylistMapTable.onDeviceOnlyPlaylistIds()
     }
         .collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA)
+    val playlistIdsWithDeviceTracks by remember(previewSession) {
+        if (previewSession != null) flowOf(emptySet<Long>())
+        else Database.songPlaylistMapTable.playlistIdsWithDeviceTracks().map { it.toSet() }
+    }.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA)
     val scopeWithoutQuery = remember(libraryScope) { libraryScope.copy(query = "") }
     val deviceIds = remember(devicePlaylistIds) { devicePlaylistIds?.toHashSet() }
     var filteredItems by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/filtered") }
@@ -447,7 +451,8 @@ fun HomeLibrary(
             Timber.tag("HomeLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
-        localDestinationsOnly = playlistType == PlaylistsType.OnDevice,
+        localDestinationsOnly = playlistType == PlaylistsType.OnDevice ||
+            (playlistIdsWithDeviceTracks.isNotEmpty() && actionTargets().any { it.playlist.id in playlistIdsWithDeviceTracks }),
     )
     val exportDialog = ExportSongsToCSVDialog.deferred(
         "Library",
