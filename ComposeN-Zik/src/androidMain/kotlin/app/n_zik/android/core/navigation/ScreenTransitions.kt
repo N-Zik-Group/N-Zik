@@ -34,24 +34,10 @@ class ScreenTransitions(transitionEffect: TransitionEffect) {
         }
     }
     val popEnterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition) = {
-        when (transitionEffect) {
-            TransitionEffect.None -> EnterTransition.None
-            TransitionEffect.Expand -> scaleIn(animationSpec = tween(350), initialScale = 2.0f)
-            TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
-            TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
-            TransitionEffect.SlideVertical -> EnterTransition.None
-            TransitionEffect.SlideHorizontal -> EnterTransition.None
-        }
+        screenPopEnter(transitionEffect)
     }
     val popExitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition) = {
-        when (transitionEffect) {
-            TransitionEffect.None -> ExitTransition.None
-            TransitionEffect.Expand -> scaleOut(animationSpec = tween(350), targetScale = 2.0f)
-            TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
-            TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
-            TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
-            TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
-        }
+        screenPopExit(transitionEffect)
     }
 
     // Navigation has separate predictive callbacks; keep their edge-independent policy identical.
@@ -60,3 +46,23 @@ class ScreenTransitions(transitionEffect: TransitionEffect) {
     val predictivePopExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.(Int) -> ExitTransition =
         { popExitTransition() }
 }
+
+internal fun <T> AnimatedContentTransitionScope<T>.screenPopEnter(effect: TransitionEffect): EnterTransition =
+    when (effect) {
+        TransitionEffect.None -> EnterTransition.None
+        TransitionEffect.Expand -> scaleIn(animationSpec = tween(350), initialScale = 2.0f)
+        TransitionEffect.Fade -> fadeIn(animationSpec = tween(350))
+        TransitionEffect.Scale -> scaleIn(animationSpec = tween(350))
+        TransitionEffect.SlideVertical -> EnterTransition.None
+        TransitionEffect.SlideHorizontal -> EnterTransition.None
+    }
+
+internal fun <T> AnimatedContentTransitionScope<T>.screenPopExit(effect: TransitionEffect): ExitTransition =
+    when (effect) {
+        TransitionEffect.None -> ExitTransition.None
+        TransitionEffect.Expand -> scaleOut(animationSpec = tween(350), targetScale = 2.0f)
+        TransitionEffect.Fade -> fadeOut(animationSpec = tween(350))
+        TransitionEffect.Scale -> scaleOut(animationSpec = tween(350))
+        TransitionEffect.SlideVertical -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Down)
+        TransitionEffect.SlideHorizontal -> slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.Right)
+    }

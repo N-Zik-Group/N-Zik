@@ -15,6 +15,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 val LocalMenuState = staticCompositionLocalOf { MenuState() }
 
 internal val LocalMenuScrollState = staticCompositionLocalOf<MenuScrollState?> { null }
+internal val LocalMenuBack = staticCompositionLocalOf<(() -> Unit)?> { null }
 
 internal class MenuScrollState {
     private val listPosition = MenuScrollPosition(0)
@@ -72,7 +73,9 @@ class MenuState {
     internal class Entry(
         val content: @Composable () -> Unit,
         val onDestinationOpened: (() -> Unit)?,
+        val depth: Int,
     ) {
+        val hasPrevious get() = depth > 0
         val scrollState = MenuScrollState()
     }
 
@@ -96,7 +99,7 @@ class MenuState {
         if (!isDisplayed) {
             contentStack.clear()
         }
-        contentStack.add(Entry(content, onDestinationOpened ?: this.onDestinationOpened))
+        contentStack.add(Entry(content, onDestinationOpened ?: this.onDestinationOpened, contentStack.size))
         this.transitionKey++
         isDisplayed = true
     }

@@ -15,6 +15,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 
@@ -29,12 +30,19 @@ import app.n_zik.android.components.glass.glassContentCaptureEnabled
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.theme.AppearanceMenuSheet
+import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.MenuState
+import app.n_zik.android.core.navigation.screenPopEnter
+import app.n_zik.android.core.navigation.screenPopExit
+import app.n_zik.android.enums.TransitionEffect
+import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.transitionEffectKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState) {
+    val transitionEffect = rememberPreference(transitionEffectKey, TransitionEffect.Fade).value
     AppearanceMenuSheet(
         showSheet = menuState.isDisplayed,
         onDismissRequest = menuState::hide,
@@ -43,8 +51,15 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
         AnimatedContent(
             targetState = menuState.presentationState,
             transitionSpec = {
-                slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } + fadeIn(animationSpec = tween(300)) togetherWith
-                slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } + fadeOut(animationSpec = tween(300))
+                val returning = (targetState.second?.depth ?: 0) < (initialState.second?.depth ?: 0)
+                if (returning) {
+                    screenPopEnter(transitionEffect) togetherWith screenPopExit(transitionEffect)
+                } else {
+                    slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } +
+                        fadeIn(animationSpec = tween(300)) togetherWith
+                        slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } +
+                        fadeOut(animationSpec = tween(300))
+                }
             },
             label = "MenuContentTransition"
         ) { target ->
@@ -53,7 +68,19 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
             }
             Box(modifier = Modifier.fillMaxWidth()) {
                 target.second?.let { entry ->
-                    CompositionLocalProvider(LocalMenuScrollState provides entry.scrollState) {
+                    val back = remember(menuState, entry) {
+                        if (entry.hasPrevious) {
+                            {
+                                if (menuState.isDisplayed && menuState.presentationState.second === entry) {
+                                    menuState.pop()
+                                }
+                            }
+                        } else null
+                    }
+                    CompositionLocalProvider(
+                        LocalMenuScrollState provides entry.scrollState,
+                        LocalMenuBack provides back,
+                    ) {
                         entry.content()
                     }
                 }

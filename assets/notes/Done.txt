@@ -1360,3 +1360,7 @@ Menus:
 Menus:
 - fix(menu): highlight the current filter choice
   - Use the selection background and accent treatment from the sorting menu.
+
+Menus:
+- fix(menu): share navigation motion and nested back behavior
+  - Use the app back transition when returning to the actual parent sheet.
