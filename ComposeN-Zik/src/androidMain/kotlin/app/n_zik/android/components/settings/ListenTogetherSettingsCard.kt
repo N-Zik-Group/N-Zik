@@ -306,6 +306,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         onSaved = { settingsVersion.value++ },
         onDismiss = { showUsernameSheet = false },
         savedUsername = username,
+        canEditUsername = { !manager.isInRoom },
     )
 }
 
@@ -317,6 +318,7 @@ internal fun ServerChooserSheet(
     onDismiss: () -> Unit,
     currentUrl: String,
     customServerModifier: Modifier = Modifier,
+    hasParentMenu: Boolean = false,
 ) {
     val context = LocalContext.current
     val palette = colorPalette()
@@ -360,7 +362,7 @@ internal fun ServerChooserSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_choose_server),
-                headerLeading = menuHeaderBackLeading(onDismiss),
+                headerLeading = menuHeaderBackLeading(onDismiss.takeIf { hasParentMenu }),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     ListenTogetherServers.servers.forEach { server ->
@@ -449,6 +451,8 @@ internal fun UsernameSheet(
     onSaved: () -> Unit,
     onDismiss: () -> Unit,
     savedUsername: String,
+    canEditUsername: () -> Boolean,
+    hasParentMenu: Boolean = false,
 ) {
     val context = LocalContext.current
     val palette = colorPalette()
@@ -491,7 +495,7 @@ internal fun UsernameSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_username),
-                headerLeading = menuHeaderBackLeading(onDismiss),
+                headerLeading = menuHeaderBackLeading(onDismiss.takeIf { hasParentMenu }),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(
@@ -518,6 +522,10 @@ internal fun UsernameSheet(
                     )
                     Button(
                         onClick = {
+                            if (!canEditUsername()) {
+                                Toaster.i(R.string.listen_together_cannot_edit_username_in_room)
+                                return@Button
+                            }
                             val value = tempUsername.trim()
                             DataStoreUtils.saveString(context, PREF_USERNAME, value)
                             Timber.tag(TAG).i("Username -> $value")

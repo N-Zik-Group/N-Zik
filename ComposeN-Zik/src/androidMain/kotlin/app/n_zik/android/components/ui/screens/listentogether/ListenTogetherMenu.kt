@@ -326,12 +326,15 @@ fun ListenTogetherMenu() {
             onSaved = { settingsVersion.value++ },
             onDismiss = { showServerChooserSheet = false },
             currentUrl = serverUrl,
+            hasParentMenu = true,
         )
         UsernameSheet(
             showSheet = showUsernameSheet,
             onSaved = { settingsVersion.value++ },
             onDismiss = { showUsernameSheet = false },
             savedUsername = username,
+            canEditUsername = { !listenTogetherManager.isInRoom },
+            hasParentMenu = true,
         )
     }
 }

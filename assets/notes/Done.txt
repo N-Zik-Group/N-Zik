@@ -1668,3 +1668,7 @@ Playlist:
 Menus:
 - refactor(menu): share maintenance section headers
   - Use the common menu heading for maintenance groups, including its Glass contrast and accessibility semantics.
+
+Menus:
+- fix(menu): keep Listen Together form actions contextual
+  - Show Back only over the room menu and preserve the username draft when joining a room during editing.
