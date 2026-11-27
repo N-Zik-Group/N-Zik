@@ -29,7 +29,7 @@ import app.n_zik.android.components.menu.playlist.loadOnlinePlaylistContent
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import app.n_zik.android.core.database.podcastSourceBrowseId
-import app.n_zik.android.playback.services.automotive.browse.loadAutoDeviceSortedFavorites
+import app.n_zik.android.playback.services.automotive.browse.loadAutoFavorites
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -99,13 +99,7 @@ class PlaylistDetailHandler internal constructor(
         // find the right song list (issue #777).
         val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoMediaIdContract.playlistShuffle(playlistId))
         val listFlow = when (playlistId) {
-            AutoSessionConstants.ID_FAVORITES -> {
-                val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY.let { context.preferences.getEnum(it.key, it.default) }
-                val sortOrder = Preference.HOME_SONGS_FAVORITES_SORT_ORDER.let { context.preferences.getEnum(it.key, it.default) }
-                if (sortBy == SongSortBy.OnDevice) {
-                    flowOf(loadAutoDeviceSortedFavorites(context, database, sortOrder))
-                } else database.songTable.sortFavorites(sortBy, sortOrder)
-            }
+            AutoSessionConstants.ID_FAVORITES -> flowOf(loadAutoFavorites(context, database, downloadHelper))
             AutoSessionConstants.ID_CACHED -> {
                 val sortBy = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_BY.key, SongSortBy.Title)
                 val sortOrder = context.preferences.getEnum(Preference.HOME_SONGS_OFFLINE_SORT_ORDER.key, SortOrder.Ascending)

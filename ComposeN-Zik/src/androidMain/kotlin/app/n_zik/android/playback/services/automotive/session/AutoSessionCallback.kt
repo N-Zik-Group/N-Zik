@@ -55,7 +55,6 @@ import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.playback.services.automotive.browse.handlers.autoHomeTabIds
 import app.n_zik.android.utils.withPodcastSource
-import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.withPlaybackAlbum
 import app.n_zik.android.components.settings.accounts.isYouTubeLoggedIn
@@ -75,7 +74,7 @@ import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
 import app.n_zik.android.playback.services.automotive.browse.isUnmatchedPlaylistImport
-import app.n_zik.android.playback.services.automotive.browse.loadAutoDeviceSortedFavorites
+import app.n_zik.android.playback.services.automotive.browse.loadAutoFavorites
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
@@ -996,13 +995,7 @@ class AutoSessionCallback(
     }
 
     private suspend fun playlistSongs(playlistId: String): List<Song> = when (playlistId) {
-        AutoSessionConstants.ID_FAVORITES -> {
-            val sortBy = Preference.HOME_SONGS_FAVORITES_SORT_BY.let { context.preferences.getEnum(it.key, it.default) }
-            val order = Preference.HOME_SONGS_FAVORITES_SORT_ORDER.let { context.preferences.getEnum(it.key, it.default) }
-            if (sortBy == SongSortBy.OnDevice) {
-                loadAutoDeviceSortedFavorites(context, database, order)
-            } else database.songTable.sortFavorites(sortBy, order).first()
-        }
+        AutoSessionConstants.ID_FAVORITES -> loadAutoFavorites(context, database, downloadHelper)
         AutoSessionConstants.ID_CACHED -> database.formatTable.allWithSongs().map { fl -> fl.fastFilter { itf -> ::binder.isInitialized && binder.cache.hasCachedStream(itf.song.id, itf.format.contentLength) }.reversed().fastMap { itf -> itf.song } }.first()
         AutoSessionConstants.ID_TOP -> database.eventTable.findSongsMostPlayedBetween(from = 0, limit = context.preferences.getEnum(MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10`).toInt(context.preferences.getInt(MaxTopPlaylistItemsCustomValueKey, 10))).first()
         AutoSessionConstants.ID_ONDEVICE -> database.songTable.allOnDevice().first()

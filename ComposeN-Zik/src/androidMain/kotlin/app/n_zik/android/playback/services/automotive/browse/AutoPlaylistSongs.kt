@@ -5,6 +5,7 @@ import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.ui.screens.home.matchesOnDevicePlaylist
 import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.enums.PlaylistSongSortBy
+import app.n_zik.android.utils.Preference
 import app.n_zik.android.enums.SongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
@@ -27,7 +28,24 @@ import kotlinx.coroutines.flow.first
 internal fun Song.isUnmatchedPlaylistImport(): Boolean = totalPlayTimeMs == 1L && isUnmatched
 
 /** Orders legacy Favorites without changing which entries the legacy route exposes. */
-internal suspend fun loadAutoDeviceSortedFavorites(context: Context, database: Database, order: SortOrder): List<Song> {
+internal suspend fun loadAutoFavorites(context: Context, database: Database, downloads: MyDownloadHelper): List<Song> {
+    val preferences = context.preferences
+    val sort = Preference.HOME_SONGS_FAVORITES_SORT_BY.let { preferences.getEnum(it.key, it.default) }
+    val order = Preference.HOME_SONGS_FAVORITES_SORT_ORDER.let { preferences.getEnum(it.key, it.default) }
+    return when (sort) {
+        SongSortBy.OnDevice -> loadAutoDeviceSortedFavorites(context, database, order)
+        SongSortBy.Downloaded -> {
+            downloads.getDownloadManager(context)
+            val downloadedIds = downloads.downloads.value.filterValues { it.state == Download.STATE_COMPLETED }.keys
+            val songs = database.songTable.sortFavorites(SongSortBy.Title, SortOrder.Ascending).first()
+            if (order == SortOrder.Ascending) songs.sortedByDescending { it.id in downloadedIds }
+            else songs.sortedBy { it.id in downloadedIds }
+        }
+        else -> database.songTable.sortFavorites(sort, order).first()
+    }
+}
+
+private suspend fun loadAutoDeviceSortedFavorites(context: Context, database: Database, order: SortOrder): List<Song> {
     val enabled = context.isDeviceLibraryEnabled()
     val songs = database.songTable.sortFavorites(SongSortBy.Title, if (enabled) SortOrder.Ascending else order).first()
     if (!enabled) return songs
