@@ -1548,3 +1548,7 @@ Settings:
 Settings:
 - fix(sync): respect YouTube sync settings and report progress
   - Keep queued work, sync direction and status aligned with the active profile settings.
+
+Settings / Menus:
+- fix(logging): stop writing debug logs when disabled
+  - Honor the active profile switch before queuing and writing debug logs, including after a settings reset.

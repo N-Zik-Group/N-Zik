@@ -68,6 +68,20 @@ class FileLoggingTreeTest {
 
     private fun lines(): List<String> = if (logFile.exists()) logFile.readLines() else emptyList()
 
+    @Test
+    fun `disabling logging drops queued lines and leaves the deleted file absent`() {
+        holdConsumer()
+        val enabled = java.util.concurrent.atomic.AtomicBoolean(true)
+        val tree = FileLoggingTree(logFile, dispatcher = executor.asCoroutineDispatcher(), enabled = enabled::get)
+            .also { trees += it }
+        tree.logD("test", "queued")
+        enabled.set(false)
+        tree.logD("test", "after disable")
+        releaseConsumer()
+        assertTrue(tree.flushBlocking(1000))
+        assertFalse(logFile.exists())
+    }
+
     // --- formatLogLine ---------------------------------------------------------------------
 
     @Test

@@ -44,6 +44,7 @@ class FileLoggingTree(
     private val maxLogSize: Long = DEFAULT_MAX_LOG_SIZE,
     dispatcher: CoroutineDispatcher = NzikDispatchers.DATA,
     private val maxPendingSize: Long = DEFAULT_MAX_PENDING_SIZE,
+    private val enabled: () -> Boolean = { true },
 ) : Timber.DebugTree() {
 
     private sealed interface Item
@@ -74,7 +75,7 @@ class FileLoggingTree(
      * logged after [close] is ignored.
      */
     public override fun log(priority: Int, tag: String?, message: String, t: Throwable?) {
-        if (priority < Log.DEBUG) return
+        if (priority < Log.DEBUG || !enabled()) return
         queue.trySend(LogEntry(System.currentTimeMillis(), priority, tag, message))
     }
 
@@ -146,7 +147,7 @@ class FileLoggingTree(
 
     /** @return `true` when every line of [lines] reached the file (or there was nothing to write) */
     private fun writeBatch(lines: List<String>): Boolean = synchronized(diagnosticFileMutationLock) {
-        if (lines.isEmpty()) return@synchronized true
+        if (lines.isEmpty() || !enabled()) return@synchronized true
         try {
             if (!logFile.exists()) {
                 logFile.createNewFile()

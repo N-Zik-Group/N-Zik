@@ -46,7 +46,9 @@ internal fun Context.installStartupDiagnostics() {
     }
 
     if (logEnabled) {
-        val fileLoggingTree = FileLoggingTree(File(dir, "N-Zik_log.txt"))
+        val fileLoggingTree = FileLoggingTree(File(dir, "N-Zik_log.txt")) {
+            diagnosticPrefs.getBoolean(logDebugEnabledKey, false)
+        }
         Timber.plant(fileLoggingTree)
         // Allow queued diagnostics to reach disk before crash capture ends the process.
         Thread.setDefaultUncaughtExceptionHandler(flushThenDelegate(fileLoggingTree, 2000, guardedCrashCapture))
