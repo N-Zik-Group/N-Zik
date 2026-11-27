@@ -41,6 +41,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasAnyDescendant
@@ -306,6 +307,37 @@ class MenuSheetPresentationTest {
         compose.runOnIdle { assertEquals(SheetValue.PartiallyExpanded, state.currentValue) }
         compose.onNode(hasClickAction() and SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss))
             .performSemanticsAction(SemanticsActions.Dismiss) { it() }
+        settleSheetMotion()
+        compose.runOnIdle {
+            assertEquals(SheetValue.Hidden, state.currentValue)
+            assertEquals(1, dismissals)
+        }
+    }
+
+    @Test fun `glass menu exposes one accessible handle on the original bar`() {
+        lateinit var state: SheetState
+        var dismissals = 0
+        compose.setContent {
+            var visible by remember { mutableStateOf(true) }
+            Fixture(shared = true, direction = LayoutDirection.Ltr) {
+                state = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+                GlassMenuSheet(visible, { dismissals++; visible = false }, state) {
+                    MenuSheetDragHandle()
+                    Box(Modifier.fillMaxWidth().height(500.dp))
+                }
+            }
+        }
+        settleSheetMotion()
+        compose.runOnIdle { assertEquals(SheetValue.PartiallyExpanded, state.currentValue) }
+        val handle = hasClickAction() and SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss)
+        compose.onAllNodes(handle).assertCountEquals(1)
+        compose.onNode(handle).performSemanticsAction(SemanticsActions.Expand) { it() }
+        settleSheetMotion()
+        compose.runOnIdle { assertEquals(SheetValue.Expanded, state.currentValue) }
+        compose.onNode(handle).performSemanticsAction(SemanticsActions.Collapse) { it() }
+        settleSheetMotion()
+        compose.runOnIdle { assertEquals(SheetValue.PartiallyExpanded, state.currentValue) }
+        compose.onNode(handle).performSemanticsAction(SemanticsActions.Dismiss) { it() }
         settleSheetMotion()
         compose.runOnIdle {
             assertEquals(SheetValue.Hidden, state.currentValue)

@@ -1784,3 +1784,7 @@ Menus:
 Menus:
 - fix(menu): update the player external playback action live
   - Reflect offline changes while the player menu stays open.
+
+Menus:
+- fix(menu): expose Glass handle accessibility actions
+  - Reuse expand, collapse and dismiss actions on the existing Glass handle.

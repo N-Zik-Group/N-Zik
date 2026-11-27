@@ -36,6 +36,9 @@ import kotlinx.coroutines.flow.first
 
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle
+import app.n_zik.android.components.menu.LocalMenuSheetHandleActions
+import app.n_zik.android.components.menu.MenuSheetHandleActions
+import app.n_zik.android.components.menu.menuSheetHandleActions
 import app.n_zik.android.components.menu.straightBottomMenuShape
 import app.n_zik.android.topUiRoundnessShape
 
@@ -50,7 +53,7 @@ internal fun GlassMenuSheet(
     content: @Composable ColumnScope.() -> Unit,
 ) = SharedGlassMenuSheet(
     showSheet, onDismissRequest, sheetState, partiallyExpanded = true,
-    expandOnShow = expandOnShow, content = content,
+    expandOnShow = expandOnShow, useContentHandleActions = true, content = content,
 )
 
 /** Also hosts short form sheets, reserving their IME insets inside the modal viewport. */
@@ -68,6 +71,7 @@ internal fun SharedGlassMenuSheet(
     dragHandle: @Composable (() -> Unit)? = null,
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets(0) },
     expandOnShow: Boolean = false,
+    useContentHandleActions: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
@@ -139,17 +143,25 @@ internal fun SharedGlassMenuSheet(
                 containerColor = Color.Transparent,
                 sheetContent = {
                     val paintScope = LocalGlassOverlayPaintScope.current
-                    CompositionLocalProvider(LocalGlassOverlayPaintScope provides paintScope?.let {
-                        GlassOverlayPaintScope(it.host, it.id) {
-                            if (sheetState.currentValue == SheetValue.Expanded && sheetState.targetValue == SheetValue.Expanded) it.alpha() else 0f
-                        }
-                    }) {
-                    if (maxSheetHeight.isSpecified) {
-                        Column(Modifier.heightIn(max = maxSheetHeight)) {
-                            dragHandle?.let { CenteredMenuSheetDragHandle(it) }
-                            content()
-                        }
-                    } else content()
+                    val handleActions = if (useContentHandleActions && paintScope != null) {
+                        MenuSheetHandleActions(paintScope.id, menuSheetHandleActions(sheetState, onDismiss = { dismissRequested = true }))
+                    } else null
+                    CompositionLocalProvider(
+                        LocalMenuSheetHandleActions provides handleActions,
+                        LocalGlassOverlayPaintScope provides paintScope?.let {
+                            GlassOverlayPaintScope(it.host, it.id) {
+                                if (sheetState.currentValue == SheetValue.Expanded &&
+                                    sheetState.targetValue == SheetValue.Expanded
+                                ) it.alpha() else 0f
+                            }
+                        },
+                    ) {
+                        if (maxSheetHeight.isSpecified) {
+                            Column(Modifier.heightIn(max = maxSheetHeight)) {
+                                dragHandle?.let { CenteredMenuSheetDragHandle(it) }
+                                content()
+                            }
+                        } else content()
                     }
                 },
             ) { }
