@@ -60,6 +60,7 @@ class PlaylistContinuationTest {
         })
 
         assertNull(partial.toOnlinePlaylistMenuContent().songs)
+        assertEquals(partial.songs.map { it.key }, partial.toOnlinePlaylistMenuContent().availableSongs?.map { it.id })
         assertEquals(listOf("A", "B", "C"), complete.toOnlinePlaylistMenuContent().songs?.map { it.id })
     }
 

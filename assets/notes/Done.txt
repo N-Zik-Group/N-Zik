@@ -1624,3 +1624,7 @@ Search:
 Menus / Playlist:
 - fix(menu): keep sorting feedback consistent
   - Use the shared selected state and verify current sort and Library scope behavior.
+
+Playlist:
+- fix(playlist): keep loaded tracks available after pagination fails
+  - Enable Add for available tracks after the load settles while reserving full import for complete or saved collections.

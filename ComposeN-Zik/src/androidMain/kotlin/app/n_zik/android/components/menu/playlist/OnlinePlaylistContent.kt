@@ -22,6 +22,7 @@ internal data class OnlinePlaylistContent(
     val thumbnailUrl: String?,
     val songs: List<Song>?,
     val channel: Innertube.Info<NavigationEndpoint.Endpoint.Browse>? = null,
+    val availableSongs: List<Song>? = songs,
 )
 
 internal fun onlinePlaylistShareUrl(browseId: String): String? {
@@ -66,12 +67,15 @@ internal suspend fun loadOnlinePlaylistContent(
     return if (isPodcastBrowseId(browseId)) podcastLoader(browseId) else playlistLoader(browseId)
 }
 
-/** Keep source metadata available when a continuation fails, without exposing a partial bulk selection. */
-internal fun PlaylistPage.toOnlinePlaylistMenuContent(): OnlinePlaylistContent =
-    OnlinePlaylistContent(
+/** Keep visible songs available for Add without treating an interrupted page as a complete collection. */
+internal fun PlaylistPage.toOnlinePlaylistMenuContent(): OnlinePlaylistContent {
+    val available = songs.mapNotNull { it.asSong }
+    return OnlinePlaylistContent(
         title = playlist.title,
         author = playlist.channel?.name,
         thumbnailUrl = playlist.thumbnail?.url,
-        songs = if (songsContinuation == null) songs.mapNotNull { it.asSong } else null,
+        songs = available.takeIf { songsContinuation == null },
         channel = playlist.channel,
+        availableSongs = available,
     )
+}

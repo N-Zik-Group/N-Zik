@@ -430,6 +430,7 @@ class OnlinePlaylistItemMenu private constructor(
         val sourceChanged = sourceId != playlist.key
 
         var fetchedSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
+        var partialSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
         var contentLoadFailed by remember(sourceId) { mutableStateOf(false) }
         
         var displayTitle by remember(sourceId) { mutableStateOf((playlist.title ?: playlist.info?.name).takeUnless { sourceChanged }) }
@@ -471,7 +472,8 @@ class OnlinePlaylistItemMenu private constructor(
                     ownerChannel = result.channel ?: ownerChannel
                     displayThumbnailUrl = result.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
                 }
-                result?.songs?.let { fetchedSongs = it }
+                fetchedSongs = result?.songs
+                partialSongs = result?.takeIf { it.songs == null }?.availableSongs
                 contentLoadFailed = result?.songs == null
             }
         }
@@ -480,7 +482,10 @@ class OnlinePlaylistItemMenu private constructor(
             it.asMediaItem.withPodcastSource(sourceId)
         }
 
-        val pickerSongs = songs
+        val fallbackTracks = remember(partialSongs, parentalControlEnabled) {
+            partialSongs?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
+        }
+        val pickerSongs by rememberMenuSongs(songs ?: fallbackTracks)
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
             mediaItems = { pickerSongs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) } },
