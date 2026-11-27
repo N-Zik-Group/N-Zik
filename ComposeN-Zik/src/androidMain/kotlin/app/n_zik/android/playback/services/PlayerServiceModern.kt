@@ -1510,7 +1510,9 @@ class PlayerServiceModern : MediaLibraryService(),
         trackBoundaryPause.cancel()
         refreshTrackBoundaryPause()
         // P16 (2026-10-23): refresh the main-thread locality snapshot read by the load gate.
+        val wasLocal = currentMediaIsLocal
         currentMediaIsLocal = mediaItem?.isLocal == true
+        if (wasLocal != currentMediaIsLocal && ::mediaSession.isInitialized) updateDefaultNotification()
         if (!isInternalCrossfadeSeek && (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)) {
             cancelCrossfadeAndReset()
         }
@@ -2416,6 +2418,7 @@ class PlayerServiceModern : MediaLibraryService(),
         val commandButtonsList = playbackNotificationButtons(
             first = notificationPlayerFirstIcon,
             second = notificationPlayerSecondIcon,
+            allowDownload = !currentMediaIsLocal,
             labelRes = ::commandButtonLabelRes,
             iconRes = ::commandButtonIconRes,
         )
@@ -3048,7 +3051,7 @@ class PlayerServiceModern : MediaLibraryService(),
 
         fun toggleDownload() {
             if (!NetworkQualityHelper.isNetworkConnected(this@PlayerServiceModern)) return
-            val mediaItem = currentMediaItem.value ?: return
+            val mediaItem = currentMediaItem.value?.takeUnless { it.isLocal } ?: return
             val downloadState = currentDownloadState(mediaItem)
             manageDownload(
                 context = this@PlayerServiceModern,

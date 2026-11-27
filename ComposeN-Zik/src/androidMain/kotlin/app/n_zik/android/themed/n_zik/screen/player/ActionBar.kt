@@ -120,6 +120,7 @@ import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.effectRotationKey
 import app.n_zik.android.utils.expandedplayertoggleKey
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.getDownloadState
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.isLandscape
@@ -543,7 +544,7 @@ internal fun playerActionBarActions(
                 }
                 "download" -> {
                     val showButtonPlayerDownload by rememberPreference( showButtonPlayerDownloadKey, true )
-                    if ((placedAtTop || showButtonPlayerDownload) && !offlineMode) {
+                    if ((placedAtTop || showButtonPlayerDownload) && !offlineMode && !mediaItem.isLocal) {
                         val isDownloaded = isDownloadedSong( mediaItem.mediaId )
                         playerActions.add(PlayerActionSlot(buttonId) {
                             PlayerDownloadAction(

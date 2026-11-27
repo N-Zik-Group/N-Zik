@@ -1,6 +1,7 @@
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 package app.n_zik.android.ui.screens.player
 
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.player.rememberMiniPlayerProgress
 
@@ -282,7 +283,8 @@ fun MiniPlayer(
     val slot4Key = rememberPreference(miniPlayerSlot4Key, "")
 
     // Folding changes presentation only; every configured action keeps its node and handler.
-    val activeButtons = rememberMiniPlayerButtons()
+    val configuredButtons = rememberMiniPlayerButtons()
+    val activeButtons = if (mediaItem.isLocal) configuredButtons - MiniPlayerButton.Download else configuredButtons
 
     val color = colorPalette()
     val colorPaletteName by rememberPreference(colorPaletteNameKey, ColorPaletteName.Dynamic)

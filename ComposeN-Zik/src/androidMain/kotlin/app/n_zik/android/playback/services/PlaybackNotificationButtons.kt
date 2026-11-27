@@ -10,11 +10,12 @@ import app.n_zik.android.enums.NotificationButtons
 internal fun playbackNotificationButtons(
     first: NotificationButtons,
     second: NotificationButtons,
+    allowDownload: Boolean,
     labelRes: (NotificationButtons) -> Int,
     iconRes: (NotificationButtons) -> Int,
 ): List<CommandButton> {
     val buttons = listOf(first, second) + NotificationButtons.entries.filterNot { it == first || it == second }
-    return buttons.map { button ->
+    return buttons.filter { allowDownload || it != NotificationButtons.Download }.map { button ->
         CommandButton.Builder()
             .setDisplayName(appTextResources().getString(labelRes(button)))
             .setIconResId(iconRes(button))
