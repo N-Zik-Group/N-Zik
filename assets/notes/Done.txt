@@ -1204,3 +1204,7 @@ Settings:
 Menus:
 - fix(menu): preserve removal of the last separator
   - Keep intentionally removed separators out of the saved burger menu while still adding new actions to existing profiles.
+
+Settings:
+- fix(settings): index server values and show Quick Picks prerequisites
+  - Use the displayed PC server timer options for search and describe the For you switch needed for hidden Quick Picks options.

@@ -1,5 +1,8 @@
 package app.n_zik.android.components.settings.common
 
+import app.n_zik.android.bridge.AutoStopSettings
+import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+import app.n_zik.android.components.ui.screens.bridge.bridgeAutoStopValueLabel
 import app.n_zik.android.listentogether.ListenTogetherServers
 import java.net.Proxy
 import java.time.DayOfWeek
@@ -79,6 +82,7 @@ internal fun settingsEntryChoiceLabels(
         "Unlimited" -> resolveString(R.string.statistics_items_limit_unlimited)
         else -> name
     }
+    val bridgeAutoStopValues = AutoStopSettings.OPTIONS.map { bridgeAutoStopValueLabel(it, resolveString, locale) }
     // Arbitrary text, custom numbers, credentials, folders and runtime-loaded lists are excluded.
     return mapOf(
         "general.languages.app_language" to Languages.entries.map { resolveString(it.textId) },
@@ -181,5 +185,5 @@ internal fun settingsEntryChoiceLabels(
             RecommendationsNumber.entries.map { if (it == RecommendationsNumber.Adaptive) resolveString(R.string.recommendations_adaptive) else it.name },
         "ai.quick_picks.quick_selection_type" to
             LocalRecommandationsNumber.entries.map { resolvePlural(R.plurals.recommendations_quick_picks_song_count, it.value) },
-    )
+    ) + BridgeAutoStopTarget.entries.associate { it.id to bridgeAutoStopValues }
 }

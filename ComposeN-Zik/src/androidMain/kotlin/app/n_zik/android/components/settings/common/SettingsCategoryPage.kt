@@ -568,10 +568,14 @@ fun SettingsCategoryPage(
             }
         }
         val unavailable = hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
-        val searchPrerequisite = if (unavailable) {
-            settingsSearchPrerequisite(requestedTarget, context.preferences, registry.targets::containsKey)
-        } else null
-        if (unavailable || requestedTarget != rawTarget && rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")) {
+        val needsQuickPicksForYou = requestedTarget != rawTarget &&
+            rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")
+        val searchPrerequisite = when {
+            unavailable -> settingsSearchPrerequisite(requestedTarget, context.preferences, registry.targets::containsKey)
+            needsQuickPicksForYou -> SearchPrerequisite(requestedTarget, listOf(R.string.common_state_on))
+            else -> null
+        }
+        if (unavailable || needsQuickPicksForYou) {
             if (unavailable && nested != null) {
                 settingsNestedDialog(nested.dialogId)?.hideDialog()
                 registry.nestedTarget = null

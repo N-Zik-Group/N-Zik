@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,7 @@ import app.n_zik.android.bridge.BridgeServerController
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
 import app.n_zik.android.uiRoundnessShape
+import java.util.Locale
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -59,6 +61,10 @@ internal enum class BridgeAutoStopTarget(val id: String, val labelRes: Int) {
     NoClient("network.bridge_server.auto_stop_no_client", R.string.bridge_auto_stop_no_client),
     Inactivity("network.bridge_server.auto_stop_inactivity", R.string.bridge_auto_stop_inactivity),
 }
+
+internal fun bridgeAutoStopValueLabel(minutes: Int, resolveString: (Int) -> String, locale: Locale): String =
+    if (minutes == AutoStopSettings.NEVER) resolveString(R.string.bridge_auto_stop_never)
+    else String.format(locale, resolveString(R.string.bridge_auto_stop_minutes), minutes)
 
 /** "Connected PC" card of "Manage server": the PC holding the session and Disconnect, which closes its session with `4001 KICKED` without revoking it (contract §6.4) — no confirmation. */
 @Composable
@@ -153,9 +159,10 @@ private fun AutoStopEntry(
 ) {
     var showDialog by remember { mutableStateOf(false) }
     val title = stringResource(target.labelRes)
-    val never = stringResource(R.string.bridge_auto_stop_never)
+    val resources = LocalResources.current
+    val locale = resources.configuration.locales[0]
     val valueText: @Composable (Int) -> String = { value ->
-        if (value == AutoStopSettings.NEVER) never else stringResource(R.string.bridge_auto_stop_minutes, value)
+        bridgeAutoStopValueLabel(value, resources::getString, locale)
     }
 
     OtherSettingsEntry(
