@@ -18,6 +18,7 @@ internal data class GlassSearchOption(
     val sectionTitle: Int,
     val fallback: String? = null,
     val choiceRes: List<Int> = emptyList(),
+    val requiredTintSource: GlassTintSource? = null,
 )
 
 private val hardwareGlassSearchSettings = GlassSettings()
@@ -58,10 +59,11 @@ internal val GlassSectionGroupTitles = mapOf(
 
 internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     fun option(name: String, label: Int, section: String, sectionTitle: Int,
-        description: Int? = null, fallback: String? = null, choices: List<Int> = emptyList()) {
+        description: Int? = null, fallback: String? = null, choices: List<Int> = emptyList(),
+        requiredTintSource: GlassTintSource? = null) {
         add(GlassSearchOption(SettingsEntryTarget("glass.$name", 1, R.string.glass_effect_title, label,
             listOfNotNull(R.string.glass_effect_title, sectionTitle, GlassSectionGroupTitles[sectionTitle], description)),
-            section, sectionTitle, fallback, choices))
+            section, sectionTitle, fallback, choices, requiredTintSource))
     }
     option("master", R.string.glass_effect_enabled_title, "master", R.string.glass_effect_title, R.string.glass_effect_enabled_description)
     option("optimization", R.string.glass_effect_optimization_title, "material", R.string.glass_effect_group_material, R.string.glass_effect_optimization_description)
@@ -71,8 +73,10 @@ internal val GlassSearchOptions: List<GlassSearchOption> = buildList {
     option("blur", R.string.glass_effect_frost, "material", R.string.glass_effect_group_material, fallback = "glass.quality")
     option("tintSource", R.string.glass_effect_tint_source, "colour", R.string.glass_effect_group_color,
         choices = availableGlassTintSources().map(GlassTintSource::labelRes))
-    option("tint", R.string.glass_effect_custom_color, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")
-    option("hue", R.string.glass_effect_tint, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")
+    option("tint", R.string.glass_effect_custom_color, "colour", R.string.glass_effect_group_color,
+        fallback = "glass.tintSource", requiredTintSource = GlassTintSource.Custom)
+    option("hue", R.string.glass_effect_tint, "colour", R.string.glass_effect_group_color,
+        fallback = "glass.tintSource", requiredTintSource = GlassTintSource.Custom)
     option("tintStrength", R.string.glass_effect_tint_strength, "colour", R.string.glass_effect_group_color, fallback = "glass.tintSource")
     option("film", R.string.glass_effect_film, "colour", R.string.glass_effect_group_color)
     option("indicator", R.string.glass_effect_active_tab_indicator, "colour", R.string.glass_effect_group_color)

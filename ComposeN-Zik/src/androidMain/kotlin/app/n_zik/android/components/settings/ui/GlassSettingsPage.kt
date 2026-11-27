@@ -197,7 +197,12 @@ internal fun GlassSettingsContent(
             snapshotFlow { registry.targets[targetId] }.first { it != null }
         }
         val resolved = if (found != null) targetId else {
-            showMessage(unavailableMessage)
+            val requirement = option.requiredTintSource?.let { source ->
+                val label = context.getString(R.string.glass_effect_tint_source)
+                val choice = context.getString(source.labelRes())
+                context.getString(R.string.settings_target_prerequisite, "$label › $choice")
+            }
+            showMessage(requirement ?: unavailableMessage)
             option.fallback ?: run {
                 searchTargetHandled = true
                 return@LaunchedEffect

@@ -1304,3 +1304,7 @@ Menus:
 Menus:
 - fix(listen-together): show back in nested room menus
   - Expose explicit back navigation only when the room or participant sheet has a parent.
+
+Settings:
+- fix(settings): explain cover and Glass search prerequisites
+  - Focus the applicable prerequisites for hidden cover and custom tint controls.

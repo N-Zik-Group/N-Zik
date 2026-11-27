@@ -152,9 +152,16 @@ private fun settingsSearchPrerequisite(
     }
     if (requiredTheme != null) return SearchPrerequisite(ThemeSettingsTarget, listOf(requiredTheme.textId))
 
+    if (target == "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" &&
+        preferences.getEnum(playerTypeKey, PlayerType.Essential) != PlayerType.Modern
+    ) {
+        return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(PlayerType.Modern.textId))
+    }
     val requiredCoverVisibility = when (target) {
-        "appearance.cover_and_thumbnail.show_cover_thumbnail_animation" -> R.string.common_state_on
-        "appearance.cover_and_thumbnail.noblur" -> R.string.common_state_off
+        "appearance.cover_and_thumbnail.show_cover_thumbnail_animation",
+        "appearance.cover_and_thumbnail.player_thumbnail_size" -> R.string.common_state_on
+        "appearance.cover_and_thumbnail.noblur",
+        "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" -> R.string.common_state_off
         else -> null
     }
     if (requiredCoverVisibility != null) {
@@ -257,10 +264,6 @@ internal fun playerSettingsSearchFallback(
     val actionButtons = "appearance.player_action_bar.player_action_bar_buttons"
     val layout = PlayerTypeSettingsTarget
     return when (target) {
-        "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ->
-            ShowCoverSettingsTarget.takeUnless { playerType != PlayerType.Modern || isLandscape }
-                ?: layout.takeUnless { playerType == PlayerType.Modern || isLandscape }
-        "appearance.cover_and_thumbnail.player_thumbnail_size" -> ShowCoverSettingsTarget.takeIf { isLandscape }
         "appearance.cover_and_thumbnail.carousel", "appearance.cover_and_thumbnail.carouselsize" ->
             if (isLandscape) null else if (playerType != PlayerType.Modern) layout else actionButtons
         "appearance.cover_and_thumbnail.fadingedge", "appearance.cover_and_thumbnail.thumbnailpause",
