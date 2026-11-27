@@ -98,7 +98,8 @@ import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
 import app.n_zik.android.components.menu.song.SongMenuSnapshot
 import app.n_zik.android.components.song.GoToAlbum
 import app.n_zik.android.components.menu.song.localTrackNavigationActions
-import app.n_zik.android.components.menu.song.localTrackRadioAction
+import app.n_zik.android.components.menu.song.activeRadioAction
+import app.n_zik.android.components.menu.song.trackRadioAction
 import app.n_zik.android.utils.resolveTrackArtistName
 import app.n_zik.android.components.menu.song.rememberTrackMenuArtists
 import app.n_zik.android.components.menu.song.unlinkedTrackMenuArtistNames
@@ -207,7 +208,7 @@ class PlayerItemMenu private constructor(
             }
 
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
-            buttons.localTrackRadioAction(offlineMode)?.ListMenuItem()
+            buttons.activeRadioAction()?.ListMenuItem()
             for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -217,7 +218,7 @@ class PlayerItemMenu private constructor(
         } else {
             // Remote songs: 0=info, 1=waves, 2=rename, 3=author, 4=cover, 5=radio, 6=equalizer, 7=sleep, 8=fav, 9=playlist, 10=refetch, 11+=nav
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
-            if (!offlineMode) buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            buttons.trackRadioAction(offlineMode)?.ListMenuItem()
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
@@ -300,7 +301,7 @@ class PlayerItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
-            buttons.localTrackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
+            buttons.activeRadioAction()?.let { action -> item { action.GridMenuItem() } }
             for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
@@ -313,7 +314,7 @@ class PlayerItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
-            if (!offlineMode) buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            buttons.trackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 

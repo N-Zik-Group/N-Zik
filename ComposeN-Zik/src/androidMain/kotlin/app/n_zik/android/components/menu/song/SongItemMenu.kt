@@ -202,7 +202,7 @@ class SongItemMenu private constructor(
 
             // Section: Playback
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
-            buttons.localTrackRadioAction(offlineMode)?.ListMenuItem()
+            buttons.activeRadioAction()?.ListMenuItem()
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -212,7 +212,7 @@ class SongItemMenu private constructor(
             // Remote songs: renameSong(1), changeAuthor(2), changeCover(3)
             // Section: Playback
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
-            if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            buttons.trackRadioAction(offlineMode)?.ListMenuItem()
             buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
@@ -292,7 +292,7 @@ class SongItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
-            buttons.localTrackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
+            buttons.activeRadioAction()?.let { action -> item { action.GridMenuItem() } }
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
@@ -306,7 +306,7 @@ class SongItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
-            if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            buttons.trackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
             buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
@@ -753,5 +753,8 @@ internal const val LOCAL_PLAYBACK_COUNT = 5
 internal fun List<Button>.localTrackNavigationActions(): List<MenuIcon> =
     filterIsInstance<MenuIcon>().filter { it is GoToAlbum || it is GoToArtist }
 
-internal fun List<Button>.localTrackRadioAction(offlineMode: Boolean): Radio? =
-    if (offlineMode) null else filterIsInstance<Radio>().firstOrNull { it.active }
+internal fun List<Button>.trackRadioAction(offlineMode: Boolean): Radio? =
+    if (offlineMode) activeRadioAction() else firstNotNullOfOrNull { it as? Radio }
+
+internal fun List<Button>.activeRadioAction(): Radio? =
+    firstNotNullOfOrNull { (it as? Radio)?.takeIf { radio -> radio.active } }

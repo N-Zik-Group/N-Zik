@@ -427,7 +427,7 @@ class OnlineArtistItemMenu private constructor(
         }
 
         buttons = listOf(
-            playRadio.takeUnless { useSavedSongs },
+            playRadio.takeIf { !useSavedSongs || radioAction.active },
             shuffle,
             changeTitle,
             changeCover,

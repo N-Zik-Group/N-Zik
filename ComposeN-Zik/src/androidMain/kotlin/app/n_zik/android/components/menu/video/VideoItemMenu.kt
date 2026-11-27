@@ -101,6 +101,7 @@ import app.n_zik.android.components.menu.song.unlinkedTrackMenuArtistNames
 import app.n_zik.android.components.song.GoToArtist
 import app.n_zik.android.components.song.chooseTrackArtist
 import app.n_zik.android.components.song.rememberTrackAlbumLink
+import app.n_zik.android.components.menu.song.trackRadioAction
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
@@ -159,7 +160,7 @@ class VideoItemMenu private constructor(
 
         // Section: Playback
         MenuSectionTitle(stringResource(R.string.common_playback_section_title))
-        if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
+        buttons.trackRadioAction(offlineMode)?.ListMenuItem()
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
@@ -214,7 +215,7 @@ class VideoItemMenu private constructor(
         item(span = { GridItemSpan(maxLineSpan) }) {
             MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         }
-        if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+        buttons.trackRadioAction(offlineMode)?.let { action -> item { action.GridMenuItem() } }
         buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 

@@ -222,9 +222,14 @@ internal fun OnlineAlbumToolbar(
     actions: Map<ToolbarControl, Button>,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    radioActive: Boolean = false,
 ) {
     val offlineMode by OfflineMode.rememberEnabled()
-    val availableActions = if (offlineMode) actions - ToolbarControl.DOWNLOAD - ToolbarControl.RADIO else actions
+    val availableActions = when {
+        !offlineMode -> actions
+        radioActive -> actions - ToolbarControl.DOWNLOAD
+        else -> actions - ToolbarControl.DOWNLOAD - ToolbarControl.RADIO
+    }
     CollectionButtonToolbar(
         bookmark = bookmark,
         buttons = ToolbarSurface.ALBUM_ONLINE.ordered(availableActions),
@@ -823,6 +828,7 @@ fun AlbumDetails(
                                 },
                                 actions = actions,
                                 enabled = !initialSongsLoading,
+                                radioActive = radio.active,
                             )
                         }
 
