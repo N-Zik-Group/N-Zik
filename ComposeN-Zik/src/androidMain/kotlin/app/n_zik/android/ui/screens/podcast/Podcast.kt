@@ -119,6 +119,7 @@ import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.rememberSongRowArtistCredits
 import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
+import app.n_zik.android.components.playlist.launchLoadedPlaylistImport
 import app.n_zik.android.core.database.findMusicBookmarkByBrowseId
 import app.n_zik.android.components.rememberSongRowMetadata
 
@@ -218,17 +219,10 @@ fun Podcast(
     val importDialog = ImportPlaylistDialog(
         initialValue = podcastTitle.orEmpty(),
         onImport = { text ->
-            Database.asyncTransaction {
-                val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(owner)
-
-                podcastPage?.listEpisode
-                           ?.map { it.asPodcastMediaItem(browseId) }
-                           ?.let {
-                               mapIgnore( playlist, *it.toTypedArray() )
-                           }
-
-                Toaster.done()
-            }
+            val page = podcastLoadState.page
+            val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(page?.owner)
+            val songs = page?.listEpisode?.map { it.asPodcastMediaItem(browseId).asSong }
+            launchLoadedPlaylistImport(context, playlist, songs)
         }
     )
 

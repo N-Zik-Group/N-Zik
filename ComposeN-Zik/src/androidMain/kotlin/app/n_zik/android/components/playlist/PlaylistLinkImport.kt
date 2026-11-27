@@ -10,6 +10,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importSongsToPlaylist
 import kotlinx.coroutines.CancellationException
@@ -18,6 +19,38 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+
+/** Saves a copy of a complete collection already loaded by the detail screen. */
+internal fun launchLoadedPlaylistImport(
+    context: Context,
+    playlist: Playlist,
+    songs: List<Song>?,
+) {
+    val app = context.applicationContext
+    val owner = ProfileWorkOwner.capture(app) ?: return
+    if (songs == null) {
+        Toaster.e(R.string.playlist_import_failed)
+        return
+    }
+    if (songs.isEmpty()) {
+        Toaster.w(R.string.player_no_song_found)
+        return
+    }
+
+    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+        try {
+            val inserted = Database.awaitWriteBatch {
+                if (ProfileWorkOwner.isBound(app, owner)) mapMissingPlaylistSongs(playlist, songs) else 0
+            }
+            if (inserted > 0 && ProfileWorkOwner.isBound(app, owner)) Toaster.done()
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (error: Exception) {
+            Timber.tag("PlaylistLinkImport").e(error, "Could not save the loaded collection")
+            if (ProfileWorkOwner.isBound(app, owner)) Toaster.e(R.string.playlist_import_failed)
+        }
+    }
+}
 
 /** Imports only complete collections, into the profile that confirmed the link. */
 @androidx.annotation.OptIn(UnstableApi::class)

@@ -1416,3 +1416,7 @@ Settings:
 Library:
 - fix(library): include device media in the All tabs
   - Use current device membership and keep the existing sort and local detail routes.
+
+Menus:
+- fix(playlist): import complete playlists and podcasts
+  - Do not truncate collection imports by the current search or acknowledge an empty write.

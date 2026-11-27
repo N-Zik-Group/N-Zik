@@ -78,6 +78,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
+import app.n_zik.android.components.playlist.launchLoadedPlaylistImport
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.coil.resize
 import app.n_zik.android.compose.persist.persist
@@ -340,17 +341,10 @@ fun PlaylistSongList(
     val importPlaylistDialog = ImportPlaylistDialog(
         initialValue = playlistPage?.playlist?.title ?: ""
     ) { text ->
-        Database.asyncTransaction {
-            val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(playlistPage?.playlist?.channel)
-
-            filteredPageSongs
-                        ?.map( Innertube.SongItem::asMediaItem )
-                        ?.let {
-                            mapIgnore( playlist, *it.toTypedArray() )
-                        }
-
-            Toaster.done()
-        }
+        val page = playlistPage?.takeIf { it.songsContinuation == null }
+        val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(page?.playlist?.channel)
+        val songs = page?.let { playlistSongs.map { it.asMediaItem.asSong } }
+        launchLoadedPlaylistImport(context, playlist, songs)
     }
     importPlaylistDialog.RenderAboveMenu(menuState)
 
