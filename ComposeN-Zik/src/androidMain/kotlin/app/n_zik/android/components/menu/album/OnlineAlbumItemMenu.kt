@@ -5,7 +5,6 @@ import app.n_zik.android.core.sync.showFavoriteChange
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,8 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -50,7 +46,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 
 import app.n_zik.android.MODIFIED_PREFIX
-import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.components.navigation.LibraryBrowseKind
@@ -81,8 +76,6 @@ import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.withPlaybackAlbum
 import app.n_zik.android.utils.asSong
-import app.n_zik.android.utils.conditional
-import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.utils.getSyncDirection
 import app.n_zik.android.utils.isNetworkConnected
@@ -90,8 +83,6 @@ import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.secondary
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.syncPushAlbumBookmarkKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -131,7 +122,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.thumbnailShape
-import app.n_zik.android.typography
 import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -234,11 +224,11 @@ class OnlineAlbumItemMenu private constructor(
         authorsText: String?,
         year: String?,
         thumbnailUrl: String?,
+        loading: Boolean,
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
-        val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
         val showDisliked by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
 
         MenuMediaHeader(modifier.fillMaxWidth()) {
@@ -279,49 +269,13 @@ class OnlineAlbumItemMenu private constructor(
                 }
 
                 // Album's information
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    MenuMetadataText(
-                        text = cleanPrefix(title ?: ""),
-                        style = typography().xs.semiBold.copy(
-                            color = colorPalette().text,
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    )
-
-                    authorsText?.let { authors ->
-                        if (authors.isNotBlank()) {
-                            MenuMetadataText(
-                                text = cleanPrefix(authors),
-                                style = typography().xs.semiBold.secondary.copy(
-                                    color = colorPalette().textSecondary,
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier
-                                    .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                            )
-                        }
-                    }
-
-                    year?.let {
-                        if (it.isNotBlank()) {
-                            MenuMetadataText(
-                                text = it,
-                                style = typography().xxs.semiBold.secondary.copy(
-                                    color = colorPalette().textSecondary,
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
+                AlbumMenuMetadata(
+                    title = title,
+                    authors = authorsText,
+                    year = year,
+                    modifier = Modifier.weight(1f),
+                    loading = loading,
+                )
 
                 // Trailing content (Bookmark & Share)
                 val isBookmarked by remember(browseId) {
@@ -682,7 +636,8 @@ class OnlineAlbumItemMenu private constructor(
                 title = displayedAlbum.title,
                 authorsText = displayedAlbum.authorsText,
                 year = displayedAlbum.year,
-                thumbnailUrl = displayedAlbum.thumbnailUrl
+                thumbnailUrl = displayedAlbum.thumbnailUrl,
+                loading = fetchedSongs == null && !songsLoadFailed && !offlineMode && !isLocalAlbum,
             )
 
             if (menuStyle == MenuStyle.List)

@@ -5,6 +5,9 @@ import android.content.Context
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -13,6 +16,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -46,6 +50,7 @@ import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.glassEnabledKey
+import app.n_zik.android.components.menu.album.AlbumMenuMetadata
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.PlaylistTable
 
@@ -132,6 +137,65 @@ class LegacyDisplayPrefixRenderingTest {
     }
 
     @Test
+    fun `information shows a distinct navigable unknown album value when the title is empty`() {
+        mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
+        coEvery { loadVideoOrSongInfo(any(), any(), null) } returns VideoOrSongInfoResult(null, emptyList())
+        val albumLabel = context.getString(R.string.library_sort_album)
+        val unknownAlbum = context.getString(R.string.metadata_unknown_album)
+        showContent {
+            VideoOrSongInfoScreen(
+                videoId = "local:track-with-unnamed-album",
+                songTitle = "Track with unnamed album",
+                albumId = "album-id",
+                albumTitle = " ",
+                navController = mockk(relaxed = true),
+                onNavigateUp = {},
+                onClose = {},
+            )
+        }
+
+        waitForText(unknownAlbum)
+        composeRule.onAllNodesWithText(albumLabel, useUnmergedTree = true).assertCountEquals(1)
+        composeRule.onNodeWithText(unknownAlbum).assertHasClickAction()
+        composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_artist)).assertExists()
+    }
+
+    @Test
+    fun `album menu uses metadata fallbacks only after loading`() {
+        val loading = mutableStateOf(true)
+        val unknownArtist = context.getString(R.string.metadata_unknown_artist)
+        val unknownYear = context.getString(R.string.metadata_unknown_year)
+        showContent {
+            AlbumMenuMetadata(title = "Known album", authors = " ", year = null, loading = loading.value)
+        }
+
+        waitForText("Known album")
+        composeRule.onNodeWithText(unknownArtist).assertDoesNotExist()
+        composeRule.onNodeWithText(unknownYear).assertDoesNotExist()
+
+        composeRule.runOnIdle { loading.value = false }
+        waitForText(unknownYear)
+        composeRule.onNodeWithText(unknownArtist).assertExists()
+        composeRule.onNodeWithText("Known album").assertExists()
+    }
+
+    @Test
+    fun `album menu shows identical title and artist once and keeps the year`() {
+        showContent {
+            AlbumMenuMetadata(
+                title = "Grand Theft Auto VI",
+                authors = "modified:grand theft auto vi ",
+                year = "2027",
+            )
+        }
+
+        waitForText("2027")
+        composeRule.onAllNodesWithText("Grand Theft Auto VI", ignoreCase = true, useUnmergedTree = true)
+            .assertCountEquals(1)
+        composeRule.onNodeWithText(context.getString(R.string.metadata_unknown_artist)).assertDoesNotExist()
+    }
+
+    @Test
     fun `playlist selector hides stacked prefixes and preserves a marker inside a real name`() {
         val previews = listOf(
             PlaylistPreview(Playlist(id = 1, name = "pinned:modified:Favorites"), songCount = 1),
@@ -141,6 +205,10 @@ class LegacyDisplayPrefixRenderingTest {
         val table = mockk<PlaylistTable>()
         mockkObject(Database)
         every { Database.playlistTable } returns table
+        every { Database.songPlaylistMapTable } returns mockk {
+            every { observeDeviceTrackMappings() } returns flowOf(emptyList())
+            every { onDeviceOnlyPlaylistIds() } returns flowOf(emptyList())
+        }
         every { table.sortPreviews(any(), any()) } returns flowOf(previews)
         val navController = mockk<NavController>(relaxed = true)
         showContent {

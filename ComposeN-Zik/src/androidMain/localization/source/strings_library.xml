@@ -178,8 +178,12 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Title</string>
     <string name="metadata_track">Track</string>
+    <string name="metadata_unknown_album">Unknown Album</string>
     <string name="metadata_unknown_artist">Unknown Artist</string>
+    <string name="metadata_unknown_playlist">Unknown Playlist</string>
+    <string name="metadata_unknown_podcast">Unknown Podcast</string>
     <string name="metadata_unknown_title">Unknown Title</string>
+    <string name="metadata_unknown_year">Unknown Year</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Likes</string>
     <string name="metadata_video_subscribers_label">Subscribers</string>

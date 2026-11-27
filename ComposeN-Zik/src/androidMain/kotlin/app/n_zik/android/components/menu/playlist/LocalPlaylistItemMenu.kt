@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.menu.MenuMetadataText
+import app.n_zik.android.components.menu.distinctMenuMetadataSubtitle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
@@ -351,7 +352,7 @@ class LocalPlaylistItemMenu private constructor(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
-                    ownerName?.takeIf(String::isNotBlank)?.let { name ->
+                    distinctMenuMetadataSubtitle(playlistPreview.playlist.name, ownerName)?.let { name ->
                         MenuMetadataText(
                             text = name,
                             style = typography().xs.semiBold.secondary.copy(color = colorPalette().textSecondary),

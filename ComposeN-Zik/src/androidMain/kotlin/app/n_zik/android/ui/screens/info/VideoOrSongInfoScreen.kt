@@ -222,10 +222,8 @@ fun VideoOrSongInfoScreen(
                         onClick = playAction,
                     )
 
-                    Spacer(Modifier.height(8.dp))
-
-                    artists.forEachIndexed { index, (artistId, artistName) ->
-                        if (index > 0) Spacer(Modifier.height(8.dp))
+                    artists.forEach { (artistId, artistName) ->
+                        Spacer(Modifier.height(8.dp))
                         InfoRow(
                             label = stringResource(R.string.library_artists_title),
                             value = artistName,
@@ -245,12 +243,23 @@ fun VideoOrSongInfoScreen(
                         )
                     }
 
+                    if (artists.isEmpty() && !isLoading) {
+                        Spacer(Modifier.height(8.dp))
+                        InfoRow(
+                            label = stringResource(R.string.library_artists_title),
+                            value = stringResource(R.string.metadata_unknown_artist),
+                            showArrow = false,
+                        )
+                    }
+
                     // Album + Flèche
                     if (albumId.isNotBlank()) {
                         Spacer(Modifier.height(8.dp))
                         InfoRow(
                             label = stringResource(R.string.library_sort_album),
-                            value = albumTitle.takeIf { it.isNotBlank() } ?: stringResource(R.string.library_sort_album),
+                            value = if (!isLoading && cleanPrefix(albumTitle).isBlank()) {
+                                stringResource(R.string.metadata_unknown_album)
+                            } else albumTitle,
                             showArrow = navController != null,
                             onClick = {
                                 if (navController != null) {
@@ -345,6 +354,7 @@ private fun InfoRow(
     showArrow: Boolean,
     onClick: (() -> Unit)? = null
 ) {
+    val displayValue = cleanPrefix(value).takeIf(String::isNotBlank)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -352,20 +362,22 @@ private fun InfoRow(
             .clickable(enabled = showArrow && onClick != null) { onClick?.invoke() }
             .padding(vertical = 4.dp, horizontal = 4.dp)
     ) {
-        Text(
-            text = label,
-            style = typography().xs,
-            color = colorPalette().accent
-        )
+        if (displayValue != null) {
+            Text(
+                text = label,
+                style = typography().xs,
+                color = colorPalette().accent
+            )
+        }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = cleanPrefix(value),
+                text = displayValue ?: label,
                 style = typography().xs,
-                color = colorPalette().text,
+                color = if (displayValue == null) colorPalette().accent else colorPalette().text,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)

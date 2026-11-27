@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.menu.MenuMetadataText
+import app.n_zik.android.components.menu.distinctMenuMetadataSubtitle
+import app.n_zik.android.components.menu.menuMetadataValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -189,7 +191,7 @@ class OnlinePlaylistItemMenu private constructor(
     private fun PlaylistItemDisplay(
         sourceId: String,
         shareUrl: String?,
-        title: String?,
+        title: String,
         authorText: String?,
         thumbnailUrl: String?,
         songs: List<Song>?,
@@ -243,7 +245,7 @@ class OnlinePlaylistItemMenu private constructor(
                     modifier = Modifier.weight(1f)
                 ) {
                     MenuMetadataText(
-                        text = cleanPrefix(title ?: ""),
+                        text = title,
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
                         ),
@@ -253,16 +255,18 @@ class OnlinePlaylistItemMenu private constructor(
                             .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
 
-                    MenuMetadataText(
-                        text = cleanPrefix(authorText.orEmpty()),
-                        style = typography().xs.semiBold.secondary.copy(
-                            color = colorPalette().textSecondary,
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    )
+                    distinctMenuMetadataSubtitle(title, authorText)?.let { author ->
+                        MenuMetadataText(
+                            text = author,
+                            style = typography().xs.semiBold.secondary.copy(
+                                color = colorPalette().textSecondary,
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
+                        )
+                    }
                 }
 
                 // Trailing content (Bookmark & Share)
@@ -432,13 +436,19 @@ class OnlinePlaylistItemMenu private constructor(
         var partialSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
         var contentLoadFailed by remember(sourceId) { mutableStateOf(false) }
         
-        var displayTitle by remember(sourceId) { mutableStateOf((playlist.title ?: playlist.info?.name).takeUnless { sourceChanged }) }
+        var displayTitle by remember(sourceId) {
+            mutableStateOf(
+                (menuMetadataValue(playlist.title) ?: menuMetadataValue(playlist.info?.name)).takeUnless { sourceChanged }
+            )
+        }
         var displayAuthor by remember(sourceId) { mutableStateOf(playlist.channel?.name.takeUnless { sourceChanged }) }
         var ownerChannel by remember(sourceId) { mutableStateOf(playlist.channel.takeUnless { sourceChanged }) }
         var displayThumbnailUrl by remember(sourceId) { mutableStateOf(playlist.thumbnail?.url.takeUnless { sourceChanged }) }
 
-        val localPlaylistFlow = remember(sourceId) { Database.playlistTable.findMusicBookmarkByBrowseId(sourceId) }
-        val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+        val localPlaylist by key(sourceId) {
+            val localPlaylistFlow = remember { Database.playlistTable.findMusicBookmarkByBrowseId(sourceId) }
+            localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
+        }
         val savedPlaylistId = localPlaylist?.id?.takeIf { offlineMode || contentLoadFailed }
         val savedSongs by remember(savedPlaylistId) {
             savedPlaylistId?.let { Database.songPlaylistMapTable.allSongsOf(it) } ?: flowOf(null)
@@ -467,7 +477,7 @@ class OnlinePlaylistItemMenu private constructor(
                 )
                 currentCoroutineContext().ensureActive()
                 if (result != null) {
-                    displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
+                    displayTitle = menuMetadataValue(result.title) ?: displayTitle
                     displayAuthor = result.author.takeIf { !it.isNullOrBlank() } ?: displayAuthor
                     ownerChannel = result.channel ?: ownerChannel
                     displayThumbnailUrl = result.thumbnailUrl.takeIf { !it.isNullOrBlank() } ?: displayThumbnailUrl
@@ -632,7 +642,14 @@ class OnlinePlaylistItemMenu private constructor(
             PlaylistItemDisplay(
                 sourceId = sourceId,
                 shareUrl = shareUrl,
-                title = localPlaylist?.name ?: displayTitle,
+                title = onlinePlaylistMenuTitle(
+                    savedTitle = localPlaylist?.name,
+                    sourceTitle = displayTitle,
+                    loading = fetchedSongs == null && !contentUnavailable,
+                    fallbackTitle = stringResource(
+                        if (isPodcastSource) R.string.metadata_unknown_podcast else R.string.metadata_unknown_playlist
+                    ),
+                ),
                 authorText = localPlaylist?.displayAuthorName() ?: displayAuthor,
                 thumbnailUrl = displayThumbnailUrl,
                 songs = songs,
@@ -652,6 +669,15 @@ class OnlinePlaylistItemMenu private constructor(
     }
 
 }
+
+internal fun onlinePlaylistMenuTitle(
+    savedTitle: String?,
+    sourceTitle: String?,
+    loading: Boolean,
+    fallbackTitle: String,
+): String = menuMetadataValue(savedTitle)
+    ?: menuMetadataValue(sourceTitle)
+    ?: fallbackTitle.takeUnless { loading }.orEmpty()
 
 internal suspend fun Database.importOnlinePlaylist(playlist: Playlist, songs: List<Song>) {
     val importSongs = songs.distinctBy(Song::id)

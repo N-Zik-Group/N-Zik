@@ -9,6 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
+import app.n_zik.android.cleanPrefix
+
+internal fun menuMetadataValue(value: String?): String? =
+    value?.let(::cleanPrefix)?.trim()?.takeUnless { it.isBlank() || it.equals("null", ignoreCase = true) }
+
+internal fun distinctMenuMetadataSubtitle(title: String?, subtitle: String?): String? =
+    menuMetadataValue(subtitle)?.takeUnless { it.equals(menuMetadataValue(title), ignoreCase = true) }
 
 @Composable
 internal fun MenuMetadataText(

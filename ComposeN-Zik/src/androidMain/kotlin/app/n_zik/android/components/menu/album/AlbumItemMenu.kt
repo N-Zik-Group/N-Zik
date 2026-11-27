@@ -7,7 +7,6 @@ import app.n_zik.android.core.utils.Toaster
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.text.BasicText
-import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -34,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
@@ -46,7 +42,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import app.n_zik.android.MODIFIED_PREFIX
-import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.NavRoutes
@@ -67,8 +62,6 @@ import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.withPlaybackAlbum
-import app.n_zik.android.utils.conditional
-import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.excludeDislikedAlbumsKey
 import app.n_zik.android.utils.getSyncDirection
 import app.n_zik.android.utils.isNetworkConnected
@@ -76,8 +69,6 @@ import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.rememberPreference
-import app.n_zik.android.utils.secondary
-import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.syncPushAlbumBookmarkKey
 import app.n_zik.android.R
 import app.n_zik.android.playback.services.isLocal
@@ -115,7 +106,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.thumbnailShape
-import app.n_zik.android.typography
 import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.components.menu.withMenuGuestLock
 import app.n_zik.android.components.menu.collectionQueueActions
@@ -255,7 +245,6 @@ class AlbumItemMenu private constructor(
     ) {
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
-        val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
         val showDisliked by rememberPreference(excludeDislikedAlbumsKey, DislikeMode.Enabled)
 
         MenuMediaHeader(modifier.fillMaxWidth()) {
@@ -296,45 +285,12 @@ class AlbumItemMenu private constructor(
                 }
 
                 // Album's information
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    MenuMetadataText(
-                        text = cleanPrefix(album.title ?: ""),
-                        style = typography().xs.semiBold.copy(
-                            color = colorPalette().text,
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                    )
-
-                    album.authorsText?.let {
-                        MenuMetadataText(
-                            text = cleanPrefix(it),
-                            style = typography().xs.semiBold.secondary.copy(
-                                color = colorPalette().textSecondary,
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
-                        )
-                    }
-
-                    album.year?.let {
-                        MenuMetadataText(
-                            text = it,
-                            style = typography().xxs.semiBold.secondary.copy(
-                                color = colorPalette().textSecondary,
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                AlbumMenuMetadata(
+                    title = album.title,
+                    authors = album.authorsText,
+                    year = album.year,
+                    modifier = Modifier.weight(1f),
+                )
 
                 // Trailing content (Bookmark & Share)
                 val isBookmarked by remember(album.id) {

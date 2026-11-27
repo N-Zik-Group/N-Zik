@@ -1968,3 +1968,7 @@ Player / Appearance:
 Theme Store:
 - fix(theme-store): enforce manifest and feature compatibility
   - Gate local and online creation and application on the manifest and appearance requirements, while preserving valid Rescue backups.
+
+Menus / Information:
+- fix(menu): identify missing media metadata
+  - Use translated fallbacks for missing album and collection metadata, while displaying identical title/author text once and keeping navigation.
