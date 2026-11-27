@@ -31,6 +31,8 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.core.backup.BackupManager
 import app.n_zik.android.core.backup.DatabaseRestoreJournal
+import app.n_zik.android.core.rewind.scheduleRewindWork
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
 import app.n_zik.android.components.glass.GlassQuality
 import app.n_zik.android.components.glass.GlassStore
@@ -41,8 +43,11 @@ import app.n_zik.android.components.glass.glassProfileDefaults
 import app.n_zik.android.components.settings.general.applyPlaybackDefaults
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.persistentQueueKey
+import app.n_zik.android.utils.exoPlayerDiskCacheMaxSizeKey
+import app.n_zik.android.enums.ExoPlayerDiskCacheMaxSize
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 import kotlinx.coroutines.test.runTest
 import io.mockk.every
@@ -108,6 +113,9 @@ class AllSettingsDefaultsTest {
         every { any<Context>().encryptedPreferences } returns secure
         mockkObject(BackupManager)
         every { BackupManager.scheduleBackup(any(), BackupManager.INTERVAL_NONE) } just Runs
+        every { BackupManager.scheduleBackup(any(), BackupManager.INTERVAL_NONE, any()) } just Runs
+        mockkStatic(::scheduleRewindWork)
+        every { scheduleRewindWork(any(), any()) } just Runs
     }
 
     @After fun tearDown() {
@@ -227,6 +235,50 @@ class AllSettingsDefaultsTest {
         compose.waitForIdle()
         assertEquals("cookie", secure.getString("ytCookie", null))
         assertEquals("token", secure.getString(discordPersonalAccessTokenKey, null))
+    }
+
+    @Test fun `data reset reports the streaming restart after its subdialog is closed`() {
+        mockkObject(Toaster)
+        every { Toaster.done() } just Runs
+        val restartRequests = AtomicInteger()
+        context.preferences.edit()
+            .putString(exoPlayerDiskCacheMaxSizeKey, ExoPlayerDiskCacheMaxSize.`1GB`.name)
+            .commit()
+        compose.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides Appearance(DefaultDarkColorPalette, Typography.fallback, CircleShape, CircleShape, CircleShape),
+            ) {
+                SettingsResetCard(
+                    scopes = (0..7).toList(),
+                    target = "data.settings_reset.settings_reset",
+                    onRestartRequired = { restartRequests.incrementAndGet() },
+                    resetContent = {},
+                )
+            }
+        }
+        val lockHeld = CountDownLatch(1)
+        val releaseLock = CountDownLatch(1)
+        val storageWorker = thread {
+            DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                lockHeld.countDown()
+                releaseLock.await(10, TimeUnit.SECONDS)
+            }
+        }
+        try {
+            assertTrue(lockHeld.await(5, TimeUnit.SECONDS))
+            compose.onNodeWithTag("settings.reset.data.action").performClick()
+            compose.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
+            compose.onNodeWithTag("settings.reset.data.action").assertDoesNotExist()
+            assertEquals(ExoPlayerDiskCacheMaxSize.`1GB`.name, context.preferences.getString(exoPlayerDiskCacheMaxSizeKey, null))
+        } finally {
+            releaseLock.countDown()
+            storageWorker.join()
+        }
+        compose.waitUntil(10_000) {
+            context.preferences.getString(exoPlayerDiskCacheMaxSizeKey, null) == ExoPlayerDiskCacheMaxSize.`2GB`.name
+        }
+        compose.waitUntil(10_000) { restartRequests.get() == 1 }
     }
 
     @Test fun `global reset covers every concrete reverse audited control and scoped playlist pattern`() = runTest {

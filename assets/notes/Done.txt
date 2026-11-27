@@ -1856,3 +1856,7 @@ Playlists:
 Settings / Accounts:
 - fix(settings): allow disconnecting saved accounts while disabled
   - Keep session removal accessible without re-enabling integrations or discarding other saved identities.
+
+Settings:
+- fix(settings): retain reset results and route reset search cards
+  - Keep the Data reset result after the dialog closes and stop search feedback once the requested dialog is open.

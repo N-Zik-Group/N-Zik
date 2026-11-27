@@ -33,6 +33,9 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.glass.rememberGlassStore
 import app.n_zik.android.components.settings.network.applyDownloadDefaults
 import app.n_zik.android.components.settings.data.hasPendingDataResetCacheMove
+import app.n_zik.android.components.settings.data.DataResetCard
+import app.n_zik.android.components.settings.data.DataResetAction
+import app.n_zik.android.components.settings.data.rememberDataResetAction
 import app.n_zik.android.components.settings.data.readStorageCacheLimits
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
@@ -43,6 +46,7 @@ import kotlinx.coroutines.launch
 private val resetScopeNames = listOf("general", "ui", "appearance", "ai", "data", "accounts", "network", "other")
 private const val GLASS_RESET_SCOPE = -1
 private const val ALL_RESET_SCOPE = -2
+private const val DATA_RESET_SCOPE = 4
 internal const val DOWNLOAD_RESET_SCOPE = -3
 internal const val LISTEN_TOGETHER_RESET_SCOPE = -4
 internal const val PLAYBACK_RESET_SCOPE = -5
@@ -96,10 +100,12 @@ internal fun SettingsResetCard(
     target: String,
     onRestartRequired: () -> Unit = {},
     allowAllSettings: Boolean = true,
+    dataResetAction: DataResetAction? = null,
     resetContent: @Composable (Int) -> Unit,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
+    val dataReset = dataResetAction ?: rememberDataResetAction(onPlayerRestartRequired = onRestartRequired)
     var resetting by remember { mutableStateOf(false) }
     val availableScopes = scopes.flatMap { if (it == 1) listOf(it, GLASS_RESET_SCOPE) else listOf(it) }
     val initialScope = resetScopeForTarget(target)?.takeIf { it in availableScopes || (allowAllSettings && it == ALL_RESET_SCOPE) }
@@ -222,6 +228,8 @@ internal fun SettingsResetCard(
                         style = typography().xs,
                         modifier = Modifier.testTag("settings.reset.all.confirmation"),
                     )
+                } else if (scope == DATA_RESET_SCOPE) {
+                    DataResetCard(dataReset)
                 } else if (scope == DOWNLOAD_RESET_SCOPE) {
                     OtherSettingsEntry(
                         title = stringResource(R.string.settings_reset),

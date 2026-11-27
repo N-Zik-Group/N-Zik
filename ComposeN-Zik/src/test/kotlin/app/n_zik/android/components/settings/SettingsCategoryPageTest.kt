@@ -82,6 +82,7 @@ import app.n_zik.android.components.settings.common.SettingsCards
 import app.n_zik.android.components.settings.common.cardsForCategory
 import app.n_zik.android.components.settings.common.categoryId
 import app.n_zik.android.components.settings.common.destinationRoute
+import app.n_zik.android.components.settings.common.searchSettingsCardResults
 import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.components.settings.common.parentCard
 import app.n_zik.android.components.settings.common.SettingsResetCard
@@ -876,6 +877,37 @@ class SettingsCategoryPageTest {
         composeRule.onNodeWithTag("settings.reset.card", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("settings.target.card.0.settings_reset", useUnmergedTree = true).assertDoesNotExist()
         assertEquals("opening a reset search result must never apply defaults", before, context.preferences.all)
+    }
+
+    @Test fun `a reset card result opens the Data scope without unavailable feedback`() {
+        val before = context.preferences.all.toMap()
+        val query = context.getString(R.string.settings_group_restore_defaults)
+        val card = searchSettingsCardResults(context, query).single { it.tab == 4 && it.titleRes == R.string.settings_reset }
+        val messages = mutableListOf<String>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsSearchMessage provides { messages.add(it) },
+            ) {
+                SettingsCategoryPage(
+                    categoryId = card.categoryId(),
+                    navController = mockk(relaxed = true),
+                    target = settingsCardTargetId(context, card.tab, card.titleRes),
+                )
+            }
+        }
+        val heading = composeRule.onNode(
+            hasTestTag("dialogFrameTitle") and hasText(context.getString(R.string.settings_data_title)),
+            useUnmergedTree = true,
+        )
+        pumpUntil("the Data reset dialog is visible") {
+            runCatching { heading.assertIsDisplayed() }.isSuccess
+        }
+        settleSearch()
+        assertTrue(messages.isEmpty())
+        assertEquals(before, context.preferences.all)
     }
 
     @Test fun `General reset keeps one restart action after leaving its scope`() {

@@ -84,6 +84,7 @@ import app.n_zik.android.components.settings.appearance.AppearanceSettingsConten
 import app.n_zik.android.components.settings.appearance.appearanceBehaviorSearchFallback
 import app.n_zik.android.components.settings.data.DataSettingsContent
 import app.n_zik.android.components.settings.data.isStorageCleanupSearchTarget
+import app.n_zik.android.components.settings.data.rememberDataResetAction
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.core.navigation.LocalPageNavigationEntry
@@ -506,6 +507,9 @@ fun SettingsCategoryPage(
         mutableStateOf(TextFieldValue(""))
     }
     var resetRestartRequired by rememberSaveable(categoryId) { mutableStateOf(false) }
+    val dataReset = rememberDataResetAction(
+        onPlayerRestartRequired = { resetRestartRequired = true },
+    )
     var searchTargetHandled by rememberSaveable(categoryId, target, parentTarget) { mutableStateOf(false) }
     val search = Search(initialVisible = true, inputState = searchInput)
     val contentSearch = Search(initialVisible = false)
@@ -777,7 +781,8 @@ fun SettingsCategoryPage(
         if (requestedTarget == SettingsResetChooserTarget || requestedTarget == SettingsResetAllTarget ||
             requestedTarget == SettingsResetGlassTarget || requestedTarget == SettingsResetDownloadsTarget ||
             requestedTarget == SettingsResetListenTogetherTarget || requestedTarget == SettingsResetPlaybackTarget ||
-            requestedTarget == SettingsResetPrivacyTarget
+            requestedTarget == SettingsResetPrivacyTarget ||
+            (requestedTarget.startsWith("card.") && resetScopeForTarget(requestedTarget)?.let(resetScopes::contains) == true)
         ) {
             searchTargetHandled = true
             return@LaunchedEffect
@@ -1024,6 +1029,7 @@ fun SettingsCategoryPage(
                                     target,
                                     onRestartRequired = { resetRestartRequired = true },
                                     allowAllSettings = categoryId == "system",
+                                    dataResetAction = dataReset,
                                 ) { tab ->
                                     CompositionLocalProvider(
                                         LocalSettingsCardSlots provides null,
