@@ -184,6 +184,7 @@ internal fun GlassSettingsContent(
     val registry = remember { SettingsTargetRegistry() }
     val scroll = rememberLazyListState()
     val config = rememberGlassSettings(GlassScope.Shared)
+    val hasTint = glassTint(config).isSpecified
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
     LaunchedEffect(requestedTarget) {
@@ -213,7 +214,13 @@ internal fun GlassSettingsContent(
                 }
                 else -> null
             }
-            showMessage(requirement?.let { context.getString(R.string.settings_target_prerequisite, it) } ?: unavailableMessage)
+            val message = when {
+                requirement != null -> context.getString(R.string.settings_target_prerequisite, requirement)
+                targetId == "glass.tintStrength" && !hasTint ->
+                    context.getString(R.string.glass_effect_tint_strength_requires_color)
+                else -> unavailableMessage
+            }
+            showMessage(message)
             option.fallback ?: run {
                 searchTargetHandled = true
                 return@LaunchedEffect

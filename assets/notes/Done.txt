@@ -1492,3 +1492,7 @@ Settings:
 Settings:
 - fix(settings): explain account reset behavior
   - State that account features are disabled while saved credentials are preserved.
+
+Settings:
+- fix(glass): explain tint strength prerequisites
+  - Explain why tint strength is unavailable and point to the source chooser.

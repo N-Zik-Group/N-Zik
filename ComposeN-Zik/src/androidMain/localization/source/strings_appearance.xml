@@ -135,6 +135,7 @@
     <string name="glass_effect_tint_source">Glass color source</string>
     <string name="glass_effect_tint_source_custom">Custom</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Choose a Glass color source that applies a tint to adjust tint strength.</string>
     <string name="glass_effect_title" translatable="false">Glass</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
     <string name="glass_effect_where_action_buttons">Action buttons</string>
