@@ -1396,3 +1396,7 @@ Settings:
 Menus:
 - fix(playlists): respect library sorting and device availability
   - Flatten the picker, align filters with Home, omit locked Rewind destinations, and preserve device navigation.
+
+Menus:
+- fix(menu): place nested back actions on the leading edge
+  - Use left-hand back actions and keep sheet titles centered.

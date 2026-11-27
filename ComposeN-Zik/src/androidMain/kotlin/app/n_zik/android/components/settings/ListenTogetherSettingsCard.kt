@@ -360,7 +360,7 @@ internal fun ServerChooserSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_choose_server),
-                headerTrailing = managementBackButton(onDismiss),
+                headerLeading = managementBackButton(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     ListenTogetherServers.servers.forEach { server ->
@@ -491,7 +491,7 @@ internal fun UsernameSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_username),
-                headerTrailing = managementBackButton(onDismiss),
+                headerLeading = managementBackButton(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(

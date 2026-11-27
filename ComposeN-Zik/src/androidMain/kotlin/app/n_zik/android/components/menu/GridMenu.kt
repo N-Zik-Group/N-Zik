@@ -70,11 +70,12 @@ object GridMenu {
         headerContent: (@Composable ColumnScope.() -> Unit)? = null,
         bodyHeader: (@Composable ColumnScope.() -> Unit)? = null,
         emptyBody: (@Composable () -> Unit)? = null,
+        headerLeading: (@Composable RowScope.() -> Unit)? = null,
         content: LazyGridScope.() -> Unit,
     ) {
         val screenHeight = LocalConfiguration.current.screenHeightDp
-        val hasHeader = showDragHandle || title != null || headerTrailing != null || headerContent != null
-        val trailing = menuHeaderTrailing(headerTrailing, hasHeader && headerContent == null)
+        val hasHeader = showDragHandle || title != null || headerLeading != null || headerTrailing != null || headerContent != null
+        val leading = menuHeaderLeading(headerLeading, hasHeader && headerContent == null)
         val glass = rememberGlassSettings()
         val useGlass = glass.usesGlassMaterial(GlassArea.Menus)
         val ownsSurface = drawSurface && !LocalMenuSheetSurface.current
@@ -120,11 +121,11 @@ object GridMenu {
                     if (showDragHandle) {
                         MenuSheetDragHandle(
                             color = colorPalette().text,
-                            centeredVertically = title == null && trailing == null && headerContent == null,
+                            centeredVertically = title == null && leading == null && headerTrailing == null && headerContent == null,
                         )
                     }
 
-                    MenuHeaderTitle(title, trailing)
+                    MenuHeaderTitle(title, leading, headerTrailing)
                     headerContent?.invoke(this)
 
                     GlassHorizontalSeparator(Modifier.height(1.dp))

@@ -333,12 +333,12 @@ internal fun UserActionMenu(
         },
     )
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title, headerTrailing = backButton) {
+        ListMenu.Menu(title = title, headerLeading = backButton) {
             header()
             entries.forEach { it() }
         }
     } else {
-        GridMenu.Menu(title = title, headerTrailing = backButton) {
+        GridMenu.Menu(title = title, headerLeading = backButton) {
             item(span = { GridItemSpan(maxLineSpan) }) { header() }
             items(entries) { it() }
         }

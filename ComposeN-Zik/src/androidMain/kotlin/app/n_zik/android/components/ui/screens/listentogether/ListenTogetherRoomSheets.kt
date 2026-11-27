@@ -87,7 +87,7 @@ internal fun CreateRoomSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_create_room),
-                headerTrailing = managementBackButton(onDismiss),
+                headerLeading = managementBackButton(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(
@@ -195,7 +195,7 @@ internal fun JoinRoomSheet(
         ) {
             ListMenu.Menu(
                 title = stringResource(R.string.listen_together_join_room),
-                headerTrailing = managementBackButton(onDismiss),
+                headerLeading = managementBackButton(onDismiss),
             ) {
                 Column(modifier = Modifier.padding(vertical = 16.dp)) {
                     TextField(

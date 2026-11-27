@@ -98,13 +98,13 @@ fun ListenTogetherLogsMenu(
         }
     }
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
+        ListMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
             if (logs.isEmpty()) empty() else logs.forEach { LogEntryRow(it) }
             copyEntry()
             clearEntry()
         }
     } else {
-        GridMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
+        GridMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
             if (logs.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
             else items(logs, span = { GridItemSpan(maxLineSpan) }) { LogEntryRow(it) }
             item { copyEntry() }
@@ -220,11 +220,11 @@ fun ListenTogetherBlockedUsersMenu(
     }
 
     if (style == MenuStyle.List) {
-        ListMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
+        ListMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
             if (blockedUsernames.isEmpty()) empty() else blockedUsernames.forEach { entry(it) }
         }
     } else {
-        GridMenu.Menu(title = title, headerTrailing = managementBackButton(onBack)) {
+        GridMenu.Menu(title = title, headerLeading = managementBackButton(onBack)) {
             if (blockedUsernames.isEmpty()) item(span = { GridItemSpan(maxLineSpan) }) { empty() }
             else items(blockedUsernames.toList(), key = { it }) { entry(it) }
         }
