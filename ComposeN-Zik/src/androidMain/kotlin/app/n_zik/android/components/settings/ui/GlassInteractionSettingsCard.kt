@@ -19,6 +19,7 @@ import app.n_zik.android.components.glass.glassJellyIntensityKey
 import app.n_zik.android.components.glass.glassRippleEnabledKey
 import app.n_zik.android.components.glass.glassRippleIntensityKey
 import app.n_zik.android.components.glass.glassRippleSizeKey
+import app.n_zik.android.components.glass.glassProfileDefaults
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
@@ -33,6 +34,7 @@ internal fun GlassInteractionSettingsCard(
     target: String = "",
     showGroupHeading: Boolean = false,
 ) {
+    val defaults = glassProfileDefaults(config.quality)
     SettingsSectionCard(
         title = stringResource(R.string.glass_effect_group_interactions),
         groupTitleRes = R.string.settings_group_glass_feedback.takeIf { showGroupHeading },
@@ -49,11 +51,11 @@ internal fun GlassInteractionSettingsCard(
             AnimatedVisibility(config.rippleEnabled || target in setOf("glass.ripple.intensity", "glass.ripple.size"), enter = settingsEntryEnter, exit = settingsEntryExit) {
                 Column {
                     InteractionSlider(R.string.glass_effect_ripple_intensity, R.string.glass_effect_ripple_intensity_description,
-                        config.rippleIntensity, 0f..1f, "ripple.intensity", R.drawable.eye,
+                        config.rippleIntensity, 0f..1f, defaults.rippleIntensity, "ripple.intensity", R.drawable.eye,
                         prerequisite = R.string.glass_effect_ripple_enabled.takeUnless { config.rippleEnabled },
                     ) { store.setFloat(glassRippleIntensityKey, it) }
                     InteractionSlider(R.string.glass_effect_ripple_size, R.string.glass_effect_ripple_size_description,
-                        config.rippleSize, .5f..2f, "ripple.size", R.drawable.resize,
+                        config.rippleSize, .5f..2f, defaults.rippleSize, "ripple.size", R.drawable.resize,
                         prerequisite = R.string.glass_effect_ripple_enabled.takeUnless { config.rippleEnabled },
                     ) { store.setFloat(glassRippleSizeKey, it) }
                 }
@@ -68,7 +70,7 @@ internal fun GlassInteractionSettingsCard(
             )
             AnimatedVisibility(config.jellyEnabled || target == "glass.jelly.intensity", enter = settingsEntryEnter, exit = settingsEntryExit) {
                 InteractionSlider(R.string.glass_effect_jelly_intensity, R.string.glass_effect_jelly_intensity_description,
-                    config.jellyIntensity, 0f..1f, "jelly.intensity", R.drawable.slow_motion,
+                    config.jellyIntensity, 0f..1f, defaults.jellyIntensity, "jelly.intensity", R.drawable.slow_motion,
                     prerequisite = R.string.glass_effect_jelly_enabled.takeUnless { config.jellyEnabled },
                 ) { store.setFloat(glassJellyIntensityKey, it) }
             }
@@ -83,6 +85,7 @@ private fun InteractionSlider(
     @StringRes description: Int,
     value: Float,
     range: ClosedFloatingPointRange<Float>,
+    defaultValue: Float,
     tag: String,
     @DrawableRes icon: Int,
     @StringRes prerequisite: Int?,
@@ -96,7 +99,7 @@ private fun InteractionSlider(
         title = stringResource(title), text = text,
         state = value, range = range, icon = icon,
         isEnabled = prerequisite == null,
-        stepSize = 0f, toDisplay = { percentLabel((it * 100).roundToInt()) },
+        stepSize = 0f, defaultValue = defaultValue, toDisplay = { percentLabel((it * 100).roundToInt()) },
         inputScale = 100f, onSlide = onChange,
         modifier = Modifier.testTag("settings.glass.$tag").settingsSearchTarget("glass.$tag"),
     )

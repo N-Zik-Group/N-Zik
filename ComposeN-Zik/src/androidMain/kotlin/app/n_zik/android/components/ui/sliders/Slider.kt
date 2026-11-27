@@ -41,7 +41,7 @@ fun Slider(
     range: ClosedFloatingPointRange<Float> = 0f..100f,
     stepSize: Float = 0f,
     defaultValue: Float? = null,
-    drawValuePoints: Boolean = false,
+    drawValuePoints: Boolean = defaultValue != null,
     modifier: Modifier = Modifier,
     snapToSteps: Boolean = false,
     drawStepPoints: Boolean = true
@@ -149,7 +149,8 @@ fun Slider(
                     )
                 }
                 
-                if (actualSteps > 0 && drawStepPoints) {
+                val showStepPoints = actualSteps > 0 && drawStepPoints
+                if (showStepPoints || drawValuePoints && defaultValue != null) {
                     val accentColor = colorPalette().accent
                     val passedColor = colorPalette().text.copy(alpha = 0.5f)
                     
@@ -158,65 +159,26 @@ fun Slider(
                             (state - range.start) / (range.endInclusive - range.start)
                         } else 0f
                         
-                        val trackWidth = size.width
-                        val numIntervals = actualSteps + 1
-                        
-                        val trackStart = 0f
-                        val activeWidth = trackWidth
-                        
-                        var drawStep = 1
-                        if (numIntervals > 10) {
-                            var bestDivisor = -1
-                            for (step in 2..numIntervals) {
-                                val count = numIntervals / step
-                                if (numIntervals % step == 0 && count in 4..10) {
-                                    bestDivisor = step
-                                    break
-                                }
-                            }
-                            drawStep = if (bestDivisor != -1) bestDivisor else (numIntervals / 8.0).roundToInt().coerceAtLeast(1)
-                        }
-                        
-                        for (i in 0..numIntervals) {
-                            if (i % drawStep == 0 || i == numIntervals) {
-                                val fraction = i.toFloat() / numIntervals
-                                val x = trackStart + (fraction * activeWidth)
-                                val isPassed = fraction <= currentFraction
-                                drawCircle(
-                                    color = if (isPassed) passedColor else accentColor,
-                                    radius = 2.dp.toPx(),
-                                    center = Offset(x = x, y = size.height / 2)
-                                )
-                            }
-                        }
-                    }
-                } else if (drawValuePoints) {
-                    val accentColor = colorPalette().accent
-                    val passedColor = colorPalette().text.copy(alpha = 0.5f)
-                    
-                    Canvas(modifier = Modifier.fillMaxWidth().height(4.dp)) {
-                        val currentFraction = if (range.endInclusive > range.start) {
-                            (state - range.start) / (range.endInclusive - range.start)
-                        } else 0f
-                        
-                        val trackWidth = size.width
-                        val trackStart = 0f
-                        val activeWidth = trackWidth
-                        
-                        val pointsToDraw = mutableSetOf<Float>()
-                        if (defaultValue != null) {
-                            val defaultFraction = ((defaultValue - range.start) / (range.endInclusive - range.start)).coerceIn(0f, 1f)
-                            pointsToDraw.add(defaultFraction)
-                        }
-                        
-                        pointsToDraw.forEach { fraction ->
-                            val x = trackStart + (fraction * activeWidth)
-                            val isPassed = fraction <= currentFraction
+                        fun drawPoint(fraction: Float, radius: Float) {
                             drawCircle(
-                                color = if (isPassed) passedColor else accentColor,
-                                radius = 2.dp.toPx(),
-                                center = Offset(x = x, y = size.height / 2)
+                                color = if (fraction <= currentFraction) passedColor else accentColor,
+                                radius = radius.dp.toPx(),
+                                center = Offset(x = fraction * size.width, y = size.height / 2),
                             )
+                        }
+
+                        if (showStepPoints) {
+                            val intervals = actualSteps + 1
+                            val stride = if (intervals <= 10) 1 else {
+                                (2..intervals).firstOrNull { intervals % it == 0 && intervals / it in 4..10 }
+                                    ?: (intervals / 8.0).roundToInt().coerceAtLeast(1)
+                            }
+                            for (i in 0..intervals step stride) drawPoint(i.toFloat() / intervals, 2f)
+                            if (intervals % stride != 0) drawPoint(1f, 2f)
+                        }
+                        if (drawValuePoints && defaultValue != null && rangeSize > 0f) {
+                            val defaultFraction = ((defaultValue - range.start) / rangeSize).coerceIn(0f, 1f)
+                            drawPoint(defaultFraction, 3f)
                         }
                     }
                 }

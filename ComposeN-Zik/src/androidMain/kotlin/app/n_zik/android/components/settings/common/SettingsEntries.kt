@@ -489,7 +489,7 @@ fun SliderSettingsEntry(
     toDisplay: @Composable (Float) -> String = { it.toInt().toString() },
     stepSize: Float = 0.1f,
     defaultValue: Float? = null,
-    drawValuePoints: Boolean = false,
+    drawValuePoints: Boolean = defaultValue != null,
     isEnabled: Boolean = true,
     usePadding: Boolean = true,
     icon: Int? = null,

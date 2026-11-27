@@ -172,6 +172,7 @@ internal fun AccountsSyncOverviewCard(isSyncEnabled: Boolean, disabledReason: In
                         state = syncCooldown.toFloat(),
                         range = 5f..120f,
                         stepSize = 15f,
+                        defaultValue = 30f,
                         onSlide = { syncCooldown = it.toInt() },
                         toDisplay = { stringResource(R.string.common_duration_minutes_short, it.toInt()) },
                         isIntegerOnly = true,
