@@ -95,6 +95,7 @@ object GridMenu {
         iconHasOwnBackground: Boolean = false,
         selected: Boolean = false,
         onLongClickLabel: String? = null,
+        titleMaxLines: Int = 1,
         trailingContent: @Composable () -> Unit = {}
     ) {
         val alpha = if (enabled) 1f else 0.5f
@@ -140,11 +141,11 @@ object GridMenu {
                 color = colorPalette().text.copy(alpha = alpha),
                 style = typography().xs.semiBold,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
+                maxLines = titleMaxLines,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 4.dp)
-                    .conditional( !isScrollingTextDisabled ) {
+                    .conditional(titleMaxLines == 1 && !isScrollingTextDisabled) {
                         basicMarquee( iterations = Int.MAX_VALUE )
                     }
             )

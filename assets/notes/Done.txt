@@ -1932,3 +1932,7 @@ Settings / Listen Together:
 Menus / Navigation:
 - fix(menu): deduplicate fallback credits and keep Stop Radio available
   - Deduplicate unlinked artist actions and preserve the Stop Radio control on local tracks.
+
+Menus / Playback:
+- fix(menu): align Customize sliders and values
+  - Align the tracks and values in List and keep Grid labels readable.

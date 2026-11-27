@@ -118,20 +118,33 @@ class PlaybackSettingsMenuDefaultsTest {
     }
 
     @Test
+    fun `list slider tracks align across labels and value lengths`() {
+        context.preferences.edit().putFloat(playbackSpeedKey, 10f).putFloat(playbackVolumeKey, .2f).commit()
+        show(MenuStyle.List)
+
+        fun sliderBounds(label: Int) = compose.onNode(
+            hasContentDescription(context.getString(label)) and
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo),
+            useUnmergedTree = true,
+        ).performScrollTo().fetchSemanticsNode().boundsInRoot
+
+        val speed = sliderBounds(R.string.player_controls_speed_title)
+        val pitch = sliderBounds(R.string.player_controls_pitch_title)
+        val volume = sliderBounds(R.string.player_controls_playback_volume_title)
+        assertTrue(speed.width > 0f)
+        assertEquals(speed.left, pitch.left, .5f)
+        assertEquals(speed.left, volume.left, .5f)
+        assertEquals(speed.right, pitch.right, .5f)
+        assertEquals(speed.right, volume.right, .5f)
+    }
+
+    @Test
     fun `list long press resets gain to five and preserves volume boost`() {
         seedCustomGain()
         show(MenuStyle.List)
-        val titleBounds = compose.onNodeWithText(title).performScrollTo().fetchSemanticsNode().boundsInRoot
-        // Rows without semantics are flattened into the menu column. Locate the icon
-        // beside this title by geometry instead of matching their shared parent.
         compose.onNode(
-            SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick) and
-                SemanticsMatcher("reset icon beside the loudness label") { node ->
-                    node.boundsInRoot.right <= titleBounds.left &&
-                        kotlin.math.abs(node.boundsInRoot.center.y - titleBounds.center.y) < 2f
-                },
-            useUnmergedTree = true,
-        ).performTouchInput { longClick() }
+            hasContentDescription(title) and SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick),
+        ).performScrollTo().performTouchInput { longClick() }
         assertReset()
     }
 
@@ -217,15 +230,9 @@ class PlaybackSettingsMenuDefaultsTest {
         seedCustomGain()
         context.preferences.edit().putBoolean(volumeNormalizationKey, false).commit()
         show(MenuStyle.List)
-        val titleBounds = compose.onNodeWithText(title).performScrollTo().fetchSemanticsNode().boundsInRoot
         compose.onNode(
-            SemanticsMatcher.keyIsDefined(SemanticsProperties.Disabled) and
-                SemanticsMatcher("disabled reset icon beside the loudness label") { node ->
-                    node.boundsInRoot.right <= titleBounds.left &&
-                        kotlin.math.abs(node.boundsInRoot.center.y - titleBounds.center.y) < 2f
-                },
-            useUnmergedTree = true,
-        ).performTouchInput { longClick() }
+            hasContentDescription(title) and SemanticsMatcher.keyIsDefined(SemanticsActions.OnLongClick),
+        ).performScrollTo().assertIsNotEnabled().performTouchInput { longClick() }
         assertEquals(-8f, context.preferences.getFloat(loudnessBaseGainKey, Float.NaN), 0f)
     }
 

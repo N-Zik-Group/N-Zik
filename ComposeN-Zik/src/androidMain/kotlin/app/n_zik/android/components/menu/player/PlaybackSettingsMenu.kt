@@ -10,9 +10,9 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
@@ -59,8 +60,6 @@ import app.n_zik.android.utils.setGlobalVolume
 import app.n_zik.android.typography
 import app.n_zik.android.utils.bassboostLevelKey
 import app.n_zik.android.utils.bassboostEnabledKey
-import app.n_zik.android.utils.conditional
-import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.blurStrengthKey
 import app.n_zik.android.utils.getDeviceVolume
 import app.n_zik.android.utils.loudnessBaseGainKey
@@ -593,40 +592,42 @@ class PlaybackSettingsMenu private constructor(
                 )
             }
 
-            val isScrollingTextDisabled by rememberPreference(disableScrollingTextKey, false)
+            Column(Modifier.weight(1f)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    BasicText(
+                        text = title,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = typography().s.semiBold.copy(color = colorPalette().text),
+                        modifier = Modifier.weight(1f),
+                    )
+                    BasicText(
+                        text = displayValue(value),
+                        maxLines = 1,
+                        style = typography().xxs.semiBold.copy(color = colorPalette().accent),
+                    )
+                }
 
-            BasicText(
-                text = title,
-                maxLines = 1,
-                style = typography().s.semiBold.copy(color = colorPalette().text),
-                modifier = Modifier
-                    .weight(1f, fill = false)
-                    .padding(end = 8.dp)
-                    .conditional(!isScrollingTextDisabled) {
-                        basicMarquee(iterations = Int.MAX_VALUE)
-                    }
-            )
-
-            BasicText(
-                text = displayValue(value),
-                style = typography().xxs.semiBold.copy(color = colorPalette().accent),
-                modifier = Modifier.padding(end = 8.dp)
-            )
-
-            SliderControl(
-                state = value,
-                onSlide = onValueChange,
-                onSlideComplete = { if (isEnabled) onSlideComplete() },
-                isEnabled = isEnabled,
-                toDisplay = displayValue,
-                range = valueRange,
-                stepSize = stepSize,
-                defaultValue = defaultValue,
-                drawValuePoints = drawValuePoints,
-                showValue = false,
-                modifier = Modifier.weight(1.5f),
-                label = title,
-            )
+                SliderControl(
+                    state = value,
+                    onSlide = onValueChange,
+                    onSlideComplete = { if (isEnabled) onSlideComplete() },
+                    isEnabled = isEnabled,
+                    toDisplay = displayValue,
+                    range = valueRange,
+                    stepSize = stepSize,
+                    defaultValue = defaultValue,
+                    drawValuePoints = drawValuePoints,
+                    showValue = false,
+                    usePadding = false,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = title,
+                )
+            }
         }
     }
 
@@ -676,6 +677,7 @@ class PlaybackSettingsMenu private constructor(
             iconHasOwnBackground = true,
             subtitle = toDisplay(value),
             enabled = isEnabled,
+            titleMaxLines = 2,
             onClick = { isShowingDialog = true },
             trailingContent = {
                 Icon(
