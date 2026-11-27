@@ -38,7 +38,6 @@ class ExportSongsToCSVDialog private constructor(
     launcher: ManagedActivityResultLauncher<String, Uri?>,
     private val prepare: () -> Boolean,
     private val unavailableMessage: () -> Int?,
-    private val saveBrowsingScope: () -> Unit,
 ): ExportToFileDialog(valueState, activeState, launcher), MenuIcon, Descriptive {
 
     companion object {
@@ -106,13 +105,19 @@ class ExportSongsToCSVDialog private constructor(
             val pending = remember { mutableStateOf<(suspend () -> List<Song>?)?>(null) }
             val selectionAtOpen = rememberSaveable { mutableStateOf(false) }
             val browsingScopeAtLaunch = rememberSaveable { mutableStateOf<String?>(null) }
+            val pendingPlaylistName = rememberSaveable { mutableStateOf<String?>(null) }
+            val pendingPlaylistBrowseId = rememberSaveable { mutableStateOf<String?>(null) }
             val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
                 val captured = pending.value
                 val selectedExport = selectionAtOpen.value
                 val savedBrowsingScope = browsingScopeAtLaunch.value
+                val savedPlaylistName = pendingPlaylistName.value ?: playlistName
+                val savedPlaylistBrowseId = pendingPlaylistBrowseId.value ?: playlistBrowseId
                 pending.value = null
                 selectionAtOpen.value = false
                 browsingScopeAtLaunch.value = null
+                pendingPlaylistName.value = null
+                pendingPlaylistBrowseId.value = null
                 if (uri == null) return@rememberLauncherForActivityResult
                 val restoreBrowsing = !selectedExport && !requireCapture && captured == null &&
                     latestBrowsingScope.value != null
@@ -142,7 +147,7 @@ class ExportSongsToCSVDialog private constructor(
                             Toaster.w(R.string.player_no_song_found)
                             return@launch
                         }
-                        val songsToWrite = songs.map { SongCSV(it, playlistBrowseId, playlistName) }
+                        val songsToWrite = songs.map { SongCSV(it, savedPlaylistBrowseId, savedPlaylistName) }
                         val stream = checkNotNull(appContext().contentResolver.openOutputStream(uri)) {
                             "Document provider did not open the playlist export"
                         }
@@ -164,6 +169,10 @@ class ExportSongsToCSVDialog private constructor(
                     selectionAtOpen.value = selectionActive()
                     val captureNow = captureOnOpen || selectionAtOpen.value
                     pending.value = if (captureNow) latestCapture.value() else null
+                    browsingScopeAtLaunch.value = latestBrowsingScope.value?.invoke()
+                        ?.takeUnless { selectionAtOpen.value || requireCapture }
+                    pendingPlaylistName.value = playlistName
+                    pendingPlaylistBrowseId.value = playlistBrowseId
                     !captureNow || pending.value != null
                 },
                 unavailableMessage = {
@@ -173,10 +182,6 @@ class ExportSongsToCSVDialog private constructor(
                         requireCapture -> R.string.common_load_failed
                         else -> null
                     }
-                },
-                saveBrowsingScope = {
-                    browsingScopeAtLaunch.value =
-                        latestBrowsingScope.value?.invoke()?.takeUnless { selectionAtOpen.value || requireCapture }
                 },
             )
         }
@@ -206,8 +211,6 @@ class ExportSongsToCSVDialog private constructor(
         super.onSet(newValue)
     }
 
-    override fun onDocumentPickerLaunch() = saveBrowsingScope()
-
     override fun defaultFileName(): String =
         "${BuildConfig.APP_NAME}_playlist_${TimeDateUtils.localizedDateNoDelimiter()}_${TimeDateUtils.timeNoDelimiter()}"
 }
@@ -222,9 +225,9 @@ internal suspend fun <T : Any> awaitRestoredExportPayload(
     capture: () -> T?,
 ): T? = withTimeoutOrNull(10_000L) {
     snapshotFlow {
-        val validScope = savedScope == currentScope()
-        validScope to if (validScope) capture() else null
-    }.first { (validScope, payload) -> !validScope || payload != null }.second
+        val scope = currentScope()
+        scope to if (savedScope == scope) capture() else null
+    }.first { (scope, payload) -> (scope != null && scope != savedScope) || payload != null }.second
 }?.takeIf { currentScope() == savedScope }
 
 

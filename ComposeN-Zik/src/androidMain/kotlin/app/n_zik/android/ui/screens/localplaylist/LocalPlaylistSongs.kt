@@ -35,6 +35,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -151,7 +152,7 @@ import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.core.database.podcastSourceBrowseId
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.database.LikeStateManager
 import app.n_zik.android.core.database.PlaylistLinkKind
@@ -166,7 +167,10 @@ import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.core.ondevice.groupByDeviceAvailability
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.boundProcessStorageIdentity
 import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.core.rewind.RewindPlaylists.rewindDisplayName
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
@@ -279,8 +283,9 @@ fun LocalPlaylistSongs(
     // the import dialog prunes its network choices; listen_on_yt is EXTERNAL and stays.
     val offlineModeState = OfflineMode.rememberEnabled()
     val offlineMode by offlineModeState
+    val deviceLibraryAvailable = deviceLibraryEnabled()
     var onDeviceSelected by rememberSaveable(playlistId) { mutableStateOf(false) }
-    val onDeviceOnly = forceOnDevice || onDeviceSelected
+    val onDeviceOnly = forceOnDevice || (deviceLibraryAvailable && onDeviceSelected)
     var isRecommendationEnabled by remember { mutableStateOf(false) }
 
     // Non-vital
@@ -298,7 +303,7 @@ fun LocalPlaylistSongs(
         source.map { Result.success(it) }
     }.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
     val playlist = playlistResult?.getOrNull()
-    val podcastBrowseId = playlist?.browseId?.takeIf(::isPodcastBrowseId)
+    val podcastBrowseId = podcastSourceBrowseId(playlist?.browseId)
     fun playbackItem(song: Song) = song.asMediaItem.withPodcastSource(podcastBrowseId)
 
     // Spec 2: generated `rewind-*` playlists are protected (Spotify principle) and get
@@ -308,10 +313,10 @@ fun LocalPlaylistSongs(
     if (preview == null && !onDeviceOnly) RefreshPlaylistOnOpening(playlistId, playlist, offlineMode)
     val refreshOnOpen = playlistRefreshOnOpenAction(playlist)
 
-    val isRewindPlaylist = playlist?.name?.let { RewindPlaylists.isRewind(it) } == true
+    val isRewindPlaylist = playlist?.name?.let(RewindPlaylists::isReservedName) == true
 
     val sort = PlaylistSongsSort(playlistId, isRewind = isRewindPlaylist)
-    sort.onDeviceCriterionAvailable = deviceLibraryEnabled() && !onDeviceOnly && playlist != null &&
+    sort.onDeviceCriterionAvailable = deviceLibraryAvailable && !onDeviceOnly && playlist != null &&
         !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
     val deviceSortOrder = sort.sortOrder.takeIf { sort.sortBy == PlaylistSongSortBy.OnDevice }
 
@@ -343,10 +348,11 @@ fun LocalPlaylistSongs(
     val playlistTracks = loadedItems.orEmpty()
     val hasDeviceTracks = playlistTracks.any { it.isLocal }
     val deviceOnlyPlaylist = playlistTracks.isNotEmpty() && playlistTracks.all { it.isLocal }
-    LaunchedEffect(loadedItems, hasDeviceTracks) {
-        if (loadedItems != null && !hasDeviceTracks) onDeviceSelected = false
+    LaunchedEffect(loadedItems, hasDeviceTracks, deviceLibraryAvailable) {
+        if (!deviceLibraryAvailable || (loadedItems != null && !hasDeviceTracks)) onDeviceSelected = false
     }
     val profile = getActiveProfile(context)
+    val profileOwner = boundProcessStorageIdentity()
     val needsDeviceScan = onDeviceOnly || deviceSortOrder != null
     val scan by remember(context, profile, needsDeviceScan) {
         if (needsDeviceScan) context.observeDeviceLibrary() else kotlinx.coroutines.flow.flowOf(null)
@@ -361,24 +367,12 @@ fun LocalPlaylistSongs(
     var filteredQuery by remember { mutableStateOf<String?>(null) }
     var itemsOnDisplay by persistList<Song>("localPlaylist/$playlistId/${if (forceOnDevice) "on_device/" else ""}songs/on_display")
 
-    val importedBrowseIds = remember {
-        listOf("SPOTIFY_IMPORT", "RIPLAY_IMPORT") +
-        listOf("SPOTIFY_IMPORT_HOMESONGS", "RIPLAY_IMPORT_HOMESONGS")
-    }
-    LaunchedEffect( playlist?.browseId, items ) {
-        if (items.isEmpty()) return@LaunchedEffect
-        val browseId = playlist?.browseId.orEmpty()
-        val isSpotifyRiplay = importedBrowseIds.any { browseId == it || browseId.startsWith("${it}_") }
-        val hasImportedSongs = items.any { it.totalPlayTimeMs == 1L }
-        val prefs = appContext().preferences
-        val currentSort = prefs.getString("PlaylistSongsSortBy_$playlistId", null)
-        // Only force Custom if no saved preference exists AND playlist has imports
-        if ((isSpotifyRiplay || hasImportedSongs) && currentSort == null) {
-            sort.sortBy = PlaylistSongSortBy.Custom
-        } else if (isRewindPlaylist && currentSort == null) {
-            // Spec 2: a generated rewind-* playlist defaults to its top-order snapshot
-            sort.sortBy = PlaylistSongSortBy.RewindTop
-        }
+    val sortPreferenceKey = "PlaylistSongsSortBy_$playlistId"
+    LaunchedEffect(playlist, playlistTracks, preview) {
+        if (preview != null || playlist == null || playlistTracks.isEmpty()) return@LaunchedEffect
+        if (context.preferences.contains(sortPreferenceKey)) return@LaunchedEffect
+        val initialSort = defaultPlaylistSongSort(playlist.browseId, isRewindPlaylist, playlistTracks)
+        if (initialSort != PlaylistSongSortBy.Title) sort.sortBy = initialSort
     }
 
     val itemSelector = ItemSelector<Song>()
@@ -446,7 +440,10 @@ fun LocalPlaylistSongs(
         getSongs = ::getSongs,
     )
 
-    val shuffle = itemSelector.guard(SongShuffler(::getSongs), hasEligibleSelection)
+    val shuffle = itemSelector.guard(
+        SongShuffler.fromMediaItems { getSongs().map(::playbackItem) },
+        hasEligibleSelection,
+    )
     val queueMenuState = LocalMenuState.current
     val insertionDialog = PlaylistInsertionDialog { playlist }
     insertionDialog.RenderAboveMenu(queueMenuState)
@@ -455,9 +452,14 @@ fun LocalPlaylistSongs(
     val renameDialog = RenamePlaylistDialog { playlist }
     val renameAuthorDialog = RenamePlaylistAuthorDialog { playlist }
     val changeBrowseIdDialog = ChangePlaylistBrowseIdDialog { playlist }
-    val importNzikDialog = ImportSongsFromCSV(targetPlaylistId = playlistId, onImportComplete = {
-        appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
-    })
+    fun useImportSortIfUnset() {
+        coroutineScope.launch(NzikDispatchers.UI) {
+            if (profileOwner != null && ProfileWorkOwner.isBound(context, profileOwner) &&
+                !context.preferences.contains(sortPreferenceKey)
+            ) sort.sortBy = PlaylistSongSortBy.Custom
+        }
+    }
+    val importNzikDialog = ImportSongsFromCSV(targetPlaylistId = playlistId, onImportComplete = ::useImportSortIfUnset)
     val importSpotifyDialog = ImportSongsFromServices.init(
         afterTransaction = { finalPosition, song, _, _ ->
             // Already handled by ImportSongsFromServices internally
@@ -465,9 +467,7 @@ fun LocalPlaylistSongs(
         playlistIdForMatch = playlistId,
         playlistName = playlist?.name ?: "",
         source = "SPOTIFY_IMPORT",
-        onImportComplete = {
-            appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
-        }
+        onImportComplete = { useImportSortIfUnset() },
     )
     val importRiplayDialog = ImportSongsFromServices.init(
         afterTransaction = { finalPosition, song, _, _ ->
@@ -475,9 +475,7 @@ fun LocalPlaylistSongs(
         playlistIdForMatch = playlistId,
         playlistName = playlist?.name ?: "",
         source = "RIPLAY_IMPORT",
-        onImportComplete = {
-            appContext().preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
-        }
+        onImportComplete = { useImportSortIfUnset() },
     )
 
     var showYouTubeLinkDialog by remember { mutableStateOf(false) }
@@ -485,9 +483,7 @@ fun LocalPlaylistSongs(
         YouTubeLinkImportDialog(
             onDismiss = { showYouTubeLinkDialog = false },
             onImport = { sourceId ->
-                launchPlaylistLinkImport(context, coroutineScope, sourceId, targetPlaylistId = playlistId) {
-                    context.preferences.edit().putString("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Custom.name).apply()
-                }
+                launchPlaylistLinkImport(context, coroutineScope, sourceId, playlistId, ::useImportSortIfUnset)
             }
         )
     }
@@ -729,14 +725,22 @@ fun LocalPlaylistSongs(
     )
     val currentAddToPlaylist by rememberUpdatedState(addToPlaylist)
     val exportDialog = ExportSongsToCSVDialog.deferred(
-        playlistBrowseId = playlist?.browseId.orEmpty(),
-        playlistName = playlist?.name.orEmpty(),
+        playlistBrowseId = playlist?.browseId?.takeUnless(RewindPlaylists::isGeneratedSourceId).orEmpty(),
+        playlistName = playlist?.name?.let { context.portablePlaylistName(it) }.orEmpty(),
         capture = {
             val displayedSongs = if (preview == null) capturePlaylistActionSongs().toList() else emptyList()
             if (displayedSongs.isEmpty()) null else suspend { displayedSongs }
         },
         selectionActive = { itemSelector.isActive },
-        requireCapture = true,
+        browsingRestoreScope = {
+            if (profileOwner == null || playlist == null || preview != null || itemSelector.isActive ||
+                isRecommendationEnabled || !ProfileWorkOwner.isBound(context, profileOwner)
+            ) null else listOf(
+                profileOwner.id, profileOwner.generation, playlist.id.toString(), playlist.browseId.orEmpty(),
+                forceOnDevice.toString(), onDeviceOnly.toString(), parentalControlEnabled.toString(),
+                sort.sortBy.name, sort.sortOrder.name, search.filterQuery,
+            ).joinToString("") { "${it.length}:$it" }
+        },
     )
     SearchEmptyFeedback(
         query = query,
@@ -1052,10 +1056,11 @@ fun LocalPlaylistSongs(
 
                 val order = LocalPlaylistToolbarSettingsDialog.parseOrder(toolbarOrderPref)
 
-                val toolbarPreferences = LocalContext.current.preferences
-                val visibleToolbarOrder = order.filter { id ->
-                    id in LocalPlaylistToolbarSettingsDialog.lockedActionIds ||
-                        toolbarPreferences.getBoolean("pl_ts_$id", true)
+                val visibleToolbarOrder = order.mapNotNull { id ->
+                    key(id) {
+                        val enabled by rememberPreference("pl_ts_$id", true)
+                        id.takeIf { enabled || it in LocalPlaylistToolbarSettingsDialog.lockedActionIds }
+                    }
                 }
                 val playlistAnchor = playlistActionsAnchor(visibleToolbarOrder, exportId = "export")
                 val playlistActions = rememberCollectionAddAction(
@@ -1146,7 +1151,7 @@ fun LocalPlaylistSongs(
 
                 }
 
-                if (preview == null && !forceOnDevice && hasDeviceTracks) GlassHomeChips(
+                if (preview == null && !forceOnDevice && deviceLibraryAvailable && hasDeviceTracks) GlassHomeChips(
                     chips = listOf(
                         false to stringResource(R.string.common_option_all),
                         true to stringResource(R.string.library_on_device_title),
@@ -1350,7 +1355,7 @@ fun LocalPlaylistSongs(
                         if (playableSongs.isNotEmpty()) {
                             binder?.let {
                                 it.triggerShuffleOkFlash()
-                                Shuffler.play(it, playableSongs)
+                                Shuffler.play(it, playableSongs.map(::playbackItem))
                             }
                         } else {
                             Toaster.w(R.string.player_matching_required_message)
@@ -1370,6 +1375,18 @@ fun LocalPlaylistSongs(
 
 
 
+
+internal fun defaultPlaylistSongSort(
+    browseId: String?,
+    isRewind: Boolean,
+    songs: List<Song> = emptyList(),
+): PlaylistSongSortBy = when {
+    isRewind -> PlaylistSongSortBy.RewindTop
+    browseId == "SPOTIFY_IMPORT" || browseId?.startsWith("SPOTIFY_IMPORT_") == true ||
+        browseId == "RIPLAY_IMPORT" || browseId?.startsWith("RIPLAY_IMPORT_") == true ||
+        songs.any { it.totalPlayTimeMs == 1L } -> PlaylistSongSortBy.Custom
+    else -> PlaylistSongSortBy.Title
+}
 
 internal fun localPlaylistActionSongs(
     visibleSongs: List<Song>,

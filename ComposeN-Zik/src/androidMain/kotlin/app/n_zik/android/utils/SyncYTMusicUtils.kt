@@ -1,5 +1,7 @@
 package app.n_zik.android.utils
 
+import android.content.Context
+import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.appTextResources
 
 import android.widget.Toast
@@ -16,6 +18,7 @@ import app.n_zik.innertube.utils.completed
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.extensions.youtubelogin.readYouTubeSession
 import app.n_zik.android.appContext
 import app.n_zik.android.models.Album
@@ -318,6 +321,14 @@ suspend fun removeYTMLikedSongs(): Boolean = withContext(NzikDispatchers.DATA) {
     }.getOrDefault(false)
 }
 
+internal fun Context.syncedYouTubePlaylistName(remoteTitle: String?, existing: Playlist?): String {
+    if (existing?.hasModifiedTitle() == true) return existing.name
+    val title = remoteTitle?.takeIf(String::isNotBlank)?.let { portablePlaylistName(it) }
+        ?: return existing?.name ?: getString(R.string.playlist_youtube_title)
+    val pin = existing?.name?.take(PINNED_PREFIX.length)?.takeIf { it.equals(PINNED_PREFIX, ignoreCase = true) }
+    return pin.orEmpty() + title
+}
+
 suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = true): Boolean = withContext(NzikDispatchers.DATA) {
     Timber.tag("SyncYTMusicUtils").d("importYTMPlaylists isYouTubeSyncEnabled() = ${isYouTubeSyncEnabled()}")
     if (!isYouTubeSyncEnabled()) return@withContext false
@@ -359,11 +370,11 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
                 .findByBrowseId(remotePlaylist.key)
                 .first()
 
-        val remoteTitle = remotePlaylist.title?.takeIf(String::isNotBlank)
+        val playlistName = context.syncedYouTubePlaylistName(remotePlaylist.title, existingPlaylist)
         val playlistId: Long
         if (existingPlaylist == null) {
             val newPlaylist = Playlist(
-                name = remoteTitle ?: appTextResources().getString(R.string.playlist_youtube_title),
+                name = playlistName,
                 browseId = browseIdWithVL,
                 isYoutubePlaylist = true,
                 isEditable = remotePlaylist.isEditable ?: false
@@ -374,7 +385,7 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
             playlistId = existingPlaylist.id
             Database.playlistTable.update(
                 existingPlaylist.copy(
-                    name = remoteTitle?.takeUnless { existingPlaylist.hasModifiedTitle() } ?: existingPlaylist.name,
+                    name = playlistName,
                     browseId = browseIdWithVL,
                     isEditable = remotePlaylist.isEditable ?: existingPlaylist.isEditable
                 ).withSourcePlaylistOwner(remotePlaylist.channel)

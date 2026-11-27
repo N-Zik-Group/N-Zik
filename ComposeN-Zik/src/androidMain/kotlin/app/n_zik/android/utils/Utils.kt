@@ -43,7 +43,7 @@ import app.n_zik.kugou.KuGou
 import app.n_zik.lrclib.LrcLib
 import androidx.media3.session.MediaConstants.EXTRAS_KEY_IS_EXPLICIT
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.core.database.podcastSourceBrowseId
 import app.n_zik.android.core.database.PlaylistAddResult
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.addTracksToStoredPlaylist
@@ -100,14 +100,14 @@ val Innertube.AlbumItem.asAlbum: Album
 private const val PODCAST_BROWSE_ID_EXTRA = "podcastBrowseId"
 
 internal val MediaItem.podcastBrowseId: String?
-    get() = mediaMetadata.extras?.getString(PODCAST_BROWSE_ID_EXTRA)?.takeIf(String::isNotBlank)
+    get() = podcastSourceBrowseId(mediaMetadata.extras?.getString(PODCAST_BROWSE_ID_EXTRA))
 
 /** Carry an exact source across the conversion from stored playlist rows to playback items. */
 internal fun MediaItem.withPodcastSource(browseId: String?): MediaItem {
-    if (!isPodcastBrowseId(browseId)) return this
+    val source = podcastSourceBrowseId(browseId) ?: return this
     val metadata = mediaMetadata
     val extras = (metadata.extras?.let(::Bundle) ?: Bundle()).apply {
-        putString(PODCAST_BROWSE_ID_EXTRA, browseId)
+        putString(PODCAST_BROWSE_ID_EXTRA, source)
     }
     return buildUpon().setMediaMetadata(metadata.buildUpon().setExtras(extras).build()).build()
 }

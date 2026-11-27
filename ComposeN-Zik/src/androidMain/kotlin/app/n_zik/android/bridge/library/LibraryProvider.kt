@@ -18,11 +18,18 @@ import app.n_zik.android.bridge.RewindStateDto
 import app.n_zik.android.bridge.state.TrackDto
 import app.n_zik.android.bridge.state.TrackDownloadState
 import app.n_zik.android.bridge.state.TrackLike
+import app.n_zik.android.components.podcast.PodcastBookmarkOperation
+import app.n_zik.android.components.podcast.removeSavedPodcastBookmark
+import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
+import app.n_zik.android.components.ui.screens.home.matchesYouTubeLibraryFilter
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.canBookmarkPlaylist
+import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.core.network.client.NetworkClientFactory
 import app.n_zik.android.core.profiles.cacheDatabaseProvider
 import app.n_zik.android.core.profiles.LegacyMediaAccess
 import app.n_zik.android.core.profiles.ProfileDataItem
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.utils.getActiveProfile
 import androidx.media3.datasource.cache.Cache
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -65,8 +72,6 @@ import app.n_zik.android.utils.includeLocalSongsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.putEnum
-import app.n_zik.android.utils.showMonthlyPlaylistsKey
-import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.cachedStreamingIds
 import app.n_zik.android.playback.services.hasCachedStream
@@ -254,42 +259,30 @@ internal class DatabaseLibraryProvider(
         LibraryMapping.librarySongs(filter, tabSongs, support.withMembership(tabSongs, filteredCache))
     }
 
-    /**
-     * The playlists of the phone's home tab behind [filter] (contract §10, since 1.6), each shown the
-     * way the phone's own `HomeLibrary.kt` shows it: `All` keeps everything except the rewind and
-     * pinned playlists the phone's own toggles hide, `Pinned` the pinned-prefix names, `Rewind` the
-     * rewind names the phone's creation toggles and Month/Year/All filter allow, `Youtube` the
-     * youtube-synced ones. Since 1.7.2, [rewindFilter] overrides the phone's Month/Year/All filter
-     * for the `Rewind` listing and is persisted to the phone's own setting (its Rewind tab
-     * reflects the client's choice, like one of its own chip taps).
-     */
+    /** Lists the phone's saved playlists and persists an explicitly requested Rewind period. */
     override suspend fun playlists(filter: PlaylistsFilter, sort: PlaylistSort, reverse: Boolean, rewindFilter: RewindPlaylists.Filter?): List<PlaylistDto> = withContext(NzikDispatchers.DATA) {
-        val previews = Database.playlistTable.sortPreviews(sort.playlistSortBy(), reverse.sortOrder()).first()
         val prefs = appContext.preferences
-        val showPinned = prefs.getBoolean(showPinnedPlaylistsKey, true)
         val rewind = RewindPlaylists.visibility(appContext)
-        val showRewind = rewind.enabled && prefs.getBoolean(showMonthlyPlaylistsKey, true)
+        val previews = Database.playlistTable.sortPreviews(sort.playlistSortBy(), reverse.sortOrder()).first()
+            .filter { rewind.visibleInLibrary(it.playlist.name) }
         val rewindFilterToApply = rewindFilter ?: prefs.getEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
         // A present wire filter is persisted exactly like the phone's own chip tap
         if (rewindFilter != null) prefs.edit { putEnum(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, rewindFilter) }
         val shown = when (filter) {
-            PlaylistsFilter.ALL -> previews.filter {
-                (!RewindPlaylists.isRewind(it.playlist.name) || showRewind) &&
-                    (!it.playlist.name.startsWith(PINNED_PREFIX, true) || showPinned)
-            }
+            PlaylistsFilter.ALL -> previews
 
             PlaylistsFilter.PINNED -> previews.filter { it.playlist.name.startsWith(PINNED_PREFIX, true) }
 
             PlaylistsFilter.REWIND -> previews.filter {
                 RewindPlaylists.isShown(
-                    it.playlist.name,
+                    it.playlist.cleanName(),
                     rewind.monthlyEnabled,
                     rewind.yearlyEnabled,
                     rewindFilterToApply,
                 )
             }
 
-            PlaylistsFilter.YOUTUBE -> previews.filter { it.playlist.isYoutubePlaylist }
+            PlaylistsFilter.YOUTUBE -> previews.filter { matchesYouTubeLibraryFilter(it.playlist, YouTubeLibraryFilter.All) }
         }
         val artworkTracks = LibraryMapping.artworkTracks(Database.songPlaylistMapTable.songsWithThumbnailDirect())
         val listening = Database.eventTable.getPlaylistListeningTotals().first()
@@ -304,7 +297,8 @@ internal class DatabaseLibraryProvider(
      * own screen, the parental control hides the explicit `e:` rows (`LocalPlaylistSongs.kt` 1058).
      */
     override suspend fun playlistSongs(playlistId: Long, sort: PlaylistSongSort, reverse: Boolean): List<TrackDto>? = withContext(NzikDispatchers.DATA) {
-        Database.playlistTable.findById(playlistId).first() ?: return@withContext null
+        val playlist = Database.playlistTable.findById(playlistId).first() ?: return@withContext null
+        if (!RewindPlaylists.visibility(appContext).visibleInLibrary(playlist.name)) return@withContext null
         val support = trackSupport()
         val downloaded = support.downloaded
         val songs = if (sort == PlaylistSongSort.DOWNLOADED) {
@@ -478,16 +472,40 @@ internal class DatabaseLibraryProvider(
 
     override suspend fun setPlaylistPin(playlistId: Long, pinned: Boolean): Boolean? =
         withContext(NzikDispatchers.DATA) {
-            if (Database.playlistTable.findById(playlistId).first() == null) return@withContext null
-            Database.playlistTable.pinState(playlistId, pinned)
-            pinned
+            var result: Boolean? = null
+            Database.transaction {
+                val playlist = playlistTable.findById(playlistId).first() ?: return@transaction
+                if (pinned && (RewindPlaylists.isReservedName(playlist.name) || RewindPlaylists.isGeneratedSourceId(playlist.browseId))) {
+                    return@transaction
+                }
+                if (playlistTable.pinState(playlistId, pinned) > 0) result = pinned
+            }
+            result
         }
 
     override suspend fun setPlaylistBookmark(playlistId: Long, bookmarked: Boolean): Boolean? =
         withContext(NzikDispatchers.DATA) {
             val playlist = Database.playlistTable.findById(playlistId).first() ?: return@withContext null
-            Database.playlistTable.update(playlist.copy(isYoutubePlaylist = bookmarked))
-            bookmarked
+            if (!canBookmarkPlaylist(playlist)) return@withContext null
+            if (isPodcastBrowseId(playlist.browseId)) {
+                if (bookmarked) return@withContext true
+                val owner = ProfileWorkOwner.capture(appContext) ?: return@withContext null
+                return@withContext when (removeSavedPodcastBookmark(playlistId, playlist.browseId) {
+                    ProfileWorkOwner.isBound(appContext, owner)
+                }) {
+                    PodcastBookmarkOperation.Remove -> false
+                    PodcastBookmarkOperation.ExistingImport -> true
+                    else -> null
+                }
+            }
+            var result: Boolean? = null
+            Database.transaction {
+                val current = playlistTable.findById(playlistId).first() ?: return@transaction
+                if (current.browseId == playlist.browseId && canBookmarkPlaylist(current) &&
+                    playlistTable.update(current.copy(isYoutubePlaylist = bookmarked)) > 0
+                ) result = bookmarked
+            }
+            result
         }
 
     private suspend fun artwork(size: Int, thumbnailUrl: suspend () -> String?): ArtworkResult =

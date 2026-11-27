@@ -445,6 +445,8 @@ fun HomeQuickPicksContent(
 
             val showRewindPlaylists by rememberPreference(showMonthlyPlaylistsKey, true)
             val rewindEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_ENABLED, true)
+            val rewindMonthlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+            val rewindYearlyEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
             val showRewind = rewindEnabled && showRewindPlaylists
             val rewindState = persist<List<PlaylistPreview>?>("home/quickpicks/local/rewind")
             val rewindFlow = remember(preview) {
@@ -464,7 +466,9 @@ fun HomeQuickPicksContent(
                     }
             }
             val rewindResult = collectQuickPicksLocalShelf("rewind", manualRevision, rewindState, rewindFlow)
-            val rewindPlaylists = rewindResult.orEmpty()
+            val rewindPlaylists = rewindResult.orEmpty().filter { item ->
+                RewindPlaylists.visibleInLibrary(item.playlist.name, rewindEnabled, rewindMonthlyEnabled, rewindYearlyEnabled)
+            }
 
             val sectionOrder = rememberQuickPicksSectionOrder()
             val showCharts by rememberPreference(showChartsKey, true)

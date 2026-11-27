@@ -1,6 +1,6 @@
 package app.n_zik.android.ui.screens.localplaylist
 
-import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.playback.services.isLocal
@@ -27,7 +27,7 @@ internal fun projectLocalPlaylistSongs(
 
     return ordered.distinctBy(Song::id).filter { song ->
         (!onDeviceOnly || song.isLocal) &&
-            (!parentalControlEnabled || !song.title.startsWith(EXPLICIT_PREFIX)) &&
+            (!parentalControlEnabled || !song.title.hasExplicitPrefix()) &&
             (song.cleanTitle().contains(query, ignoreCase = true) ||
                 song.cleanArtistsText().contains(query, ignoreCase = true))
     }

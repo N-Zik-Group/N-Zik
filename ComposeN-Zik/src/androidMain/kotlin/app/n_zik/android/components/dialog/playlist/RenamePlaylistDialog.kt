@@ -14,8 +14,10 @@ import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import app.n_zik.android.components.dialog.song.RenameDialog
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.rewind.RewindPlaylists
 
 class RenamePlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
@@ -53,6 +55,11 @@ class RenamePlaylistDialog private constructor(
     override fun onSet( newValue: String ) {
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
+
+        if (RewindPlaylists.isReservedName(newValue)) {
+            errorMessage = appTextResources().getString(R.string.playlist_name_reserved)
+            return
+        }
 
         val playlist = getPlaylist() ?: return
         val storedPrefixes = playlist.name.dropLast(cleanPrefix(playlist.name).length)

@@ -18,6 +18,8 @@ import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.menu.playlist.importOnlinePlaylist
 import app.n_zik.android.core.sync.FavoriteAction
 import app.n_zik.android.core.sync.YouTubeSync
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.models.Event
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.playlist.PlaylistInsertionPosition
 import app.n_zik.android.utils.playlist.PlaylistInsertionPreferences
@@ -42,6 +44,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.io.File
+import java.nio.file.Files
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -300,6 +303,29 @@ class PlaylistInsertionTest {
         assertTrue(db.playlistTable.getAll().isEmpty())
     }
 
+    @Test fun `an older exported Rewind CSV imports as an ordinary editable copy`() = runBlocking<Unit> {
+        val name = RewindPlaylists.yearlyName(2025)
+        val source = RewindPlaylists.generatedSourceId(name)
+        val csv = "PlaylistBrowseId,PlaylistName,MediaId,Title,Artists,Duration,ThumbnailUrl\n" +
+            "$source,$name,track,Title,Artist,100,\n"
+        assertTrue(csv.byteInputStream().use { ImportSongsFromCSV.importFile(it) })
+        val imported = db.playlistTable.getAll().single()
+        assertTrue(canEditPlaylistMembership(imported))
+        assertFalse(RewindPlaylists.isGeneratedSourceId(imported.browseId))
+        assertEquals(listOf("track"), db.songPlaylistMapTable.songsByPositionDirect(imported.id).map { it.id })
+    }
+
+    @Test fun `playlist listening sorts use the same recorded events as the badges`() = runBlocking<Unit> {
+        val second = Playlist(id = 902, name = "Second")
+        Database.mapIgnore(playlist, Song.makePlaceholder("cumulative").copy(totalPlayTimeMs = 400_000))
+        Database.mapIgnore(second, Song.makePlaceholder("recorded").copy(totalPlayTimeMs = 30_000))
+        db.eventTable.insertIgnore(Event(songId = "recorded", timestamp = 1, playTime = 30_000))
+
+        assertEquals(listOf(playlist.id, second.id), db.playlistTable.sortPreviewsByListeningTime().first().map { it.playlist.id })
+        assertEquals(listOf(playlist.id, second.id), db.playlistTable.sortPreviewsByPlayCount().first().map { it.playlist.id })
+        assertEquals(1, db.eventTable.getPlaylistListeningTotals().first().single().playCount)
+    }
+
     @Test fun `YouTube and CSV import batch prepends in order and still upserts existing metadata`() = runBlocking<Unit> {
         add("A", "B")
         begin()
@@ -367,6 +393,28 @@ class PlaylistInsertionTest {
             assertEquals("First", db.songTable.findByIdDirect("C")?.title)
         } finally {
             csv.delete()
+        }
+    }
+
+    @Test fun `service CSV filenames cannot turn imported playlists into Rewind playlists`() = runBlocking<Unit> {
+        val folder = Files.createTempDirectory(context.cacheDir.toPath(), "service-rewind").toFile()
+        val csv = File(folder, "${RewindPlaylists.ALLTIME_NAME}.csv")
+        try {
+            val inputs = mapOf(
+                "SPOTIFY_IMPORT" to "Track URI,Track Name,Artist Name(s),Duration (ms)\nspotify:track:C,First,Artist,1000\n",
+                "RIPLAY_IMPORT" to "MediaId,Title,AlbumId\nD,Second,album\n",
+            )
+            for ((source, body) in inputs) {
+                csv.writeText(body)
+                assertTrue(ImportSongsFromServices.openFile(Uri.fromFile(csv), source = source))
+            }
+            val playlists = db.playlistTable.getAll()
+            assertEquals(inputs.keys, playlists.map { it.browseId }.toSet())
+            assertTrue(playlists.all { !RewindPlaylists.isReservedName(it.name) })
+            assertTrue(playlists.all { db.songPlaylistMapTable.songsByPositionDirect(it.id).size == 1 })
+        } finally {
+            csv.delete()
+            folder.delete()
         }
     }
 

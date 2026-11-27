@@ -177,7 +177,7 @@ class ExportPickerRestorationTest {
             override fun close() = throw IOException("Cannot close test document")
         })
 
-    @Test fun `a failed browsing load removes its empty export document`() =
+    @Test fun `a failed browsing load preserves an empty provider document`() =
         assertFailedBrowsingExport(contents = "")
 
     @Test fun `a failed browsing load leaves a nonempty export document alone`() =
@@ -218,15 +218,10 @@ class ExportPickerRestorationTest {
                 assertEquals(Intent.ACTION_CREATE_DOCUMENT, registry.launchedIntent?.action)
                 registry.complete(provider.uri)
             }
-            assertTrue("The export did not check the created document", provider.readOpened.await(5, TimeUnit.SECONDS))
-            if (contents.isEmpty()) {
-                assertTrue("The empty document was not removed", provider.deleted.await(5, TimeUnit.SECONDS))
-                assertTrue(!file.exists())
-            } else {
-                assertFalse("The nonempty document was removed", provider.deleted.await(300, TimeUnit.MILLISECONDS))
-                assertEquals(contents, file.readText())
-            }
-            verify(exactly = 1) { Toaster.e(R.string.common_load_failed, duration = any()) }
+            verify(timeout = 5_000, exactly = 1) { Toaster.e(R.string.common_load_failed, duration = any()) }
+            assertFalse("The picker can return an existing document", provider.deleted.await(300, TimeUnit.MILLISECONDS))
+            assertEquals(1L, provider.readOpened.count)
+            assertEquals(contents, file.readText())
             verify(exactly = 0) { Toaster.done() }
         } finally {
             file.delete()

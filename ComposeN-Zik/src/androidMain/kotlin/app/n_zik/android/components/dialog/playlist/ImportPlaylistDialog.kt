@@ -24,7 +24,9 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.TextInputDialog
 import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import app.n_zik.android.colorPalette
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
@@ -147,10 +149,18 @@ class ImportPlaylistDialog private constructor(
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
 
+        importPlaylistNameError(newValue)?.let { error ->
+            errorMessage = appTextResources().getString(error)
+            return
+        }
+
         onImport(newValue)
         onImportAccepted?.invoke()
         hideDialog()
     }
 }
+
+internal fun importPlaylistNameError(name: String): Int? =
+    R.string.playlist_name_reserved.takeIf { RewindPlaylists.isReservedName(name) }
 
 

@@ -30,6 +30,7 @@ internal data class HomeLibraryPlaylistScope(
     val monthlyEnabled: Boolean,
     val yearlyEnabled: Boolean,
     val rewindFilter: RewindPlaylists.Filter,
+    val rewindEnabled: Boolean = true,
 ) {
     fun matchesName(name: String, displayName: (String) -> String = ::cleanPrefix): Boolean =
         query.isBlank() || displayName(name).contains(query.trim(), ignoreCase = true)
@@ -37,18 +38,22 @@ internal data class HomeLibraryPlaylistScope(
     fun canOpenPlaylistPicker(hasTracks: Boolean, selectionActive: Boolean): Boolean =
         hasTracks || (type == PlaylistsType.Playlist && query.isBlank() && !selectionActive)
 
-    fun visible(candidates: List<PlaylistPreview>, onDevicePlaylistIds: Set<Long>? = null): List<PlaylistPreview> = candidates.filter { preview ->
-        val playlist = preview.playlist
-        matchesName(playlist.name) && when (type) {
-            PlaylistsType.YTPlaylist -> matchesYouTubeLibraryFilter(playlist, youtubeFilter)
-            PlaylistsType.Playlist -> true
-            PlaylistsType.OnDevice -> playlist.matchesOnDevicePlaylist(onDevicePlaylistIds)
-            PlaylistsType.MonthlyPlaylist -> RewindPlaylists.isShown(
-                playlist.name, monthlyEnabled, yearlyEnabled, rewindFilter,
-            )
-            PlaylistsType.PinnedPlaylist -> playlist.name.startsWith(PINNED_PREFIX, true)
+    fun visible(candidates: List<PlaylistPreview>, onDevicePlaylistIds: Set<Long>? = null): List<PlaylistPreview> =
+        candidates.filter { preview ->
+            val playlist = preview.playlist
+            if (!RewindPlaylists.visibleInLibrary(playlist.name, rewindEnabled, monthlyEnabled, yearlyEnabled) ||
+                !matchesName(playlist.name)
+            ) return@filter false
+            when (type) {
+                PlaylistsType.YTPlaylist -> matchesYouTubeLibraryFilter(playlist, youtubeFilter)
+                PlaylistsType.Playlist -> true
+                PlaylistsType.OnDevice -> playlist.matchesOnDevicePlaylist(onDevicePlaylistIds)
+                PlaylistsType.MonthlyPlaylist -> RewindPlaylists.isShown(
+                    playlist.cleanName(), monthlyEnabled, yearlyEnabled, rewindFilter,
+                )
+                PlaylistsType.PinnedPlaylist -> playlist.name.startsWith(PINNED_PREFIX, true)
+            }
         }
-    }
 }
 
 internal fun Playlist.matchesOnDevicePlaylist(playlistIds: Set<Long>?): Boolean =

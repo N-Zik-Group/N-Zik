@@ -246,7 +246,7 @@ class LibraryMappingTest {
     fun `originOf mirrors the phone origin icon logic, the pin apart`() {
         // Local: no browseId, or a browseId with no known sentinel
         assertEquals(PlaylistOrigin.LOCAL, LibraryMapping.originOf("My list", null, false))
-        assertEquals(PlaylistOrigin.LOCAL, LibraryMapping.originOf("My list", "RDabc", false))
+        assertEquals(PlaylistOrigin.YTMUSIC, LibraryMapping.originOf("My list", "RDabc", false))
         assertEquals(PlaylistOrigin.LOCAL, LibraryMapping.originOf("pinned:My list", null, false))
         // YouTube Music: the flag or a browseId starting with VL
         assertEquals(PlaylistOrigin.YTMUSIC, LibraryMapping.originOf("YT list", "VL123", false))
@@ -342,7 +342,7 @@ class LibraryMappingTest {
     fun `playlists carry their editability and listening stats`() {
         val playlists = LibraryMapping.playlists(
             listOf(
-                PlaylistPreview(Playlist(id = 1L, name = "Locked YT", isYoutubePlaylist = true, isEditable = false), songCount = 2),
+                PlaylistPreview(Playlist(id = 1L, name = "Locked YT", browseId = "VLplaylist", isYoutubePlaylist = true, isEditable = false), songCount = 2),
                 PlaylistPreview(Playlist(id = 2L, name = "Free"), songCount = 1),
             ),
             emptyMap(),
@@ -400,9 +400,10 @@ class LibraryMappingTest {
     @Test
     fun `detailSongs hides the explicit rows only when the parental control is on`() {
         val explicit = song("x").copy(title = "e:Explicit")
+        val renamedExplicit = song("z").copy(title = "modified:e:Renamed")
         val plain = song("y").copy(title = "Plain")
 
-        assertEquals(listOf("x", "y"), LibraryMapping.detailSongs(listOf(explicit, plain), parentalControl = false).map { it.id })
-        assertEquals(listOf("y"), LibraryMapping.detailSongs(listOf(explicit, plain), parentalControl = true).map { it.id })
+        assertEquals(listOf("x", "z", "y"), LibraryMapping.detailSongs(listOf(explicit, renamedExplicit, plain), parentalControl = false).map { it.id })
+        assertEquals(listOf("y"), LibraryMapping.detailSongs(listOf(explicit, renamedExplicit, plain), parentalControl = true).map { it.id })
     }
 }

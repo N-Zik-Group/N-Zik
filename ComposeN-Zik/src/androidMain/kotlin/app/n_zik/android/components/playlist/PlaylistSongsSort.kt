@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.PlaylistSongSortBy
@@ -19,6 +20,7 @@ import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.localPlaylistSortMenuOrderKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.Sort
 
@@ -27,7 +29,8 @@ class PlaylistSongsSort private constructor(
     sortByState: MutableState<PlaylistSongSortBy>,
     sortOrderState: MutableState<SortOrder>,
     styleState: MutableState<MenuStyle>,
-    private val isRewind: Boolean
+    private val isRewind: Boolean,
+    private val persistFirstCriterion: (PlaylistSongSortBy) -> Unit,
 ): Sort<PlaylistSongSortBy>(
     menuState, sortByState, sortOrderState, styleState,
     sortMenuOrderKey = localPlaylistSortMenuOrderKey,
@@ -36,14 +39,29 @@ class PlaylistSongsSort private constructor(
 
     companion object {
         @Composable
-        operator fun invoke(playlistId: Long, isRewind: Boolean = false) = PlaylistSongsSort(
-            LocalMenuState.current,
-            rememberPreference("PlaylistSongsSortBy_$playlistId", PlaylistSongSortBy.Title),
-            rememberPreference("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending),
-            rememberPreference( menuStyleKey, MenuStyle.List ),
-            isRewind
-        )
+        operator fun invoke(playlistId: Long, isRewind: Boolean = false): PlaylistSongsSort {
+            val sortKey = "PlaylistSongsSortBy_$playlistId"
+            val preferences = LocalContext.current.preferences
+            return PlaylistSongsSort(
+                LocalMenuState.current,
+                rememberPreference(sortKey, PlaylistSongSortBy.Title),
+                rememberPreference("PlaylistSongsSortOrder_$playlistId", SortOrder.Ascending),
+                rememberPreference(menuStyleKey, MenuStyle.List),
+                isRewind,
+                persistFirstCriterion = { criterion ->
+                    if (!preferences.contains(sortKey)) preferences.edit().putString(sortKey, criterion.name).apply()
+                },
+            )
+        }
     }
+
+    override var sortBy: PlaylistSongSortBy
+        get() = super.sortBy
+        set(value) {
+            super.sortBy = value
+            // Selecting the displayed default still records an explicit preference.
+            persistFirstCriterion(value)
+        }
 
     /** Spec 2: "Rewind Top" exists only in the sort menu of the generated `rewind-*` playlists; every other playlist keeps the classic option list. */
     override fun getEnumConstants(): List<PlaylistSongSortBy> =

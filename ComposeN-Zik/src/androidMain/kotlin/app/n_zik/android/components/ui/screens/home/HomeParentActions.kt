@@ -17,14 +17,21 @@ internal suspend fun <Id> loadHomeParentSongs(
     ids: List<Id>,
     load: suspend (List<Id>) -> List<HomeParentSong>,
     include: (Id, Song) -> Boolean = { _, _ -> true },
-): List<Song> = withContext(NzikDispatchers.DATA) {
+): List<Song> = loadHomeParentItems(ids, load, include) { _, song -> song }
+
+internal suspend fun <Id, T> loadHomeParentItems(
+    ids: List<Id>,
+    load: suspend (List<Id>) -> List<HomeParentSong>,
+    include: (Id, Song) -> Boolean,
+    map: (Id, Song) -> T,
+): List<T> = withContext(NzikDispatchers.DATA) {
     val seen = HashSet<String>()
     buildList {
         for (chunk in ids.chunked(500)) {
             val byParent = load(chunk).groupBy(HomeParentSong::parentId)
             for (id in chunk) {
                 for (row in byParent[id.toString()].orEmpty()) {
-                    if (include(id, row.song) && seen.add(row.song.id)) add(row.song)
+                    if (include(id, row.song) && seen.add(row.song.id)) add(map(id, row.song))
                 }
             }
         }
@@ -44,11 +51,11 @@ internal suspend fun loadHomeLibraryGroupSongs(
     }
 }
 
-internal class HomeSongAction(
+internal class HomeSongAction<T>(
     private val tag: String,
-    private val capture: () -> (suspend () -> List<Song>)?,
+    private val capture: () -> (suspend () -> List<T>)?,
 ) {
-    fun snapshot(): (suspend () -> List<Song>?)? {
+    fun snapshot(): (suspend () -> List<T>?)? {
         val load = capture() ?: return null
         return {
             try {
@@ -65,10 +72,10 @@ internal class HomeSongAction(
 }
 
 @Composable
-internal fun rememberHomeSongAction(
+internal fun <T> rememberHomeSongAction(
     tag: String,
-    capture: () -> (suspend () -> List<Song>)?,
-): HomeSongAction {
+    capture: () -> (suspend () -> List<T>)?,
+): HomeSongAction<T> {
     val latest = rememberUpdatedState(capture)
     return remember(tag) { HomeSongAction(tag) { latest.value() } }
 }

@@ -176,6 +176,7 @@ import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.utils.asMediaItem
+import app.n_zik.android.utils.withPodcastSource
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
@@ -252,6 +253,7 @@ fun HomeLibrary(
     val libraryScope = HomeLibraryPlaylistScope(
         playlistType, youtubeLibraryFilter, search.filterQuery,
         rewindEnabled && rewindMonthlyPlaylistEnabled, rewindEnabled && rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
+        rewindEnabled = rewindEnabled,
     )
     val devicePlaylistIds by remember(previewSession) {
         if (previewSession != null) kotlinx.coroutines.flow.flowOf(emptyList())
@@ -403,25 +405,39 @@ fun HomeLibrary(
     }
     val action = rememberHomeSongAction("HomeLibrary") {
         if (!gridReady || previewSession != null) return@rememberHomeSongAction null
-        val ids = actionTargets().map { it.playlist.id }
+        val targets = actionTargets()
+        val ids = targets.map { it.playlist.id }
+        val sources = targets.associate { it.playlist.id to it.playlist.browseId }
         if (itemSelector.isActive && ids.isEmpty()) return@rememberHomeSongAction null
         val deviceOnly = playlistType == PlaylistsType.OnDevice
-        val load: suspend () -> List<Song> = {
+        val load: suspend () -> List<Pair<Song, String?>> = {
             val eligible = if (deviceOnly) context.scanDeviceLibrary().songIds else emptySet()
-            loadHomeParentSongs(ids, Database.songPlaylistMapTable::songsForHomePlaylists) { _, song ->
-                !deviceOnly || (song.isLocal && song.id in eligible)
+            loadHomeParentItems(
+                ids, Database.songPlaylistMapTable::songsForHomePlaylists,
+                include = { _, song -> !deviceOnly || (song.isLocal && song.id in eligible) },
+            ) { playlistId, song ->
+                song to sources[playlistId]
             }
         }
         load
     }
-    val shuffle = SongShuffler.deferred(action::snapshot)
+    val captureMediaItems = {
+        action.snapshot()?.let { load ->
+            suspend {
+                withContext(NzikDispatchers.DATA) {
+                    load()?.map { (song, source) -> song.asMediaItem.withPodcastSource(source) }
+                }
+            }
+        }
+    }
+    val shuffle = SongShuffler.deferredMediaItems(captureMediaItems)
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
-        val load = action.snapshot() ?: return
+        val load = captureMediaItems() ?: return
         val endSelection = itemSelector.captureSelectionCompletion()
         val menuKey = menuState.transitionKey
         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-            val items = withContext(NzikDispatchers.DATA) { load()?.map { it.asMediaItem } ?: emptyList() }
+            val items = load().orEmpty()
             val queued = if (playNext) player.addNextOffMain(items, context)
                 else player.enqueueOffMain(items, context)
             if (queued) {
@@ -436,8 +452,7 @@ fun HomeLibrary(
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
         captureMediaItems = {
-            action.snapshot()?.let { load -> { load()?.map { it.asMediaItem } } }
-                ?: if (itemSelector.isActive) null else suspend { emptyList() }
+            captureMediaItems() ?: if (itemSelector.isActive) null else suspend { emptyList() }
         },
         onFailure = { error, preview ->
             Timber.tag("HomeLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
@@ -448,7 +463,7 @@ fun HomeLibrary(
     )
     val exportDialog = ExportSongsToCSVDialog.deferred(
         "Library",
-        action::snapshot,
+        { action.snapshot()?.let { load -> suspend { load()?.map { it.first } } } },
         selectionActive = { itemSelector.isActive },
         browsingRestoreScope = {
             boundProcessStorageIdentity()?.takeIf {

@@ -101,6 +101,20 @@ class HomeLibraryPlaylistScopeTest {
             rewindFilter = RewindPlaylists.Filter.Year).visible(rows))
         assertEquals(listOf(month), all.copy(type = PlaylistsType.MonthlyPlaylist,
             monthlyEnabled = true, yearlyEnabled = false).visible(rows))
+        assertEquals(catalog + pinned, all.copy(rewindEnabled = false).visible(rows))
+        assertEquals(catalog + year + pinned, all.copy(monthlyEnabled = false).visible(rows))
+    }
+
+    @Test fun `a generated Rewind keeps the ambiguous old row accessible in library projections`() {
+        val name = RewindPlaylists.ALLTIME_NAME
+        val legacy = preview(5, name)
+        val generated = preview(6, name, RewindPlaylists.generatedSourceId(name))
+        val all = podcastScope.copy(type = PlaylistsType.Playlist)
+
+        assertEquals(listOf(local, legacy), all.visible(listOf(local, legacy)))
+        val rows = listOf(local, legacy, generated)
+        assertEquals(rows, all.visible(rows))
+        assertEquals(listOf(legacy, generated), all.copy(type = PlaylistsType.MonthlyPlaylist).visible(rows))
     }
 
     @Test fun `on device shows scanned playlists in order while retaining pinned and search rules`() {

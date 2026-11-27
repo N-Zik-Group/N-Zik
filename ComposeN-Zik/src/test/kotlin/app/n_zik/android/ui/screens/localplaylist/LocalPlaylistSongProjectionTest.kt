@@ -52,12 +52,13 @@ class LocalPlaylistSongProjectionTest {
     @Test
     fun `parental filtering follows deduplication and search cleans both fields`() {
         val explicit = song("explicit", "e:Night")
+        val renamedExplicit = song("renamed", "modified:e:Night")
         val artistMatch = song("artist", "Other", "modified:Night Crew")
         val titleMatch = song("title", "modified:Night sky")
         val uppercasePrefix = song("uppercase", "E:Night edit")
 
         val result = projectLocalPlaylistSongs(
-            songs = listOf(explicit, explicit.copy(title = "Night"), artistMatch, titleMatch, uppercasePrefix),
+            songs = listOf(explicit, explicit.copy(title = "Night"), renamedExplicit, artistMatch, titleMatch, uppercasePrefix),
             recommendations = emptyMap(),
             query = "nIgHt",
             onDeviceOnly = false,

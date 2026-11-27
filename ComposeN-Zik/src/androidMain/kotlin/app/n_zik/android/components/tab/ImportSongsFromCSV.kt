@@ -13,6 +13,8 @@ import app.n_zik.android.exception.InvalidHeaderException
 import com.github.doyaaaaaken.kotlincsv.dsl.csvReader
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.appContext
+import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
@@ -121,8 +123,10 @@ class ImportSongsFromCSV(
                 if (name.isBlank()) {
                     straySongs.addAll(songs)
                 } else {
-                    val browseId = if (sourceSuffix.isEmpty()) sourceId else "${sourceId}_$sourceSuffix"
-                    playlists[Playlist(name = name, browseId = browseId)] = songs
+                    val importedSource = sourceId.takeUnless(RewindPlaylists::isGeneratedSourceId).orEmpty()
+                    val browseId = if (sourceSuffix.isEmpty()) importedSource else "${importedSource}_$sourceSuffix"
+                    val playlist = Playlist(name = appContext().portablePlaylistName(name), browseId = browseId)
+                    playlists[playlist] = playlists[playlist].orEmpty() + songs
                 }
             }
             if (straySongs.isEmpty() && playlists.isEmpty()) return false

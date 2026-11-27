@@ -14,6 +14,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.appContext
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.ui.components.themed.HeaderIconButton
 import app.n_zik.android.ui.styling.favoritesIcon
 import app.n_zik.android.core.utils.Toaster
@@ -61,7 +63,7 @@ internal suspend fun togglePodcastBookmark(
         operation = podcastBookmarkOperation(latest)
         when (operation) {
             PodcastBookmarkOperation.Create -> {
-                val playlist = podcastBookmarkPlaylist(browseId, title, owner)
+                val playlist = podcastBookmarkPlaylist(browseId, appContext().portablePlaylistName(title), owner)
                 // mapIgnore intentionally skips an empty track list.
                 if (episodes.isEmpty()) playlistTable.insert(playlist)
                 else mapIgnore(playlist, *episodes.toTypedArray())

@@ -47,7 +47,7 @@ class HomeLibraryActionSourceTest {
         mockkObject(Toaster)
         every { Toaster.e(R.string.common_load_failed, duration = any()) } just Runs
         try {
-            val load = requireNotNull(HomeSongAction("HomeLibrary") { { error("Read failed") } }.snapshot())
+            val load = requireNotNull(HomeSongAction<Song>("HomeLibrary") { { error("Read failed") } }.snapshot())
 
             assertNull(load())
             verify(exactly = 1) { Toaster.e(R.string.common_load_failed, duration = any()) }
@@ -61,7 +61,7 @@ class HomeLibraryActionSourceTest {
         val cancelled = CancellationException("Read cancelled")
         mockkObject(Toaster)
         try {
-            val load = requireNotNull(HomeSongAction("HomeLibrary") { { throw cancelled } }.snapshot())
+            val load = requireNotNull(HomeSongAction<Song>("HomeLibrary") { { throw cancelled } }.snapshot())
 
             assertSame(cancelled, runCatching { load() }.exceptionOrNull())
             verify(exactly = 0) { Toaster.e(R.string.common_load_failed, duration = any()) }
@@ -91,7 +91,7 @@ class HomeLibraryActionSourceTest {
     @Test fun `retained toolbar resolves current targets once only when invoked`() = runBlocking {
         val targetId = mutableStateOf("first")
         val reads = mutableListOf<String>()
-        lateinit var source: HomeSongAction
+        lateinit var source: HomeSongAction<Song>
         var initialized = false
         compose.setContent {
             val id = targetId.value

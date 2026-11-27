@@ -52,6 +52,20 @@ class ExportPayloadTest {
     }
 
     @Test
+    fun `restored browsing waits for a playlist whose identity has not loaded`() = runTest {
+        val scope = mutableStateOf<String?>(null)
+        val result = async(start = CoroutineStart.UNDISPATCHED) {
+            awaitRestoredExportPayload("original", { scope.value }) { listOf("current") }
+        }
+        assertFalse(result.isCompleted)
+
+        scope.value = "original"
+        Snapshot.sendApplyNotifications()
+
+        assertEquals(listOf("current"), result.await())
+    }
+
+    @Test
     fun `restored browsing never captures a different scope`() = runTest {
         val result = awaitRestoredExportPayload<List<String>>("original", { "different" }) {
             error("A restored export must stay within its original scope")

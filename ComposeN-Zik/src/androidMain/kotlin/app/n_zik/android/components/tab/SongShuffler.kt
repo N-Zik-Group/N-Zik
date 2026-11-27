@@ -67,6 +67,19 @@ class SongShuffler private constructor(
             }
         }
 
+        @Composable
+        internal fun deferredMediaItems(capture: () -> (suspend () -> List<MediaItem>?)?): SongShuffler {
+            val scope = rememberCoroutineScope()
+            return SongShuffler(LocalPlayerServiceBinder.current, LocalMenuState.current) { binder ->
+                val load = capture()
+                if (load != null) scope.launch {
+                    val items = load() ?: return@launch
+                    if (items.isEmpty()) Toaster.i(R.string.player_shuffle_empty_message)
+                    else Shuffler.play(binder, items, onQueueApplied = binder::triggerShuffleOkFlash)
+                }
+            }
+        }
+
         fun playShuffled(
             binder: PlayerServiceModern.Binder,
             songs: List<Song>

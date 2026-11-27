@@ -19,6 +19,9 @@ import app.n_zik.android.bridge.state.TrackDownloadState
 import app.n_zik.android.bridge.state.TrackLike
 import app.n_zik.android.bridge.state.TrackMapping
 import app.n_zik.android.core.database.PlaylistSongRef
+import app.n_zik.android.core.database.PlaylistLinkKind
+import app.n_zik.android.core.database.isPlaylistBookmarked
+import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.MONTHLY_PREFIX
@@ -53,7 +56,7 @@ internal object LibraryMapping {
 
     /** The phone's detail screens' display filter: the parental control hides the explicit `e:` rows of an album / artist / playlist (`AlbumScreen.kt` 453-455, `ArtistScreen.kt` 345, `LocalPlaylistSongs.kt` 1058). */
     fun detailSongs(shown: List<Song>, parentalControl: Boolean): List<Song> =
-        shown.filter { !parentalControl || !it.title.startsWith(EXPLICIT_PREFIX, true) }
+        shown.filter { !parentalControl || !it.title.hasExplicitPrefix() }
 
     /** `Track` of a database song: cleaned title and artists, the like tri-state from `likedAt`, and the phone's row states from [support] (contract §1.1, since 1.7.1). */
     fun track(song: Song, support: TrackSupport): TrackDto =
@@ -161,11 +164,11 @@ internal object LibraryMapping {
                 artworkTrackId = artworkTracks[playlist.id],
                 origin = originOf(playlist.name, playlist.browseId, playlist.isYoutubePlaylist),
                 isPinned = playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true),
-                isBookmarked = playlist.isYoutubePlaylist,
+                isBookmarked = isPlaylistBookmarked(playlist),
                 isEditable = playlist.isEditable,
                 playCount = stats.playCount,
                 totalPlayTimeMs = stats.totalPlayTimeMs,
-                browseId = playlist.browseId,
+                browseId = playlist.browseId?.takeUnless(RewindPlaylists::isGeneratedSourceId),
             )
         }
 
@@ -180,7 +183,7 @@ internal object LibraryMapping {
         RewindPlaylists.isRewind(name) -> PlaylistOrigin.REWIND
         browseId?.startsWith("SPOTIFY_IMPORT") == true -> PlaylistOrigin.SPOTIFY
         browseId?.startsWith("RIPLAY_IMPORT") == true -> PlaylistOrigin.RIPLAY
-        isYoutubePlaylist || browseId?.startsWith("VL") == true -> PlaylistOrigin.YTMUSIC
+        isYoutubePlaylist || playlistLinkKind(browseId) != PlaylistLinkKind.Local -> PlaylistOrigin.YTMUSIC
         else -> PlaylistOrigin.LOCAL
     }
 }

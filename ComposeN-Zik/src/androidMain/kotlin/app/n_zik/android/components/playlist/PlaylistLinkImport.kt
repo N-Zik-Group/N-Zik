@@ -8,6 +8,7 @@ import app.n_zik.android.components.menu.playlist.withSourcePlaylistOwner
 import app.n_zik.android.components.navigation.onlinePlaylistBrowseIdFromLink
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
@@ -83,7 +84,7 @@ internal fun launchPlaylistLinkImport(
                     if (!ProfileWorkOwner.isBound(app, owner)) return@transaction
                     val target = if (targetPlaylistId == null) {
                         val playlist = Playlist(
-                            name = source.title ?: app.getString(R.string.playlist_youtube_title),
+                            name = app.portablePlaylistName(source.title ?: app.getString(R.string.playlist_youtube_title)),
                             browseId = browseId,
                         ).withSourcePlaylistOwner(source.channel)
                         playlist.copy(id = playlistTable.insert(playlist))

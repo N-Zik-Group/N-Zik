@@ -15,12 +15,14 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.appTextResources
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
 import app.n_zik.android.components.dialog.common.TextInputDialog
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.models.Playlist
@@ -102,6 +104,11 @@ class NewPlaylistDialog private constructor(
     override fun onSet( newValue: String ) {
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
+
+        if (RewindPlaylists.isReservedName(newValue)) {
+            errorMessage = appTextResources().getString(R.string.playlist_name_reserved)
+            return
+        }
 
         val context = appContext()
         val owner = ProfileWorkOwner.capture(context) ?: return

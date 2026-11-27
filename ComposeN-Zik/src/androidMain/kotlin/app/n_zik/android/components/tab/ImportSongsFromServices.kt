@@ -21,6 +21,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.appContext
 import app.n_zik.android.components.ImportFromFile
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.rewind.RewindPlaylists.portablePlaylistName
 import app.n_zik.android.R
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importServiceSongsToPlaylist
@@ -165,7 +166,10 @@ class ImportSongsFromServices private constructor(
             Database.awaitWriteBatch {
                 transaction {
                     if (createPlaylist) {
-                        val newPlaylist = Playlist(name = fileName.substringBeforeLast("."), browseId = source)
+                        val newPlaylist = Playlist(
+                            name = context.portablePlaylistName(fileName.substringBeforeLast(".")),
+                            browseId = source,
+                        )
                         activePlaylistId = playlistTable.insert(newPlaylist)
                     }
                     beforeActions.forEach { it() }
