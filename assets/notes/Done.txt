@@ -1592,3 +1592,7 @@ Settings / Playback:
 Menus:
 - refactor(menu): share the list and grid frame
   - Reuse the same material, heading, separator and empty state for both menu layouts.
+
+Menus:
+- refactor(menu): share section headings and nested return
+  - Use common rendering primitives for section labels and reopen a parent action on explicit Back.

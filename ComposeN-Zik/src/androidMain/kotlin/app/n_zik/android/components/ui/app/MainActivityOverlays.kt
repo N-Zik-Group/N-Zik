@@ -63,13 +63,13 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
             },
             label = "MenuContentTransition"
         ) { target ->
-            BackHandler(enabled = menuState.hasPrevious) {
+            BackHandler(enabled = menuState.isDisplayed && menuState.canGoBack) {
                 menuState.pop()
             }
             Box(modifier = Modifier.fillMaxWidth()) {
                 target.second?.let { entry ->
                     val back = remember(menuState, entry) {
-                        if (entry.hasPrevious) {
+                        if (entry.hasPrevious || entry.onReturn != null) {
                             {
                                 if (menuState.isDisplayed && menuState.presentationState.second === entry) {
                                     menuState.pop()

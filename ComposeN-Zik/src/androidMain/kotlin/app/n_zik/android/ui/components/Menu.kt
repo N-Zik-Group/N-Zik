@@ -74,6 +74,7 @@ class MenuState {
         val content: @Composable () -> Unit,
         val onDestinationOpened: (() -> Unit)?,
         val depth: Int,
+        val onReturn: (() -> Unit)?,
     ) {
         val hasPrevious get() = depth > 0
         val scrollState = MenuScrollState()
@@ -90,27 +91,37 @@ class MenuState {
     val hasPrevious: Boolean
         get() = contentStack.size > 1
 
+    internal val canGoBack: Boolean get() = contentStack.lastOrNull()?.let { it.hasPrevious || it.onReturn != null } == true
+
     internal val onDestinationOpened: (() -> Unit)?
         get() = if (isDisplayed) contentStack.lastOrNull()?.onDestinationOpened else null
 
-    fun display(content: @Composable () -> Unit) = display(null, content)
+    fun display(content: @Composable () -> Unit) = display(null, content = content)
 
-    internal fun display(onDestinationOpened: (() -> Unit)?, content: @Composable () -> Unit) {
+    internal fun display(
+        onDestinationOpened: (() -> Unit)?,
+        onReturn: (() -> Unit)? = null,
+        content: @Composable () -> Unit,
+    ) {
         if (!isDisplayed) {
             contentStack.clear()
         }
-        contentStack.add(Entry(content, onDestinationOpened ?: this.onDestinationOpened, contentStack.size))
+        contentStack.add(Entry(content, onDestinationOpened ?: this.onDestinationOpened, contentStack.size, onReturn))
         this.transitionKey++
         isDisplayed = true
     }
 
+    internal fun containsEntry(entry: Entry): Boolean = isDisplayed && entry in contentStack
+
     fun pop() {
+        val onReturn = contentStack.lastOrNull()?.onReturn
         if (contentStack.size > 1) {
             contentStack.removeLast()
             this.transitionKey++
         } else {
             hide()
         }
+        onReturn?.invoke()
     }
 
     fun hide() {
