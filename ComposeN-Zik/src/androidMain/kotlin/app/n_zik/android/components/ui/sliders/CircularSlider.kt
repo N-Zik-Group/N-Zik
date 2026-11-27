@@ -3,7 +3,6 @@ package app.n_zik.android.components.ui.sliders
 import android.view.MotionEvent
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,16 +44,15 @@ fun CircularSlider(
     backgroundColor: Color = Color.LightGray,
     debug: Boolean = false,
     text: String = "",
+    initialProgress: Float = 0f,
     onChange: ((Float)->Unit)? = null
 ){
     var width by remember { mutableStateOf(0) }
     var height by remember { mutableStateOf(0) }
-    var angle by remember { mutableStateOf(-60f) }
-    var last by remember { mutableStateOf(0f) }
     var down  by remember { mutableStateOf(false) }
     var radius by remember { mutableStateOf(0f) }
     var center by remember { mutableStateOf(Offset.Zero) }
-    var appliedAngle by remember { mutableStateOf(0f) }
+    var appliedAngle by remember { mutableStateOf(initialProgress.coerceIn(0f, 1f) * 300f) }
 
     val textMeasurer = rememberTextMeasurer()
     val style = TextStyle(
@@ -66,21 +64,14 @@ fun CircularSlider(
         textMeasurer.measure(AnnotatedString(text), style)
     }
 
-    LaunchedEffect(key1 = angle){
-        var a = angle
-        a += 60
-        if(a<=0f){
-            a += 360
+    fun updateAngle(angle: Float) {
+        val offsetAngle = angle + 60f
+        val sweep = (if (offsetAngle <= 0f) offsetAngle + 360f else offsetAngle).coerceAtMost(300f)
+        val nextAngle = if (appliedAngle < 150f && sweep == 300f) 0f else sweep
+        if (nextAngle != appliedAngle) {
+            appliedAngle = nextAngle
+            onChange?.invoke(nextAngle / 300f)
         }
-        a = a.coerceIn(0f,300f)
-        if(last<150f&&a==300f){
-            a = 0f
-        }
-        last = a
-        appliedAngle = a
-    }
-    LaunchedEffect(key1 = appliedAngle){
-        onChange?.invoke(appliedAngle/300f)
     }
     Canvas(
         modifier = modifier
@@ -101,14 +92,14 @@ fun CircularSlider(
                         val a = angle(center, offset)
                         if (d >= radius - touchStroke / 2f && d <= radius + touchStroke / 2f && a !in -120f..-60f) {
                             down = true
-                            angle = a
+                            updateAngle(a)
                         } else {
                             down = false
                         }
                     }
                     MotionEvent.ACTION_MOVE -> {
                         if (down) {
-                            angle = angle(center, offset)
+                            updateAngle(angle(center, offset))
                         }
                     }
                     MotionEvent.ACTION_UP -> {

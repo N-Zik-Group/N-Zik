@@ -1916,3 +1916,7 @@ Playlists:
 Playlists / Export:
 - fix(playlist): restore Library CSV exports once tracks load
   - Wait briefly for the original Library view after Android recreates the export screen.
+
+Menus / Playback:
+- fix(player): preserve the sleep timer when opening the dial
+  - Keep duration on opening the dial and hold the final dialog state during dismissal.

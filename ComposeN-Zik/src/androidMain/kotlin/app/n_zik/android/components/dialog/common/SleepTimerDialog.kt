@@ -56,17 +56,18 @@ fun SleepTimerDialog(
     onCancelSleepTimer: () -> Unit,
     onStartSleepTimer: (Long) -> Unit
 ) {
-    if (sleepTimerMillisLeft != null) {
+    val timerRunning = sleepTimerMillisLeft != null
+    var displayedTimerRunning by remember { mutableStateOf(timerRunning) }
+    if (dialogInputEnabled) displayedTimerRunning = timerRunning
+
+    if (displayedTimerRunning) {
         ConfirmationDialog(
             title = stringResource(R.string.player_sleep_timer_title),
             text = stringResource(R.string.player_sleep_timer_stop_confirmation),
             cancelText = stringResource(R.string.common_answer_no),
             confirmText = stringResource(R.string.common_action_stop),
             onDismiss = onDismiss,
-            onConfirm = {
-                onCancelSleepTimer()
-                onDismiss()
-            }
+            onConfirm = onCancelSleepTimer,
         )
     } else {
         val palette = colorPalette()
@@ -162,6 +163,7 @@ fun SleepTimerDialog(
                             stroke = 40f,
                             thumbColor = palette.accent,
                             text = formatAsDuration(sleepTimeMillis),
+                            initialProgress = amount / MAX_SLIDER_VALUE,
                             modifier = Modifier
                                 .testTag("sleepTimerSlider")
                                 .fillMaxWidth()

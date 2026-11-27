@@ -20,7 +20,9 @@ import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -141,6 +143,67 @@ class DialogPresenceTest {
         advance()
         assertEquals(2, calls.size)
         assertTrue(disposed)
+    }
+
+    @Test fun `starting and stopping the sleep timer retain the dialog during exit`() {
+        val visible = mutableStateOf(true)
+        val millisLeft = mutableStateOf<Long?>(null)
+        var dismissals = 0
+        content {
+            DialogPresence(visible = visible.value) {
+                SleepTimerDialog(
+                    sleepTimerMillisLeft = millisLeft.value,
+                    timeRemaining = 0L,
+                    onDismiss = {
+                        dismissals++
+                        visible.value = false
+                    },
+                    onCancelSleepTimer = { millisLeft.value = null },
+                    onStartSleepTimer = { millisLeft.value = it },
+                )
+            }
+        }
+        advance()
+        val viewport = compose.onNodeWithTag("dialogFrameViewport")
+        val setupId = viewport.fetchSemanticsNode().id
+        compose.onNode(hasText(context.getString(R.string.player_sleep_timer_action_set)) and hasClickAction())
+            .performClick()
+        advance(100)
+        assertEquals(setupId, viewport.fetchSemanticsNode().id)
+        assertEquals(1, dismissals)
+        advance()
+
+        compose.runOnIdle { visible.value = true }
+        advance()
+        val stopId = viewport.fetchSemanticsNode().id
+        compose.onNodeWithText(context.getString(R.string.common_action_stop)).performClick()
+        advance(100)
+        assertEquals(stopId, viewport.fetchSemanticsNode().id)
+        assertEquals(2, dismissals)
+        advance()
+        viewport.assertDoesNotExist()
+    }
+
+    @Test fun `sleep timer expiry updates the open dialog`() {
+        val millisLeft = mutableStateOf<Long?>(10_000L)
+        content {
+            DialogPresence(visible = true) {
+                SleepTimerDialog(
+                    sleepTimerMillisLeft = millisLeft.value,
+                    timeRemaining = 0L,
+                    onDismiss = {},
+                    onCancelSleepTimer = {},
+                    onStartSleepTimer = {},
+                )
+            }
+        }
+        advance()
+        compose.onNodeWithText(context.getString(R.string.player_sleep_timer_stop_confirmation)).assertExists()
+
+        compose.runOnIdle { millisLeft.value = null }
+        advance()
+        compose.onNode(hasText(context.getString(R.string.player_sleep_timer_action_set)) and hasClickAction())
+            .assertExists()
     }
 
     @Test fun `retired confirmation rejects a captured action`() {

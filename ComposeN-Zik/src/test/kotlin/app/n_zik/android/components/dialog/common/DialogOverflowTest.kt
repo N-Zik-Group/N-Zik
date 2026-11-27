@@ -201,14 +201,15 @@ class DialogOverflowTest {
 
     @Config(qualifiers = "w320dp-h470dp")
     @Test
-    fun `sleep timer slider stays bounded to the card width on a narrow screen`() {
+    fun `sleep timer slider stays bounded and preserves the selected duration`() {
+        var startedTimer: Long? = null
         content {
             SleepTimerDialog(
                 sleepTimerMillisLeft = null,
                 timeRemaining = 0L,
                 onDismiss = {},
                 onCancelSleepTimer = {},
-                onStartSleepTimer = {}
+                onStartSleepTimer = { startedTimer = it }
             )
         }
         composeRule.waitForIdle()
@@ -244,10 +245,11 @@ class DialogOverflowTest {
         // inside the card: the stepper / slider area scrolls within the frame, so the
 
         // pills are never clipped below the card (issue #896, vertical half).
-        val confirmPill = composeRule.onNode(
+        val confirm = composeRule.onNode(
             hasText(app.getString(R.string.player_sleep_timer_action_set)) and
                 hasAnyAncestor(hasTestTag("dialogFrameFooter"))
-        ).getBoundsInRoot()
+        )
+        val confirmPill = confirm.getBoundsInRoot()
         val cancelPill = composeRule.onNodeWithText(app.getString(R.string.common_action_cancel)).getBoundsInRoot()
         assertTrue(
             "confirm pill clipped below the card (cardBottom=${card.bottom}, pillBottom=${confirmPill.bottom})",
@@ -257,6 +259,8 @@ class DialogOverflowTest {
             "cancel pill clipped below the card (cardBottom=${card.bottom}, pillBottom=${cancelPill.bottom})",
             cancelPill.bottom <= card.bottom
         )
+        confirm.performClick()
+        assertTrue("switching to the slider changed the selected duration", startedTimer == 5L * 60 * 1000)
     }
 
     @Test
