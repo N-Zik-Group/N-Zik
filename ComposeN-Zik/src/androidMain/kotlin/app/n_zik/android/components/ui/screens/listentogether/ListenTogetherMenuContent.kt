@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,7 +29,7 @@ import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
-import app.n_zik.android.components.menu.menuSectionHeading
+import app.n_zik.android.components.menu.MenuSectionTitle
 import app.n_zik.android.components.menu.menuToggleSemantics
 import app.n_zik.android.components.ui.InlineLoader
 import app.n_zik.android.components.ui.toggles.Switch
@@ -599,22 +598,6 @@ private fun GridEntryIcon(@DrawableRes icon: Int, color: Color) {
         contentDescription = null,
         tint = color,
         modifier = Modifier.size(18.dp),
-    )
-}
-
-@Composable
-private fun MenuSectionTitle(title: String) {
-    BasicText(
-        text = title,
-        style = typography().xxs.semiBold.copy(
-            color = colorPalette().accent,
-            textAlign = TextAlign.Start,
-        ),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading(),
     )
 }
 

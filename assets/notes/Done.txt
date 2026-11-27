@@ -1776,3 +1776,7 @@ Playlists:
 Settings:
 - fix(settings): index exact backup retention values
   - Share the available retention range with search and match the exact number entered.
+
+Menus:
+- fix(menu): share Listen Together section headings
+  - Use the shared section heading so both menu styles adapt text contrast to the active surface.
