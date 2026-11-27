@@ -16,7 +16,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.findRootCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollToIndexAction
@@ -28,6 +30,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
+import kotlin.math.abs
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
@@ -53,8 +56,10 @@ class RewindExportMenuHeightTest {
     @Test fun `native grid keeps half height after expand and last action reachable`() = checkMenu(false, true)
     @Test fun `shared list keeps half height after expand and last action reachable`() = checkMenu(true, false)
     @Test fun `shared grid keeps half height after expand and last action reachable`() = checkMenu(true, true)
+    @Test fun `native short list opens at the bottom`() = checkMenu(false, false, actionCount = 3)
+    @Test fun `shared short list opens at the bottom`() = checkMenu(true, false, actionCount = 3)
 
-    private fun checkMenu(shared: Boolean, grid: Boolean) {
+    private fun checkMenu(shared: Boolean, grid: Boolean, actionCount: Int = 20) {
         val host = GlassMenuHostState()
         val shape = RoundedCornerShape(24.dp)
         val appearance = Appearance(
@@ -64,25 +69,30 @@ class RewindExportMenuHeightTest {
         lateinit var state: SheetState
         lateinit var scope: CoroutineScope
         var visible by mutableStateOf(false)
-        var maxHeightPx = 0f
+        var viewportHeight = 0
+        var contentTop = 0f
+        var contentHeight = 0
         compose.setContent {
-            maxHeightPx = with(LocalDensity.current) { 320.dp.toPx() }
             CompositionLocalProvider(LocalAppearance provides appearance, LocalGlassMenuHost provides if (shared) host else null) {
                 state = rememberModalBottomSheetState(skipPartiallyExpanded = true)
                 scope = rememberCoroutineScope()
                 Text("Open export options", Modifier.clickable { visible = true })
                 val content: @androidx.compose.runtime.Composable () -> Unit = {
-                    Box(Modifier.fillMaxWidth().testTag("export-menu")) {
+                    Box(Modifier.fillMaxWidth().testTag("export-menu").onGloballyPositioned {
+                        viewportHeight = it.findRootCoordinates().size.height
+                        contentTop = it.positionInRoot().y
+                        contentHeight = it.size.height
+                    }) {
                         if (grid) GridMenu.Menu(title = "Export") {
-                            items(20) { index -> GridMenu.Entry(text = "Action $index", icon = {}, onClick = {}) }
+                            items(actionCount) { index -> GridMenu.Entry(text = "Action $index", icon = {}, onClick = {}) }
                         } else ListMenu.Menu(title = "Export") {
-                            repeat(20) { index -> ListMenu.Entry(text = "Action $index", icon = {}, onClick = {}) }
+                            repeat(actionCount) { index -> ListMenu.Entry(text = "Action $index", icon = {}, onClick = {}) }
                         }
                     }
                 }
                 if (shared) {
                     Box {
-                        SharedGlassMenuSheet(visible, { visible = false }, state, maxSheetHeight = 320.dp,
+                        SharedGlassMenuSheet(visible, { visible = false }, state, maxHeightFraction = .5f,
                             contentWindowInsets = { WindowInsets(0) }) { content() }
                         GlassDialogOverlayHost(host)
                     }
@@ -95,12 +105,23 @@ class RewindExportMenuHeightTest {
         compose.waitForIdle()
         compose.runOnIdle { assertTrue("the button must open the sheet without manual expansion", state.isVisible) }
         compose.onNodeWithText("Action 0").assertIsDisplayed()
+        fun assertBottomPlacement() {
+            val contentBottom = contentTop + contentHeight
+            assertTrue("surface top should be in the lower half of the window: $contentTop / $viewportHeight",
+                contentTop >= viewportHeight / 2f - 1f)
+            assertTrue("surface bottom should reach the window bottom: $contentBottom / $viewportHeight",
+                abs(contentBottom - viewportHeight) <= 1f)
+        }
+        compose.runOnIdle { assertBottomPlacement() }
         compose.runOnIdle { scope.launch { state.expand() } }
         compose.waitForIdle()
         val height = compose.onNodeWithTag("export-menu").fetchSemanticsNode().boundsInRoot.height
+        val maxHeightPx = viewportHeight / 2f
         assertTrue("expanded surface must remain at most half the screen: $height > $maxHeightPx", height <= maxHeightPx + 1f)
-        if (grid) compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText("Action 19"))
-        else compose.onNodeWithText("Action 19").performScrollTo()
-        compose.onNodeWithText("Action 19").assertIsDisplayed()
+        compose.runOnIdle { assertBottomPlacement() }
+        val lastAction = "Action ${actionCount - 1}"
+        if (grid) compose.onNode(hasScrollToIndexAction()).performScrollToNode(hasText(lastAction))
+        else compose.onNodeWithText(lastAction).performScrollTo()
+        compose.onNodeWithText(lastAction).assertIsDisplayed()
     }
 }

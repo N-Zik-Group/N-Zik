@@ -3,7 +3,6 @@ package app.n_zik.android.components.glass
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.ime
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -12,10 +11,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.isSpecified
-import androidx.compose.ui.unit.dp
 import app.n_zik.android.topUiRoundnessShape
 
 /**
@@ -38,9 +33,6 @@ fun SampledMenuSheet(
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val maxSheetHeight = maxHeightFraction?.let {
-        (LocalConfiguration.current.screenHeightDp * it.coerceIn(0f, 1f)).dp
-    } ?: Dp.Unspecified
     val settings = rememberGlassSettings()
     val host = LocalGlassMenuHost.current
     val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
@@ -52,7 +44,7 @@ fun SampledMenuSheet(
             onDismissRequest = onDismissRequest,
             sheetState = sheetState,
             partiallyExpanded = partiallyExpanded,
-            maxSheetHeight = maxSheetHeight,
+            maxHeightFraction = maxHeightFraction,
             modifier = modifier,
             shape = shape,
             dragHandle = dragHandle,
@@ -64,12 +56,13 @@ fun SampledMenuSheet(
         CustomModalBottomSheet(
             showSheet = showSheet,
             onDismissRequest = onDismissRequest,
-            modifier = if (maxSheetHeight.isSpecified) modifier.heightIn(max = maxSheetHeight) else modifier,
+            modifier = modifier,
             sheetState = sheetState,
             shape = shape,
             containerColor = containerColor,
             dragHandle = dragHandle,
             contentWindowInsets = contentWindowInsets,
+            maxHeightFraction = maxHeightFraction,
             content = content,
         )
     }

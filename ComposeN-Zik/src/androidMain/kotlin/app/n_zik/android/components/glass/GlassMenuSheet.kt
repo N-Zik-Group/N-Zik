@@ -66,6 +66,7 @@ internal fun SharedGlassMenuSheet(
     partiallyExpanded: Boolean = false,
     scrimColor: Color = Color.Unspecified,
     maxSheetHeight: Dp = Dp.Unspecified,
+    maxHeightFraction: Float? = null,
     modifier: Modifier = Modifier,
     shape: Shape = topUiRoundnessShape(),
     dragHandle: @Composable (() -> Unit)? = null,
@@ -128,6 +129,7 @@ internal fun SharedGlassMenuSheet(
         BoxWithConstraints(Modifier.fillMaxSize().windowInsetsPadding(
             WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
         ).windowInsetsPadding(contentWindowInsets())) {
+            val heightCap = maxHeightFraction?.let { maxHeight * it.coerceIn(0f, 1f) } ?: maxSheetHeight
             BottomSheetScaffold(
                 modifier = modifier.fillMaxSize(),
                 scaffoldState = rememberBottomSheetScaffoldState(bottomSheetState = sheetState),
@@ -138,7 +140,7 @@ internal fun SharedGlassMenuSheet(
                 sheetContentColor = colorPalette().text,
                 sheetShadowElevation = 0.dp,
                 sheetTonalElevation = 0.dp,
-                sheetDragHandle = if (maxSheetHeight.isSpecified || dragHandle == null) null
+                sheetDragHandle = if (heightCap.isSpecified || dragHandle == null) null
                     else ({ CenteredMenuSheetDragHandle(dragHandle) }),
                 containerColor = Color.Transparent,
                 sheetContent = {
@@ -160,8 +162,8 @@ internal fun SharedGlassMenuSheet(
                             }
                         },
                     ) {
-                        if (maxSheetHeight.isSpecified) {
-                            Column(Modifier.heightIn(max = maxSheetHeight)) {
+                        if (heightCap.isSpecified) {
+                            Column(Modifier.heightIn(max = heightCap)) {
                                 dragHandle?.let { ContentMenuSheetDragHandle(it) }
                                 content()
                             }

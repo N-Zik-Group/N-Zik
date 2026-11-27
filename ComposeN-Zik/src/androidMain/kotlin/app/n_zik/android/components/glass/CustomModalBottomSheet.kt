@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.DialogWindowProvider
@@ -53,6 +54,7 @@ import app.n_zik.android.components.menu.straightBottomMenuShape
 import app.n_zik.android.surfaceColor
 
 import kotlinx.coroutines.flow.first
+import kotlin.math.roundToInt
 
 /** Hosts menu content with straight lower corners in native and shared windows. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -75,6 +77,7 @@ fun CustomModalBottomSheet(
     contentWindowInsets: @Composable () -> WindowInsets = { WindowInsets.ime },
     useSharedHost: Boolean = true,
     expandOnShow: Boolean = false,
+    maxHeightFraction: Float? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
@@ -96,6 +99,7 @@ fun CustomModalBottomSheet(
             shape = sheetShape,
             partiallyExpanded = expandOnShow,
             expandOnShow = expandOnShow,
+            maxHeightFraction = maxHeightFraction,
             contentWindowInsets = contentWindowInsets,
             useContentHandleActions = useContentHandleActions,
         ) {
@@ -177,7 +181,14 @@ fun CustomModalBottomSheet(
             } else null
             // The native host translates its content after the caller's modifier.
             // Keep the material inside that translation and outside its content insets.
-            Column(Modifier.fillMaxWidth()
+            val contentHeight = if (maxHeightFraction == null) Modifier else Modifier.layout { measurable, constraints ->
+                val measured = if (constraints.hasBoundedHeight) {
+                    val maxHeight = (constraints.maxHeight * maxHeightFraction.coerceIn(0f, 1f)).roundToInt()
+                    measurable.measure(constraints.copy(maxHeight = maxHeight.coerceAtLeast(constraints.minHeight)))
+                } else measurable.measure(constraints)
+                layout(measured.width, measured.height) { measured.placeRelative(0, 0) }
+            }
+            Column(contentHeight.fillMaxWidth()
                 .glassOverlayPaint(if (glassSheet) glass.forArea(GlassArea.Menus).film else sheetContainerColor.alpha).then(
                 if (glassSheet) Modifier.glassMaterial(
                     glass.forArea(GlassArea.Menus), sheetShape, separateWindow = true, menu = true,
