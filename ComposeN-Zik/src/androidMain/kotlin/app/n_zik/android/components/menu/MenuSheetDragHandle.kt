@@ -37,11 +37,18 @@ private const val DRAG_HANDLE_CORNER_RADIUS = 2
 
 /** Shared appearance for visible menu handles in both native and shared hosts. */
 @Composable
-internal fun MenuSheetDragHandle(color: Color = Color.White, minTouchHeight: Dp = 0.dp) {
+internal fun MenuSheetDragHandle(
+    color: Color = Color.White,
+    minTouchHeight: Dp = 0.dp,
+    centeredVertically: Boolean = false,
+) {
+    val centeredPadding = (DRAG_HANDLE_TOP_PADDING + DRAG_HANDLE_BOTTOM_PADDING).dp / 2
+    val topPadding = if (centeredVertically) centeredPadding else DRAG_HANDLE_TOP_PADDING.dp
+    val bottomPadding = if (centeredVertically) centeredPadding else DRAG_HANDLE_BOTTOM_PADDING.dp
     CenteredMenuSheetDragHandle {
         Box(
             Modifier.heightIn(min = minTouchHeight)
-                .padding(top = DRAG_HANDLE_TOP_PADDING.dp, bottom = DRAG_HANDLE_BOTTOM_PADDING.dp),
+                .padding(top = topPadding, bottom = bottomPadding),
             contentAlignment = Alignment.Center,
         ) {
             MenuDragHandleBar(color)

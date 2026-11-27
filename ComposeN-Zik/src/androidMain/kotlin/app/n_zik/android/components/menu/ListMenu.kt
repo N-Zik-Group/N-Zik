@@ -101,7 +101,10 @@ object ListMenu {
                             .glassOverlayPaint(headerFilm.alpha)
                     ) {
                         if (showDragHandle) {
-                            MenuSheetDragHandle(color = colorPalette().text)
+                            MenuSheetDragHandle(
+                                color = colorPalette().text,
+                                centeredVertically = title == null && headerTrailing == null,
+                            )
                         }
 
                         MenuHeaderTitle(title, headerTrailing)

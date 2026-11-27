@@ -1244,3 +1244,7 @@ Settings:
 Menus:
 - fix(library): honor configurable sort options across views
   - Use matching sort choices for List and Grid, keep the historical album key, and apply sorting to disliked and cached songs.
+
+Menus:
+- fix(menu): center drag handles on untitled sheets
+  - Give the handle equal top and bottom spacing in titleless List and Grid menus.
