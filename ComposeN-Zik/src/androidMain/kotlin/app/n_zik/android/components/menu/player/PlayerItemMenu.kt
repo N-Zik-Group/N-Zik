@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import java.util.Optional
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -30,7 +31,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -187,7 +187,7 @@ class PlayerItemMenu private constructor(
         ListMenu.Menu(title = null, showDragHandle = false) {
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
             // Section: Information
-            SectionTitle(stringResource(R.string.common_information_title))
+            MenuSectionTitle(stringResource(R.string.common_information_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         statsButton?.takeIf { it.isAvailable }?.ListMenuItem()
 
@@ -196,7 +196,7 @@ class PlayerItemMenu private constructor(
             // The FFmpeg gate is gone (spec-ffmpeg-extension-module): the module is downloaded on
             // first use, so editMetadata (index 2) is always present and the indexes are fixed
             val playbackStart = LOCAL_PLAYER_PLAYBACK_START
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -206,27 +206,27 @@ class PlayerItemMenu private constructor(
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
 
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             buttons.localTrackNavigationActions().forEach { it.ListMenuItem() }
         } else {
             // Remote songs: 0=info, 1=waves, 2=rename, 3=author, 4=cover, 5=radio, 6=equalizer, 7=sleep, 8=fav, 9=playlist, 10=refetch, 11+=nav
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             if (!offlineMode) buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
             if (listenTogetherActions.isNotEmpty()) {
-                SectionTitle(stringResource(R.string.listen_together_title))
+                MenuSectionTitle(stringResource(R.string.listen_together_title))
                 listenTogetherActions.forEach { it.ListMenuItem() }
             }
 
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -235,13 +235,13 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(9)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            if (!offlineMode) buttons.getOrNull(10)?.let { if (it is MenuIcon) it.ListMenuItem() }
+            buttons.getOrNull(10)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.ListMenuItem()
             buttons.getOrNull(11)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(12)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
 
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in 13 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
                 if (btn is DeleteSongDialog || btn is ExportCacheDialog) continue
@@ -249,7 +249,7 @@ class PlayerItemMenu private constructor(
             }
 
             if (showLastFmSection && !offlineMode) {
-                SectionTitle(stringResource(R.string.settings_lastfm_title))
+                MenuSectionTitle(stringResource(R.string.settings_lastfm_title))
                 lastFmLoveButton.ListMenuItem()
                 lastFmUnloveButton.ListMenuItem()
             }
@@ -271,7 +271,7 @@ class PlayerItemMenu private constructor(
             val lastFmSectionSize = if (showLastFmSection) 2 else 0
             // Section: Information
             item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_information_title))
+            MenuSectionTitle(stringResource(R.string.common_information_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         availableStatsButton?.let { button ->
@@ -283,7 +283,7 @@ class PlayerItemMenu private constructor(
             // first use (spec-ffmpeg-extension-module)
             val playbackStart = LOCAL_PLAYER_PLAYBACK_START
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.library_management_section_title))
+                MenuSectionTitle(stringResource(R.string.library_management_section_title))
             }
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -297,19 +297,19 @@ class PlayerItemMenu private constructor(
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_playback_section_title))
+                MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
             for (i in playbackStart until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             buttons.localTrackNavigationActions().forEach { button -> item { button.GridMenuItem() } }
         } else {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_playback_section_title))
+                MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
             if (!offlineMode) buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(6)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -318,13 +318,13 @@ class PlayerItemMenu private constructor(
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
             if (listenTogetherActions.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.listen_together_title))
+                    MenuSectionTitle(stringResource(R.string.listen_together_title))
                 }
                 listenTogetherActions.forEach { action -> item { action.GridMenuItem() } }
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.library_management_section_title))
+                MenuSectionTitle(stringResource(R.string.library_management_section_title))
             }
             if (playerTimelineType == PlayerTimelineType.AudioWaves) {
                 buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -334,14 +334,14 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             (buttons.getOrNull(8) as? LikeComponent)?.takeIf { it.isMenuVisible }?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(9)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            if (!offlineMode) buttons.getOrNull(10)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            buttons.getOrNull(10)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(11)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(12)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in 13 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
@@ -351,7 +351,7 @@ class PlayerItemMenu private constructor(
 
             if (showLastFmSection && !offlineMode) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.settings_lastfm_title))
+                    MenuSectionTitle(stringResource(R.string.settings_lastfm_title))
                 }
                 item { lastFmLoveButton.GridMenuItem() }
                 item { lastFmUnloveButton.GridMenuItem() }
@@ -364,7 +364,7 @@ class PlayerItemMenu private constructor(
     override fun MenuComponent() {
         ObserveSongMenuSnapshot(snapshot, onProfileChanged = menuState::hide)
         val mContext = LocalContext.current
-        offlineMode = OfflineMode.enabled(mContext)
+        offlineMode = OfflineMode.rememberEnabled().value
         val coroutineScope = rememberCoroutineScope()
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
@@ -427,10 +427,10 @@ class PlayerItemMenu private constructor(
                                 )
                             }
                         )
+                        menuState.hide()
                     } catch (e: ActivityNotFoundException) {
                         Toaster.w(R.string.audio_equalizer_application_unavailable_message)
                     }
-                    menuState.hide()
                 }
                 override fun onLongClick() {}
             }
@@ -593,7 +593,7 @@ class PlayerItemMenu private constructor(
 
         val isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
         val lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
-        showLastFmSection = !song.isLocal &&
+        showLastFmSection = !offlineMode && !song.isLocal &&
             isLastfmScrobblingEnabled &&
             lastfmSession.isNotEmpty() &&
             BuildConfig.LASTFM_API_KEY.isNotEmpty() &&
@@ -741,6 +741,7 @@ class PlayerItemMenu private constructor(
                 SongItem(
                     song = song,
                     observeStoredMetadata = false,
+                    animateMetadataChanges = true,
                     artistTextOverride = resolveTrackArtistName(
                         mediaItem.mediaMetadata.artist?.toString(),
                         song.artistsText,
@@ -815,20 +816,6 @@ class PlayerItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }
 
 

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.video
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -27,7 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -155,23 +155,23 @@ class VideoItemMenu private constructor(
     ) = ListMenu.Menu(title = null, showDragHandle = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
-        SectionTitle(stringResource(R.string.common_information_title))
+        MenuSectionTitle(stringResource(R.string.common_information_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Playback
-        SectionTitle(stringResource(R.string.common_playback_section_title))
+        MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
         if (listenTogetherActions.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.listen_together_title))
+            MenuSectionTitle(stringResource(R.string.listen_together_title))
             listenTogetherActions.forEach { it.ListMenuItem() }
         }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.library_management_section_title))
+        MenuSectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -181,7 +181,7 @@ class VideoItemMenu private constructor(
         refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Navigation
-        SectionTitle(stringResource(R.string.common_navigation_section_title))
+        MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
         for (i in 10 until buttons.size - lastFmSectionSize) {
             val btn = buttons.getOrNull(i)
             if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog) continue
@@ -190,7 +190,7 @@ class VideoItemMenu private constructor(
 
         if (showLastFmSection && !offlineMode) {
             // Section: Last.fm
-            SectionTitle(stringResource(R.string.settings_lastfm_title))
+            MenuSectionTitle(stringResource(R.string.settings_lastfm_title))
             buttons.getOrNull(buttons.size - 2)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(buttons.size - 1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         }
@@ -207,13 +207,13 @@ class VideoItemMenu private constructor(
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_information_title))
+            MenuSectionTitle(stringResource(R.string.common_information_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         }
         if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -222,14 +222,14 @@ class VideoItemMenu private constructor(
         // Section: Listen Together (room menu, then suggest-to-host for guests in a room)
         if (listenTogetherActions.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.listen_together_title))
+                MenuSectionTitle(stringResource(R.string.listen_together_title))
             }
             listenTogetherActions.forEach { action -> item { action.GridMenuItem() } }
         }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -241,7 +241,7 @@ class VideoItemMenu private constructor(
 
         // Section: Navigation
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
         }
         for (i in 10 until buttons.size - lastFmSectionSize) {
             val btn = buttons.getOrNull(i)
@@ -252,7 +252,7 @@ class VideoItemMenu private constructor(
         if (showLastFmSection && !offlineMode) {
             // Section: Last.fm
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.settings_lastfm_title))
+                MenuSectionTitle(stringResource(R.string.settings_lastfm_title))
             }
             buttons.getOrNull(buttons.size - 2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(buttons.size - 1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -263,7 +263,7 @@ class VideoItemMenu private constructor(
     override fun MenuComponent() {
         ObserveSongMenuSnapshot(snapshot, onProfileChanged = menuState::hide)
         val context = LocalContext.current
-        offlineMode = OfflineMode.enabled(context)
+        offlineMode = OfflineMode.rememberEnabled().value
         val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
         val binder = LocalPlayerServiceBinder.current
         val coroutineScope = rememberCoroutineScope()
@@ -411,7 +411,7 @@ class VideoItemMenu private constructor(
 
         val isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
         val lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
-        showLastFmSection = !song.isLocal &&
+        showLastFmSection = !offlineMode && !song.isLocal &&
             isLastfmScrobblingEnabled &&
             lastfmSession.isNotEmpty() &&
             BuildConfig.LASTFM_API_KEY.isNotEmpty() &&
@@ -500,6 +500,7 @@ class VideoItemMenu private constructor(
                 SongItem(
                     song = song,
                     observeStoredMetadata = false,
+                    animateMetadataChanges = true,
                     artistTextOverride = resolveTrackArtistName(
                         source.mediaMetadata.artist?.toString(),
                         song.artistsText,
@@ -577,18 +578,4 @@ class VideoItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }

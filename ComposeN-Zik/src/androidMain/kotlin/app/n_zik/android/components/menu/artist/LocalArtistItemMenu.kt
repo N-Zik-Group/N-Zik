@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.artist
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import app.n_zik.android.core.sync.showFavoriteChange
 import android.content.Intent
 import app.n_zik.android.MODIFIED_PREFIX
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -31,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -129,17 +130,17 @@ class LocalArtistItemMenu private constructor(
     @Composable
     override fun ListMenu() = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.common_playback_section_title))
+        MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.library_management_section_title))
+        MenuSectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
-        SectionTitle(stringResource(R.string.common_navigation_section_title))
+        MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
         openArtist.ListMenuItem()
     }
 
@@ -147,21 +148,21 @@ class LocalArtistItemMenu private constructor(
     override fun GridMenu() = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
         }
         item { openArtist.GridMenuItem() }
     }
@@ -226,7 +227,7 @@ class LocalArtistItemMenu private constructor(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    BasicText(
+                    MenuMetadataText(
                         text = cleanPrefix(title ?: ""),
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
@@ -239,7 +240,7 @@ class LocalArtistItemMenu private constructor(
 
                     subscribersCount?.let {
                         if (it.isNotBlank()) {
-                            BasicText(
+                            MenuMetadataText(
                                 text = it,
                                 style = typography().xxs.semiBold.secondary.copy(
                                     color = colorPalette().textSecondary,
@@ -406,19 +407,5 @@ class LocalArtistItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }
 

@@ -5,6 +5,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
 import app.n_zik.android.appContext
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.lastfm.LastFm
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +38,10 @@ object LastFmActions {
 
     fun setLoveStatus(artist: String, track: String, love: Boolean) {
         scope.launch {
-            performLoveStatus(artist, track, love)
+            val context = appContext()
+            if (!OfflineMode.enabled(context) && context.encryptedPreferences.getBoolean(isLastfmScrobblingEnabledKey, false)) {
+                performLoveStatus(artist, track, love)
+            }
         }
     }
 

@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.song
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import java.util.Optional
 
 import android.content.Intent
@@ -25,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -182,7 +182,7 @@ class SongItemMenu private constructor(
     ) = ListMenu.Menu(title = null, showDragHandle = false, drawSurface = false) {
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
-        SectionTitle(stringResource(R.string.common_information_title))
+        MenuSectionTitle(stringResource(R.string.common_information_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         if (song.isLocal) {
@@ -190,7 +190,7 @@ class SongItemMenu private constructor(
             // is downloaded on first use, spec-ffmpeg-extension-module)
             val playbackStart = LOCAL_SONG_PLAYBACK_START
             // Section: Management
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
             for (i in 1 until playbackStart) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -200,19 +200,19 @@ class SongItemMenu private constructor(
             }
 
             // Section: Playback
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             // Full offline mode: startRadio (the first playback entry) needs the network — skipped
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
             refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
 
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             buttons.localTrackNavigationActions().forEach { it.ListMenuItem() }
         } else {
             // Remote songs: renameSong(1), changeAuthor(2), changeCover(3)
             // Section: Playback
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(6)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -220,12 +220,12 @@ class SongItemMenu private constructor(
             // Section: Listen Together (room menu, then suggest-to-host for guests in a room) —
             // pruned in full offline mode (network feature)
             if (listenTogetherActions.isNotEmpty()) {
-                SectionTitle(stringResource(R.string.listen_together_title))
+                MenuSectionTitle(stringResource(R.string.listen_together_title))
                 listenTogetherActions.forEach { it.ListMenuItem() }
             }
 
             // Section: Management
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
             buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -233,13 +233,13 @@ class SongItemMenu private constructor(
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.getOrNull(7)?.let { if (it is MenuIcon) it.ListMenuItem() }
             buttons.getOrNull(8)?.let { if (it is MenuIcon) it.ListMenuItem() }
-            if (!offlineMode) buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
+            buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { it.ListMenuItem() }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { it.ListMenuItem() }
             refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
 
             // Section: Navigation
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in 9 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
                 if (btn is ChangeAlbumBrowseIdDialog || btn is ChangeArtistBrowseIdDialog || btn is UpdateSongDialog || btn is DeleteSongDialog || btn is ExportCacheDialog) continue
@@ -248,7 +248,7 @@ class SongItemMenu private constructor(
 
             if (showLastFmSection && !offlineMode) {
                 // Section: Last.fm
-                SectionTitle(stringResource(R.string.settings_lastfm_title))
+                MenuSectionTitle(stringResource(R.string.settings_lastfm_title))
                 buttons.getOrNull(buttons.size - 2)?.let { if (it is MenuIcon) it.ListMenuItem() }
                 buttons.getOrNull(buttons.size - 1)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -266,7 +266,7 @@ class SongItemMenu private constructor(
         val lastFmSectionSize = if (showLastFmSection) 2 else 0
         // Section: Info
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_information_title))
+            MenuSectionTitle(stringResource(R.string.common_information_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
@@ -276,7 +276,7 @@ class SongItemMenu private constructor(
             val playbackStart = LOCAL_SONG_PLAYBACK_START
             // Section: Management
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.library_management_section_title))
+                MenuSectionTitle(stringResource(R.string.library_management_section_title))
             }
             for (i in 1 until playbackStart) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -290,7 +290,7 @@ class SongItemMenu private constructor(
 
             // Section: Playback
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_playback_section_title))
+                MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
             // Full offline mode: startRadio (the first playback entry) needs the network — skipped
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
@@ -299,14 +299,14 @@ class SongItemMenu private constructor(
             refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             buttons.localTrackNavigationActions().forEach { button -> item { button.GridMenuItem() } }
         } else {
             // Remote songs: renameSong(1), changeAuthor(2), changeCover(3)
             // Section: Playback
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_playback_section_title))
+                MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             }
             if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(5)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -316,14 +316,14 @@ class SongItemMenu private constructor(
             // pruned in full offline mode (network feature)
             if (listenTogetherActions.isNotEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.listen_together_title))
+                    MenuSectionTitle(stringResource(R.string.listen_together_title))
                 }
                 listenTogetherActions.forEach { action -> item { action.GridMenuItem() } }
             }
 
             // Section: Management
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.library_management_section_title))
+                MenuSectionTitle(stringResource(R.string.library_management_section_title))
             }
             buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -332,14 +332,14 @@ class SongItemMenu private constructor(
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             (buttons.getOrNull(7) as? LikeComponent)?.takeIf { it.isMenuVisible }?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            if (!offlineMode) buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
+            buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
 
             // Section: Navigation
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in 9 until buttons.size - lastFmSectionSize) {
                 val btn = buttons.getOrNull(i)
@@ -350,7 +350,7 @@ class SongItemMenu private constructor(
             if (showLastFmSection && !offlineMode) {
                 // Section: Last.fm
                 item(span = { GridItemSpan(maxLineSpan) }) {
-                    SectionTitle(stringResource(R.string.settings_lastfm_title))
+                    MenuSectionTitle(stringResource(R.string.settings_lastfm_title))
                 }
                 buttons.getOrNull(buttons.size - 2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
                 buttons.getOrNull(buttons.size - 1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -365,7 +365,7 @@ class SongItemMenu private constructor(
         val binder = LocalPlayerServiceBinder.current
 
         // Full offline mode (spec-full-offline-mode): prune network entries from the menu
-        offlineMode = OfflineMode.enabled(context)
+        offlineMode = OfflineMode.rememberEnabled().value
 
         val playerTimelineType by rememberPreference(playerTimelineTypeKey, PlayerTimelineType.Wavy)
         val showDisliked by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
@@ -540,7 +540,7 @@ class SongItemMenu private constructor(
 
         val isLastfmScrobblingEnabled by rememberEncryptedPreference(isLastfmScrobblingEnabledKey, false)
         val lastfmSession by rememberEncryptedPreference(lastfmSessionKey, "")
-        showLastFmSection = !song.isLocal &&
+        showLastFmSection = !offlineMode && !song.isLocal &&
             isLastfmScrobblingEnabled &&
             lastfmSession.isNotEmpty() &&
             BuildConfig.LASTFM_API_KEY.isNotEmpty() &&
@@ -659,6 +659,7 @@ class SongItemMenu private constructor(
                 SongItem(
                     song = song,
                     observeStoredMetadata = false,
+                    animateMetadataChanges = true,
                     artistTextOverride = resolveTrackArtistName(
                         source?.mediaMetadata?.artist?.toString(),
                         song.artistsText,
@@ -734,20 +735,6 @@ class SongItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }
 
 

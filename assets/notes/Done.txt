@@ -1640,3 +1640,7 @@ Settings:
 Menus:
 - fix(menu): keep nested dialogs and actions in the correct window
   - Open Extensions and timer dialogs above their source, retain the Listen Together room and remove the unused legacy sheet.
+
+Menus:
+- fix(menu): keep media actions aligned with their source state
+  - Use the common section presentation and respect offline, bookmark and external navigation state.

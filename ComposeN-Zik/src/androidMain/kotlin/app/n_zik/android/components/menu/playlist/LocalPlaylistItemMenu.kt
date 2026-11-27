@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.playlist
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
@@ -35,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -188,14 +189,14 @@ class LocalPlaylistItemMenu private constructor(
     @Composable
     private fun LocalPlaylistListMenu(buttons: List<Button>, ownerAction: MenuIcon?) = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.common_playback_section_title))
+        MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.library_management_section_title))
+        MenuSectionTitle(stringResource(R.string.library_management_section_title))
         val mgmtEnd = if (hasExternalPlaylistUrl) buttons.size - 1 else buttons.size
         for (i in 3 until mgmtEnd) {
             // idx 3 = download_all (network)
@@ -205,7 +206,7 @@ class LocalPlaylistItemMenu private constructor(
 
         val openAction = openPlaylistAction()
         if (openAction != null || ownerAction != null || hasExternalPlaylistUrl) {
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
         }
         openAction?.ListMenuItem()
         ownerAction?.ListMenuItem()
@@ -221,7 +222,7 @@ class LocalPlaylistItemMenu private constructor(
     private fun LocalPlaylistGridMenu(buttons: List<Button>, ownerAction: MenuIcon?) = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -230,7 +231,7 @@ class LocalPlaylistItemMenu private constructor(
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
         }
         val mgmtEnd = if (hasExternalPlaylistUrl) buttons.size - 1 else buttons.size
         for (i in 3 until mgmtEnd) {
@@ -242,7 +243,7 @@ class LocalPlaylistItemMenu private constructor(
         val openAction = openPlaylistAction()
         if (openAction != null || ownerAction != null || hasExternalPlaylistUrl) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
         }
         openAction?.let { item { it.GridMenuItem() } }
@@ -349,7 +350,7 @@ class LocalPlaylistItemMenu private constructor(
                     modifier = Modifier.weight(1f)
                 ) {
                     val disableScrollingText by rememberPreference(disableScrollingTextKey, false)
-                    BasicText(
+                    MenuMetadataText(
                         text = cleanPrefix(playlistPreview.playlist.name),
                         style = typography().xs.semiBold.copy(color = colorPalette().text),
                         maxLines = 1,
@@ -357,14 +358,14 @@ class LocalPlaylistItemMenu private constructor(
                         modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
                     ownerName?.takeIf(String::isNotBlank)?.let { name ->
-                        BasicText(
+                        MenuMetadataText(
                             text = name,
                             style = typography().xs.semiBold.secondary.copy(color = colorPalette().textSecondary),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
-                    BasicText(
+                    MenuMetadataText(
                         text = playlistPreview.menuItemCount(),
                         style = typography().xs.semiBold.secondary.copy(color = colorPalette().textSecondary),
                         maxLines = 1,
@@ -694,18 +695,4 @@ class LocalPlaylistItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }

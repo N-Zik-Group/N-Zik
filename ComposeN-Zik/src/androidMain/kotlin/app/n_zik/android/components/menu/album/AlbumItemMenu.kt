@@ -1,7 +1,9 @@
 package app.n_zik.android.components.menu.album
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import app.n_zik.android.core.sync.showFavoriteChange
 import android.net.Uri
+import app.n_zik.android.core.utils.Toaster
 
 import android.content.Intent
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
@@ -33,7 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -161,26 +163,26 @@ class AlbumItemMenu private constructor(
     @Composable
     private fun ListMenu(buttons: List<Button>, trailingManagementActions: Int) = ListMenu.Menu(title = null, showDragHandle = false) {
         if (isDeviceAlbumId(album.id)) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
             buttons.take(3).filterIsInstance<MenuIcon>().forEach { it.ListMenuItem() }
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
             buttons.drop(3).take(3).filterIsInstance<MenuIcon>().forEach { it.ListMenuItem() }
             val links = buttons.drop(6).filterIsInstance<MenuIcon>()
             if (links.isNotEmpty()) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
                 links.forEach { it.ListMenuItem() }
             }
             return@Menu
         }
 
         // Section: Playback
-        SectionTitle(stringResource(R.string.common_playback_section_title))
+        MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.library_management_section_title))
+        MenuSectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -191,7 +193,7 @@ class AlbumItemMenu private constructor(
         // Section: Navigation
         val navRange = 6 until (buttons.size - trailingManagementActions)
         if (!navRange.isEmpty()) {
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in navRange) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -204,13 +206,13 @@ class AlbumItemMenu private constructor(
     @Composable
     private fun GridMenu(buttons: List<Button>, trailingManagementActions: Int) = GridMenu.Menu(title = null, showDragHandle = false) {
         if (isDeviceAlbumId(album.id)) {
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.common_playback_section_title)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.common_playback_section_title)) }
             buttons.take(3).filterIsInstance<MenuIcon>().forEach { button -> item { button.GridMenuItem() } }
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.library_management_section_title)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.library_management_section_title)) }
             buttons.drop(3).take(3).filterIsInstance<MenuIcon>().forEach { button -> item { button.GridMenuItem() } }
             val links = buttons.drop(6).filterIsInstance<MenuIcon>()
             if (links.isNotEmpty()) {
-                item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.common_navigation_section_title)) }
+                item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.common_navigation_section_title)) }
                 links.forEach { button -> item { button.GridMenuItem() } }
             }
             return@Menu
@@ -218,7 +220,7 @@ class AlbumItemMenu private constructor(
 
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -226,7 +228,7 @@ class AlbumItemMenu private constructor(
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -239,7 +241,7 @@ class AlbumItemMenu private constructor(
         val navRange = 6 until (buttons.size - trailingManagementActions)
         if (!navRange.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in navRange) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -304,7 +306,7 @@ class AlbumItemMenu private constructor(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    BasicText(
+                    MenuMetadataText(
                         text = cleanPrefix(album.title ?: ""),
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
@@ -316,7 +318,7 @@ class AlbumItemMenu private constructor(
                     )
 
                     album.authorsText?.let {
-                        BasicText(
+                        MenuMetadataText(
                             text = cleanPrefix(it),
                             style = typography().xs.semiBold.secondary.copy(
                                 color = colorPalette().textSecondary,
@@ -329,7 +331,7 @@ class AlbumItemMenu private constructor(
                     }
 
                     album.year?.let {
-                        BasicText(
+                        MenuMetadataText(
                             text = it,
                             style = typography().xxs.semiBold.secondary.copy(
                                 color = colorPalette().textSecondary,
@@ -372,29 +374,6 @@ class AlbumItemMenu private constructor(
                             null -> colorPalette().text
                         },
                         onClick = {
-                            coroutineScope.launch(NzikDispatchers.DATA) {
-                                val pushAlbumBookmark = appContext().preferences.getBoolean(syncPushAlbumBookmarkKey, false)
-                                val syncDir = getSyncDirection()
-                                // Only sync to YouTube if NOT disliked (dislike is local only)
-                                if (likeState != false && isYouTubeSyncEnabled() && pushAlbumBookmark && syncDir != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
-                                    val playlistId = album.shareUrl
-                                        ?.substringAfter("list=")
-                                        ?.takeIf { it.isNotBlank() }
-                                    if (playlistId != null) {
-                                        if (likeState == true) YtMusic.removelikePlaylistOrAlbum(playlistId)
-                                        else YtMusic.likePlaylistOrAlbum(playlistId)
-                                    }
-                                }
-                                val cachedAlbumFetch = Database.albumTable.findByIdDirect(album.id)?.lastFetch
-                                if (showDisliked.isEnabled) {
-                                    Database.albumTable.rotateLikeState(album.id)
-                                } else {
-                                    Database.albumTable.toggleBookmark(album.id)
-                                }
-                                if (Database.albumTable.isBookmarked(album.id).first()) {
-                                    MyDownloadHelper.downloadBookmarkedAlbum(appContext(), album.id, cachedAlbumFetch)
-                                }
-                            }
                             val newState = if (showDisliked.isEnabled) {
                                 when(likeState) {
                                     true -> false // bookmarked → disliked
@@ -408,7 +387,39 @@ class AlbumItemMenu private constructor(
                                     null -> true  // neutral → bookmarked
                                 }
                             }
-                            showFavoriteChange(likeState, newState, album.title)
+                            val previous = likeState
+                            val dislikesEnabled = showDisliked.isEnabled
+                            coroutineScope.launch(NzikDispatchers.DATA) {
+                                val context = appContext()
+                                val cachedAlbumFetch = Database.albumTable.findByIdDirect(album.id)?.lastFetch
+                                val updated = if (dislikesEnabled) Database.albumTable.rotateLikeState(album.id)
+                                    else Database.albumTable.bookmarkState(album.id, newState == true)
+                                if (updated == 0) {
+                                    Toaster.e(R.string.common_error_title)
+                                    return@launch
+                                }
+                                showFavoriteChange(previous, newState, album.title)
+
+                                val remoteBookmark = onlineAlbumBookmarkChange(previous, dislikesEnabled)
+                                val playlistId = album.shareUrl?.let {
+                                    runCatching { Uri.parse(it).getQueryParameter("list") }.getOrNull()
+                                }?.takeIf(String::isNotBlank)
+                                if (remoteBookmark != null && playlistId != null && !OfflineMode.enabled(context) &&
+                                    isYouTubeSyncEnabled() && context.preferences.getBoolean(syncPushAlbumBookmarkKey, false) &&
+                                    getSyncDirection() != SyncDirection.YT_TO_APP && isNetworkConnected(context)
+                                ) {
+                                    val result = if (remoteBookmark) YtMusic.likePlaylistOrAlbum(playlistId)
+                                        else YtMusic.removelikePlaylistOrAlbum(playlistId)
+                                    result.onFailure { error ->
+                                        if (error is kotlinx.coroutines.CancellationException) throw error
+                                        timber.log.Timber.tag("AlbumItemMenu").w(error, "Failed to push album bookmark")
+                                        Toaster.e(R.string.common_load_failed)
+                                    }
+                                }
+                                if (Database.albumTable.isBookmarked(album.id).first()) {
+                                    MyDownloadHelper.downloadBookmarkedAlbum(context, album.id, cachedAlbumFetch)
+                                }
+                            }
                         },
                         modifier = Modifier
                             .padding(all = 4.dp)
@@ -522,7 +533,7 @@ class AlbumItemMenu private constructor(
             add(whenSongsLoaded(shuffle))
             add(playNext)
             add(enqueue)
-            add(whenSongsLoaded(addToPlaylist))
+            add(addToPlaylist.withMenuClick(enabledWhen = { !availableSongs.isNullOrEmpty() }, onClick = addToPlaylist::onShortClick))
             if (onDevice) {
                 add(changeTitle)
                 add(changeCover)
@@ -587,20 +598,6 @@ class AlbumItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }
 
 internal fun currentAlbumShareUrl(album: Album): String? {
