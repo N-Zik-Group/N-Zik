@@ -48,6 +48,11 @@ import app.n_zik.android.utils.transitionEffectKey
 import app.n_zik.android.utils.uiRoundnessDpKey
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.HomeTabsSettingsDialog
+import app.n_zik.android.components.ui.screens.home.activeHomeTabIds
+import app.n_zik.android.components.ui.screens.home.tabIdForIndex
+import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.homeTabsOrderKey
 import app.n_zik.android.components.settings.common.ArtistRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.ThumbnailRoundnessSettingsTarget
 import app.n_zik.android.components.settings.common.InterfaceRoundnessSettingsTarget
@@ -276,13 +281,25 @@ internal fun UiInterfaceCard(search: Search) {
                     SearchableSettingsSectionHeading(R.string.home_title, "ui.user_interface.section.home")
                 }
 
+                val homeOrder by rememberPreference(homeTabsOrderKey, "")
+                val quickPicks by rememberPreference(enableQuickPicksPageKey, true)
+                val songs by rememberPreference("hometab_songs_enabled", true)
+                val artists by rememberPreference("hometab_artists_enabled", true)
+                val albums by rememberPreference("hometab_albums_enabled", true)
+                val playlists by rememberPreference("hometab_playlists_enabled", true)
+                val offline by OfflineMode.rememberEnabled()
+                val activeTabs = activeHomeTabIds(HomeTabsSettingsDialog.parseOrder(homeOrder), quickPicks, songs, artists, albums, playlists, offline)
+                val defaultPageChoices = HomeScreenTabs.entries.filter {
+                    it == HomeScreenTabs.Default || it == HomeScreenTabs.Search || tabIdForIndex(it.index) in activeTabs
+                }
+                val effectiveDefaultPage = indexNavigationTab.takeIf { it in defaultPageChoices } ?: HomeScreenTabs.Default
                 var showDefPageDialog by remember { mutableStateOf(false) }
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_home_default_page_label).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("ui.user_interface.default_page"),
                         title = stringResource(R.string.settings_home_default_page_label),
                         text = stringResource(R.string.interface_default_page_description),
-                        selectedValueText = indexNavigationTab.text,
+                        selectedValueText = effectiveDefaultPage.text,
                         icon = R.drawable.star_brilliant,
                         onClick = { showDefPageDialog = true }
                     )
@@ -290,10 +307,10 @@ internal fun UiInterfaceCard(search: Search) {
                 DialogPresence(visible = showDefPageDialog) {
                     ValueSelectorDialog(
                         title = stringResource(R.string.settings_home_default_page_label),
-                        selectedValue = indexNavigationTab,
+                        selectedValue = effectiveDefaultPage,
                         onValueSelected = { indexNavigationTab = it },
                         valueText = { it.text },
-                        values = HomeScreenTabs.values().toList(),
+                        values = defaultPageChoices,
                         onDismiss = { showDefPageDialog = false }
                     )
                 }

@@ -68,8 +68,8 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                     selectedValue = maxStatisticsItems,
                     values = MaxStatisticsItems.values().toList(),
                     onValueSelected = {
-                        maxStatisticsItems = it
                         if (it == MaxStatisticsItems.Custom) showCustomStatisticsItemsDialog = true
+                        else maxStatisticsItems = it
                     },
                     valueText = { it.optionLabel() },
                     onDismiss = { showStatisticsDialog = false }
@@ -83,8 +83,12 @@ internal fun AiStatisticsCard(search: Search, navController: NavController, modi
                     placeholder = stringResource(R.string.statistics_max_number_of_items),
                     onDismiss = { showCustomStatisticsItemsDialog = false },
                     onSetValue = {
-                        if (TextUtils.isDigitsOnly(it) && it.length <= 9)
-                            maxStatisticsItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
+                        if (TextUtils.isDigitsOnly(it) && it.length <= 9) {
+                            it.toIntOrNull()?.let { value ->
+                                maxStatisticsItemsCustomValue = value.coerceAtLeast(1)
+                                maxStatisticsItems = MaxStatisticsItems.Custom
+                            }
+                        }
                     }
                 ).apply {
                     showDialog()

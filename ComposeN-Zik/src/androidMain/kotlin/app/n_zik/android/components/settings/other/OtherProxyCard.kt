@@ -10,6 +10,7 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import app.n_zik.android.core.network.client.profileProxyEndpoint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -113,7 +114,8 @@ internal fun OtherProxyCard(search: Search) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_host"),
                             title = stringResource(R.string.settings_proxy_host_label),
-                            text = stringResource(R.string.network_proxy_host_description),
+                            text = stringResource(if (profileProxyEndpoint(proxyMode, proxyHost, 8080) != null)
+                                R.string.network_proxy_host_description else R.string.network_proxy_invalid_hostname),
                             selectedValueText = proxyHost,
                             icon = R.drawable.server,
                             onClick = { showProxyHostDialog = true }
@@ -126,7 +128,8 @@ internal fun OtherProxyCard(search: Search) {
                             initialValue = proxyHost,
                             placeholder = stringResource(R.string.settings_proxy_host_label),
                             onDismiss = { showProxyHostDialog = false },
-                            onSetValue = { proxyHost = it }
+                            isValid = { profileProxyEndpoint(proxyMode, it, 8080) != null },
+                            onSetValue = { proxyHost = it.trim() }
                         ).apply {
                             showDialog()
                             Render()

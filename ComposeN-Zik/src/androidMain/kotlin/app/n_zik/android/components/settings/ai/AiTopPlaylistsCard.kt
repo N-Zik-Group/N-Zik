@@ -60,8 +60,8 @@ internal fun AiTopPlaylistsCard(search: Search) {
                     selectedValue = maxTopPlaylistItems,
                     values = MaxTopPlaylistItems.values().toList(),
                     onValueSelected = {
-                        maxTopPlaylistItems = it
                         if (it == MaxTopPlaylistItems.Custom) showCustomTopPlaylistsItemsDialog = true
+                        else maxTopPlaylistItems = it
                     },
                     valueText = { it.optionLabel() },
                     onDismiss = { showTopPlaylistsDialog = false }
@@ -75,8 +75,12 @@ internal fun AiTopPlaylistsCard(search: Search) {
                     placeholder = stringResource(R.string.statistics_max_number_of_items),
                     onDismiss = { showCustomTopPlaylistsItemsDialog = false },
                     onSetValue = {
-                        if (TextUtils.isDigitsOnly(it) && it.length <= 9)
-                            maxTopPlaylistItemsCustomValue = it.toIntOrNull()?.coerceAtLeast(1) ?: 10
+                        if (TextUtils.isDigitsOnly(it) && it.length <= 9) {
+                            it.toIntOrNull()?.let { value ->
+                                maxTopPlaylistItemsCustomValue = value.coerceAtLeast(1)
+                                maxTopPlaylistItems = MaxTopPlaylistItems.Custom
+                            }
+                        }
                     }
                 ).apply {
                     showDialog()

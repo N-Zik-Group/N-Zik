@@ -712,7 +712,15 @@ fun SettingsCategoryPage(
         val needsQuickPicksForYou = requestedTarget != rawTarget &&
             rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")
         val searchPrerequisite = when {
-            unavailable -> settingsSearchPrerequisite(requestedTarget, context.preferences, registry.targets::containsKey)
+            unavailable -> when {
+                entry?.paletteTitleRes != null -> SearchPrerequisite(
+                    ThemeSettingsTarget, listOf(ColorPaletteName.Customized.textId),
+                )
+                hiddenFullscreenLyricsTarget -> SearchPrerequisite(
+                    LyricsOnCoverSettingsTarget, listOf(R.string.common_state_off),
+                )
+                else -> settingsSearchPrerequisite(requestedTarget, preferences, registry.targets::containsKey)
+            }
             needsQuickPicksForYou || requiresExpandedPlayer ->
                 SearchPrerequisite(requestedTarget, listOf(R.string.common_state_on))
             else -> null

@@ -72,7 +72,7 @@ internal const val OPEN_SEARCH_SHORTCUT = -2
  * Home tab id for a [HomeScreenTabs] index, or null when [tabIndex] isn't a home tab (e.g. the
  * [OPEN_SEARCH_SHORTCUT] sentinel, or -1/"no shortcut pending").
  */
-private fun tabIdForIndex(tabIndex: Int): String? = when (tabIndex) {
+internal fun tabIdForIndex(tabIndex: Int): String? = when (tabIndex) {
     HomeScreenTabs.QuickPics.index -> "quickpicks"
     HomeScreenTabs.Songs.index -> "songs"
     HomeScreenTabs.Artists.index -> "artists"

@@ -1600,3 +1600,7 @@ Menus:
 Menus:
 - fix(dialog): isolate song update checkboxes
   - Reset options on opening and select only visible operations so offline updates keep their local actions.
+
+Settings:
+- fix(settings): keep choices and feedback consistent
+  - Validate proxy host edits, filter disabled startup tabs, apply custom counts on confirmation, and reveal search prerequisites.

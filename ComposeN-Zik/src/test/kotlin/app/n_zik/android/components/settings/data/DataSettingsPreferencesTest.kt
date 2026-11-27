@@ -129,9 +129,9 @@ class DataSettingsPreferencesTest {
         assertTrue(context.preferences.getBoolean(pauseListenHistoryKey, false))
     }
 
-    @Test fun `target inventory preserves card order and eight distinct preference keys`() {
+    @Test fun `target inventory preserves card order and nine distinct preference keys`() {
         assertEquals(listOf("data.cache", "data.backup", "data.auto-backup", "data.history", "data.reset"), DataSettingTargets.cards)
-        assertEquals(expected.keys, DataSettingTargets.preferenceKeys.toSet())
+        assertEquals(expected.keys + setOf(pauseSearchHistoryKey, pauseListenHistoryKey, exoPlayerMinTimeForEventKey), DataSettingTargets.preferenceKeys.toSet())
         assertEquals(9, DataSettingTargets.preferenceKeys.size)
         assertEquals(DataSettingTargets.actions.size, DataSettingTargets.actions.toSet().size)
         assertEquals("history", DataSettingTargets.HISTORY_FOCUS)

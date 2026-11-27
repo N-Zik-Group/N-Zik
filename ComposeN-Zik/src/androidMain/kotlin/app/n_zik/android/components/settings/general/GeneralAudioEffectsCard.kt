@@ -86,7 +86,10 @@ fun GeneralAudioEffectsCard(
                 title = stringResource(R.string.settings_audio_focus),
                 text = stringResource(R.string.settings_audio_focus_info),
                 isChecked = audioFocusEnabled,
-                onCheckedChange = { audioFocusEnabled = it },
+                onCheckedChange = {
+                    audioFocusEnabled = it
+                    onRestartServiceSet()
+                },
                 icon = R.drawable.focus_audio
             )
 
