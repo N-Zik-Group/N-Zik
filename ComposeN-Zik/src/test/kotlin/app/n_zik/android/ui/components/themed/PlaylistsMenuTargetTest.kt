@@ -8,6 +8,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -44,9 +45,13 @@ import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
+import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
@@ -54,6 +59,7 @@ import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
+import app.n_zik.android.utils.getActiveProfile
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [32], application = Application::class)
@@ -110,6 +116,72 @@ class PlaylistsMenuTargetTest {
         } finally {
             unmockkStatic(::isYouTubeSyncEnabled)
             unmockkObject(DatabaseInitializer.Companion, Toaster, Dependencies)
+            database.close()
+        }
+    }
+
+    @Test
+    fun `a device playlist opens in device mode only from the device tab`() {
+        val application = ApplicationProvider.getApplicationContext<Application>()
+        val database = Room.inMemoryDatabaseBuilder(application, DatabaseInitializer::class.java).build()
+        val preferences = profileDataPrefs(application, getActiveProfile(application))
+        val originalDeviceLibraryEnabled = preferences.getBoolean(DEVICE_LIBRARY_ENABLED_KEY, false)
+            .takeIf { preferences.contains(DEVICE_LIBRARY_ENABLED_KEY) }
+        preferences.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).commit()
+        val mainApplication = mockk<MainApplication>()
+        every { mainApplication.applicationContext } returns application
+        mockkObject(DatabaseInitializer.Companion, Dependencies)
+        every { Dependencies.application } returns mainApplication
+        every { DatabaseInitializer.Instance } returns database
+        try {
+            val playlistId = runBlocking {
+                val trackId = "local:device-track"
+                val id = database.playlistTable.insert(Playlist(name = "Device playlist"))
+                database.songTable.insertIgnore(
+                    Song(id = trackId, title = "Device track", durationText = null, thumbnailUrl = null)
+                )
+                database.songPlaylistMapTable.mapAtPosition(trackId, id, 0)
+                id
+            }
+            val menuState = MenuState()
+            val destinations = mutableListOf<Pair<Long, Boolean>>()
+            val onDeviceLabel = application.getString(R.string.library_on_device_title)
+            val openLabel = application.getString(R.string.playlist_action_open)
+            lateinit var picker: PlaylistsMenu
+            compose.setContent {
+                val shape = RoundedCornerShape(24.dp)
+                CompositionLocalProvider(
+                    LocalMenuState provides menuState,
+                    LocalPlaylistPickerNavigation provides { id, onDevice -> destinations.add(id to onDevice) },
+                    LocalAppearance provides Appearance(DefaultDarkColorPalette,
+                        typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape),
+                ) {
+                    picker = PlaylistsMenu.forSong(MediaItem.Builder().setMediaId("source-track").build())
+                    if (menuState.isDisplayed) menuState.contentState.second()
+                }
+            }
+            compose.runOnIdle { picker.onShortClick() }
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithContentDescription(onDeviceLabel).fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithContentDescription(openLabel).performClick()
+
+            compose.runOnIdle { picker.onShortClick() }
+            compose.onNodeWithText(onDeviceLabel).performClick()
+            compose.waitUntil(5_000) {
+                compose.onAllNodesWithContentDescription(openLabel).fetchSemanticsNodes().isNotEmpty()
+            }
+            compose.onNodeWithContentDescription(openLabel).performClick()
+
+            compose.runOnIdle {
+                assertEquals(listOf(playlistId to false, playlistId to true), destinations)
+            }
+        } finally {
+            preferences.edit().apply {
+                if (originalDeviceLibraryEnabled == null) remove(DEVICE_LIBRARY_ENABLED_KEY)
+                else putBoolean(DEVICE_LIBRARY_ENABLED_KEY, originalDeviceLibraryEnabled)
+            }.commit()
+            unmockkObject(DatabaseInitializer.Companion, Dependencies)
             database.close()
         }
     }

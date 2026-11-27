@@ -84,6 +84,26 @@ class PlaylistPickerResultsTest {
     }
 
     @Test
+    fun `device membership cannot reintroduce an offline YouTube destination`() {
+        val local = PlaylistPreview(Playlist(id = 1, name = "Device collection"), 1)
+        val linked = PlaylistPreview(Playlist(
+            id = 2,
+            name = "YouTube collection",
+            browseId = "VLPLcollection",
+            isYoutubePlaylist = true,
+        ), 1)
+        val previews = listOf(local, linked)
+        val ids = setOf(local.playlist.id, linked.playlist.id)
+
+        val online = playlistPickerSections(previews, online = true, devicePlaylistIds = ids)
+        assertEquals(listOf(local), online.device)
+        assertEquals(listOf(linked), online.youtube)
+
+        val offline = playlistPickerSections(previews, online = false, devicePlaylistIds = ids)
+        assertEquals(listOf(local), offline.groups().flatMap { it.second })
+    }
+
+    @Test
     fun `picker search matches the displayed name without storage prefixes`() {
         val playlist = Playlist(name = "${PINNED_PREFIX}Late Night")
 

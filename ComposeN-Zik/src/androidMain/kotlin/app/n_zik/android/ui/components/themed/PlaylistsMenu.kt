@@ -118,6 +118,9 @@ internal fun isPlaylistPickerVisible(playlist: Playlist): Boolean =
 internal fun isYouTubePlaylistPickerEntry(playlist: Playlist): Boolean =
     isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
 
+private fun Playlist.isOnDevicePickerEntry(devicePlaylistIds: Set<Long>): Boolean =
+    id in devicePlaylistIds && !isYouTubePlaylistPickerEntry(this)
+
 internal fun isPinnedPlaylistPickerVisible(playlist: Playlist, online: Boolean): Boolean =
     playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
         (online || !playlist.isYoutubePlaylist || !canEditPlaylistMembership(playlist))
@@ -195,7 +198,7 @@ private fun PlaylistPickerMenu(
     filters: PlaylistPickerFilters,
     showDeviceTab: Boolean,
     header: @Composable ColumnScope.() -> Unit,
-    entry: @Composable (PlaylistPreview) -> Unit,
+    entry: @Composable (PlaylistPreview, Boolean) -> Unit,
 ) {
     val all = R.string.common_option_all
     val showPinned by rememberPreference(showPinnedPlaylistsKey, true)
@@ -210,6 +213,7 @@ private fun PlaylistPickerMenu(
         }
     }
     val activeGroup = filters.group.takeIf { it in availableGroups } ?: all
+    val openOnDevice = activeGroup == R.string.library_on_device_title
     val query = search.filterQuery
     val searchAndFilters: @Composable ColumnScope.() -> Unit = {
         search.SearchBar(this)
@@ -247,12 +251,12 @@ private fun PlaylistPickerMenu(
     if (style == MenuStyle.List) {
         ListMenu.Menu(headerContent = header, bodyHeader = searchAndFilters, emptyBody = emptyBody) {
             PlaylistPickerFeedback(playlistRead, query, empty)
-            PlaylistPickerSearchRows(displayed, matches, entry)
+            PlaylistPickerSearchRows(displayed, matches) { entry(it, openOnDevice) }
         }
     } else {
         GridMenu.Menu(headerContent = header, bodyHeader = searchAndFilters, emptyBody = emptyBody) {
             playlistPickerGridFeedback(playlistRead, query, empty)
-            items(matches, key = { it.playlist.id }) { entry(it) }
+            items(matches, key = { it.playlist.id }) { entry(it, openOnDevice) }
         }
     }
 }
@@ -319,7 +323,7 @@ internal fun playlistPickerSections(
                 (online || !it.playlist.isYoutubePlaylist || !canEditPlaylistMembership(it.playlist))
         },
         local = ordinary.filterNot { it.playlist.id in devicePlaylistIds },
-        device = visible.filter { it.playlist.id in devicePlaylistIds },
+        device = visible.filter { it.playlist.isOnDevicePickerEntry(devicePlaylistIds) },
     )
 }
 
@@ -520,6 +524,7 @@ class PlaylistsMenu private constructor(
         playlistPreview: PlaylistPreview,
         containsSong: Boolean,
         onDevice: Boolean,
+        openOnDevice: Boolean,
         onAdd: () -> Unit,
     ) {
         val playlist = playlistPreview.playlist
@@ -542,14 +547,14 @@ class PlaylistsMenu private constructor(
                 PlaylistPickerOrigin(playlist, onDevice)
                 PlaylistPickerOpenButton(
                     playlistId = playlist.id,
-                    onDevice = onDevice,
+                    onDevice = openOnDevice,
                     onDismiss = {
                         onOpenPlaylist()
                         menuState.hide()
                     },
                     openDestination = { navigate -> menuState.openDestination(navigate = navigate) },
                     openPlaylist = navController?.let { controller ->
-                        { id: Long -> navigateToPickedPlaylist(controller, id, onDevice) }
+                        { id: Long -> navigateToPickedPlaylist(controller, id, openOnDevice) }
                     },
                 )
             }
@@ -645,10 +650,11 @@ class PlaylistsMenu private constructor(
                     onCreate = newPlaylistButton::onShortClick,
                 )
             },
-            entry = { preview ->
+            entry = { preview, openOnDevice ->
                 PlaylistCard(
                     preview, preview.playlist.id in songPlaylistIds,
-                    onDevice = preview.playlist.id in playlistRead.devicePlaylistIds,
+                    onDevice = preview.playlist.isOnDevicePickerEntry(playlistRead.devicePlaylistIds),
+                    openOnDevice = openOnDevice,
                 ) {
                     add(preview)
                 }
