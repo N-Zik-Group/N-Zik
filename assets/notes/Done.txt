@@ -1904,3 +1904,7 @@ Settings / Search:
 Menus / Search:
 - fix(menu): scope picker search back to the active page
   - Keep the retained search filter from consuming Back while its sheet page animates out.
+
+Menus:
+- fix(menu): return to the parent when deletion is canceled
+  - Keep the item menu open after canceling a deletion confirmation.

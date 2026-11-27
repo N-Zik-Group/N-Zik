@@ -8,7 +8,6 @@ import androidx.compose.ui.res.stringResource
 import app.n_zik.android.R
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
-import app.n_zik.android.ui.components.tab.toolbar.ConfirmDialog
 
 class RemoveFromPlaylist private constructor(
     activeState: MutableState<Boolean>,
@@ -41,5 +40,6 @@ class RemoveFromPlaylist private constructor(
     override fun onConfirm() {
         onConfirmAction()
         onDismiss()
+        menuState.hide()
     }
 }

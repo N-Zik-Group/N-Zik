@@ -27,11 +27,6 @@ abstract class DeleteDialog protected constructor(
         }
 
     override fun onShortClick() = super.onShortClick()
-
-    override fun onDismiss() {
-        super.onDismiss()
-        menuState.hide()
-    }
 }
 
 
