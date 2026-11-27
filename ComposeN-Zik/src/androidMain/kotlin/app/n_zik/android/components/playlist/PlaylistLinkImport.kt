@@ -14,6 +14,8 @@ import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importSongsToPlaylist
+import app.n_zik.android.utils.playlist.saveImportedPlaylistSort
+import app.n_zik.android.utils.preferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
@@ -60,7 +62,7 @@ internal fun launchPlaylistLinkImport(
     scope: CoroutineScope,
     playlistId: String,
     targetPlaylistId: Long? = null,
-    onImported: () -> Unit,
+    onImported: () -> Unit = {},
 ) {
     val app = context.applicationContext
     val owner = ProfileWorkOwner.capture(app) ?: return
@@ -78,8 +80,8 @@ internal fun launchPlaylistLinkImport(
                 return@launch
             }
             val songs = source.songs.map { it.copy(totalPlayTimeMs = 1L) }
-            val imported = Database.awaitWriteBatch {
-                var committed = false
+            val importedId = Database.awaitWriteBatch {
+                var committedId: Long? = null
                 transaction {
                     if (!ProfileWorkOwner.isBound(app, owner)) return@transaction
                     val target = if (targetPlaylistId == null) {
@@ -94,12 +96,13 @@ internal fun launchPlaylistLinkImport(
                         }
                     }
                     importSongsToPlaylist(target, songs)
-                    committed = true
+                    committedId = target.id
                 }
-                committed
+                committedId
             }
-            if (imported) withContext(NzikDispatchers.UI) {
+            if (importedId != null) withContext(NzikDispatchers.UI) {
                 if (ProfileWorkOwner.isBound(app, owner)) {
+                    if (targetPlaylistId == null) app.preferences.saveImportedPlaylistSort(listOf(importedId))
                     onImported()
                     Toaster.done()
                 }

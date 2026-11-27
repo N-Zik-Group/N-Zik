@@ -22,6 +22,8 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.formatAsDuration
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.playlist.importCsvSongs
+import app.n_zik.android.utils.playlist.saveImportedPlaylistSort
+import app.n_zik.android.utils.preferences
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import app.n_zik.android.components.ImportFromFile
@@ -130,7 +132,9 @@ class ImportSongsFromCSV(
                 }
             }
             if (straySongs.isEmpty() && playlists.isEmpty()) return false
-            Database.awaitWriteBatch { importCsvSongs(targetPlaylistId, straySongs, playlists) }
+            val preferences = appContext().preferences
+            val createdPlaylists = Database.awaitWriteBatch { importCsvSongs(targetPlaylistId, straySongs, playlists) }
+            preferences.saveImportedPlaylistSort(createdPlaylists)
             return true
         }
 

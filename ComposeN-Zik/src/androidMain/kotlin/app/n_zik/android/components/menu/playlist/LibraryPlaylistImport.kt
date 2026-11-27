@@ -11,13 +11,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
-import app.n_zik.android.components.playlist.launchPlaylistLinkImport
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistFormatDialog
+import app.n_zik.android.components.playlist.launchPlaylistLinkImport
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
-import app.n_zik.android.enums.PlaylistSortBy
-import app.n_zik.android.utils.Preference.HOME_LIBRARY_PLAYLIST_SORT_BY
-import app.n_zik.android.utils.preferences
 
 internal val LocalLibraryPlaylistImport = staticCompositionLocalOf<ImportPlaylistFormatDialog?> { null }
 
@@ -27,12 +24,9 @@ internal fun rememberLibraryPlaylistImportMenu(offlineMode: Boolean): ImportPlay
     val scope = rememberCoroutineScope()
     val allowNetwork by rememberUpdatedState(!offlineMode)
     var showYouTubeLink by remember { mutableStateOf(false) }
-    val onImported = {
-        context.preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
-    }
-    val csv = ImportSongsFromCSV(onImportComplete = { onImported() })
-    val spotify = ImportSongsFromServices.init(source = "SPOTIFY_IMPORT", onImportComplete = { onImported() })
-    val riplay = ImportSongsFromServices.init(source = "RIPLAY_IMPORT", onImportComplete = { onImported() })
+    val csv = ImportSongsFromCSV()
+    val spotify = ImportSongsFromServices.init(source = "SPOTIFY_IMPORT")
+    val riplay = ImportSongsFromServices.init(source = "RIPLAY_IMPORT")
     val options = remember {
         ImportPlaylistFormatDialog(
             onImportNzik = csv::onShortClick,
@@ -44,7 +38,7 @@ internal fun rememberLibraryPlaylistImportMenu(offlineMode: Boolean): ImportPlay
     }
     DialogPresence(visible = showYouTubeLink) {
         YouTubeLinkImportDialog(
-            onImport = { playlistId -> launchPlaylistLinkImport(context, scope, playlistId, onImported = onImported) },
+            onImport = { playlistId -> launchPlaylistLinkImport(context, scope, playlistId) },
             onDismiss = { showYouTubeLink = false },
         )
     }

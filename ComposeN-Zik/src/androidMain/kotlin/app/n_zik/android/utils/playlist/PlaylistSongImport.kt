@@ -1,5 +1,7 @@
 package app.n_zik.android.utils.playlist
 
+import android.content.SharedPreferences
+import app.n_zik.android.enums.PlaylistSongSortBy
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
@@ -25,7 +27,8 @@ internal suspend fun Database.importCsvSongs(
     targetPlaylistId: Long,
     straySongs: List<Song>,
     playlists: Map<Playlist, List<Song>>,
-) {
+): List<Long> {
+    val createdPlaylists = mutableListOf<Long>()
     transaction {
         val destinations = if (targetPlaylistId > 0L) {
             val target = checkNotNull(playlistTable.findById(targetPlaylistId).first()) {
@@ -39,9 +42,24 @@ internal suspend fun Database.importCsvSongs(
         if (targetPlaylistId <= 0L) mergeCsvImportSongs(straySongs)
         destinations.forEach { (playlist, songs) ->
             mergeCsvImportSongs(songs)
-            mapIgnore(playlist, *songs.toTypedArray())
+            val destination = if (playlist.id > 0L) playlist else {
+                val id = playlistTable.insert(playlist)
+                createdPlaylists.add(id)
+                playlist.copy(id = id)
+            }
+            mapIgnore(destination, *songs.toTypedArray())
         }
     }
+    return createdPlaylists
+}
+
+/** Stores the source order as the initial track sort for a newly imported playlist. */
+internal fun SharedPreferences.saveImportedPlaylistSort(playlistIds: List<Long>) {
+    val unsetKeys = playlistIds.map { "PlaylistSongsSortBy_$it" }.filterNot(::contains)
+    if (unsetKeys.isEmpty()) return
+    val editor = edit()
+    unsetKeys.forEach { editor.putString(it, PlaylistSongSortBy.Custom.name) }
+    editor.apply()
 }
 
 /** Sparse imports fill missing metadata and preserve existing library state. */

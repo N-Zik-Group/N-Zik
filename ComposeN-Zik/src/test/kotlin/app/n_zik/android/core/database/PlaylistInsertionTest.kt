@@ -315,6 +315,23 @@ class PlaylistInsertionTest {
         assertEquals(listOf("track"), db.songPlaylistMapTable.songsByPositionDirect(imported.id).map { it.id })
     }
 
+    // JUnit is synchronous, while the CSV import awaits its Room write batch.
+    @Test fun `native CSV uses source order for a new playlist of previously played tracks`() = runBlocking<Unit> {
+        db.songTable.upsert(Song.makePlaceholder("z-track").copy(title = "Z", totalPlayTimeMs = 8000))
+        db.songTable.upsert(Song.makePlaceholder("a-track").copy(title = "A", totalPlayTimeMs = 9000))
+        val csv = "PlaylistBrowseId,PlaylistName,MediaId,Title,Artists,Duration,ThumbnailUrl\n" +
+            ",Import,z-track,Z,Artist,100,\n" +
+            ",Import,a-track,A,Artist,100,\n"
+
+        assertTrue(csv.byteInputStream().use { ImportSongsFromCSV.importFile(it) })
+
+        val imported = db.playlistTable.getAll().single()
+        assertEquals(PlaylistSongSortBy.Custom.name, context.preferences.getString("PlaylistSongsSortBy_${imported.id}", null))
+        val songs = db.songPlaylistMapTable.songsByPositionDirect(imported.id)
+        assertEquals(listOf("z-track", "a-track"), songs.map { it.id })
+        assertEquals(listOf(8000L, 9000L), songs.map { it.totalPlayTimeMs })
+    }
+
     @Test fun `playlist listening sorts use the same recorded events as the badges`() = runBlocking<Unit> {
         val second = Playlist(id = 902, name = "Second")
         Database.mapIgnore(playlist, Song.makePlaceholder("cumulative").copy(totalPlayTimeMs = 400_000))
