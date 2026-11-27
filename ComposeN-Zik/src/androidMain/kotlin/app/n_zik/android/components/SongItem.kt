@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.menu.MenuMetadataText
 import app.n_zik.android.components.glass.explicitBadgeIconId
 import app.n_zik.android.components.glass.glassExplicitBadgeBackground
 import androidx.compose.runtime.Composable
@@ -167,14 +168,15 @@ fun SongText(
     text: String,
     style: TextStyle,
     overflow: TextOverflow = TextOverflow.Ellipsis,
-    modifier: Modifier = Modifier
-) = BasicText(
-    text = text,
-    style = style,
-    maxLines = 1,
-    overflow = overflow,
-    modifier = modifier
-)
+    modifier: Modifier = Modifier,
+    animateChanges: Boolean = false,
+) {
+    if (animateChanges) {
+        MenuMetadataText(text, style, modifier, overflow = overflow)
+    } else {
+        BasicText(text, modifier, style, overflow = overflow, maxLines = 1)
+    }
+}
 
 /**
  * Displays a song row.
@@ -209,6 +211,7 @@ fun SongItem(
     sourceMediaItem: (() -> MediaItem)? = null,
     artistTextOverride: String? = null,
     artistCredits: List<Info>? = null,
+    animateMetadataChanges: Boolean = false,
     onMenuDestinationOpened: (() -> Unit)? = null,
     onClick: () -> Unit = {}
 ) {
@@ -355,6 +358,7 @@ fun SongItem(
                 // Song's name
                 SongText(
                     text = cleanPrefix( safeTitle ),
+                    animateChanges = animateMetadataChanges,
                     style = typography().xs.semiBold,
                     modifier = Modifier.weight( 1f )
                                        .conditional( !disableScrollingText ) {
@@ -369,6 +373,7 @@ fun SongItem(
                 // Song's author
                 SongText(
                     text = safeArtists,
+                    animateChanges = animateMetadataChanges,
                     style = typography().xs.semiBold.secondary,
                     overflow = TextOverflow.Clip,
                     modifier = Modifier.weight( 1f )
@@ -383,6 +388,7 @@ fun SongItem(
                  */
                 SongText(
                     text = displaySong.durationText ?: "--:--",
+                    animateChanges = animateMetadataChanges,
                     style = typography().xxs.secondary.medium,
                     modifier = Modifier.padding( top = 4.dp, start = 5.dp  )
                 )

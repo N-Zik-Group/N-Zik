@@ -788,7 +788,6 @@ fun MiniPlayer(
                             effectRotationEnabled = effectRotationEnabled,
                             isRotated = isRotated,
                             onRotatedChange = { isRotated = it },
-                            menuState = menuState,
                             pendingAction = pendingMiniPlayerAction,
                             navController = navController,
                             onClosePlayer = hidePlayer

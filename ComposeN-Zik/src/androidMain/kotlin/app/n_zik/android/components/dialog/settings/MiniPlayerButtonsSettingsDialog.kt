@@ -62,7 +62,7 @@ private fun buildButtonDefs(): Map<String, MiniPlayerButtonDef> = mapOf(
     "audio_output" to MiniPlayerButtonDef("audio_output", showMiniPlayerAudioOutputKey, R.drawable.devices, R.string.audio_output_title, true),
     "shuffle" to MiniPlayerButtonDef("shuffle", showMiniPlayerShuffleKey, R.drawable.shuffle, R.string.player_mini_action_shuffle, false),
     "repeat" to MiniPlayerButtonDef("repeat", showMiniPlayerRepeatKey, R.drawable.repeat, R.string.player_action_repeat, false),
-    "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.player_mini_action_add_to_playlist, false),
+    "add_to_playlist" to MiniPlayerButtonDef("add_to_playlist", showMiniPlayerAddToPlaylistKey, R.drawable.playlist, R.string.playlist_actions_title, false),
     "queue" to MiniPlayerButtonDef("queue", showMiniPlayerQueueKey, R.drawable.reorder, R.string.player_mini_button_queue, false),
     "share" to MiniPlayerButtonDef("share", showMiniPlayerShareKey, R.drawable.share_social, R.string.player_mini_button_share, false),
     "radio" to MiniPlayerButtonDef("radio", showMiniPlayerRadioKey, R.drawable.radio, R.string.player_mini_button_radio, false),

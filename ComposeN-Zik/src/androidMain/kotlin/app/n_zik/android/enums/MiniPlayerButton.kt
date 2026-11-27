@@ -14,7 +14,7 @@ enum class MiniPlayerButton(
     Shuffle(R.drawable.shuffle, R.string.player_mini_action_shuffle),
     Repeat(R.drawable.repeat, R.string.player_action_repeat),
     Like(R.drawable.heart, R.string.player_action_like),
-    AddToPlaylist(R.drawable.add_in_playlist, R.string.player_mini_action_add_to_playlist),
+    AddToPlaylist(R.drawable.playlist, R.string.playlist_actions_title),
     Download(R.drawable.download, R.string.player_mini_button_download),
     Share(R.drawable.share_social, R.string.player_mini_button_share),
     Radio(R.drawable.radio, R.string.player_mini_button_radio),

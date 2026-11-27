@@ -1644,3 +1644,7 @@ Menus:
 Menus:
 - fix(menu): keep media actions aligned with their source state
   - Use the common section presentation and respect offline, bookmark and external navigation state.
+
+Menus / Playlist:
+- fix(playlist): use the shared entry point from player and track actions
+  - Route track, artist, mini-player and full-player entry points to the same Playlist actions dialog.

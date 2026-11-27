@@ -211,6 +211,7 @@ fun ArtistLocalSongs(
             Timber.tag("ArtistLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
         },
         itemSelector = itemSelector,
+        allowImportChoice = false,
     )
 
     LaunchedEffect(browseId) {

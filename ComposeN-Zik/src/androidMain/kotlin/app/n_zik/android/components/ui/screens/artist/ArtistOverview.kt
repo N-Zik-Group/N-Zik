@@ -306,6 +306,7 @@ internal fun ArtistOverview(
             timber.log.Timber.tag("ArtistOverview").e(error, "Failed to add songs to playlist %s", playlist.playlist.name)
         },
         itemSelector = itemSelector,
+        allowImportChoice = false,
     )
     val downloadAllDialog = DownloadAllSongsDialog(::getSongs)
     val deleteAllDownloadsDialog = DeleteAllDownloadedSongsDialog(::getSongs)

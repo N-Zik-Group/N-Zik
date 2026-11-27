@@ -450,8 +450,8 @@ fun SongItem(
                     if ( playlistindicator && isSongMappedToPlaylist ) {
                         val picker = PlaylistsMenu.forSong(mediaItem)
                         IconButton(
-                            icon = R.drawable.add_in_playlist,
-                            contentDescription = stringResource(R.string.playlist_action_add),
+                            icon = picker.iconId,
+                            contentDescription = picker.menuIconTitle,
                             color = colorPalette().text,
                             enabled = true,
                             onClick = {
@@ -541,8 +541,8 @@ fun SongItem(
                 if ( playlistindicator && isSongMappedToPlaylist ) {
                     val picker = PlaylistsMenu.forSong(mediaItem)
                     IconButton(
-                        icon = R.drawable.add_in_playlist,
-                        contentDescription = stringResource(R.string.playlist_action_add),
+                        icon = picker.iconId,
+                        contentDescription = picker.menuIconTitle,
                         color = colorPalette().text,
                         enabled = true,
                         onClick = {

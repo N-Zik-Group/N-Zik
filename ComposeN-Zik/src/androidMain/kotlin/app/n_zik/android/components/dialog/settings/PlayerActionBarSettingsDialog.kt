@@ -70,7 +70,7 @@ private data class ButtonDef(
 private fun buildButtonDefs(): Map<String, ButtonDef> = mapOf(
     "discover" to ButtonDef("discover", showButtonPlayerDiscoverKey, R.drawable.discover, R.string.settings_player_action_bar_discover_visible_label, false),
     "download" to ButtonDef("download", showButtonPlayerDownloadKey, R.drawable.download, R.string.settings_player_action_bar_download_visible_label, true),
-    "add_to_playlist" to ButtonDef("add_to_playlist", showButtonPlayerAddToPlaylistKey, R.drawable.add_in_playlist, R.string.settings_player_action_bar_playlist_add_visible_label, true),
+    "add_to_playlist" to ButtonDef("add_to_playlist", showButtonPlayerAddToPlaylistKey, R.drawable.playlist, R.string.playlist_actions_title, true),
     "loop" to ButtonDef("loop", showButtonPlayerLoopKey, R.drawable.repeat, R.string.settings_player_action_bar_loop_visible_label, false),
     "shuffle" to ButtonDef("shuffle", showButtonPlayerShuffleKey, R.drawable.shuffle, R.string.settings_player_action_bar_shuffle_visible_label, true),
     "lyrics" to ButtonDef("lyrics", showButtonPlayerLyricsKey, R.drawable.song_lyrics, R.string.settings_action_bar_show_lyrics_button, true),
