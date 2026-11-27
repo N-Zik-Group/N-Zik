@@ -3,17 +3,31 @@ package app.n_zik.android.ui.components.themed
 import android.app.Application
 import android.content.Context
 import android.os.Looper
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshots.Snapshot
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.navigation.compose.rememberNavController
@@ -55,6 +69,7 @@ import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuState
@@ -69,6 +84,42 @@ import app.n_zik.android.utils.getActiveProfile
 @Config(sdk = [32], application = Application::class)
 class PlaylistsMenuTargetTest {
     @get:Rule val compose = createComposeRule()
+
+    @Test
+    fun `a filtered playlist remains visible during exit but blocks both actions`() {
+        val previews = listOf(
+            PlaylistPreview(Playlist(id = 1L, name = "Road trip"), 0),
+            PlaylistPreview(Playlist(id = 2L, name = "Focus"), 0),
+        )
+        val matchingIds = mutableStateOf(setOf(1L, 2L))
+        val clicks = mutableListOf<String>()
+        compose.setContent {
+            Column {
+                PlaylistPickerSearchRows(previews, matchingIds.value) { preview ->
+                    Row {
+                        val title = preview.playlist.name
+                        BasicText(title, Modifier.size(104.dp, 48.dp).clickable { clicks += title })
+                        BasicText("Open $title", Modifier.size(104.dp, 48.dp).clickable { clicks += "Open $title" })
+                    }
+                }
+            }
+        }
+
+        compose.mainClock.autoAdvance = false
+        compose.runOnIdle {
+            matchingIds.value = setOf(2L)
+            Snapshot.sendApplyNotifications()
+        }
+        compose.mainClock.advanceTimeBy(64)
+        val hiddenFromAccessibility = SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility)
+        for (label in listOf("Road trip", "Open Road trip")) {
+            compose.onNode(hasText(label) and hasAnyAncestor(hiddenFromAccessibility), useUnmergedTree = true)
+                .assertExists()
+                .performTouchInput { click() }
+        }
+        compose.onNodeWithText("Focus").performTouchInput { click() }
+        compose.runOnIdle { assertEquals(listOf("Focus"), clicks) }
+    }
 
     @Test
     fun `the device picker accepts local playlists and shows YouTube sources with a lock`() {

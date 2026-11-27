@@ -1892,3 +1892,7 @@ Menus / Audio:
 Playlists:
 - fix(playlist): keep local export tracks stable through the file picker
   - Capture the displayed tracks or selection before opening the dialog and preserve the source identifier.
+
+Menus / Playlists:
+- fix(playlist): block actions on filtered exit rows
+  - Keep the exit animation while making excluded rows inert and rejecting stale add and open events.

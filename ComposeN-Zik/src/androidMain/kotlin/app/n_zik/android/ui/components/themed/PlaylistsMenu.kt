@@ -47,6 +47,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.Modifier
@@ -109,6 +110,7 @@ import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuHeaderTitle
 import app.n_zik.android.components.menu.menuHeaderBackAction
 import app.n_zik.android.components.menu.isCurrentMenu
+import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.components.menu.openDestination
 import androidx.compose.material3.Icon
 
@@ -129,13 +131,15 @@ internal fun isPinnedPlaylistPickerVisible(playlist: Playlist, online: Boolean):
 @Composable
 internal fun PlaylistPickerSearchRows(
     previews: List<PlaylistPreview>,
-    matches: List<PlaylistPreview>,
+    matchingIds: Set<Long>,
     content: @Composable (PlaylistPreview) -> Unit,
 ) {
-    val visibleIds = remember(matches) { matches.mapTo(HashSet()) { it.playlist.id } }
     previews.forEach { preview ->
         key(preview.playlist.id) {
-            SearchHeaderVisibility(preview.playlist.id in visibleIds) { content(preview) }
+            val matches = preview.playlist.id in matchingIds
+            SearchHeaderVisibility(matches) {
+                Box(Modifier.menuPageInteraction(matches)) { content(preview) }
+            }
         }
     }
 }
@@ -199,7 +203,7 @@ private fun PlaylistPickerMenu(
     filters: PlaylistPickerFilters,
     showDeviceTab: Boolean,
     header: @Composable ColumnScope.() -> Unit,
-    entry: @Composable (PlaylistPreview, Boolean) -> Unit,
+    entry: @Composable (PlaylistPreview, Boolean, () -> Boolean) -> Unit,
 ) {
     val all = R.string.common_option_all
     val showPinned by rememberPreference(showPinnedPlaylistsKey, true)
@@ -245,17 +249,25 @@ private fun PlaylistPickerMenu(
             (activeGroup != R.string.sync_youtube_playlists_title ||
                 matchesYouTubeLibraryFilter(playlist, filters.youtube))
     }
+    val matchingIds = remember(matches) { matches.mapTo(HashSet()) { it.playlist.id } }
+    val currentMatchingIds by rememberUpdatedState(matchingIds)
+    val currentGroup by rememberUpdatedState(activeGroup)
+    val matchingEntry: @Composable (PlaylistPreview) -> Unit = { preview ->
+        entry(preview, openOnDevice) {
+            activeGroup == currentGroup && preview.playlist.id in currentMatchingIds
+        }
+    }
     val empty = matches.isEmpty()
     val emptyBody = playlistPickerEmptyBody(playlistRead, query, empty)
     if (style == MenuStyle.List) {
         ListMenu.Menu(headerContent = header, bodyHeader = searchAndFilters, emptyBody = emptyBody) {
             PlaylistPickerFeedback(playlistRead, query, empty)
-            PlaylistPickerSearchRows(displayed, matches) { entry(it, openOnDevice) }
+            PlaylistPickerSearchRows(displayed, matchingIds, matchingEntry)
         }
     } else {
         GridMenu.Menu(headerContent = header, bodyHeader = searchAndFilters, emptyBody = emptyBody) {
             playlistPickerGridFeedback(playlistRead, query, empty)
-            items(matches, key = { it.playlist.id }) { entry(it, openOnDevice) }
+            items(matches, key = { it.playlist.id }) { matchingEntry(it) }
         }
     }
 }
@@ -574,6 +586,7 @@ class PlaylistsMenu private constructor(
         onDevice: Boolean,
         openOnDevice: Boolean,
         localDestinationsOnly: Boolean,
+        canInteract: () -> Boolean,
         onAdd: () -> Unit,
     ) {
         val playlist = playlistPreview.playlist
@@ -585,6 +598,7 @@ class PlaylistsMenu private constructor(
             icon = { SettingIcon(R.drawable.add_in_playlist) },
             onClick = {
                 when {
+                    !canInteract() -> Unit
                     locked -> warnPlaylistPickerLocked()
                     containsSong -> Toaster.i(R.string.playlist_contains_song)
                     else -> onAdd()
@@ -601,7 +615,9 @@ class PlaylistsMenu private constructor(
                         onOpenPlaylist()
                         menuState.hide()
                     },
-                    openDestination = { navigate -> menuState.openDestination(navigate = navigate) },
+                    openDestination = { navigate ->
+                        canInteract() && menuState.openDestination(navigate = navigate)
+                    },
                     openPlaylist = navController?.let { controller ->
                         { id: Long -> navigateToPickedPlaylist(controller, id, openOnDevice) }
                     },
@@ -707,12 +723,13 @@ class PlaylistsMenu private constructor(
                     onCreate = newPlaylistButton::onShortClick,
                 )
             },
-            entry = { preview, openOnDevice ->
+            entry = { preview, openOnDevice, isMatching ->
                 PlaylistCard(
                     preview, preview.playlist.id in songPlaylistIds,
                     onDevice = preview.playlist.matchesOnDevicePlaylist(playlistRead.devicePlaylistIds),
                     openOnDevice = openOnDevice,
                     localDestinationsOnly = request.localDestinationsOnly,
+                    canInteract = { menuState.isCurrentMenu(menuKey) && isMatching() },
                 ) {
                     add(preview)
                 }
