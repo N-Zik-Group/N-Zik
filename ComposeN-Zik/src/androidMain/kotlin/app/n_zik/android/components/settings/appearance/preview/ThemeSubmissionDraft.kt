@@ -16,7 +16,9 @@ internal fun compatibleThemeSubmissionDraftAppearance(source: String): String? {
     if (runCatching { parseThemeAppearance(source) }.isSuccess) return source
     return runCatching {
         val root = Json.parseToJsonElement(source) as? JsonObject ?: error("Invalid draft appearance")
-        val shape = requireNotNull(submissionDraftShapes[themeAppearanceSchema(root)])
+        val version = requireNotNull(themeAppearanceSchema(root))
+        require(version < ThemeAppearanceV3)
+        val shape = requireNotNull(submissionDraftShapes[version])
         val filtered = retainDraftFields(root, shape).toString()
         parseThemeAppearance(filtered)
         filtered

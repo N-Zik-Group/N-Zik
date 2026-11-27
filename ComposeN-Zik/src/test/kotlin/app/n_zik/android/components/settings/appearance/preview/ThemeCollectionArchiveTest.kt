@@ -236,6 +236,51 @@ class ThemeCollectionArchiveTest {
     }
 
     @Test
+    fun versionThreeValidatesTheDeclarationAndDocumentBeforeRestore() {
+        val saved = theme("12345678-1111-2222-3333-123456789023")
+        val document = """{"schemaVersion":3,"categories":{"colors":{"palette":"dynamic","mode":"light"}}}"""
+        val bytes = document.encodeToByteArray()
+        val manifest = requireNotNull(saved.theme).copy(
+            schemaVersion = 3, appearance = StoreFile("appearance.json", bytes.sha256()),
+            compatibility = StoreCompatibility(101),
+        )
+        val manifestJson = Json.encodeToString(manifest)
+        assertEquals(manifest, parseStoreTheme(manifestJson))
+        for (invalid in listOf(
+            manifestJson.replace("\"minVersionCode\":101", "\"minVersionCode\":100"),
+            manifestJson.replace("\"minVersionCode\":101", "\"minVersionCode\":\"101\""),
+            manifestJson.replace("\"minVersionCode\":101", "\"minVersionCode\":2147483648"),
+            manifestJson.replace("\"minVersionCode\":101", ""),
+            manifestJson.dropLast(1) + ""","license":"GPL-3.0"}""",
+        )) {
+            assertThrows(IllegalArgumentException::class.java) { parseStoreTheme(invalid) }
+        }
+        val reviews = """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray()
+        assertEquals(document, validateThemeArchiveDocuments(manifest, { path, _ ->
+            if (path == "appearance.json") bytes else reviews
+        }, validateFeatureCompatibility = false))
+        assertThrows(IllegalArgumentException::class.java) {
+            validateThemeArchiveDocuments(manifest.copy(appearance = StoreFile("appearance.json", "0".repeat(64))), { path, _ ->
+                if (path == "appearance.json") bytes else reviews
+            }, validateFeatureCompatibility = false)
+        }
+        for (invalid in listOf(
+            document.replace("\"schemaVersion\":3", "\"schemaVersion\":2"),
+            document.replace("\"mode\":\"light\"", "\"futureMode\":true"),
+            document.replace(",\"mode\":\"light\"", ""),
+            document.replace("\"mode\":\"light\"", "\"mode\":\"future\""),
+        )) {
+            val invalidBytes = invalid.encodeToByteArray()
+            assertThrows(IllegalArgumentException::class.java) {
+                val changed = manifest.copy(appearance = StoreFile("appearance.json", invalidBytes.sha256()))
+                validateThemeArchiveDocuments(changed, { path, _ ->
+                    if (path == "appearance.json") invalidBytes else reviews
+                }, validateFeatureCompatibility = false)
+            }
+        }
+    }
+
+    @Test
     fun versionTwoArchiveRequiresCompatibilityCodeNinetyNine() {
         val saved = theme("12345678-1111-2222-3333-123456789019")
         val document = defaultThemeAppearanceDocument()

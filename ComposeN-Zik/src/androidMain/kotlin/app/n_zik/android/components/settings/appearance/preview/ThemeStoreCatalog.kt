@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -265,8 +266,12 @@ internal fun parseStoreTheme(
     manifest: String,
     allowLocalAuthor: Boolean = false,
     previewLimit: Int? = null,
-): StoreTheme =
-    Json.decodeFromJsonElement(StoreTheme.serializer(), JsonObject(Json.parseToJsonElement(manifest).jsonObject - "license")).also { theme ->
+): StoreTheme {
+    val root = Json.parseToJsonElement(manifest).jsonObject
+    val data = if ((root["schemaVersion"] as? JsonPrimitive)?.content in setOf("1", "2")) {
+        JsonObject(root - "license")
+    } else root
+    return Json.decodeFromJsonElement(StoreTheme.serializer(), data).also { theme ->
         require(theme.schemaVersion in 1..ThemeAppearanceV3 && uuid.matches(theme.themeId) && theme.revision > 0)
         require(theme.title.themeTextLength in 1..100 && theme.description.themeTextLength in 1..1000)
         require(theme.localCreatorName == null || allowLocalAuthor && theme.localCreatorName.themeTextLength in 1..100)
@@ -277,6 +282,11 @@ internal fun parseStoreTheme(
         if (theme.schemaVersion >= ThemeAppearanceV2) {
             require((theme.compatibility.minVersionCode ?: 0) >= themeSchemaMinimumVersionCode(theme.schemaVersion))
         }
+        if (theme.schemaVersion == ThemeAppearanceV3) {
+            require(root["schemaVersion"] == JsonPrimitive(ThemeAppearanceV3))
+            require(root.getValue("compatibility").jsonObject["minVersionCode"] == JsonPrimitive(theme.compatibility.minVersionCode))
+            require(theme.previews.size <= 128)
+        }
         require(theme.appearance.path == "appearance.json" && hash.matches(theme.appearance.sha256))
         require(previewLimit == null || theme.previews.size <= previewLimit)
         require(theme.previews.distinctBy { it.path }.size == theme.previews.size)
@@ -286,6 +296,7 @@ internal fun parseStoreTheme(
                 preview.caption?.themeTextLength?.let { it in 1..160 } != false
         })
     }.withMinimumCompatibility()
+}
 
 internal fun List<StoreTheme>.latestCompatibleRevisions(appVersionCode: Int): List<StoreTheme> =
     groupBy(StoreTheme::themeId).values.mapNotNull { revisions ->
@@ -306,7 +317,7 @@ internal fun parseCatalogThemeAppearance(
         document,
         allowEmptyCategories = false,
         advertisedMinVersionCode = theme.compatibility.minVersionCode ?: 0,
-        validateFeatureCompatibility = validateFeatureCompatibility,
+        validateFeatureCompatibility = validateFeatureCompatibility || theme.schemaVersion == ThemeAppearanceV3,
     )
 }
 

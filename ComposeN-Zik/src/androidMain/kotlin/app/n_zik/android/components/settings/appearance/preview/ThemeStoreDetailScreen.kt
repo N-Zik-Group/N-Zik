@@ -326,12 +326,21 @@ private fun ThemeStoreDetailContent(
     val id = "${theme.themeId}:${theme.revision}"
     val downloaded = builtIn ?: downloads.firstOrNull { it.id == id }
     val appVersion = BuildConfig.VERSION_CODE
-    val support = theme.supportAt(appVersion)
-    val supported = support == StoreSupport.Supported
+    val isStock = builtIn?.theme == theme && theme.themeId == BundledThemeId
+    val manifestSupport = if (isStock) StoreSupport.Supported else theme.supportAt(appVersion)
     var appearance by remember(theme.appearance) { mutableStateOf<StoreAppearance?>(null) }
-    LaunchedEffect(theme, catalog, retry, downloaded, supported) {
-        if (supported) appearance = loadDetail("appearance") { catalog.appearance(theme, downloaded) } ?: appearance
+    var appearanceFailed by remember(theme.appearance) { mutableStateOf(false) }
+    LaunchedEffect(theme, catalog, retry, downloaded, manifestSupport) {
+        if (manifestSupport == StoreSupport.Supported) {
+            val loaded = loadDetail("appearance") { catalog.appearance(theme, downloaded) }
+            appearance = loaded
+            appearanceFailed = loaded == null
+        }
     }
+    val support = if (!isStock && appearance?.minimumVersionCode?.let { appVersion < it } == true) {
+        StoreSupport.RequiresUpdate
+    } else manifestSupport
+    val supported = support == StoreSupport.Supported
     val downloadQueue = rememberThemeStoreDownloadQueue(profileId)
     val pendingDownloads by remember(downloadQueue) { downloadQueue?.activeDownloads ?: kotlinx.coroutines.flow.flowOf(emptySet<String>()) }
         .collectAsStateWithLifecycle(initialValue = emptySet(), context = NzikDispatchers.DATA)
@@ -366,7 +375,7 @@ private fun ThemeStoreDetailContent(
     val dismiss = { dialog = null }
     val apply: (Set<StoreGroup>) -> Unit = { groups ->
         if (getActiveProfile(context) == profileId) {
-            appearance?.selectedSettings(theme, appVersion, groups)?.let { settings ->
+            appearance?.selectedSettings(theme, appVersion, groups, bundled = isStock)?.let { settings ->
                 undo = settings.applyTo(
                     context.preferences,
                     GlassProfilePreferences.preferences(context, profileId),
@@ -590,9 +599,10 @@ private fun ThemeStoreDetailContent(
                             shimmer,
                         )
                     }
-                    if (builtIn == null) OtherInfoSettingsEntry(
+                    if (builtIn == null && (appearance != null || appearanceFailed || !supported)) OtherInfoSettingsEntry(
                         title = stringResource(R.string.theme_store_compatibility),
-                        text = compatibilityLabel(support),
+                        text = if (appearanceFailed) stringResource(R.string.theme_store_appearance_unreadable)
+                        else compatibilityLabel(support),
                         icon = R.drawable.information,
                         shimmerText = shimmer,
                     )

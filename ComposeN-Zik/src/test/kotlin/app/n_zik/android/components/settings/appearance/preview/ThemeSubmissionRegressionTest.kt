@@ -178,6 +178,12 @@ class ThemeSubmissionRegressionTest {
     }
 
     @Test
+    fun versionThreeDraftRejectsAnUnknownOptionWithoutDroppingIt() {
+        val unknown = """{"schemaVersion":3,"categories":{"colors":{"palette":"dynamic","mode":"light","futureSetting":true}}}"""
+        assertNull(compatibleThemeSubmissionDraftAppearance(unknown))
+    }
+
+    @Test
     fun resumingAnOlderPositiveDraftMinimumUpgradesItWithoutMaskingInvalidInput() {
         for (old in listOf("1", "95", " 96 ")) {
             assertEquals("97", submissionDraftMinimumVersionInput(old))

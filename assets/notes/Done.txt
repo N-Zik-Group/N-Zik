@@ -1964,3 +1964,7 @@ Playlists / Export:
 Player / Appearance:
 - feat(player): adjust lyrics and visualizer cover dimming
   - Give each overlay a toggle and animated intensity control, store values per profile and share the V3 appearance fields.
+
+Theme Store:
+- fix(theme-store): enforce manifest and feature compatibility
+  - Gate local and online creation and application on the manifest and appearance requirements, while preserving valid Rescue backups.

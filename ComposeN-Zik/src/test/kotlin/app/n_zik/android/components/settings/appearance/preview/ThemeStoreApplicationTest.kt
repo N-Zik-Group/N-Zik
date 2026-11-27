@@ -8,6 +8,9 @@ import app.n_zik.android.components.glass.GlassProfilePreferences
 import app.n_zik.android.components.glass.glassEnabledKey
 import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.m3eAlwaysShowShapesKey
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.enums.AnimatedGradient
 import app.n_zik.android.enums.CarouselSize
 import app.n_zik.android.enums.PlayerBackgroundColors
@@ -86,7 +89,10 @@ class ThemeStoreApplicationTest {
     fun customizeCanLabelEveryPortableSettingIncludingGlass() {
         val v1 = appearance.groups.values.flatMap { it.plain.keys + it.glass.keys }
         val v2 = parseThemeAppearance(defaultThemeAppearanceDocument()).values.flatMap { it.plain.keys + it.glass.keys }
-        val keys = (v1 + v2 + m3eAlwaysShowShapesKey + "playerActionBarTopSlots" + "playerActionBarBottomAudioVideo").toSet()
+        val keys = (v1 + v2 + setOf(
+            m3eAlwaysShowShapesKey, "playerActionBarTopSlots", "playerActionBarBottomAudioVideo",
+            lyricsCoverDimmingEnabledKey, lyricsCoverDimmingOpacityKey, visualizerCoverDimmingOpacityKey,
+        )).toSet()
         // Default documents omit optional controls. Customized V2 imports still need labels.
         assertEquals(keys, themeSettingNames.keys.filterNot {
             it.startsWith("customToolbar.") || it == "burger_menu_toggle_search" || it == "burger_menu_toggle_notifications"
@@ -118,7 +124,19 @@ class ThemeStoreApplicationTest {
         assertEquals(ThemeAppearanceV3MinimumVersionCode, stock.compatibility.minVersionCode)
         assertEquals(StoreSupport.RequiresUpdate, stock.compatibility.supportAt(100))
         assertEquals(StoreSupport.Supported, stock.compatibility.supportAt(101))
-        assertEquals(StoreSupport.Supported, stock.supportAt(100))
+        assertEquals(StoreSupport.RequiresUpdate, stock.supportAt(100))
+    }
+
+    @Test
+    fun versionGateChecksTheDocumentEvenWhenAnImportedV2ThemeDeclaredAnEarlierVersion() {
+        val document = """{"schemaVersion":2,"categories":{"colors":{"palette":"dynamic","mode":"pure-black"}}}"""
+        val imported = StoreAppearance(document, document.length, parseThemeAppearance(document).toStoreGroups())
+        val groups = setOf(StoreGroup.Colors)
+        val compatibility = StoreCompatibility(99)
+
+        assertEquals(101, imported.minimumVersionCode)
+        assertNull(imported.selectedSettings(compatibility, 100, groups))
+        assertNotNull(imported.selectedSettings(compatibility, 101, groups))
     }
 
     @Test
@@ -132,9 +150,10 @@ class ThemeStoreApplicationTest {
         val stock = StoreAppearance(document, document.length, parseThemeAppearance(document).toStoreGroups())
         target.edit().putBoolean(m3eAlwaysShowShapesKey, true).apply()
 
-        requireNotNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Colors))).applyTo(target, glass)
+        assertNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Colors)))
+        requireNotNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Colors), bundled = true)).applyTo(target, glass)
         assertEquals(true, target.all[m3eAlwaysShowShapesKey])
-        val undo = requireNotNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Animations))).applyTo(target, glass)
+        val undo = requireNotNull(stock.selectedSettings(theme, 100, setOf(StoreGroup.Animations), bundled = true)).applyTo(target, glass)
         assertFalse(target.contains(m3eAlwaysShowShapesKey))
         undo()
         assertEquals(true, target.all[m3eAlwaysShowShapesKey])

@@ -331,7 +331,7 @@ private fun ThemeSubmissionForm(
         compatibleThemeSubmissionDraftAppearance(storedAppearance)
     }
     val fullAppearance = remember(storedAppearance, compatibleAppearance) {
-        compatibleAppearance ?: currentAppearance()
+        compatibleAppearance ?: """{"schemaVersion":2,"categories":{}}"""
     }
     var usingCurrentAppearance by rememberSaveable(key) {
         mutableStateOf(compatibleAppearance == null ||
@@ -352,9 +352,9 @@ private fun ThemeSubmissionForm(
     }
     val manifestSchema = maxOf(ThemeAppearanceV2, appearanceSchema)
     val archiveMinimum = themeSchemaMinimumVersionCode(manifestSchema)
-    val schemaMinimum = if (localOnly) {
-        archiveMinimum
-    } else maxOf(archiveMinimum, themeAppearancePublicationMinimumVersionCode(appearance))
+    val schemaMinimum = remember(archiveMinimum, appearance) {
+        maxOf(archiveMinimum, themeAppearancePublicationMinimumVersionCode(appearance))
+    }
     val currentVersionCode = BuildConfig.VERSION_CODE
     var minimumVersionManualInput by rememberSaveable(key) {
         mutableStateOf(draft?.takeIf { it.has("minVersionCode") }?.optString("minVersionCode")
@@ -366,8 +366,7 @@ private fun ThemeSubmissionForm(
     val minimumVersionInput = submissionMinimumVersionInput(
         minimumVersionManualInput, minimumVersionAutomatic, schemaMinimum, previousMinimum,
     )
-    val compatibilityCeiling = if (localOnly) maxOf(currentVersionCode, schemaMinimum) else currentVersionCode
-    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, compatibilityCeiling, previousMinimum, schemaMinimum)
+    val minimumVersionCode = submissionMinimumVersionCode(minimumVersionInput, currentVersionCode, previousMinimum, schemaMinimum)
     val minimumVersionLabel = when (minimumVersionCode) {
         currentVersionCode -> stringResource(R.string.theme_store_submission_version_with_code,
             BuildConfig.VERSION_NAME.substringBefore('-'), currentVersionCode)
@@ -531,7 +530,7 @@ private fun ThemeSubmissionForm(
             .put("tags", tags).put("appearance", appearance).put("previews", JSONObject(previews.toMap()))
             .put("captions", captions)
             .put("previewSelection", previewSelectionState)
-            .put("fullAppearance", fullAppearance).put("categorySelection", selection)
+            .put("fullAppearance", compatibleAppearance ?: storedAppearance).put("categorySelection", selection)
             .put("usingCurrentAppearance", usingCurrentAppearance)
             .put("reusePublishedPreviews", reusePublishedPreviews)
         drafts.edit().putString(key, data.toString()).apply()
@@ -540,14 +539,14 @@ private fun ThemeSubmissionForm(
     }
     suspend fun packageTheme(): Pair<StoreTheme, Map<String, ByteArray>> = withContext(NzikDispatchers.DATA) {
         require(validTags)
-        if (!localOnly) require(currentVersionCode >= schemaMinimum) {
-            "This theme requires Android version code $schemaMinimum before publication"
+        require(compatibleAppearance != null) { "Unsupported theme draft appearance" }
+        require(currentVersionCode >= schemaMinimum) {
+            "This theme requires Android version code $schemaMinimum"
         }
         val compatibility = StoreCompatibility(checkNotNull(minimumVersionCode))
         val files = mutableMapOf<String, ByteArray>()
         val appearanceBytes = appearance.encodeToByteArray()
-        parseThemeAppearance(appearance, allowEmptyCategories = false,
-            advertisedMinVersionCode = if (localOnly) null else compatibility.minVersionCode)
+        parseThemeAppearance(appearance, allowEmptyCategories = false, advertisedMinVersionCode = compatibility.minVersionCode)
         files["appearance.json"] = appearanceBytes
         files["reviews.json"] = """{"schemaVersion":1,"reviews":[]}""".encodeToByteArray()
         val gallery = gallerySlots.map { slot ->
@@ -657,7 +656,7 @@ private fun ThemeSubmissionForm(
         else authorizePublication(id)
     }
     val informationValid = title.isNotBlank() && description.isNotBlank() && included.isNotEmpty() && validTags &&
-        minimumVersionCode != null
+        compatibleAppearance != null && minimumVersionCode != null
     val footerGlass = rememberGlassSettings()
     val footerBackdrop = rememberLayerBackdrop()
     val captureFooter = footerGlass.usesGlassMaterial(GlassArea.SettingsCards) &&
@@ -757,8 +756,12 @@ private fun ThemeSubmissionForm(
                                 },
                                 invalid = minimumVersionCode == null,
                             ) {
-                                if (!localOnly && schemaMinimum > currentVersionCode) {
-                                    SettingsDescription(stringResource(R.string.theme_store_submission_feature_requires_update, schemaMinimum))
+                                if (schemaMinimum > currentVersionCode) {
+                                    SettingsDescription(stringResource(
+                                        if (localOnly) R.string.theme_store_local_feature_requires_update
+                                        else R.string.theme_store_submission_feature_requires_update,
+                                        schemaMinimum,
+                                    ))
                                 } else if (minimumVersionCode == null) {
                                     SettingsDescription(stringResource(
                                         if (schemaMinimum >= currentVersionCode) R.string.theme_store_submission_version_required
@@ -769,6 +772,9 @@ private fun ThemeSubmissionForm(
                             }
                             SettingsSectionCard(stringResource(R.string.theme_store_submission_included), R.drawable.ui,
                                 bottomSpacing = 0.dp, content = {
+                                    if (compatibleAppearance == null) {
+                                        SettingsDescription(stringResource(R.string.theme_store_submission_appearance_unsupported))
+                                    }
                                     if (initialAppearance != null || draft != null) {
                                         OtherSettingsEntry(
                                             title = stringResource(R.string.theme_store_local_use_current),

@@ -37,7 +37,7 @@ class ThemeStoreStockPreferenceTest {
         val document = saved.document
         val stock = StoreAppearance(document, document.length, parseThemeAppearance(document).toStoreGroups())
         val settings = requireNotNull(stock.selectedSettings(
-            requireNotNull(saved.theme), 100, setOf(StoreGroup.Animations),
+            requireNotNull(saved.theme), 100, setOf(StoreGroup.Animations), bundled = true,
         ))
         lateinit var setEnabled: (Boolean) -> Unit
         lateinit var undo: () -> Unit
@@ -92,7 +92,7 @@ class ThemeStoreStockPreferenceTest {
             .putString(playerTop.orderKey, """["audioVideo"]""")
             .putString(queue.orderKey, """["search"]""").commit()
 
-        val reset = requireNotNull(stock.selectedSettings(requireNotNull(saved.theme), 100, setOf(StoreGroup.Navigation)))
+        val reset = requireNotNull(stock.selectedSettings(requireNotNull(saved.theme), 100, setOf(StoreGroup.Navigation), bundled = true))
         val undo = reset.applyTo(prefs, glass)
         assertEquals(album.actions, album.readVisibleActions(prefs))
         assertFalse(prefs.contains(legacyToolbar))
@@ -102,7 +102,7 @@ class ThemeStoreStockPreferenceTest {
         assertFalse(ToolbarAction.SHUFFLE in album.readVisibleActions(prefs))
         assertTrue(prefs.contains(legacyToolbar))
 
-        val playerReset = requireNotNull(stock.selectedSettings(requireNotNull(saved.theme), 100, setOf(StoreGroup.PlayerAndQueue)))
+        val playerReset = requireNotNull(stock.selectedSettings(requireNotNull(saved.theme), 100, setOf(StoreGroup.PlayerAndQueue), bundled = true))
         val undoPlayerReset = playerReset.applyTo(prefs, glass)
         assertFalse(prefs.contains(playerTop.orderKey))
         assertFalse(prefs.contains(queue.orderKey))

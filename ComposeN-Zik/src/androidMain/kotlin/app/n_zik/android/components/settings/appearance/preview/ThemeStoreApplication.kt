@@ -50,7 +50,9 @@ internal data class StoreAppearance(
     val document: String,
     val size: Int,
     val groups: Map<StoreGroup, ThemeSettings>,
-)
+) {
+    val minimumVersionCode: Int by lazy { themeAppearancePublicationMinimumVersionCode(document) }
+}
 
 internal enum class StoreSupport { Supported, Pending, RequiresUpdate, Legacy }
 
@@ -67,8 +69,10 @@ internal fun StoreCompatibility.supportAt(versionCode: Int): StoreSupport = when
 }
 
 internal fun StoreTheme.supportAt(versionCode: Int): StoreSupport {
-    if (themeId == BundledThemeId) return StoreSupport.Supported
     val support = compatibility.supportAt(versionCode)
+    if (support == StoreSupport.Supported && versionCode < themeSchemaMinimumVersionCode(schemaVersion)) {
+        return StoreSupport.RequiresUpdate
+    }
     // Earlier V2 appearances used V1 manifest envelopes and already declared a minimum of 99.
     return if (support == StoreSupport.Supported && schemaVersion == 1 &&
         (compatibility.minVersionCode ?: 0) <= ThemeLegacyMaxVersionCode && versionCode > ThemeLegacyMaxVersionCode
@@ -124,7 +128,7 @@ internal fun StoreAppearance.selectedSettings(
     versionCode: Int,
     selection: Set<StoreGroup>,
 ): ThemeSettings? {
-    if (compatibility.supportAt(versionCode) != StoreSupport.Supported) return null
+    if (compatibility.supportAt(versionCode) != StoreSupport.Supported || versionCode < minimumVersionCode) return null
     return selectedGroups(selection)
 }
 
@@ -132,10 +136,12 @@ internal fun StoreAppearance.selectedSettings(
     theme: StoreTheme,
     versionCode: Int,
     selection: Set<StoreGroup>,
+    bundled: Boolean = false,
 ): ThemeSettings? {
-    if (theme.supportAt(versionCode) != StoreSupport.Supported) return null
+    val isStock = bundled && theme.themeId == BundledThemeId
+    if (!isStock && (theme.supportAt(versionCode) != StoreSupport.Supported || versionCode < minimumVersionCode)) return null
     val selected = selectedGroups(selection) ?: return null
-    if (theme.themeId != BundledThemeId) {
+    if (!isStock) {
         if (StoreGroup.PlayerAndQueue !in selection) return selected
         val defaults = listOf(playerActionBarTopSlotsKey, playerActionBarBottomAudioVideoKey)
             .filterNot(selected.plain::containsKey)
