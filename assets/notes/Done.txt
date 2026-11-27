@@ -1580,3 +1580,7 @@ Settings:
 Menus / Settings:
 - fix(dialog): open color pickers on the saved color
   - Initialize the preview and selection markers from the current setting and collect pointer events once per control.
+
+Settings:
+- fix(settings): index available values and reveal prerequisites
+  - Reuse backup and opening choices in search and direct unavailable font, theme and artwork controls to the setting that enables them.

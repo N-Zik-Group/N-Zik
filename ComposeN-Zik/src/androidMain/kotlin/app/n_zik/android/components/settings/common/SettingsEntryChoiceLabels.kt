@@ -9,7 +9,12 @@ import java.time.DayOfWeek
 import java.time.format.TextStyle
 import java.util.Locale
 import app.n_zik.android.components.settings.other.proxyModeLabel
+import app.n_zik.android.core.backup.ui.AutoBackupIntervalLabels
+import app.n_zik.android.core.backup.ui.AutoBackupIntervalUnitLabels
+import app.n_zik.android.core.backup.ui.AutoBackupMonthlyDayOptions
 import app.n_zik.android.core.backup.ui.AutoBackupRetentionOptions
+import app.n_zik.android.core.backup.ui.AutoBackupScheduleHours
+import app.n_zik.android.core.backup.ui.autoBackupScheduleHourLabel
 import app.n_zik.android.utils.minutesLabel
 import app.n_zik.android.utils.secondsLabel
 
@@ -44,6 +49,7 @@ import app.n_zik.android.enums.PlayEventsType
 import app.n_zik.android.enums.PlayerBackgroundColors
 import app.n_zik.android.enums.PlayerControlsType
 import app.n_zik.android.enums.PlayerInfoType
+import app.n_zik.android.enums.PlayerOpeningMode
 import app.n_zik.android.enums.PlayerPlayButtonType
 import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.enums.PlayerTimelineSize
@@ -62,6 +68,7 @@ import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.enums.PlayerControlsColors
 import app.n_zik.android.enums.PlayerSwipeSensitivity
 import app.n_zik.android.enums.ShakeSensitivityTheme
+import app.n_zik.android.components.settings.accounts.DiscordButtonField
 import app.n_zik.android.R
 
 /** Finite selector labels keyed by exact navigation target; never reads saved preference values. */
@@ -85,6 +92,10 @@ internal fun settingsEntryChoiceLabels(
     val bridgeAutoStopValues = AutoStopSettings.OPTIONS.map { bridgeAutoStopValueLabel(it, resolveString, locale) }
     // Arbitrary text, custom numbers, credentials, folders and runtime-loaded lists are excluded.
     return mapOf(
+        DiscordButtonField.FirstLabel.targetId to
+            resources(R.string.discord_presence_button_get_nzik),
+        DiscordButtonField.SecondLabel.targetId to
+            resources(R.string.discord_presence_button_listen_ytmusic),
         "general.languages.app_language" to Languages.entries.map { resolveString(it.textId) },
         "general.picture_in_picture.settings_pip_module" to PipModule.entries.map { resolveString(it.textId) },
         "general.queue_management.now_playing_indicator" to MusicAnimationType.entries.map { resolveString(it.textId) },
@@ -102,6 +113,7 @@ internal fun settingsEntryChoiceLabels(
         "ui.swipe_to_action.album_right_swipe" to AlbumSwipeAction.entries.map { resolveString(it.textId) },
         "ui.theme.theme" to ColorPaletteName.entries.map { resolveString(it.textId) },
         "ui.theme.theme_mode" to ColorPaletteMode.entries.map { resolveString(it.textId) },
+        PlayerOpeningModeSettingsTarget to PlayerOpeningMode.entries.map { resolveString(it.textId) },
         "appearance.player_behavior_and_visuals.player_swipe_sensitivity" to
             PlayerSwipeSensitivity.entries.map { resolveString(it.textId) },
         "appearance.player_behavior_and_visuals.background_progress_bar" to BackgroundProgress.entries.map { resolveString(it.textId) },
@@ -173,6 +185,10 @@ internal fun settingsEntryChoiceLabels(
         "embedded.auto_backup.auto_backup_max_backups" to AutoBackupRetentionOptions.map {
             if (it == -1) resolveString(R.string.common_limit_unlimited_label) else it.toString()
         },
+        "embedded.auto_backup.auto_backup_interval" to AutoBackupIntervalLabels.values.map(resolveString),
+        "embedded.auto_backup.auto_backup_custom_interval_unit" to AutoBackupIntervalUnitLabels.values.map(resolveString),
+        "embedded.auto_backup.auto_backup_schedule_day_of_month" to AutoBackupMonthlyDayOptions.map(Int::toString),
+        "embedded.auto_backup.auto_backup_schedule_time" to AutoBackupScheduleHours.map(::autoBackupScheduleHourLabel),
         "embedded.auto_backup.auto_backup_schedule_day_of_week" to DayOfWeek.values().map {
             it.getDisplayName(TextStyle.FULL_STANDALONE, locale)
         },

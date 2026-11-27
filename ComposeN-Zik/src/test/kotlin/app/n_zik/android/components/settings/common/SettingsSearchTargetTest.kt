@@ -154,7 +154,7 @@ class SettingsSearchTargetTest {
             Shadows.shadowOf(Looper.getMainLooper()).idleFor(Duration.ofMillis(50))
             if (condition()) return
         }
-        assertTrue(label, condition())
+        assertTrue("$label; messages=$messages", condition())
     }
 
     private fun highlighted(id: String, expected: Boolean): Boolean = runCatching {
@@ -244,6 +244,30 @@ class SettingsSearchTargetTest {
             target = "appearance.cover_and_thumbnail.cover_thumbnail_animation_type",
             prerequisite = "appearance.cover_and_thumbnail.show_thumbnail",
         )
+    }
+
+    @Test fun hiddenShrinkWhenPausedRoutesToCoverVisibility() {
+        assertHiddenCoverControlPrerequisite(PlayerType.Essential, "thumbnailpause")
+    }
+
+    @Test fun hiddenFadingEdgeRoutesToCoverVisibility() {
+        assertHiddenCoverControlPrerequisite(PlayerType.Modern, "fadingedge")
+    }
+
+    private fun assertHiddenCoverControlPrerequisite(playerType: PlayerType, target: String) {
+        context.preferences.edit()
+            .putString(playerTypeKey, playerType.name)
+            .putString(playerBackgroundColorsKey, PlayerBackgroundColors.BlurredCoverColor.name)
+            .putBoolean(showthumbnailKey, false)
+            .commit()
+        val id = "appearance.cover_and_thumbnail.$target"
+        val parentCard = AllSettingsEntryTargets.single { it.id == id }.parentCard("player")
+        val parent = settingsCardTargetId(context, parentCard.tab, parentCard.titleRes)
+        show("player", id, parent)
+        pumpUntil("Show thumbnail is highlighted; settings target: $id") {
+            highlighted("appearance.cover_and_thumbnail.show_thumbnail", true)
+        }
+        composeRule.onNodeWithTag("settings.target.$id", useUnmergedTree = true).assertDoesNotExist()
     }
 
     @Test fun `search for hidden fullscreen lyrics controls leads to the cover lyrics switch`() {

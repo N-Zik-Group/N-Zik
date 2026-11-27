@@ -90,6 +90,8 @@ import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.PlayerInfoType
 import app.n_zik.android.enums.PlayerType
+import app.n_zik.android.enums.PlayerBackgroundColors
+import app.n_zik.android.utils.playerBackgroundColorsKey
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.settings.general.GeneralSettingsContent
@@ -110,6 +112,8 @@ import app.n_zik.android.utils.showNextSongsInPlayerKey
 import app.n_zik.android.utils.showTipsKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
+import app.n_zik.android.utils.colorPaletteNameKey
+import app.n_zik.android.utils.useSystemFontKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.Proxy
@@ -219,6 +223,12 @@ private fun settingsSearchPrerequisite(
             }
     }
 
+    if (target == "ui.theme.theme_mode" && preferences.getEnum(colorPaletteNameKey, ColorPaletteName.Dynamic).isAlwaysDark) {
+        return SearchPrerequisite(ThemeSettingsTarget, listOf(ColorPaletteName.Dynamic.textId, ColorPaletteName.Default.textId))
+    }
+    if (target == "ui.settings_use_font_type.settings_use_font_type" && preferences.getBoolean(useSystemFontKey, false)) {
+        return SearchPrerequisite("ui.settings_use_font_type.use_system_font", listOf(R.string.common_state_off))
+    }
     val requiredTheme = when (target) {
         "ui.theme.respect_brightness" -> ColorPaletteName.Dynamic
         "ui.theme.customcolor" -> ColorPaletteName.CustomColor
@@ -226,23 +236,35 @@ private fun settingsSearchPrerequisite(
     }
     if (requiredTheme != null) return SearchPrerequisite(ThemeSettingsTarget, listOf(requiredTheme.textId))
 
-    val needsModernPlayer = target in expandedArtworkTargets ||
-        target == "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ||
-        target == "appearance.colors_and_background.albumCoverRotation"
-    if (needsModernPlayer && preferences.getEnum(playerTypeKey, PlayerType.Essential) != PlayerType.Modern) {
-        return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(PlayerType.Modern.textId))
+    val requiredPlayerType = when {
+        target == "appearance.cover_and_thumbnail.thumbnailpause" -> PlayerType.Essential
+        target in expandedArtworkTargets ||
+            target == "appearance.cover_and_thumbnail.fadingedge" ||
+            target == "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ||
+            target == "appearance.colors_and_background.albumCoverRotation" -> PlayerType.Modern
+        else -> null
+    }
+    if (requiredPlayerType != null && preferences.getEnum(playerTypeKey, PlayerType.Essential) != requiredPlayerType) {
+        return SearchPrerequisite(PlayerTypeSettingsTarget, listOf(requiredPlayerType.textId))
     }
     val requiredCoverVisibility = when (target) {
         "appearance.cover_and_thumbnail.section.motion",
         CoverAnimationEnabledTarget,
         CoverAnimationStyleTarget,
         "appearance.cover_and_thumbnail.player_thumbnail_size" -> R.string.common_state_on
+        "appearance.cover_and_thumbnail.carousel",
+        "appearance.cover_and_thumbnail.carouselsize",
+        "appearance.cover_and_thumbnail.fadingedge",
+        "appearance.cover_and_thumbnail.thumbnailpause" ->
+            R.string.common_state_on.takeUnless { preferences.getBoolean(showthumbnailKey, true) }
         "appearance.cover_and_thumbnail.noblur",
         "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" -> R.string.common_state_off
         else -> null
     }
     if (requiredCoverVisibility != null) {
-        return if (hasTarget(ShowCoverSettingsTarget)) {
+        val showCoverAvailable = hasTarget(ShowCoverSettingsTarget) ||
+            preferences.getEnum(playerBackgroundColorsKey, PlayerBackgroundColors.AnimatedGradient) == PlayerBackgroundColors.BlurredCoverColor
+        return if (showCoverAvailable) {
             SearchPrerequisite(ShowCoverSettingsTarget, listOf(requiredCoverVisibility))
         } else {
             SearchPrerequisite(BackgroundSettingsTarget, listOf(R.string.player_background_artwork_blurred_label))
@@ -554,6 +576,7 @@ fun SettingsCategoryPage(
         withFrameNanos { }
         val preferences = context.preferences
         val requiresExpandedPlayer = rawTarget in expandedArtworkTargets && !isLandscape &&
+            preferences.getBoolean(showthumbnailKey, true) &&
             preferences.getEnum(playerTypeKey, PlayerType.Essential) == PlayerType.Modern &&
             !preferences.getBoolean(expandedplayerKey, false) &&
             !preferences.getBoolean(expandedplayertoggleKey, false) &&
@@ -643,9 +666,8 @@ fun SettingsCategoryPage(
         }
         if (item != null) {
             // Lazy cards must be composed before exact-row availability can be evaluated.
-            scroll.scrollToItem(0)
             val paddingPx = with(density) { listPadding.calculateTopPadding().roundToPx() }
-            scroll.animateScrollToItem(item, scrollOffset = paddingPx - searchClearancePx().roundToInt())
+            scroll.scrollToItem(item, scrollOffset = paddingPx - searchClearancePx().roundToInt())
             withFrameNanos { }
             withFrameNanos { }
         }
@@ -683,7 +705,9 @@ fun SettingsCategoryPage(
                 }
             }
         }
-        val unavailable = hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
+        val disabledFontTarget = requestedTarget == "ui.settings_use_font_type.settings_use_font_type" &&
+            preferences.getBoolean(useSystemFontKey, false)
+        val unavailable = disabledFontTarget || hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
         if (unavailable && registry.sheetTarget == requestedTarget) registry.sheetTarget = null
         val needsQuickPicksForYou = requestedTarget != rawTarget &&
             rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")
@@ -731,7 +755,7 @@ fun SettingsCategoryPage(
                 }
                 if (prerequisiteRow >= 0) {
                     val paddingPx = with(density) { listPadding.calculateTopPadding().roundToPx() }
-                    scroll.animateScrollToItem(prerequisiteRow + settingsHeaderItems, scrollOffset = paddingPx - searchClearancePx().roundToInt())
+                    scroll.scrollToItem(prerequisiteRow + settingsHeaderItems, scrollOffset = paddingPx - searchClearancePx().roundToInt())
                     withFrameNanos { }
                 }
             }

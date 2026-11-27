@@ -18,10 +18,12 @@ import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDia
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.PlayerOpeningModeSettingsTarget
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.components.settings.common.settingsEntrySearchIndex
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.enums.PlayerOpeningMode
@@ -52,11 +54,6 @@ internal fun AppearanceActionBarCard(search: Search) {
     var rememberQueueScroll by rememberPreference(rememberQueueScrollPositionKey, true)
     var openingMode by rememberPreference(playerOpeningModeKey, PlayerOpeningMode.Audio)
     var topPadding by rememberPreference(topPaddingKey, true)
-    val openingModeLabels = mapOf(
-        PlayerOpeningMode.Audio to R.string.player_audio_mode,
-        PlayerOpeningMode.Video to R.string.player_video_mode,
-        PlayerOpeningMode.RememberLast to R.string.settings_player_opening_mode_remember_last,
-    )
     val context = LocalContext.current
     val query = search.inputValue
     val title = stringResource(R.string.settings_section_player_action_bar_title)
@@ -79,8 +76,8 @@ internal fun AppearanceActionBarCard(search: Search) {
         R.string.settings_toolbar_player_action_bar_description,
         R.string.player_position_top_label, R.string.player_position_bottom_label) ||
         PlayerActionBarSettingsDialog.searchOptions().any { matches(it.labelRes) }
-    val showOpeningMode = appearanceMatches || matches(R.string.settings_player_opening_mode_label,
-        R.string.settings_player_opening_mode_description) || openingModeLabels.values.any { matches(it) }
+    val showOpeningMode = appearanceMatches || settingsEntrySearchIndex(context.resources).search(query)
+        .any { it.id == PlayerOpeningModeSettingsTarget }
     val showTopPadding = !isLandscape &&
         (appearanceMatches || matches(R.string.settings_lyrics_top_spacing_label, R.string.player_top_spacing_description))
     val toolbarDialogs = appearanceToolbarSettingsDialogs.filter { dialog ->
@@ -141,17 +138,17 @@ internal fun AppearanceActionBarCard(search: Search) {
                 )
 
                 if (showOpeningMode) OtherEnumValueSelectorSettingsEntry(
-                    modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.opening_mode"),
+                    modifier = Modifier.settingsSearchTarget(PlayerOpeningModeSettingsTarget),
                     icon = R.drawable.video,
                     title = stringResource(R.string.settings_player_opening_mode_label),
                     text = stringResource(
                         R.string.settings_description_with_value,
                         stringResource(R.string.settings_player_opening_mode_description),
-                        stringResource(openingModeLabels.getValue(openingMode)),
+                        stringResource(openingMode.textId),
                     ),
                     selectedValue = openingMode,
                     onValueSelected = { openingMode = it },
-                    valueText = { stringResource(openingModeLabels.getValue(it)) },
+                    valueText = { stringResource(it.textId) },
                 )
                 if (showTopPadding) OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("appearance.player_behavior_and_visuals.blankspace"),

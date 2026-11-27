@@ -8,6 +8,7 @@ import android.content.Context
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.R
+import app.n_zik.android.utils.contentTranslationChoices
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
 import app.n_zik.android.components.settings.appearance.preview.THEME_STORE_CREATOR_TAB
 import app.n_zik.android.components.settings.appearance.preview.ThemeStoreCreatorTarget
@@ -88,6 +89,7 @@ internal fun updaterSettingsOptionForQuery(
     }.associateWith { context.getString(it.labelRes) }
     options.entries.firstOrNull { (option, label) ->
         val values = when (option) {
+            UpdaterSettingsOption.Translation -> contentTranslationChoices.map { context.getString(it.textId) }
             UpdaterSettingsOption.AutomaticCheck ->
                 listOf(R.string.common_state_on, R.string.updates_check_mode_ask, R.string.common_state_off).map(context::getString)
             UpdaterSettingsOption.BetaUpdates ->
@@ -96,7 +98,13 @@ internal fun updaterSettingsOptionForQuery(
             else -> emptyList()
         }
         normalizedSettingsText(label) == optionQuery ||
-            values.any { value -> normalizedSettingsText(option.labelWithValue(label, value)) == optionQuery }
+            values.any { value -> normalizedSettingsText(option.labelWithValue(label, value)) == optionQuery } ||
+            (option == UpdaterSettingsOption.Translation && values.any { value ->
+                val normalizedLabel = normalizedSettingsText(label)
+                val queryValue = optionQuery.removePrefix(normalizedLabel).trimStart(' ', ':')
+                queryValue != optionQuery && queryValue.isNotEmpty() &&
+                    normalizedSettingsText(value).startsWith(queryValue)
+            })
     }?.let { return it.key }
     val automaticCheck = UpdaterSettingsOption.AutomaticCheck
     val automaticLabel = options[automaticCheck]?.let(::normalizedSettingsText)
@@ -444,6 +452,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
             R.string.storage_breakdown_nzik_total, R.string.storage_cleanup_profile_title,
             R.string.storage_breakdown_cached_images, R.string.storage_breakdown_streamed_audio,
             R.string.storage_breakdown_downloaded_audio, R.string.storage_breakdown_waveforms,
+            R.string.storage_breakdown_subtitle,
             R.string.storage_cleanup_diagnostic_logs, R.string.storage_cleanup_clear_temporary_files,
             R.string.storage_cleanup_clear_network_cache, R.string.storage_breakdown_network,
             R.string.storage_cleanup_all, R.string.storage_cleanup_picker_title,

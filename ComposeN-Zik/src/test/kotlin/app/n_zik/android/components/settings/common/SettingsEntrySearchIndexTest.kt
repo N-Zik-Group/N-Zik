@@ -151,6 +151,21 @@ class SettingsEntrySearchIndexTest {
     }
 
     @Test
+    fun `opening mode is found globally and in player by label and choice fragments`() {
+        val target = AllSettingsEntryTargets.single { it.id == PlayerOpeningModeSettingsTarget }
+        for (locale in listOf(Locale.ENGLISH, Locale.forLanguageTag("zz-ZZ"))) {
+            val context = localizedContext(locale)
+            val queries = listOf("opening mode remember last", "remember last opening mode", "opening mode video")
+            for (query in queries) {
+                val matches = searchSettingsEntries(context, query)
+                assertTrue(target in matches)
+                assertTrue(target in matches.filter { it.parentCard("player").categoryId() == "player" })
+                assertTrue(target.cardTitleRes in visibleCardTitleRes(context, target.tab, query))
+            }
+        }
+    }
+
+    @Test
     @Config(sdk = [30, 31])
     fun `automatic picture in picture only appears in search when its setting is supported`() {
         val english = localizedContext(Locale.ENGLISH)

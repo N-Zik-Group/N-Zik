@@ -7,6 +7,9 @@ import app.n_zik.android.R
 import app.n_zik.android.components.dialog.settings.appearanceToolbarSettingsDialogs
 import app.n_zik.android.components.settings.accounts.DiscordButtonField
 import app.n_zik.android.components.settings.ui.interfaceToolbarEntryTargets
+import app.n_zik.android.enums.PlayerOpeningMode
+
+internal const val PlayerOpeningModeSettingsTarget = "appearance.player_behavior_and_visuals.opening_mode"
 
 /** Explicit row destinations, independent of locale, resource integers and display order. */
 data class SettingsEntryTarget(
@@ -202,10 +205,9 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("appearance.player_action_bar.action_bar_transparent_background", 2, R.string.settings_section_player_action_bar_title, R.string.settings_player_action_bar_transparent_background_label, groupTitleRes = R.string.settings_group_action_appearance),
     SettingsEntryTarget("appearance.player_action_bar.actionspacedevenly", 2, R.string.settings_section_player_action_bar_title, R.string.settings_player_actions_spaced_evenly_label, groupTitleRes = R.string.settings_group_action_appearance),
     SettingsEntryTarget(
-        "appearance.player_behavior_and_visuals.opening_mode", 2, R.string.settings_section_player_action_bar_title,
+        PlayerOpeningModeSettingsTarget, 2, R.string.settings_section_player_action_bar_title,
         R.string.settings_player_opening_mode_label,
-        listOf(R.string.settings_player_opening_mode_description, R.string.settings_player_opening_mode_remember_last,
-            R.string.player_audio_mode, R.string.player_video_mode),
+        listOf(R.string.settings_player_opening_mode_description) + PlayerOpeningMode.entries.map { it.textId },
         groupTitleRes = R.string.settings_group_action_appearance,
     ),
     SettingsEntryTarget("appearance.player_behavior_and_visuals.blankspace", 2, R.string.settings_section_player_action_bar_title, R.string.settings_lyrics_top_spacing_label, groupTitleRes = R.string.settings_group_action_appearance),
@@ -380,7 +382,8 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("accounts.social_discord.discord_advanced_refresh_interval", 5, R.string.settings_discord_title,
         R.string.discord_advanced_refresh_interval, listOf(R.string.discord_advanced_refresh_interval_description),
         groupTitleRes = R.string.discord_advanced_group_connection),
-    SettingsEntryTarget("accounts.settings_reset.settings_reset", 5, R.string.settings_reset, R.string.settings_reset, listOf(R.string.settings_restore_default_settings)),
+    SettingsEntryTarget("accounts.settings_reset.settings_reset", 5, R.string.settings_reset, R.string.settings_reset,
+        listOf(R.string.settings_restore_default_settings, R.string.settings_reset_account_usage_notice)),
     SettingsEntryTarget("accounts.sync_import_from_youtube.sync_import_history", 5, R.string.sync_import_from_youtube, R.string.sync_import_history, listOf(R.string.sync_import_history_description)),
     SettingsEntryTarget("accounts.sync_import_from_youtube.sync_import_library_songs", 5, R.string.sync_import_from_youtube, R.string.sync_import_library_songs, listOf(R.string.sync_import_library_songs_description)),
     SettingsEntryTarget("accounts.sync_import_from_youtube.sync_import_uploaded_songs", 5, R.string.sync_import_from_youtube, R.string.sync_import_uploaded_songs, listOf(R.string.sync_import_uploaded_songs_description)),

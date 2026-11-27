@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import app.n_zik.android.components.settings.appearance.PlayerSongSwipeSetting
+import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.playerTypeKey
@@ -55,6 +56,62 @@ class SettingsDetailedSearchTest {
         val results = AllSettingsEntryTargets.filter { it.id in resetTargets }
         assertEquals(resetTargets, results.map { it.id }.toSet())
         results.forEach { assertEquals(expected, it.locationDescription(english)) }
+    }
+
+    @Test fun accountResetMatchesItsVisibleDeactivationNotice() {
+        val english = localized(Locale.ENGLISH)
+        val description = english.getString(R.string.settings_reset_account_usage_notice)
+        val results = searchSettingsEntries(english, description)
+
+        assertTrue(results.any { it.id == "accounts.settings_reset.settings_reset" })
+    }
+
+    @Test fun monthlyBackupSearchIncludesTheDaysOfferedByTheSelector() {
+        val english = localized(Locale.ENGLISH)
+        val label = english.getString(R.string.backup_auto_schedule_day_of_month)
+        val target = "embedded.auto_backup.auto_backup_schedule_day_of_month"
+
+        assertTrue(searchSettingsEntries(english, "$label 17").any { it.id == target })
+        assertTrue(searchSettingsEntries(english, "$label 28").any { it.id == target })
+        assertFalse(searchSettingsEntries(english, "$label 29").any { it.id == target })
+    }
+
+    @Test fun backupTimeSearchMatchesEachHourOfferedByTheSelector() {
+        val english = localized(Locale.ENGLISH)
+        val label = english.getString(R.string.backup_auto_schedule_time)
+        val target = "embedded.auto_backup.auto_backup_schedule_time"
+        for (hour in listOf("00:00", "03:00", "23:00")) {
+            val entries = searchSettingsEntries(english, "$label $hour")
+            assertTrue(hour, entries.any { it.id == target && it.parentCard("data").categoryId() == "data" })
+        }
+        assertFalse(searchSettingsEntries(english, "$label 24:00").any { it.id == target })
+    }
+
+    @Test fun backupIntervalSearchMatchesChoicesBeforeTheirSettingLabels() {
+        val cases = listOf(
+            Triple(
+                "embedded.auto_backup.auto_backup_interval",
+                R.string.backup_auto_interval,
+                R.string.backup_auto_interval_monthly,
+            ),
+            Triple(
+                "embedded.auto_backup.auto_backup_custom_interval_unit",
+                R.string.backup_auto_custom_interval_unit,
+                R.string.backup_auto_unit_weeks,
+            ),
+        )
+        for (locale in listOf(Locale.ENGLISH, Locale.FRENCH, Locale.forLanguageTag("qaa"))) {
+            val resources = localized(locale)
+            for ((target, labelRes, choiceRes) in cases) {
+                val label = resources.getString(labelRes)
+                val choice = resources.getString(choiceRes)
+                val query = "$choice $label"
+
+                assertTrue(query, searchSettingsEntries(resources, query).any {
+                    it.id == target && it.parentCard("data").categoryId() == "data"
+                })
+            }
+        }
     }
 
     @Test fun sectionHeadingsRouteToTheirOwnTargetAndQualifyChildBreadcrumbs() {
@@ -268,7 +325,8 @@ class SettingsDetailedSearchTest {
             val localized = localized(locale)
             for (label in labels) {
                 val query = localized.getString(label)
-                assertTrue(searchSettingsCardResults(localized, query).any { it.titleRes == R.string.storage_breakdown_title })
+                assertTrue(query, searchSettingsCardResults(localized, query).any { it.titleRes == R.string.storage_breakdown_title } ||
+                    searchSettingsEntries(localized, query).any { it.cardTitleRes == R.string.storage_breakdown_title })
                 assertTrue(R.string.storage_breakdown_title in visibleCardTitleRes(localized, 4, query))
             }
         }
@@ -396,6 +454,7 @@ class SettingsDetailedSearchTest {
                 val resetChoice = entry.id in setOf(
                     SettingsResetAllTarget, SettingsResetChooserTarget,
                     SettingsResetGlassTarget, SettingsResetListenTogetherTarget, SettingsResetPlaybackTarget,
+                    SettingsResetDownloadsTarget, SettingsResetPrivacyTarget,
                 )
                 val parent = if (resetChoice) localized.getString(R.string.settings_reset) else card.displayTitle(localized)
                 assertTrue("Missing parent card for ${entry.id}: $location", location.contains(parent))
@@ -551,6 +610,8 @@ class SettingsDetailedSearchTest {
             assertEquals(entry.id, uri.getQueryParameter("target"))
             if (entry.id.startsWith("glass.")) {
                 assertEquals(SETTINGS_GLASS_ROUTE, uri.path)
+            } else if (BridgeAutoStopTarget.entries.any { it.id == entry.id }) {
+                assertEquals(app.n_zik.android.enums.NavRoutes.bridgeServer.name, uri.path)
             } else {
                 val card = entry.parentCard()
                 assertEquals("settingsCategory/${card.categoryId()}", uri.path)
@@ -582,7 +643,7 @@ class SettingsDetailedSearchTest {
     @Test fun functionalResultsKeepTheirVisibleLabelAndActualOrganizedCardPath() {
         val entry = AllSettingsEntryTargets.single { it.id == "general.audio_effects.skip_silence" }
         assertEquals(context.getString(R.string.settings_audio_skip_silence_label), entry.searchResultTitle(context))
-        assertEquals(listOf(R.string.settings_title, R.string.settings_category_audio, R.string.audio_effects)
+        assertEquals(listOf(R.string.settings_title, R.string.settings_category_audio, R.string.audio_effects, R.string.settings_group_focus_and_silence)
             .joinToString(" › ") { context.getString(it) }, entry.locationDescription(context))
         val audioQuality = AllSettingsEntryTargets.single { it.id == "network.quality.audio_quality_format" }
         assertEquals(listOf(R.string.settings_title, R.string.settings_network_title, R.string.settings_network_quality_title, R.string.settings_group_streaming_quality)

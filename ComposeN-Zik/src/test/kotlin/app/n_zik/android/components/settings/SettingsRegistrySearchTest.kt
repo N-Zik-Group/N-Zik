@@ -285,6 +285,18 @@ class SettingsRegistrySearchTest {
     }
 
     @Test
+    fun updaterSearchMatchesLanguageLabelsWhenUpdatesAreDisabled() {
+        val english = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply { setLocale(Locale.ENGLISH) },
+        )
+        val translation = english.getString(R.string.common_translation_title)
+        val french = english.getString(R.string.language_name_french)
+        for (query in listOf("$translation $french", "$translation: $french", "$translation French")) {
+            assertEquals(query, UpdaterSettingsOption.Translation, updaterSettingsOptionForQuery(english, query, autoUpdate = false))
+        }
+    }
+
+    @Test
     fun thematicGroupsAreCompleteAndKeepProfileAboutAndUpdateTogether() {
         assertEquals((1..7).toList(), SettingsPageGroups.map { it.group })
         assertEquals(SETTINGS_GROUP_ABOUT_UPDATE, SettingsUpdateItem.group)

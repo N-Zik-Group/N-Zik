@@ -246,7 +246,7 @@ internal fun AppearanceCoverCard(search: Search) {
 
                     if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_artwork_motion, "appearance.cover_and_thumbnail.section.motion")
 
-                    if (playerType == PlayerType.Modern && !isLandscape && canExpandPlayer) {
+                    if (showthumbnail && playerType == PlayerType.Modern && !isLandscape && canExpandPlayer) {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_carousel_label).contains(
                                 search.inputValue,
                                 true
@@ -281,7 +281,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             }
                     }
 
-                    if (playerType == PlayerType.Modern) {
+                    if (showthumbnail && playerType == PlayerType.Modern) {
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_fading_edge_label).contains(
                                 search.inputValue,
                                 true
@@ -299,7 +299,7 @@ internal fun AppearanceCoverCard(search: Search) {
                             }
                     }
 
-                    if (playerType == PlayerType.Essential) {
+                    if (showthumbnail && playerType == PlayerType.Essential) {
 
                         if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_shrink_when_paused_label).contains(
                                 search.inputValue,

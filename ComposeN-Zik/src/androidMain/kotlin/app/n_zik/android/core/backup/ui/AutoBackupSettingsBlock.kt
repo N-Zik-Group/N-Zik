@@ -44,6 +44,26 @@ import java.time.format.TextStyle
 import timber.log.Timber
 
 internal val AutoBackupRetentionOptions = listOf(1, 3, 5, 10, 20, -1)
+internal val AutoBackupMonthlyDayOptions = (1..28).toList()
+internal val AutoBackupScheduleHours = (0..23).toList()
+
+internal fun autoBackupScheduleHourLabel(hour: Int): String =
+    "${hour.toString().padStart(2, '0')}:00"
+internal val AutoBackupIntervalLabels = mapOf(
+    BackupManager.INTERVAL_NONE to R.string.backup_auto_interval_none,
+    BackupManager.INTERVAL_HOURLY to R.string.backup_auto_interval_hourly,
+    BackupManager.INTERVAL_DAILY to R.string.backup_auto_interval_daily,
+    BackupManager.INTERVAL_WEEKLY to R.string.backup_auto_interval_weekly,
+    BackupManager.INTERVAL_MONTHLY to R.string.backup_auto_interval_monthly,
+    BackupManager.INTERVAL_CUSTOM to R.string.backup_auto_interval_custom,
+)
+internal val AutoBackupIntervalUnitLabels = mapOf(
+    BackupManager.UNIT_MINUTES to R.string.backup_auto_unit_minutes,
+    BackupManager.UNIT_HOURS to R.string.backup_auto_unit_hours,
+    BackupManager.UNIT_DAYS to R.string.backup_auto_unit_days,
+    BackupManager.UNIT_WEEKS to R.string.backup_auto_unit_weeks,
+    BackupManager.UNIT_MONTHS to R.string.backup_auto_unit_months,
+)
 
 @Composable
 internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
@@ -200,14 +220,11 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
             OtherSettingsEntry(
                 modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_interval"),
                 title = stringResource(R.string.backup_auto_interval),
-                text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_interval_description), when (autoBackupInterval) {
-                    BackupManager.INTERVAL_HOURLY -> stringResource(R.string.backup_auto_interval_hourly)
-                    BackupManager.INTERVAL_DAILY -> stringResource(R.string.backup_auto_interval_daily)
-                    BackupManager.INTERVAL_WEEKLY -> stringResource(R.string.backup_auto_interval_weekly)
-                    BackupManager.INTERVAL_MONTHLY -> stringResource(R.string.backup_auto_interval_monthly)
-                    BackupManager.INTERVAL_CUSTOM -> stringResource(R.string.backup_auto_interval_custom)
-                    else -> stringResource(R.string.backup_auto_interval_none)
-                }),
+                text = stringResource(
+                    R.string.settings_description_with_value,
+                    stringResource(R.string.backup_auto_interval_description),
+                    stringResource(AutoBackupIntervalLabels[autoBackupInterval] ?: R.string.backup_auto_interval_none),
+                ),
                 icon = R.drawable.history,
                 onClick = { showIntervalDialog = true }
             )
@@ -216,29 +233,13 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.backup_auto_interval),
                     selectedValue = autoBackupInterval,
-                    values = listOf(
-                        BackupManager.INTERVAL_NONE,
-                        BackupManager.INTERVAL_HOURLY,
-                        BackupManager.INTERVAL_DAILY,
-                        BackupManager.INTERVAL_WEEKLY,
-                        BackupManager.INTERVAL_MONTHLY,
-                        BackupManager.INTERVAL_CUSTOM
-                    ),
+                    values = AutoBackupIntervalLabels.keys.toList(),
                     onValueSelected = {
                         autoBackupInterval = it
                         BackupManager.scheduleBackup(context, it, target)
                         showIntervalDialog = false
                     },
-                    valueText = {
-                        when (it) {
-                            BackupManager.INTERVAL_HOURLY -> stringResource(R.string.backup_auto_interval_hourly)
-                            BackupManager.INTERVAL_DAILY -> stringResource(R.string.backup_auto_interval_daily)
-                            BackupManager.INTERVAL_WEEKLY -> stringResource(R.string.backup_auto_interval_weekly)
-                            BackupManager.INTERVAL_MONTHLY -> stringResource(R.string.backup_auto_interval_monthly)
-                            BackupManager.INTERVAL_CUSTOM -> stringResource(R.string.backup_auto_interval_custom)
-                            else -> stringResource(R.string.backup_auto_interval_none)
-                        }
-                    },
+                    valueText = { stringResource(AutoBackupIntervalLabels.getValue(it)) },
                     onDismiss = { showIntervalDialog = false }
                 )
             }
@@ -254,14 +255,11 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                     )
                     OtherSettingsEntry(
                         title = stringResource(R.string.backup_auto_custom_interval_unit),
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_custom_interval_unit_description), when (autoBackupCustomIntervalUnit) {
-                            BackupManager.UNIT_MINUTES -> stringResource(R.string.backup_auto_unit_minutes)
-                            BackupManager.UNIT_HOURS -> stringResource(R.string.backup_auto_unit_hours)
-                            BackupManager.UNIT_DAYS -> stringResource(R.string.backup_auto_unit_days)
-                            BackupManager.UNIT_WEEKS -> stringResource(R.string.backup_auto_unit_weeks)
-                            BackupManager.UNIT_MONTHS -> stringResource(R.string.backup_auto_unit_months)
-                            else -> stringResource(R.string.backup_auto_unit_hours)
-                        }),
+                        text = stringResource(
+                            R.string.settings_description_with_value,
+                            stringResource(R.string.backup_auto_custom_interval_unit_description),
+                            stringResource(AutoBackupIntervalUnitLabels[autoBackupCustomIntervalUnit] ?: R.string.backup_auto_unit_hours),
+                        ),
                         icon = R.drawable.calendar,
                         onClick = { showCustomUnitDialog = true },
                         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_custom_interval_unit").padding(start = 24.dp)
@@ -288,28 +286,13 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.backup_auto_custom_interval_unit),
                     selectedValue = autoBackupCustomIntervalUnit,
-                    values = listOf(
-                        BackupManager.UNIT_MINUTES,
-                        BackupManager.UNIT_HOURS,
-                        BackupManager.UNIT_DAYS,
-                        BackupManager.UNIT_WEEKS,
-                        BackupManager.UNIT_MONTHS
-                    ),
+                    values = AutoBackupIntervalUnitLabels.keys.toList(),
                     onValueSelected = {
                         autoBackupCustomIntervalUnit = it
                         BackupManager.scheduleBackup(context, autoBackupInterval, target)
                         showCustomUnitDialog = false
                     },
-                    valueText = {
-                        when (it) {
-                            BackupManager.UNIT_MINUTES -> stringResource(R.string.backup_auto_unit_minutes)
-                            BackupManager.UNIT_HOURS -> stringResource(R.string.backup_auto_unit_hours)
-                            BackupManager.UNIT_DAYS -> stringResource(R.string.backup_auto_unit_days)
-                            BackupManager.UNIT_WEEKS -> stringResource(R.string.backup_auto_unit_weeks)
-                            BackupManager.UNIT_MONTHS -> stringResource(R.string.backup_auto_unit_months)
-                            else -> stringResource(R.string.backup_auto_unit_hours)
-                        }
-                    },
+                    valueText = { stringResource(AutoBackupIntervalUnitLabels.getValue(it)) },
                     onDismiss = { showCustomUnitDialog = false }
                 )
             }
@@ -318,7 +301,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                 Column {
                     OtherSettingsEntry(
                         title = stringResource(R.string.backup_auto_schedule_time),
-                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_schedule_time_description), "${autoBackupScheduleHour.toString().padStart(2, '0')}:00"),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.backup_auto_schedule_time_description), autoBackupScheduleHourLabel(autoBackupScheduleHour)),
                         icon = R.drawable.time,
                         onClick = { showScheduleHourDialog = true },
                         modifier = Modifier.settingsSearchTarget("embedded.auto_backup.auto_backup_schedule_time").padding(start = 24.dp)
@@ -330,13 +313,13 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.backup_auto_schedule_time),
                     selectedValue = autoBackupScheduleHour,
-                    values = (0..23).toList(),
+                    values = AutoBackupScheduleHours,
                     onValueSelected = {
                         autoBackupScheduleHour = it
                         BackupManager.scheduleBackup(context, autoBackupInterval, target)
                         showScheduleHourDialog = false
                     },
-                    valueText = { "${it.toString().padStart(2, '0')}:00" },
+                    valueText = { autoBackupScheduleHourLabel(it) },
                     onDismiss = { showScheduleHourDialog = false }
                 )
             }
@@ -388,7 +371,7 @@ internal fun AutoBackupSettingsBlock(target: ProfileStorageIdentity) {
                 ValueSelectorDialog(
                     title = stringResource(R.string.backup_auto_schedule_day_of_month),
                     selectedValue = autoBackupScheduleDayOfMonth,
-                    values = (1..28).toList(),
+                    values = AutoBackupMonthlyDayOptions,
                     onValueSelected = {
                         autoBackupScheduleDayOfMonth = it
                         BackupManager.scheduleBackup(context, autoBackupInterval, target)
