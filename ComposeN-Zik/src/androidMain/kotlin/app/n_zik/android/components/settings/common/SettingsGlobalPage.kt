@@ -5,14 +5,6 @@ import app.n_zik.android.components.ui.horizontalLayoutOutset
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
 import android.net.Uri
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberOverscrollEffect
@@ -86,7 +78,6 @@ import java.util.Locale
 import kotlinx.coroutines.withContext
 
 /** Searchable settings hub; an empty query displays the registry groups. */
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SettingsGlobalPage(
     onItemSelected: (SettingsPageItem) -> Unit,
@@ -102,11 +93,7 @@ fun SettingsGlobalPage(
     var searchInput by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
     var isSearchFocused by remember { mutableStateOf(false) }
     val query = searchInput.text
-    val contentAlpha by animateFloatAsState(
-        targetValue = if (isSearchFocused && query.isBlank()) 0f else 1f,
-        animationSpec = tween(250),
-        label = "settingsGlobalPageContentAlpha"
-    )
+    val searchFocus = rememberSettingsSearchFocus(isSearchFocused, query.isBlank())
     val configuration = LocalConfiguration.current
     val ambiguousCategoryIds = remember(context, configuration) { ambiguousSettingsCategoryIds(context) }
     val itemResults = remember(context, configuration, query) {
@@ -173,13 +160,7 @@ fun SettingsGlobalPage(
         ) {
             item(key = "search_controls", contentType = "search_controls") {
                 Column {
-                    AnimatedVisibility(
-                        visible = !isSearchFocused,
-                        enter = expandVertically(tween(250)) + fadeIn(tween(250)),
-                        exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
-                    ) {
-                        SettingsPageTitle(stringResource(R.string.settings_global_title), R.drawable.settings)
-                    }
+                    settingsSearchTitle(searchFocus, R.string.settings_global_title, R.drawable.settings)
 
                     SettingsGlobalSearchBar(
                         input = searchInput,
@@ -187,7 +168,7 @@ fun SettingsGlobalPage(
                         onFocused = { isSearchFocused = it },
                         onSearch = { recordSearchQuery() },
                         // Match Online Search and the per-page search coordinators.
-                        modifier = Modifier.padding(SettingsSearchBarPadding)
+                        modifier = Modifier.padding(searchFocus.barPadding)
                     )
 
                     SearchHistorySection(
@@ -215,7 +196,7 @@ fun SettingsGlobalPage(
             if (query.isBlank()) {
                 // Keep group state composed while releasing its height after the focus fade.
                 item(key = "groups", contentType = "groups") {
-                    Column(modifier = Modifier.animateItem().settingsSearchContentVisibility(contentAlpha)) {
+                    Column(modifier = Modifier.animateItem().settingsSearchContentVisibility(searchFocus.contentAlpha)) {
                         SettingsPageGroups.forEach { group ->
                             SettingsResultCard(
                                 testTag = "settings_global_group_${group.group}",

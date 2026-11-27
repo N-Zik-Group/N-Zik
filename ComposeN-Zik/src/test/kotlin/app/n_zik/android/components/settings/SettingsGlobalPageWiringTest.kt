@@ -18,6 +18,7 @@ import app.n_zik.android.utils.setActiveProfile
 import android.app.Application
 import android.content.Context
 import android.os.Looper
+import android.view.accessibility.AccessibilityManager
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.navigation.NavHostController
@@ -205,6 +206,29 @@ class SettingsGlobalPageWiringTest {
         profile.performClick()
         settle()
         assertEquals("profiles", selectedItem?.categoryId)
+    }
+
+    @Test fun searchFocusCollapsesTheTitleAndGroupsWithoutMotionDuringTouchExploration() {
+        val accessibility = checkNotNull(context.getSystemService(AccessibilityManager::class.java))
+        val shadow = Shadows.shadowOf(accessibility)
+        val previous = accessibility.isTouchExplorationEnabled
+        shadow.setTouchExplorationEnabled(true)
+        try {
+            showGlobalPage()
+            val title = composeRule.onNodeWithText(context.getString(R.string.settings_global_title))
+            title.assertIsDisplayed()
+
+            composeRule.onNodeWithTag("settings_global_search").performClick()
+            repeat(4) {
+                composeRule.mainClock.advanceTimeByFrame()
+                composeRule.waitForIdle()
+            }
+
+            title.assertDoesNotExist()
+            composeRule.onNodeWithTag("settings_global_group_1", useUnmergedTree = true).assertIsNotDisplayed()
+        } finally {
+            shadow.setTouchExplorationEnabled(previous)
+        }
     }
 
     @Test fun savedSearchesAppearOnlyWhileFocusedAndFilterWhileTyping() {
@@ -527,7 +551,7 @@ class SettingsGlobalPageWiringTest {
             assertTrue(searchSettingsPageItems(context, context.getString(label)).none { it.isUpdaterSettingsItem() })
         }
         val notesTitle = context.getString(R.string.updates_changelog_title, "123")
-        assertTrue(searchSettingsPageItems(context, notesTitle.substringBefore("123").trim()).any { it == SettingsUpdateItem })
+        assertTrue(searchSettingsPageItems(context, notesTitle.substringBefore("123").trim()).any { it.isUpdaterSettingsItem() })
         val changelog = context.getString(R.string.updates_changelog_search_label)
         val changelogResult = searchSettingsPageItems(context, changelog).single { it.isUpdaterSettingsItem() }
         assertEquals(R.string.updates_changelog_search_label, changelogResult.labelRes)

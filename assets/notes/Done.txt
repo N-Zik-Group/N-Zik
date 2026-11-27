@@ -1940,3 +1940,7 @@ Menus / Playback:
 Toolbars:
 - fix(toolbar): hide unsupported Home controls
   - Keep historical toolbar preferences and omit the position lock or smart shuffle where unavailable.
+
+Settings / Search:
+- fix(settings): share the main settings search transition
+  - Apply the same search motion policy as the nested settings screens.
