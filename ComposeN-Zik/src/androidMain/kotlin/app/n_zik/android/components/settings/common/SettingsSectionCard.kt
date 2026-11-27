@@ -143,8 +143,12 @@ fun SettingsSectionCard(
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
-                                    .padding(start = 4.dp, top = 4.dp, end = 4.dp)
-                                    .padding(bottom = if (expanded == false) 0.dp else 12.dp),
+                                    .padding(
+                                        start = 4.dp,
+                                        top = 4.dp,
+                                        end = 4.dp,
+                                        bottom = if (expanded == false) 4.dp else 12.dp,
+                                    ),
                             ) {
                             Box(
                                 modifier = Modifier

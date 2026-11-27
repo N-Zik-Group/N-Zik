@@ -1136,3 +1136,7 @@ Settings:
 Settings:
 - fix(settings): disable Glass intensity controls until their effect is active
   - Retain exact search targets while displaying the effect toggle prerequisite.
+
+Settings:
+- fix(settings): balance collapsed card heading padding
+  - Match the bottom padding of collapsed card headers to their top padding.
