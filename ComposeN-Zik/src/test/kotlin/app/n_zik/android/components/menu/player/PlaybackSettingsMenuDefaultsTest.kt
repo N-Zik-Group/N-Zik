@@ -7,6 +7,7 @@ import android.media.AudioManager
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -25,6 +26,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.MenuStyle
@@ -39,6 +42,9 @@ import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.loudnessBaseGainKey
 import app.n_zik.android.utils.playbackPitchKey
 import app.n_zik.android.utils.playbackSpeedKey
+import app.n_zik.android.utils.playbackVolumeKey
+import app.n_zik.android.utils.getGlobalVolume
+import app.n_zik.android.utils.setGlobalVolume
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
@@ -54,6 +60,7 @@ import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -136,6 +143,48 @@ class PlaybackSettingsMenuDefaultsTest {
         compose.onNodeWithText(title).performClick()
         compose.onNodeWithText(context.getString(R.string.common_action_reset)).performClick()
         assertReset()
+    }
+
+    @Test
+    fun `grid speed pitch and volume preview before saving at the end of the gesture`() {
+        val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
+        val player = mockk<Player>(relaxed = true)
+        every { binder.player } returns player
+        var parameters = PlaybackParameters.DEFAULT
+        var volume = 1f
+        every { player.playbackParameters = any() } answers { parameters = firstArg() }
+        every { player.volume = any() } answers { volume = firstArg() }
+        val originalGlobalVolume = player.getGlobalVolume()
+        show(MenuStyle.Grid, binder)
+
+        try {
+            assertGridLivePreview(R.string.player_controls_speed_title, playbackSpeedKey) { parameters.speed }
+            assertGridLivePreview(R.string.player_controls_pitch_title, playbackPitchKey) { parameters.pitch }
+            assertGridLivePreview(R.string.player_controls_playback_volume_title, playbackVolumeKey) { volume }
+        } finally {
+            player.setGlobalVolume(originalGlobalVolume)
+        }
+    }
+
+    private fun assertGridLivePreview(label: Int, key: String, engineValue: () -> Float) {
+        val title = context.getString(label)
+        compose.onNode(hasScrollAction()).performScrollToNode(hasText(title))
+        compose.onNodeWithText(title).performClick()
+        val slider = compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.SetProgress))
+        slider.performTouchInput {
+            down(center)
+            moveTo(Offset(width * .65f, center.y))
+            moveTo(Offset(width * .8f, center.y))
+        }
+        compose.runOnIdle {
+            assertTrue(engineValue() != 1f)
+            assertFalse(context.preferences.contains(key))
+        }
+        slider.performTouchInput { up() }
+        compose.runOnIdle {
+            assertEquals(engineValue(), context.preferences.getFloat(key, Float.NaN), 0f)
+        }
+        compose.onNodeWithText(context.getString(R.string.common_action_close)).performClick()
     }
 
     @Test
@@ -247,9 +296,12 @@ class PlaybackSettingsMenuDefaultsTest {
         compose.onNode(hasScrollAction()).performScrollToNode(hasText(title))
     }
 
-    private fun show(style: MenuStyle) {
+    private fun show(
+        style: MenuStyle,
+        binder: PlayerServiceModern.Binder = mockk(relaxed = true),
+    ) {
         val menu = PlaybackSettingsMenu.create(
-            binder = mockk<PlayerServiceModern.Binder>(relaxed = true),
+            binder = binder,
             menuState = MenuState(),
             styleState = mutableStateOf(style),
             onDismiss = {},

@@ -1884,3 +1884,7 @@ Settings / Accounts:
 Menus:
 - fix(menu): adapt media and loading headers to Glass surfaces
   - Share media header foreground treatment and retain a readable handle on the actual loading surface.
+
+Menus / Audio:
+- fix(menu): preview audible playback changes in Grid
+  - Apply speed, pitch and playback volume during a gesture while keeping saved values tied to release.

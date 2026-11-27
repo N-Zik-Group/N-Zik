@@ -137,7 +137,7 @@ class PlaybackSettingsMenu private constructor(
                 title = stringResource(R.string.player_controls_speed_title),
                 value = playbackSpeed,
                 onValueChange = {
-                    val rounded = kotlin.math.round(it * 10f) / 10f
+                    val rounded = roundPlaybackParameter(it)
                     updatePlaybackParameters(rounded, playbackPitch) { playbackSpeed = rounded }
                 },
                 valueRange = 0.1f..10f,
@@ -155,7 +155,7 @@ class PlaybackSettingsMenu private constructor(
                 title = stringResource(R.string.player_controls_pitch_title),
                 value = playbackPitch,
                 onValueChange = {
-                    val rounded = kotlin.math.round(it * 10f) / 10f
+                    val rounded = roundPlaybackParameter(it)
                     updatePlaybackParameters(playbackSpeed, rounded) { playbackPitch = rounded }
                 },
                 valueRange = 0.1f..5f,
@@ -190,10 +190,8 @@ class PlaybackSettingsMenu private constructor(
                 title = stringResource(R.string.player_controls_playback_volume_title),
                 value = playbackVolume,
                 onValueChange = {
-                    val rounded = kotlin.math.round(it * 100f) / 100f
-                    playbackVolume = rounded
-                    binder.player.volume = playbackVolume
-                    binder.player.setGlobalVolume(playbackVolume)
+                    playbackVolume = roundPlaybackVolume(it)
+                    applyPlaybackVolume(playbackVolume)
                 },
                 valueRange = 0f..1f,
                 displayValue = { percentLabel((it * 100).toInt()) },
@@ -202,8 +200,7 @@ class PlaybackSettingsMenu private constructor(
                 drawValuePoints = true,
                 onReset = {
                     playbackVolume = 1f
-                    binder.player.volume = playbackVolume
-                    binder.player.setGlobalVolume(playbackVolume)
+                    applyPlaybackVolume(playbackVolume)
                 }
             )
 
@@ -332,8 +329,9 @@ class PlaybackSettingsMenu private constructor(
                     icon = R.drawable.slow_motion,
                     value = playbackSpeed,
                     toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
+                    onPreviewValue = { updatePlaybackParameters(roundPlaybackParameter(it), playbackPitch) },
                     onValueChange = {
-                        val rounded = kotlin.math.round(it * 10f) / 10f
+                        val rounded = roundPlaybackParameter(it)
                         updatePlaybackParameters(rounded, playbackPitch) { playbackSpeed = rounded }
                     },
                     valueRange = 0.1f..10f,
@@ -351,8 +349,9 @@ class PlaybackSettingsMenu private constructor(
                     icon = R.drawable.equalizer,
                     value = playbackPitch,
                     toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
+                    onPreviewValue = { updatePlaybackParameters(playbackSpeed, roundPlaybackParameter(it)) },
                     onValueChange = {
-                        val rounded = kotlin.math.round(it * 10f) / 10f
+                        val rounded = roundPlaybackParameter(it)
                         updatePlaybackParameters(playbackSpeed, rounded) { playbackPitch = rounded }
                     },
                     valueRange = 0.1f..5f,
@@ -387,11 +386,10 @@ class PlaybackSettingsMenu private constructor(
                     icon = R.drawable.volume_up,
                     value = playbackVolume,
                     toDisplay = { percentLabel((it * 100).toInt()) },
+                    onPreviewValue = { applyPlaybackVolume(roundPlaybackVolume(it)) },
                     onValueChange = {
-                        val rounded = kotlin.math.round(it * 100f) / 100f
-                        playbackVolume = rounded
-                        binder.player.volume = playbackVolume
-                        binder.player.setGlobalVolume(playbackVolume)
+                        playbackVolume = roundPlaybackVolume(it)
+                        applyPlaybackVolume(playbackVolume)
                     },
                     valueRange = 0f..1f,
                     stepSize = 0f,
@@ -399,8 +397,7 @@ class PlaybackSettingsMenu private constructor(
                     drawValuePoints = true,
                     onReset = {
                         playbackVolume = 1f
-                        binder.player.volume = 1f
-                        binder.player.setGlobalVolume(1f)
+                        applyPlaybackVolume(playbackVolume)
                     }
                 )
             }
@@ -502,7 +499,16 @@ class PlaybackSettingsMenu private constructor(
         }
     }
 
-    private fun updatePlaybackParameters(speed: Float, pitch: Float, save: () -> Unit) {
+    private fun roundPlaybackParameter(value: Float): Float = kotlin.math.round(value * 10f) / 10f
+
+    private fun roundPlaybackVolume(value: Float): Float = kotlin.math.round(value * 100f) / 100f
+
+    private fun applyPlaybackVolume(value: Float) {
+        binder.player.volume = value
+        binder.player.setGlobalVolume(value)
+    }
+
+    private fun updatePlaybackParameters(speed: Float, pitch: Float, save: () -> Unit = {}) {
         if (listenTogetherGuestLock.value) return
         binder.player.playbackParameters = PlaybackParameters(speed, pitch)
         save()
@@ -640,6 +646,7 @@ class PlaybackSettingsMenu private constructor(
         drawValuePoints: Boolean = false,
         syncExternalValue: Boolean = false,
         applyWhileDragging: Boolean = false,
+        onPreviewValue: ((Float) -> Unit)? = null,
     ) {
         var isShowingDialog by remember(isEnabled) { mutableStateOf(false) }
 
@@ -655,6 +662,7 @@ class PlaybackSettingsMenu private constructor(
                 syncExternalValue = syncExternalValue,
                 applyWhileDragging = applyWhileDragging,
                 onValueChange = { if (isEnabled) onValueChange(it) },
+                onPreviewValue = onPreviewValue?.let { preview -> { if (isEnabled) preview(it) } },
                 onSlideComplete = { if (isEnabled) onSlideComplete() },
                 onReset = onReset?.let { reset -> { if (isEnabled) reset() } },
                 toDisplay = toDisplay,
@@ -692,6 +700,7 @@ class PlaybackSettingsMenu private constructor(
         syncExternalValue: Boolean,
         applyWhileDragging: Boolean,
         onValueChange: (Float) -> Unit,
+        onPreviewValue: ((Float) -> Unit)?,
         onSlideComplete: () -> Unit = {},
         onReset: (() -> Unit)? = null,
         toDisplay: @Composable (Float) -> String = { it.toInt().toString() },
@@ -745,7 +754,7 @@ class PlaybackSettingsMenu private constructor(
                 label = title,
                 onSlide = {
                     currentValue = it
-                    if (applyWhileDragging) onValueChange(it)
+                    if (applyWhileDragging) onValueChange(it) else onPreviewValue?.invoke(it)
                 },
                 onSlideComplete = {
                     if (!applyWhileDragging) onValueChange(currentValue)
