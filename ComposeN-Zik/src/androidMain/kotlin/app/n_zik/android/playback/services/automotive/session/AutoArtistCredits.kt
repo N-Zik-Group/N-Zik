@@ -23,6 +23,7 @@ internal suspend fun refreshAutoArtistCredits(
     profile: String,
     items: List<MediaItem>,
 ): List<MediaItem> {
+    if (items.isEmpty()) return items
     if (getActiveProfile(context) != profile || Database.FILE_NAME != Database.fileNameForProfile(profile)) return items
     return try {
         val unknown = ContextCompat.getContextForLanguage(context).getString(R.string.metadata_unknown_artist)

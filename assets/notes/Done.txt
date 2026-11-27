@@ -1996,3 +1996,7 @@ Settings / Glass:
 Toolbars:
 - fix(toolbar): identify actions that stay in the overflow menu
   - Share the Playlist and Podcast overflow catalog with toolbar settings and retain the older Add search label.
+
+Android Auto:
+- fix(auto): avoid reading song credits for empty browse results
+  - Skip the metadata query on empty lists and keep the invalidation tests on the artist queries used by the browser.

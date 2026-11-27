@@ -207,8 +207,8 @@ class AutoOfflineNavigationTest {
 
     private fun artistsWithEmptySources(): ArtistTable = mockk<ArtistTable>().also { artists ->
         every { database.artistTable } returns artists
-        every { artists.allInLibrary() } returns flowOf(emptyList())
-        every { artists.allFollowing() } returns flowOf(emptyList())
+        every { artists.sortInLibrary(any(), any(), any(), any()) } returns flowOf(emptyList())
+        every { artists.sortFollowing(any(), any(), any(), any()) } returns flowOf(emptyList())
         every { artists.allDisliked() } returns flowOf(emptyList())
     }
 
@@ -237,7 +237,7 @@ class AutoOfflineNavigationTest {
         assertTrue(count > 0)
         val entered = CountDownLatch(1)
         val release = CompletableDeferred<Unit>()
-        every { artists.allInLibrary() } returns flow {
+        every { artists.sortInLibrary(any(), any(), any(), any()) } returns flow {
             entered.countDown()
             release.await()
             emit(emptyList())
@@ -276,7 +276,7 @@ class AutoOfflineNavigationTest {
         val artists = artistsWithEmptySources()
         val entered = CountDownLatch(1)
         val release = CompletableDeferred<Unit>()
-        every { artists.allInLibrary() } returns flow {
+        every { artists.sortInLibrary(any(), any(), any(), any()) } returns flow {
             entered.countDown()
             release.await()
             emit(emptyList())
