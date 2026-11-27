@@ -540,6 +540,7 @@
     <string name="settings_recommendations_title">AI Recommendations</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_account_usage_notice">Connected accounts will be disabled. You can turn them back on in Settings.</string>
     <string name="settings_reset_glass">Reset Glass settings</string>
     <string name="settings_reset_glass_appearance_description">Restore the default Glass material and effects.</string>
     <string name="settings_reset_downloads">Reset download settings</string>

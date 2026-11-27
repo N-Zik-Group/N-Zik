@@ -1488,3 +1488,7 @@ Menus:
 Settings:
 - fix(search): refresh audio permission results on resume
   - Reevaluate the audio permission shortcut in global and Data search.
+
+Settings:
+- fix(settings): explain account reset behavior
+  - State that account features are disabled while saved credentials are preserved.

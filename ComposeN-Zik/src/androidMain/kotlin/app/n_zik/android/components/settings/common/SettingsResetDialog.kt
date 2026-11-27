@@ -210,6 +210,7 @@ internal fun SettingsResetCard(
                 } else if (scope == ALL_RESET_SCOPE) {
                     Text(
                         text = stringResource(R.string.settings_reset_all_confirmation) + "\n\n" +
+                            stringResource(R.string.settings_reset_account_usage_notice) + "\n\n" +
                             stringResource(R.string.settings_reset_profile_scope_notice) + "\n\n" +
                             stringResource(R.string.settings_reset_listen_together_preservation_notice),
                         color = colorPalette().text,
