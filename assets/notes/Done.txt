@@ -1152,3 +1152,7 @@ Settings:
 Menus:
 - fix(library): scope the origin filter to synchronized collections
   - Use the recorded provider filter only where its control is visible and distinguish N-Zik entries from device files.
+
+Menus:
+- fix(menu): keep the volume dialog in sync with hardware controls
+  - Follow the system volume until the user begins a draft adjustment.

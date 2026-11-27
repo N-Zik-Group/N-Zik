@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -168,7 +167,8 @@ private fun VolumeDialog(
     onVolumeChangeComplete: () -> Unit = {},
     onDismiss: () -> Unit
 ) {
-    var dialogVolume by remember { mutableFloatStateOf(currentVolume) }
+    var pendingVolume by remember { mutableStateOf<Float?>(null) }
+    val displayedVolume = pendingVolume?.coerceIn(0f, maxVolume) ?: currentVolume
     val volumeLabel = stringResource(R.string.player_statistics_volume_label)
 
     DialogFrame(
@@ -212,7 +212,7 @@ private fun VolumeDialog(
         Spacer(modifier = Modifier.height(16.dp))
 
         BasicText(
-            text = percentLabel(if (maxVolume > 0) kotlin.math.round(((dialogVolume / maxVolume) * 100)).toInt() else 0),
+            text = percentLabel(if (maxVolume > 0) kotlin.math.round(((displayedVolume / maxVolume) * 100)).toInt() else 0),
             style = typography().l.semiBold.copy(
                 color = colorPalette().accent
             ),
@@ -222,12 +222,15 @@ private fun VolumeDialog(
         Spacer(modifier = Modifier.height(16.dp))
 
         SliderControl(
-            state = dialogVolume,
+            state = displayedVolume,
             label = volumeLabel,
-            onSlide = { dialogVolume = it },
+            onSlide = { pendingVolume = it },
             onSlideComplete = {
-                onVolumeChange(dialogVolume)
-                onVolumeChangeComplete()
+                pendingVolume?.let { volume ->
+                    onVolumeChange(volume.coerceIn(0f, maxVolume))
+                    pendingVolume = null
+                    onVolumeChangeComplete()
+                }
             },
             range = 0f..maxVolume,
             stepSize = 0f,
