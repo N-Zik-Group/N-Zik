@@ -1,5 +1,6 @@
 package app.n_zik.android.components.podcast
 
+import app.n_zik.android.components.playlist.PodcastContinuationFailure
 import app.n_zik.innertube.Innertube
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -29,15 +30,21 @@ class PodcastPageLoaderTest {
         loader = PodcastPageLoader { id ->
             assertEquals("MPSPpodcast", id)
             assertEquals(PodcastPageStatus.Loading, loader.state.value.status)
-            if (++requests == 1) error("Invalid response") else page
+            assertTrue(loader.state.value.partialEpisodes.isEmpty())
+            if (++requests == 1) {
+                throw PodcastContinuationFailure(page.listEpisode, IllegalStateException("Invalid continuation"))
+            }
+            page
         }
         loader.load("MPSPpodcast")
         assertEquals(PodcastPageStatus.Error, loader.state.value.status)
         assertNull(loader.state.value.page)
+        assertEquals(page.listEpisode, loader.state.value.partialEpisodes)
         loader.load("MPSPpodcast")
         assertEquals(2, requests)
         assertEquals(PodcastPageStatus.Content, loader.state.value.status)
         assertSame(page, loader.state.value.page)
+        assertTrue(loader.state.value.partialEpisodes.isEmpty())
     }
 
     @Test fun `valid empty feed and cached page are distinct from loading and failure`() = runBlocking {
@@ -75,5 +82,25 @@ class PodcastPageLoaderTest {
         job.cancelAndJoin()
         assertEquals(PodcastPageStatus.Loading, loader.state.value.status)
         assertNull(loader.state.value.page)
+    }
+
+    @Test fun `an earlier request cannot publish partial episodes over a newer complete page`() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val finishEarlierRequest = CompletableDeferred<Unit>()
+        val loader = PodcastPageLoader { id ->
+            if (id == "MPSPold") {
+                started.complete(Unit)
+                finishEarlierRequest.await()
+                throw PodcastContinuationFailure(page.listEpisode, IllegalStateException("Old continuation"))
+            }
+            page
+        }
+        val earlierRequest = launch { loader.load("MPSPold") }
+        started.await()
+        loader.load("MPSPnew")
+        finishEarlierRequest.complete(Unit)
+        earlierRequest.join()
+        assertSame(page, loader.state.value.page)
+        assertTrue(loader.state.value.partialEpisodes.isEmpty())
     }
 }

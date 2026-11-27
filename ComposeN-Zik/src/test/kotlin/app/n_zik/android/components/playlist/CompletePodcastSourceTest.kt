@@ -96,13 +96,19 @@ class CompletePodcastSourceTest {
         assertEquals(listOf("first", "second"), page.listEpisode.map { it.videoId })
     }
 
-    @Test fun `missing continuation shelf cannot return a partial source`() = runBlocking {
+    @Test fun `missing continuation shelf only exposes the validated prefix on failure`() = runBlocking {
         val outcome = runCatching {
             loadCompletePodcastEpisodes(id) { _, continuation ->
-                if (continuation == null) initial() else BrowsePodcastsResponse0624()
+                when (continuation) {
+                    null -> initial()
+                    "next" -> next("last")
+                    else -> BrowsePodcastsResponse0624()
+                }
             }
         }
-        assertTrue(outcome.isFailure)
+        assertNull(outcome.getOrNull())
+        val failure = outcome.exceptionOrNull() as PodcastContinuationFailure
+        assertEquals(listOf("first", "second"), failure.availableEpisodes.map { it.videoId })
     }
 
     @Test fun `repeated continuation aborts within bounded requests`() = runBlocking {

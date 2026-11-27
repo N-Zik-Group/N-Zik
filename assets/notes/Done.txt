@@ -1828,3 +1828,7 @@ Menus / Lyrics:
 Menus:
 - test(dialog): verify live radio selections with the Compose clock
   - Wait for the dialog choice to recompose before checking its selected state.
+
+Playlists / Podcasts:
+- fix(podcast): keep available episodes after continuation failures
+  - Allow adding validated episodes after a load failure and require a complete source for collection import.

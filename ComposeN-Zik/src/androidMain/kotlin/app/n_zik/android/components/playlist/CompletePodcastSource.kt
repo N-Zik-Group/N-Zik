@@ -7,6 +7,7 @@ import app.n_zik.innertube.models.v0624.podcasts.BrowsePodcastsResponse0624
 import app.n_zik.innertube.models.v0624.podcasts.Continuation
 import app.n_zik.innertube.requests.parseContinuationPodcastEpisodes
 import app.n_zik.innertube.requests.parsePodcastData
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json
@@ -32,6 +33,16 @@ private fun continuationToken(entries: List<Continuation>?): String? {
     require(entries.size == 1) { "Ambiguous podcast continuation" }
     return requireNotNull(entries.single().nextContinuationData?.continuation)
         .also { require(it.isNotBlank()) { "Empty podcast continuation" } }
+}
+
+internal class PodcastContinuationFailure(
+    val availableEpisodes: List<Innertube.Podcast.EpisodeItem>,
+    cause: Exception,
+) : IllegalStateException("Could not complete podcast pagination", cause)
+
+private fun List<Innertube.Podcast.EpisodeItem>.validatedEpisodes(): List<Innertube.Podcast.EpisodeItem> {
+    require(all { it.videoId.isNotBlank() && it.title.isNotBlank() }) { "Malformed podcast episode" }
+    return this
 }
 
 /** Loads every podcast shelf page or fails before the caller can replace saved membership. */
@@ -65,25 +76,31 @@ internal suspend fun loadCompletePodcastPage(
         ?.takeIf { it.startsWith("UC") && it.length > 2 }
     val shelf = requireNotNull(renderer.secondaryContents?.sectionListRenderer?.contents
         ?.firstOrNull()?.musicShelfRenderer) { "Missing podcast shelf" }
-    val episodes = parsePodcastData(requireNotNull(shelf.contents), author).toMutableList()
+    val episodes = parsePodcastData(requireNotNull(shelf.contents), author).validatedEpisodes().toMutableList()
     val seen = mutableSetOf<String>()
-    var next = continuationToken(shelf.continuations)
-    currentCoroutineContext().ensureActive()
-    onEpisodeCount?.invoke(episodes.size)
-    while (next != null) {
-        currentCoroutineContext().ensureActive()
-        require(seen.size < 1000) { "Podcast continuation limit exceeded" }
-        require(seen.add(next)) { "Repeated podcast continuation" }
-        val continuation = requireNotNull(browse(null, next).continuationContents?.musicShelfContinuation) {
-            "Missing podcast continuation shelf"
-        }
-        episodes.addAll(parseContinuationPodcastEpisodes(requireNotNull(continuation.contents), author))
-        next = continuationToken(continuation.continuations)
+    try {
+        var next = continuationToken(shelf.continuations)
         currentCoroutineContext().ensureActive()
         onEpisodeCount?.invoke(episodes.size)
+        while (next != null) {
+            currentCoroutineContext().ensureActive()
+            require(seen.size < 1000) { "Podcast continuation limit exceeded" }
+            require(seen.add(next)) { "Repeated podcast continuation" }
+            val continuation = requireNotNull(browse(null, next).continuationContents?.musicShelfContinuation) {
+                "Missing podcast continuation shelf"
+            }
+            currentCoroutineContext().ensureActive()
+            episodes.addAll(parseContinuationPodcastEpisodes(requireNotNull(continuation.contents), author).validatedEpisodes())
+            next = continuationToken(continuation.continuations)
+            onEpisodeCount?.invoke(episodes.size)
+        }
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (error: Exception) {
+        currentCoroutineContext().ensureActive()
+        throw PodcastContinuationFailure(episodes.toList(), error)
     }
     currentCoroutineContext().ensureActive()
-    require(episodes.all { it.videoId.isNotBlank() && it.title.isNotBlank() }) { "Malformed podcast episode" }
     return Innertube.Podcast(
         title = title,
         author = author,

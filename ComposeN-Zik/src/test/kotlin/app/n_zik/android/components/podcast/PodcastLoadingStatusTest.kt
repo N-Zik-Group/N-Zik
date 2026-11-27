@@ -53,9 +53,10 @@ class PodcastLoadingStatusTest {
         }
     }
 
-    @Test fun `retry pill remains visible and invokes one action in Material and Glass`() {
+    @Test fun `playlist actions and retry each invoke once in Material and Glass`() {
         val glassEnabled = mutableStateOf(false)
         var retries = 0
+        var playlistActions = 0
         val context = RuntimeEnvironment.getApplication()
         compose.setContent {
             val shape = RoundedCornerShape(8.dp)
@@ -70,15 +71,23 @@ class PodcastLoadingStatusTest {
                     quality = GlassQuality.Performance,
                 ),
             ) {
-                PodcastLoadingStatus(PodcastPageStatus.Error, isOnline = false) { retries++ }
+                PodcastLoadingStatus(
+                    PodcastPageStatus.Error,
+                    isOnline = false,
+                    onPlaylistActions = { playlistActions++ },
+                ) { retries++ }
             }
         }
         for (enabled in listOf(false, true)) {
             compose.runOnIdle { glassEnabled.value = enabled }
             compose.onNodeWithText(context.getString(R.string.common_error_no_internet)).assertIsDisplayed()
             compose.onNodeWithTag("podcast-loading").assertDoesNotExist()
+            compose.onNodeWithText(context.getString(R.string.playlist_actions_title)).assertIsDisplayed().performClick()
             compose.onNodeWithText(context.getString(R.string.common_action_retry)).assertIsDisplayed().performClick()
-            compose.runOnIdle { assertEquals(if (enabled) 2 else 1, retries) }
+            compose.runOnIdle {
+                assertEquals(if (enabled) 2 else 1, retries)
+                assertEquals(retries, playlistActions)
+            }
         }
     }
 
@@ -104,6 +113,7 @@ class PodcastLoadingStatusTest {
         compose.runOnIdle { status.value = PodcastPageStatus.Error }
         compose.onNodeWithTag("podcast-loading").assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.common_error_title)).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.playlist_actions_title)).assertDoesNotExist()
         compose.onNodeWithText(context.getString(R.string.common_action_retry)).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, retries) }
         compose.onNodeWithTag("podcast-loading").assertIsDisplayed()

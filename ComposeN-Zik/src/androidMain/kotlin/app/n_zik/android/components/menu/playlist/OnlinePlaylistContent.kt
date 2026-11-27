@@ -7,6 +7,7 @@ import app.n_zik.android.utils.asPodcastMediaItem
 import app.n_zik.android.utils.asSong
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.core.database.isPodcastBrowseId
+import app.n_zik.android.components.playlist.PodcastContinuationFailure
 import app.n_zik.android.components.playlist.loadCompletePodcastPage
 import app.n_zik.android.ui.screens.playlist.loadPlaylistContinuations
 import app.n_zik.android.ui.screens.playlist.loadPlaylistFirstPage
@@ -48,6 +49,15 @@ internal suspend fun loadOnlinePlaylistContent(
             )
         } catch (cancelled: CancellationException) {
             throw cancelled
+        } catch (error: PodcastContinuationFailure) {
+            Timber.tag("PodcastContent").e(error, "Unable to load complete podcast episodes")
+            OnlinePlaylistContent(
+                title = null,
+                author = null,
+                thumbnailUrl = null,
+                songs = null,
+                availableSongs = error.availableEpisodes.map { it.asPodcastMediaItem(id).asSong },
+            )
         } catch (error: Exception) {
             Timber.tag("PodcastContent").e(error, "Unable to load complete podcast episodes")
             null

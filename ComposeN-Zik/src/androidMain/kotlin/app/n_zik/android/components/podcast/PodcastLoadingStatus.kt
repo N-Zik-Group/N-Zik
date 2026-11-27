@@ -36,7 +36,12 @@ internal fun podcastEpisodeLoadingLabel(loadedEpisodeCount: Int): String {
 
 /** Displays terminal failures and empty feeds separately from an active request. */
 @Composable
-internal fun PodcastLoadingStatus(status: PodcastPageStatus, isOnline: Boolean, onRetry: () -> Unit) {
+internal fun PodcastLoadingStatus(
+    status: PodcastPageStatus,
+    isOnline: Boolean,
+    onPlaylistActions: (() -> Unit)? = null,
+    onRetry: () -> Unit,
+) {
     CollectionPageStatus {
         when (status) {
             PodcastPageStatus.Loading -> OfflineAwareLoader(
@@ -57,7 +62,14 @@ internal fun PodcastLoadingStatus(status: PodcastPageStatus, isOnline: Boolean, 
                     textAlign = TextAlign.Center,
                 )
                 ButtonRow(
-                    buttons = listOf(
+                    buttons = listOfNotNull(
+                        onPlaylistActions?.let {
+                            DialogButton(
+                                text = stringResource(R.string.playlist_actions_title),
+                                onClick = it,
+                                icon = R.drawable.playlist,
+                            )
+                        },
                         DialogButton(
                             text = stringResource(R.string.common_action_retry),
                             onClick = onRetry,

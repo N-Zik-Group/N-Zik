@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.utils.asSong
+import app.n_zik.android.hasExplicitPrefix
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
@@ -49,6 +50,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -144,9 +146,12 @@ import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.startPlaylistRowDownload
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showFloatingIconKey
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import app.n_zik.android.utils.ExternalUris
 import app.n_zik.android.core.utils.Toaster
@@ -181,7 +186,7 @@ fun Podcast(
 
     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
 
-    var podcastPage by persist<Innertube.Podcast?>("podcast/$browseId/listEpisodes")
+    var podcastPage by key(browseId) { persist<Innertube.Podcast?>("podcast/$browseId/listEpisodes") }
     val podcastLoader = remember(browseId) { PodcastPageLoader(podcastPage) }
     val podcastLoadState by podcastLoader.state.collectAsStateWithLifecycle(context = NzikDispatchers.DATA)
     val storedPodcast by remember(browseId) { Database.playlistTable.findMusicBookmarkByBrowseId(browseId) }
@@ -230,6 +235,8 @@ fun Podcast(
     val initialLoading = podcastPage == null && podcastLoadState.status == PodcastPageStatus.Loading
     val showShimmer = initialLoading || forceShimmer
     val itemSelector = key(browseId) { ItemSelector<Song>() }
+    val detailScope = rememberCoroutineScope()
+    val currentLoader by rememberUpdatedState(podcastLoader)
     val collectionEpisodes = podcastPage?.listEpisode.orEmpty()
     val episodeIds = remember(collectionEpisodes) {
         collectionEpisodes.map { collectionFavoriteSongId(it.videoId) }.distinct()
@@ -289,11 +296,31 @@ fun Podcast(
         enabled = !showShimmer && podcastLoadState.status == PodcastPageStatus.Content,
         collectionKey = browseId,
     )
+    val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+    val failedLoad = podcastLoadState.takeIf { it.status == PodcastPageStatus.Error && !forceShimmer }
+    val partialEpisodes = failedLoad?.partialEpisodes.orEmpty()
+    val hasPartialEpisodeTargets = partialEpisodes.any {
+        !parentalControlEnabled || !it.title.hasExplicitPrefix()
+    }
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
         captureMediaItems = {
-            val items = targetMediaItems()
-            if (items.isEmpty()) null else suspend { items }
+            if (hasPartialEpisodeTargets) {
+                suspend {
+                    if (!detailScope.isActive || currentLoader !== podcastLoader ||
+                        podcastLoader.state.value !== failedLoad
+                    ) {
+                        null
+                    } else {
+                        val filterExplicit = context.preferences.getBoolean(parentalControlEnabledKey, false)
+                        partialEpisodes.filterNot { filterExplicit && it.title.hasExplicitPrefix() }
+                            .map { it.asPodcastMediaItem(browseId) }
+                    }
+                }
+            } else {
+                val items = targetMediaItems()
+                if (items.isEmpty()) null else suspend { items }
+            }
         },
         onFailure = { error, _ -> Timber.tag("Podcast").e(error, "Could not add items to playlist") },
         itemSelector = itemSelector,
@@ -323,7 +350,7 @@ fun Podcast(
         sourceId = browseId,
         menuState = menuState,
         canImportCollection = importStatus.canOpenImport && !itemSelector.isActive,
-        hasTracks = hasEpisodeTargets,
+        hasTracks = hasEpisodeTargets || hasPartialEpisodeTargets,
         importDialogOpen = importDialog.isActive,
         openImport = importDialog::open,
         openPicker = addToPlaylist::openPicker,
@@ -392,6 +419,9 @@ fun Podcast(
                 PodcastLoadingStatus(
                     status = podcastLoadState.status,
                     isOnline = isOnline,
+                    onPlaylistActions = (addAction::onShortClick).takeIf {
+                        hasPartialEpisodeTargets && ToolbarControl.ADD_TO_PLAYLIST in toolbarOrder
+                    },
                     onRetry = { retryAttempt++ },
                 )
             } else {
