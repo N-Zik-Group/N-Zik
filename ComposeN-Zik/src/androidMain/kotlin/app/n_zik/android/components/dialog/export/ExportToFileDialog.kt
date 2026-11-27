@@ -31,6 +31,8 @@ abstract class ExportToFileDialog(
      */
     abstract fun defaultFileName(): String
 
+    protected open fun onDocumentPickerLaunch() = Unit
+
     override fun onSet( newValue: String ) {
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
@@ -39,6 +41,7 @@ abstract class ExportToFileDialog(
         val fileName = newValue.ifBlank( ::defaultFileName )
 
         try {
+            onDocumentPickerLaunch()
             launcher.launch( "$fileName.$extension" )
         } catch ( _: ActivityNotFoundException) {
             Toaster.e( R.string.common_error_no_document_handler )

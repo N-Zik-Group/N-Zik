@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.BuildConfig
@@ -22,7 +23,9 @@ import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import app.n_zik.android.core.utils.TimeDateUtils
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.utils.csv.SongCSV
@@ -36,6 +39,7 @@ class ExportSongsToCSVDialog private constructor(
     launcher: ManagedActivityResultLauncher<String, Uri?>,
     private val prepare: () -> Boolean,
     private val unavailableMessage: () -> Int?,
+    private val saveBrowsingScope: () -> Unit,
 ): ExportToFileDialog(valueState, activeState, launcher), MenuIcon, Descriptive {
 
     companion object {
@@ -81,9 +85,11 @@ class ExportSongsToCSVDialog private constructor(
             selectionActive: () -> Boolean = { false },
             playlistBrowseId: String = "",
             requireCapture: Boolean = false,
+            browsingRestoreScope: (() -> String?)? = null,
         ) = rememberExport(
             playlistName, playlistBrowseId, capture, captureOnOpen = true,
             requireCapture = requireCapture, selectionActive = selectionActive,
+            browsingRestoreScope = browsingRestoreScope,
         )
 
         @Composable
@@ -94,25 +100,44 @@ class ExportSongsToCSVDialog private constructor(
             captureOnOpen: Boolean = false,
             requireCapture: Boolean = false,
             selectionActive: () -> Boolean,
+            browsingRestoreScope: (() -> String?)? = null,
         ): ExportSongsToCSVDialog {
             val latestCapture = rememberUpdatedState(capture)
+            val latestBrowsingScope = rememberUpdatedState(browsingRestoreScope)
             val pending = remember { mutableStateOf<(suspend () -> List<Song>?)?>(null) }
             val selectionAtOpen = rememberSaveable { mutableStateOf(false) }
+            val browsingScopeAtLaunch = rememberSaveable { mutableStateOf<String?>(null) }
             val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
                 val captured = pending.value
                 val selectedExport = selectionAtOpen.value
+                val savedBrowsingScope = browsingScopeAtLaunch.value
                 pending.value = null
                 selectionAtOpen.value = false
+                browsingScopeAtLaunch.value = null
                 if (uri == null) return@rememberLauncherForActivityResult
-                val load = resolveExportPayload(selectedExport || requireCapture, captured) { latestCapture.value() }
+                val restoreBrowsing = !selectedExport && !requireCapture && captured == null &&
+                    latestBrowsingScope.value != null
+                val load = resolveExportPayload(selectedExport || requireCapture || restoreBrowsing, captured) {
+                    latestCapture.value()
+                }
                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                     try {
-                        val songs = load?.invoke()
+                        val readyLoad = if (restoreBrowsing && savedBrowsingScope != null) {
+                            awaitRestoredExportPayload(savedBrowsingScope, { latestBrowsingScope.value?.invoke() }) {
+                                latestCapture.value()
+                            }
+                        } else load
+                        val songs = readyLoad?.invoke()
+                        if (restoreBrowsing && readyLoad != null && savedBrowsingScope != latestBrowsingScope.value?.invoke()) {
+                            removeEmptyExport(uri)
+                            Toaster.e(R.string.common_load_failed)
+                            return@launch
+                        }
                         if (songs == null) {
-                            if (load == null) {
+                            if (readyLoad == null) {
                                 when {
                                     selectedExport -> Toaster.e(R.string.export_selection_lost)
-                                    requireCapture -> Toaster.e(R.string.common_load_failed)
+                                    requireCapture || restoreBrowsing -> Toaster.e(R.string.common_load_failed)
                                 }
                             }
                             removeEmptyExport(uri)
@@ -155,6 +180,10 @@ class ExportSongsToCSVDialog private constructor(
                         else -> null
                     }
                 },
+                saveBrowsingScope = {
+                    browsingScopeAtLaunch.value =
+                        latestBrowsingScope.value?.invoke()?.takeUnless { selectionAtOpen.value || requireCapture }
+                },
             )
         }
 
@@ -194,6 +223,8 @@ class ExportSongsToCSVDialog private constructor(
         super.onSet(newValue)
     }
 
+    override fun onDocumentPickerLaunch() = saveBrowsingScope()
+
     override fun defaultFileName(): String =
         "${BuildConfig.APP_NAME}_playlist_${TimeDateUtils.localizedDateNoDelimiter()}_${TimeDateUtils.timeNoDelimiter()}"
 }
@@ -201,5 +232,16 @@ class ExportSongsToCSVDialog private constructor(
 /** A pending selection export can only use the payload captured before opening the picker. */
 internal fun <T : Any> resolveExportPayload(selected: Boolean, captured: T?, browsing: () -> T?): T? =
     captured ?: if (selected) null else browsing()
+
+internal suspend fun <T : Any> awaitRestoredExportPayload(
+    savedScope: String,
+    currentScope: () -> String?,
+    capture: () -> T?,
+): T? = withTimeoutOrNull(10_000L) {
+    snapshotFlow {
+        val validScope = savedScope == currentScope()
+        validScope to if (validScope) capture() else null
+    }.first { (validScope, payload) -> !validScope || payload != null }.second
+}?.takeIf { currentScope() == savedScope }
 
 

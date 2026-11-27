@@ -7,6 +7,8 @@ import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.boundProcessStorageIdentity
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
@@ -430,6 +432,19 @@ fun HomeLibrary(
         "Library",
         action::snapshot,
         selectionActive = { itemSelector.isActive },
+        browsingRestoreScope = {
+            boundProcessStorageIdentity()?.takeIf {
+                previewSession == null && !itemSelector.isActive && playlistType != PlaylistsType.OnDevice &&
+                    ProfileWorkOwner.isBound(context, it)
+            }?.let { owner ->
+                listOf(
+                    owner.id, owner.generation, playlistType.name,
+                    youtubeLibraryFilter.name.takeIf { playlistType == PlaylistsType.YTPlaylist }.orEmpty(),
+                    rewindPlaylistsFilter.name.takeIf { playlistType == PlaylistsType.MonthlyPlaylist }.orEmpty(),
+                    sort.sortBy.name, sort.sortOrder.name, search.filterQuery,
+                ).joinToString("\u0000")
+            }
+        },
     )
 
     val observeListening = previewSession == null &&

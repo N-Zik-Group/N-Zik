@@ -1912,3 +1912,7 @@ Menus:
 Playlists:
 - fix(playlist): keep local playlist actions aligned with visible tracks
   - Refresh the downloaded sort and protect hidden positions and stale Add or Export scopes.
+
+Playlists / Export:
+- fix(playlist): restore Library CSV exports once tracks load
+  - Wait briefly for the original Library view after Android recreates the export screen.
