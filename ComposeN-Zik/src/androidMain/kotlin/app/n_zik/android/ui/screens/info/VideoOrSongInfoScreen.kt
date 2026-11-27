@@ -280,12 +280,8 @@ fun VideoOrSongInfoScreen(
         }
 
         Column(Modifier.weight(1f).background(informationMenuBodyColor())) {
-            // Offline banner (spec-offline-load-state wave 2): the local params
-            // (title/artist/thumbnail) stay visible, the online info (stats,
-            //
-            // description) is replaced by a centered message instead of the
-            // silent "−" degradation.
-            if (!isLoading && info == null) {
+            // Only remote tracks require an online metadata lookup.
+            if (!isLoading && info == null && LOCAL_KEY_PREFIX !in videoId) {
                 OfflineContent(
                     modifier = Modifier
                         .fillMaxWidth()

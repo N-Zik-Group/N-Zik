@@ -31,7 +31,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.R
 import app.n_zik.android.enums.ColorPaletteMode
+import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.ui.screens.info.VideoOrSongInfoResult
 import app.n_zik.android.ui.screens.info.VideoOrSongInfoScreen
 import app.n_zik.android.ui.screens.info.loadVideoOrSongInfo
@@ -271,6 +273,33 @@ class InformationMenuSurfaceTest {
             reference[x, (50 * density).toInt()].toArgb(), pixels[x, (50 * density).toInt()].toArgb())
         assertEquals("the legacy body must not mask the shared glass with opaque black",
             reference[x, (550 * density).toInt()].toArgb(), pixels[x, (550 * density).toInt()].toArgb())
+    }
+
+    @Test
+    fun `information for an on-device track does not show a connection error`() {
+        val trackId = "${LOCAL_KEY_PREFIX}123"
+        val artist = "Device artist"
+        mockkStatic("app.n_zik.android.ui.screens.info.VideoOrSongInfoScreenKt")
+        coEvery { loadVideoOrSongInfo(trackId, "", null) } returns
+            VideoOrSongInfoResult(info = null, finalArtists = listOf("" to artist))
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance(DefaultDarkColorPalette)) {
+                VideoOrSongInfoScreen(
+                    videoId = trackId,
+                    songTitle = "Device track",
+                    onNavigateUp = {},
+                    onClose = {},
+                )
+            }
+        }
+
+        composeRule.waitUntil(10_000) {
+            composeRule.mainClock.advanceTimeByFrame()
+            composeRule.onAllNodesWithText(artist).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText(artist).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.common_load_failed_no_connection)).assertDoesNotExist()
     }
 
     private fun appearance(palette: ColorPalette): Appearance {
