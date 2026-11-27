@@ -12,6 +12,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +37,7 @@ import app.n_zik.android.listentogether.ListenTogetherClient
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.ListenTogetherServers
 import app.n_zik.android.listentogether.RoomRole
+import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.utils.DataStoreUtils
 import app.n_zik.android.utils.menuStyleKey
@@ -246,79 +248,83 @@ fun ListenTogetherMenu() {
         },
         label = "ListenTogetherMenuPage",
     ) { target ->
-        when (target) {
-            RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
-                ListMenu.Menu(
-                    title = stringResource(R.string.listen_together_title),
-                    headerTrailing = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
-                ) {
-                    ListLtMenuContent(content)
+        CompositionLocalProvider(LocalMenuScrollState provides LocalMenuScrollState.current?.forPage(target)) {
+            when (target) {
+                RoomMenuPage.Room -> if (menuStyle == MenuStyle.List) {
+                    ListMenu.Menu(
+                        title = stringResource(R.string.listen_together_title),
+                        headerTrailing = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
+                    ) {
+                        ListLtMenuContent(content)
+                    }
+                } else {
+                    GridMenu.Menu(
+                        title = stringResource(R.string.listen_together_title),
+                        headerTrailing = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
+                    ) {
+                        GridLtMenuContent(content, palette)
+                    }
                 }
-            } else {
-                GridMenu.Menu(
-                    title = stringResource(R.string.listen_together_title),
-                    headerTrailing = managementBackButton(if (menuState.hasPrevious) menuState::pop else null),
-                ) {
-                    GridLtMenuContent(content, palette)
-                }
+                RoomMenuPage.Logs -> ListenTogetherLogsMenu(
+                    logs = logs,
+                    onClear = { listenTogetherManager.clearLogs() },
+                    onBack = { page = RoomMenuPage.Room },
+                )
+                RoomMenuPage.BlockedUsers -> ListenTogetherBlockedUsersMenu(
+                    blockedUsernames = blockedUsernames,
+                    onUnblock = { listenTogetherManager.unblockUser(it) },
+                    onBack = { page = RoomMenuPage.Room },
+                )
             }
-            RoomMenuPage.Logs -> ListenTogetherLogsMenu(
-                logs = logs,
-                onClear = { listenTogetherManager.clearLogs() },
-                onBack = { page = RoomMenuPage.Room },
-            )
-            RoomMenuPage.BlockedUsers -> ListenTogetherBlockedUsersMenu(
-                blockedUsernames = blockedUsernames,
-                onUnblock = { listenTogetherManager.unblockUser(it) },
-                onBack = { page = RoomMenuPage.Room },
-            )
         }
     }
 
-    CreateRoomSheet(
-        showSheet = showCreateRoomSheet,
-        savedUsername = username,
-        onConfirm = { finalUsername ->
-            usernamePref.value = finalUsername
-            DataStoreUtils.saveString(context, PREF_USERNAME, finalUsername)
-            settingsVersion.value++
-            showCreateRoomSheet = false
-            Toaster.i(R.string.listen_together_creating_room)
-            isCreatingRoom = true
-            isJoiningRoom = false
-            joinErrorMessage = null
-            listenTogetherManager.connect()
-            listenTogetherManager.createRoom(finalUsername)
-        },
-        onDismiss = { showCreateRoomSheet = false },
-    )
-    JoinRoomSheet(
-        showSheet = showJoinRoomSheet,
-        savedUsername = username,
-        onConfirm = { roomCodeInput, finalUsername ->
-            usernamePref.value = finalUsername
-            DataStoreUtils.saveString(context, PREF_USERNAME, finalUsername)
-            settingsVersion.value++
-            showJoinRoomSheet = false
-            Toaster.i(R.string.listen_together_joining_room, roomCodeInput)
-            isJoiningRoom = true
-            isCreatingRoom = false
-            joinErrorMessage = null
-            listenTogetherManager.connect()
-            listenTogetherManager.joinRoom(roomCodeInput, finalUsername)
-        },
-        onDismiss = { showJoinRoomSheet = false },
-    )
-    ServerChooserSheet(
-        showSheet = showServerChooserSheet,
-        onSaved = { settingsVersion.value++ },
-        onDismiss = { showServerChooserSheet = false },
-        currentUrl = serverUrl,
-    )
-    UsernameSheet(
-        showSheet = showUsernameSheet,
-        onSaved = { settingsVersion.value++ },
-        onDismiss = { showUsernameSheet = false },
-        savedUsername = username,
-    )
+    CompositionLocalProvider(LocalMenuScrollState provides null) {
+        CreateRoomSheet(
+            showSheet = showCreateRoomSheet,
+            savedUsername = username,
+            onConfirm = { finalUsername ->
+                usernamePref.value = finalUsername
+                DataStoreUtils.saveString(context, PREF_USERNAME, finalUsername)
+                settingsVersion.value++
+                showCreateRoomSheet = false
+                Toaster.i(R.string.listen_together_creating_room)
+                isCreatingRoom = true
+                isJoiningRoom = false
+                joinErrorMessage = null
+                listenTogetherManager.connect()
+                listenTogetherManager.createRoom(finalUsername)
+            },
+            onDismiss = { showCreateRoomSheet = false },
+        )
+        JoinRoomSheet(
+            showSheet = showJoinRoomSheet,
+            savedUsername = username,
+            onConfirm = { roomCodeInput, finalUsername ->
+                usernamePref.value = finalUsername
+                DataStoreUtils.saveString(context, PREF_USERNAME, finalUsername)
+                settingsVersion.value++
+                showJoinRoomSheet = false
+                Toaster.i(R.string.listen_together_joining_room, roomCodeInput)
+                isJoiningRoom = true
+                isCreatingRoom = false
+                joinErrorMessage = null
+                listenTogetherManager.connect()
+                listenTogetherManager.joinRoom(roomCodeInput, finalUsername)
+            },
+            onDismiss = { showJoinRoomSheet = false },
+        )
+        ServerChooserSheet(
+            showSheet = showServerChooserSheet,
+            onSaved = { settingsVersion.value++ },
+            onDismiss = { showServerChooserSheet = false },
+            currentUrl = serverUrl,
+        )
+        UsernameSheet(
+            showSheet = showUsernameSheet,
+            onSaved = { settingsVersion.value++ },
+            onDismiss = { showUsernameSheet = false },
+            savedUsername = username,
+        )
+    }
 }

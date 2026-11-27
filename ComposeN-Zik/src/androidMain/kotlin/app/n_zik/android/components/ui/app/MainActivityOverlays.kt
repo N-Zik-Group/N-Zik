@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 
@@ -28,6 +29,7 @@ import app.n_zik.android.components.glass.glassContentCaptureEnabled
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.theme.AppearanceMenuSheet
+import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.MenuState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -39,7 +41,7 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
         sheetState = menuSheetState,
     ) {
         AnimatedContent(
-            targetState = menuState.contentState,
+            targetState = menuState.presentationState,
             transitionSpec = {
                 slideInHorizontally(animationSpec = tween(300)) { width -> width / 2 } + fadeIn(animationSpec = tween(300)) togetherWith
                 slideOutHorizontally(animationSpec = tween(300)) { width -> -width / 2 } + fadeOut(animationSpec = tween(300))
@@ -50,7 +52,11 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
                 menuState.pop()
             }
             Box(modifier = Modifier.fillMaxWidth()) {
-                target.second()
+                target.second?.let { entry ->
+                    CompositionLocalProvider(LocalMenuScrollState provides entry.scrollState) {
+                        entry.content()
+                    }
+                }
             }
         }
     }

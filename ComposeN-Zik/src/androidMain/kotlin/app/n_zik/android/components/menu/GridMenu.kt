@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -55,6 +56,7 @@ import app.n_zik.android.recessedSurfaceColor
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.topUiRoundnessShape
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.uiRoundnessShape
 
 object GridMenu {
@@ -146,6 +148,7 @@ object GridMenu {
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Adaptive(minSize = 120.dp),
+                            state = LocalMenuScrollState.current?.rememberGridState() ?: rememberLazyGridState(),
                             contentPadding = PaddingValues(
                                 start = CONTENT_HORIZONTAL_PADDING.dp,
                                 end = CONTENT_HORIZONTAL_PADDING.dp,

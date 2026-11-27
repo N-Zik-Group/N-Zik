@@ -1320,3 +1320,7 @@ Menus:
 Settings:
 - fix(settings): open prerequisites and custom server from search
   - Route hidden player layout options to the controls that enable them and open the custom server field.
+
+Menus:
+- fix(menu): preserve the parent scroll when returning
+  - Keep independent List and Grid positions for each menu entry and retain the existing transitions.

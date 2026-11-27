@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.ui.PressFeedbackHorizontalInset
 import app.n_zik.android.components.ui.horizontalLayoutOutset
+import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.themed.ItemTextPlaceholder
 
 import app.n_zik.android.utils.conditional
@@ -146,9 +147,10 @@ object ListMenu {
                             emptyBody()
                         }
                     } else {
+                        val scrollState = LocalMenuScrollState.current?.rememberListState() ?: rememberScrollState()
                         Column(
                             Modifier.fillMaxWidth().weight(1f)
-                                .verticalScroll(rememberScrollState())
+                                .verticalScroll(scrollState)
                                 .padding(horizontal = MenuConstants.LIST_CONTENT_HORIZONTAL_PADDING.dp)
                                 .padding(top = MenuConstants.LIST_CONTENT_TOP_PADDING.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
