@@ -125,7 +125,7 @@ internal fun PlaylistPickerSearchRows(
 internal fun ColumnScope.PlaylistPickerHeader(
     title: String,
     search: Search,
-    onBack: () -> Unit,
+    onBack: (() -> Unit)?,
     onCreate: () -> Unit,
 ) {
     val textColor = colorPalette().text
@@ -134,13 +134,15 @@ internal fun ColumnScope.PlaylistPickerHeader(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(Modifier.width(72.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(
-                icon = R.drawable.chevron_back,
-                contentDescription = stringResource(R.string.common_action_back),
-                color = textColor,
-                onClick = onBack,
-                modifier = Modifier.size(36.dp).padding(6.dp),
-            )
+            if (onBack != null) {
+                IconButton(
+                    icon = R.drawable.chevron_back,
+                    contentDescription = stringResource(R.string.common_action_back),
+                    color = textColor,
+                    onClick = onBack,
+                    modifier = Modifier.size(36.dp).padding(6.dp),
+                )
+            }
             IconButton(
                 icon = R.drawable.search_circle,
                 contentDescription = stringResource(R.string.search_title),
@@ -524,7 +526,7 @@ class PlaylistsMenu private constructor(
                 PlaylistPickerHeader(
                     title = stringResource(R.string.playlist_action_add),
                     search = search,
-                    onBack = menuState::pop,
+                    onBack = if (menuState.hasPrevious) menuState::pop else null,
                     onCreate = newPlaylistButton::onShortClick,
                 )
             },

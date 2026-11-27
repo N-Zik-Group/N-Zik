@@ -36,6 +36,7 @@ import androidx.navigation.NavController
 import app.n_zik.android.core.database.PlaylistAddResult
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.themed.isPlaylistPickerTarget
+import app.n_zik.android.ui.components.themed.isYouTubePlaylistPickerEntry
 import app.n_zik.android.ui.components.themed.reportPlaylistAddResult
 import app.n_zik.android.R
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
@@ -237,7 +238,7 @@ fun AddToPlaylistItemMenu(
             PlaylistPickerHeader(
                 title = stringResource(R.string.playlist_action_add),
                 search = search,
-                onBack = { if (menuState.hasPrevious) menuState.pop() else onDismiss() },
+                onBack = if (menuState.hasPrevious) menuState::pop else null,
                 onCreate = newPlaylistDialog::onShortClick,
             )
         },
@@ -250,7 +251,7 @@ fun AddToPlaylistItemMenu(
                     .menuSectionHeading(),
             )
         },
-        entry = { label, preview ->
+        entry = { _, preview ->
             val playlist = preview.playlist
             PlaylistPickerEntry(
                 style = style,
@@ -260,7 +261,7 @@ fun AddToPlaylistItemMenu(
                 trailingContent = {
                     if (!isPlaylistPickerTarget(playlist, localDestinationsOnly)) PlaylistPickerLockIcon()
                     if (playlist.id in playlistIds) SongInPlaylistIcon()
-                    if (label == R.string.playlist_pinned_title && playlist.isYoutubePlaylist) {
+                    if (isYouTubePlaylistPickerEntry(playlist)) {
                         Image(
                             painter = painterResource(R.drawable.ytmusic),
                             contentDescription = null,

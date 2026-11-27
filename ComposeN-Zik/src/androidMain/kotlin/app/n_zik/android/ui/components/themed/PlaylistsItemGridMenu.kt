@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
+import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.ui.Alignment
 import android.annotation.SuppressLint
