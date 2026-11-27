@@ -1632,3 +1632,7 @@ Playlist:
 Menus:
 - refactor(menu): share playback controls and selection styling
   - Reuse the common icon badge and device volume observer, and show the current audio option in List and Grid.
+
+Settings:
+- fix(settings): explain what enables hidden lyrics settings
+  - Guide search hits to the cover and lyrics artwork switches with the required On or Off value.

@@ -716,6 +716,12 @@ fun SettingsCategoryPage(
                 entry?.paletteTitleRes != null -> SearchPrerequisite(
                     ThemeSettingsTarget, listOf(ColorPaletteName.Customized.textId),
                 )
+                hiddenCoverLyricsTarget -> SearchPrerequisite(
+                    ShowCoverSettingsTarget, listOf(R.string.common_state_on),
+                )
+                requestedTarget == LyricsBackgroundSettingsTarget -> SearchPrerequisite(
+                    LyricsOnCoverSettingsTarget, listOf(R.string.common_state_on),
+                )
                 hiddenFullscreenLyricsTarget -> SearchPrerequisite(
                     LyricsOnCoverSettingsTarget, listOf(R.string.common_state_off),
                 )
