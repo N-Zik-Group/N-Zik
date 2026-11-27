@@ -2,6 +2,7 @@ package app.n_zik.android.playback.services.automotive.browse
 
 import app.n_zik.android.core.coil.ImageCacheFactory
 import android.content.Context
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import app.n_zik.android.utils.cropVideoThumbnailsKey
@@ -88,8 +89,9 @@ class AutoBrowseTree(
             if (page == null) cache.clear()
             cache.get(key)
         }
+        val labelContext = ContextCompat.getContextForLanguage(context)
         val list = if (cached != null) cached else if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) {
-            val suggestions = AutoSuggestedQueueLoader.load(context, database, downloadHelper, binder)
+            val suggestions = AutoSuggestedQueueLoader.load(labelContext, database, downloadHelper, binder)
             synchronized(publicationLock) {
                 if (!ownsPublication(requestProfile, generation)) return emptyList()
                 val captured = suggestions.mapNotNull { suggestion ->
@@ -109,7 +111,7 @@ class AutoBrowseTree(
             }
         } else {
             val handler = handlers.firstOrNull { it.handles(actualParentId) }
-            val loadedRows = handler?.getChildren(actualParentId, context, database, downloadHelper, binder).orEmpty().map { item ->
+            val loadedRows = handler?.getChildren(actualParentId, labelContext, database, downloadHelper, binder).orEmpty().map { item ->
                 withRemoteArtwork(item, requestProfile)
             }
             val access = AutoAccessPolicy(context, database, downloadHelper, binder)
@@ -132,7 +134,7 @@ class AutoBrowseTree(
         return synchronized(publicationLock) {
             if (!ownsPublication(requestProfile, generation)) return emptyList()
             val visible = (if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) list
-                else PaginationHelper.paginate(context, list, actualParentId, page?.index ?: pageIndex))
+                else PaginationHelper.paginate(labelContext, list, actualParentId, page?.index ?: pageIndex))
                 .map { withCurrentArtwork(it, requestProfile, includeLocal = true) }
             visible.also {
                 visibleLists[BrowseKey(browser, parentId)] = visible

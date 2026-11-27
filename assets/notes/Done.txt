@@ -1448,3 +1448,7 @@ Menus:
 Settings:
 - fix(backup): validate imports and apply restored language
   - Reject empty settings imports and apply a valid language after the active database is restored.
+
+Android Auto:
+- fix(auto): align browse labels with app language
+  - Use Playlists for the playlist destination and retain the dedicated Quick Picks action.

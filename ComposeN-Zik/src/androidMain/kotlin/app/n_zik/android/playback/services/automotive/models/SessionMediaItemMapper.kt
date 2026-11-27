@@ -20,6 +20,7 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.thumbnail
 import app.n_zik.android.playback.services.ArtworkContentProvider
@@ -153,9 +154,9 @@ object SessionMediaItemMapper {
         val needsTitle = SessionMetadataFallbacks.needsFallback(metadata.title)
         val needsArtist = SessionMetadataFallbacks.needsFallback(metadata.artist)
         if (!needsTitle && !needsArtist) return
-        val context = appContext()
-        if (needsTitle) metadataBuilder.setTitle(context.getString(R.string.metadata_unknown_title))
-        if (needsArtist) metadataBuilder.setArtist(context.getString(R.string.metadata_unknown_artist))
+        val labels = appTextResources()
+        if (needsTitle) metadataBuilder.setTitle(labels.getString(R.string.metadata_unknown_title))
+        if (needsArtist) metadataBuilder.setArtist(labels.getString(R.string.metadata_unknown_artist))
     }
 
     fun mapArtistToMediaItem(

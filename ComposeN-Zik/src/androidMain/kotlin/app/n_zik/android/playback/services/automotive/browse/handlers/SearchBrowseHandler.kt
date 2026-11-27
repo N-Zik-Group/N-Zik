@@ -58,7 +58,10 @@ class SearchBrowseHandler(
         ) { continuation -> loadBatch(category, query, continuation) } ?: return emptyList()
         return window.items + listOfNotNull(window.nextToken?.let {
             browsableMediaItem(
-                AutoMediaIdContract.searchContinuation(it), "${context.getString(R.string.common_action_next)} (${window.pageNumber + 1})", null,
+                AutoMediaIdContract.searchContinuation(it),
+                context.getString(R.string.automotive_search_next_page,
+                    context.getString(R.string.common_action_next), window.pageNumber + 1),
+                null,
                 drawableUri(context, R.drawable.library),
                 MediaMetadata.MEDIA_TYPE_FOLDER_MIXED, parent,
             )

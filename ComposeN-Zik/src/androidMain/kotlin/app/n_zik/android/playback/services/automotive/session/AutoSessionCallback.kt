@@ -86,6 +86,7 @@ import app.n_zik.android.playback.services.diagnostics.seekCommandName
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.R
+import app.n_zik.android.appTextResources
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -372,15 +373,18 @@ class AutoSessionCallback(
         }
     }
 
-    private fun searchCategories(query: String): List<MediaItem> = listOf(
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", context.getString(R.string.library_songs_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", context.getString(R.string.library_albums_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", context.getString(R.string.library_artists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_VIDEOS}/$query", context.getString(R.string.search_videos_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.video), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PLAYLISTS}/$query", context.getString(R.string.library_playlists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_FEATURED}/$query", context.getString(R.string.search_featured_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.featured_playlist), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
-        AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PODCASTS}/$query", context.getString(R.string.podcast_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.podcast), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
-    )
+    private fun searchCategories(query: String): List<MediaItem> {
+        val labels = appTextResources()
+        return listOf(
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_SONGS}/$query", labels.getString(R.string.library_songs_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.musical_notes), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ALBUMS}/$query", labels.getString(R.string.library_albums_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.album), MediaMetadata.MEDIA_TYPE_FOLDER_ALBUMS),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_ARTISTS}/$query", labels.getString(R.string.library_artists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.people), MediaMetadata.MEDIA_TYPE_FOLDER_ARTISTS),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_VIDEOS}/$query", labels.getString(R.string.search_videos_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.video), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PLAYLISTS}/$query", labels.getString(R.string.library_playlists_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.library), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_FEATURED}/$query", labels.getString(R.string.search_featured_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.featured_playlist), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED),
+            AutoMediaItemMapper.browsableMediaItem("${AutoSessionConstants.ID_SEARCH_PODCASTS}/$query", labels.getString(R.string.podcast_title), null, AutoMediaItemMapper.drawableUri(context, R.drawable.podcast), MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
+        )
+    }
 
     override fun onCustomCommand(
         session: MediaSession,

@@ -41,7 +41,7 @@ object PaginationHelper {
             val end = start + chunk.size - 1
             browsableMediaItem(
                 AutoMediaIdContract.page(actualParentId, index),
-                "Page ${index + 1} ($start - $end)",
+                context.getString(R.string.automotive_page_range, index + 1, start, end),
                 null,
                 drawableUri(context, R.drawable.library),
                 MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS,

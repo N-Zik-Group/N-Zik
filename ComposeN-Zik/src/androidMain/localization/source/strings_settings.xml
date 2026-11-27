@@ -4,6 +4,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
+    <string name="automotive_page_range">Page %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <string name="automotive_title" translatable="false">Android Auto</string>
 
     <!-- Gestures -->
