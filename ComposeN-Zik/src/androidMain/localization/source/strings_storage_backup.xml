@@ -169,7 +169,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Export the database and settings separately. The database uses ZIP if it includes custom covers.</string>
     <string name="backup_export_database_with_covers_description">Save songs, playlists, and history as SQLite. If you have custom covers, the export is a ZIP with the database and covers.</string>
     <string name="backup_export_profile_state_failed">Profile state export failed</string>
-    <string name="backup_export_settings_description">Export app settings and preferences</string>
+    <string name="backup_export_settings_description">Export saved profile settings, including Glass</string>
 
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Import the profile list and the face photos from a .txt file</string>
@@ -181,7 +181,7 @@
     <string name="backup_import_profile_state_complete">Profile state imported: %1$d profiles</string>
     <string name="backup_import_profile_state_complete_base">Profile state imported: base profile</string>
     <string name="backup_import_profile_state_failed">Profile state import failed</string>
-    <string name="backup_import_settings_description">Import app settings and preferences</string>
+    <string name="backup_import_settings_description">Merge saved profile settings and restore any Glass snapshot</string>
     <string name="backup_import_target_from_file">From the file</string>
     <string name="backup_import_target_profile_title">Import into which profile?</string>
 

@@ -1472,3 +1472,7 @@ Downloads:
 Settings:
 - fix(settings): surface local audio permission in search
   - Resume explicit local music activation after Android grants audio access.
+
+Settings:
+- fix(backup): describe the scope of settings CSVs
+  - Distinguish merging saved profile settings from restoring the Glass snapshot.
