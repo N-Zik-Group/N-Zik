@@ -861,9 +861,9 @@ fun PlaylistSongList(
                                                     val eligible = songs.filter { it.key !in dislikedSongs }
                                                         .map(Innertube.SongItem::asMediaItem)
                                                     val first = eligible.firstOrNull() ?: return@HeaderIconButton
-                                                    val current = binder?.player?.currentMediaItem
-                                                        ?.takeIf { playing -> !active || eligible.any { it.mediaId == playing.mediaId } }
-                                                    binder?.startRadio(current ?: first, false, null, true)
+                                                    val currentId = binder?.player?.currentMediaItem?.mediaId
+                                                    val seed = eligible.firstOrNull { it.mediaId == currentId } ?: first
+                                                    binder?.startRadio(seed, false, null, true)
                                                 },
                                                 onLongClick = {
                                                     Toaster.i( binder?.radioActionTextRes ?: R.string.radio_action_start_hint )

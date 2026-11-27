@@ -1156,3 +1156,7 @@ Menus:
 Menus:
 - fix(menu): keep the volume dialog in sync with hardware controls
   - Follow the system volume until the user begins a draft adjustment.
+
+Menus:
+- fix(menu): start playlist radio from an eligible track
+  - Use the current track only when it belongs to the selected playlist scope.
