@@ -409,6 +409,32 @@ class RewindPlaylistWorkersTest {
         assertEquals("a non-rewind playlist is untouched", listOf("imp_custom"), songsIn(customId))
     }
 
+    // JUnit is synchronous, while the worker and Room queries require a coroutine.
+    @Test
+    fun postImportRefreshesHiddenOwnedSnapshots() = runBlocking {
+        val app = RuntimeEnvironment.getApplication()
+        DataStoreUtils.saveBoolean(app, DataStoreUtils.KEY_REWIND_ENABLED, false)
+        val name = RewindPlaylists.monthlyName(2023, 4)
+        val (from, _) = requireNotNull(RewindPlaylists.windowFor(name))
+        insertSong("hidden_old")
+        insertSong("hidden_new")
+        val oldId = insertPlaylist(name, generated = true)
+        val userId = insertPlaylist(name)
+
+        withContext(NzikDispatchers.DATA) {
+            Database.songPlaylistMapTable.map("hidden_old", oldId)
+            Database.songPlaylistMapTable.map("hidden_old", userId)
+            Database.eventTable.insertIgnore(Event(songId = "hidden_new", timestamp = from + 1, playTime = 8000))
+        }
+
+        assertTrue(runWorker(postImportWorker()) is ListenableWorker.Result.Success)
+
+        val updated = Database.playlistTable.findByBrowseId(RewindPlaylists.generatedSourceId(name)).first()
+        assertEquals(listOf("hidden_new"), songsIn(requireNotNull(updated).id))
+        assertEquals(listOf("hidden_old"), songsIn(userId))
+        assertFalse(RewindPlaylists.visibility(app).visibleInLibrary(name))
+    }
+
     @Test
     fun postImportLeavesDeletedPlaylistsDeleted() = runBlocking {
         val name = RewindPlaylists.monthlyName(2022, 5)

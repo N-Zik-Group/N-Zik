@@ -18,15 +18,18 @@ internal enum class GenerateMode {
     CreateIfMissing,
 
     /**
-     * Button / post-import job path: replace a snapshot with verified generated provenance.
+     * Button path: create or replace a snapshot with verified generated provenance.
      */
-    Regenerate
+    Regenerate,
+
+    /** Post-import path: replace a verified snapshot that still exists when the write starts. */
+    RefreshExisting,
 }
 
 /**
  * The shared generation function of every `rewind-*` playlist (spec 2): the monthly/yearly
  * workers ([GenerateMode.CreateIfMissing]), the deck's regenerate pills and the post-import
- * job ([GenerateMode.Regenerate]) all funnel through it — no other code writes `rewind-*`
+ * job ([GenerateMode.RefreshExisting]) all funnel through it — no other code writes `rewind-*`
  * names.
  *
  * Window (epoch millis) -> [Database.eventTable.findSongsMostPlayedBetween]
@@ -68,6 +71,7 @@ internal suspend fun generateRewindPlaylist(
             return@transaction
         }
         val existing = rows.firstOrNull { it.browseId == sourceId }
+        if (mode == GenerateMode.RefreshExisting && existing?.name != name) return@transaction
         if (existing != null) {
             if (mode == GenerateMode.CreateIfMissing) return@transaction
             playlistTable.delete(existing)

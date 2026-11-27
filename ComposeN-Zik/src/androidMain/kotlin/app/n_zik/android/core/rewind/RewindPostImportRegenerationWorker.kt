@@ -68,11 +68,9 @@ internal class RewindPostImportRegenerationWorker(
             Timber.tag(TAG).i("Database is closed after the import: retrying so the run survives the restart")
             return Result.retry()
         }
-        val visibility = RewindPlaylists.visibility(applicationContext)
         val snapshots = Database.playlistTable.getAll().filter { playlist ->
             RewindPlaylists.isRewind(playlist.name) &&
-                playlist.browseId == RewindPlaylists.generatedSourceId(playlist.name) &&
-                visibility.visibleInLibrary(playlist.name)
+                playlist.browseId == RewindPlaylists.generatedSourceId(playlist.name)
         }
         snapshots.map { it.name }.distinct().forEach { name ->
             val window = RewindPlaylists.windowFor(name)
@@ -84,7 +82,7 @@ internal class RewindPostImportRegenerationWorker(
                 name,
                 window.first,
                 window.second,
-                GenerateMode.Regenerate,
+                GenerateMode.RefreshExisting,
             ) { ProfileWorkOwner.isBound(applicationContext, owner) }
             Timber.tag(TAG).i("Regenerated \"$name\" with $count songs")
         }
