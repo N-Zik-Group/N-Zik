@@ -1192,3 +1192,7 @@ Settings:
 Menus:
 - fix(downloads): clear download state when deleting a song
   - Remove the Media3 download request after successful song deletion within the active profile.
+
+Settings:
+- test(network): cover profile proxy migration and challenges
+  - Cover legacy password migration, hostname support and authentication challenge boundaries.
