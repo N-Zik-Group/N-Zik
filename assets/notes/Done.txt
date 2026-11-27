@@ -1500,3 +1500,7 @@ Settings:
 Menus:
 - fix(menu): disable collection playback for locked guests
   - Apply the same guest guard to the playlist, album and artist shuffle rows and to local artist playback.
+
+Settings:
+- fix(settings): clarify the accounts reset card
+  - Explain account deactivation and credential preservation on the targeted reset.

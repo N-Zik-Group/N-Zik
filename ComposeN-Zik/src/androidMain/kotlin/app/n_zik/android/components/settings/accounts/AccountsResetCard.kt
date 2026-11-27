@@ -125,7 +125,7 @@ internal fun AccountsResetCard(search: Search) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.settings_reset.settings_reset"),
                         title = stringResource(R.string.settings_reset),
-                        text = stringResource(R.string.settings_restore_default_settings),
+                        text = stringResource(R.string.settings_reset_account_usage_notice),
                         icon = R.drawable.refresh,
                         onClick = {
                             applyAccountsDefaults(context)
