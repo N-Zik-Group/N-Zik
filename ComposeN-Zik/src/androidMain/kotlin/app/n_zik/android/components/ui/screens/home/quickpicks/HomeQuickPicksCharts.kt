@@ -125,189 +125,181 @@ fun ChartsSection(
     }
     val menuState = LocalMenuState.current
     if (showCharts) {
-        if (forcePlaceholder || chartsPageInit != null) {
-            val hasPlaylists = chartsPageInit?.playlists?.isNotEmpty() == true
-            val hasSongs = chartsPageInit?.songs?.isNotEmpty() == true
-            val hasArtists = chartsPageInit?.artists?.isNotEmpty() == true
+        displayedSectionTitles.add("Charts")
+        Column {
+            HomeSectionTitle(
+                title = stringResource(R.string.recommendations_charts_country_format, stringResource(R.string.recommendations_charts_title), selectedCountryCode.displayLabel()),
+                onClick = {
+                    menuState.display {
+                        SelectionMenu(
+                            title = stringResource(R.string.recommendations_charts_title),
+                            choices = Countries.entries,
+                            selectedChoice = selectedCountryCode,
+                            label = { it.displayLabel() },
+                            icon = { R.drawable.arrow_right },
+                        ) { country ->
+                            onCountryChange(country)
+                            menuState.hide()
+                        }
+                    }
+                },
+                verticalPadding = 16.dp,
+            )
 
-            if (forcePlaceholder || hasPlaylists || hasSongs || hasArtists) {
-                displayedSectionTitles.add("Charts")
-                Column {
-                    HomeSectionTitle(
-                        title = stringResource(R.string.recommendations_charts_country_format, stringResource(R.string.recommendations_charts_title), selectedCountryCode.displayLabel()),
-                        onClick = {
-                            menuState.display {
-                                SelectionMenu(
-                                    title = stringResource(R.string.recommendations_charts_title),
-                                    choices = Countries.entries,
-                                    selectedChoice = selectedCountryCode,
-                                    label = { it.displayLabel() },
-                                    icon = { R.drawable.arrow_right },
-                                ) { country ->
-                                    onCountryChange(country)
-                                    menuState.hide()
-                                }
-                            }
-                        },
-                        verticalPadding = 16.dp,
+            chartsPageInit?.playlists.orEmpty().let { playlists ->
+                if (forcePlaceholder || playlists.isNotEmpty()) {
+                    val chartPlaylistKeys = remember(playlists) { playlists.map { it.key } }
+                    val chartPlaylistBookmarkStatesMap by remember(chartPlaylistKeys) {
+                        BookmarkStateManager.getPlaylistBookmarkStates(chartPlaylistKeys)
+                    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+
+                    if (forcePlaceholder) {
+                        ShelfCardPlaceholders(playlists, YtmShelfPlaceholderKind.Playlist, playlistThumbnailSizeDp, endPaddingValues)
+                    } else LazyRow(contentPadding = endPaddingValues) {
+                        items(
+                            items = playlists.distinctBy { it.key },
+                            key = Innertube.PlaylistItem::key,
+                            contentType = { "playlist" }
+                        ) { playlist ->
+                            PlaylistItem(
+                                playlist = playlist,
+                                thumbnailSizePx = playlistThumbnailSizePx,
+                                thumbnailSizeDp = playlistThumbnailSizeDp,
+                                alternative = true,
+                                showSongsCount = false,
+                                isBookmarked = chartPlaylistBookmarkStatesMap[playlist.key],
+                                modifier = Modifier
+                                    .clip(uiRoundnessShape()).combinedClickable(
+                                        onClick = { onPlaylistClick(playlist.key) },
+                                        onLongClick = { menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = playlist).MenuComponent() } }
+                                    ).animateItem(),
+                                disableScrollingText = disableScrollingText
+                            )
+                        }
+                    }
+                }
+            } // end playlists let
+
+            chartsPageInit?.songs.orEmpty().let { songs ->
+                if (forcePlaceholder || songs.isNotEmpty()) {
+                    val chartSongIds = remember(songs) { songs.mapNotNull { it.key } }
+                    val storedRows by rememberSongRowMetadata(chartSongIds)
+                    val linkedCredits by rememberSongRowArtistCredits(chartSongIds)
+                    val chartLikeStatesMap by remember(chartSongIds) {
+                        LikeStateManager.getLikeStates(chartSongIds)
+                    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+                    val chartPlaylistStatesMap by remember(chartSongIds) {
+                        PlaylistStateManager.getPlaylistStates(chartSongIds)
+                    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+
+                    BasicText(
+                        text = stringResource(R.string.home_chart_top_songs_title),
+                        style = typography().l.semiBold,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .padding(top = 16.dp, bottom = 8.dp)
                     )
 
-                    chartsPageInit?.playlists.orEmpty().let { playlists ->
-                        if (forcePlaceholder || playlists.isNotEmpty()) {
-                            val chartPlaylistKeys = remember(playlists) { playlists.map { it.key } }
-                            val chartPlaylistBookmarkStatesMap by remember(chartPlaylistKeys) {
-                                BookmarkStateManager.getPlaylistBookmarkStates(chartPlaylistKeys)
-                            }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-
-                            if (forcePlaceholder) {
-                                ShelfCardPlaceholders(playlists, YtmShelfPlaceholderKind.Playlist, playlistThumbnailSizeDp, endPaddingValues)
-                            } else LazyRow(contentPadding = endPaddingValues) {
-                                items(
-                                    items = playlists.distinctBy { it.key },
-                                    key = Innertube.PlaylistItem::key,
-                                    contentType = { "playlist" }
-                                ) { playlist ->
-                                    PlaylistItem(
-                                        playlist = playlist,
-                                        thumbnailSizePx = playlistThumbnailSizePx,
-                                        thumbnailSizeDp = playlistThumbnailSizeDp,
-                                        alternative = true,
-                                        showSongsCount = false,
-                                        isBookmarked = chartPlaylistBookmarkStatesMap[playlist.key],
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onClick = { onPlaylistClick(playlist.key) },
-                                                onLongClick = { menuState.display { OnlinePlaylistItemMenu(navController = navController, playlist = playlist).MenuComponent() } }
-                                            ).animateItem(),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .height(Dimensions.itemsVerticalPadding * 3 * 9)
+                            .fillMaxWidth(),
+                        flingBehavior = ScrollableDefaults.flingBehavior(),
+                    ) {
+                        val rankedSongs = songs.filter { !parentalControlEnabled || !it.asSong.title.startsWith(EXPLICIT_PREFIX) }
+                            .distinctBy { it.key }
+                        if (forcePlaceholder) items(rankedSongs.size.takeIf { it > 0 } ?: 9) { index ->
+                            RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
+                                val song = rankedSongs.getOrNull(index)?.asSong
+                                SongItemPlaceholder(title = song?.title, artist = song?.artistsText)
                             }
-                        }
-                    } // end playlists let
-
-                chartsPageInit?.songs.orEmpty().let { songs ->
-                    if (forcePlaceholder || songs.isNotEmpty()) {
-                        val chartSongIds = remember(songs) { songs.mapNotNull { it.key } }
-                        val storedRows by rememberSongRowMetadata(chartSongIds)
-                        val linkedCredits by rememberSongRowArtistCredits(chartSongIds)
-                        val chartLikeStatesMap by remember(chartSongIds) {
-                            LikeStateManager.getLikeStates(chartSongIds)
-                        }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-                        val chartPlaylistStatesMap by remember(chartSongIds) {
-                            PlaylistStateManager.getPlaylistStates(chartSongIds)
-                        }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
-
-                        BasicText(
-                            text = stringResource(R.string.home_chart_top_songs_title),
-                            style = typography().l.semiBold,
-                            modifier = Modifier
-                                .padding(horizontal = 12.dp)
-                                .padding(top = 16.dp, bottom = 8.dp)
-                        )
-
-                        LazyHorizontalGrid(
-                            rows = GridCells.Fixed(3),
-                            modifier = Modifier
-                                .height(Dimensions.itemsVerticalPadding * 3 * 9)
-                                .fillMaxWidth(),
-                            flingBehavior = ScrollableDefaults.flingBehavior(),
-                        ) {
-                            val rankedSongs = songs.filter { !parentalControlEnabled || !it.asSong.title.startsWith(EXPLICIT_PREFIX) }
-                                .distinctBy { it.key }
-                            if (forcePlaceholder) items(rankedSongs.size.takeIf { it > 0 } ?: 9) { index ->
-                                RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
-                                    val song = rankedSongs.getOrNull(index)?.asSong
-                                    SongItemPlaceholder(title = song?.title, artist = song?.artistsText)
-                                }
-                            } else itemsIndexed(
-                                items = rankedSongs,
-                                key = { _, song -> song.key },
-                                contentType = { _, _ -> "song" }
-                            ) { index, song ->
-                                RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
-                                    SongItem(
-                                        song = resolveSongDisplayMetadata(song.asSong ?: Song.makePlaceholder(""), storedRows[song.key]),
-                                        observeStoredMetadata = false,
-                                        artistCredits = linkedCredits[song.key].orEmpty(),
-                                        sourceMediaItem = { song.asMediaItem },
-                                        isLiked = chartLikeStatesMap[song.key],
-                                        inPlaylist = chartPlaylistStatesMap[song.key],
-                                        navController = navController,
-                                        onClick = {
-                                            val mediaItem = song.asMediaItem
-                                            binder?.stopRadio()
-                                            binder?.player?.forcePlay(mediaItem)
-                                            binder?.player?.addMediaItems(songs.map { it.asMediaItem })
-                                        }
-                                    )
-                                }
+                        } else itemsIndexed(
+                            items = rankedSongs,
+                            key = { _, song -> song.key },
+                            contentType = { _, _ -> "song" }
+                        ) { index, song ->
+                            RankedChartRow(index, rankWidth, itemInHorizontalGridWidth) {
+                                SongItem(
+                                    song = resolveSongDisplayMetadata(song.asSong ?: Song.makePlaceholder(""), storedRows[song.key]),
+                                    observeStoredMetadata = false,
+                                    artistCredits = linkedCredits[song.key].orEmpty(),
+                                    sourceMediaItem = { song.asMediaItem },
+                                    isLiked = chartLikeStatesMap[song.key],
+                                    inPlaylist = chartPlaylistStatesMap[song.key],
+                                    navController = navController,
+                                    onClick = {
+                                        val mediaItem = song.asMediaItem
+                                        binder?.stopRadio()
+                                        binder?.player?.forcePlay(mediaItem)
+                                        binder?.player?.addMediaItems(songs.map { it.asMediaItem })
+                                    }
+                                )
                             }
                         }
                     }
                 }
+            }
 
-                chartsPageInit?.artists.orEmpty().let { artists ->
-                    if (forcePlaceholder || artists.isNotEmpty()) {
-                        val chartArtistKeys = remember(artists) { artists.map { it.key } }
-                        val chartArtistBookmarkStatesMap by remember(chartArtistKeys) {
-                            BookmarkStateManager.getArtistBookmarkStates(chartArtistKeys)
-                        }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
+            chartsPageInit?.artists.orEmpty().let { artists ->
+                if (forcePlaceholder || artists.isNotEmpty()) {
+                    val chartArtistKeys = remember(artists) { artists.map { it.key } }
+                    val chartArtistBookmarkStatesMap by remember(chartArtistKeys) {
+                        BookmarkStateManager.getArtistBookmarkStates(chartArtistKeys)
+                    }.collectAsStateWithLifecycle(emptyMap(), context = NzikDispatchers.DATA)
 
-                        BasicText(
-                            text = stringResource(R.string.home_chart_top_artists_title),
-                            style = typography().l.semiBold,
-                            modifier = Modifier
-                                .padding(horizontal = 12.dp)
-                                .padding(bottom = 8.dp)
-                        )
+                    BasicText(
+                        text = stringResource(R.string.home_chart_top_artists_title),
+                        style = typography().l.semiBold,
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .padding(bottom = 8.dp)
+                    )
 
-                        LazyHorizontalGrid(
-                            rows = GridCells.Fixed(3),
-                            modifier = Modifier
-                                .height(Dimensions.itemsVerticalPadding * 3 * 9)
-                                .fillMaxWidth(),
-                            flingBehavior = ScrollableDefaults.flingBehavior(),
-                        ) {
-                            val rankedArtists = artists.distinctBy { it.key }
-                            if (forcePlaceholder) items(rankedArtists.size.takeIf { it > 0 } ?: 9) { index ->
-                                RankedChartRow(index, rankWidth, 200.dp) {
-                                    val artist = rankedArtists.getOrNull(index)
-                                    ArtistItemPlaceholder(
-                                        songThumbnailSizeDp,
-                                        title = artist?.title,
-                                        subscribers = artist?.subscribersCountText,
-                                        showSubscribers = artist == null || artist.subscribersCountText != null,
-                                    )
-                                }
-                            } else itemsIndexed(
-                                items = rankedArtists,
-                                key = { _, artist -> artist.key },
-                                contentType = { _, _ -> "artist" }
-                            ) { index, artist ->
-                                RankedChartRow(index, rankWidth, 200.dp) {
-                                    ArtistItem(
-                                        artist = artist,
-                                        thumbnailSizePx = songThumbnailSizePx,
-                                        thumbnailSizeDp = songThumbnailSizeDp,
-                                        alternative = false,
-                                        bookmarkState = chartArtistBookmarkStatesMap[artist.key],
-                                        observeBookmarkState = false,
-                                        modifier = Modifier
-                                            .clip(uiRoundnessShape()).combinedClickable(
-                                                onClick = { onArtistClick(artist.key) },
-                                                onLongClick = {
-                                                    menuState.display { OnlineArtistItemMenu(navController = navController, artist = artist).MenuComponent() }
-                                                }
-                                            ).animateItem(),
-                                        disableScrollingText = disableScrollingText
-                                    )
-                                }
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(3),
+                        modifier = Modifier
+                            .height(Dimensions.itemsVerticalPadding * 3 * 9)
+                            .fillMaxWidth(),
+                        flingBehavior = ScrollableDefaults.flingBehavior(),
+                    ) {
+                        val rankedArtists = artists.distinctBy { it.key }
+                        if (forcePlaceholder) items(rankedArtists.size.takeIf { it > 0 } ?: 9) { index ->
+                            RankedChartRow(index, rankWidth, 200.dp) {
+                                val artist = rankedArtists.getOrNull(index)
+                                ArtistItemPlaceholder(
+                                    songThumbnailSizeDp,
+                                    title = artist?.title,
+                                    subscribers = artist?.subscribersCountText,
+                                    showSubscribers = artist == null || artist.subscribersCountText != null,
+                                )
+                            }
+                        } else itemsIndexed(
+                            items = rankedArtists,
+                            key = { _, artist -> artist.key },
+                            contentType = { _, _ -> "artist" }
+                        ) { index, artist ->
+                            RankedChartRow(index, rankWidth, 200.dp) {
+                                ArtistItem(
+                                    artist = artist,
+                                    thumbnailSizePx = songThumbnailSizePx,
+                                    thumbnailSizeDp = songThumbnailSizeDp,
+                                    alternative = false,
+                                    bookmarkState = chartArtistBookmarkStatesMap[artist.key],
+                                    observeBookmarkState = false,
+                                    modifier = Modifier
+                                        .clip(uiRoundnessShape()).combinedClickable(
+                                            onClick = { onArtistClick(artist.key) },
+                                            onLongClick = {
+                                                menuState.display { OnlineArtistItemMenu(navController = navController, artist = artist).MenuComponent() }
+                                            }
+                                        ).animateItem(),
+                                    disableScrollingText = disableScrollingText
+                                )
                             }
                         }
                     }
                 }
-                } // end Column
             }
         }
     }

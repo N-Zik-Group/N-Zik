@@ -594,9 +594,8 @@ fun HomeQuickPicksContent(
                     when (sectionId) {
                         "tips" -> { /* Tips are always shown at top, handled separately */ }
                         "charts" -> {
-                            val hasChartsContent = state.chartsPageInit.value?.let { it.playlists?.isNotEmpty() == true || it.songs?.isNotEmpty() == true || it.artists?.isNotEmpty() == true } ?: false
                             item(key = "charts") {
-                                AnimatedVisibility(visible = showCharts && (hasChartsContent || forceShimmer || chartsPending), modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+                                AnimatedVisibility(visible = showCharts, modifier = Modifier.animateItem(), enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
                                     ChartsSection(showCharts, state.chartsPageInit.value, selectedCountryCode, onSelectedCountryCodeChange, navController, onPlaylistClick, onArtistClick, endPaddingValues, playlistThumbnailSizePx, playlistThumbnailSizeDp, songThumbnailSizePx, songThumbnailSizeDp, disableScrollingText, parentalControlEnabled, displayedSectionTitles, itemInHorizontalGridWidth, forcePlaceholder = forceShimmer || chartsPending)
                                 }
                             }

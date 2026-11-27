@@ -1252,3 +1252,7 @@ Menus:
 Menus:
 - fix(menu): reveal searches opened from overflow
   - Close the overflow sheet after activating search on the underlying screen.
+
+Menus:
+- fix(charts): keep the country selector available after load failure
+  - Keep the source control visible so the user can switch countries.
