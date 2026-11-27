@@ -2115,3 +2115,8 @@ Playlists:
   - Avoid requesting recommendations for empty or device-only playlists, and cancel pending work when eligibility changes.
 - fix(auto): group downloads in legacy favorites
   - Use the same favorites loader for legacy browse and playback, including downloaded grouping and sort direction.
+
+Theme Store:
+- chore(themes): refresh bundled Stock preview metadata
+  - Match the 64 Stock preview images published in the Theme Store.
+  - Update the fallback preview index so its checksums match the catalog assets.
