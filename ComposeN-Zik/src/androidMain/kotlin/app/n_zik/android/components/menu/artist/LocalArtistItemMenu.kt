@@ -87,12 +87,13 @@ import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.OpenEntityMenuAction
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.menuSheetSectionBackground
+import app.n_zik.android.components.menu.withMenuGuestLock
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
-import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
@@ -351,6 +352,7 @@ class LocalArtistItemMenu private constructor(
 
         val playAll = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int = R.drawable.play
+            override val isEnabled: Boolean get() = !listenTogetherGuestLock.value
             override val messageId: Int = if (deviceGroup) {
                 R.string.artist_action_play_local_songs
             } else {
@@ -358,6 +360,7 @@ class LocalArtistItemMenu private constructor(
             }
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
+                if (!isEnabled) return
                 if (songsLoading) {
                     ToastRelay.loadingWarning()
                     return
@@ -374,7 +377,7 @@ class LocalArtistItemMenu private constructor(
         }
 
         val shuffleAction = SongShuffler { songs }
-        val shuffle = shuffleAction.withMenuClick {
+        val shuffle = shuffleAction.withMenuGuestLock {
             if (songsLoading) ToastRelay.loadingWarning() else shuffleAction.onShortClick()
         }
 

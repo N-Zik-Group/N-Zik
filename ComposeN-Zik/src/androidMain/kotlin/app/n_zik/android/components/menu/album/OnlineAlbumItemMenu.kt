@@ -123,6 +123,7 @@ import app.n_zik.android.components.menu.collectionQueueActions
 import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.artistEntryNames
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
@@ -590,18 +591,19 @@ class OnlineAlbumItemMenu private constructor(
             // Issue #866 (gh-866): app-wide shuffle confirmation flash - the icon follows the
             // binder's flash state (shuffle_ok ~1 s), triggered in onShortClick below.
             override val iconId: Int get() = shuffleButtonIconRes(binder)
+            override val isEnabled: Boolean get() = !listenTogetherGuestLock.value
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = colorPalette().text
             override val messageId: Int = R.string.player_action_shuffle
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
+                if (!Shuffler.canStart()) return
                 val currentSongs = songs
                 if (currentSongs == null) {
                     warnAlbumSongsUnavailable()
                 } else if (currentSongs.isNotEmpty()) {
                     val activeBinder = binder ?: return
-                    if (!Shuffler.canStart()) return
                     Shuffler.play(
                         activeBinder,
                         currentSongs.map { it.asMediaItem.withPlaybackAlbum(browseId, playbackAlbumTitle) },

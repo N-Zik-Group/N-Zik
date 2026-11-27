@@ -116,6 +116,7 @@ import app.n_zik.android.surfaceColor
 import app.n_zik.android.thumbnailShape
 import app.n_zik.android.typography
 import app.n_zik.android.components.menu.withMenuClick
+import app.n_zik.android.components.menu.withMenuGuestLock
 import app.n_zik.android.components.menu.collectionQueueActions
 import app.n_zik.android.utils.ToastRelay
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -514,7 +515,7 @@ class AlbumItemMenu private constructor(
             finalAction = { menuState.hide() }
         )
 
-        val shuffle = SongShuffler.fromMediaItems { songs.map(::albumMediaItem) }
+        val shuffle = SongShuffler.fromMediaItems { songs.map(::albumMediaItem) }.withMenuGuestLock()
 
         val onDevice = isDeviceAlbumId(album.id)
         val updatedButtons = buildList<Button> {

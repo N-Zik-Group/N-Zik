@@ -1496,3 +1496,7 @@ Settings:
 Settings:
 - fix(glass): explain tint strength prerequisites
   - Explain why tint strength is unavailable and point to the source chooser.
+
+Menus:
+- fix(menu): disable collection playback for locked guests
+  - Apply the same guest guard to the playlist, album and artist shuffle rows and to local artist playback.

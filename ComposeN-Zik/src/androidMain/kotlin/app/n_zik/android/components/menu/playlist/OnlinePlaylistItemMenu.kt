@@ -110,6 +110,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.collectionQueueActions
 import app.n_zik.android.components.menu.withMenuClick
+import app.n_zik.android.components.menu.withMenuGuestLock
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.network.OfflineMode
@@ -556,7 +557,7 @@ class OnlinePlaylistItemMenu private constructor(
         val shuffleAction = SongShuffler.fromMediaItems {
             songs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) }
         }
-        val shuffle = shuffleAction.withMenuClick {
+        val shuffle = shuffleAction.withMenuGuestLock {
             if (songs == null) warnPlaylistSongsUnavailable(contentUnavailable)
             else shuffleAction.onShortClick()
         }

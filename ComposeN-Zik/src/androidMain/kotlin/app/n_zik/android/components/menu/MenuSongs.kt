@@ -6,16 +6,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.listentogether.listenTogetherGuestLock
+import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 
-internal fun MenuIcon.withMenuClick(onClick: () -> Unit): MenuIcon = object : MenuIcon by this {
-    override fun onShortClick() = onClick()
+internal fun MenuIcon.withMenuClick(
+    enabledWhen: () -> Boolean = { true },
+    onClick: () -> Unit,
+): MenuIcon = object : MenuIcon by this {
+    override val isEnabled: Boolean get() = this@withMenuClick.isEnabled && enabledWhen()
+
+    override fun onShortClick() {
+        if (enabledWhen()) onClick()
+    }
 
     @Composable
     override fun ListMenuItem() = super<MenuIcon>.ListMenuItem()
@@ -23,6 +31,9 @@ internal fun MenuIcon.withMenuClick(onClick: () -> Unit): MenuIcon = object : Me
     @Composable
     override fun GridMenuItem() = super<MenuIcon>.GridMenuItem()
 }
+
+internal fun MenuIcon.withMenuGuestLock(onClick: () -> Unit = this::onShortClick): MenuIcon =
+    withMenuClick(enabledWhen = { !listenTogetherGuestLock.value }, onClick = onClick)
 
 /** Observes song metadata even when the provider collection has never been saved locally. */
 @Composable

@@ -96,6 +96,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.PropUtils
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.utils.Shuffler
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -388,13 +389,15 @@ class OnlineArtistItemMenu private constructor(
 
         val shuffle = object : MenuIcon, Descriptive, Clickable {
             override val iconId: Int get() = shuffleButtonIconRes(binder)
-            override val isEnabled: Boolean get() = !useSavedSongs || savedSongs.isNotEmpty()
+            override val isEnabled: Boolean
+                get() = !listenTogetherGuestLock.value && (!useSavedSongs || savedSongs.isNotEmpty())
             override val color: androidx.compose.ui.graphics.Color
                 @Composable
                 get() = colorPalette().text
             override val messageId: Int = R.string.player_action_shuffle
             @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
             override fun onShortClick() {
+                if (!Shuffler.canStart()) return
                 if (!useSavedSongs && isFetching) {
                     ToastRelay.loadingWarning()
                 } else {
@@ -410,7 +413,6 @@ class OnlineArtistItemMenu private constructor(
                         }
                     }
                     if (allMediaItems.isNotEmpty()) {
-                        if (!Shuffler.canStart()) return
                         val activeBinder = binder ?: return
                         Shuffler.play(activeBinder, allMediaItems, onQueueApplied = activeBinder::triggerShuffleOkFlash)
                         menuState.hide()
