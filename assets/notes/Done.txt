@@ -1328,3 +1328,7 @@ Menus:
 Menus:
 - fix(update): keep active downloads from being replaced
   - Disable transfer replacement and cache clearing while a download starts or runs.
+
+Menus:
+- fix(playlists): lock remote destinations for device selections
+  - Match destination availability to on-device album and artist selections.
