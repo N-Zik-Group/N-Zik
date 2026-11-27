@@ -64,9 +64,17 @@ object CancellableAutoMediaItemMapper {
         item.withBrowsableArtworkFallback()
     }
 
-    private fun MediaItem.withBrowsableArtworkFallback(): MediaItem =
-        if (mediaMetadata.artworkData != null || !mediaMetadata.artworkUri?.toString().isNullOrBlank()) this
-        else buildUpon().setMediaMetadata(
+    private suspend fun MediaItem.withBrowsableArtworkFallback(): MediaItem {
+        if (mediaMetadata.artworkData != null) return this
+        val uri = mediaMetadata.artworkUri
+        if (uri != null && uri.toString().isNotBlank()) {
+            val local = uri.scheme == "content" || uri.scheme == "file" ||
+                (uri.scheme == null && uri.path?.startsWith('/') == true)
+            if (!local) return this
+            val embedded = SessionMediaItemMapper.attachBrowsableArtwork(this, uri.toString())
+            if (embedded.mediaMetadata.artworkData != null) return embedded
+        }
+        return buildUpon().setMediaMetadata(
             mediaMetadata.buildUpon()
                 .setArtworkUri(AutoMediaItemMapper.drawableUri(appContext(), R.drawable.ic_launcher_box))
                 .apply {
@@ -75,4 +83,5 @@ object CancellableAutoMediaItemMapper {
                     }
                 }.build(),
         ).build()
+    }
 }

@@ -261,7 +261,7 @@ object SessionMediaItemMapper {
         mapAlbumToMediaItem(parentId, id, title, authorsText, thumbnailUrl, searchPath), thumbnailUrl,
     )
 
-    private suspend fun attachBrowsableArtwork(item: MediaItem, thumbnailUrl: String?): MediaItem {
+    internal suspend fun attachBrowsableArtwork(item: MediaItem, thumbnailUrl: String?): MediaItem {
         val bytes = loadArtworkBytes(thumbnailUrl?.let(::cleanPrefix)) ?: return item
         return item.buildUpon().setMediaMetadata(item.mediaMetadata.buildUpon()
             .setArtworkUri(null)

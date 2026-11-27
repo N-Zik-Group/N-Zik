@@ -157,16 +157,17 @@ class PlaylistsBrowseHandler : BrowseHandler {
         RewindPlaylists.Filter.All -> R.drawable.musical_notes
     }
 
-    private fun localPlaylistIcon(playlist: Playlist, onDevice: Boolean): Int = when {
+    private fun localPlaylistIcon(playlist: Playlist, onDevice: Boolean): Int {
+        val rewindIcon = RewindPlaylists.iconForPlaylist(playlist.cleanName())
+        return when {
         onDevice -> R.drawable.folder
         playlistLinkKind(playlist.browseId) == PlaylistLinkKind.YouTubePodcast -> R.drawable.podcast
         playlist.name.startsWith(PINNED_PREFIX, true) -> R.drawable.pin_filled
-        RewindPlaylists.isMonthly(playlist.name) -> R.drawable.stat_month
-        RewindPlaylists.isYearly(playlist.name) -> R.drawable.stat_year
-        RewindPlaylists.isAlltime(playlist.name) -> R.drawable.musical_notes
+        rewindIcon != null -> rewindIcon
         playlist.browseId?.startsWith("SPOTIFY_IMPORT") == true -> R.drawable.spotify
         playlist.browseId?.startsWith("RIPLAY_IMPORT") == true -> R.drawable.riplay
         playlistLinkKind(playlist.browseId) == PlaylistLinkKind.YouTubePlaylist -> R.drawable.ytmusic
         else -> R.drawable.ic_launcher
+        }
     }
 }
