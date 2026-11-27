@@ -1652,3 +1652,7 @@ Menus / Playlist:
 Settings:
 - fix(settings): match default page search to enabled tabs
   - Share the current Home page choices with the selector and keep cached search results aligned with tab visibility.
+
+Menus:
+- fix(menu): align player controls across menu layouts
+  - Apply device volume while dragging in Grid and keep the bottom overflow open behind the sleep timer.

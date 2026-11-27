@@ -818,10 +818,7 @@ internal fun playerActionBarActions(
                                             mediaItem = mediaItem,
                                             binder = binder ?: return@display,
                                             onClosePlayer = onDismiss,
-                                            onShowSleepTimer = {
-                                                showSleepTimerState.value = true
-                                                menuState.hide()
-                                            },
+                                            onShowSleepTimer = { showSleepTimerState.value = true },
                                             disableScrollingText = disableScrollingText,
                                             statsMenuControl = statsMenuControl,
                                         )
