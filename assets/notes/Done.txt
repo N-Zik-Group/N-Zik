@@ -1536,3 +1536,7 @@ Menus:
 Settings:
 - fix(history): keep waveform cache when clearing listens
   - Delete playback events and leave waveform cleanup to its dedicated storage action.
+
+Settings:
+- fix(settings): remove obsolete service requirement
+  - Keep battery optimization guidance focused on the available controls.

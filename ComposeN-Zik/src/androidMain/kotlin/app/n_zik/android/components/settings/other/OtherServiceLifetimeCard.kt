@@ -17,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
-import app.n_zik.android.utils.isAtLeastAndroid12
 import app.n_zik.android.utils.isAtLeastAndroid6
 import app.n_zik.android.utils.isIgnoringBatteryOptimizations
 import app.n_zik.android.utils.isKeepScreenOnEnabledKey
@@ -28,7 +27,6 @@ import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 
@@ -64,10 +62,6 @@ internal fun OtherServiceLifetimeCard(search: Search) {
             }
 
             ImportantSettingsDescription(text = stringResource(R.string.settings_service_battery_optimizations_warning))
-
-            if (isAtLeastAndroid12) {
-                SettingsDescription(text = stringResource(R.string.settings_service_android_12_requirement_description))
-            }
 
             val msgNoBatteryOptim = stringResource(R.string.settings_service_battery_settings_unavailable_message)
 
