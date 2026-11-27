@@ -60,6 +60,7 @@ import androidx.compose.foundation.layout.Row
 import app.n_zik.android.utils.thumbnailSizeDpKey
 import app.n_zik.android.utils.thumbnailRoundnessDpKey
 import androidx.compose.foundation.shape.RoundedCornerShape
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
@@ -118,7 +119,7 @@ internal fun AppearanceCoverCard(search: Search) {
             icon = R.drawable.album,
             content = {
                 if (search.inputValue.isBlank()) SearchableSettingsSectionHeading(R.string.settings_group_artwork_layout, "appearance.cover_and_thumbnail.section.layout", showDivider = false)
-            if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
+            SettingsEntryVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_artwork_visible_label).contains(
                         search.inputValue,
                         true
@@ -351,7 +352,7 @@ internal fun AppearanceCoverCard(search: Search) {
                         }
                     }
 
-            if (!showthumbnail) {
+            SettingsEntryVisibility(visible = !showthumbnail) {
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_background_blur_disabled_without_lyrics_label).contains(
                         search.inputValue,
                         true
@@ -370,8 +371,7 @@ internal fun AppearanceCoverCard(search: Search) {
 
 
             }
-
-            if (!(showthumbnail && playerType == PlayerType.Essential)){
+            SettingsEntryVisibility(visible = !showthumbnail || playerType != PlayerType.Essential) {
                 if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_technical_info_title).contains(
                         search.inputValue,
                         true
@@ -388,7 +388,6 @@ internal fun AppearanceCoverCard(search: Search) {
                         )
                     }
             }
-
             if (matchesSpeedBoost) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("appearance.cover_and_thumbnail.hold_to_speed_up"),

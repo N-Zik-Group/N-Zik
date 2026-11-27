@@ -1944,3 +1944,7 @@ Toolbars:
 Settings / Search:
 - fix(settings): share the main settings search transition
   - Apply the same search motion policy as the nested settings screens.
+
+Settings / Appearance:
+- fix(settings): animate conditional controls
+  - Use shared layout transitions for Rewind and conditional Appearance controls.

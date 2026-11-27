@@ -21,6 +21,7 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.RewindNotificationSectionTarget
 import app.n_zik.android.components.settings.common.RewindPlaylistSectionTarget
 import app.n_zik.android.components.settings.common.RewindMasterSettingsTarget
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsEntryEnter
 import app.n_zik.android.components.settings.common.settingsEntryExit
@@ -76,68 +77,68 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     onCheckedChange = { updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_ENABLED, it) },
                     icon = R.drawable.sparkles,
                 )
-                if (!rewindEnabled) return@SettingsSectionCard
+                SettingsEntryVisibility(visible = rewindEnabled) {
+                    // Optional deep link to the Rewind home screen (wired by the AI tab,
+                    // spec-customizable-burger-menu goal B).
+                    onOpenRewind?.let { onOpen ->
+                        OtherSettingsEntry(
+                            modifier = Modifier.settingsSearchTarget("embedded.rewind.module_open"),
+                            title = stringResource(R.string.modules_open),
+                            text = stringResource(R.string.rewind_open_desc),
+                            icon = R.drawable.chevron_forward,
+                            onClick = onOpen
+                        )
+                    }
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly"),
+                        title = stringResource(R.string.rewind_settings_monthly),
+                        text = stringResource(R.string.rewind_settings_monthly_description),
+                        isChecked = monthlyEnabled,
+                        onCheckedChange = {
+                            updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
+                            Timber.tag("RewindReminder").i("Rewind monthly -> $it")
+                        },
+                        icon = R.drawable.calendar
+                    )
 
-                // Optional deep link to the Rewind home screen (wired by the AI tab,
-                // spec-customizable-burger-menu goal B).
-                onOpenRewind?.let { onOpen ->
-                    OtherSettingsEntry(
-                        modifier = Modifier.settingsSearchTarget("embedded.rewind.module_open"),
-                        title = stringResource(R.string.modules_open),
-                        text = stringResource(R.string.rewind_open_desc),
-                        icon = R.drawable.chevron_forward,
-                        onClick = onOpen
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly"),
+                        title = stringResource(R.string.rewind_settings_yearly),
+                        text = stringResource(R.string.rewind_settings_yearly_description),
+                        isChecked = yearlyEnabled,
+                        onCheckedChange = {
+                            updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
+                            Timber.tag("RewindReminder").i("Rewind yearly -> $it")
+                        },
+                        icon = R.drawable.trending
+                    )
+
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_global"),
+                        title = stringResource(R.string.rewind_settings_global),
+                        text = stringResource(R.string.rewind_settings_global_description),
+                        isChecked = globalEnabled,
+                        onCheckedChange = {
+                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, it)
+                            Timber.tag("RewindReminder").i("Rewind all-time -> $it")
+                        },
+                        icon = R.drawable.star_brilliant
+                    )
+                    // Deck background music (spec 3): the same key as the deck's mute button, a flip
+                    // here is live for a deck already open, and off means no player is created
+                    // when the deck opens.
+                    OtherSwitchSettingEntry(
+                        modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_bgmusic_settings"),
+                        title = stringResource(R.string.rewind_background_music_title),
+                        text = stringResource(R.string.settings_description_with_value, stringResource(R.string.rewind_background_music_description), stringResource(R.string.rewind_background_music_toggle_accessibility)),
+                        isChecked = bgmEnabled,
+                        onCheckedChange = {
+                            DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_BGM_ENABLED, it)
+                            Timber.tag("RewindReminder").i("Rewind background music -> $it")
+                        },
+                        icon = R.drawable.volume_up
                     )
                 }
-                OtherSwitchSettingEntry(
-                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly"),
-                    title = stringResource(R.string.rewind_settings_monthly),
-                    text = stringResource(R.string.rewind_settings_monthly_description),
-                    isChecked = monthlyEnabled,
-                    onCheckedChange = {
-                        updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, it)
-                        Timber.tag("RewindReminder").i("Rewind monthly -> $it")
-                    },
-                    icon = R.drawable.calendar
-                )
-
-                OtherSwitchSettingEntry(
-                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly"),
-                    title = stringResource(R.string.rewind_settings_yearly),
-                    text = stringResource(R.string.rewind_settings_yearly_description),
-                    isChecked = yearlyEnabled,
-                    onCheckedChange = {
-                        updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, it)
-                        Timber.tag("RewindReminder").i("Rewind yearly -> $it")
-                    },
-                    icon = R.drawable.trending
-                )
-
-                OtherSwitchSettingEntry(
-                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_global"),
-                    title = stringResource(R.string.rewind_settings_global),
-                    text = stringResource(R.string.rewind_settings_global_description),
-                    isChecked = globalEnabled,
-                    onCheckedChange = {
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_GLOBAL_ENABLED, it)
-                        Timber.tag("RewindReminder").i("Rewind all-time -> $it")
-                    },
-                    icon = R.drawable.star_brilliant
-                )
-                // Deck background music (spec 3): the same key as the deck's mute button, a flip
-                // here is live for a deck already open, and off means no player is created
-                // when the deck opens.
-                OtherSwitchSettingEntry(
-                    modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_bgmusic_settings"),
-                    title = stringResource(R.string.rewind_background_music_title),
-                    text = stringResource(R.string.settings_description_with_value, stringResource(R.string.rewind_background_music_description), stringResource(R.string.rewind_background_music_toggle_accessibility)),
-                    isChecked = bgmEnabled,
-                    onCheckedChange = {
-                        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_BGM_ENABLED, it)
-                        Timber.tag("RewindReminder").i("Rewind background music -> $it")
-                    },
-                    icon = R.drawable.volume_up
-                )
             }
         )
 

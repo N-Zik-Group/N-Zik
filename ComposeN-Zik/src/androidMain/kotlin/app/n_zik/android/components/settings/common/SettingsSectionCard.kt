@@ -37,13 +37,9 @@ import app.n_zik.android.utils.color
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.ui.iconBadgeBackground
-import app.n_zik.android.components.glass.GlassArea
-import app.n_zik.android.components.glass.GlassAreaMode
-import app.n_zik.android.components.glass.mode
 import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.glassOverflowFade
 import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -105,9 +101,7 @@ fun SettingsSectionCard(
         if (visible) Column(modifier = modifier.fillMaxWidth()) { content() }
         return
     }
-    val glassSettings = rememberGlassSettings()
-    val overflow = glassSettings.usesGlassMaterial(GlassArea.ActionButtons) ||
-        (glassSettings.enabled && glassSettings.mode(GlassArea.Switches) != GlassAreaMode.Disabled)
+    val overflow = rememberGlassSettings().settingsControlsMayOverflow()
     val chevronRotation by animateFloatAsState(
         targetValue = if (expanded == true) 90f else 0f,
         animationSpec = tween(if (expanded == true) SETTINGS_CARD_ENTER_MILLIS else SETTINGS_CARD_EXIT_MILLIS),

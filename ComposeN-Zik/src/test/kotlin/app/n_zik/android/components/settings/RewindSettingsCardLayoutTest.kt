@@ -2,6 +2,7 @@ package app.n_zik.android.components.settings
 
 import android.app.Application
 import android.content.Context
+import android.os.Looper
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,15 +23,21 @@ import app.n_zik.android.ui.styling.DefaultDarkColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
+import app.n_zik.android.core.rewind.scheduleRewindWork
 import app.n_zik.android.utils.DataStoreUtils
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 /**
@@ -62,6 +69,12 @@ class RewindSettingsCardLayoutTest {
         artistThumbnailShape = CircleShape,
     )
 
+    @Before
+    fun stubWorkScheduling() {
+        mockkStatic("app.n_zik.android.core.rewind.RewindWorkSchedulingKt")
+        every { scheduleRewindWork(any(), any()) } returns Unit
+    }
+
     @After
     fun resetPreferences() {
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
@@ -69,6 +82,7 @@ class RewindSettingsCardLayoutTest {
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
         DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+        unmockkStatic("app.n_zik.android.core.rewind.RewindWorkSchedulingKt")
     }
 
     @Test
@@ -178,8 +192,16 @@ class RewindSettingsCardLayoutTest {
             assertTrue(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, false))
         }
 
-        toggle.performScrollTo().performClick()
+        toggle.performScrollTo()
+        composeRule.mainClock.autoAdvance = false
+        toggle.performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        composeRule.mainClock.advanceTimeBy(64)
         composeRule.waitForIdle()
+        assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true))
+        yearly.assertExists()
+
+        composeRule.mainClock.advanceTimeBy(250)
         yearly.assertDoesNotExist()
         composeRule.runOnIdle {
             assertFalse(DataStoreUtils.getBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true))

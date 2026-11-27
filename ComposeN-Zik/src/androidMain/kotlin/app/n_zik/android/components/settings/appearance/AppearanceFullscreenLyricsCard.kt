@@ -1,8 +1,6 @@
 package app.n_zik.android.components.settings.appearance
 
 import app.n_zik.android.components.settings.common.settingsSearchTarget
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -41,10 +39,8 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import androidx.compose.ui.platform.testTag
-import app.n_zik.android.components.settings.common.settingsCardEnter
-import app.n_zik.android.components.settings.common.settingsCardExit
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 
-@OptIn(ExperimentalAnimationApi::class)
 @UnstableApi
 @Composable
 internal fun AppearanceFullscreenLyricsCard(search: Search) {
@@ -77,12 +73,7 @@ internal fun AppearanceFullscreenLyricsCard(search: Search) {
     var actionExpanded by rememberPreference(actionExpandedKey, true)
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
     val searchCtx_2 = search.inputValue.isBlank() || stringResource(R.string.settings_section_fullscreen_lyrics_title).contains(search.inputValue, true) || stringResource(R.string.settings_player_queue_duration_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_title_artist_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_timeline_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_controls_visible_label).contains(search.inputValue, true) || stringResource(R.string.lyrics_fullscreen_technical_info_title).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_action_bar_visible_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(search.inputValue, true)
-    if (!showthumbnail || !showlyricsthumbnail) {
-AnimatedVisibility(
-                    visible = searchCtx_2,
-                    enter = settingsCardEnter,
-                exit = settingsCardExit
-                ) {
+    SettingsEntryVisibility(visible = searchCtx_2 && (!showthumbnail || !showlyricsthumbnail)) {
                     SettingsSectionCard(
                     modifier = Modifier.testTag("appearance.card.fullscreenLyrics"),
                         title = stringResource(R.string.settings_section_fullscreen_lyrics_title),
@@ -206,22 +197,18 @@ AnimatedVisibility(
                             )
                         }
                 }
-                if (showNextSongsInPlayer && actionExpanded) {
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(
-                            search.inputValue,
-                            true
-                        )
-                    )
-                        if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_next_queue_visible_label).contains(search.inputValue, true)) {
-                            OtherSwitchSettingEntry(
+                val miniQueueTitle = stringResource(R.string.settings_lyrics_next_queue_visible_label)
+                SettingsEntryVisibility(
+                    visible = showNextSongsInPlayer && actionExpanded && miniQueueTitle.contains(search.inputValue, ignoreCase = true),
+                ) {
+                    OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("appearance.full_screen_lyrics_components.miniqueue"),
                         icon = R.drawable.sort_vertical,
-                                title = stringResource(R.string.settings_lyrics_next_queue_visible_label),
-                                text = stringResource(R.string.lyrics_fullscreen_queue_preview_description),
-                                isChecked = miniQueueExpanded,
-                                onCheckedChange = { miniQueueExpanded = it }
-                            )
-                        }
+                        title = miniQueueTitle,
+                        text = stringResource(R.string.lyrics_fullscreen_queue_preview_description),
+                        isChecked = miniQueueExpanded,
+                        onCheckedChange = { miniQueueExpanded = it },
+                    )
                 }
 
 
@@ -229,5 +216,4 @@ AnimatedVisibility(
                         }
                     )
                 }
-}
 }

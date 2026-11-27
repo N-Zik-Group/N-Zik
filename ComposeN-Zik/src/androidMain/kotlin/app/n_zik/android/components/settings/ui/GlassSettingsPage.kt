@@ -117,6 +117,7 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.components.settings.common.SettingsEntryResultRow
 import app.n_zik.android.components.settings.common.SettingsScrollToTop
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContentVisibility
 import app.n_zik.android.components.settings.common.SettingsSearchEmptyFeedback
@@ -377,12 +378,12 @@ internal fun GlassSettingsContent(
                                     GlassQuality.Quality -> R.string.glass_effect_quality_high
                                 }) },
                             )
-                            if (liquid) {
+                            SettingsEntryVisibility(visible = liquid) {
                                 GlassSlider("vibrancy", stringResource(R.string.glass_effect_color_vibrancy), config.vibrancy, 0f..2f, percentLabel((config.vibrancy * 50).roundToInt()), R.drawable.eye, inputScale = 50f) { store.setFloat(glassVibrancyKey, it) }
                                 GlassSlider("blur", stringResource(R.string.glass_effect_frost), config.blur, 0f..24f, "${config.blur.roundToInt()} dp", R.drawable.drop_blur) { store.setFloat(glassBlurKey, it) }
-                            } else {
-                                Text(stringResource(if (config.quality == GlassQuality.Performance) R.string.glass_effect_quality_fastest_description else R.string.glass_effect_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
                             }
+                            GlassAvailabilityMessage(!liquid && config.quality == GlassQuality.Performance, R.string.glass_effect_quality_fastest_description, ink)
+                            GlassAvailabilityMessage(!liquid && config.quality != GlassQuality.Performance, R.string.glass_effect_unsupported, ink)
                         }
                     }
                     settingsGroup("colour") {
@@ -395,14 +396,13 @@ internal fun GlassSettingsContent(
                     settingsGroup("edges") {
                         GlassSection(R.string.glass_effect_group_edges, searchEnabled) {
                             GlassSlider("rim", stringResource(R.string.glass_effect_rim), config.rim, 0f..1f, percentLabel((config.rim * 100).roundToInt()), R.drawable.sparkles, inputScale = 100f) { store.setFloat(glassRimKey, it) }
-                            if (refractive) {
+                            SettingsEntryVisibility(visible = refractive) {
                                 GlassSlider("refractionDepth", stringResource(R.string.glass_effect_refraction_depth), config.depth, 0f..1f, "${(config.depth * 48).roundToInt()} dp", R.drawable.sound_effect, inputScale = 48f) { store.setFloat(glassDepthKey, it) }
                                 GlassSlider("refractionAmount", stringResource(R.string.glass_effect_refraction_amount), config.amount, 0f..1f, "${(config.amount * 48).roundToInt()} dp", R.drawable.resize, inputScale = 48f) { store.setFloat(glassAmountKey, it) }
                                 GlassSwitch("dispersion", R.string.glass_effect_dispersion, config.dispersion, R.drawable.color_palette) { store.setBoolean(glassDispersionKey, it) }
                                 GlassSwitch("depth", R.string.glass_effect_depth_enabled, config.depthEffect, R.drawable.sort_grid) { store.setBoolean(glassDepthEffectKey, it) }
-                            } else if (liquid) {
-                                Text(stringResource(R.string.glass_effect_refraction_unsupported), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
                             }
+                            GlassAvailabilityMessage(liquid && !refractive, R.string.glass_effect_refraction_unsupported, ink)
                         }
                     }
                     settingsGroup("readability") {
@@ -515,8 +515,7 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
     val selectedSource = config.source.takeIf { it in sources } ?: GlassTintSource.None
     val chosen = glassTint(config)
     var showColorPicker by remember(config.source) { mutableStateOf(false) }
-    val hsv = FloatArray(3)
-    if (chosen.isSpecified) AndroidColor.colorToHSV(chosen.toArgb(), hsv)
+    val customColor = Color(config.customColor)
     OtherEnumValueSelectorSettingsEntry(
         title = stringResource(R.string.glass_effect_tint_source),
         icon = R.drawable.color_palette,
@@ -526,7 +525,8 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
         modifier = Modifier.testTag("settings.glass.tintSource").settingsSearchTarget("glass.tintSource"),
         valueText = { value -> stringResource(value.labelRes()) },
     )
-    if (selectedSource == GlassTintSource.Custom) {
+    SettingsEntryVisibility(visible = selectedSource == GlassTintSource.Custom) {
+        val hsv = remember(customColor) { FloatArray(3).also { AndroidColor.colorToHSV(config.customColor, it) } }
         OtherSettingsEntry(
             title = stringResource(R.string.glass_effect_custom_color),
             text = "",
@@ -534,11 +534,11 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
             modifier = Modifier.testTag("settings.glass.tint").settingsSearchTarget("glass.tint"),
             onClick = { showColorPicker = true },
             trailingContent = {
-                Box(Modifier.size(24.dp).clip(uiRoundnessShape()).background(chosen))
+                Box(Modifier.size(24.dp).clip(uiRoundnessShape()).background(customColor))
             },
         )
         DialogPresence(visible = showColorPicker) {
-            DialogColorPicker(onDismiss = { showColorPicker = false }, initialColor = chosen) {
+            DialogColorPicker(onDismiss = { showColorPicker = false }, initialColor = customColor) {
                 onColor(it.toArgb())
                 showColorPicker = false
             }
@@ -551,7 +551,16 @@ internal fun TintRow(config: GlassSettings, onTint: (GlassTintSource) -> Unit, o
             modifier = Modifier.testTag("settings.glass.hue").settingsSearchTarget("glass.hue"),
         )
     }
-    if (chosen.isSpecified) GlassSlider("tintStrength", stringResource(R.string.glass_effect_tint_strength), config.tintStrength, 0f..1f, percentLabel((config.tintStrength * 100).roundToInt()), R.drawable.drop_half_fill, inputScale = 100f, onChange = onStrength)
+    SettingsEntryVisibility(visible = chosen.isSpecified) {
+        GlassSlider("tintStrength", stringResource(R.string.glass_effect_tint_strength), config.tintStrength, 0f..1f, percentLabel((config.tintStrength * 100).roundToInt()), R.drawable.drop_half_fill, inputScale = 100f, onChange = onStrength)
+    }
+}
+
+@Composable
+private fun GlassAvailabilityMessage(visible: Boolean, @StringRes label: Int, ink: Color) {
+    SettingsEntryVisibility(visible) {
+        Text(stringResource(label), color = ink.copy(alpha = .66f), style = typography().xxs, modifier = Modifier.padding(18.dp))
+    }
 }
 
 @Composable

@@ -31,6 +31,7 @@ import app.n_zik.android.utils.rotatingAlbumCoverKey
 import app.n_zik.android.utils.textoutlineKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.enums.ShakeSensitivityTheme
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
@@ -157,7 +158,10 @@ internal fun AppearanceColorsCard(search: Search) {
             }
 
 
-            if ((playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient) || (playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient))
+            SettingsEntryVisibility(
+                visible = playerBackgroundColors == PlayerBackgroundColors.CoverColorGradient ||
+                    playerBackgroundColors == PlayerBackgroundColors.ThemeColorGradient,
+            ) {
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_bottom_black_gradient_label).contains(
                         search.inputValue,
                         true
@@ -173,8 +177,11 @@ internal fun AppearanceColorsCard(search: Search) {
                             onCheckedChange = { blackgradient = it }
                         )
                     }
+            }
 
-            if ((playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) && (playerType == PlayerType.Modern))
+            SettingsEntryVisibility(
+                visible = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor && playerType == PlayerType.Modern,
+            ) {
                 if (search.inputValue.isBlank() || stringResource(R.string.player_artwork_rotation).contains(
                         search.inputValue,
                         true
@@ -191,8 +198,9 @@ internal fun AppearanceColorsCard(search: Search) {
                                 .padding(start = 25.dp)).settingsSearchTarget("appearance.colors_and_background.albumCoverRotation")
                         )
                     }
+            }
 
-            if (playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor)
+            SettingsEntryVisibility(visible = playerBackgroundColors == PlayerBackgroundColors.BlurredCoverColor) {
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_player_action_bar_gradient_label).contains(
                         search.inputValue,
                         true
@@ -208,6 +216,8 @@ internal fun AppearanceColorsCard(search: Search) {
                             onCheckedChange = { bottomgradient = it }
                         )
                     }
+            }
+
             if (search.inputValue.isBlank() || stringResource(R.string.settings_player_text_outline_label).contains(
                   search.inputValue,
                   true
