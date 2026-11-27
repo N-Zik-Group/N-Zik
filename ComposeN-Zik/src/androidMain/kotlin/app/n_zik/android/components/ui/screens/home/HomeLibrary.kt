@@ -373,20 +373,16 @@ fun HomeLibrary(
     }
 
     val searchReady = searchDataReady && completedSearchQuery == search.filterQuery
-    var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds, showOnDevice) {
+    var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds, showOnDevice) {
+    LaunchedEffect(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds) {
         if (!searchReady || deviceIds == null) return@LaunchedEffect
         val candidates = itemsOnDisplay
         val deviceTab = playlistType == PlaylistsType.OnDevice
         filteredItems = withContext(NzikDispatchers.DATA) {
-            scopeWithoutQuery.visible(candidates).filter { preview ->
-                val playlist = preview.playlist
-                val onDevice = playlist.id in deviceIds &&
-                    !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
-                if (deviceTab) onDevice else !showOnDevice || !onDevice
-            }
+            val visible = scopeWithoutQuery.visible(candidates)
+            if (deviceTab) visible.filter { it.playlist.id in deviceIds } else visible
         }
         projectionReady = true
     }

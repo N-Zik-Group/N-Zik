@@ -1292,3 +1292,7 @@ Menus:
 Menus:
 - fix(playlists): keep the search field below the picker header
   - Keep search pinned below the separator while leaving title controls in the header.
+
+Library:
+- fix(playlists): include and pin device playlists in the library
+  - Keep device playlists visible in the general and pinned library views and expose pinning on their detail toolbar.
