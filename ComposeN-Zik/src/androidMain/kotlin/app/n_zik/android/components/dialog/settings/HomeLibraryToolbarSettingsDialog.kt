@@ -50,7 +50,7 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
         "item_selector" to R.string.common_action_select,
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
-        "add_to_playlist" to R.string.playlist_action_add,
+        "add_to_playlist" to R.string.playlist_actions_title,
         "import_menu" to R.string.playlist_action_import,
         "export_dialog" to R.string.playlist_action_export,
         "delete_playlists" to R.string.playlist_action_delete_selected,
@@ -165,9 +165,9 @@ object HomeLibraryToolbarSettingsDialog : ContentFramedDialog {
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
-                "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
-                "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
-                "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
+                "add_to_playlist" -> ToggleItem(uid, R.drawable.playlist, addToPlaylistLabel, pk, true)
+                "import_menu" -> ToggleItem(uid, R.drawable.import_playlist_source, importMenuLabel, pk, true)
+                "export_dialog" -> ToggleItem(uid, R.drawable.export_playlist, exportDialogLabel, pk, true)
                 "delete_playlists" -> ToggleItem(uid, R.drawable.trash, deletePlaylistsLabel, pk, true)
                 "item_size" -> ToggleItem(uid, R.drawable.resize, itemSizeLabel, pk, true)
                 else -> null

@@ -226,6 +226,9 @@
     <string name="playlist_action_delete_selected">Delete playlists</string>
     <string name="playlist_action_export">Export playlist</string>
     <string name="playlist_action_import">Import playlist</string>
+    <string name="playlist_actions_title">Playlist actions</string>
+    <string name="playlist_action_import_collection">Import this collection</string>
+    <string name="playlist_action_import_from_source">Import from a file or link</string>
     <string name="playlist_action_import_favorites">Import favorites</string>
     <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">Remove from playlist</string>
@@ -394,6 +397,7 @@
     <string name="search_suggestions_empty_message">No suggestions</string>
     <string name="search_suggestions_title">Suggestions</string>
     <string name="search_title">Search</string>
+    <string name="search_action_edit_query">Edit search query</string>
     <string name="search_video_download_unsupported_message">Downloading videos not supported</string>
     <string name="search_videos_title">Videos</string>
     <string name="search_voice_action_start">Voice search</string>

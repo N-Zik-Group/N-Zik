@@ -1,5 +1,8 @@
 package app.n_zik.android.ui.components.themed
 
+import app.n_zik.android.components.ui.LeadingIconBadge
+import app.n_zik.android.components.menu.playlist.LocalPlaylistAddChoice
+import app.n_zik.android.components.menu.playlist.PlaylistActionsRequest
 import app.n_zik.android.components.menu.playlist.PlaylistPickerFeedback
 import app.n_zik.android.components.menu.playlist.playlistPickerEmptyBody
 import app.n_zik.android.components.menu.playlist.PlaylistPickerRead
@@ -12,8 +15,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 import app.n_zik.android.core.database.canEditPlaylistMembership
-import app.n_zik.android.core.database.PlaylistLinkKind
-import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.database.PlaylistAddResult
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.database.isPlaylistBookmarked
@@ -88,6 +89,10 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.components.ui.screens.home.HomeLibrarySubfilter
 import app.n_zik.android.components.ui.screens.home.HomeLibrarySubfilterRow
+import app.n_zik.android.components.ui.screens.home.libraryPlaylistChipOrder
+import app.n_zik.android.utils.homePlaylistsOrderKey
+import app.n_zik.android.utils.showPinnedPlaylistsKey
+import app.n_zik.android.utils.showYtPlaylistsKey
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilterChip
 import app.n_zik.android.components.ui.screens.home.matchesYouTubeLibraryFilter
@@ -111,11 +116,11 @@ internal fun isPlaylistPickerVisible(playlist: Playlist): Boolean =
     canEditPlaylistMembership(playlist) || isPlaylistBookmarked(playlist)
 
 internal fun isYouTubePlaylistPickerEntry(playlist: Playlist): Boolean =
-    playlist.isYoutubePlaylist || playlistLinkKind(playlist.browseId) == PlaylistLinkKind.YouTubePodcast
+    isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
 
 internal fun isPinnedPlaylistPickerVisible(playlist: Playlist, online: Boolean): Boolean =
     playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
-        (online || !isYouTubePlaylistPickerEntry(playlist) || !canEditPlaylistMembership(playlist))
+        (online || !playlist.isYoutubePlaylist || !canEditPlaylistMembership(playlist))
 
 @Composable
 internal fun PlaylistPickerSearchRows(
@@ -193,9 +198,17 @@ private fun PlaylistPickerMenu(
     entry: @Composable (PlaylistPreview) -> Unit,
 ) {
     val all = R.string.common_option_all
-    val availableGroups = groups.filter { (label, previews) ->
-        previews.isNotEmpty() && (label != R.string.library_on_device_title || showDeviceTab)
-    }.map { it.first }
+    val showPinned by rememberPreference(showPinnedPlaylistsKey, true)
+    val showYouTube by rememberPreference(showYtPlaylistsKey, true)
+    val chipOrder by rememberPreference(homePlaylistsOrderKey, "")
+    val availableGroups = libraryPlaylistChipOrder(chipOrder).mapNotNull { id ->
+        when (id) {
+            "pinned_playlists" -> R.string.playlist_pinned_title.takeIf { showPinned }
+            "yt_playlists" -> R.string.sync_youtube_playlists_title.takeIf { showYouTube }
+            "on_device" -> R.string.library_on_device_title.takeIf { showDeviceTab }
+            else -> null
+        }
+    }
     val activeGroup = filters.group.takeIf { it in availableGroups } ?: all
     val query = search.filterQuery
     val searchAndFilters: @Composable ColumnScope.() -> Unit = {
@@ -303,7 +316,7 @@ internal fun playlistPickerSections(
         pinned = visible.filter { isPinnedPlaylistPickerVisible(it.playlist, online) },
         youtube = visible.filter {
             isYouTubePlaylistPickerEntry(it.playlist) &&
-                (online || !canEditPlaylistMembership(it.playlist))
+                (online || !it.playlist.isYoutubePlaylist || !canEditPlaylistMembership(it.playlist))
         },
         local = ordinary.filterNot { it.playlist.id in devicePlaylistIds },
         device = visible.filter { it.playlist.id in devicePlaylistIds },
@@ -383,6 +396,8 @@ class PlaylistsMenu private constructor(
     private val localDestinationsOnly: Boolean = false,
     private val onOpenPlaylist: () -> Unit = {},
     private val onMenuDestinationOpened: (() -> Unit)? = null,
+    private val openAddChoice: ((PlaylistActionsRequest) -> Unit)? = null,
+    private val canImportFiles: Boolean = false,
 ): MenuIcon, Descriptive, Menu {
 
     private class AddRequest(
@@ -413,6 +428,8 @@ class PlaylistsMenu private constructor(
             rememberPreference( menuStyleKey, MenuStyle.List ),
             localDestinationsOnly = localDestinationsOnly,
             onOpenPlaylist = onOpenPlaylist,
+            openAddChoice = LocalPlaylistAddChoice.current,
+            canImportFiles = false,
         )
 
         @Composable
@@ -443,6 +460,7 @@ class PlaylistsMenu private constructor(
             itemSelector: ItemSelector<*>,
             localDestinationsOnly: Boolean = false,
             onMenuDestinationOpened: (() -> Unit)? = null,
+            allowImportChoice: Boolean = true,
         ) = PlaylistsMenu(
             navController,
             null,
@@ -457,20 +475,28 @@ class PlaylistsMenu private constructor(
             rememberPreference(menuStyleKey, MenuStyle.List),
             localDestinationsOnly = localDestinationsOnly,
             onMenuDestinationOpened = onMenuDestinationOpened,
+            openAddChoice = LocalPlaylistAddChoice.current,
+            canImportFiles = allowImportChoice && !localDestinationsOnly && !itemSelector.isActive,
         )
     }
 
-    override val iconId: Int = R.drawable.add_in_playlist
-    override val messageId: Int = R.string.playlist_action_add
+    override val iconId: Int = R.drawable.playlist
+    override val messageId: Int = R.string.playlist_actions_title
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )
 
     override var menuStyle: MenuStyle by styleState
 
-    private suspend fun addToPlaylist(preview: PlaylistPreview, request: AddRequest, menuKey: Int) {
+    private suspend fun addToPlaylist(
+        preview: PlaylistPreview,
+        request: AddRequest,
+        menuKey: Int,
+        createdAfterConfirmation: Boolean,
+    ) {
         try {
             val items = request.load(preview)() ?: return
+            if (items.isEmpty() && createdAfterConfirmation) return
             val result = addPlaylistItemsFromMenu(preview.playlist, items, localDestinationsOnly) ?: return
             withContext(NzikDispatchers.UI) {
                 reportPlaylistAddResult(result, localDestinationsOnly)
@@ -487,24 +513,7 @@ class PlaylistsMenu private constructor(
     }
 
     @Composable
-    fun SettingIcon(@DrawableRes icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = colorPalette().accent,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
+    fun SettingIcon(@DrawableRes icon: Int) = LeadingIconBadge(icon, contentDescription = null)
 
     @Composable
     private fun PlaylistCard(
@@ -552,8 +561,22 @@ class PlaylistsMenu private constructor(
     }
 
     override fun openMenu() {
-        val request = captureRequest() ?: return
-        menuState.display(onMenuDestinationOpened) { PlaylistPicker(request) }
+        val request = captureRequest()
+        val showPicker = request?.let { captured -> { onReturn: (() -> Unit)? -> openPicker(captured, onReturn) } }
+        if (openAddChoice != null) {
+            val parentMenu = menuState.presentationState.second.takeIf { menuState.isDisplayed }
+            openAddChoice(PlaylistActionsRequest(showPicker, canImportFiles, parentMenu))
+        } else showPicker?.invoke(null)
+    }
+
+    internal fun openPicker() = openPicker(onReturn = null)
+
+    internal fun openPicker(onReturn: (() -> Unit)?) {
+        captureRequest()?.let { openPicker(it, onReturn) }
+    }
+
+    private fun openPicker(request: AddRequest, onReturn: (() -> Unit)? = null) {
+        menuState.display(onMenuDestinationOpened, onReturn) { PlaylistPicker(request) }
     }
 
     @Composable
@@ -593,7 +616,9 @@ class PlaylistsMenu private constructor(
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 try {
                     withContext(NzikDispatchers.DATA) {
-                        if (ProfileWorkOwner.isBound(context, owner)) addToPlaylist(preview, request, menuKey)
+                        if (ProfileWorkOwner.isBound(context, owner)) {
+                            addToPlaylist(preview, request, menuKey, createdAfterConfirmation)
+                        }
                     }
                 } finally {
                     if (!createdAfterConfirmation) request.isAdding = false

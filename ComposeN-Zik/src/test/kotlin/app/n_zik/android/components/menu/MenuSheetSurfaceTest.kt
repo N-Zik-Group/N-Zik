@@ -50,7 +50,7 @@ import app.n_zik.android.components.glass.glassFilmKey
 import app.n_zik.android.components.glass.glassTintStrengthKey
 import app.n_zik.android.components.menu.player.AudioDeviceStatusMenu
 import app.n_zik.android.components.menu.song.SongMenuSurface
-import app.n_zik.android.components.tab.ImportPlaylistsMenu
+import app.n_zik.android.components.dialog.playlist.ImportPlaylistFormatDialog
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -188,54 +188,34 @@ class MenuSheetSurfaceTest {
     }
 
     @Test
-    fun `import title and options start at the same glass surface in list and grid`() {
-        val style = mutableStateOf(MenuStyle.List)
-        val backdrop = Color(0xFF00C853)
-        val headerColor = Color(0xFF693875)
+    fun importFormatDialogRetainsFormatsAndCancelDoesNotAccept() {
         val shape = RoundedCornerShape(32.dp)
-        val appearance = Appearance(
-            colorPalette = ColorPalette.fallback.copy(background1 = headerColor),
-            typography = Typography.fallback,
-            thumbnailShape = shape,
-            uiRoundnessShape = shape,
-            artistThumbnailShape = shape,
-        )
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
         val menuState = MenuState()
-        val menu = ImportPlaylistsMenu({}, {}, {}, {})
-        context.preferences.edit().putBoolean(glassEnabledKey, true)
-            .putEnum(menuStyleKey, MenuStyle.List).commit()
-        // Isolate the sheet from the icon badges' runtime shader.
-        GlassStore(context).setAreaMode(GlassArea.ActionButtons, GlassAreaMode.Disabled)
+        var accepted = 0
+        var imported = 0
+        val dialog = ImportPlaylistFormatDialog({ imported++ }, {}, {}, {})
         composeRule.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance, LocalMenuState provides menuState) {
-                menu.Render()
-                Box(Modifier.size(300.dp).background(backdrop).testTag("import-sheet")) {
-                    key(style.value) {
-                        if (menuState.isDisplayed) menuState.contentState.second()
-                    }
-                }
+                dialog.Render()
             }
         }
-        composeRule.runOnIdle { menu.onShortClick() }
-        for (layout in listOf(MenuStyle.List, MenuStyle.Grid)) {
-            composeRule.runOnIdle {
-                context.preferences.edit().putEnum(menuStyleKey, layout).commit()
-                style.value = layout
-            }
-            composeRule.onNodeWithText(context.getString(R.string.playlist_action_import)).assertIsDisplayed()
-            val localImport = composeRule.onNodeWithText(context.getString(R.string.playlist_import_format_nzik_csv))
-            val spotifyImport = composeRule.onNodeWithText(context.getString(R.string.playlist_import_format_exportify_csv))
-            val localBounds = localImport.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
-            val spotifyBounds = spotifyImport.assertIsDisplayed().fetchSemanticsNode().boundsInRoot
-            if (layout == MenuStyle.List) {
-                assertTrue(spotifyBounds.top >= localBounds.bottom)
-            } else {
-                assertTrue(spotifyBounds.left >= localBounds.right)
-            }
-            val pixels = composeRule.onNodeWithTag("import-sheet").captureToImage().toPixelMap()
-            assertEquals("$layout: the glass outline starts above the title", backdrop.toArgb(), pixels[1, 1].toArgb())
-            assertNotEquals("$layout: the header has no opaque background",
-                headerColor.toArgb(), pixels[pixels.width / 4, 6].toArgb())
+        composeRule.runOnIdle { dialog.open { accepted++ } }
+        listOf(
+            R.string.playlist_import_format_nzik_csv,
+            R.string.playlist_import_format_exportify_csv,
+            R.string.playlist_import_format_riplay_csv,
+            R.string.settings_youtube_music_title,
+        ).forEach { composeRule.onNodeWithText(context.getString(it)).assertIsDisplayed() }
+        composeRule.onNodeWithText(context.getString(R.string.common_action_cancel)).performClick()
+        composeRule.runOnIdle {
+            assertEquals(0, accepted)
+            dialog.open { accepted++ }
+        }
+        composeRule.onNodeWithText(context.getString(R.string.playlist_import_format_nzik_csv)).performClick()
+        composeRule.runOnIdle {
+            assertEquals(1, accepted)
+            assertEquals(1, imported)
         }
     }
 

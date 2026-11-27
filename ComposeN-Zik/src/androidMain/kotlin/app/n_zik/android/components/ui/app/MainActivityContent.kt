@@ -169,6 +169,11 @@ import app.n_zik.android.enums.ColorPaletteName
 import app.n_zik.android.enums.HomeScreenTabs
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
+import app.n_zik.android.components.menu.playlist.LocalLibraryPlaylistImport
+import app.n_zik.android.components.menu.playlist.LocalPlaylistAddChoice
+import app.n_zik.android.components.menu.playlist.PlaylistImportAddDialog
+import app.n_zik.android.components.menu.playlist.PlaylistActionsRequest
+import app.n_zik.android.components.menu.playlist.rememberLibraryPlaylistImportMenu
 import app.n_zik.android.core.navigation.navigateToPickedPlaylist
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.enums.PendingMiniPlayerAction
@@ -924,10 +929,14 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
 
                 }
 
-            } else
-                     CompositionLocalProvider(
-                     LocalIndication provides ripple(bounded = true),
-                    LocalGlassMenuHost provides glassMenuHost,
+            } else {
+                    var playlistActions by remember { mutableStateOf<PlaylistActionsRequest?>(null) }
+                    CompositionLocalProvider(LocalGlassMenuHost provides glassMenuHost) {
+                    val importMenu = rememberLibraryPlaylistImportMenu(offlineMode)
+                    CompositionLocalProvider(
+                    LocalLibraryPlaylistImport provides importMenu,
+                    LocalPlaylistAddChoice provides { playlistActions = it },
+                    LocalIndication provides ripple(bounded = true),
                     app.n_zik.android.components.glass.LocalGlassPlayerOverlayActive provides
                         (!playerSheetState.isDismissed && !playerSheetState.isCollapsed),
                     LocalRippleConfiguration provides LocalAppearance.current.colorPalette.text.let { color ->
@@ -1175,6 +1184,28 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                     val menuState = LocalMenuState.current
                     val menuSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
                     AppAppearanceMenu(menuState, menuSheetState)
+                    val activePlaylistActions = playlistActions
+                    LaunchedEffect(activePlaylistActions, menuState.isDisplayed) {
+                        if (activePlaylistActions?.parentMenu != null && !menuState.isDisplayed) {
+                            playlistActions = null
+                        }
+                    }
+                    PlaylistImportAddDialog(
+                        menuState = menuState,
+                        visible = activePlaylistActions?.isOnSource(menuState) == true && !importMenu.isOpen,
+                        canAdd = playlistActions?.openPicker != null,
+                        canImport = playlistActions?.canImportFiles == true,
+                        onDismiss = { playlistActions = null },
+                        onImport = { importMenu.open { playlistActions = null } },
+                        onAdd = {
+                            val request = playlistActions
+                            if (request?.parentMenu == null) playlistActions = null
+                            val onReturn = if (request?.parentMenu == null && request?.canImportFiles == true) {
+                                { playlistActions = request }
+                            } else null
+                            request?.openPicker?.invoke(onReturn)
+                        },
+                    )
 
                     }
                     }
@@ -1184,6 +1215,8 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                         onToastPresenceChanged = { toastNeedsLiveBackdrop = it },
                         windowsInsets = windowsInsets,
                     )
+                    }
+                    }
                     }
 
                 }

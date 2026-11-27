@@ -47,6 +47,7 @@ import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.models.Playlist
+import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.styling.Appearance
@@ -84,7 +85,10 @@ class PlaylistsMenuTargetTest {
         val application = ApplicationProvider.getApplicationContext<Application>()
         val database = Room.inMemoryDatabaseBuilder(application, DatabaseInitializer::class.java).build()
         val created = CompletableDeferred<Playlist>()
-        mockkObject(DatabaseInitializer.Companion, Toaster)
+        val mainApplication = mockk<MainApplication>()
+        every { mainApplication.applicationContext } returns application
+        mockkObject(DatabaseInitializer.Companion, Toaster, Dependencies)
+        every { Dependencies.application } returns mainApplication
         mockkStatic(::isYouTubeSyncEnabled)
         every { DatabaseInitializer.Instance } returns database
         every { isYouTubeSyncEnabled() } returns true
@@ -95,14 +99,17 @@ class PlaylistsMenuTargetTest {
                 dialog = NewPlaylistDialog(localOnly = true) { created.complete(it) }
             }
             compose.runOnIdle { dialog.onSet("Device playlist") }
-            compose.waitUntil(5_000) { created.isCompleted }
+            compose.waitUntil(5_000) {
+                Shadows.shadowOf(Looper.getMainLooper()).idle()
+                created.isCompleted
+            }
             val playlist = runBlocking { created.await() }
             assertTrue(isPlaylistPickerTarget(playlist, localDestinationsOnly = true))
             assertEquals(playlist, runBlocking { database.playlistTable.getAll().single() })
             verify(exactly = 0) { isYouTubeSyncEnabled() }
         } finally {
             unmockkStatic(::isYouTubeSyncEnabled)
-            unmockkObject(DatabaseInitializer.Companion, Toaster)
+            unmockkObject(DatabaseInitializer.Companion, Toaster, Dependencies)
             database.close()
         }
     }
@@ -142,6 +149,7 @@ class PlaylistsMenuTargetTest {
                 val shape = RoundedCornerShape(24.dp)
                 CompositionLocalProvider(
                     LocalMenuState provides menuState,
+                    LocalMenuBack provides if (menuState.hasPrevious) menuState::pop else null,
                     LocalAppearance provides Appearance(DefaultDarkColorPalette,
                         typographyOf(Color.White, true, false, FontType.Rubik), shape, shape, shape),
                 ) {
@@ -164,7 +172,7 @@ class PlaylistsMenuTargetTest {
             }
             compose.waitUntil(5_000) { compose.onAllNodesWithText(local.name).fetchSemanticsNodes().isNotEmpty() }
             compose.onAllNodesWithText(application.getString(R.string.playlist_action_add)).assertCountEquals(1)
-            compose.onAllNodesWithText(application.getString(R.string.library_playlists_title)).assertCountEquals(1)
+            compose.onAllNodesWithText(application.getString(R.string.library_playlists_title)).assertCountEquals(0)
             compose.onNodeWithContentDescription(application.getString(R.string.common_action_back)).performClick()
             compose.runOnIdle {
                 assertTrue(menuState.isDisplayed)

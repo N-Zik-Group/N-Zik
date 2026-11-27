@@ -2,7 +2,6 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.components.playlist.launchLocalPlaylistDeletion
-import app.n_zik.android.components.playlist.launchPlaylistLinkImport
 import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
 
 
@@ -88,6 +87,10 @@ import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.playlist.LocalLibraryPlaylistImport
+import app.n_zik.android.components.menu.playlist.rememberLibraryPlaylistImportMenu
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
+import app.n_zik.android.components.menu.playlist.playlistActionsAnchor
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
@@ -159,7 +162,6 @@ import kotlinx.coroutines.CancellationException
 import app.n_zik.android.components.Sort
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
-import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
 import timber.log.Timber
@@ -177,9 +179,6 @@ import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.preferences
-import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
-import app.n_zik.android.components.tab.ImportPlaylistsMenu
-import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.typography
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.settings.HomeLibrarySortSettingsDialog
@@ -297,39 +296,8 @@ fun HomeLibrary(
 
     //</editor-fold>
 
-    val importPlaylistDialog = ImportSongsFromCSV(onImportComplete = {
-        appContext().preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
-    })
-    val importSpotifyDialog = ImportSongsFromServices.init(source = "SPOTIFY_IMPORT", onImportComplete = {
-        appContext().preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
-    })
-    val importRiPlayDialog = ImportSongsFromServices.init(source = "RIPLAY_IMPORT", onImportComplete = {
-        appContext().preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
-    })
-    
-    var showYouTubeLinkDialog by remember { mutableStateOf(false) }
+    val importMenu = LocalLibraryPlaylistImport.current ?: rememberLibraryPlaylistImportMenu(offlineMode)
     val coroutineScope = rememberCoroutineScope()
-    
-    DialogPresence(visible = showYouTubeLinkDialog) {
-        YouTubeLinkImportDialog(
-            onImport = { playlistId ->
-                launchPlaylistLinkImport(context, coroutineScope, playlistId) {
-                    context.preferences.edit().putString(HOME_LIBRARY_PLAYLIST_SORT_BY.key, PlaylistSortBy.Custom.name).apply()
-                }
-            },
-            onDismiss = { showYouTubeLinkDialog = false }
-        )
-    }
-
-    val importMenu = remember {
-        ImportPlaylistsMenu(
-            onImportNzik = { importPlaylistDialog.onShortClick() },
-            onImportSpotify = { importSpotifyDialog.onShortClick() },
-            onImportRiplay = { importRiPlayDialog.onShortClick() },
-            onImportYoutubeLink = { showYouTubeLinkDialog = true },
-            networkOptionsEnabled = { !offlineMode }
-        )
-    }
     val sync = autoSyncToolbutton(R.string.sync_imported_playlists_automatic_title, autosyncPlaylistsKey) {
         coroutineScope.launch {
             importYTMPlaylists(force = true)
@@ -446,6 +414,7 @@ fun HomeLibrary(
         navController = navController,
         captureMediaItems = {
             action.snapshot()?.let { load -> { load()?.map { it.asMediaItem } } }
+                ?: if (itemSelector.isActive) null else suspend { emptyList() }
         },
         onFailure = { error, preview ->
             Timber.tag("HomeLibrary").e(error, "Failed to add songs to playlist ${preview.playlist.name}")
@@ -459,6 +428,7 @@ fun HomeLibrary(
         action::snapshot,
         selectionActive = { itemSelector.isActive },
     )
+
     val observeListening = previewSession == null &&
         (sort.sortBy == PlaylistSortBy.PlayCount || sort.sortBy == PlaylistSortBy.ListeningTime)
     val listeningTotals by remember(observeListening) {
@@ -472,7 +442,6 @@ fun HomeLibrary(
 
     // YT playlists can come from imports (not only live sync), so the tab
     // visibility follows the showYtPlaylists setting alone.
-    val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
     val toggleMap = mapOf(
         "on_device" to showOnDevice,
         "yt_playlists" to showYtPlaylists,
@@ -497,13 +466,7 @@ fun HomeLibrary(
         "rewind" to rewindLabel
     )
     val buttonsList = remember(showOnDevice, onDeviceLabel, showPinnedPlaylists, showRewind, showYtPlaylists, homePlaylistsOrderPref, allLabel, ytLabel, pinnedLabel, rewindLabel) {
-        val order = try {
-            val arr = JSONArray(homePlaylistsOrderPref)
-            val parsed = (0 until arr.length()).map { arr.getString(it) }
-            val valid = parsed.filter { it in playlistsDefaultOrder }.toMutableList()
-            for (id in playlistsDefaultOrder) { if (id !in valid) valid.add(id) }
-            valid
-        } catch (_: Exception) { playlistsDefaultOrder }
+        val order = libraryPlaylistChipOrder(homePlaylistsOrderPref)
         val result = mutableListOf<Pair<PlaylistsType, String>>()
         result.add(PlaylistsType.Playlist to allLabel)
         for (id in order) {
@@ -528,9 +491,6 @@ fun HomeLibrary(
 
 
     
-    // START - Import menu
-    importMenu.Render()
-    // END - Import menu
 
     val doAutoSync by rememberPreference(autosyncPlaylistsKey, false)
     var justSynced by rememberSaveable { mutableStateOf(!doAutoSync) }
@@ -591,6 +551,22 @@ fun HomeLibrary(
                     else -> "all"
                 }
                 val toolbarOrder = HomeLibraryToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
+                val playlistAnchor = playlistActionsAnchor(toolbarOrder)
+                val hasTracksToAdd = actionTargets().any { it.songCount > 0 }
+                val canCreateFirstPlaylist = gridReady && !itemSelector.isActive &&
+                    playlistType == PlaylistsType.Playlist && search.filterQuery.isBlank() && itemsOnDisplay.isEmpty()
+                val addPlaylistAction = rememberCollectionAddAction(
+                    sourceId = "library",
+                    menuState = menuState,
+                    canImportCollection = "import_menu" in toolbarOrder && playlistType != PlaylistsType.OnDevice,
+                    hasTracks = "add_to_playlist" in toolbarOrder && (hasTracksToAdd || canCreateFirstPlaylist),
+                    importFromCurrentCollection = false,
+                    canExport = "export_dialog" in toolbarOrder && (playlistType != PlaylistsType.OnDevice && hasTracksToAdd),
+                    openExport = exportDialog::onShortClick,
+                    importDialogOpen = importMenu.isOpen,
+                    openImport = importMenu::open,
+                    openPicker = addToPlaylist::openPicker,
+                )
 
                 val toolbarButtons = buildList<Button> {
                     toolbarOrder.forEach { id ->
@@ -603,10 +579,8 @@ fun HomeLibrary(
                             "item_selector" -> add(itemSelector)
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
-                            "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
-                            "export_dialog" -> add(itemSelector.guard(exportDialog, hasEligibleSelection))
+                            playlistAnchor -> add(addPlaylistAction)
                             "delete_playlists" -> add(itemSelector.guard(deletePlaylistsButton, hasEligibleSelection))
-                            "import_menu" -> add(importMenu)
                             "item_size" -> add(itemSize)
                         }
                     }
@@ -941,4 +915,13 @@ fun HomeLibrary(
             }
         }
     }
+}
+
+internal fun libraryPlaylistChipOrder(serializedOrder: String): List<String> {
+    val defaults = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
+    val saved = runCatching {
+        val items = JSONArray(serializedOrder)
+        List(items.length(), items::getString).filter { it in defaults }
+    }.getOrDefault(emptyList())
+    return (saved + defaults).distinct()
 }

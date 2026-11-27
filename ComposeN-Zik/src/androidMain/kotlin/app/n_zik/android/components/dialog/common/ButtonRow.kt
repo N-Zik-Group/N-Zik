@@ -58,6 +58,7 @@ data class DialogButton(
     val placement: DialogButtonPlacement = DialogButtonPlacement.Auto,
     val wrapLabel: Boolean = false,
     val modifier: Modifier = Modifier,
+    val iconColor: Color? = null,
 )
 
 /** Shows full-width dialog actions with the same appearance as the fixed cancel button. */
@@ -155,7 +156,7 @@ private fun DialogPill(button: DialogButton, modifier: Modifier) {
                 Icon(
                     painter = painterResource(iconRes),
                     contentDescription = null,
-                    tint = glyph,
+                    tint = button.iconColor ?: glyph,
                     modifier = Modifier.size(16.dp),
                 )
                 if (!iconOnly) Spacer(Modifier.width(6.dp))

@@ -38,6 +38,15 @@ fun YouTubeLinkImportDialog(
     onDismiss: () -> Unit
 ) {
     var youTubeUrl by remember { mutableStateOf("") }
+    var invalidUrl by remember { mutableStateOf(false) }
+    fun submit() {
+        val playlistId = extractYouTubePlaylistId(youTubeUrl)
+        invalidUrl = playlistId == null
+        if (playlistId != null) {
+            onImport(playlistId)
+            onDismiss()
+        }
+    }
 
     DialogFrame(
         onDismiss = onDismiss,
@@ -52,13 +61,7 @@ fun YouTubeLinkImportDialog(
                     ),
                     DialogButton(
                         text = stringResource(R.string.common_action_import),
-                        onClick = {
-                            val playlistId = extractYouTubePlaylistId(youTubeUrl)
-                            if (playlistId != null) {
-                                onImport(playlistId)
-                                onDismiss()
-                            }
-                        },
+                        onClick = ::submit,
                         primary = true
                     )
                 )
@@ -69,7 +72,11 @@ fun YouTubeLinkImportDialog(
         TextField(
             enabled = dialogInputEnabled,
             value = youTubeUrl,
-            onValueChange = { youTubeUrl = it },
+            onValueChange = {
+                youTubeUrl = it
+                invalidUrl = false
+            },
+            isError = invalidUrl,
             placeholder = {
                 BasicText(
                     stringResource(R.string.playlist_import_youtube_link_hint),
@@ -79,25 +86,28 @@ fun YouTubeLinkImportDialog(
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
-                val playlistId = extractYouTubePlaylistId(youTubeUrl)
-                if (presentation?.interactive != false && playlistId != null) {
-                    onImport(playlistId)
-                    onDismiss()
-                }
+                if (presentation?.interactive != false) submit()
             }),
             colors = InputDialog.defaultTextFieldColors(),
             modifier = Modifier.fillMaxWidth()
         )
+        if (invalidUrl) {
+            BasicText(
+                stringResource(R.string.common_validation_invalid_input),
+                style = typography().xs.copy(color = colorPalette().red),
+            )
+        }
     }
 }
 
-private fun extractYouTubePlaylistId(url: String): String? {
+internal fun extractYouTubePlaylistId(url: String): String? {
     val prefixes = listOf(
         "https://www.youtube.com/playlist?",
         "https://youtube.com/playlist?",
         "https://music.youtube.com/playlist?",
         "https://m.youtube.com/playlist?"
     )
-    return prefixes.find { url.startsWith(it) }
-        ?.let { url.trim().toUri().getQueryParameter("list") }
+    val trimmedUrl = url.trim()
+    if (prefixes.none { trimmedUrl.startsWith(it, ignoreCase = true) }) return null
+    return trimmedUrl.toUri().getQueryParameter("list")?.takeIf(String::isNotBlank)
 }
