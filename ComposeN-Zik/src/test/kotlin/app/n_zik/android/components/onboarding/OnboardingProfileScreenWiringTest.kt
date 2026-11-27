@@ -22,6 +22,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isNotEnabled
+import androidx.compose.ui.test.isSelected
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -134,6 +137,20 @@ class OnboardingProfileScreenWiringTest {
     }
 
     @Test
+    fun localSourcesAreSelectedAndDisconnectedAccountsAreDisabled() {
+        mockSecurePrefs("")
+        showScreen()
+        waitForLockState(6)
+
+        composeRule.onAllNodes(
+            hasText(context.getString(R.string.profile_name_source_local)) and isSelected()
+        ).assertCountEquals(2)
+        composeRule.onAllNodes(
+            hasText(context.getString(R.string.profile_display_name_source_youtube)) and isNotEnabled()
+        ).assertCountEquals(2)
+    }
+
+    @Test
     fun accountSourceLabelsStayOnOneLineWithLargeText() {
         mockSecurePrefs("")
         showScreen(fontScale = 2f)
@@ -180,7 +197,7 @@ class OnboardingProfileScreenWiringTest {
         val locked = context.getString(R.string.profile_identity_source_not_connected)
         val deadline = System.currentTimeMillis() + 10_000
         while (System.currentTimeMillis() < deadline) {
-            if (runCatching { composeRule.onAllNodesWithText(locked).fetchSemanticsNodes().size == lockedCount }.isSuccess) return
+            if (runCatching { composeRule.onAllNodesWithText(locked).fetchSemanticsNodes().size == lockedCount }.getOrDefault(false)) return
             Thread.sleep(50)
             composeRule.waitForIdle()
         }

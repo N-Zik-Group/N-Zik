@@ -1476,3 +1476,7 @@ Settings:
 Settings:
 - fix(backup): describe the scope of settings CSVs
   - Distinguish merging saved profile settings from restoring the Glass snapshot.
+
+Onboarding:
+- fix(onboarding): align the profile card with settings
+  - Reuse the shared card and align profile sources, avatar and photo action.

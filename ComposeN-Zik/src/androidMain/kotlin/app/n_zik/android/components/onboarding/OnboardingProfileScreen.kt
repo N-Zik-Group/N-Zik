@@ -1,5 +1,18 @@
 package app.n_zik.android.components.onboarding
 
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.ui.semantics.Role
+import app.n_zik.android.components.dialog.common.SettingsChoiceRadio
+import app.n_zik.android.components.settings.common.CardCategoryLabel
+import app.n_zik.android.components.settings.common.LocalSettingsCardRowOutset
+import app.n_zik.android.components.settings.common.OtherSettingsEntry
+import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsCardAlignedInset
+import app.n_zik.android.components.settings.common.settingsCardRowHorizontalPadding
+import app.n_zik.android.components.ui.horizontalLayoutOutset
+import app.n_zik.android.components.ui.iconBadgeBackground
+import app.n_zik.android.utils.semiBold
 import app.n_zik.android.components.glass.PageIconButton
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -7,7 +20,6 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,12 +32,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.runtime.Composable
@@ -40,7 +49,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -367,26 +375,21 @@ fun OnboardingProfileScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // The card is the last child of the step: it re-applies the nav inset the column
-        // dropped, so the continue button (its last element) stays clear of the system
-        // nav buttons
-        OnboardingActionCard(
-            icon = R.drawable.person,
+        SettingsSectionCard(
             title = stringResource(R.string.profile_local_name),
-            description = "",
+            icon = R.drawable.person,
             modifier = Modifier.navigationBarsPadding(),
-            extraContent = {
-                // Face preview: the resolved face as it will be saved on
-                // continue â€” the same treatment as the settings face card
-//
-                // (avatar + "Shown as" + name)
+            horizontalPadding = 0.dp,
+            bottomSpacing = 0.dp,
+            content = {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp),
+                        .settingsCardAlignedInset()
+                        .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ProfileCardAvatar(previewFace, GlassArea.SettingsCards)
+                    ProfileCardAvatar(previewFace, GlassArea.SettingsCards, slotSize = 32.dp)
 
                     Spacer(modifier = Modifier.width(12.dp))
 
@@ -421,7 +424,8 @@ fun OnboardingProfileScreen(
                     shape = uiRoundnessShape(),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp)
+                        .settingsCardAlignedInset()
+                        .padding(top = 8.dp)
                         .semantics {
                             contentDescription = fieldHint
                         }
@@ -431,157 +435,72 @@ fun OnboardingProfileScreen(
                     Text(
                         text = stringResource(R.string.profile_name_invalid_or_taken),
                         style = typography().xxs,
-                        color = Color.Red,
+                        color = colorPalette().red,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .settingsCardAlignedInset()
                             .padding(top = 8.dp)
                     )
                 }
 
-                // Face-name source selector: the same four options as the settings
-                // face card (same labels, same icons); an account source is locked
-//
-                // while that account is not logged in
-                Text(
-                    text = stringResource(R.string.profile_name_source),
-                    style = typography().xxs,
-                    color = colorPalette().textSecondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
+                FaceSourceOptions(
+                    title = stringResource(R.string.profile_name_source),
+                    selection = nameSource,
+                    lockedSources = lockedSources,
+                    marqueeEnabled = !scrollingTextDisabled,
+                    onSelect = { nameSource = it },
+                )
+                FaceSourceOptions(
+                    title = stringResource(R.string.profile_avatar_source),
+                    selection = avatarSource,
+                    lockedSources = lockedSources,
+                    marqueeEnabled = !scrollingTextDisabled,
+                    onSelect = { avatarSource = it },
                 )
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    faceSources.forEach { option ->
-                        FaceSourceOptionRow(
-                            option = option,
-                            selected = nameSource == option,
-                            locked = option in lockedSources,
-                            marqueeEnabled = !scrollingTextDisabled,
-                            onSelect = { nameSource = option }
-                        )
-                    }
-                }
-
-                // Face-avatar source selector: the same four options + the same
-                // locks as the name source (one selector per face property, like
-//
-                // the settings face card)
-                Text(
-                    text = stringResource(R.string.profile_avatar_source),
-                    style = typography().xxs,
-                    color = colorPalette().textSecondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    faceSources.forEach { option ->
-                        FaceSourceOptionRow(
-                            option = option,
-                            selected = avatarSource == option,
-                            locked = option in lockedSources,
-                            marqueeEnabled = !scrollingTextDisabled,
-                            onSelect = { avatarSource = option }
-                        )
-                    }
-                }
-
-                // The base clone's photo: pick from the gallery (the same helper
-                // as the settings face card) or remove it â€” the face preview
-//
-                // follows live
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp)
-                        .clip(uiRoundnessShape())
-                        .clickable {
-                            photoJob?.cancel()
-                            photoRequest++
-                            photoProfile = getActiveProfile(app)
-                            photoPicker.launch(
-                                PickVisualMediaRequest(
-                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
-                            )
-                        }
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.image),
-                        contentDescription = null,
-                        tint = colorPalette().text,
-                        modifier = Modifier.size(20.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = stringResource(R.string.profile_photo),
-                        style = typography().s,
-                        color = colorPalette().text,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f).profileMarquee(!scrollingTextDisabled)
-                    )
-
-                    Text(
-                        text = stringResource(
-                            if (profilePhoto != null) R.string.profile_photo_set else R.string.profile_photo_not_set
-                        ),
-                        style = typography().xxs.copy(color = colorPalette().textSecondary),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = ONBOARDING_ACTION_LABEL_MAX_WIDTH_DP.dp)
-                            .padding(start = 8.dp)
-                            .profileMarquee(!scrollingTextDisabled)
-                    )
-
-                    if (profilePhoto != null) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        PageIconButton(
-                            onClick = {
-                                val previousPhotoJob = photoJob
-                                previousPhotoJob?.cancel()
-                                photoRequest++
-                                // File IO off the main thread â€” the photo file is
-                                // removed alone (never the whole profile files
-//
-                                // dir), then the preview re-resolves
-                                scope.launch(start = CoroutineStart.UNDISPATCHED) {
-                                    photoWrites.remove {
-                                        previousPhotoJob?.cancelAndJoin()
-                                        withContext(NzikDispatchers.DATA) {
-                                            removeProfileAvatarFile(app, DEFAULT_PROFILE_ID)
+                OtherSettingsEntry(
+                    modifier = Modifier.padding(top = 8.dp),
+                    title = stringResource(R.string.profile_photo),
+                    text = "",
+                    icon = R.drawable.image,
+                    selectedValueText = stringResource(
+                        if (profilePhoto != null) R.string.profile_photo_set else R.string.profile_photo_not_set
+                    ),
+                    onClick = {
+                        photoJob?.cancel()
+                        photoRequest++
+                        photoProfile = getActiveProfile(app)
+                        photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
+                    trailingContent = if (profilePhoto != null) {
+                        {
+                            PageIconButton(
+                                onClick = {
+                                    val previousPhotoJob = photoJob
+                                    previousPhotoJob?.cancel()
+                                    photoRequest++
+                                    scope.launch(start = CoroutineStart.UNDISPATCHED) {
+                                        photoWrites.remove {
+                                            previousPhotoJob?.cancelAndJoin()
+                                            withContext(NzikDispatchers.DATA) {
+                                                removeProfileAvatarFile(app, DEFAULT_PROFILE_ID)
+                                            }
                                         }
+                                        photoVersion++
+                                        Timber.tag("Onboarding").i("Base clone photo removed")
                                     }
-                                    photoVersion++
-                                    Timber.tag("Onboarding").i("Base clone photo removed")
                                 }
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.trash),
+                                    contentDescription = stringResource(R.string.profile_photo_remove),
+                                    tint = colorPalette().red,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.trash),
-                                contentDescription = stringResource(R.string.profile_photo_remove),
-                                tint = Color.Red,
-                                modifier = Modifier.size(20.dp)
-                            )
                         }
-                    }
-                }
+                    } else null,
+                )
 
                 OnboardingPrimaryButton(
                     onClick = {
@@ -589,7 +508,8 @@ fun OnboardingProfileScreen(
                     },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp)
+                        .settingsCardAlignedInset()
+                        .padding(top = 12.dp)
                 ) {
                     // Single line: the button is full width, so an enlarged font must not
                     // wrap the label onto a second line
@@ -613,11 +533,28 @@ private val faceSources = listOf(
     FACE_SOURCE_LASTFM,
 )
 
-/**
- * One row of the face-source selectors (the name source and the avatar source
- * render the same rows; an account source is locked while that account is not
- * logged in, faded and unclickable â€” the same rule as the settings face card).
- */
+@Composable
+private fun FaceSourceOptions(
+    title: String,
+    selection: String,
+    lockedSources: Set<String>,
+    marqueeEnabled: Boolean,
+    onSelect: (String) -> Unit,
+) {
+    CardCategoryLabel(title, Modifier.padding(top = 8.dp))
+    Column(Modifier.selectableGroup()) {
+        faceSources.forEach { option ->
+            FaceSourceOptionRow(
+                option = option,
+                selected = selection == option,
+                locked = option in lockedSources,
+                marqueeEnabled = marqueeEnabled,
+                onSelect = { onSelect(option) },
+            )
+        }
+    }
+}
+
 @Composable
 private fun FaceSourceOptionRow(
     option: String,
@@ -626,40 +563,33 @@ private fun FaceSourceOptionRow(
     marqueeEnabled: Boolean,
     onSelect: () -> Unit,
 ) {
+    val palette = colorPalette()
+    val outset = LocalSettingsCardRowOutset.current
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
+            .horizontalLayoutOutset(outset)
             .fillMaxWidth()
             .clip(uiRoundnessShape())
-            .clickable(enabled = !locked) { onSelect() }
-            .alpha(if (locked) 0.4f else 1f)
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .selectable(selected = selected, enabled = !locked, role = Role.RadioButton, onClick = onSelect)
+            .alpha(if (locked) 0.5f else 1f)
+            .conditional(selected) { background(palette.accent.copy(alpha = 0.1f)) }
+            .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 8.dp)
     ) {
-        RadioButton(
-            selected = selected,
-            enabled = !locked,
-            onClick = onSelect,
-            colors = RadioButtonDefaults.colors(
-                selectedColor = colorPalette().accent,
-                unselectedColor = colorPalette().textSecondary
-            )
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
         Icon(
             painter = painterResource(faceSourceIcon(option)),
             contentDescription = null,
-            tint = colorPalette().text,
-            modifier = Modifier.size(20.dp)
+            tint = palette.accent,
+            modifier = Modifier.size(32.dp)
+                .iconBadgeBackground(palette.accent.copy(alpha = 0.1f), uiRoundnessShape())
+                .padding(8.dp)
         )
-
-        Spacer(modifier = Modifier.width(8.dp))
 
         Text(
             text = faceSourceLabel(option),
-            style = typography().s,
-            color = colorPalette().text,
+            style = typography().xs.semiBold,
+            color = palette.text,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f).profileMarquee(marqueeEnabled)
@@ -668,13 +598,14 @@ private fun FaceSourceOptionRow(
         if (locked) {
             Text(
                 text = stringResource(R.string.profile_identity_source_not_connected),
-                style = typography().xxs.copy(color = colorPalette().textSecondary),
+                style = typography().xxs,
+                color = palette.textSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.widthIn(max = ONBOARDING_ACTION_LABEL_MAX_WIDTH_DP.dp)
-                    .padding(start = 8.dp)
-                    .profileMarquee(marqueeEnabled)
+                modifier = Modifier.weight(0.5f, fill = false).profileMarquee(marqueeEnabled)
             )
+        } else {
+            SettingsChoiceRadio(selected = selected)
         }
     }
 }
