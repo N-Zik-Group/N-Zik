@@ -1840,3 +1840,7 @@ Settings:
 Settings / Accounts:
 - fix(sync): preserve the library and surface YouTube errors
   - Disconnect the active session safely and report failed or partial pushes without linking incomplete copies.
+
+Playlists:
+- fix(innertube): follow playlist continuations without parsed tracks
+  - Preserve continuation tokens from empty batches and reject unrecognized payloads before import.

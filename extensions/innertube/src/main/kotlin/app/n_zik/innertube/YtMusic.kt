@@ -473,45 +473,50 @@ object YtMusic {
         ).body<BrowseResponse>()
 
         InnertubeLogger.d("YtMusic", "getPlaylistContinuation fetching next page")
+        parsePlaylistContinuation(response)
+    }.onFailure {
+        InnertubeLogger.e("YtMusic", "getPlaylistContinuation error", it)
+    }
 
-        val mainContents: List<MusicShelfRenderer.Content> = response.continuationContents
-            ?.sectionListContinuation?.contents
+    internal fun parsePlaylistContinuation(response: BrowseResponse): PlaylistContinuationPage {
+        val continuationContents = response.continuationContents
+        val section = continuationContents?.sectionListContinuation
+        val playlistShelf = continuationContents?.musicPlaylistShelfContinuation
+        val musicShelf = continuationContents?.musicShelfContinuation
+        val mainContents: List<MusicShelfRenderer.Content> = section?.contents
             ?.mapNotNull { content ->
                 content.musicPlaylistShelfRenderer?.contents
                     ?: content.musicShelfRenderer?.contents
             }?.flatten().orEmpty()
 
-        val shelfContents: List<MusicShelfRenderer.Content> = response.continuationContents
-            ?.musicPlaylistShelfContinuation?.contents.orEmpty()
-
-        val musicShelfContents: List<MusicShelfRenderer.Content> = response.continuationContents
-            ?.musicShelfContinuation?.contents.orEmpty()
-
-        val allShelfContents = mainContents + shelfContents + musicShelfContents
+        val allShelfContents = mainContents + playlistShelf?.contents.orEmpty() + musicShelf?.contents.orEmpty()
 
         val songs = allShelfContents.mapNotNull { it.musicResponsiveListItemRenderer }
             .mapNotNull { renderer -> PlaylistPage.fromMusicResponsiveListItemRenderer(renderer) }.toMutableList()
 
-        val appendedItems = response.onResponseReceivedActions
-            ?.firstOrNull()?.appendContinuationItemsAction
-            ?.continuationItems.orEmpty()
+        val appendBatches = response.onResponseReceivedActions.orEmpty()
+            .mapNotNull { it.appendContinuationItemsAction?.continuationItems }
+        val appendedItems = appendBatches.flatten()
         songs += appendedItems.mapNotNull { it.musicResponsiveListItemRenderer }
             .mapNotNull { renderer -> PlaylistPage.fromMusicResponsiveListItemRenderer(renderer) }
 
-        val nextContinuation = if (songs.isEmpty()) null else
-            response.continuationContents?.sectionListContinuation?.continuations?.getContinuation()
-                ?: response.continuationContents?.musicPlaylistShelfContinuation?.continuations?.getContinuation()
-                ?: response.continuationContents?.musicShelfContinuation?.continuations?.getContinuation()
-                ?: appendedItems.lastOrNull()?.continuationItemRenderer
-                    ?.continuationEndpoint?.continuationCommand?.token
+        val appendedContinuation = appendedItems.lastOrNull { it.continuationItemRenderer != null }
+        val nextContinuation = section?.continuations?.getContinuation()
+            ?: playlistShelf?.continuations?.getContinuation()
+            ?: musicShelf?.continuations?.getContinuation()
+            ?: allShelfContents.getContinuation()
+            ?: appendedContinuation?.continuationItemRenderer?.continuationEndpoint?.continuationCommand?.token
+        require(nextContinuation == null || nextContinuation.isNotBlank()) { "Empty playlist continuation token" }
+        require(appendedContinuation == null || nextContinuation != null) { "Missing playlist continuation token" }
+        require(
+            section?.contents != null || playlistShelf?.contents != null || musicShelf?.contents != null ||
+                appendBatches.isNotEmpty() || nextContinuation != null
+        ) { "Missing playlist continuation contents" }
 
-        PlaylistContinuationPage(
+        return PlaylistContinuationPage(
             songs = songs,
             continuation = nextContinuation
         )
-
-    }.onFailure {
-        InnertubeLogger.e("YtMusic", "getPlaylistContinuation error", it)
     }
 
     suspend fun getArtistItemsContinuation(continuation: String) = runCatching {
