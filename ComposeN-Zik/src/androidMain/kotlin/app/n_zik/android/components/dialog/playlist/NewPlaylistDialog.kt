@@ -32,8 +32,10 @@ import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.innertube.YtMusic
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 class NewPlaylistDialog private constructor(
@@ -42,14 +44,14 @@ class NewPlaylistDialog private constructor(
     private val coroutineScope: CoroutineScope,
     private val suggestedNamePrefix: String,
     private val localOnly: Boolean,
-    private val onPlaylistCreated: (Playlist) -> Unit = {}
+    private val onPlaylistCreated: ((Playlist) -> Unit)?,
 ): TextInputDialog(InputDialogConstraints.ALL, focusOnOpen = true), MenuIcon, Descriptive {
 
     companion object {
         @Composable
         operator fun invoke(
             localOnly: Boolean = false,
-            onPlaylistCreated: (Playlist) -> Unit = {},
+            onPlaylistCreated: ((Playlist) -> Unit)? = null,
         ): NewPlaylistDialog {
             val coroutineScope = rememberCoroutineScope()
             return NewPlaylistDialog(
@@ -105,49 +107,34 @@ class NewPlaylistDialog private constructor(
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
 
-        if (!localOnly && isYouTubeSyncEnabled()) {
-            val pushPlaylist = appContext().preferences.getBoolean(syncPushPlaylistKey, false)
-            val syncDirection = getSyncDirection()
-            if (pushPlaylist && syncDirection != SyncDirection.YT_TO_APP && isNetworkConnected(appContext())) {
-                hideDialog()
-                coroutineScope.launch(NzikDispatchers.DATA) {
-                    val playlist = runCatching {
-                        YtMusic.createPlaylist(newValue).getOrNull()?.let { browseId ->
-                            Playlist(
-                                name = newValue,
-                                browseId = browseId,
-                                isYoutubePlaylist = true,
-                                isEditable = true
-                            )
-                        }
-                    }.onFailure { e ->
-                        Timber.tag("NewPlaylistDialog").e(e, "Failed to create playlist on YouTube")
-                        Toaster.e( R.string.common_error_title )
-                    }.getOrNull() ?: Playlist(name = newValue)
-
-                    Database.asyncTransaction {
-                        val newId = playlistTable.insert( playlist )
-                        onPlaylistCreated(playlist.copy(id = newId))
-                    }
-                    Toaster.done()
-                    Timber.tag("NewPlaylistDialog").d("Playlist created: ${playlist.name}, browseId=${playlist.browseId}")
+        val context = appContext()
+        val createOnYouTube = !localOnly && isYouTubeSyncEnabled() &&
+            context.preferences.getBoolean(syncPushPlaylistKey, false) &&
+            getSyncDirection() != SyncDirection.YT_TO_APP && isNetworkConnected(context)
+        hideDialog()
+        coroutineScope.launch(NzikDispatchers.UI) {
+            val playlist = try {
+                withContext(NzikDispatchers.DATA) {
+                    val browseId = if (createOnYouTube) {
+                        YtMusic.createPlaylist(newValue).onFailure {
+                            if (it is CancellationException) throw it
+                        }.getOrNull()
+                    } else null
+                    val draft = Playlist(
+                        name = newValue,
+                        browseId = browseId,
+                        isYoutubePlaylist = browseId != null,
+                    )
+                    Database.awaitWriteBatch { draft.copy(id = playlistTable.insert(draft)) }
                 }
-            } else {
-                hideDialog()
-                createLocalPlaylist(newValue)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("NewPlaylistDialog").e(error, "Failed to store new playlist")
+                Toaster.e(R.string.common_error_title)
+                return@launch
             }
-        } else {
-            hideDialog()
-            createLocalPlaylist(newValue)
+            if (onPlaylistCreated != null) onPlaylistCreated.invoke(playlist) else Toaster.done()
         }
-    }
-
-    private fun createLocalPlaylist(name: String) {
-        val playlist = Playlist(name = name)
-        Database.asyncTransaction {
-            val newId = playlistTable.insert( playlist )
-            onPlaylistCreated(playlist.copy(id = newId))
-        }
-        Toaster.done()
     }
 }

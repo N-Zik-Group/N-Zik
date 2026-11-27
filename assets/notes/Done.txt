@@ -1280,3 +1280,7 @@ Menus:
 Settings:
 - fix(settings): scope privacy resets and find profile shortcuts
   - Separate history preferences from Data, keep stored histories and accounts, and resolve profile shortcuts from settings search.
+
+Menus:
+- fix(playlists): report creation only after it is stored
+  - Wait for the playlist ID before reporting success and let the picker report the subsequent add result.
