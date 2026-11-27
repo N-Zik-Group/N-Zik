@@ -2042,3 +2042,36 @@ Fix:
 Fix:
 - fix(auto): handle cold browse and saved queue playback
   - Keep the first browse request valid across initial network observation and defer saved queue playback until the library is ready (issue https://github.com/N-Zik-Group/N-Zik/issues/1015).
+
+Playback:
+- fix(player): keep the player mounted when returning to the app
+  - MainActivity keeps the playback connection while a track is loaded, preserving the full player and mini-player through a background round trip.
+  - PlayerSheetVisibility treats a temporarily missing service as unknown and keeps the existing delay before dismissing a genuinely empty queue.
+- fix(player): hide download controls for on-device tracks
+  - Filter the full player and mini-player actions by the current track source.
+  - Refresh the notification and Android Auto action list when the source changes and reject stale download commands for device files.
+
+Android Auto:
+- fix(auto): respect the pause preference on projection disconnect
+  - Observe actual Android Auto projection transitions in PlayerServiceModern and reuse the existing pause-on-disconnect preference.
+  - Document the audio focus setting used by Android Auto media routing.
+- fix(auto): keep browse counts and podcast episode metadata consistent
+  - Use the active home tabs to determine root invalidation counts.
+  - Preserve the podcast episode type and source when browsing saved collections or resuming the queue.
+
+Rewind:
+- fix(rewind): anchor export options in the lower half
+  - Cap the sheet using the measured viewport in the native and Glass presenters, with regression coverage for both list and grid layouts.
+- fix(rewind): refresh existing hidden playlists after history import
+  - Update verified snapshots regardless of visibility and guard against recreating a concurrently removed playlist.
+
+Playlists:
+- fix(playlist): preserve library and source ordering on import
+  - Keep the saved library sort and open newly created CSV and YouTube playlists in source order with the Custom sort.
+- fix(menu): restore the shared playlist actions dialog on back
+  - Retain the actual parent dialog even for an Add-only action and remove the redundant queue toolbar description.
+
+Settings:
+- fix(settings): reflect live notification actions and incomplete YouTube sessions
+  - Apply notification button changes without a restart prompt.
+  - Show incomplete sessions as invalid while keeping account recovery and sign-out available.
