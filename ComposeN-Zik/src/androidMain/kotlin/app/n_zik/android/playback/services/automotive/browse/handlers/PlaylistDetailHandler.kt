@@ -159,12 +159,7 @@ class PlaylistDetailHandler internal constructor(
             .distinctBy { it.id }
         val podcastId = podcastSourceBrowseId(browseId)
         val rows = songs.map { song ->
-            val item = CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId)
-            if (podcastId == null) item else item.withPodcastSource(podcastId).let { episode ->
-                episode.buildUpon().setMediaMetadata(
-                    episode.mediaMetadata.buildUpon().setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE).build(),
-                ).build()
-            }
+            CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId).withPodcastSource(podcastId)
         }
         currentCoroutineContext().ensureActive()
         if (!canLoad()) return emptyList()

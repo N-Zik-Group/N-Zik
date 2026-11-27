@@ -17,6 +17,19 @@ import app.n_zik.android.utils.enableQuickPicksPageKey
 import app.n_zik.android.utils.homeTabsOrderKey
 import app.n_zik.android.utils.preferences
 
+internal fun autoHomeTabIds(context: Context, online: Boolean): List<String> {
+    val prefs = context.preferences
+    return activeHomeTabIds(
+        HomeTabsSettingsDialog.parseOrder(prefs.getString(homeTabsOrderKey, "").orEmpty()).distinct(),
+        quickPicks = prefs.getBoolean(enableQuickPicksPageKey, true),
+        songs = prefs.getBoolean("hometab_songs_enabled", true),
+        artists = prefs.getBoolean("hometab_artists_enabled", true),
+        albums = prefs.getBoolean("hometab_albums_enabled", true),
+        playlists = prefs.getBoolean("hometab_playlists_enabled", true),
+        offlineMode = !online,
+    )
+}
+
 class RootBrowseHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean = parentId == PlayerServiceModern.ROOT
 
@@ -27,17 +40,8 @@ class RootBrowseHandler : BrowseHandler {
         downloadHelper: MyDownloadHelper,
         binder: PlayerServiceModern.Binder?
     ): List<MediaItem> {
-        val prefs = context.preferences
         val categories = buildHomeTabDefs()
-        val active = activeHomeTabIds(
-            HomeTabsSettingsDialog.parseOrder(prefs.getString(homeTabsOrderKey, "").orEmpty()).distinct(),
-            quickPicks = prefs.getBoolean(enableQuickPicksPageKey, true),
-            songs = prefs.getBoolean("hometab_songs_enabled", true),
-            artists = prefs.getBoolean("hometab_artists_enabled", true),
-            albums = prefs.getBoolean("hometab_albums_enabled", true),
-            playlists = prefs.getBoolean("hometab_playlists_enabled", true),
-            offlineMode = !AutoAccessPolicy(context, database, downloadHelper, binder).online,
-        )
+        val active = autoHomeTabIds(context, AutoAccessPolicy(context, database, downloadHelper, binder).online)
         return active.map { tab ->
             val (id, type) = when (tab) {
                 "quickpicks" -> AutoSessionConstants.ID_QUICK_PICKS to MediaMetadata.MEDIA_TYPE_FOLDER_MIXED

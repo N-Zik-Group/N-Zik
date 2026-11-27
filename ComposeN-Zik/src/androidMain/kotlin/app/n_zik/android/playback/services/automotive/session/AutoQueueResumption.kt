@@ -3,6 +3,8 @@ package app.n_zik.android.playback.services.automotive.session
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import app.n_zik.android.utils.podcastBrowseId
+import app.n_zik.android.utils.withPodcastSource
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaSession
 import app.n_zik.android.MODIFIED_PREFIX
@@ -74,7 +76,7 @@ internal fun loadAutoQueueResumption(
                     .setAlbumTitle(restored.mediaMetadata.albumTitle)
                     .setExtras(extras)
                     .build()
-                mapped.buildUpon().setMediaMetadata(metadata).build()
+                mapped.buildUpon().setMediaMetadata(metadata).build().withPodcastSource(restored.podcastBrowseId)
             }
             val available = accessPolicy().eligible(mediaItems)
             val credited = refreshAutoArtistCredits(context, database, requestProfile, available.map { it.value })

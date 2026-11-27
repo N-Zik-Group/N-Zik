@@ -53,6 +53,7 @@ import app.n_zik.android.utils.maxSongsInQueueAndroidAutoKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsCustomValueKey
 import app.n_zik.android.utils.MaxTopPlaylistItemsKey
 import app.n_zik.android.utils.parentalControlEnabledKey
+import app.n_zik.android.playback.services.automotive.browse.handlers.autoHomeTabIds
 import app.n_zik.android.utils.withPodcastSource
 import app.n_zik.android.utils.Preference
 import app.n_zik.android.utils.preferences
@@ -234,7 +235,7 @@ class AutoSessionCallback(
         val parents = synchronized(browsedParents) { browsedParents.toMutableMap() }
         val online = accessPolicy().online
         if (accessChanged || PlayerServiceModern.ROOT in parents) {
-            parents[PlayerServiceModern.ROOT] = if (online) 5 else 4
+            parents[PlayerServiceModern.ROOT] = autoHomeTabIds(context, online).size
         }
         // Offline direct requests may have recorded zero. Discovery is invalidated on
         // reconnect/art refresh; never advertise that stale zero as the online item count.

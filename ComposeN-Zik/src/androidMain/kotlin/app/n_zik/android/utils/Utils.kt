@@ -109,7 +109,11 @@ internal fun MediaItem.withPodcastSource(browseId: String?): MediaItem {
     val extras = (metadata.extras?.let(::Bundle) ?: Bundle()).apply {
         putString(PODCAST_BROWSE_ID_EXTRA, source)
     }
-    return buildUpon().setMediaMetadata(metadata.buildUpon().setExtras(extras).build()).build()
+    val episode = metadata.buildUpon()
+        .setMediaType(MediaMetadata.MEDIA_TYPE_PODCAST_EPISODE)
+        .setExtras(extras)
+        .build()
+    return buildUpon().setMediaMetadata(episode).build()
 }
 
 @UnstableApi
