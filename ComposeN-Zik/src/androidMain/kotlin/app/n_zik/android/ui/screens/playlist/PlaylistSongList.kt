@@ -475,7 +475,7 @@ fun PlaylistSongList(
             color = if (addAction.isEnabled) colorPalette().text else colorPalette().textDisabled,
             modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
             onClick = addAction::onShortClick,
-            onLongClick = { Toaster.i(R.string.playlist_action_add_hint) },
+            onLongClick = { Toaster.i(R.string.playlist_actions_title) },
         )
     }
     val toolbarOrder = ToolbarSurface.ONLINE_PLAYLIST.visibleActions()

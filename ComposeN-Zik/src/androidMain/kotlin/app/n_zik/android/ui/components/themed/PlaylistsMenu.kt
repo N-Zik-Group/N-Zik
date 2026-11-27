@@ -21,6 +21,7 @@ import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
 import app.n_zik.android.core.navigation.navigateToPickedPlaylist
+import app.n_zik.android.core.network.utils.isNetworkAvailableComposable
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.normalizedSongId
 import timber.log.Timber
@@ -78,7 +79,6 @@ import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.addPlaylistItemsFromMenu
-import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
@@ -594,7 +594,7 @@ class PlaylistsMenu private constructor(
     private fun PlaylistPicker(request: AddRequest) {
         val playlistRead = rememberPlaylistPickerRead()
         val context = LocalContext.current
-        val online = isNetworkConnected(context)
+        val online by context.isNetworkAvailableComposable
         val previews = playlistRead.result?.getOrNull()
         val showOnDevice by rememberPreference(showOnDevicePlaylistsKey, true)
         val showDeviceTab = deviceLibraryEnabled() && showOnDevice

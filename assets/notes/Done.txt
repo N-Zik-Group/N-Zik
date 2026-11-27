@@ -1656,3 +1656,7 @@ Settings:
 Menus:
 - fix(menu): align player controls across menu layouts
   - Apply device volume while dragging in Grid and keep the bottom overflow open behind the sleep timer.
+
+Playlist:
+- fix(playlist): keep picker availability and labels current
+  - Refresh destination availability as connectivity changes and use the Playlist actions label for both collection toolbars.
