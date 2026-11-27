@@ -283,13 +283,14 @@ open class Sort<T> (
     override fun ToolBarButton() {
         val animatedArrow by arrowDirection
         val label = menuIconTitle
+        val longClickLabel = menuLongClickLabel
 
         TabToolBar.Icon(
             icon,
             color,
             sizeDp,
             isEnabled,
-            this.modifier.semantics { onLongClick(label = label, action = null) }
+            this.modifier.semantics { onLongClick(label = longClickLabel, action = null) }
                 .graphicsLayer { rotationZ = animatedArrow },
             this::onShortClick,
             this::onLongClick,

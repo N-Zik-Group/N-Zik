@@ -1760,3 +1760,7 @@ Settings:
 Settings:
 - fix(settings): search the actual About contributor counts
   - Reuse the bundled contributor lists for localized counted results and reject incorrect number matches.
+
+Menus:
+- fix(menu): expose sorting direction action label
+  - Announce and verify the toolbar long press that reverses the sorting direction.

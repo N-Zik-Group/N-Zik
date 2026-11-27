@@ -29,12 +29,14 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
+import app.n_zik.android.components.Sort
 import app.n_zik.android.components.menu.playlist.CollectionImportStatus
 import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
 import app.n_zik.android.components.tab.SmartShuffle
@@ -42,6 +44,9 @@ import app.n_zik.android.components.tab.StatefulMenuIcon
 import app.n_zik.android.components.ui.app.MenuStackContent
 import app.n_zik.android.components.ui.screens.player.Repeat
 import app.n_zik.android.enums.QueueLoopType
+import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.enums.PlaylistSortBy
+import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.enums.TransitionEffect
 import app.n_zik.android.ui.components.LocalMenuBack
 import app.n_zik.android.ui.components.MenuState
@@ -64,6 +69,26 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class, qualifiers = "w360dp-h640dp")
 class MenuEntryInteractionTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test
+    fun `sort toolbar names the action that opens criteria`() {
+        val context = ApplicationProvider.getApplicationContext<Application>()
+        val menu = MenuState()
+        val sort = Sort(menu, mutableStateOf(PlaylistSortBy.Name), mutableStateOf(SortOrder.Ascending), mutableStateOf(MenuStyle.List))
+        val shape = RoundedCornerShape(8.dp)
+        val appearance = Appearance(ColorPalette.fallback, Typography.fallback, shape, shape, shape)
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) { sort.ToolBarButton() }
+        }
+
+        val criterion = context.getString(R.string.library_sort_action_choose_criterion)
+        composeRule.onNodeWithContentDescription(context.getString(R.string.library_sort_order_title))
+            .assert(SemanticsMatcher("sort criteria long press") { node ->
+                node.config.getOrNull(SemanticsActions.OnLongClick)?.label == criterion
+            })
+            .performSemanticsAction(SemanticsActions.OnLongClick)
+        composeRule.runOnIdle { assertTrue(menu.isDisplayed) }
+    }
 
     @Test
     fun `outgoing menu action is unavailable while the new page enters and restored on back`() {
