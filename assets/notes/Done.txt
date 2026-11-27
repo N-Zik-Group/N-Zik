@@ -1216,3 +1216,7 @@ Menus:
 Settings:
 - fix(settings): align card content and page headings
   - Align room actions and dividers with card badges, use title-only Listen Together cards, and share wrapping page headings.
+
+Menus:
+- fix(menu): avoid duplicate destinations from profile menu
+  - Use single-top navigation for direct menu routes such as Notifications and Settings.

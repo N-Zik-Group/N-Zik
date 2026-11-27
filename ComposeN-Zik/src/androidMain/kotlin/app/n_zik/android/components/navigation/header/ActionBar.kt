@@ -581,7 +581,7 @@ fun ActionBar(
     Box(modifier = Modifier, contentAlignment = Alignment.Center) {
         val onItemClick: (NavRoutes) -> Unit = {
             expanded = false
-            navController.navigate(it.name)
+            navController.navigate(it.name) { launchSingleTop = true }
         }
         val onDismissRequest: () -> Unit = { expanded = false }
         HamburgerMenu(
