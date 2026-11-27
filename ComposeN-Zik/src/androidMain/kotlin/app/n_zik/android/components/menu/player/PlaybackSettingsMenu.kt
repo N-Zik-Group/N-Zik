@@ -42,6 +42,8 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.listentogether.listenTogetherGuestLock
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.components.dialog.common.ButtonRow
@@ -109,6 +111,7 @@ class PlaybackSettingsMenu private constructor(
     @Composable
     override fun ListMenu() {
         val context = LocalContext.current
+        val canAdjustPlaybackParameters = !rememberListenTogetherGuestLock()
 
         var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
         var playbackPitch by rememberPreference(playbackPitchKey, 1f)
@@ -145,20 +148,15 @@ class PlaybackSettingsMenu private constructor(
                 value = playbackSpeed,
                 onValueChange = {
                     val rounded = kotlin.math.round(it * 10f) / 10f
-                    playbackSpeed = rounded
-                    binder.player.playbackParameters =
-                        PlaybackParameters(rounded, playbackPitch)
+                    updatePlaybackParameters(rounded, playbackPitch) { playbackSpeed = rounded }
                 },
                 valueRange = 0.1f..10f,
                 displayValue = { stringResource(R.string.player_playback_speed_value, it) },
                 stepSize = 0f,
                 defaultValue = 1f,
                 drawValuePoints = true,
-                onReset = {
-                    playbackSpeed = 1f
-                    binder.player.playbackParameters =
-                        PlaybackParameters(playbackSpeed, playbackPitch)
-                }
+                isEnabled = canAdjustPlaybackParameters,
+                onReset = { updatePlaybackParameters(1f, playbackPitch) { playbackSpeed = 1f } },
             )
 
             // Pitch
@@ -168,20 +166,15 @@ class PlaybackSettingsMenu private constructor(
                 value = playbackPitch,
                 onValueChange = {
                     val rounded = kotlin.math.round(it * 10f) / 10f
-                    playbackPitch = rounded
-                    binder.player.playbackParameters =
-                        PlaybackParameters(playbackSpeed, rounded)
+                    updatePlaybackParameters(playbackSpeed, rounded) { playbackPitch = rounded }
                 },
                 valueRange = 0.1f..5f,
                 displayValue = { stringResource(R.string.player_playback_speed_value, it) },
                 stepSize = 0f,
                 defaultValue = 1f,
                 drawValuePoints = true,
-                onReset = {
-                    playbackPitch = 1f
-                    binder.player.playbackParameters =
-                        PlaybackParameters(playbackSpeed, playbackPitch)
-                }
+                isEnabled = canAdjustPlaybackParameters,
+                onReset = { updatePlaybackParameters(playbackSpeed, 1f) { playbackPitch = 1f } },
             )
 
             // Medley Duration
@@ -322,6 +315,7 @@ class PlaybackSettingsMenu private constructor(
     @Composable
     override fun GridMenu() {
         val context = LocalContext.current
+        val canAdjustPlaybackParameters = !rememberListenTogetherGuestLock()
 
         var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
         var playbackPitch by rememberPreference(playbackPitchKey, 1f)
@@ -362,19 +356,14 @@ class PlaybackSettingsMenu private constructor(
                     toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
                     onValueChange = {
                         val rounded = kotlin.math.round(it * 10f) / 10f
-                        playbackSpeed = rounded
-                        binder.player.playbackParameters =
-                            PlaybackParameters(rounded, playbackPitch)
+                        updatePlaybackParameters(rounded, playbackPitch) { playbackSpeed = rounded }
                     },
                     valueRange = 0.1f..10f,
                     stepSize = 0f,
                     defaultValue = 1f,
                     drawValuePoints = true,
-                    onReset = {
-                        playbackSpeed = 1f
-                        binder.player.playbackParameters =
-                            PlaybackParameters(1f, playbackPitch)
-                    }
+                    isEnabled = canAdjustPlaybackParameters,
+                    onReset = { updatePlaybackParameters(1f, playbackPitch) { playbackSpeed = 1f } },
                 )
             }
 
@@ -386,19 +375,14 @@ class PlaybackSettingsMenu private constructor(
                     toDisplay = { stringResource(R.string.player_playback_speed_value, it) },
                     onValueChange = {
                         val rounded = kotlin.math.round(it * 10f) / 10f
-                        playbackPitch = rounded
-                        binder.player.playbackParameters =
-                            PlaybackParameters(playbackSpeed, rounded)
+                        updatePlaybackParameters(playbackSpeed, rounded) { playbackPitch = rounded }
                     },
                     valueRange = 0.1f..5f,
                     stepSize = 0f,
                     defaultValue = 1f,
                     drawValuePoints = true,
-                    onReset = {
-                        playbackPitch = 1f
-                        binder.player.playbackParameters =
-                            PlaybackParameters(playbackSpeed, 1f)
-                    }
+                    isEnabled = canAdjustPlaybackParameters,
+                    onReset = { updatePlaybackParameters(playbackSpeed, 1f) { playbackPitch = 1f } },
                 )
             }
 
@@ -537,6 +521,12 @@ class PlaybackSettingsMenu private constructor(
                 )
             }
         }
+    }
+
+    private fun updatePlaybackParameters(speed: Float, pitch: Float, save: () -> Unit) {
+        if (listenTogetherGuestLock.value) return
+        binder.player.playbackParameters = PlaybackParameters(speed, pitch)
+        save()
     }
 
     @Composable

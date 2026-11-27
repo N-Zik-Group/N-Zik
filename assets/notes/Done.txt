@@ -1480,3 +1480,7 @@ Settings:
 Onboarding:
 - fix(onboarding): align the profile card with settings
   - Reuse the shared card and align profile sources, avatar and photo action.
+
+Menus:
+- fix(menu): respect guest lock for playback tuning
+  - Disable speed and pitch for guests before changing playback preferences.

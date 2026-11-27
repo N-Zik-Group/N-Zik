@@ -10,6 +10,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.enums.MenuStyle
+import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
@@ -31,6 +33,8 @@ import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.loudnessBaseGainKey
+import app.n_zik.android.utils.playbackPitchKey
+import app.n_zik.android.utils.playbackSpeedKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
@@ -81,6 +85,7 @@ class PlaybackSettingsMenuDefaultsTest {
 
     @After
     fun tearDown() {
+        listenTogetherGuestLock.value = false
         context.preferences.edit().clear().commit()
         context.profilePreferences.edit().putString(activeProfileKey, previousProfile).commit()
     }
@@ -155,6 +160,45 @@ class PlaybackSettingsMenuDefaultsTest {
         compose.onNodeWithText(title).assertIsNotEnabled().performTouchInput { click() }
         compose.onNodeWithText(context.getString(R.string.common_action_reset)).assertDoesNotExist()
         assertEquals(-8f, context.preferences.getFloat(loudnessBaseGainKey, Float.NaN), 0f)
+    }
+
+    @Test
+    fun `locked guest cannot edit playback parameters in list menu`() {
+        seedLockedGuestPlaybackParameters()
+        show(MenuStyle.List)
+        for (resourceId in listOf(R.string.player_controls_speed_title, R.string.player_controls_pitch_title)) {
+            val parameter = context.getString(resourceId)
+            compose.onNode(
+                hasContentDescription(parameter) and
+                    SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo),
+                useUnmergedTree = true,
+            ).performScrollTo().assertIsNotEnabled().performTouchInput { click() }
+        }
+        assertGuestPlaybackParametersUnchanged()
+    }
+
+    @Test
+    fun `locked guest cannot open playback parameter dialogs in grid menu`() {
+        seedLockedGuestPlaybackParameters()
+        show(MenuStyle.Grid)
+        for (resourceId in listOf(R.string.player_controls_speed_title, R.string.player_controls_pitch_title)) {
+            val parameter = context.getString(resourceId)
+            compose.onNode(hasScrollAction()).performScrollToNode(hasText(parameter))
+            compose.onNodeWithText(parameter).assertIsNotEnabled().performTouchInput { click() }
+        }
+        compose.onNodeWithText(context.getString(R.string.common_action_reset)).assertDoesNotExist()
+        assertGuestPlaybackParametersUnchanged()
+    }
+
+    private fun seedLockedGuestPlaybackParameters() {
+        context.preferences.edit().putFloat(playbackSpeedKey, 1.5f)
+            .putFloat(playbackPitchKey, 1.2f).commit()
+        listenTogetherGuestLock.value = true
+    }
+
+    private fun assertGuestPlaybackParametersUnchanged() {
+        assertEquals(1.5f, context.preferences.getFloat(playbackSpeedKey, Float.NaN), 0f)
+        assertEquals(1.2f, context.preferences.getFloat(playbackPitchKey, Float.NaN), 0f)
     }
 
     private fun seedCustomGain() {
