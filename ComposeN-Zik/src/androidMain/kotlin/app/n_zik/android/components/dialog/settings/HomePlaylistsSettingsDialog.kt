@@ -26,6 +26,14 @@ import android.content.Context
 import app.n_zik.android.utils.preferences
 internal val playlistsDefaultOrder = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
 
+internal fun libraryPlaylistChipOrder(serializedOrder: String): List<String> {
+    val saved = runCatching {
+        val items = JSONArray(serializedOrder)
+        List(items.length(), items::getString).filter { it in playlistsDefaultOrder }
+    }.getOrDefault(emptyList())
+    return (listOf("all") + saved + playlistsDefaultOrder).distinct()
+}
+
 internal val playlistsThemeToggleKeys = mapOf(
     "yt_playlists" to showYtPlaylistsKey,
     "on_device" to showOnDevicePlaylistsKey,
@@ -48,17 +56,15 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
     override val dialogTitle: String @Composable get() = stringResource(R.string.home_playlists_settings)
     override var isActive: Boolean by mutableStateOf(false)
 
-    private fun parseOrder(s: String): List<String> {
-        if (s.isBlank()) return playlistsDefaultOrder
-        return try { val a = JSONArray(s); val l = mutableListOf<String>(); for (i in 0 until a.length()) l.add(a.getString(i)); val r = l.filter { it in playlistsDefaultOrder }.toMutableList(); for (id in playlistsDefaultOrder) { if (id !in r) r.add(id) }; r } catch (_: Exception) { playlistsDefaultOrder }
-    }
     private fun serializeOrder(order: List<String>): String { val a = JSONArray(); order.forEach { a.put(it) }; return a.toString() }
 
     @Composable
     override fun DialogBody() {
         val ctx = LocalContext.current
         val prefs = remember { ctx.preferences }
-        var workingOrder by remember { mutableStateOf(parseOrder(prefs.getString(homePlaylistsOrderKey, "") ?: "").toMutableList()) }
+        var workingOrder by remember(prefs) {
+            mutableStateOf(libraryPlaylistChipOrder(prefs.getString(homePlaylistsOrderKey, "").orEmpty()))
+        }
 
         val prefKeys = playlistsThemeToggleKeys
 
@@ -79,8 +85,11 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
 
         val lazyListState = rememberLazyListState()
         val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-            val o = workingOrder.toMutableList(); val fi = o.indexOf(from.key); val ti = o.indexOf(to.key)
-            if (fi != -1 && ti != -1) { val item = o.removeAt(fi); o.add(ti, item); workingOrder = o }
+            val fromIndex = workingOrder.indexOf(from.key)
+            val toIndex = workingOrder.indexOf(to.key)
+            if (fromIndex > 0 && toIndex > 0) {
+                workingOrder = workingOrder.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+            }
         }
 
         val items = workingOrder.map { id ->
@@ -100,6 +109,7 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
             onDismiss = ::hideDialog,
             items = items, lazyListState = lazyListState, reorderableState = reorderableState,
             enforceMinOneChecked = true,
+            pinnedItemCount = 1,
             lockedCheckedIds = setOf("all"),
             checkedStatesOverride = items.map { workingToggles[it.id] ?: true },
             onCheckedChange = { index, newValue ->
@@ -109,7 +119,7 @@ object HomePlaylistsSettingsDialog : ContentFramedDialog {
                 workingToggles = m
             },
             onReset = {
-                workingOrder = playlistsDefaultOrder.toMutableList()
+                workingOrder = playlistsDefaultOrder
                 val m = playlistsDefaultOrder.associateWith { true }.toMutableMap()
                 workingToggles = m
             },

@@ -91,7 +91,7 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.ui.screens.home.GlassHomeChips
 import app.n_zik.android.components.ui.screens.home.HomeLibrarySubfilter
 import app.n_zik.android.components.ui.screens.home.HomeLibrarySubfilterRow
-import app.n_zik.android.components.ui.screens.home.libraryPlaylistChipOrder
+import app.n_zik.android.components.dialog.settings.libraryPlaylistChipOrder
 import app.n_zik.android.utils.homePlaylistsOrderKey
 import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.utils.showYtPlaylistsKey

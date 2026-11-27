@@ -1812,3 +1812,7 @@ Playlists:
 Playlists:
 - fix(playlist): reuse the displayed local alias destination
   - Avoid a duplicate detail while preserving true source and On-device navigation scopes.
+
+Playlists:
+- fix(playlist): keep the All filter anchored consistently
+  - Share the chip order with Library and the picker and lock the first filter in Settings.

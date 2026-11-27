@@ -24,6 +24,15 @@ class HomeToolbarPreferencesTest {
         HomeLibraryToolbarSettingsDialog.portableLists().getValue("yt"),
     )
 
+    @Test fun legacyPlaylistChipOrderKeepsAllFirstAndPreservesTheOtherChips() {
+        val saved = """["on_device","yt_playlists","all","on_device","unknown"]"""
+        assertEquals(
+            listOf("all", "on_device", "yt_playlists", "pinned_playlists", "rewind"),
+            libraryPlaylistChipOrder(saved),
+        )
+        assertEquals(playlistsDefaultOrder, libraryPlaylistChipOrder("invalid"))
+    }
+
     @Test fun legacySyncIdRemainsPortableWhenItIsNotAvailableInTheAllEditor() {
         val syncId = "sync_ytm_likes"
         val dialog = HomeSongsToolbarSettingsDialog

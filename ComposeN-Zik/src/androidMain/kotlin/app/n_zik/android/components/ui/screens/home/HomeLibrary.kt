@@ -154,7 +154,6 @@ import app.n_zik.android.utils.homeLibraryOnDeviceSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
-import org.json.JSONArray
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
@@ -186,6 +185,7 @@ import app.n_zik.android.typography
 import kotlinx.coroutines.withContext
 import app.n_zik.android.components.dialog.settings.HomeLibrarySortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
+import app.n_zik.android.components.dialog.settings.libraryPlaylistChipOrder
 import app.n_zik.android.components.dialog.settings.visibleHomeToolbarIds
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.utils.DataStoreUtils
@@ -936,13 +936,4 @@ fun HomeLibrary(
             }
         }
     }
-}
-
-internal fun libraryPlaylistChipOrder(serializedOrder: String): List<String> {
-    val defaults = listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device")
-    val saved = runCatching {
-        val items = JSONArray(serializedOrder)
-        List(items.length(), items::getString).filter { it in defaults }
-    }.getOrDefault(emptyList())
-    return (saved + defaults).distinct()
 }
