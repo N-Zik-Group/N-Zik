@@ -1,6 +1,5 @@
 package app.n_zik.android.ui.screens.info
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -48,6 +47,7 @@ import app.n_zik.android.topUiRoundnessShape
 import app.n_zik.android.components.menu.MenuHeaderTitle
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.menu.menuHeaderBackLeading
+import app.n_zik.android.components.menu.info.InformationMenuBand
 import app.n_zik.android.components.menu.info.InformationMenuSurface
 import app.n_zik.android.components.menu.info.InformationStatsCard
 import app.n_zik.android.components.menu.info.informationMenuBodyColor
@@ -177,11 +177,10 @@ fun VideoOrSongInfoScreen(
             .clip(topUiRoundnessShape())
     ) {
         // ── Top Section (Separated Header) ───────────────────────────────────
-        Column(
+        InformationMenuBand(
+            film = informationMenuHeaderColor(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(informationMenuHeaderColor())
+            modifier = Modifier.fillMaxWidth(),
         ) {
             MenuSheetDragHandle(color = colorPalette().text)
             MenuHeaderTitle(
@@ -268,7 +267,7 @@ fun VideoOrSongInfoScreen(
             HorizontalDivider(Modifier.height(1.dp))
         }
 
-        Column(Modifier.weight(1f).background(informationMenuBodyColor())) {
+        InformationMenuBand(film = informationMenuBodyColor(), modifier = Modifier.weight(1f)) {
             // Only remote tracks require an online metadata lookup.
             if (!isLoading && info == null && LOCAL_KEY_PREFIX !in videoId) {
                 OfflineContent(

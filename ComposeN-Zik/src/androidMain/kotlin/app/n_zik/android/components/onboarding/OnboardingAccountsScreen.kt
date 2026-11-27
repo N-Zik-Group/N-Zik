@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -408,12 +407,6 @@ fun OnboardingAccountsScreen(
                     bottomEnd = CornerSize(0.dp)
                 )
             } ?: uiRoundnessShape(),
-            dragHandle = {
-                Surface(
-                    modifier = Modifier.padding(vertical = 0.dp),
-                    color = Color.Transparent
-                ) {}
-            }
         ) {
             // Cap the content at ~50% of the screen so the sheet keeps its
             // half-screen look and its anchor stays content-driven

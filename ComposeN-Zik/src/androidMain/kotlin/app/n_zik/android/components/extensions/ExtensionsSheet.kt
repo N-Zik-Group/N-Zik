@@ -147,7 +147,6 @@ fun ExtensionsSheet(
                 bottomEnd = CornerSize(0.dp),
             )
         } ?: uiRoundnessShape(),
-        dragHandle = {},
     ) {
         DialogPresence(target = infoTarget) { request ->
             key(request) {

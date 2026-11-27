@@ -88,7 +88,7 @@ import app.n_zik.android.components.dialog.song.EditMetadataDialog
 import app.n_zik.android.components.dialog.song.RenameSongDialog
 import app.n_zik.android.components.dialog.song.UpdateSongDialog
 import app.n_zik.android.components.dialog.tab.DeleteSongDialog
-import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.rememberListenTogetherTrackMenuActions
@@ -191,6 +191,7 @@ class SongItemMenu private constructor(
             val playbackStart = LOCAL_SONG_PLAYBACK_START
             // Section: Management
             MenuSectionTitle(stringResource(R.string.library_management_section_title))
+            refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
             for (i in 1 until playbackStart) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -205,8 +206,6 @@ class SongItemMenu private constructor(
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
-            refreshBtn?.let { if (it is MenuIcon) it.ListMenuItem() }
-
             MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             buttons.localTrackNavigationActions().forEach { it.ListMenuItem() }
         } else {
@@ -278,6 +277,7 @@ class SongItemMenu private constructor(
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.library_management_section_title))
             }
+            refreshBtn?.let { if (it is MenuIcon) item { it.GridMenuItem() } }
             for (i in 1 until playbackStart) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
@@ -296,8 +296,6 @@ class SongItemMenu private constructor(
             for (i in (playbackStart + 1) until playbackStart + LOCAL_PLAYBACK_COUNT - 2) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             }
-            refreshBtn?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-
             item(span = { GridItemSpan(maxLineSpan) }) {
                 MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
@@ -654,7 +652,7 @@ class SongItemMenu private constructor(
 
         SongMenuSurface(
             header = {
-                MenuSheetDragHandle()
+                MenuMediaHeaderDragHandle()
 
                 SongItem(
                     song = song,

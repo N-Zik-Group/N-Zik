@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -37,6 +38,7 @@ import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
+import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.ColorPaletteMode
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
@@ -57,6 +59,7 @@ import app.n_zik.android.utils.profilePreferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.components.glass.GlassStore
 import app.n_zik.android.components.glass.GlassSettings
+import app.n_zik.android.components.glass.GlassTintSource
 import app.n_zik.android.components.glass.LocalGlassBackdrop
 import app.n_zik.android.components.glass.LocalGlassMaterialSource
 import app.n_zik.android.components.glass.LocalGlassMenuHost
@@ -230,6 +233,40 @@ class InformationMenuSurfaceTest {
         assertEquals(reference[pixels.width / 2, (120 * density).toInt()].toArgb(),
             pixels[pixels.width / 2, (120 * density).toInt()].toArgb())
         assertNotEquals(Color(0xFF101010).toArgb(), body.toArgb())
+    }
+
+    @Test
+    fun `opaque custom glass keeps information text readable on both bands`() {
+        var headerInk = Color.Unspecified
+        var bodyInk = Color.Unspecified
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalAppearance provides appearance(DefaultLightColorPalette),
+                LocalGlassPreviewSettings provides GlassSettings(
+                    enabled = true,
+                    source = GlassTintSource.Custom,
+                    customColor = Color.Black.toArgb(),
+                    tintStrength = 1f,
+                    film = 1f,
+                    rim = 0f,
+                ),
+            ) {
+                InformationMenuSurface {
+                    InformationMenuBand(film = informationMenuHeaderColor(), modifier = Modifier.height(60.dp)) {
+                        val ink = colorPalette().text
+                        SideEffect { headerInk = ink }
+                    }
+                    InformationMenuBand(film = informationMenuBodyColor(), modifier = Modifier.height(180.dp)) {
+                        val ink = colorPalette().text
+                        SideEffect { bodyInk = ink }
+                    }
+                }
+            }
+        }
+        composeRule.runOnIdle {
+            assertEquals(Color.White.toArgb(), headerInk.toArgb())
+            assertEquals(Color.White.toArgb(), bodyInk.toArgb())
+        }
     }
 
     @Test

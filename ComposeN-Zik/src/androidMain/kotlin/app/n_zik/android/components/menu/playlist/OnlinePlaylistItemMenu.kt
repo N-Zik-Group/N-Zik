@@ -43,6 +43,8 @@ import app.n_zik.android.components.navigation.rememberLibraryBrowseDestination
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import app.n_zik.android.components.podcast.podcastBookmarkOperation
@@ -101,7 +103,7 @@ import app.n_zik.android.components.menu.ObserveMenuProfile
 import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.MenuBookmarkBadge
-import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.PendingLibraryItemMenu
 import app.n_zik.android.components.menu.menuLikeActionDescription
@@ -206,7 +208,7 @@ class OnlinePlaylistItemMenu private constructor(
                 .fillMaxWidth()
                 .menuSheetSectionBackground(surfaceColor(colorPalette().background1))
         ) {
-            MenuSheetDragHandle()
+            MenuMediaHeaderDragHandle()
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -423,11 +425,13 @@ class OnlinePlaylistItemMenu private constructor(
 
         val kind = if (isPodcastBrowseId(playlist.key)) LibraryBrowseKind.Podcast else LibraryBrowseKind.Playlist
         val sourceId = rememberLibraryBrowseDestination(playlist.key, kind)?.browseId
+        val currentSourceId by rememberUpdatedState(sourceId)
         if (sourceId == null) {
             PendingLibraryItemMenu()
             return
         }
         val shareUrl = onlinePlaylistShareUrl(sourceId)
+        val isPodcastSource = isPodcastBrowseId(sourceId.removePrefix(MODIFIED_PREFIX))
         val sourceChanged = sourceId != playlist.key
 
         var fetchedSongs by remember(sourceId) { mutableStateOf<List<Song>?>(null) }
@@ -461,11 +465,13 @@ class OnlinePlaylistItemMenu private constructor(
         LaunchedEffect(sourceId, offlineMode) {
             if (offlineMode) return@LaunchedEffect
             contentLoadFailed = false
+            if (isPodcastSource) partialSongs = null
             withContext(NzikDispatchers.DATA) {
                 val result = loadOnlinePlaylistContent(
                     sourceId.removePrefix(MODIFIED_PREFIX),
                     fetchAllowed = { !OfflineMode.enabled(context) },
                 )
+                currentCoroutineContext().ensureActive()
                 if (result != null) {
                     displayTitle = result.title.takeIf { !it.isNullOrBlank() } ?: displayTitle
                     displayAuthor = result.author.takeIf { !it.isNullOrBlank() } ?: displayAuthor
@@ -488,7 +494,14 @@ class OnlinePlaylistItemMenu private constructor(
         val pickerSongs by rememberMenuSongs(pickerTracks)
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
-            mediaItems = { pickerSongs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) } },
+            mediaItems = {
+                if (isPodcastSource && currentSourceId != sourceId) emptyList()
+                else {
+                    val filterExplicit = isPodcastSource && context.preferences.getBoolean(parentalControlEnabledKey, false)
+                    pickerSongs.orEmpty().filterNot { filterExplicit && it.title.hasExplicitPrefix() }
+                        .map { it.asMediaItem.withPodcastSource(sourceId) }
+                }
+            },
             onFailure = { _, _ -> },
             finalAction = { menuState.hide() }
         )

@@ -1860,3 +1860,7 @@ Settings / Accounts:
 Settings:
 - fix(settings): retain reset results and route reset search cards
   - Keep the Data reset result after the dialog closes and stop search feedback once the requested dialog is open.
+
+Menus:
+- fix(menu): share visible handle behavior and contrasting media headers
+  - Keep one usable handle per sheet, adapt Information and media headers to custom Glass films, and put waveform refresh under Management.

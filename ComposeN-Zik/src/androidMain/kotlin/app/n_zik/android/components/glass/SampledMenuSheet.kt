@@ -57,6 +57,7 @@ fun SampledMenuSheet(
             shape = shape,
             dragHandle = dragHandle,
             contentWindowInsets = contentWindowInsets,
+            useContentHandleActions = dragHandle == null,
             content = content,
         )
     } else {

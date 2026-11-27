@@ -36,9 +36,9 @@ import kotlinx.coroutines.flow.first
 
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle
+import app.n_zik.android.components.menu.ContentMenuSheetDragHandle
 import app.n_zik.android.components.menu.LocalMenuSheetHandleActions
 import app.n_zik.android.components.menu.MenuSheetHandleActions
-import app.n_zik.android.components.menu.menuSheetHandleActions
 import app.n_zik.android.components.menu.straightBottomMenuShape
 import app.n_zik.android.topUiRoundnessShape
 
@@ -143,9 +143,13 @@ internal fun SharedGlassMenuSheet(
                 containerColor = Color.Transparent,
                 sheetContent = {
                     val paintScope = LocalGlassOverlayPaintScope.current
-                    val handleActions = if (useContentHandleActions && paintScope != null) {
-                        MenuSheetHandleActions(paintScope.id, menuSheetHandleActions(sheetState, onDismiss = { dismissRequested = true }))
-                    } else null
+                    val handleActions = paintScope?.let {
+                        MenuSheetHandleActions(
+                            it.id, sheetState,
+                            onDismiss = { dismissRequested = true },
+                            appliesToContentHandle = useContentHandleActions && dragHandle == null,
+                        )
+                    }
                     CompositionLocalProvider(
                         LocalMenuSheetHandleActions provides handleActions,
                         LocalGlassOverlayPaintScope provides paintScope?.let {
@@ -158,7 +162,7 @@ internal fun SharedGlassMenuSheet(
                     ) {
                         if (maxSheetHeight.isSpecified) {
                             Column(Modifier.heightIn(max = maxSheetHeight)) {
-                                dragHandle?.let { CenteredMenuSheetDragHandle(it) }
+                                dragHandle?.let { ContentMenuSheetDragHandle(it) }
                                 content()
                             }
                         } else content()

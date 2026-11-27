@@ -2,13 +2,11 @@ package app.n_zik.android.components.theme
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -53,12 +51,7 @@ fun AppearanceMenuSheet(
         modifier = Modifier.statusBarsPadding(),
         sheetState = sheetState,
         expandOnShow = expandOnShow,
-        dragHandle = {
-            Surface(
-                modifier = Modifier.padding(vertical = 0.dp),
-                color = Color.Transparent,
-            ) {}
-        },
+        dragHandle = null,
         shape = bottomSheetShape(LocalAppearance.current.uiRoundnessShape),
         content = content,
     )

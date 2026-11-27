@@ -89,7 +89,7 @@ import app.n_zik.android.components.menu.rememberListenTogetherTrackMenuActions
 import app.n_zik.android.components.menu.rememberListenOnMenuAction
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.utils.excludeDislikedSongsKey
-import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.menuSheetSectionBackground
 import app.n_zik.android.components.menu.song.ObserveSongMenuSnapshot
@@ -495,7 +495,7 @@ class VideoItemMenu private constructor(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.menuSheetSectionBackground(surfaceColor(colorPalette().background1))
             ) {
-                MenuSheetDragHandle()
+                MenuMediaHeaderDragHandle()
 
                 SongItem(
                     song = song,

@@ -1,7 +1,9 @@
 package app.n_zik.android.components.menu.info
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import app.n_zik.android.colorPalette
@@ -9,6 +11,8 @@ import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.menuSheetSectionColor
 import app.n_zik.android.components.menu.menuSheetFilmOpacity
 import app.n_zik.android.components.glass.GlassArea
+import app.n_zik.android.components.glass.GlassMaterialContainerColumn
+import app.n_zik.android.components.glass.GlassTintSource
 import app.n_zik.android.components.glass.glassOverlayPaint
 import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
@@ -28,6 +32,24 @@ fun InformationMenuSurface(
     val bandAlpha = minOf(surfaceColor(colorPalette().background1).alpha,
         recessedSurfaceColor(colorPalette().background0).alpha) * film
     MenuSheetSurface(modifier.glassOverlayPaint(bandAlpha), content)
+}
+
+@Composable
+internal fun InformationMenuBand(
+    film: Color,
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val glass = rememberGlassSettings()
+    val adaptForeground = glass.usesGlassMaterial(GlassArea.Menus) && glass.source == GlassTintSource.Custom
+    GlassMaterialContainerColumn(
+        modifier.background(film),
+        horizontalAlignment = horizontalAlignment,
+        includeParent = true,
+        foregroundFill = film.takeIf { adaptForeground },
+        content = content,
+    )
 }
 
 /** Keeps the information header on the same elevated band as other media menus. */

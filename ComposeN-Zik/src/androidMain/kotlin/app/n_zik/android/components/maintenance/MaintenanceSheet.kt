@@ -466,7 +466,6 @@ fun MaintenanceSheet(
                 bottomEnd = CornerSize(0.dp),
             )
         } ?: uiRoundnessShape(),
-        dragHandle = {}
     ) {
         // Refresh rereads the snapshot without rerunning the boot passes.
         val refreshTrailing: (@Composable RowScope.() -> Unit)? = {

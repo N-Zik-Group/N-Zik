@@ -544,7 +544,6 @@ fun RewindFinaleCard(
                 bottomEnd = CornerSize(0.dp)
             )
         } ?: uiRoundnessShape(),
-        dragHandle = {}
     ) {
         // The same style toggle as the song item menu (settings: list or grid) — the
         // entries are defined once and rendered in whichever layout the user picked.

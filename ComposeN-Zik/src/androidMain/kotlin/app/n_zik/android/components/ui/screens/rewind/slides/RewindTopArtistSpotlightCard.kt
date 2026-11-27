@@ -392,7 +392,6 @@ fun RewindTopArtistSpotlightCard(
                                 bottomEnd = CornerSize(0.dp)
                             )
                         } ?: uiRoundnessShape(),
-                        dragHandle = {}
                     ) {
                         // Same style toggle as the app's item menus (settings: list or
                         // grid): the full text renders as the single item of the grid,

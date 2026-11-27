@@ -42,9 +42,13 @@ import androidx.core.view.WindowInsetsControllerCompat
 import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
-import app.n_zik.android.components.menu.CenteredMenuSheetDragHandle
+import app.n_zik.android.components.menu.ContentMenuSheetDragHandle
+import app.n_zik.android.components.menu.LocalMenuSheetHandleActions
 import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.MenuSheetHandleActions
 import app.n_zik.android.components.menu.NativeMenuSheetDragHandle
+import app.n_zik.android.components.menu.menuSheetHandleOverlayIdentity
+import app.n_zik.android.components.menu.rememberNativeMenuSheetDismiss
 import app.n_zik.android.components.menu.straightBottomMenuShape
 import app.n_zik.android.surfaceColor
 
@@ -74,6 +78,7 @@ fun CustomModalBottomSheet(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val sheetShape = remember(shape) { straightBottomMenuShape(shape) }
+    val useContentHandleActions = dragHandle == null
     // Resolve the owner before the sheet content moves into the shared overlay host.
     val sheetContainerColor =
         if (containerColor == Color.Transparent) containerColor else surfaceColor(containerColor)
@@ -92,6 +97,7 @@ fun CustomModalBottomSheet(
             partiallyExpanded = expandOnShow,
             expandOnShow = expandOnShow,
             contentWindowInsets = contentWindowInsets,
+            useContentHandleActions = useContentHandleActions,
         ) {
             if (glassSheet) GlassMaterialContainerColumn(modifier.fillMaxWidth().glassOverlayPaint(glass.forArea(GlassArea.Menus).film),
                 materialSource = LocalGlassBackdrop.current,
@@ -104,7 +110,7 @@ fun CustomModalBottomSheet(
                 val foreground = if (contentColor.isSpecified) glassPaneForeground(contentColor, surfaceBackdropColor(),
                     TextContrast, LocalGlassInkDarkness.current ?: glassSurfaceDarkness(glass)) else LocalContentColor.current
                 CompositionLocalProvider(LocalContentColor provides foreground) {
-                    dragHandle?.let { CenteredMenuSheetDragHandle(it) }
+                    dragHandle?.let { ContentMenuSheetDragHandle(it) }
                     content()
                 }
             } else Column(modifier.fillMaxWidth()) {
@@ -113,7 +119,7 @@ fun CustomModalBottomSheet(
                     LocalGlassContainerBackdrop provides LocalGlassBackdrop.current,
                     LocalGlassMaterialSource provides LocalGlassBackdrop.current,
                 ) {
-                    dragHandle?.let { CenteredMenuSheetDragHandle(it) }
+                    dragHandle?.let { ContentMenuSheetDragHandle(it) }
                     content()
                 }
             }
@@ -165,6 +171,10 @@ fun CustomModalBottomSheet(
                     if (sheetState.currentValue == SheetValue.Expanded && sheetState.targetValue == SheetValue.Expanded) 1f else 0f
                 }
             }) {
+            val contentHandleActions = if (useContentHandleActions) {
+                val dismissSheet = rememberNativeMenuSheetDismiss(sheetState, onDismissRequest)
+                MenuSheetHandleActions(menuSheetHandleOverlayIdentity(), sheetState, dismissSheet)
+            } else null
             // The native host translates its content after the caller's modifier.
             // Keep the material inside that translation and outside its content insets.
             Column(Modifier.fillMaxWidth()
@@ -233,6 +243,7 @@ fun CustomModalBottomSheet(
                     LocalGlassBackdrop provides null,
                     LocalSurfaceBackdropColor provides nativeUnderlay,
                     LocalGlassOverlayBackdrop provides null,
+                    LocalMenuSheetHandleActions provides contentHandleActions,
                 ) {
                     GlassRippleProvider(glass) {
                         Column(Modifier.fillMaxWidth()) {

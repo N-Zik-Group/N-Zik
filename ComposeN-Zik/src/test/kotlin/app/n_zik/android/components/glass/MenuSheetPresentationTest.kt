@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,6 +36,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
@@ -66,12 +68,16 @@ import org.robolectric.annotation.GraphicsMode
 
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.DefaultDarkColorPalette
+import app.n_zik.android.ui.styling.DefaultLightColorPalette
 import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.Typography
 import app.n_zik.android.components.glass.backdrop.backdrops.rememberCanvasBackdrop
 import app.n_zik.android.components.menu.GlassDropdownMenu
+import app.n_zik.android.components.menu.MenuMediaHeaderDragHandle
 import app.n_zik.android.components.menu.MenuSheetDragHandle
+import app.n_zik.android.components.menu.song.SongMenuSurface
 import app.n_zik.android.components.menu.straightBottomMenuShape
+import app.n_zik.android.components.theme.AppearanceMenuSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @RunWith(RobolectricTestRunner::class)
@@ -269,15 +275,13 @@ class MenuSheetPresentationTest {
                 assertTrue("Square lower corner shared=$shared direction=$direction color=$color: $corner",
                     corner.red > .95f && corner.green > .95f && corner.blue > .95f)
             }
-            if (!shared) {
-                val nativeHandle = compose.onNode(hasClickAction() and
-                    SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss))
-                if (color == Color.Transparent) nativeHandle.performSemanticsAction(SemanticsActions.Dismiss) { it() }
-                else nativeHandle.performClick()
-                settleSheetMotion()
-                compose.runOnIdle { assertEquals(SheetValue.Hidden, sheetState.currentValue) }
-                compose.onNodeWithTag("sheet.body").assertDoesNotExist()
-            }
+            val handle = hasClickAction() and SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss)
+            compose.onAllNodes(handle).assertCountEquals(1)
+            if (color == Color.Transparent) compose.onNode(handle).performSemanticsAction(SemanticsActions.Dismiss) { it() }
+            else compose.onNode(handle).performClick()
+            settleSheetMotion()
+            compose.runOnIdle { assertEquals(SheetValue.Hidden, sheetState.currentValue) }
+            compose.onNodeWithTag("sheet.body").assertDoesNotExist()
         }
     }
 
@@ -314,23 +318,33 @@ class MenuSheetPresentationTest {
         }
     }
 
-    @Test fun `glass menu exposes one accessible handle on the original bar`() {
+    @Test fun `glass menu exposes one accessible handle on the original bar`() =
+        assertVisibleContentHandleActions(shared = true)
+
+    @Test fun `native menu exposes one accessible handle on the original bar`() =
+        assertVisibleContentHandleActions(shared = false)
+
+    private fun assertVisibleContentHandleActions(shared: Boolean) {
         lateinit var state: SheetState
         var dismissals = 0
         compose.setContent {
             var visible by remember { mutableStateOf(true) }
-            Fixture(shared = true, direction = LayoutDirection.Ltr) {
+            Fixture(shared = shared, direction = LayoutDirection.Ltr) {
                 state = rememberModalBottomSheetState(skipPartiallyExpanded = false)
-                GlassMenuSheet(visible, { dismissals++; visible = false }, state) {
+                val onDismiss = { dismissals++; visible = false }
+                val content: @Composable ColumnScope.() -> Unit = {
                     MenuSheetDragHandle()
                     Box(Modifier.fillMaxWidth().height(500.dp))
                 }
+                if (shared) GlassMenuSheet(visible, onDismiss, state, content = content)
+                else AppearanceMenuSheet(visible, onDismiss, state, content = content)
             }
         }
         settleSheetMotion()
         compose.runOnIdle { assertEquals(SheetValue.PartiallyExpanded, state.currentValue) }
         val handle = hasClickAction() and SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss)
         compose.onAllNodes(handle).assertCountEquals(1)
+        assertTrue(compose.onNode(handle).fetchSemanticsNode().size.height > 0)
         compose.onNode(handle).performSemanticsAction(SemanticsActions.Expand) { it() }
         settleSheetMotion()
         compose.runOnIdle { assertEquals(SheetValue.Expanded, state.currentValue) }
@@ -378,6 +392,8 @@ class MenuSheetPresentationTest {
             val handle = compose.onNodeWithTag("sheet.handle", useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
             val body = compose.onNodeWithTag("sheet.body").fetchSemanticsNode().boundsInRoot
             assertTrue("Height cap includes the manual handle", body.bottom - handle.top <= 124.5f)
+            compose.onAllNodes(hasClickAction() and SemanticsMatcher.keyIsDefined(SemanticsActions.Dismiss))
+                .assertCountEquals(1)
         }
     }
 
@@ -394,25 +410,58 @@ class MenuSheetPresentationTest {
         assertTrue("Handle remains above the sheet content", handle.bottom <= body.top + .5f)
     }
 
-    @Test fun `common visible handle is centered inside start aligned content in both directions`() {
-        val direction = mutableStateOf(LayoutDirection.Ltr)
+    @Test fun `common handle stays centered and visible on light and dark surfaces in both directions`() {
+        val scenario = mutableStateOf(LayoutDirection.Ltr to DefaultDarkColorPalette)
         compose.setContent {
-            CompositionLocalProvider(LocalLayoutDirection provides direction.value) {
-                Column(Modifier.width(300.dp).background(Color.Black).testTag("handle.container")) {
+            val (direction, palette) = scenario.value
+            val shape = RoundedCornerShape(32.dp)
+            CompositionLocalProvider(
+                LocalLayoutDirection provides direction,
+                LocalAppearance provides Appearance(palette, Typography.fallback, shape, shape, shape),
+            ) {
+                Column(Modifier.width(300.dp).background(palette.background1).testTag("handle.container")) {
                     MenuSheetDragHandle()
                 }
             }
         }
-        for (layout in LayoutDirection.entries) {
-            compose.runOnIdle { direction.value = layout }
+        for (layout in LayoutDirection.entries) for (palette in listOf(DefaultDarkColorPalette, DefaultLightColorPalette)) {
+            compose.runOnIdle { scenario.value = layout to palette }
             val pixels = compose.onNodeWithTag("handle.container").captureToImage().toPixelMap()
+            val ink = if (palette.isDark) Color.White else palette.text
             val visible = (0 until pixels.width).filter { x ->
-                (0 until pixels.height).any { y -> pixels[x, y].red > .9f }
+                (0 until pixels.height).any { y -> pixels[x, y].toArgb() == ink.toArgb() }
             }
             assertTrue("Handle must remain visible", visible.isNotEmpty())
             assertEquals("Handle is centered in $layout", (pixels.width - 1) / 2f,
                 (visible.first() + visible.last()) / 2f, .5f)
         }
+    }
+
+    @Test fun `light media menu handle stays visible on an opaque black custom glass film`() {
+        compose.setContent {
+            val shape = RoundedCornerShape(32.dp)
+            CompositionLocalProvider(
+                LocalAppearance provides Appearance(
+                    DefaultLightColorPalette, Typography.fallback, shape, shape, shape,
+                ),
+                LocalGlassPreviewSettings provides GlassSettings(
+                    source = GlassTintSource.Custom,
+                    customColor = Color.Black.toArgb(),
+                    tintStrength = 1f,
+                    film = 1f,
+                    rim = 0f,
+                ),
+            ) {
+                Box(Modifier.width(300.dp).testTag("media.menu")) {
+                    SongMenuSurface(header = { MenuMediaHeaderDragHandle() }, content = {})
+                }
+            }
+        }
+        val pixels = compose.onNodeWithTag("media.menu").captureToImage().toPixelMap()
+        val barY = (0 until pixels.height).first { y ->
+            pixels[pixels.width / 2, y].toArgb() == Color.White.toArgb()
+        }
+        assertEquals(Color.Black.toArgb(), pixels[pixels.width / 4, barY].toArgb())
     }
 
     @Test fun `floating dropdowns preserve lower corners in both native and shared hosts`() {

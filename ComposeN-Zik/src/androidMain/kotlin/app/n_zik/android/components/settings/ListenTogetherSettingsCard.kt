@@ -23,7 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import app.n_zik.android.components.ui.UiIconButton as IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import app.n_zik.android.components.glass.GlassTextField as TextField
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -347,12 +346,6 @@ internal fun ServerChooserSheet(
                 bottomEnd = CornerSize(0.dp),
             )
         } ?: uiRoundnessShape(),
-        dragHandle = {
-            Surface(
-                modifier = Modifier.padding(vertical = 0.dp),
-                color = Color.Transparent,
-            ) {}
-        },
     ) {
         // Keep the form's anchor content-driven so it can grow with the keyboard.
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
@@ -480,12 +473,6 @@ internal fun UsernameSheet(
                 bottomEnd = CornerSize(0.dp),
             )
         } ?: uiRoundnessShape(),
-        dragHandle = {
-            Surface(
-                modifier = Modifier.padding(vertical = 0.dp),
-                color = Color.Transparent,
-            ) {}
-        },
     ) {
         // Keep the form's anchor content-driven so it can grow with the keyboard.
         val screenHeightDp = LocalConfiguration.current.screenHeightDp
