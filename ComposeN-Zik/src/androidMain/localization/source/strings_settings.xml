@@ -147,7 +147,7 @@
     <string name="settings_audio_equalizer_description">Interact with the system equalizer</string>
     <string name="settings_audio_equalizer_label">Equalizer</string>
     <string name="settings_audio_focus">Audio focus</string>
-    <string name="settings_audio_focus_info">Allows automatic pause and resume playback after a call for example</string>
+    <string name="settings_audio_focus_info">Pause and resume playback automatically when a call or another app takes audio focus. Android Auto may need this setting for sound.</string>
     <string name="settings_audio_loudness_boost_warning">Additional loudness level, to be used without overdoing it, may damage the device</string>
     <string name="settings_audio_loudness_normalization_description">Adjust the volume to a fixed level</string>
     <string name="settings_audio_loudness_normalization_label">Loudness normalization</string>
@@ -434,8 +434,8 @@
     <string name="settings_playback_pause_at_zero_volume_description">Pause the song when the volume reaches 0 and resume it when the volume is greater than 0</string>
     <string name="settings_playback_pause_between_songs_description">Add a pause between songs</string>
     <string name="settings_playback_pause_between_songs_label">Pause between songs</string>
-    <string name="settings_playback_pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones disconnect</string>
-    <string name="settings_playback_pause_on_headphone_disconnect_label">Pause on headphone disconnect</string>
+    <string name="settings_playback_pause_on_headphone_disconnect_description">Automatically pause playback when Bluetooth or wired headphones or Android Auto disconnect</string>
+    <string name="settings_playback_pause_on_headphone_disconnect_label">Pause when audio disconnects</string>
     <string name="settings_playback_previous_restart_threshold_description">Leave empty or with 0 to always jump to previous song on queue</string>
     <string name="settings_playback_previous_restart_threshold_label">Previous song maximum elapsed duration</string>
     <string name="settings_playback_resume_on_connection_description">When a wired or bluetooth device is connected</string>

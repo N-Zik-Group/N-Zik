@@ -69,10 +69,13 @@ import android.os.Looper
 import android.os.SystemClock
 import android.content.pm.ServiceInfo
 import androidx.annotation.MainThread
+import androidx.car.app.connection.CarConnection
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.media3.common.AuxEffectInfo
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -481,6 +484,17 @@ class PlayerServiceModern : MediaLibraryService(),
 
     private lateinit var notificationActionReceiver: NotificationActionReceiver
 
+    private var carConnection: LiveData<Int>? = null
+    private var wasProjectingToCar = false
+    private val carConnectionObserver = Observer<Int> { type ->
+        val disconnected = wasProjectingToCar && type == CarConnection.CONNECTION_TYPE_NOT_CONNECTED
+        wasProjectingToCar = type == CarConnection.CONNECTION_TYPE_PROJECTION
+        if (disconnected && guestGuardPlayer.playWhenReady && isPauseOnHeadphoneDisconnectEnabled()) {
+            Timber.tag("PlayerServiceModern").d("Android Auto disconnected: pausing playback per user setting")
+            guestGuardPlayer.pause()
+        }
+    }
+
     private val audioBecomingNoisyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             if (intent.action == AudioManager.ACTION_AUDIO_BECOMING_NOISY && isPauseOnHeadphoneDisconnectEnabled()) {
@@ -866,6 +880,13 @@ class PlayerServiceModern : MediaLibraryService(),
             )
         }
 
+        runCatching {
+            carConnection = CarConnection(applicationContext).type
+            carConnection?.observeForever(carConnectionObserver)
+        }.onFailure {
+            Timber.tag("PlayerServiceModern").w(it, "Failed to observe Android Auto connection")
+        }
+
         // Issue #881 (gh-881): screen on/off markers for stall correlation (spec S5)
         ContextCompat.registerReceiver(
             this,
@@ -1199,6 +1220,8 @@ class PlayerServiceModern : MediaLibraryService(),
     override fun onDestroy() {
         if (isDestroying) return
         isDestroying = true
+        carConnection?.removeObserver(carConnectionObserver)
+        carConnection = null
         trackBoundaryPause.cancel()
         medleyJob?.cancel()
         unregisterPlaybackDeviceCallback()
