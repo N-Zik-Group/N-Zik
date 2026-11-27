@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
@@ -126,6 +127,17 @@ fun manageDownload(
 
 }
 
+
+/** Prepares a swiped playlist row only after the download passes queue eligibility. */
+@UnstableApi
+internal fun startPlaylistRowDownload(context: Context, mediaItem: MediaItem, cache: Cache?) {
+    MyDownloadHelper.addDownload(context, mediaItem) {
+        cache?.removeResource(mediaItem.mediaId)
+        Database.asyncTransaction {
+            formatTable.updateContentLengthOf(mediaItem.mediaId)
+        }
+    }
+}
 
 @UnstableApi
 @Composable

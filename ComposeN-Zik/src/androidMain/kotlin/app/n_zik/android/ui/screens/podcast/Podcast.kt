@@ -82,7 +82,6 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.models.Playlist
-import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.SwipeablePlaylistItem
@@ -139,10 +138,10 @@ import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.getDownloadState
-import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.manageDownload
+import app.n_zik.android.utils.startPlaylistRowDownload
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
@@ -732,9 +731,7 @@ fun Podcast(
                         return@itemsIndexed
                     }
                     val episodeMedia = remember(song, browseId) { song.asPodcastMediaItem(browseId) }
-                    val isLocal = episodeMedia.isLocal
                     downloadState = getDownloadState(episodeMedia.mediaId)
-                    val isDownloaded = if (!isLocal) isDownloadedSong(episodeMedia.mediaId) else true
 
                     SwipeablePlaylistItem(
                         mediaItem = episodeMedia,
@@ -743,17 +740,7 @@ fun Podcast(
                             binder?.player?.addNext(episodeMedia)
                         },
                         onDownload = {
-                            binder?.cache?.removeResource(episodeMedia.mediaId)
-                            Database.asyncTransaction {
-                                formatTable.updateContentLengthOf( episodeMedia.mediaId )
-                            }
-
-                            if (!isLocal)
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = episodeMedia,
-                                    downloadState = isDownloaded
-                                )
+                            startPlaylistRowDownload(context, episodeMedia, binder?.cache)
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(episodeMedia)

@@ -89,8 +89,10 @@ import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.SongItem
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.RenderAboveMenu
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistCoverDialog
@@ -226,7 +228,7 @@ import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getSyncDirection
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.localPlaylistToolbarOrderKey
-import app.n_zik.android.utils.manageDownload
+import app.n_zik.android.utils.startPlaylistRowDownload
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.playlist.supportsInsertionPosition
 import app.n_zik.android.utils.preferences
@@ -433,8 +435,9 @@ fun LocalPlaylistSongs(
     )
 
     val shuffle = itemSelector.guard(SongShuffler(::getSongs), hasEligibleSelection)
+    val queueMenuState = LocalMenuState.current
     val insertionDialog = PlaylistInsertionDialog { playlist }
-    insertionDialog.Render()
+    insertionDialog.RenderAboveMenu(queueMenuState)
     val canEditPlaylistMetadata = playlist != null && !forceOnDevice && !isRewindPlaylist
     val sourceKind = playlistLinkKind(playlist?.browseId)
     val renameDialog = RenamePlaylistDialog { playlist }
@@ -513,7 +516,7 @@ fun LocalPlaylistSongs(
 
             @Composable
             override fun Render() {
-                DialogPresence(visible = showDeleteConfirmDialog) {
+                AboveMenuDialogPresence(queueMenuState, visible = showDeleteConfirmDialog) {
                     val hasSelection = deleteSelectionMode
                     val text = if (hasSelection) {
                         stringResource(R.string.playlist_remove_songs_confirmation, getSongs().size)
@@ -568,7 +571,8 @@ fun LocalPlaylistSongs(
     val renumberDialog = Reposition(playlistId)
     val downloadAllDialog = DownloadAllSongsDialog ( ::getSongs )
     val deleteDownloadsDialog = DeleteAllDownloadedSongsDialog ( ::getSongs )
-    val pin = PinPlaylist( playlist )
+    val pinPlaylist = rememberUpdatedState(playlist)
+    val pin = PinPlaylist { pinPlaylist.value }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
     LaunchedEffect( itemSelector.isActive ) {
         // Setting this field to true means disable it
@@ -585,7 +589,6 @@ fun LocalPlaylistSongs(
         }
     }
 
-    val queueMenuState = LocalMenuState.current
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
         val songs = getSongs().toList()
@@ -744,16 +747,16 @@ fun LocalPlaylistSongs(
     }
 
     changePlaylistCover.Render()
-    renameDialog.Render()
-    renameAuthorDialog.Render()
-    changeBrowseIdDialog.Render()
+    renameDialog.RenderAboveMenu(queueMenuState)
+    renameAuthorDialog.RenderAboveMenu(queueMenuState)
+    changeBrowseIdDialog.RenderAboveMenu(queueMenuState)
     exportDialog.Render()
     deleteDialog.Render()
-    (renumberDialog as Dialog).Render()
-    downloadAllDialog.Render()
-    deleteDownloadsDialog.Render()
+    renumberDialog.RenderAboveMenu(queueMenuState)
+    downloadAllDialog.RenderAboveMenu(queueMenuState)
+    deleteDownloadsDialog.RenderAboveMenu(queueMenuState)
     importMenu.Render()
-    updateSongsDialog.Render()
+    updateSongsDialog.RenderAboveMenu(queueMenuState)
 
     val playlistThumbnailSizeDp = Dimensions.thumbnails.playlist
     val playlistThumbnailSizePx = playlistThumbnailSizeDp.px
@@ -1156,7 +1159,6 @@ fun LocalPlaylistSongs(
                                     Modifier.onGloballyPositioned { preview.previewRowsPlaced.value = it.size.height > 0 }
                                 } else Modifier)
                         ) {
-                            val isLocal by remember { derivedStateOf { song.asMediaItem.isLocal } }
 
                             // Drag anchor
                             if ( !onDeviceOnly && query.isBlank() && !positionLock.isLocked() && sort.sortBy == PlaylistSongSortBy.Custom && sort.sortOrder == SortOrder.Ascending ) {
@@ -1202,18 +1204,7 @@ fun LocalPlaylistSongs(
                             }
                         },
                         onDownload = {
-                            binder?.cache?.removeResource(song.asMediaItem.mediaId)
-                            Database.asyncTransaction {
-                                formatTable.updateContentLengthOf( song.id )
-                            }
-
-                            if (!isLocal) {
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = song.asMediaItem,
-                                    downloadState = song.isLocal
-                                )
-                            }
+                            startPlaylistRowDownload(context, song.asMediaItem, binder?.cache)
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(

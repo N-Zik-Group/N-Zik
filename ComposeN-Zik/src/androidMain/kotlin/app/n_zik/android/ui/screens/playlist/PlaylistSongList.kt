@@ -7,6 +7,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 
 import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.RenderAboveMenu
 import app.n_zik.android.listentogether.guestLockedAlpha
 import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.uiRoundnessShape
@@ -43,7 +44,6 @@ import app.n_zik.android.components.glass.GlassDescriptionExpansion
 import app.n_zik.android.components.glass.GlassDescriptionTranslate
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -97,7 +97,6 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
-import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
@@ -156,13 +155,13 @@ import app.n_zik.android.utils.fadingEdge
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.core.network.client.NetworkClientFactory
-import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.isLandscape
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.enums.Languages
 import app.n_zik.android.utils.otherLanguageAppPlaylistKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.manageDownload
+import app.n_zik.android.utils.startPlaylistRowDownload
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.secondary
@@ -421,9 +420,9 @@ fun PlaylistSongList(
     val renamePlaylist = RenamePlaylistDialog { localPlaylist }
     val renameAuthor = RenamePlaylistAuthorDialog { localPlaylist }
     val changePlaylistId = ChangePlaylistBrowseIdDialog(menuState) { localPlaylist }
-    renamePlaylist.Render()
-    renameAuthor.Render()
-    changePlaylistId.Render()
+    renamePlaylist.RenderAboveMenu(menuState)
+    renameAuthor.RenderAboveMenu(menuState)
+    changePlaylistId.RenderAboveMenu(menuState)
 
     // Once pagination settles, the picker can add the tracks already available; full import still requires every page.
     val canAddLoadedSongs = playlistPage != null && !continuationLoading && !forceSongPlaceholders
@@ -1132,8 +1131,6 @@ fun PlaylistSongList(
                 ) { ytSong ->
                     val storedSong = storedSongs[ytSong.key]
                     val song = remember(ytSong, storedSong) { resolveSongDisplayMetadata(ytSong.asSong, storedSong) }
-                    val isLocal by remember { derivedStateOf { ytSong.asMediaItem.isLocal } }
-                    val isDownloaded = !isLocal && isDownloadedSong( ytSong.key )
 
                     SwipeablePlaylistItem(
                         mediaItem = ytSong.asMediaItem,
@@ -1142,17 +1139,7 @@ fun PlaylistSongList(
                             binder?.player?.addNext(ytSong.asMediaItem)
                         },
                         onDownload = {
-                            binder?.cache?.removeResource( ytSong.key )
-                            Database.asyncTransaction {
-                                formatTable.updateContentLengthOf( ytSong.key )
-                            }
-
-                            if (!isLocal)
-                                manageDownload(
-                                    context = context,
-                                    mediaItem = ytSong.asMediaItem,
-                                    downloadState = isDownloaded
-                                )
+                            startPlaylistRowDownload(context, ytSong.asMediaItem, binder?.cache)
                         },
                         onEnqueue = {
                             binder?.player?.enqueue(ytSong.asMediaItem)

@@ -572,8 +572,13 @@ object MyDownloadHelper {
     }
 
     fun addDownload(context: Context, mediaItem: MediaItem) {
+        addDownload(context, mediaItem, beforeEnqueue = null)
+    }
+
+    /** Runs optional preparation after admission checks and before queuing the download. */
+    internal fun addDownload(context: Context, mediaItem: MediaItem, beforeEnqueue: (() -> Unit)?) {
         val owner = ProfileDownloadCommands.capture(context) ?: return
-        enqueueDownload(context, mediaItem, owner, skipExisting = false)
+        enqueueDownload(context, mediaItem, owner, skipExisting = false, beforeEnqueue = beforeEnqueue)
     }
 
     private fun enqueueDownload(
@@ -581,6 +586,7 @@ object MyDownloadHelper {
         mediaItem: MediaItem,
         owner: ProfileDownloadCommands,
         skipExisting: Boolean,
+        beforeEnqueue: (() -> Unit)? = null,
     ) {
         if (mediaItem.isLocal || owner != ProfileDownloadCommands.capture(context)) return
 
@@ -598,6 +604,7 @@ object MyDownloadHelper {
             }
         }
 
+        beforeEnqueue?.invoke()
         Database.asyncTransaction {
             insertIgnore( mediaItem, autoFix = false )
         }

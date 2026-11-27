@@ -1736,3 +1736,7 @@ Menus:
 Playlist:
 - fix(playlist): match device actions to the active file scan
   - Keep saved playlists visible while gating On-device bulk actions on present tracks; retain Library confirmation above the overflow.
+
+Playlist:
+- fix(playlist): keep playback cache when row downloads are rejected
+  - Defer cache cleanup until accepted; keep playlist and podcast menu dialogs in the correct window.
