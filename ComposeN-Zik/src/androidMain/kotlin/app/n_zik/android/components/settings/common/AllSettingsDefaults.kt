@@ -29,13 +29,15 @@ import kotlinx.coroutines.withContext
 /** Explicit settings writes preserve credentials, profile records and user content. */
 internal suspend fun applyAllSettingsDefaults(
     context: Context,
+    profileId: String = getActiveProfile(context),
     onDownloadLimitRetained: () -> Unit = {},
     onSettingsApplied: () -> Unit = {},
 ): Boolean =
     withContext(NonCancellable) {
-        val profileId = getActiveProfile(context)
         val applied = withContext(NzikDispatchers.DATA) {
             DatabaseRestoreJournal.withProfileStorageMutation(context) {
+                // Validate inside the profile-switch lock before any reset resolves a preference store.
+                if (getActiveProfile(context) != profileId) return@withProfileStorageMutation false
                 if (!applyDataDefaults(context, profileId, onDownloadLimitRetained)) return@withProfileStorageMutation false
                 applyPrivacyDefaults(profileDataPrefs(context, profileId))
                 applyRemainingSettingsDefaults(context)
@@ -57,6 +59,7 @@ private fun applyRemainingSettingsDefaults(context: Context) {
     applyAppearanceDefaults(context)
     applyAiDefaults(context)
     applyAccountsDefaults(context)
+    resetPlaylistRefreshDefaults(context.preferences)
     applyNetworkDefaults(context)
     applyDownloadDefaults(context)
     applyOtherDefaults(context)

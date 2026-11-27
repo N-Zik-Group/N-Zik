@@ -85,10 +85,11 @@ import app.n_zik.android.components.glass.CustomModalBottomSheet
 import app.n_zik.android.components.menu.MenuSheetDragHandle
 import app.n_zik.android.components.settings.YtSearchAccountToggle
 import app.n_zik.android.components.settings.applyUseLoginForSearch
-import app.n_zik.android.components.settings.common.RestartPlayerService
+import app.n_zik.android.components.settings.common.settingsPlayerRestartRequest
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
 import app.n_zik.android.components.settings.common.settingsSearchTarget
@@ -106,6 +107,7 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 @Composable
 internal fun AccountsYouTubeCard(search: Search) {
     val context = LocalContext.current
+    val requestPlayerRestart = settingsPlayerRestartRequest()
     val accountPreferences = remember(context, encryptedPreferencesUpdateTrigger) { context.encryptedPreferences }
     val cookie = accountPreferences.getString(ytCookieKey, null)
     var showLogoutDialog by remember(accountPreferences, cookie) { mutableStateOf(false) }
@@ -157,7 +159,6 @@ internal fun AccountsYouTubeCard(search: Search) {
                                     putBoolean(enableYouTubeSyncKey, false)
                                 }
                                 appContext().preferences.edit {
-                                    putBoolean(useLoginForBrowseKey, false)
                                     putBoolean(autosyncArtistsKey, false)
                                     putBoolean(autosyncAlbumsKey, false)
                                     putBoolean(autosyncPlaylistsKey, false)
@@ -188,12 +189,9 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 applyUseLoginForSearch(context)
                                 if (savedCookie.isNotEmpty()) {
                                     Store.initSession(context)
-                                    // Only activate browse if we have real credentials
-                                    if (hasYouTubeAuthCookie(savedCookie)) {
-                                        appContext().preferences.edit().putBoolean(useLoginForBrowseKey, true).apply()
-                                        Innertube.useLoginForBrowse = true
-                                    }
                                 }
+                                Innertube.useLoginForBrowse = hasYouTubeAuthCookie(savedCookie) &&
+                                    context.preferences.getBoolean(useLoginForBrowseKey, true)
                                 // Reset cookie status — will be revalidated on next playback
                                 app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
                                 appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
@@ -201,6 +199,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             // Clear stream caches and mark restart needed
                             clearStreamCaches()
                             appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
+                            requestPlayerRestart()
                             // Clear audio cache
                             NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                 clearAudioCache(binder?.cache)
@@ -209,14 +208,6 @@ internal fun AccountsYouTubeCard(search: Search) {
                         icon = R.drawable.ytmusic
                     )
                 }
-
-                val isStreamRestartNeeded by rememberPreference(streamClientRestartNeededKey, false)
-                RestartPlayerService(
-                    restartService = isStreamRestartNeeded,
-                    onRestart = {
-                        appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, false).apply()
-                    }
-                )
 
                 val accountAction: @Composable () -> Unit = {
                     OtherSettingsEntry(
@@ -236,7 +227,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                 }
                 if (!isYouTubeLoginEnabled && isLoggedIn) accountAction()
 
-                AnimatedVisibility(visible = isYouTubeLoginEnabled) {
+                SettingsEntryVisibility(visible = isYouTubeLoginEnabled) {
                     Column {
                         if (isLoggedIn) {
                             Row(
@@ -466,6 +457,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 putBoolean(useLoginForBrowseKey, false)
                                 putBoolean(streamClientRestartNeededKey, true)
                             }
+                            requestPlayerRestart()
                             Toaster.done()
                         }
                     })

@@ -56,6 +56,7 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.CardCategoryLabel
 import app.n_zik.android.components.settings.common.SettingsCardSectionHeading
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.normalizedSettingsText
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -170,7 +171,7 @@ internal fun AccountsDiscordCard(search: Search) {
                         stringResource(R.string.account_action_logout).contains(search.inputValue, true)
                     if (!isDiscordPresenceEnabled && hasSavedAccount && matchesAccountAction) accountAction()
 
-                    AnimatedVisibility(visible = isDiscordPresenceEnabled) {
+                    SettingsEntryVisibility(visible = isDiscordPresenceEnabled) {
                         Column {
                             AnimatedVisibility(visible = showTokenError) {
                                 Text(
@@ -181,7 +182,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                 )
                             }
 
-                            AnimatedVisibility(visible = discordPersonalAccessToken.isNotEmpty()) {
+                            SettingsEntryVisibility(visible = discordPersonalAccessToken.isNotEmpty()) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -297,7 +298,7 @@ internal fun AccountsDiscordCard(search: Search) {
                                 )
                             }
 
-                            AnimatedVisibility(visible = isDiscordAdvancedMode) {
+                            SettingsEntryVisibility(visible = isDiscordAdvancedMode) {
                                 DiscordAdvancedSection(search = search)
                             }
 

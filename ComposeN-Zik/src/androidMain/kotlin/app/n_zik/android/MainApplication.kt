@@ -328,8 +328,8 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 Innertube.regionOverride = regionOverride
             }
             val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, true)
-            Innertube.useLoginForBrowse = useLoginForBrowse
             val youtubeLoginEnabled = encryptedPreferences.getBoolean(enableYouTubeLoginKey, false)
+            Innertube.useLoginForBrowse = youtubeLoginEnabled && useLoginForBrowse
             applyUseLoginForSearch(this, youtubeLoginEnabled)
             
             // The JVM modules use this app-provided connectivity gate because they have no Android context.
@@ -370,7 +370,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
                 Timber.tag("MainApplication").w("No YouTube cookie — disabling useLoginForBrowse")
                 cookieStatus = CookieStatus.NOT_LOGGED_IN
                 Innertube.useLoginForBrowse = false
-                preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
+                if (youtubeLoginEnabled) preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
             }
 
             Store.prefetchCookie()

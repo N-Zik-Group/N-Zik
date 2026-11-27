@@ -9,6 +9,7 @@ import app.n_zik.android.MainApplication
 import app.n_zik.android.components.settings.useLoginForSearchKey
 import app.n_zik.android.core.network.client.Store
 import app.n_zik.android.extensions.discord.DiscordAdvancedSettings
+import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
 import app.n_zik.android.extensions.youtubelogin.putYouTubeSession
 import app.n_zik.android.extensions.youtubelogin.readYouTubeSession
 import app.n_zik.android.listentogether.ListenTogetherClient
@@ -19,6 +20,7 @@ import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
 import app.n_zik.android.utils.discordPersonalAccessTokenKey
 import app.n_zik.android.utils.encryptedPreferences
+import app.n_zik.android.utils.isDiscordPresenceEnabledKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.setActiveProfile
 import app.n_zik.android.utils.useLoginForBrowseKey
@@ -44,24 +46,6 @@ import org.robolectric.annotation.Config
 class AccountsDefaultsTest {
     private val context: Context = ApplicationProvider.getApplicationContext()
     private val secure: SharedPreferences = context.getSharedPreferences("accounts-test-secure", Context.MODE_PRIVATE)
-    private val expected: Map<String, Any> = mapOf(
-        "enableYoutubeLogin" to false,
-        "enableYoutubeSync" to false,
-        "isDiscordPresenceEnabled" to false,
-        "isDiscordAdvancedMode" to false,
-        "discordAdvancedActivityType" to 2,
-        "discordAdvancedPausePresenceEnabled" to true,
-        "discordAdvancedName" to "",
-        "discordAdvancedStateTemplate" to "",
-        "discordAdvancedDetailsTemplate" to "",
-        "discordAdvancedPauseTemplate" to "",
-        "discordAdvancedButton1Enabled" to true,
-        "discordAdvancedButton1Label" to "",
-        "discordAdvancedButton1Url" to "",
-        "discordAdvancedButton2Enabled" to true,
-        "discordAdvancedButton2Label" to "",
-        "discordAdvancedButton2Url" to "",
-    )
 
     @Before fun setUp() {
         setActiveProfile("accounts-test", context)
@@ -77,26 +61,26 @@ class AccountsDefaultsTest {
         setActiveProfile("default", context)
     }
 
-    @Test fun resetRestoresOriginalDefaultsThroughTheirReaders() {
-        val editor = secure.edit()
-        expected.forEach { (key, value) ->
-            when (value) {
-                is Boolean -> editor.putBoolean(key, !value)
-                is Int -> editor.putInt(key, 7)
-                is String -> editor.putString(key, "seeded")
-            }
-        }
-        editor.commit()
-        context.preferences.edit().putBoolean("restartActivity", true).commit()
+    @Test fun resetWritesOnlyAccountUsageSwitches() {
+        val usageKeys = listOf(
+            enableYouTubeLoginKey,
+            enableYouTubeSyncKey,
+            isDiscordPresenceEnabledKey,
+            isLastfmScrobblingEnabledKey,
+        )
+        secure.edit().apply { usageKeys.forEach { putBoolean(it, true) } }.commit()
+        context.preferences.edit()
+            .putBoolean("restartActivity", true)
+            .putBoolean("playlist_refresh_on_open_17", true)
+            .commit()
 
         applyAccountsDefaults(context)
 
-        assertEquals(expected.filterKeys { !it.startsWith("discordAdvanced") && it != "isDiscordAdvancedMode" }, secure.all)
-        assertEquals(DiscordAdvancedSettings.DEFAULTS, DiscordAdvancedSettings.read(secure))
+        assertEquals(usageKeys.associateWith { false }, secure.all)
         assertEquals(
             mapOf(
-                "restartActivity" to false,
-                useLoginForBrowseKey to false,
+                "restartActivity" to true,
+                "playlist_refresh_on_open_17" to true,
                 "githubAccountUsageEnabled" to false,
             ),
             context.preferences.all,
@@ -104,13 +88,15 @@ class AccountsDefaultsTest {
     }
 
     @Test fun accountsResetPausesGitHubChecksAndKeepsTheOptionReversible() {
+        GitHubAccount.restoreIdentity(context, """{"id":123,"login":"saved-creator"}""")
         assertTrue(GitHubAccount.backgroundChecksEnabled(context))
         context.preferences.edit().putBoolean(GITHUB_BACKGROUND_CHECKS_KEY, false).commit()
         applyAccountsDefaults(context)
-        assertFalse(context.preferences.contains(GITHUB_BACKGROUND_CHECKS_KEY))
+        assertNull(GitHubAccount.accountLogin(context))
         assertFalse(GitHubAccount.backgroundChecksEnabled(context))
-        GitHubAccount.resumeSavedAccount(context)
-        assertTrue(GitHubAccount.backgroundChecksEnabled(context))
+        assertTrue(GitHubAccount.resumeSavedAccount(context))
+        assertEquals("saved-creator", GitHubAccount.accountLogin(context))
+        assertFalse(GitHubAccount.backgroundChecksEnabled(context))
     }
 
     @Test fun resetDisablesTheLiveYouTubeSessionAndRetainsCredentialsForReactivation() {
@@ -179,7 +165,7 @@ class AccountsDefaultsTest {
         assertEquals("saved-blocklist", prefs.getString(ListenTogetherClient.PREF_BLOCKED_USERS, null))
     }
 
-    @Test fun resetRestoresAdvancedDiscordLastFmAndSyncSettingsWhilePreservingIdentity() {
+    @Test fun resetPreservesAdvancedDiscordLastFmAndSyncSettingsAlongWithIdentity() {
         secure.edit()
             .putString("ytCookie", "test-cookie")
             .putString("ytDataSyncId", "saved-sync-id")
@@ -206,26 +192,26 @@ class AccountsDefaultsTest {
             .putBoolean("syncPushSongLike", true)
             .putBoolean("syncImportEpisodes", true)
             .putBoolean("useLoginForSearch", false)
-            .putBoolean("useLoginForBrowse", false)
+            .putBoolean(useLoginForBrowseKey, true)
             .putString("syncSessionCursor", "saved-cursor")
             .commit()
+        val discordSettings = DiscordAdvancedSettings.read(secure)
 
         applyAccountsDefaults(context)
         applyAccountsDefaults(context)
 
-        assertEquals(DiscordAdvancedSettings.DEFAULTS, DiscordAdvancedSettings.read(secure))
-        assertFalse(secure.getBoolean("isLastfmScrobblingEnabled", false))
-        assertTrue(secure.getBoolean("isLastfmNowPlayingEnabled", true))
-        assertEquals(30, secure.getInt("lastfmMinTrackDurationSeconds", 30))
-        assertEquals("TWO_WAY", profile.getString("syncDirection", "TWO_WAY"))
-        assertEquals(30, profile.getInt("syncCooldown", 30))
-        assertTrue(profile.getBoolean("syncShowDetails", true))
-        assertTrue(profile.getBoolean("syncBackgroundGuard", true))
-        assertFalse(profile.getBoolean("syncPushSongLike", false))
-        assertFalse(profile.getBoolean("syncImportEpisodes", false))
-        assertFalse(profile.contains(useLoginForSearchKey))
-        assertTrue(profile.getBoolean(useLoginForSearchKey, true))
-        assertFalse(profile.getBoolean(useLoginForBrowseKey, true))
+        assertEquals(discordSettings, DiscordAdvancedSettings.read(secure))
+        assertFalse(secure.getBoolean(isLastfmScrobblingEnabledKey, true))
+        assertFalse(secure.getBoolean("isLastfmNowPlayingEnabled", true))
+        assertEquals(60, secure.getInt("lastfmMinTrackDurationSeconds", 30))
+        assertEquals("PUSH_ONLY", profile.getString("syncDirection", null))
+        assertEquals(90, profile.getInt("syncCooldown", 30))
+        assertFalse(profile.getBoolean("syncShowDetails", true))
+        assertFalse(profile.getBoolean("syncBackgroundGuard", true))
+        assertTrue(profile.getBoolean("syncPushSongLike", false))
+        assertTrue(profile.getBoolean("syncImportEpisodes", false))
+        assertFalse(profile.getBoolean(useLoginForSearchKey, true))
+        assertTrue(profile.getBoolean(useLoginForBrowseKey, false))
         assertEquals("saved-cursor", profile.getString("syncSessionCursor", null))
         assertEquals("test-cookie", secure.getString("ytCookie", null))
         assertEquals("saved-sync-id", secure.getString("ytDataSyncId", null))

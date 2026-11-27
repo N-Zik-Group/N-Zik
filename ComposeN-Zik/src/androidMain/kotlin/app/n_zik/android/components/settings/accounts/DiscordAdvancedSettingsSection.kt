@@ -34,6 +34,7 @@ import app.n_zik.android.components.glass.GlassOutlinedTextField as OutlinedText
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsCardSectionDivider
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.normalizedSettingsText
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.tab.Search
@@ -177,7 +178,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                     icon = R.drawable.musical_notes
                 )
             }
-            AnimatedVisibility(visible = showDetails) {
+            SettingsEntryVisibility(visible = showDetails) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_details).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_details"),
@@ -199,7 +200,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                     icon = R.drawable.artist
                 )
             }
-            AnimatedVisibility(visible = showState) {
+            SettingsEntryVisibility(visible = showState) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_state).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_state"),
@@ -222,7 +223,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                     icon = R.drawable.pause
                 )
             }
-            AnimatedVisibility(visible = showDetails && pausePresenceEnabled) {
+            SettingsEntryVisibility(visible = showDetails && pausePresenceEnabled) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_pause).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_pause"),
@@ -236,7 +237,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             }
             // Auto-clear only applies when paused presence is disabled.
 
-            AnimatedVisibility(visible = !pausePresenceEnabled) {
+            SettingsEntryVisibility(visible = !pausePresenceEnabled) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_pause_auto_clear).contains(search.inputValue, true)) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_pause_auto_clear"),
@@ -261,7 +262,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                 )
             }
 
-            AnimatedVisibility(visible = showArtwork) {
+            SettingsEntryVisibility(visible = showArtwork) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_image_text).contains(search.inputValue, true)) {
                     OtherSettingsEntry(
                         modifier = Modifier.settingsSearchTarget("accounts.social_discord.discord_advanced_image_text"),
@@ -284,7 +285,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                     iconTint = Color.Unspecified,
                 )
             }
-            AnimatedVisibility(visible = showSmallImage) {
+            SettingsEntryVisibility(visible = showSmallImage) {
                 if (search.inputValue.isBlank() || stringResource(R.string.discord_advanced_logo_text).contains(search.inputValue, true)) {
                     // The manager resolves the version placeholder when it builds the presence.
                     OtherSettingsEntry(
@@ -326,7 +327,7 @@ internal fun DiscordAdvancedSection(search: Search) {
             }
             // Stack the entries because AnimatedVisibility lays its children out in a Box.
 
-            AnimatedVisibility(visible = btn1Enabled) {
+            SettingsEntryVisibility(visible = btn1Enabled) {
                 Column {
                     if (matchesButtonField(DiscordButtonField.FirstLabel)) {
                         OtherSettingsEntry(
@@ -362,7 +363,7 @@ internal fun DiscordAdvancedSection(search: Search) {
                     icon = R.drawable.ytmusic
                 )
             }
-            AnimatedVisibility(visible = btn2Enabled) {
+            SettingsEntryVisibility(visible = btn2Enabled) {
                 Column {
                     if (matchesButtonField(DiscordButtonField.SecondLabel)) {
                         OtherSettingsEntry(

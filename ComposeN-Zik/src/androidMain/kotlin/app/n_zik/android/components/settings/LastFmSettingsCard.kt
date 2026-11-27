@@ -2,11 +2,9 @@ package app.n_zik.android.components.settings
 
 import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
-import androidx.compose.animation.AnimatedVisibility
-import app.n_zik.android.components.settings.common.settingsEntryEnter
-import app.n_zik.android.components.settings.common.settingsEntryExit
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -172,7 +170,7 @@ fun LastFmSettingsCard() {
             }
             if (!isLastfmScrobblingEnabled && hasSavedAccount) accountAction()
 
-            AnimatedVisibility(visible = isLastfmScrobblingEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+            SettingsEntryVisibility(visible = isLastfmScrobblingEnabled) {
                 Column {
                     if (lastfmSession.isNotEmpty()) {
                         Row(
@@ -258,7 +256,7 @@ fun LastFmSettingsCard() {
                         icon = R.drawable.time
                     )
 
-                    AnimatedVisibility(visible = isLastfmScrobbleEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                    SettingsEntryVisibility(visible = isLastfmScrobbleEnabled) {
                         Column {
                             SliderSettingsEntry(
                                 modifier = Modifier.settingsSearchTarget("embedded.lastfm.lastfm_scrobble_threshold"),

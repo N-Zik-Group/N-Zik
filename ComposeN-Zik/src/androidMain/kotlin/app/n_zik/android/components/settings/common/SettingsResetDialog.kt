@@ -154,6 +154,7 @@ internal fun SettingsResetCard(
                                             var downloadLimitRetained = false
                                             if (applyAllSettingsDefaults(
                                                     context,
+                                                    profileId = profileId,
                                                     onDownloadLimitRetained = { downloadLimitRetained = true },
                                                     onSettingsApplied = {
                                                         if (hasPendingDataResetCacheMove(context, profileId) ||

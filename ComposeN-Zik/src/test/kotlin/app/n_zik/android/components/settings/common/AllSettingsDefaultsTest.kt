@@ -102,11 +102,13 @@ class AllSettingsDefaultsTest {
             .putString("navigationBarPosition", "Left").putString("colorPaletteMode", "Light")
             .putBoolean("fullOfflineModeEnabled", true).putBoolean(glassEnabledKey, true)
             .putString("queue", "saved queue").putString("playlist-data", "saved playlists")
+            .putString("syncDirection", "PUSH_ONLY").putBoolean("useLoginForBrowse", true)
             .putBoolean("onboarding_completed", true).commit()
         store("app_settings").edit().putString("profile-records", "saved profiles").commit()
         store("preferences_untouched").edit().clear().putString("navigationBarPosition", "Left").commit()
         secure.edit().clear().putBoolean("enableYoutubeLogin", true).putBoolean("enableYoutubeSync", true)
             .putString("ytCookie", "cookie").putString(discordPersonalAccessTokenKey, "token")
+            .putString("discordAdvancedName", "custom status")
             .putString(lastfmSessionKey, "session").putString("proxyPassword", "password").commit()
         GlassStore(context).apply { setProfile(GlassQuality.Quality); setFloat(glassFilmKey, .263f) }
         mockkStatic("app.n_zik.android.utils.EncryptedPreferencesKt")
@@ -144,8 +146,11 @@ class AllSettingsDefaultsTest {
                 assertFalse(secure.getBoolean("enableYoutubeLogin", true))
                 assertEquals(false, secure.getBoolean("enableYoutubeSync", true))
                 assertEquals("token", secure.getString(discordPersonalAccessTokenKey, null))
+                assertEquals("custom status", secure.getString("discordAdvancedName", null))
                 assertEquals("session", secure.getString(lastfmSessionKey, null))
                 assertEquals("password", secure.getString("proxyPassword", null))
+                assertEquals("PUSH_ONLY", context.preferences.getString("syncDirection", null))
+                assertTrue(context.preferences.getBoolean("useLoginForBrowse", false))
                 assertEquals("saved queue", context.preferences.getString("queue", null))
                 assertEquals("saved playlists", context.preferences.getString("playlist-data", null))
                 assertEquals(true, context.preferences.getBoolean("onboarding_completed", false))
@@ -156,6 +161,31 @@ class AllSettingsDefaultsTest {
             }
             assertEquals(2, callbacks)
         } finally { file.delete(); database.delete() }
+    }
+
+    @Test fun `reset captured for a profile that was switched out leaves both profiles untouched`() = runTest {
+        val original = context.preferences
+        val replacement = store("preferences_untouched")
+        original.edit().putBoolean("pauseSearchHistory", true).commit()
+        replacement.edit().putBoolean("pauseOnHeadphoneDisconnect", false).commit()
+        val originalBefore = original.all.toMap()
+        val replacementBefore = replacement.all.toMap()
+        val sharedBefore = store("app_settings").all.toMap()
+        val secureBefore = secure.all.toMap()
+
+        setActiveProfile("untouched", context)
+        val resetApplied = applyAllSettingsDefaults(
+            context,
+            profileId = "all-settings",
+            onDownloadLimitRetained = { error("A stale reset must not inspect download limits") },
+            onSettingsApplied = { error("A stale reset must not request a restart") },
+        )
+
+        assertFalse(resetApplied)
+        assertEquals(originalBefore, original.all)
+        assertEquals(replacementBefore, replacement.all)
+        assertEquals(sharedBefore, store("app_settings").all)
+        assertEquals(secureBefore, secure.all)
     }
 
     private fun renderReset(target: String = "") {

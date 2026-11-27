@@ -1,16 +1,17 @@
 package app.n_zik.android.components.settings.accounts
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Modifier
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.R
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.setValue
 import androidx.media3.common.util.UnstableApi
+import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
 import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
@@ -58,20 +59,27 @@ internal fun AccountsSyncCards(
                 }
             }
 
-            AnimatedVisibility(visible = isSyncEnabled) {
+            SettingsEntryVisibility(visible = isSyncEnabled) {
                 Column {
+                    // The organized Settings page renders these slots outside this animation.
                     if (selectedCards == null || R.string.sync_imported_playlists_automatic_title in selectedCards) {
-                        SettingsCardSlot(R.string.sync_imported_playlists_automatic_title, order = 3, modifier = { cardModifier(R.string.sync_imported_playlists_automatic_title) }) {
+                        SettingsCardSlot(R.string.sync_imported_playlists_automatic_title, order = 3, modifier = {
+                            cardModifier(R.string.sync_imported_playlists_automatic_title).menuPageInteraction(isSyncEnabled)
+                        }) {
                             AccountsAutoSyncCard()
                         }
                     }
                     if (selectedCards == null || R.string.sync_import_from_youtube in selectedCards) {
-                        SettingsCardSlot(R.string.sync_import_from_youtube, order = 4, modifier = { cardModifier(R.string.sync_import_from_youtube) }) {
+                        SettingsCardSlot(R.string.sync_import_from_youtube, order = 4, modifier = {
+                            cardModifier(R.string.sync_import_from_youtube).menuPageInteraction(isSyncEnabled)
+                        }) {
                             AccountsSyncImportCard()
                         }
                     }
                     if (selectedCards == null || R.string.sync_push_to_youtube in selectedCards) {
-                        SettingsCardSlot(R.string.sync_push_to_youtube, order = 5, modifier = { cardModifier(R.string.sync_push_to_youtube) }) {
+                        SettingsCardSlot(R.string.sync_push_to_youtube, order = 5, modifier = {
+                            cardModifier(R.string.sync_push_to_youtube).menuPageInteraction(isSyncEnabled)
+                        }) {
                             AccountsSyncPushCard()
                         }
                     }

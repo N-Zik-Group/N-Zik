@@ -15,7 +15,10 @@ internal const val ListenTogetherCustomServerTarget = "embedded.listen_together.
 /** Exact destinations for settings cards shared with other screens. */
 val EmbeddedSettingsEntryTargets = listOf(
     SettingsEntryTarget("embedded.youtube.use_account_for_searches", 5, R.string.settings_youtube_music_title, R.string.settings_youtube_authenticated_search_label, listOf(R.string.settings_youtube_authenticated_search_description, R.string.settings_youtube_connection_required_description)),
-    SettingsEntryTarget("embedded.network.download_quality_format", 6, R.string.settings_download_quality, R.string.downloads_quality_format),
+    SettingsEntryTarget(
+        "embedded.network.download_quality_format", 6, R.string.settings_download_quality, R.string.downloads_quality_format,
+        listOf(R.string.network_status, R.string.network_current_download_audio_quality_description),
+    ),
     SettingsEntryTarget("embedded.network.update_downloads", 6, R.string.settings_download_quality, R.string.downloads_action_refresh_quality, listOf(R.string.downloads_refresh_quality_description)),
     SettingsEntryTarget("embedded.profile.module_open", 5, R.string.profile_face, R.string.modules_open, keywordRes = listOf(R.string.profile_open_desc)),
     SettingsEntryTarget("embedded.profile.section.display_name", 5, R.string.profile_face, R.string.settings_group_profile_name),

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.accounts
 
 import app.n_zik.android.components.settings.common.settingsTopContentPadding
+import app.n_zik.android.components.settings.common.RestartPlayerService
 
 import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -207,6 +208,7 @@ internal fun AccountsSettingsContent(
                 GitHubAccountCard(showAppInstallation = true)
             }
         }
+        if (selectedCards == null) RestartPlayerService()
     }
 }
 
