@@ -330,7 +330,7 @@ private fun SettingsProfileShortcut(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ProfileCardAvatar(face, GlassArea.Images, Modifier.clearAndSetSemantics {}, size = 32.dp)
+        ProfileCardAvatar(face, GlassArea.Images, Modifier.clearAndSetSemantics {}, slotSize = 32.dp)
         Column(Modifier.weight(1f).padding(end = 2.dp)) {
             BasicText(
                 text = face.name,

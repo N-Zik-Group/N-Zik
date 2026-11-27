@@ -217,7 +217,7 @@ fun ProfileFaceCard(
                     .padding(horizontal = settingsCardRowHorizontalPadding(outset) - outset, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ProfileCardAvatar(shownFace, GlassArea.SettingsCards, size = 32.dp)
+                ProfileCardAvatar(shownFace, GlassArea.SettingsCards, slotSize = 32.dp)
 
                 Spacer(modifier = Modifier.width(12.dp))
 

@@ -2,6 +2,7 @@ package app.n_zik.android.components.ui.screens.profiles
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,10 +25,14 @@ internal fun ProfileCardAvatar(
     face: ProfileFace,
     area: GlassArea,
     modifier: Modifier = Modifier,
-    size: Dp = ProfileCardAvatarSize,
+    slotSize: Dp = ProfileCardAvatarSize,
 ) {
-    ProfileAvatarFrame(size, area, modifier) {
-        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = size)
+    ProfileAvatarFrame(
+        ProfileCardAvatarSize,
+        area,
+        modifier.size(slotSize).wrapContentSize(unbounded = true),
+    ) {
+        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = ProfileCardAvatarSize)
     }
 }
 

@@ -1168,3 +1168,7 @@ Settings:
 Menus:
 - fix(queue): reveal destinations opened from queue menus
   - Close the queue and its expanded player only after a menu destination opens successfully.
+
+Settings:
+- fix(settings): center 36 dp profile avatars in card rows
+  - Keep the 36 dp avatar and align its center with the settings badge column.
