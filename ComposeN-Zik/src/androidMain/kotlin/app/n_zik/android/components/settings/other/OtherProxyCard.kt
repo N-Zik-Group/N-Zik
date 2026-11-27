@@ -8,7 +8,6 @@ import app.n_zik.android.core.settings.validProxyPorts
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import app.n_zik.android.core.network.client.profileProxyEndpoint
 import androidx.compose.runtime.Composable
@@ -35,6 +34,7 @@ import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.innertube.Innertube
@@ -83,7 +83,7 @@ internal fun OtherProxyCard(search: Search) {
                 )
             }
 
-            AnimatedVisibility(visible = isProxyEnabled) {
+            SettingsEntryVisibility(visible = isProxyEnabled) {
                 Column {
 
                     var showProxyModeDialog by remember { mutableStateOf(false) }

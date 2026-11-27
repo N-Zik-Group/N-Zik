@@ -40,6 +40,7 @@ import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.glassOverflowFade
 import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.colorPalette
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -113,7 +114,7 @@ fun SettingsSectionCard(
             enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
             exit = if (overflow) settingsCardOverflowExit else settingsCardExit
         ) {
-            Column(modifier = modifier.fillMaxWidth().then(
+            Column(modifier = modifier.fillMaxWidth().menuPageInteraction(visible).then(
                 if (overflow) glassOverflowFade(SETTINGS_CARD_ENTER_MILLIS, SETTINGS_CARD_EXIT_MILLIS) else Modifier,
             )) {
                 SettingsCardSurface(
@@ -208,7 +209,7 @@ fun SettingsSectionCard(
                             enter = if (overflow) settingsCardOverflowEnter else settingsCardEnter,
                             exit = if (overflow) settingsCardOverflowExit else settingsCardExit,
                         ) {
-                            Column(Modifier.then(
+                            Column(Modifier.menuPageInteraction(expanded).then(
                                 if (overflow) glassOverflowFade(SETTINGS_CARD_ENTER_MILLIS, SETTINGS_CARD_EXIT_MILLIS) else Modifier,
                             )) {
                                 groupedContent()

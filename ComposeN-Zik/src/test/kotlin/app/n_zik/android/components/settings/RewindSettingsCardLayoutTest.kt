@@ -134,6 +134,39 @@ class RewindSettingsCardLayoutTest {
     }
 
     @Test
+    fun `monthly playlist notification leaves accessibility during its exit animation`() {
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_ENABLED, true)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+        DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    RewindSettingsCard()
+                }
+            }
+        }
+
+        val monthlyNotification = composeRule.onNodeWithText(
+            context.getString(R.string.rewind_settings_playlists_monthly_notification),
+        )
+        monthlyNotification.performScrollTo().assertIsDisplayed()
+        val monthlyPlaylist = composeRule
+            .onNodeWithText(context.getString(R.string.rewind_settings_playlists_monthly))
+            .performScrollTo()
+
+        composeRule.mainClock.autoAdvance = false
+        monthlyPlaylist.performClick()
+        shadowOf(Looper.getMainLooper()).idle()
+        composeRule.mainClock.advanceTimeBy(64)
+        composeRule.waitForIdle()
+
+        monthlyNotification.assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_playlists_yearly_notification))
+            .assertExists()
+    }
+
+    @Test
     fun `the open row is absent without the callback and fires it when provided`() {
         // The rule's setContent is single-shot (Compose 1.12), so the callback is an
         // observed state the test flips after the first assertions.

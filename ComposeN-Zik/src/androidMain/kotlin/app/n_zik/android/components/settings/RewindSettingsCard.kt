@@ -1,7 +1,6 @@
 package app.n_zik.android.components.settings
 
 import android.Manifest
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -23,8 +22,6 @@ import app.n_zik.android.components.settings.common.RewindPlaylistSectionTarget
 import app.n_zik.android.components.settings.common.RewindMasterSettingsTarget
 import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
-import app.n_zik.android.components.settings.common.settingsEntryEnter
-import app.n_zik.android.components.settings.common.settingsEntryExit
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.core.rewind.updateRewindWorkPreference
@@ -186,7 +183,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
             content = {
                 SearchableSettingsSectionHeading(R.string.settings_group_rewind_alerts, "embedded.rewind.section.alerts", showDivider = false)
 
-                AnimatedVisibility(visible = rewindEnabled && monthlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                SettingsEntryVisibility(visible = rewindEnabled && monthlyEnabled) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly_notification"),
                         title = stringResource(R.string.rewind_settings_monthly_notification),
@@ -200,7 +197,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     )
                 }
 
-                AnimatedVisibility(visible = monthlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                SettingsEntryVisibility(visible = rewindEnabled && monthlyPlaylistEnabled) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly_notification"),
                         title = stringResource(R.string.rewind_settings_playlists_monthly_notification),
@@ -213,7 +210,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                         icon = R.drawable.notification2
                     )
                 }
-                AnimatedVisibility(visible = rewindEnabled && yearlyEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                SettingsEntryVisibility(visible = rewindEnabled && yearlyEnabled) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly_notification"),
                         title = stringResource(R.string.rewind_settings_yearly_notification),
@@ -227,7 +224,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     )
                 }
 
-                AnimatedVisibility(visible = yearlyPlaylistEnabled, enter = settingsEntryEnter, exit = settingsEntryExit) {
+                SettingsEntryVisibility(visible = rewindEnabled && yearlyPlaylistEnabled) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_yearly_notification"),
                         title = stringResource(R.string.rewind_settings_playlists_yearly_notification),

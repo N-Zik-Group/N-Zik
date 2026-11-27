@@ -2,7 +2,6 @@ package app.n_zik.android.components.settings.accounts
 
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.compose.ui.Modifier
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,6 +50,7 @@ import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettin
 import app.n_zik.android.components.settings.common.OtherInfoSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -97,7 +97,7 @@ internal fun AccountsSyncOverviewCard(isSyncEnabled: Boolean, disabledReason: In
                 icon = R.drawable.sync
             )
 
-            AnimatedVisibility(visible = isSyncEnabled) {
+            SettingsEntryVisibility(visible = isSyncEnabled) {
                 Column {
                     // Sync status overview
                     val lifecycle = LocalLifecycleOwner.current.lifecycle

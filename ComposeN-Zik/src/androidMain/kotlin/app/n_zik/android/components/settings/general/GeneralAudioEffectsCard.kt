@@ -4,7 +4,6 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import androidx.annotation.OptIn
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -45,6 +44,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
 import app.n_zik.android.uiRoundnessShape
@@ -102,7 +102,7 @@ fun GeneralAudioEffectsCard(
                 icon = R.drawable.pause
             )
 
-            AnimatedVisibility(visible = skipSilence) {
+            SettingsEntryVisibility(visible = skipSilence) {
                 val initialValue by remember { derivedStateOf { minimumSilenceDuration.toFloat() / 1000L } }
                 var newValue by remember(initialValue) { mutableFloatStateOf(initialValue) }
 
@@ -141,7 +141,7 @@ fun GeneralAudioEffectsCard(
                 onCheckedChange = { volumeNormalization = it },
                 icon = R.drawable.volume_up
             )
-            AnimatedVisibility(visible = volumeNormalization) {
+            SettingsEntryVisibility(visible = volumeNormalization) {
                 val initialValue by remember { derivedStateOf { loudnessBaseGain } }
                 var newValue by remember(initialValue) { mutableFloatStateOf(initialValue) }
 
@@ -249,7 +249,7 @@ fun GeneralAudioEffectsCard(
                 onCheckedChange = { bassboostEnabled = it },
                 icon = R.drawable.equalizer
             )
-            AnimatedVisibility(visible = bassboostEnabled) {
+            SettingsEntryVisibility(visible = bassboostEnabled) {
                 val initialValue by remember { derivedStateOf { bassboostLevel } }
                 var newValue by remember(initialValue) { mutableFloatStateOf(initialValue) }
 
