@@ -1620,3 +1620,7 @@ Menus / Lyrics:
 Search:
 - fix(search): align result actions and labels
   - Keep search actions with their matching result context and use the shared action presentation.
+
+Menus / Playlist:
+- fix(menu): keep sorting feedback consistent
+  - Use the shared selected state and verify current sort and Library scope behavior.

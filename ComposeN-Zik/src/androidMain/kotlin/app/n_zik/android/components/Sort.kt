@@ -217,7 +217,10 @@ open class Sort<T> (
                 val isSelected = it == sortBy
                 GridMenu.Entry(
                     text = it.text,
-                    modifier = menuSelectionSemantics(isSelected),
+                    modifier = menuSelectionSemantics(isSelected).then(
+                        if (isSelected) Modifier.background(colorPalette().accent.copy(alpha = 0.1f), uiRoundnessShape()) else Modifier,
+                    ),
+                    iconHasOwnBackground = true,
                     icon = {
                         Box(
                             modifier = Modifier

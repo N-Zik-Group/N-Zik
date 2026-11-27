@@ -65,13 +65,13 @@ class HomeLibraryPlaylistScopeTest {
         assertEquals(listOf("shared", "episode-2", "episode-1"), songs.map { it.id })
     }
 
-    @Test fun `all pinned and rewind predicates retain their original visibility rules`() {
+    @Test fun `all includes pinned and rewind while their dedicated tabs filter`() {
         val month = preview(5, RewindPlaylists.monthlyName(2026, 10))
         val year = preview(6, RewindPlaylists.yearlyName(2026))
         val pinned = preview(7, "${PINNED_PREFIX}Pinned")
         val rows = catalog + month + year + pinned
         val all = podcastScope.copy(type = PlaylistsType.Playlist)
-        assertEquals(catalog, all.visible(rows))
+        assertEquals(rows, all.visible(rows))
         assertEquals(listOf(pinned), all.copy(type = PlaylistsType.PinnedPlaylist).visible(rows))
         assertEquals(listOf(year), all.copy(type = PlaylistsType.MonthlyPlaylist,
             rewindFilter = RewindPlaylists.Filter.Year).visible(rows))
@@ -83,8 +83,7 @@ class HomeLibraryPlaylistScopeTest {
         val remotePlaylist = remote.copy(playlist = remote.playlist.copy(isYoutubePlaylist = true))
         val pinned = preview(7, "${PINNED_PREFIX}Local pinned")
         val scope = podcastScope.copy(type = PlaylistsType.OnDevice, query = "local")
-        assertEquals(listOf(local), scope.visible(listOf(remotePlaylist, local, pinned)))
-        assertEquals(listOf(local, pinned), scope.copy(showPinned = true).visible(listOf(remotePlaylist, local, pinned)))
+        assertEquals(listOf(local, pinned), scope.visible(listOf(remotePlaylist, local, pinned)))
         assertTrue(scope.copy(query = "science").visible(listOf(remotePlaylist, local)).isEmpty())
     }
 

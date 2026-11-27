@@ -79,11 +79,16 @@ class QuickPicksSortingMenuTest {
             // Entry height is 32dp support plus 10dp padding on either side.
             val badge = pixels.height * 32 / 52
             val top = (pixels.height - badge) / 2
-            val nativeBackground = pixels[badge + 2, top]
-            val fill = accent.copy(alpha = .1f).compositeOver(nativeBackground).toArgb()
-            assertEquals("32dp source badge fill", fill, pixels[badge / 2, top + badge / 8].toArgb())
-            assertEquals("Rounded native corner remains outside badge", nativeBackground.toArgb(), pixels[0, top].toArgb())
-            assertTrue("18dp glyph keeps theme accent", (0 until badge).any { x ->
+            val badgeLeft = pixels.height * 12 / 52
+            val nativeBackground = pixels[pixels.width * 2 / 3, top]
+            val badgeAlpha = if (label == R.string.home_sort_most_played_song_label) .2f else .1f
+            val fill = accent.copy(alpha = badgeAlpha).compositeOver(nativeBackground).toArgb()
+            val actualFill = pixels[badgeLeft + badge / 2, top + badge / 8].toArgb()
+            assertTrue("32dp source badge fill", (0..24 step 8).all { shift ->
+                kotlin.math.abs(((fill ushr shift) and 255) - ((actualFill ushr shift) and 255)) <= 1
+            })
+            assertEquals("Rounded native corner remains outside badge", nativeBackground.toArgb(), pixels[badgeLeft, top].toArgb())
+            assertTrue("18dp glyph keeps theme accent", (badgeLeft until badgeLeft + badge).any { x ->
                 (0 until badge).any { y -> pixels[x, top + y].toArgb() == accent.toArgb() }
             })
         }
