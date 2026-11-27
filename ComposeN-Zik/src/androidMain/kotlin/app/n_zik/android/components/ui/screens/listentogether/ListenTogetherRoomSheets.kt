@@ -108,8 +108,8 @@ internal fun CreateRoomSheet(
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
                     )
-                    // Validate on click to preserve the app's accent button styling.
                     Button(
+                        enabled = tempUsername.isNotBlank(),
                         onClick = {
                             val name = tempUsername.trim()
                             if (name.isNotBlank()) onConfirm(name)
@@ -234,8 +234,8 @@ internal fun JoinRoomSheet(
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
                     )
-                    // Validate on click to preserve the app's accent button styling.
                     Button(
+                        enabled = hasValidCode && hasValidUsername,
                         onClick = {
                             if (hasValidCode && hasValidUsername) {
                                 onConfirm(tempCode, tempUsername.trim())
