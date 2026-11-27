@@ -1,5 +1,7 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.ui.LeadingIconBadge
+import app.n_zik.android.components.menu.MenuSectionTitle
 import app.n_zik.android.utils.percentLabel
 import app.n_zik.android.components.glass.NativeIconActionSize
 
@@ -22,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +38,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
@@ -115,20 +117,9 @@ class PlaybackSettingsMenu private constructor(
         var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
         var playbackPitch by rememberPreference(playbackPitchKey, 1f)
         var playbackVolume by rememberPreference(playbackVolumeKey, 1f)
-        var playbackDeviceVolume by remember(context) { mutableFloatStateOf(getDeviceVolume(context)) }
+        var playbackDeviceVolume by rememberDeviceVolume(context)
         var playbackDuration by rememberPreference(playbackDurationKey, 0f)
 
-        DisposableEffect(Unit) {
-            val receiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
-                    if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
-                        context?.let { playbackDeviceVolume = getDeviceVolume(it) }
-                    }
-                }
-            }
-            context.registerReceiver(receiver, IntentFilter("android.media.VOLUME_CHANGED_ACTION"))
-            onDispose { context.unregisterReceiver(receiver) }
-        }
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
         val bassBoostEnabled by rememberPreference(bassboostEnabledKey, false)
@@ -138,7 +129,7 @@ class PlaybackSettingsMenu private constructor(
 
         ListMenu.Menu(title = stringResource(R.string.player_controls_action_customize)) {
             // Section: Playback
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
 
             // Speed
             ListSliderMenuItem(
@@ -191,7 +182,7 @@ class PlaybackSettingsMenu private constructor(
             )
 
             // Section: Volume
-            SectionTitle(stringResource(R.string.player_statistics_volume_label))
+            MenuSectionTitle(stringResource(R.string.player_statistics_volume_label))
 
             // Playback Volume
             ListSliderMenuItem(
@@ -231,7 +222,7 @@ class PlaybackSettingsMenu private constructor(
             )
 
             // Section: Player Effects
-            SectionTitle(stringResource(R.string.player_effects))
+            MenuSectionTitle(stringResource(R.string.player_effects))
 
             // Blur Effect
             ListSliderMenuItem(
@@ -251,7 +242,7 @@ class PlaybackSettingsMenu private constructor(
             )
 
             // Section: Effects
-            SectionTitle(stringResource(R.string.audio_effects))
+            MenuSectionTitle(stringResource(R.string.audio_effects))
 
             // Bass Boost
             ListSliderMenuItem(
@@ -318,7 +309,7 @@ class PlaybackSettingsMenu private constructor(
         var playbackSpeed by rememberPreference(playbackSpeedKey, 1f)
         var playbackPitch by rememberPreference(playbackPitchKey, 1f)
         var playbackVolume by rememberPreference(playbackVolumeKey, 1f)
-        var playbackDeviceVolume by remember(context) { mutableFloatStateOf(getDeviceVolume(context)) }
+        var playbackDeviceVolume by rememberDeviceVolume(context)
         var playbackDuration by rememberPreference(playbackDurationKey, 0f)
         var blurStrength by rememberPreference(blurStrengthKey, 25f)
         var bassBoost by rememberPreference(bassboostLevelKey, 0f)
@@ -327,24 +318,13 @@ class PlaybackSettingsMenu private constructor(
         var loudnessBaseGain by rememberPreference(loudnessBaseGainKey, 5f)
         var volumeBoostLevel by rememberPreference(volumeBoostLevelKey, 0f)
 
-        DisposableEffect(Unit) {
-            val receiver = object : BroadcastReceiver() {
-                override fun onReceive(context: Context?, intent: Intent?) {
-                    if (intent?.action == "android.media.VOLUME_CHANGED_ACTION") {
-                        context?.let { playbackDeviceVolume = getDeviceVolume(it) }
-                    }
-                }
-            }
-            context.registerReceiver(receiver, IntentFilter("android.media.VOLUME_CHANGED_ACTION"))
-            onDispose { context.unregisterReceiver(receiver) }
-        }
 
         var tempLoudnessGain by remember { mutableFloatStateOf(loudnessBaseGain) }
         var tempVolumeBoost by remember { mutableFloatStateOf(volumeBoostLevel) }
 
         GridMenu.Menu(title = stringResource(R.string.player_controls_action_customize), showDragHandle = true) {
             // Section: Playback
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.common_playback_section_title)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.common_playback_section_title)) }
 
             item {
                 SliderGridEntry(
@@ -399,7 +379,7 @@ class PlaybackSettingsMenu private constructor(
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.player_statistics_volume_label)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.player_statistics_volume_label)) }
 
             item {
                 SliderGridEntry(
@@ -442,7 +422,7 @@ class PlaybackSettingsMenu private constructor(
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.player_effects)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.player_effects)) }
 
             item {
                 SliderGridEntry(
@@ -462,7 +442,7 @@ class PlaybackSettingsMenu private constructor(
                 )
             }
 
-            item(span = { GridItemSpan(maxLineSpan) }) { SectionTitle(stringResource(R.string.audio_effects)) }
+            item(span = { GridItemSpan(maxLineSpan) }) { MenuSectionTitle(stringResource(R.string.audio_effects)) }
 
             item {
                 SliderGridEntry(
@@ -536,40 +516,25 @@ class PlaybackSettingsMenu private constructor(
             GridMenu()
     }
 
+
     @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
+    private fun rememberDeviceVolume(context: Context): MutableFloatState {
+        val volume = remember(context) { mutableFloatStateOf(getDeviceVolume(context)) }
+        DisposableEffect(context) {
+            val action = "android.media.VOLUME_CHANGED_ACTION"
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(receiverContext: Context?, intent: Intent?) {
+                    if (intent?.action == action) volume.floatValue = getDeviceVolume(receiverContext ?: context)
+                }
+            }
+            context.registerReceiver(receiver, IntentFilter(action))
+            onDispose { context.unregisterReceiver(receiver) }
+        }
+        return volume
     }
 
     @Composable
-    private fun SettingIcon(icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = colorPalette().accent,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
+    private fun SettingIcon(icon: Int) = LeadingIconBadge(icon, contentDescription = null)
 
     @OptIn(ExperimentalFoundationApi::class)
     @Composable

@@ -494,6 +494,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             enabled = !isCarProjectionActive || dev.isActive,
                             modifier = Modifier.audioOptionSelection(dev.isActive),
                             iconHasOwnBackground = true,
+                            selected = dev.isActive,
                             icon = {
                                 val iconColor = if (dev.isActive) colorPalette().accent else colorPalette().text
                                 Box(
@@ -578,6 +579,7 @@ fun AudioDeviceMenu(onDismiss: () -> Unit) {
                             text = label,
                             modifier = Modifier.audioOptionSelection(isSelected),
                             iconHasOwnBackground = true,
+                            selected = isSelected,
                             icon = {
                                 val iconColor = if (isSelected) colorPalette().accent else colorPalette().text
                                 Box(

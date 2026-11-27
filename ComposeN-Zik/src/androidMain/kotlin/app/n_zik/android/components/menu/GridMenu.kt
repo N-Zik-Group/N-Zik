@@ -92,6 +92,7 @@ object GridMenu {
         onClick: (() -> Unit)? = null,
         onLongClick: (() -> Unit)? = null,
         iconHasOwnBackground: Boolean = false,
+        selected: Boolean = false,
         trailingContent: @Composable () -> Unit = {}
     ) {
         val alpha = if (enabled) 1f else 0.5f
@@ -102,6 +103,7 @@ object GridMenu {
         Column(
             modifier = modifier
                 .clip(shape)
+                .background(if (selected) colorPalette().accent.copy(alpha = 0.08f) else Color.Transparent)
                 .menuEntryClick(shape, enabled, onClick, onLongClick)
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,

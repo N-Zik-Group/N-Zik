@@ -1628,3 +1628,7 @@ Menus / Playlist:
 Playlist:
 - fix(playlist): keep loaded tracks available after pagination fails
   - Enable Add for available tracks after the load settles while reserving full import for complete or saved collections.
+
+Menus:
+- refactor(menu): share playback controls and selection styling
+  - Reuse the common icon badge and device volume observer, and show the current audio option in List and Grid.

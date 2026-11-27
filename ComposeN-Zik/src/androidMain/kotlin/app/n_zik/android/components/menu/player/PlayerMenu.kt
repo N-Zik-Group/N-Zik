@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.player
 
+import app.n_zik.android.components.ui.LeadingIconBadge
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -27,24 +28,7 @@ import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.rememberPreference
 
 @Composable
-fun SettingIcon(@DrawableRes icon: Int) {
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .iconBadgeBackground(
-                color = colorPalette().accent.copy(alpha = 0.1f),
-                shape = uiRoundnessShape()
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(icon),
-            tint = colorPalette().accent,
-            contentDescription = null,
-            modifier = Modifier.size(18.dp)
-        )
-    }
-}
+fun SettingIcon(@DrawableRes icon: Int) = LeadingIconBadge(icon, contentDescription = null)
 
 @OptIn(ExperimentalFoundationApi::class)
 @ExperimentalTextApi

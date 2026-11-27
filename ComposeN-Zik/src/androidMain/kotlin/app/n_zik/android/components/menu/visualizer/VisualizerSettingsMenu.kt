@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.visualizer
 
+import app.n_zik.android.components.ui.LeadingIconBadge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -321,24 +322,7 @@ class VisualizerSettingsMenu private constructor(
     // Helper composables
 
     @Composable
-    private fun SettingIcon(icon: Int) {
-        Box(
-            modifier = Modifier
-                .size(32.dp)
-                .iconBadgeBackground(
-                    color = colorPalette().accent.copy(alpha = 0.1f),
-                    shape = uiRoundnessShape()
-                ),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(icon),
-                tint = colorPalette().accent,
-                contentDescription = null,
-                modifier = Modifier.size(18.dp)
-            )
-        }
-    }
+    private fun SettingIcon(icon: Int) = LeadingIconBadge(icon, contentDescription = null)
 
     @Composable
     private fun ToggleSettingEntry(
