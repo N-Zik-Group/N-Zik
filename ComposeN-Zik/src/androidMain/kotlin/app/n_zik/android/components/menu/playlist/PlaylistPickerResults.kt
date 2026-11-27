@@ -111,11 +111,19 @@ private fun sortedPlaylistPickerPreviews(
     val flows = sorts.map { (sortBy, sortOrder) -> Database.playlistTable.sortPreviews(sortBy, sortOrder) }
     if (flows.size == 1) return flows.single()
     return combine(flows) { previews ->
-        fun PlaylistPreview.isPinned() = playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true)
+        val library = previews[sorts.indexOf(librarySort)]
+        val (pinned, unpinned) = library.partition { it.playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) }
+        val (youtube, local) = unpinned.partition { isYouTubePlaylistPickerEntry(it.playlist) }
 
-        previews[sorts.indexOf(pinnedSort)].filter { it.isPinned() } +
-            previews[sorts.indexOf(youtubeSort)].filter { !it.isPinned() && isYouTubePlaylistPickerEntry(it.playlist) } +
-            previews[sorts.indexOf(librarySort)].filter { !it.isPinned() && !isYouTubePlaylistPickerEntry(it.playlist) }
+        // Room can deliver the independently sorted views at different times. Classify using
+        // one snapshot and use the other views only to order the IDs already in that snapshot.
+        fun List<PlaylistPreview>.inOrder(sort: Pair<PlaylistSortBy, SortOrder>): List<PlaylistPreview> {
+            if (sort == librarySort || size < 2) return this
+            val rankById = previews[sorts.indexOf(sort)].mapIndexed { index, item -> item.playlist.id to index }.toMap()
+            return sortedBy { rankById[it.playlist.id] ?: Int.MAX_VALUE }
+        }
+
+        pinned.inOrder(pinnedSort) + youtube.inOrder(youtubeSort) + local
     }
 }
 

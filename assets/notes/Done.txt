@@ -1284,3 +1284,7 @@ Settings:
 Menus:
 - fix(playlists): report creation only after it is stored
   - Wait for the playlist ID before reporting success and let the picker report the subsequent add result.
+
+Menus:
+- fix(playlists): keep sorted picker groups from duplicating entries
+  - Classify playlists from a single snapshot and use the other sort flows solely for ordering.
