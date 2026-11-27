@@ -9,6 +9,7 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.core.rewind.RewindPlaylists
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -51,6 +52,17 @@ class HomeLibraryPlaylistScopeTest {
         assertTrue(homeLibraryActionTargets(visible, listOf(local), selectionActive = true).isEmpty())
         assertEquals(listOf(2L), homeLibraryActionTargets(visible, listOf(otherPodcast, local), selectionActive = true).map { it.playlist.id })
         assertEquals(listOf(1L), homeLibraryActionTargets(visible, listOf(podcast), selectionActive = true).map { it.playlist.id })
+    }
+
+    @Test fun `empty rows allow opening the picker from unfiltered All without a selection`() {
+        val all = podcastScope.copy(type = PlaylistsType.Playlist)
+        val emptyPlaylist = local.copy(songCount = 0)
+        val hasTracks = all.visible(listOf(emptyPlaylist)).any { it.songCount > 0 }
+
+        assertTrue(all.canOpenPlaylistPicker(hasTracks, selectionActive = false))
+        assertFalse(all.canOpenPlaylistPicker(hasTracks, selectionActive = true))
+        assertFalse(all.copy(query = "Private").canOpenPlaylistPicker(hasTracks, selectionActive = false))
+        assertFalse(podcastScope.canOpenPlaylistPicker(hasTracks, selectionActive = false))
     }
 
     @Test fun `song loading deduplicates shared episodes while retaining visible order`() = runBlocking {

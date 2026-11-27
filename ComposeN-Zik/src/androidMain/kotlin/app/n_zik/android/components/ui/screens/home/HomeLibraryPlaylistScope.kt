@@ -19,6 +19,9 @@ internal data class HomeLibraryPlaylistScope(
     fun matchesName(name: String, displayName: (String) -> String = ::cleanPrefix): Boolean =
         query.isBlank() || displayName(name).contains(query.trim(), ignoreCase = true)
 
+    fun canOpenPlaylistPicker(hasTracks: Boolean, selectionActive: Boolean): Boolean =
+        hasTracks || (type == PlaylistsType.Playlist && query.isBlank() && !selectionActive)
+
     fun visible(candidates: List<PlaylistPreview>): List<PlaylistPreview> = candidates.filter { preview ->
         val playlist = preview.playlist
         matchesName(playlist.name) && when (type) {

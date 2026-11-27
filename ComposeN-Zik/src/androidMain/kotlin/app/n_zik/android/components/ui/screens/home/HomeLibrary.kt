@@ -553,13 +553,12 @@ fun HomeLibrary(
                 val toolbarOrder = HomeLibraryToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
                 val playlistAnchor = playlistActionsAnchor(toolbarOrder)
                 val hasTracksToAdd = actionTargets().any { it.songCount > 0 }
-                val canCreateFirstPlaylist = gridReady && !itemSelector.isActive &&
-                    playlistType == PlaylistsType.Playlist && search.filterQuery.isBlank() && itemsOnDisplay.isEmpty()
                 val addPlaylistAction = rememberCollectionAddAction(
                     sourceId = "library",
                     menuState = menuState,
                     canImportCollection = "import_menu" in toolbarOrder && playlistType != PlaylistsType.OnDevice,
-                    hasTracks = "add_to_playlist" in toolbarOrder && (hasTracksToAdd || canCreateFirstPlaylist),
+                    hasTracks = "add_to_playlist" in toolbarOrder && gridReady &&
+                        libraryScope.canOpenPlaylistPicker(hasTracksToAdd, itemSelector.isActive),
                     importFromCurrentCollection = false,
                     canExport = "export_dialog" in toolbarOrder && (playlistType != PlaylistsType.OnDevice && hasTracksToAdd),
                     openExport = exportDialog::onShortClick,

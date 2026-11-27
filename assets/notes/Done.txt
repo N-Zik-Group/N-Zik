@@ -1696,3 +1696,7 @@ Playlist:
 Menus:
 - fix(menu): display the actual system volume during adjustment
   - Apply the nearest Android stream step, refresh on release, and keep local volume usable after output discovery errors.
+
+Playlist:
+- fix(playlist): allow creation from Library with empty collections
+  - Keep the picker available for creation in the unfiltered All tab without a selected payload.
