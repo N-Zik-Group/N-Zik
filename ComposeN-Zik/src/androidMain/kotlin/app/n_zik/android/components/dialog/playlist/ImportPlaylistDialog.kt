@@ -5,18 +5,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
+import app.n_zik.android.components.dialog.common.DialogPresence
+import app.n_zik.android.components.dialog.common.LocalRequireNativeDialogWindow
 import app.n_zik.android.components.dialog.common.TextInputDialog
+import app.n_zik.android.components.glass.LocalGlassMenuHost
+import app.n_zik.android.components.glass.canHostGlassMenuSheet
+import app.n_zik.android.components.glass.glassRenderer
+import app.n_zik.android.components.glass.rememberGlassSettings
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 
@@ -26,6 +36,8 @@ class ImportPlaylistDialog private constructor(
     private val initialValue: () -> String,
     private val onImport: (String) -> Unit
 ): TextInputDialog(InputDialogConstraints.ALL), MenuIcon, Descriptive {
+
+    private var onMenuImportAccepted: (() -> Unit)? = null
 
     companion object {
         @Composable
@@ -64,11 +76,42 @@ class ImportPlaylistDialog private constructor(
 
     override fun onShortClick() = showDialog()
 
+    internal fun openFromMenu(menuState: MenuState) {
+        if (isActive) return
+        val menuKey = menuState.transitionKey
+        onMenuImportAccepted = {
+            if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+        }
+        showDialog()
+    }
+
     override fun showDialog() {
         if (isActive) return
         value = TextFieldValue(initialValue())
         errorMessage = ""
         super.showDialog()
+    }
+
+    override fun hideDialog() {
+        onMenuImportAccepted = null
+        super.hideDialog()
+    }
+
+    @Composable
+    internal fun RenderAboveMenu(menuState: MenuState) {
+        DialogPresence(visible = isActive) {
+            val glass = rememberGlassSettings()
+            val host = LocalGlassMenuHost.current
+            val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
+            val menuSharesActivityWindow = canHostGlassMenuSheet(glass, glassRenderer(glass), sameWindow && host?.backdrop != null)
+            val requiresNativeDialog = LocalRequireNativeDialogWindow.current ||
+                (menuState.isDisplayed && !menuSharesActivityWindow)
+            // Keep the same window while the confirmation dismisses the menu underneath it.
+            val nativeDialog = remember { requiresNativeDialog }
+            CompositionLocalProvider(LocalRequireNativeDialogWindow provides nativeDialog) {
+                Render()
+            }
+        }
     }
 
     @Composable
@@ -83,6 +126,7 @@ class ImportPlaylistDialog private constructor(
         if( errorMessage.isNotEmpty() ) return
 
         onImport(newValue)
+        onMenuImportAccepted?.invoke()
         hideDialog()
     }
 }

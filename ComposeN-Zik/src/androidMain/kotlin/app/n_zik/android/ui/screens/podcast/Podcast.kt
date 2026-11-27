@@ -232,7 +232,7 @@ fun Podcast(
         }
     )
 
-    importDialog.Render()
+    importDialog.RenderAboveMenu(menuState)
 
     val thumbnailContent: @Composable () -> Unit = {
         PodcastBannerThumbnail(
@@ -655,7 +655,7 @@ fun Podcast(
                                                             modifier = Modifier.fillMaxHeight(0.4f),
                                                             onDismiss = menuState::hide,
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
-                                                                importDialog::onShortClick
+                                                                { importDialog.openFromMenu(menuState) }
                                                             },
                                                             onOpenAddToPlaylist = if (hasEpisodeTargets) {
                                                                 addToPlaylist::onShortClick

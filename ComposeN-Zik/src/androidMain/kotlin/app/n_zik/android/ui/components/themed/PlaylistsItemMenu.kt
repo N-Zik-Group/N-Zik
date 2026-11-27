@@ -249,10 +249,7 @@ fun PlaylistsItemMenu(
                 ListMenu.Entry(
                     text = stringResource(R.string.playlist_action_import),
                     icon = { SettingIcon(R.drawable.add_in_playlist) },
-                    onClick = {
-                        onDismiss()
-                        onImportOnlinePlaylist()
-                    }
+                    onClick = onImportOnlinePlaylist,
                 )
             }
 

@@ -209,10 +209,7 @@ fun PlaylistsItemGridMenu(
                     text = stringResource(R.string.playlist_action_import),
                     iconHasOwnBackground = true,
                     icon = { SettingIcon(R.drawable.add_in_playlist) },
-                    onClick = {
-                        onDismiss()
-                        onImportOnlinePlaylist()
-                    }
+                    onClick = onImportOnlinePlaylist,
                 )
             }
         }

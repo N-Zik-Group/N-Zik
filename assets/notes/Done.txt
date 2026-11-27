@@ -1400,3 +1400,7 @@ Menus:
 Menus:
 - fix(menu): place nested back actions on the leading edge
   - Use left-hand back actions and keep sheet titles centered.
+
+Menus:
+- fix(playlist): keep the parent menu when canceling import
+  - Keep the import dialog above the originating menu in both appearance modes.

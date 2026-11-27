@@ -352,7 +352,7 @@ fun PlaylistSongList(
             Toaster.done()
         }
     }
-    importPlaylistDialog.Render()
+    importPlaylistDialog.RenderAboveMenu(menuState)
 
     val isInitialLoading = playlistPage == null && playlistSongs.isEmpty() && !initialLoadFailed
     val showSongPlaceholders = forceSongPlaceholders || isInitialLoading
@@ -896,7 +896,7 @@ fun PlaylistSongList(
                                                             modifier = Modifier.fillMaxHeight(0.4f),
                                                             onDismiss = menuState::hide,
                                                             onImportOnlinePlaylist = if (usingSelection) null else {
-                                                                { importPlaylistDialog.onShortClick() }
+                                                                { importPlaylistDialog.openFromMenu(menuState) }
                                                             },
                                                             onOpenAddToPlaylist = if (actionSongs.isNotEmpty()) {
                                                                 addToPlaylist::onShortClick
