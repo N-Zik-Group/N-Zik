@@ -2096,3 +2096,22 @@ Playlists:
   - Hide those actions for device-only playlists and when a mixed playlist search or selection contains only device files.
 - fix(auto): use the saved database sort on legacy favorites routes
   - Use mobile defaults for legacy browsing and apply the saved database-supported order during playback.
+
+Settings:
+- fix(settings): align YouTube session validity at startup
+  - Use the same authentication check in startup and the account card, and keep invalid sessions out of authenticated browse and search.
+  - Avoid leaving an account change marked as an unrelated streaming-client restart.
+- fix(settings): restart the player without a self-bound controller
+  - Register the Media3 session directly for notifications, preserving the current playback when Android Auto prevents restart.
+  - Keep restart requests across screen recreation within the same process and expire them after a cold launch.
+
+Playback:
+- fix(player): preserve radio stop and block offline starts
+  - Keep Stop radio accessible in both players when a previously active radio goes offline.
+  - Reject unavailable starts before enabling radio or changing the queue.
+
+Playlists:
+- fix(playlist): limit smart shuffle to available remote seeds
+  - Avoid requesting recommendations for empty or device-only playlists, and cancel pending work when eligibility changes.
+- fix(auto): group downloads in legacy favorites
+  - Use the same favorites loader for legacy browse and playback, including downloaded grouping and sort direction.
