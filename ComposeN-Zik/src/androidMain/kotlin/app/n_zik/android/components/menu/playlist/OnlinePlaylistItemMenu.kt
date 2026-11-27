@@ -86,6 +86,7 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.components.menu.collectionMenuPickerSongs
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
@@ -445,9 +446,8 @@ class OnlinePlaylistItemMenu private constructor(
             savedPlaylistId?.let { Database.songPlaylistMapTable.allSongsOf(it) } ?: flowOf(null)
         }.collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA)
         val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
-        val importSource = fetchedSongs ?: savedSongs.takeIf { offlineMode }
-        val importableSongs = remember(importSource, parentalControlEnabled) {
-            importSource?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
+        val importableSongs = remember(fetchedSongs, parentalControlEnabled) {
+            fetchedSongs?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
         }
         val menuSongs = remember(importableSongs, savedSongs, parentalControlEnabled) {
             importableSongs ?: savedSongs?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
@@ -482,10 +482,10 @@ class OnlinePlaylistItemMenu private constructor(
             it.asMediaItem.withPodcastSource(sourceId)
         }
 
-        val fallbackTracks = remember(partialSongs, parentalControlEnabled) {
-            partialSongs?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
+        val pickerTracks = remember(songs, partialSongs, parentalControlEnabled) {
+            collectionMenuPickerSongs(songs, partialSongs, parentalControlEnabled)
         }
-        val pickerSongs by rememberMenuSongs(songs ?: fallbackTracks)
+        val pickerSongs by rememberMenuSongs(pickerTracks)
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
             mediaItems = { pickerSongs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) } },
@@ -525,6 +525,7 @@ class OnlinePlaylistItemMenu private constructor(
                 initialValue = cleanPrefix(localPlaylist?.name ?: displayTitle ?: ""),
                 unavailableMessage = importStatus.unavailableMessage,
             ) { text ->
+                if (importableSongs.isNullOrEmpty()) return@ImportPlaylistDialog
                 val importSongs = songs?.takeIf { it.isNotEmpty() } ?: return@ImportPlaylistDialog
                 val appContext = context.applicationContext
                 val owner = ProfileWorkOwner.capture(appContext) ?: return@ImportPlaylistDialog

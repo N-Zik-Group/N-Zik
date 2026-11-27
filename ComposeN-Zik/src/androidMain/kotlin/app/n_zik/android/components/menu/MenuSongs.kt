@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.listentogether.listenTogetherGuestLock
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -34,6 +35,13 @@ internal fun MenuIcon.withMenuClick(
 
 internal fun MenuIcon.withMenuGuestLock(onClick: () -> Unit = this::onShortClick): MenuIcon =
     withMenuClick(enabledWhen = { !listenTogetherGuestLock.value }, onClick = onClick)
+
+internal fun collectionMenuPickerSongs(
+    completeOrStored: List<Song>?,
+    partial: List<Song>?,
+    parentalControlEnabled: Boolean,
+): List<Song> = completeOrStored.orEmpty().ifEmpty { partial.orEmpty() }
+    .filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
 
 /** Observes song metadata even when the provider collection has never been saved locally. */
 @Composable

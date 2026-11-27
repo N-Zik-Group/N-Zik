@@ -73,6 +73,7 @@ import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.menu.playlist.rememberAlbumPlaylistActions
 import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.components.menu.collectionMenuPickerSongs
 import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.ui.screens.playlist.loadPlaylistTrackContinuations
 import app.n_zik.android.ui.styling.Dimensions
@@ -560,7 +561,7 @@ class OnlineAlbumItemMenu private constructor(
 
         val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
         val pickerSongs = remember(songs, partialSongs, parentalControlEnabled) {
-            onlineAlbumPickerSongs(songs, partialSongs, parentalControlEnabled)
+            collectionMenuPickerSongs(songs, partialSongs, parentalControlEnabled)
         }
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
@@ -698,13 +699,6 @@ class OnlineAlbumItemMenu private constructor(
     }
 
 }
-
-internal fun onlineAlbumPickerSongs(
-    completeOrStored: List<Song>?,
-    partial: List<Song>?,
-    parentalControlEnabled: Boolean,
-): List<Song> = completeOrStored.orEmpty().ifEmpty { partial.orEmpty() }
-    .filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
 
 internal fun onlineAlbumMenuDisplay(
     stored: Album,

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.menu.album
 
 import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.components.menu.collectionMenuPickerSongs
 import app.n_zik.android.components.menu.playlist.CollectionImportStatus
 import app.n_zik.android.components.menu.playlist.canImportAlbumCollection
 import app.n_zik.android.models.Song
@@ -23,7 +24,7 @@ class OnlineAlbumPlaylistActionsTest {
         val clean = Song.makePlaceholder("clean")
         val explicit = Song.makePlaceholder("explicit").copy(title = EXPLICIT_PREFIX + "Explicit")
 
-        val selected = onlineAlbumPickerSongs(
+        val selected = collectionMenuPickerSongs(
             completeOrStored = emptyList(),
             partial = listOf(clean, explicit),
             parentalControlEnabled = true,
@@ -37,6 +38,6 @@ class OnlineAlbumPlaylistActionsTest {
         val cached = Song.makePlaceholder("cached")
         val partial = Song.makePlaceholder("partial")
 
-        assertEquals(listOf(cached), onlineAlbumPickerSongs(listOf(cached), listOf(partial), false))
+        assertEquals(listOf(cached), collectionMenuPickerSongs(listOf(cached), listOf(partial), false))
     }
 }

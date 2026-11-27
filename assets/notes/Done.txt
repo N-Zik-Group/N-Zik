@@ -1804,3 +1804,7 @@ Playlists:
 Playlists:
 - fix(playlist): use ordered download actions for swipe
   - Route cancellation and removal through the common helper and hide download gestures on local tracks.
+
+Playlists:
+- fix(playlist): distinguish available tracks from complete imports
+  - Share the picker fallback with albums and require a complete source before importing a collection.
