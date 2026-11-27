@@ -133,6 +133,8 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     val isInRoom = roomState != null
     // Guests cannot change host-side approvals while in a room (hosts always can)
     val canEditApprovals = !isInRoom || role != RoomRole.GUEST
+    val approvalEditHint = if (canEditApprovals) "" else "\n" +
+        stringResource(R.string.listen_together_auto_approval_guest_hint)
 
     val selectedServer = remember(serverUrl) { ListenTogetherServers.findByUrl(serverUrl) }
 
@@ -192,7 +194,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_auto_approval_joins"),
             title = stringResource(R.string.listen_together_auto_approval_joins),
-            text = stringResource(R.string.listen_together_auto_approval_joins_description),
+            text = stringResource(R.string.listen_together_auto_approval_joins_description) + approvalEditHint,
             isChecked = autoApprovalJoins,
             enabled = canEditApprovals,
             onCheckedChange = {
@@ -207,7 +209,7 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
         OtherSwitchSettingEntry(
             modifier = Modifier.settingsSearchTarget("embedded.listen_together.listen_together_auto_approval_suggestions"),
             title = stringResource(R.string.listen_together_auto_approval_suggestions),
-            text = stringResource(R.string.listen_together_auto_approval_suggestions_description),
+            text = stringResource(R.string.listen_together_auto_approval_suggestions_description) + approvalEditHint,
             isChecked = autoApproveSuggestions,
             enabled = canEditApprovals,
             onCheckedChange = {

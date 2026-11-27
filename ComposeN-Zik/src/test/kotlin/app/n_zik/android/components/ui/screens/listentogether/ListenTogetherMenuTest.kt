@@ -8,6 +8,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -18,13 +21,16 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.components.settings.ListenTogetherSettingsCard
 import app.n_zik.android.components.settings.ServerChooserSheet
 import app.n_zik.android.components.settings.UsernameSheet
+import app.n_zik.android.components.settings.common.searchSettingsEntries
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.listentogether.ConnectionState
 import app.n_zik.android.listentogether.ListenTogetherEvent
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.listentogether.RoomRole
+import app.n_zik.android.listentogether.RoomState
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.styling.Appearance
@@ -54,14 +60,16 @@ class ListenTogetherMenuTest {
     @get:Rule val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private val events = MutableSharedFlow<ListenTogetherEvent>(extraBufferCapacity = 1)
+    private val roomState = MutableStateFlow<RoomState?>(null)
+    private val role = MutableStateFlow(RoomRole.NONE)
 
     @Before
     fun setUp() {
         val manager = mockk<ListenTogetherManager>()
         every { manager.connectionState } returns MutableStateFlow(ConnectionState.CONNECTED)
-        every { manager.roomState } returns MutableStateFlow(null)
+        every { manager.roomState } returns roomState
         every { manager.userId } returns MutableStateFlow("listener")
-        every { manager.role } returns MutableStateFlow(RoomRole.NONE)
+        every { manager.role } returns role
         every { manager.pendingJoinRequests } returns MutableStateFlow(emptyList())
         every { manager.pendingSuggestions } returns MutableStateFlow(emptyList())
         every { manager.logs } returns MutableStateFlow(emptyList())
@@ -77,6 +85,30 @@ class ListenTogetherMenuTest {
     @After
     fun tearDown() {
         unmockkObject(ListenTogetherManager.Companion, Toaster)
+    }
+
+    @Test
+    fun `settings explain why guests cannot change either automatic approval`() {
+        roomState.value = RoomState.getDefaultInstance()
+        role.value = RoomRole.GUEST
+        val menuState = MenuState()
+        showWithAppearance {
+            CompositionLocalProvider(LocalMenuState provides menuState) { ListenTogetherSettingsCard() }
+        }
+        val activity = composeRule.activity
+        val reason = activity.getString(R.string.listen_together_auto_approval_guest_hint)
+        val approvalLabels = listOf(
+            R.string.listen_together_auto_approval_joins,
+            R.string.listen_together_auto_approval_suggestions,
+        )
+        assertEquals(approvalLabels.toSet(), searchSettingsEntries(activity, reason).map { it.labelRes }.toSet())
+        val approvals = approvalLabels.map { title -> composeRule.onNodeWithText(activity.getString(title)) }
+        approvals.forEach { it.assertIsNotEnabled().assertTextContains(reason, substring = true) }
+
+        composeRule.runOnIdle { role.value = RoomRole.HOST }
+
+        approvals.forEach { it.assertIsEnabled() }
+        composeRule.onNodeWithText(reason, substring = true).assertDoesNotExist()
     }
 
     @Test

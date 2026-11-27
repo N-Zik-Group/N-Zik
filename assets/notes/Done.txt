@@ -1752,3 +1752,7 @@ Playlist:
 Playlist:
 - fix(library): report failures loading captured tracks
   - Surface genuine collection read errors and let cancellation propagate.
+
+Settings:
+- fix(settings): explain room and notification prerequisites
+  - Show why approval is host-only for a guest, and what enables Rewind alert delivery while preserving notification choices.

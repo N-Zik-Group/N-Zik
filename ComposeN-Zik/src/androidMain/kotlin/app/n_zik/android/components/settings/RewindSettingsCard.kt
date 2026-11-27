@@ -1,12 +1,20 @@
 package app.n_zik.android.components.settings
 
+import android.Manifest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.n_zik.android.R
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
@@ -20,6 +28,8 @@ import app.n_zik.android.components.settings.common.SearchableSettingsSectionHea
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.core.rewind.updateRewindWorkPreference
 import app.n_zik.android.utils.DataStoreUtils
+import app.n_zik.android.utils.hasPermission
+import app.n_zik.android.utils.isAtLeastAndroid13
 import app.n_zik.android.utils.rememberDataStoreBooleanPreference
 import timber.log.Timber
 
@@ -38,6 +48,19 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
     val monthlyPlaylistNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, true)
     val yearlyPlaylistNotifEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, true)
     val bgmEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_BGM_ENABLED, true)
+
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    fun hasNotificationPermission() = !isAtLeastAndroid13 || context.hasPermission(Manifest.permission.POST_NOTIFICATIONS)
+    var notificationPermissionGranted by remember(context) { mutableStateOf(hasNotificationPermission()) }
+    DisposableEffect(context, lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) notificationPermissionGranted = hasNotificationPermission()
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    val notificationPermissionHint = if (notificationPermissionGranted) "" else "\n" +
+        stringResource(R.string.rewind_settings_notification_permission_hint)
 
     Column {
         SettingsSectionCard(
@@ -166,7 +189,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_monthly_notification"),
                         title = stringResource(R.string.rewind_settings_monthly_notification),
-                        text = stringResource(R.string.rewind_settings_monthly_notification_description),
+                        text = stringResource(R.string.rewind_settings_monthly_notification_description) + notificationPermissionHint,
                         isChecked = monthlyNotifEnabled,
                         onCheckedChange = {
                             updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_MONTHLY_NOTIF_ENABLED, it)
@@ -180,7 +203,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_monthly_notification"),
                         title = stringResource(R.string.rewind_settings_playlists_monthly_notification),
-                        text = stringResource(R.string.rewind_settings_playlists_monthly_notification_description),
+                        text = stringResource(R.string.rewind_settings_playlists_monthly_notification_description) + notificationPermissionHint,
                         isChecked = monthlyPlaylistNotifEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, it)
@@ -193,7 +216,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_yearly_notification"),
                         title = stringResource(R.string.rewind_settings_yearly_notification),
-                        text = stringResource(R.string.rewind_settings_yearly_notification_description),
+                        text = stringResource(R.string.rewind_settings_yearly_notification_description) + notificationPermissionHint,
                         isChecked = yearlyNotifEnabled,
                         onCheckedChange = {
                             updateRewindWorkPreference(context, DataStoreUtils.KEY_REWIND_YEARLY_NOTIF_ENABLED, it)
@@ -207,7 +230,7 @@ fun RewindSettingsCard(onOpenRewind: (() -> Unit)? = null) {
                     OtherSwitchSettingEntry(
                         modifier = Modifier.settingsSearchTarget("embedded.rewind.rw_settings_playlists_yearly_notification"),
                         title = stringResource(R.string.rewind_settings_playlists_yearly_notification),
-                        text = stringResource(R.string.rewind_settings_playlists_yearly_notification_description),
+                        text = stringResource(R.string.rewind_settings_playlists_yearly_notification_description) + notificationPermissionHint,
                         isChecked = yearlyPlaylistNotifEnabled,
                         onCheckedChange = {
                             DataStoreUtils.saveBoolean(context, DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_NOTIF_ENABLED, it)

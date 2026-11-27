@@ -14,6 +14,7 @@ import androidx.compose.foundation.verticalScroll
 
 import app.n_zik.android.LocalPlayerAwareWindowInsets
 
+import android.Manifest
 import android.app.Application
 import android.content.Context
 import android.net.Uri
@@ -23,6 +24,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextContains
@@ -571,6 +573,40 @@ class SettingsCategoryPageTest {
             expectedMessage = context.getString(R.string.settings_target_unavailable),
         )
         assertEquals(before, globalPreferences.all)
+    }
+
+    @Test fun rewindNotificationsExplainDeniedPermissionAndKeepTheSwitchesUsable() {
+        Shadows.shadowOf(context as Application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        val globalPreferences = DataStoreUtils.prefs(context)
+        globalPreferences.edit()
+            .putBoolean(DataStoreUtils.KEY_REWIND_ENABLED, true)
+            .putBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_ENABLED, true)
+            .putBoolean(DataStoreUtils.KEY_REWIND_YEARLY_ENABLED, true)
+            .putBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_ENABLED, true)
+            .putBoolean(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
+            .putBoolean(DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED, true)
+            .commit()
+        val hint = context.getString(R.string.rewind_settings_notification_permission_hint)
+        val notificationLabels = listOf(
+            R.string.rewind_settings_monthly_notification,
+            R.string.rewind_settings_yearly_notification,
+            R.string.rewind_settings_playlists_monthly_notification,
+            R.string.rewind_settings_playlists_yearly_notification,
+        )
+        assertEquals(notificationLabels.toSet(), searchSettingsEntries(context, hint).map { it.labelRes }.toSet())
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Column(Modifier.verticalScroll(rememberScrollState())) { RewindSettingsCard() }
+            }
+        }
+        notificationLabels.forEach { label ->
+            composeRule.onNodeWithText(context.getString(label))
+                .assertIsEnabled().assertTextContains(hint, substring = true)
+        }
+        val before = globalPreferences.all.toMap()
+        composeRule.onNodeWithText(context.getString(R.string.rewind_settings_playlists_monthly_notification))
+            .performScrollTo().performClick()
+        assertEquals(before + (DataStoreUtils.KEY_REWIND_MONTHLY_PLAYLIST_NOTIF_ENABLED to false), globalPreferences.all)
     }
 
     @Test fun lyricsOnArtworkSearchPointsToBackgroundWhenArtworkVisibilityIsHidden() {

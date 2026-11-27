@@ -222,6 +222,7 @@
     <string name="rewind_settings_monthly_description">Show the month grid on the Rewind home.</string>
     <string name="rewind_settings_monthly_notification">Monthly rewind notification</string>
     <string name="rewind_settings_monthly_notification_description">Get notified on the 1st that the previous month\'s rewind is ready.</string>
+    <string name="rewind_settings_notification_permission_hint">Allow notifications for N-Zik in Android settings to receive Rewind alerts.</string>
     <string name="rewind_settings_notifications">Rewind notifications</string>
     <string name="rewind_settings_playlists_monthly">Monthly rewind playlist</string>
     <string name="rewind_settings_playlists_monthly_description">Create the monthly rewind playlist.</string>
