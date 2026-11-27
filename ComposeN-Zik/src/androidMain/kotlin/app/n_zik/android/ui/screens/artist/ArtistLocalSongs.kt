@@ -142,6 +142,7 @@ internal fun artistLibraryToolbarAction(
     icon: Int = action.icon,
     label: Int = action.label,
     enabled: Boolean = true,
+    dismissOnClick: Boolean = true,
     onClick: () -> Unit = {},
 ): MenuIcon {
     val menuState = LocalMenuState.current
@@ -156,7 +157,7 @@ internal fun artistLibraryToolbarAction(
 
         override fun onShortClick() {
             if (isEnabled) {
-                menuState.hide()
+                if (dismissOnClick) menuState.hide()
                 onClick()
             }
         }

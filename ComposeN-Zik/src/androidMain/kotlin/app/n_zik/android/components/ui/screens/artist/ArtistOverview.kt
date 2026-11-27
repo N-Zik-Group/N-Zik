@@ -126,6 +126,7 @@ import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.MeasuredMetadataPlaceholder
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.ui.screens.artist.artistLibraryToolbarAction
 import app.n_zik.android.ui.items.AlbumItem
 import app.n_zik.android.ui.items.AlbumItemPlaceholder
 import app.n_zik.android.ui.items.ArtistItem
@@ -459,7 +460,12 @@ internal fun ArtistOverview(
                                 ToolbarControl.RADIO to itemSelector.guard(radio) { radio.active || hasSelection() },
                                 ToolbarControl.SELECT to itemSelector,
                                 ToolbarControl.FAVORITES to favorites,
-                                ToolbarControl.ADD_TO_PLAYLIST to itemSelector.guard(addToPlaylist, ::hasSelection),
+                                ToolbarControl.ADD_TO_PLAYLIST to artistLibraryToolbarAction(
+                                    ToolbarControl.ADD_TO_PLAYLIST,
+                                    enabled = hasSelection(),
+                                    dismissOnClick = false,
+                                    onClick = addToPlaylist::onShortClick,
+                                ),
                                 ToolbarControl.DOWNLOAD to itemSelector.guard(downloadAllDialog, ::hasSelection),
                                 ToolbarControl.DELETE_DOWNLOADS to itemSelector.guard(deleteAllDownloadsDialog, ::hasSelection),
                             )

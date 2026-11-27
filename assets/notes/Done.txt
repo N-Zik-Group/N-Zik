@@ -1708,3 +1708,7 @@ Playlist:
 Playlist:
 - fix(playlist): report actual CSV import outcomes
   - Validate the stored destination and the usable data before writing, then show success only after the complete import commits.
+
+Playlist:
+- fix(playlist): disable empty artist playlist actions
+  - Use the actual track selection for the Artist Overview toolbar and expanded actions.
