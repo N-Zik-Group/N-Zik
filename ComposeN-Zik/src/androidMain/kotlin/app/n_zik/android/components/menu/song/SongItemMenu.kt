@@ -126,7 +126,8 @@ class SongItemMenu private constructor(
     sourceMediaItem: (() -> MediaItem)?,
     private val podcastBrowseId: String?,
     override val menuState: MenuState,
-    styleState: MutableState<MenuStyle>
+    styleState: MutableState<MenuStyle>,
+    private val onMenuDestinationOpened: (() -> Unit)?,
 ): Menu {
 
     private val source by lazy { sourceMediaItem?.invoke() }
@@ -145,6 +146,7 @@ class SongItemMenu private constructor(
             playbackAlbumTitle: String? = null,
             podcastBrowseId: String? = null,
             sourceMediaItem: (() -> MediaItem)? = null,
+            onMenuDestinationOpened: (() -> Unit)? = null,
         ): SongItemMenu =
             SongItemMenu(
                 navController = navController,
@@ -154,9 +156,12 @@ class SongItemMenu private constructor(
                 podcastBrowseId = podcastBrowseId,
                 sourceMediaItem = sourceMediaItem,
                 menuState = LocalMenuState.current,
-                styleState = rememberPreference( menuStyleKey, MenuStyle.List )
+                styleState = rememberPreference( menuStyleKey, MenuStyle.List ),
+                onMenuDestinationOpened = onMenuDestinationOpened,
             )
     }
+
+    override fun openMenu() = menuState.display(onMenuDestinationOpened) { MenuComponent() }
 
     private var buttons: List<Button> = emptyList()
     var refreshBtn: Button? = null

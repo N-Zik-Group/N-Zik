@@ -2529,6 +2529,7 @@ fun Player(
             queueNavigationSurface = queueNavigationSurface,
             preview = preview != null,
             onDiscoverClick = { binder?.service?.nzikRadio?.toggleDiscover() },
+            onClosePlayer = onDismiss,
         )
 
 

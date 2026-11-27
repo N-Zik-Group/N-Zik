@@ -209,6 +209,7 @@ fun SongItem(
     sourceMediaItem: (() -> MediaItem)? = null,
     artistTextOverride: String? = null,
     artistCredits: List<Info>? = null,
+    onMenuDestinationOpened: (() -> Unit)? = null,
     onClick: () -> Unit = {}
 ) {
     // Essentials
@@ -239,7 +240,10 @@ fun SongItem(
     val displayArtist = artistTextOverride ?: songArtistDisplayLabel(displaySong, storedCredits, sourceMediaItem?.invoke())
 
     val menu = if (preview == null && navController != null && onLongClick == null) {
-        SongItemMenu(navController, displaySong, playbackAlbumId, playbackAlbumTitle, podcastBrowseId, sourceMediaItem)
+        SongItemMenu(
+            navController, displaySong, playbackAlbumId, playbackAlbumTitle, podcastBrowseId, sourceMediaItem,
+            onMenuDestinationOpened = onMenuDestinationOpened,
+        )
     } else null
     GlassSongRowSurface(backgroundColor, if (isPlaying) colorPalette.favoritesOverlay else null, rowShape) { rowBackground ->
     Row(

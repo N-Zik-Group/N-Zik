@@ -82,6 +82,7 @@ internal fun BoxScope.PlayerQueuePanel(
     queueNavigationSurface: Color?,
     preview: Boolean,
     onDiscoverClick: () -> Unit,
+    onClosePlayer: () -> Unit,
 ) {
     var showQueue by showQueueState
     var isQueuePanelVisible by visibleState
@@ -177,6 +178,10 @@ internal fun BoxScope.PlayerQueuePanel(
                         .padding(top = 48.dp)
                 ) {
                     NativeQueueRows {
+                        val dismissQueue: (QueueLoopType) -> Unit = {
+                            queueLoopState.value = it
+                            showQueue = false
+                        }
                         Queue(
                             navController = navController,
                             onSearchOpened = {
@@ -187,11 +192,12 @@ internal fun BoxScope.PlayerQueuePanel(
                                     )
                                 }
                             },
-                            onDismiss = {
-                                queueLoopState.value = it
-                                showQueue = false
+                            onDismiss = dismissQueue,
+                            onDiscoverClick = onDiscoverClick,
+                            onDestinationOpened = {
+                                dismissQueue(it)
+                                onClosePlayer()
                             },
-                            onDiscoverClick = onDiscoverClick
                         )
                     }
                 }

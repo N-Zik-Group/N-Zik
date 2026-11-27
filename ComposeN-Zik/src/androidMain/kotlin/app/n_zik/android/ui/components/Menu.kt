@@ -18,19 +18,29 @@ class MenuState {
     var transitionKey by mutableStateOf(0)
         private set
 
-    private val contentStack = mutableStateListOf<@Composable () -> Unit>()
+    private class Entry(
+        val content: @Composable () -> Unit,
+        val onDestinationOpened: (() -> Unit)?,
+    )
+
+    private val contentStack = mutableStateListOf<Entry>()
 
     val contentState: Pair<Int, @Composable () -> Unit>
-        get() = transitionKey to (contentStack.lastOrNull() ?: {})
+        get() = transitionKey to (contentStack.lastOrNull()?.content ?: {})
 
     val hasPrevious: Boolean
         get() = contentStack.size > 1
 
-    fun display(content: @Composable () -> Unit) {
+    internal val onDestinationOpened: (() -> Unit)?
+        get() = if (isDisplayed) contentStack.lastOrNull()?.onDestinationOpened else null
+
+    fun display(content: @Composable () -> Unit) = display(null, content)
+
+    internal fun display(onDestinationOpened: (() -> Unit)?, content: @Composable () -> Unit) {
         if (!isDisplayed) {
             contentStack.clear()
         }
-        contentStack.add(content)
+        contentStack.add(Entry(content, onDestinationOpened ?: this.onDestinationOpened))
         this.transitionKey++
         isDisplayed = true
     }

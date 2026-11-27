@@ -6,11 +6,14 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import app.n_zik.android.R
 import app.n_zik.android.components.navigation.COLLECTION_SOURCE_ONLY_ARGUMENT
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
+import timber.log.Timber
 
 /** Opens the exact entity already represented by a menu, without duplicating its detail page. */
 internal class OpenEntityMenuAction(
@@ -41,8 +44,8 @@ internal fun navigateToMenuEntity(
     route: String = "${destination.name}/${Uri.encode(entityId)}",
     onNavigate: () -> Unit = {},
     reopenCurrent: Boolean = false,
-) {
-    if (entityId.isBlank()) return
+): Boolean {
+    if (entityId.isBlank()) return false
 
     val current = navController.currentBackStackEntry
     val currentRoute = current?.destination?.route
@@ -51,11 +54,34 @@ internal fun navigateToMenuEntity(
     val currentId = if (isLocalPlaylist) arguments?.getLong("id")?.toString() else arguments?.getString("id")
     val sameSource = !isLocalPlaylist ||
         (arguments?.getBoolean("onDevice") == true) == Uri.parse(route).getBooleanQueryParameter("onDevice", false)
-    if ((reopenCurrent && arguments?.getBoolean(COLLECTION_SOURCE_ONLY_ARGUMENT) != true) || !sameSource || !isCurrentMenuEntity(destination, entityId, currentRoute, currentId)) {
-        navController.navigate(route)
-    }
+    val shouldNavigate = (reopenCurrent && arguments?.getBoolean(COLLECTION_SOURCE_ONLY_ARGUMENT) != true) ||
+        !sameSource || !isCurrentMenuEntity(destination, entityId, currentRoute, currentId)
+    if (!menuState.openDestination { if (shouldNavigate) navController.navigate(route) }) return false
     onNavigate()
     menuState.hide()
+    return true
+}
+
+/** Reveals the opened destination below its owning overlay only after navigation succeeds. */
+internal fun MenuState.openDestination(
+    reportFailure: () -> Unit = { Toaster.e(R.string.common_load_failed) },
+    navigate: () -> Unit,
+): Boolean {
+    val reveal = onDestinationOpened
+    if (reveal == null) {
+        navigate()
+        return true
+    }
+    try {
+        navigate()
+    } catch (error: RuntimeException) {
+        if (error !is IllegalArgumentException && error !is IllegalStateException) throw error
+        Timber.tag("MenuNavigation").w(error, "Could not open the menu destination")
+        reportFailure()
+        return false
+    }
+    reveal()
+    return true
 }
 
 internal fun MenuState.isCurrentMenu(key: Int): Boolean = isDisplayed && transitionKey == key

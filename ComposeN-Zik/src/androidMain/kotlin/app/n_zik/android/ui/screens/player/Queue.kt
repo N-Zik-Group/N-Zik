@@ -168,6 +168,7 @@ fun Queue(
     onDismiss: (QueueLoopType) -> Unit,
     onDiscoverClick: () -> Unit,
     onSearchOpened: () -> Unit = {},
+    onDestinationOpened: ((QueueLoopType) -> Unit)? = null,
 ) {
     // Essentials
     val context = LocalContext.current
@@ -336,6 +337,7 @@ fun Queue(
         // Full offline mode (spec-full-offline-mode): network queue actions removed
         val offlineMode by OfflineMode.rememberEnabled()
         val repeat = Repeat.init()
+        val revealMenuDestination = onDestinationOpened?.let { reveal -> { reveal(repeat.type) } }
         val deleteDialog = DeleteFromQueue(player, itemSelector) {
             selectedQueueWindows().mapTo(LinkedHashSet()) { it.uid }
         }
@@ -349,6 +351,7 @@ fun Queue(
                 Timber.tag("Queue").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
             itemSelector = itemSelector,
+            onMenuDestinationOpened = revealMenuDestination,
         )
         val queueArrow = QueueArrow { onDismiss( repeat.type ) }
         val locator = Locator.forQueue(lazyListState) {
@@ -657,6 +660,7 @@ fun Queue(
                                     playbackAlbumTitle = mediaItem.mediaMetadata.albumTitle?.toString(),
                                     podcastBrowseId = window.mediaItem.podcastBrowseId,
                                     sourceMediaItem = { window.mediaItem },
+                                    onMenuDestinationOpened = revealMenuDestination,
                                     trailingContent = {
                                         QueueSelectionCheckbox(window.uid, itemSelector)
                                         if (hasReorderSlot)

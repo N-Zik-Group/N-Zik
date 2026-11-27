@@ -180,6 +180,10 @@ fun MiniPlayerQueueOverlay(
                     .padding(top = 48.dp)
             ) {
                 NativeQueueRows {
+                    val dismissQueue: (QueueLoopType) -> Unit = {
+                        queueLoopState.value = it
+                        onDismiss()
+                    }
                     Queue(
                         navController = navController,
                         onSearchOpened = {
@@ -190,13 +194,11 @@ fun MiniPlayerQueueOverlay(
                                 )
                             }
                         },
-                        onDismiss = {
-                            queueLoopState.value = it
-                            onDismiss()
-                        },
+                        onDismiss = dismissQueue,
                         onDiscoverClick = {
                             binder?.service?.nzikRadio?.toggleDiscover()
-                        }
+                        },
+                        onDestinationOpened = dismissQueue,
                     )
                 }
             }

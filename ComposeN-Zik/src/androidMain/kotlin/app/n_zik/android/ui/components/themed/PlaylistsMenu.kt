@@ -84,6 +84,7 @@ import app.n_zik.android.components.menu.GridMenu
 import app.n_zik.android.components.menu.ListMenu
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.menuSectionHeading
+import app.n_zik.android.components.menu.openDestination
 import androidx.compose.material3.Icon
 
 internal fun isPlaylistPickerTarget(playlist: Playlist, localDestinationsOnly: Boolean): Boolean =
@@ -270,6 +271,7 @@ class PlaylistsMenu private constructor(
     styleState: MutableState<MenuStyle>,
     private val localDestinationsOnly: Boolean = false,
     private val onOpenPlaylist: () -> Unit = {},
+    private val onMenuDestinationOpened: (() -> Unit)? = null,
 ): MenuIcon, Descriptive, Menu {
 
     private class AddRequest(
@@ -306,6 +308,7 @@ class PlaylistsMenu private constructor(
             onFailure: (Throwable, PlaylistPreview) -> Unit,
             itemSelector: ItemSelector<*>,
             localDestinationsOnly: Boolean = false,
+            onMenuDestinationOpened: (() -> Unit)? = null,
         ) = PlaylistsMenu(
             navController,
             null,
@@ -319,6 +322,7 @@ class PlaylistsMenu private constructor(
             LocalMenuState.current,
             rememberPreference(menuStyleKey, MenuStyle.List),
             localDestinationsOnly = localDestinationsOnly,
+            onMenuDestinationOpened = onMenuDestinationOpened,
         )
     }
 
@@ -402,9 +406,9 @@ class PlaylistsMenu private constructor(
                     contentDescription = stringResource(R.string.playlist_action_open),
                     color = colorPalette().accent,
                     onClick = {
-                        openPlaylistPickerDestination(playlist.id, null, menuState::hide) { id ->
-                            navigateToPickedPlaylist(navController, id)
+                        if (menuState.openDestination { navigateToPickedPlaylist(navController, playlist.id) }) {
                             onOpenPlaylist()
+                            menuState.hide()
                         }
                     },
                     modifier = Modifier.size( 24.dp )
@@ -419,7 +423,7 @@ class PlaylistsMenu private constructor(
 
     override fun openMenu() {
         val request = captureRequest() ?: return
-        menuState.display { PlaylistPicker(request) }
+        menuState.display(onMenuDestinationOpened) { PlaylistPicker(request) }
     }
 
     @Composable

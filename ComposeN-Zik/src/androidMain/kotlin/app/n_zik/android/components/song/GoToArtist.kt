@@ -79,7 +79,8 @@ class GoToArtist(
                 if (route != null) {
                     navigate(route)
                 } else if (openTrackMetadataSearch(
-                    navController, artistName ?: song.cleanArtistsText(), TrackMetadataSearch.Artist,
+                    navController, artistName ?: song.cleanArtistsText(), TrackMetadataSearch.Artist, menuState,
+                    onNavigationFailure = {},
                 )) {
                     menuState.hide()
                     onNavigate()
@@ -95,8 +96,7 @@ class GoToArtist(
         val destination = "${NavRoutes.artist.name}/${Uri.encode(id)}"
         val params = path.substringAfter("?params=", "")
         val route = if (params.isBlank()) destination else "$destination?params=${Uri.encode(params)}"
-        navigateToMenuEntity(navController, menuState, NavRoutes.artist, id, route)
-        onNavigate()
+        if (navigateToMenuEntity(navController, menuState, NavRoutes.artist, id, route)) onNavigate()
     }
 
     private suspend fun resolveArtistRoute(onOnlineLookup: suspend () -> Unit): String? {

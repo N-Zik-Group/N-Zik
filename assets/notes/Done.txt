@@ -1164,3 +1164,7 @@ Menus:
 Settings:
 - fix(rewind): reconcile work when settings change
   - Apply reminder and playlist scheduling immediately on toggles and resets through the existing profile-owned workers.
+
+Menus:
+- fix(queue): reveal destinations opened from queue menus
+  - Close the queue and its expanded player only after a menu destination opens successfully.

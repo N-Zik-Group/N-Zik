@@ -247,9 +247,10 @@ fun VideoOrSongInfoScreen(
                             onClick = {
                                 if (navController != null) {
                                     if (artistId.isNotBlank()) {
-                                        navigateToMenuEntity(navController, menuState, NavRoutes.artist, artistId)
-                                        onEntityNavigation()
-                                    } else if (openTrackMetadataSearch(navController, artistName, TrackMetadataSearch.Artist)) {
+                                        if (navigateToMenuEntity(navController, menuState, NavRoutes.artist, artistId)) {
+                                            onEntityNavigation()
+                                        }
+                                    } else if (openTrackMetadataSearch(navController, artistName, TrackMetadataSearch.Artist, menuState)) {
                                         onClose()
                                         onEntityNavigation()
                                     }
@@ -267,8 +268,9 @@ fun VideoOrSongInfoScreen(
                             showArrow = navController != null,
                             onClick = {
                                 if (navController != null) {
-                                    navigateToMenuEntity(navController, menuState, NavRoutes.album, albumId)
-                                    onEntityNavigation()
+                                    if (navigateToMenuEntity(navController, menuState, NavRoutes.album, albumId)) {
+                                        onEntityNavigation()
+                                    }
                                 }
                             }
                         )

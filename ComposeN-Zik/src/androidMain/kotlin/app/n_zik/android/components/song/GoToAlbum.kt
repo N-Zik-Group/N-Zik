@@ -9,6 +9,7 @@ import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.navigateToMenuEntity
+import app.n_zik.android.components.menu.openDestination
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
@@ -60,12 +61,11 @@ class GoToAlbum(
             withContext(NzikDispatchers.UI) {
                 if (!menuState.isCurrentMenu(menuKey)) return@withContext
                 if (album != null) {
-                    navigateToMenuEntity(
+                    if (navigateToMenuEntity(
                         navController, menuState, NavRoutes.album, album.album.id,
                         album.menuRoute(),
-                    )
-                    onNavigate()
-                } else if (openTrackMetadataSearch(navController, searchQuery, TrackMetadataSearch.Album)) {
+                    )) onNavigate()
+                } else if (openTrackMetadataSearch(navController, searchQuery, TrackMetadataSearch.Album, menuState)) {
                     menuState.hide()
                     onNavigate()
                 }
@@ -95,6 +95,8 @@ internal fun openTrackMetadataSearch(
     navController: NavController,
     text: String?,
     kind: TrackMetadataSearch,
+    menuState: MenuState? = null,
+    onNavigationFailure: () -> Unit = { Toaster.e(R.string.common_load_failed) },
 ): Boolean {
     val query = metadataSearchTerm(text) ?: return false
     val context = appContext()
@@ -103,6 +105,11 @@ internal fun openTrackMetadataSearch(
     if (route == null) {
         Toaster.w(R.string.common_load_failed_no_connection)
         return false
+    }
+    if (menuState?.onDestinationOpened != null) {
+        val opened = menuState.openDestination(reportFailure = onNavigationFailure) { navController.navigate(route) }
+        if (opened) Toaster.i(R.string.metadata_link_manual_required)
+        return opened
     }
     Toaster.i(R.string.metadata_link_manual_required)
     navController.navigate(route)
