@@ -24,17 +24,8 @@ internal enum class CollectionImportStatus(val unavailableMessage: Int?) {
     val canOpenImport: Boolean get() = this == Loading || this == Ready
 }
 
-internal class CollectionAddChoiceState {
-    private var owner by mutableStateOf<Pair<MenuState.Entry, String>?>(null)
-
-    fun isOpen(menuState: MenuState, entry: MenuState.Entry?, sourceId: String): Boolean =
-        entry != null && owner == (entry to sourceId) &&
-            menuState.isDisplayed && menuState.presentationState.second === entry
-
-    fun setOpen(entry: MenuState.Entry?, sourceId: String, open: Boolean) {
-        owner = if (open) entry?.let { it to sourceId } else null
-    }
-}
+internal fun MenuState.isPlaylistChoiceOpen(entry: MenuState.Entry, sourceId: String): Boolean =
+    isDisplayed && presentationState.second === entry && entry.playlistActionsSourceId == sourceId
 
 internal fun playlistActionsAnchor(
     order: List<String>,
@@ -49,7 +40,7 @@ internal fun rememberCollectionAddAction(
     canImportCollection: Boolean,
     hasTracks: Boolean,
     importDialogOpen: Boolean = false,
-    menuChoice: CollectionAddChoiceState? = null,
+    menuEntry: MenuState.Entry? = null,
     openImport: (onAccepted: () -> Unit) -> Unit,
     openPicker: (onReturn: (() -> Unit)?) -> Unit,
     importFromCurrentCollection: Boolean = true,
@@ -57,11 +48,15 @@ internal fun rememberCollectionAddAction(
     openExport: (() -> Unit)? = null,
 ): MenuIcon {
     var toolbarChoiceOpen by remember(sourceId) { mutableStateOf(false) }
-    val menuEntry = remember { menuChoice?.let { menuState.presentationState.second } }
-    val choiceOpen = menuChoice?.isOpen(menuState, menuEntry, sourceId) ?: toolbarChoiceOpen
+    val choiceOpen = menuEntry?.let { menuState.isPlaylistChoiceOpen(it, sourceId) } ?: toolbarChoiceOpen
     fun setChoiceOpen(open: Boolean) {
-        if (menuChoice == null) toolbarChoiceOpen = open
-        else menuChoice.setOpen(menuEntry, sourceId, open)
+        when {
+            menuEntry == null -> toolbarChoiceOpen = open
+            open && menuState.isDisplayed && menuState.presentationState.second === menuEntry ->
+                menuEntry.playlistActionsSourceId = sourceId
+            !open && menuEntry.playlistActionsSourceId == sourceId ->
+                menuEntry.playlistActionsSourceId = null
+        }
     }
 
     PlaylistImportAddDialog(
@@ -81,8 +76,9 @@ internal fun rememberCollectionAddAction(
         onDismiss = { setChoiceOpen(false) },
         onImport = { openImport { setChoiceOpen(false) } },
         onAdd = {
-            if (menuChoice == null) setChoiceOpen(false)
-            val onReturn = if (menuChoice == null && (canImportCollection || canExport)) {
+            val hasAlternative = canImportCollection || (canExport && openExport != null)
+            if (menuEntry == null || !hasAlternative) setChoiceOpen(false)
+            val onReturn = if (menuEntry == null && hasAlternative) {
                 { setChoiceOpen(true) }
             } else null
             openPicker(onReturn)

@@ -31,6 +31,7 @@ import app.n_zik.android.components.glass.rememberGlassSettings
 import app.n_zik.android.components.glass.usesGlassMaterial
 import app.n_zik.android.components.theme.AppearanceMenuSheet
 import app.n_zik.android.ui.components.LocalMenuBack
+import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuScrollState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.core.navigation.screenPopEnter
@@ -80,6 +81,7 @@ internal fun AppAppearanceMenu(menuState: MenuState, menuSheetState: SheetState)
                     CompositionLocalProvider(
                         LocalMenuScrollState provides entry.scrollState,
                         LocalMenuBack provides back,
+                        LocalMenuEntry provides entry,
                     ) {
                         entry.content()
                     }

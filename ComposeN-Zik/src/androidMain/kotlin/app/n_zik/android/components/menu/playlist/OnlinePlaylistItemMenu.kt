@@ -57,6 +57,7 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
+import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Clickable
@@ -141,7 +142,6 @@ class OnlinePlaylistItemMenu private constructor(
 ) : Menu {
 
     private val ownerProfile = getActiveProfile(appContext())
-    private val addChoice = CollectionAddChoiceState()
 
     companion object {
         @Composable
@@ -559,7 +559,7 @@ class OnlinePlaylistItemMenu private constructor(
             hasTracks = !pickerSongs.isNullOrEmpty(),
             importDialogOpen = importDialog.isActive,
             openImport = importDialog::open,
-            menuChoice = addChoice,
+            menuEntry = LocalMenuEntry.current,
             openPicker = playlistsMenu::openPicker,
         )
 

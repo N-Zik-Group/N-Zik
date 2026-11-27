@@ -1660,3 +1660,7 @@ Menus:
 Playlist:
 - fix(playlist): keep picker availability and labels current
   - Refresh destination availability as connectivity changes and use the Playlist actions label for both collection toolbars.
+
+Playlist:
+- fix(playlist): restore collection actions when returning from the picker
+  - Keep the action dialog tied to the menu entry and let available online album tracks be added when pagination fails.

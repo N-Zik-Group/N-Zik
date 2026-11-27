@@ -22,7 +22,7 @@ internal fun rememberAlbumPlaylistActions(
     loading: Boolean,
     loadedTracks: List<Song>?,
     canAdd: Boolean,
-    menuChoice: CollectionAddChoiceState? = null,
+    menuEntry: MenuState.Entry? = null,
     openPicker: (onReturn: (() -> Unit)?) -> Unit,
 ) = key(sourceId) {
     val context = LocalContext.current
@@ -53,7 +53,7 @@ internal fun rememberAlbumPlaylistActions(
         canImportCollection = importAvailable && status.canOpenImport,
         hasTracks = canAdd,
         importDialogOpen = importDialog.isActive,
-        menuChoice = menuChoice,
+        menuEntry = menuEntry,
         openImport = importDialog::open,
         openPicker = openPicker,
     )

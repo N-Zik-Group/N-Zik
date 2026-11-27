@@ -61,6 +61,7 @@ import app.n_zik.android.models.Album
 import app.n_zik.android.models.Artist
 import app.n_zik.android.models.Song
 import app.n_zik.android.models.SongAlbumMap
+import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Button
@@ -70,7 +71,6 @@ import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
-import app.n_zik.android.components.menu.playlist.CollectionAddChoiceState
 import app.n_zik.android.components.menu.playlist.rememberAlbumPlaylistActions
 import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.utils.parentalControlEnabledKey
@@ -145,7 +145,6 @@ class OnlineAlbumItemMenu private constructor(
 ) : Menu {
 
     private val ownerProfile = getActiveProfile(appContext())
-    private val playlistChoice = CollectionAddChoiceState()
 
     companion object {
         @Composable
@@ -454,6 +453,7 @@ class OnlineAlbumItemMenu private constructor(
         val isLocalAlbum = browseId.startsWith("LOCAL_ALBUM_")
 
         var fetchedSongs by remember { mutableStateOf<List<Song>?>(null) }
+        var partialSongs by remember(browseId) { mutableStateOf<List<Song>?>(null) }
         var songsLoadFailed by remember(browseId) { mutableStateOf(false) }
 
         var displayTitle by remember { mutableStateOf(sourceAlbum?.title ?: sourceAlbum?.info?.name) }
@@ -497,6 +497,7 @@ class OnlineAlbumItemMenu private constructor(
 
         LaunchedEffect(browseId, offlineMode) {
             if (isLocalAlbum || offlineMode) return@LaunchedEffect
+            partialSongs = null
             songsLoadFailed = false
             withContext(NzikDispatchers.DATA) {
                 if (OfflineMode.enabled(context)) return@withContext
@@ -511,12 +512,13 @@ class OnlineAlbumItemMenu private constructor(
                     val tracks = result.songsPage?.let { page ->
                         if (page.continuation == null) page else loadPlaylistTrackContinuations(page)
                     }
+                    val loadedSongs = tracks?.items.orEmpty().mapNotNull { it.asSong }
                     if (tracks?.continuation != null) {
+                        partialSongs = loadedSongs
                         songsLoadFailed = true
                         return@withContext
                     }
-                    val completeSongs = tracks?.items.orEmpty().mapNotNull { it.asSong }
-                    fetchedSongs = completeSongs
+                    fetchedSongs = loadedSongs
                     Database.asyncTransaction {
                         Database.albumTable.insertIgnore(Album(
                             id = browseId,
@@ -527,7 +529,7 @@ class OnlineAlbumItemMenu private constructor(
                             shareUrl = result.url,
                             timestamp = System.currentTimeMillis()
                         ))
-                        completeSongs.forEachIndexed { index, song ->
+                        loadedSongs.forEachIndexed { index, song ->
                             Database.insertIgnore(song.asMediaItem)
                             Database.songAlbumMapTable.upsert(
                                 listOf(SongAlbumMap(songId = song.id, albumId = browseId, position = index))
@@ -557,11 +559,12 @@ class OnlineAlbumItemMenu private constructor(
         }
 
         val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+        val pickerSongs = remember(songs, partialSongs, parentalControlEnabled) {
+            onlineAlbumPickerSongs(songs, partialSongs, parentalControlEnabled)
+        }
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
-            mediaItems = {
-                songs.orEmpty().filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }.map { it.asMediaItem }
-            },
+            mediaItems = { pickerSongs.map { it.asMediaItem } },
             localDestinationsOnly = isLocalAlbum,
             onFailure = { _, _ -> },
             finalAction = { menuState.hide() }
@@ -579,8 +582,8 @@ class OnlineAlbumItemMenu private constructor(
             importAvailable = !isLocalAlbum,
             loading = fetchedSongs == null && !songsLoadFailed && !offlineMode && !isLocalAlbum,
             loadedTracks = importTracks,
-            canAdd = songs?.any { !parentalControlEnabled || !it.title.hasExplicitPrefix() } == true,
-            menuChoice = playlistChoice,
+            canAdd = pickerSongs.isNotEmpty(),
+            menuEntry = LocalMenuEntry.current,
             openPicker = playlistsMenu::openPicker,
         )
 
@@ -696,6 +699,13 @@ class OnlineAlbumItemMenu private constructor(
     }
 
 }
+
+internal fun onlineAlbumPickerSongs(
+    completeOrStored: List<Song>?,
+    partial: List<Song>?,
+    parentalControlEnabled: Boolean,
+): List<Song> = completeOrStored.orEmpty().ifEmpty { partial.orEmpty() }
+    .filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
 
 internal fun onlineAlbumMenuDisplay(
     stored: Album,

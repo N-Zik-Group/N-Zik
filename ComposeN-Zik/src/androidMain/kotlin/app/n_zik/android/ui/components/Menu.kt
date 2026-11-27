@@ -16,6 +16,7 @@ val LocalMenuState = staticCompositionLocalOf { MenuState() }
 
 internal val LocalMenuScrollState = staticCompositionLocalOf<MenuScrollState?> { null }
 internal val LocalMenuBack = staticCompositionLocalOf<(() -> Unit)?> { null }
+internal val LocalMenuEntry = staticCompositionLocalOf<MenuState.Entry?> { null }
 
 internal class MenuScrollState {
     private val listPosition = MenuScrollPosition(0)
@@ -78,6 +79,7 @@ class MenuState {
     ) {
         val hasPrevious get() = depth > 0
         val scrollState = MenuScrollState()
+        var playlistActionsSourceId by mutableStateOf<String?>(null)
     }
 
     private val contentStack = mutableStateListOf<Entry>()

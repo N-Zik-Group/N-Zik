@@ -47,21 +47,21 @@ class CollectionAddActionTest {
     @Test
     fun `return from a destination picker restores the choice only for the original menu and source`() {
         val state = MenuState()
-        val choice = CollectionAddChoiceState()
         state.display {}
-        val sourceEntry = state.presentationState.second
-        choice.setOpen(sourceEntry, "VLoriginal", true)
-        assertTrue(choice.isOpen(state, sourceEntry, "VLoriginal"))
+        val sourceEntry = checkNotNull(state.presentationState.second)
+        sourceEntry.playlistActionsSourceId = "VLoriginal"
+        assertTrue(state.isPlaylistChoiceOpen(sourceEntry, "VLoriginal"))
 
         state.display {}
-        assertFalse(choice.isOpen(state, sourceEntry, "VLoriginal"))
+        assertFalse(state.isPlaylistChoiceOpen(sourceEntry, "VLoriginal"))
         state.pop()
-        assertTrue(choice.isOpen(state, sourceEntry, "VLoriginal"))
-        assertFalse(choice.isOpen(state, sourceEntry, "VLdifferent"))
+        val restoredEntry = checkNotNull(state.presentationState.second)
+        assertTrue(state.isPlaylistChoiceOpen(restoredEntry, "VLoriginal"))
+        assertFalse(state.isPlaylistChoiceOpen(restoredEntry, "VLdifferent"))
 
         state.hide()
-        assertFalse(choice.isOpen(state, sourceEntry, "VLoriginal"))
+        assertFalse(state.isPlaylistChoiceOpen(sourceEntry, "VLoriginal"))
         state.display {}
-        assertFalse(choice.isOpen(state, state.presentationState.second, "VLoriginal"))
+        assertFalse(state.isPlaylistChoiceOpen(checkNotNull(state.presentationState.second), "VLoriginal"))
     }
 }
