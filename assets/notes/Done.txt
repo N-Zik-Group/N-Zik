@@ -1464,3 +1464,7 @@ Favorites:
 Menus:
 - fix(menu): disable queue edits for listening guests
   - Match the song menu when Listen Together grants no queue editing permission.
+
+Downloads:
+- fix(offline): protect cached playlist and podcast audio
+  - Keep the download confirmation open when offline and remove only actual download requests.

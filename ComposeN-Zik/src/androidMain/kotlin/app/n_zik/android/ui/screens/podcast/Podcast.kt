@@ -139,6 +139,7 @@ import app.n_zik.android.utils.formatAsTime
 import app.n_zik.android.utils.getDownloadState
 import app.n_zik.android.utils.isDownloadedSong
 import app.n_zik.android.utils.isLandscape
+import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.manageDownload
 import app.n_zik.android.utils.medium
 import app.n_zik.android.utils.rememberPreference
@@ -501,13 +502,22 @@ fun Podcast(
                                             confirmText = stringResource(R.string.downloads_title),
                                             text = stringResource(R.string.downloads_download_all_confirmation),
                                             onDismiss = { pendingDownloadSongs = null },
+                                            dismissOnConfirm = false,
                                             onConfirm = {
+                                                if (!isNetworkConnected(context)) {
+                                                    Toaster.noInternet()
+                                                    return@ConfirmationDialog
+                                                }
                                                 val episodes = pendingDownloadSongs.orEmpty()
                                                 pendingDownloadSongs = null
                                                 if (episodes.isNotEmpty()) {
                                                     downloadState = Download.STATE_DOWNLOADING
                                                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                        episodes.forEach { mediaItem ->
+                                                        for (mediaItem in episodes) {
+                                                            if (!isNetworkConnected(context)) {
+                                                                Toaster.noInternet()
+                                                                break
+                                                            }
                                                             binder?.cache?.removeResource(mediaItem.mediaId)
                                                             Database.asyncTransaction {
                                                                 formatTable.findBySongId(mediaItem.mediaId)
@@ -532,7 +542,12 @@ fun Podcast(
                                         color = if (collectionActionEnabled) colorPalette().text else colorPalette().textDisabled,
                                         modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                                 onClick = {
-                                                    pendingDeleteDownloads = targetMediaItems().toList()
+                                                    val downloadRequests = MyDownloadHelper.downloads.value
+                                                    val targets = targetMediaItems()
+                                                        .filter { it.mediaId in downloadRequests }
+                                                        .distinctBy { it.mediaId }
+                                                    if (targets.isEmpty()) Toaster.i(R.string.downloads_nothing_to_delete)
+                                                    else pendingDeleteDownloads = targets
                                                 },
                                                 onLongClick = {
                                                     Toaster.i( R.string.downloads_action_remove_all )
@@ -543,24 +558,18 @@ fun Podcast(
                                         ConfirmationDialog(
                                             title = stringResource(R.string.downloads_delete_dialog_title),
                                             confirmText = stringResource(R.string.common_action_delete),
-                                            text = stringResource(R.string.downloads_delete_all_confirmation),
+                                            text = stringResource(
+                                                R.string.downloads_delete_all_count_confirmation,
+                                                pendingDeleteDownloads.orEmpty().size,
+                                            ),
                                             onDismiss = { pendingDeleteDownloads = null },
                                             onConfirm = {
                                                 val episodes = pendingDeleteDownloads.orEmpty()
                                                 pendingDeleteDownloads = null
-                                                if (episodes.isNotEmpty()) {
-                                                    downloadState = Download.STATE_DOWNLOADING
-                                                    NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                                                        episodes.forEach { mediaItem ->
-                                                            binder?.cache?.removeResource(mediaItem.mediaId)
-                                                            Database.asyncTransaction {
-                                                                formatTable.findBySongId(mediaItem.mediaId)
-                                                            }
-                                                            manageDownload(
-                                                                context = context,
-                                                                mediaItem = mediaItem,
-                                                                downloadState = true
-                                                            )
+                                                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                                                    episodes.forEach { mediaItem ->
+                                                        if (mediaItem.mediaId in MyDownloadHelper.downloads.value) {
+                                                            MyDownloadHelper.removeDownload(context, mediaItem)
                                                         }
                                                     }
                                                 }

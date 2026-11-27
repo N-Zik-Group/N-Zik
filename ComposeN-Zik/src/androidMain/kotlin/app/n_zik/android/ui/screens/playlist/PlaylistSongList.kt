@@ -745,7 +745,12 @@ fun PlaylistSongList(
                                             confirmText = stringResource(R.string.downloads_title),
                                             text = stringResource(R.string.downloads_download_all_confirmation),
                                             onDismiss = { pendingDownloadSongs = null },
+                                            dismissOnConfirm = false,
                                             onConfirm = {
+                                                if (!isNetworkConnected(context)) {
+                                                    Toaster.noInternet()
+                                                    return@ConfirmationDialog
+                                                }
                                                 val songs = pendingDownloadSongs.orEmpty()
                                                 pendingDownloadSongs = null
                                                 if (songs.isNotEmpty())
@@ -769,7 +774,12 @@ fun PlaylistSongList(
                                         color = if (canTargetSongs) colorPalette().text else colorPalette().textDisabled,
                                         modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
                                                 onClick = {
-                                                    pendingDeleteDownloads = selectedSongs().takeIf { songs -> itemSelector.isActive || songs.any { it.key !in dislikedSongs } }.orEmpty().toList()
+                                                    val downloadRequests = MyDownloadHelper.downloads.value
+                                                    val targets = selectedSongs()
+                                                        .filter { it.key in downloadRequests }
+                                                        .distinctBy { it.key }
+                                                    if (targets.isEmpty()) Toaster.i(R.string.downloads_nothing_to_delete)
+                                                    else pendingDeleteDownloads = targets
                                                 },
                                                 onLongClick = {
                                                     Toaster.n(R.string.downloads_action_remove_all)
@@ -780,7 +790,10 @@ fun PlaylistSongList(
                                         ConfirmationDialog(
                                             title = stringResource(R.string.downloads_delete_dialog_title),
                                             confirmText = stringResource(R.string.common_action_delete),
-                                            text = stringResource(R.string.downloads_delete_all_confirmation),
+                                            text = stringResource(
+                                                R.string.downloads_delete_all_count_confirmation,
+                                                pendingDeleteDownloads.orEmpty().size,
+                                            ),
                                             onDismiss = { pendingDeleteDownloads = null },
                                             onConfirm = {
                                                 val songs = pendingDeleteDownloads.orEmpty()
@@ -1251,9 +1264,14 @@ internal suspend fun processPlaylistBatch(
     if (songs.isNullOrEmpty()) return
 
     Database.awaitWriteBatch(retries = 1) {
-        songs.forEach { songItem ->
+        for (songItem in songs) {
+            if (!downloadState && !isNetworkConnected(context)) {
+                Toaster.noInternet()
+                break
+            }
             val mediaItem = songItem.asMediaItem
-            binder?.cache?.removeResource(mediaItem.mediaId)
+            if (downloadState && mediaItem.mediaId !in MyDownloadHelper.downloads.value) continue
+            if (!downloadState) binder?.cache?.removeResource(mediaItem.mediaId)
             manageDownload(context, mediaItem, downloadState)
         }
     }

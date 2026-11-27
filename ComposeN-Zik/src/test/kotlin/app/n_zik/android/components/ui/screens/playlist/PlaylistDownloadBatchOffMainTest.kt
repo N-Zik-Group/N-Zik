@@ -1,10 +1,13 @@
 package app.n_zik.android.components.ui.screens.playlist
 
 import android.content.Context
+import androidx.media3.common.MediaItem
 import androidx.media3.datasource.cache.Cache
+import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.ui.screens.playlist.processPlaylistBatch
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -19,6 +22,7 @@ import io.mockk.unmockkAll
 import io.mockk.verify
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.models.NavigationEndpoint
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.After
@@ -30,10 +34,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import java.util.concurrent.CopyOnWriteArrayList
 
-/**
- * Playlist cache eviction and download commands must run within the same queued batch.
- * The binder may be absent even when download commands still need to be sent.
- */
+/** Covers playlist download commands and their streaming-cache effects in the queued batch. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class PlaylistDownloadBatchOffMainTest {
@@ -78,7 +79,7 @@ class PlaylistDownloadBatchOffMainTest {
     }
 
     @Test
-    fun `removeDownload runs once per song off the caller thread`() = runBlocking {
+    fun `removeDownload only removes existing download requests and preserves streaming cache`() = runBlocking {
         val steps = CopyOnWriteArrayList<String>()
         val cache = mockk<Cache>()
         every { cache.removeResource(any()) } answers { steps += "cache" }
@@ -87,9 +88,12 @@ class PlaylistDownloadBatchOffMainTest {
 
         val threads = CopyOnWriteArrayList<Thread>()
         mockkObject(MyDownloadHelper)
+        every { MyDownloadHelper.downloads } returns MutableStateFlow(
+            mapOf("id_1" to mockk<Download>(), "id_3" to mockk<Download>()),
+        )
         every { MyDownloadHelper.removeDownload(any(), any()) } answers {
             threads += Thread.currentThread()
-            steps += "command"
+            steps += "remove:${secondArg<MediaItem>().mediaId}"
         }
         stubWriteBatch(onEnter = { steps += "enter" }, onExit = { steps += "exit" })
 
@@ -97,11 +101,11 @@ class PlaylistDownloadBatchOffMainTest {
             processPlaylistBatch(songs(3), binder, context, downloadState = true)
         }
 
-        assertEquals(listOf("enter", "cache", "command", "cache", "command", "cache", "command", "exit"), steps)
-        assertEquals(3, threads.size)
+        assertEquals(listOf("enter", "remove:id_1", "remove:id_3", "exit"), steps)
+        assertEquals(2, threads.size)
         threads.forEach { assertNotEquals(callerThread, it) }
-        verify(exactly = 3) { MyDownloadHelper.removeDownload(any(), any()) }
-        verify(exactly = 3) { cache.removeResource(any()) }
+        verify(exactly = 2) { MyDownloadHelper.removeDownload(any(), any()) }
+        verify(exactly = 0) { cache.removeResource(any()) }
     }
 
     @Test
@@ -112,6 +116,7 @@ class PlaylistDownloadBatchOffMainTest {
         val context = mockk<Context>(relaxed = true)
 
         mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         every { NetworkQualityHelper.isNetworkAvailable(any()) } returns true
 
         val threads = CopyOnWriteArrayList<Thread>()
@@ -129,11 +134,33 @@ class PlaylistDownloadBatchOffMainTest {
     }
 
     @Test
+    fun `an offline download preserves the streaming cache`() = runBlocking {
+        val cache = mockk<Cache>()
+        val binder = binderWithCache(cache)
+        val context = mockk<Context>(relaxed = true)
+        mockkObject(NetworkQualityHelper, MyDownloadHelper, Toaster)
+        every { NetworkQualityHelper.isNetworkConnected(context) } returns false
+        every { Toaster.noInternet() } just Runs
+        stubWriteBatch()
+
+        withContext(NzikDispatchers.DATA) {
+            processPlaylistBatch(songs(2), binder, context, downloadState = false)
+        }
+
+        verify(exactly = 0) { cache.removeResource(any()) }
+        verify(exactly = 0) { MyDownloadHelper.addDownload(any(), any()) }
+        verify(exactly = 1) { Toaster.noInternet() }
+    }
+
+    @Test
     fun `null binder is a safe no-op for cache eviction but still manages the download`() = runBlocking {
         val context = mockk<Context>(relaxed = true)
 
         val threads = CopyOnWriteArrayList<Thread>()
         mockkObject(MyDownloadHelper)
+        every { MyDownloadHelper.downloads } returns MutableStateFlow(
+            mapOf("id_1" to mockk<Download>(), "id_2" to mockk<Download>()),
+        )
         every { MyDownloadHelper.removeDownload(any(), any()) } answers { threads += Thread.currentThread() }
         stubWriteBatch()
 
