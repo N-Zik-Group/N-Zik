@@ -1420,3 +1420,7 @@ Library:
 Menus:
 - fix(playlist): import complete playlists and podcasts
   - Do not truncate collection imports by the current search or acknowledge an empty write.
+
+Android Auto:
+- fix(auto): match library labels, order and rewind filters
+  - Keep All first, use YT/YTM, and show only applicable Rewind filters.

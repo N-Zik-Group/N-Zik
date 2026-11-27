@@ -92,6 +92,7 @@ object AutoMediaIdContract {
             AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
             AutoSessionConstants.ID_PLAYLISTS_YT_PODCASTS,
             AutoSessionConstants.ID_PLAYLISTS_PINNED,
+            AutoSessionConstants.ID_PLAYLISTS_REWIND,
             AutoSessionConstants.ID_PLAYLISTS_REWIND_ALL,
             AutoSessionConstants.ID_PLAYLISTS_REWIND_MONTH,
             AutoSessionConstants.ID_PLAYLISTS_REWIND_YEAR -> parentId
