@@ -133,4 +133,30 @@ class HomeParentRoomTest {
             database.close()
         }
     }
+
+    // runBlocking bridges the suspend Room calls to the JUnit test.
+    @Test fun `a stored device playlist enables actions only while a mapped track is available`() = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = Room.inMemoryDatabaseBuilder(context, DatabaseInitializer::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            database.songTable.upsert(listOf("local:1", "local:2", "online").map { Song.makePlaceholder(it) })
+            val sql = database.openHelper.writableDatabase
+            sql.execSQL("INSERT INTO Playlist (id, name, isEditable) VALUES (1, 'Saved', 1), (2, 'Available', 1)")
+            sql.execSQL(
+                "INSERT INTO SongPlaylistMap (songId, playlistId, position) VALUES " +
+                    "('local:1', 1, 0), ('local:2', 2, 0), ('online', 2, 1)",
+            )
+            val memberships = database.songPlaylistMapTable
+            assertEquals(listOf(1L), memberships.onDeviceOnlyPlaylistIds().first())
+            val deviceMappings = memberships.observeDeviceTrackMappings().first()
+            assertEquals(setOf(1L), availableDevicePlaylistIds(deviceMappings, setOf("local:1", "online")))
+            assertEquals(setOf(2L), availableDevicePlaylistIds(deviceMappings, setOf("local:2")))
+            assertEquals(emptySet<Long>(), availableDevicePlaylistIds(deviceMappings, emptySet()))
+            assertEquals(listOf(1L), memberships.onDeviceOnlyPlaylistIds().first())
+        } finally {
+            database.close()
+        }
+    }
 }

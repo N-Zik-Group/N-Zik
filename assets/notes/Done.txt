@@ -1732,3 +1732,7 @@ Menus:
 Menus:
 - fix(menu): expose command states and alternate actions
   - Keep menu toggles, repeat modes, long presses and Playlist availability consistent across List and Grid.
+
+Playlist:
+- fix(playlist): match device actions to the active file scan
+  - Keep saved playlists visible while gating On-device bulk actions on present tracks; retain Library confirmation above the overflow.

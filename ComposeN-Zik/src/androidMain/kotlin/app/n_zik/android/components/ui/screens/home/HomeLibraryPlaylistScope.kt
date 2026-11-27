@@ -5,6 +5,7 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.components.tab.selectionActionTargets
 import app.n_zik.android.enums.PlaylistsType
 import app.n_zik.android.models.PlaylistPreview
+import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.rewind.RewindPlaylists
 
@@ -43,3 +44,9 @@ internal fun homeLibraryActionTargets(
     selectionActive: Boolean,
 ): List<PlaylistPreview> =
     selectionActionTargets(selectionActive, selected, visible, { it.playlist.id }, { it.playlist.id })
+
+/** Keeps persisted playlist membership separate from the tracks the current scan can use. */
+internal fun availableDevicePlaylistIds(mappings: List<SongPlaylistMap>, availableSongIds: Set<String>): Set<Long> =
+    mappings.mapNotNullTo(hashSetOf()) { mapping ->
+        mapping.playlistId.takeIf { mapping.songId in availableSongIds }
+    }
