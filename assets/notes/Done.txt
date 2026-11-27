@@ -1596,3 +1596,7 @@ Menus:
 Menus:
 - refactor(menu): share section headings and nested return
   - Use common rendering primitives for section labels and reopen a parent action on explicit Back.
+
+Menus:
+- fix(dialog): isolate song update checkboxes
+  - Reset options on opening and select only visible operations so offline updates keep their local actions.

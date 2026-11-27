@@ -4,6 +4,7 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.core.database.ArtistMappingReconcile
 import app.n_zik.android.core.database.Database
 
+import app.n_zik.android.core.network.OfflineMode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.SideEffect
@@ -173,7 +174,6 @@ class UpdateSongDialog private constructor(
         }
         items.add(removeOfflineDownload)
 
-        items.add( Item.SELECT_ALL )
     }
 
     override val iconId: Int = R.drawable.refresh
@@ -262,16 +262,25 @@ class UpdateSongDialog private constructor(
         hideDialog()
     }
 
+    @Composable
+    override fun visibleItems(): List<Item> =
+        if (OfflineMode.rememberEnabled().value) items.filterNot { it.id in remoteItemIds } else items
+
     /** Reads the checkbox states out of the Compose items (wiring layer only). */
-    private fun readSelection(): SongUpdateSelection = SongUpdateSelection(
-        title = items.first { it.id == TITLE_CHECKBOX_ID }.selected,
-        authors = items.first { it.id == AUTHORS_CHECKBOX_ID }.selected,
-        thumbnail = items.first { it.id == THUMBNAIL_CHECKBOX_ID }.selected,
-        playtime = items.first { it.id == PLAYTIME_CHECKBOX_ID }.selected,
-        cache = items.first { it.id == CACHE_CHECKBOX_ID }.selected,
-        favorite = items.first { it.id == FAVORITE_CHECKBOX_ID }.selected,
-        offlineDownload = items.first { it.id == OFFLINE_DOWNLOAD_CHECKBOX_ID }.selected
-    )
+    private val remoteItemIds = setOf(TITLE_CHECKBOX_ID, AUTHORS_CHECKBOX_ID, THUMBNAIL_CHECKBOX_ID)
+
+    private fun readSelection(): SongUpdateSelection {
+        val allowNetwork = !OfflineMode.enabled(appContext())
+        return SongUpdateSelection(
+            title = allowNetwork && items.first { it.id == TITLE_CHECKBOX_ID }.selected,
+            authors = allowNetwork && items.first { it.id == AUTHORS_CHECKBOX_ID }.selected,
+            thumbnail = allowNetwork && items.first { it.id == THUMBNAIL_CHECKBOX_ID }.selected,
+            playtime = items.first { it.id == PLAYTIME_CHECKBOX_ID }.selected,
+            cache = items.first { it.id == CACHE_CHECKBOX_ID }.selected,
+            favorite = items.first { it.id == FAVORITE_CHECKBOX_ID }.selected,
+            offlineDownload = items.first { it.id == OFFLINE_DOWNLOAD_CHECKBOX_ID }.selected,
+        )
+    }
 
     /**
      * Progress mode renders the shared [InProgressDialog] (bold label, 48 dp

@@ -23,7 +23,6 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
 import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,32 +47,30 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
     override val bodyPadding: PaddingValues get() = PaddingValues(0.dp)
 
     @Composable
+    protected open fun visibleItems(): List<Item> = items
+
+    override fun showDialog() {
+        if (!isActive) items.forEach { it.selected = false }
+        super.showDialog()
+    }
+
+    @Composable
     override fun DialogBody() {
         Column(
             Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp)
         ) {
-            items.forEach { it.ToolBarButton() }
+            val visible = visibleItems()
+            visible.forEach { it.ToolBarButton() }
+            if (visible.isNotEmpty()) {
+                val allSelected = visible.all { it.selected }
+                CheckboxRow(stringResource(R.string.common_option_all), allSelected) {
+                    visible.forEach { it.selected = !allSelected }
+                }
+            }
         }
     }
 
     abstract class Item: MenuIcon {
-
-        companion object {
-            val SELECT_ALL: Item by lazy {
-                object: Item() {
-                    override val id: String = "select_all"
-                    override val menuIconTitle: String
-                        @Composable
-                        get() = stringResource(R.string.common_option_all)
-
-                    override fun onShortClick() {
-                        // Disable uncheck
-                        if( selected ) return
-                        super.onShortClick()
-                    }
-                }
-            }
-        }
 
         abstract val id: String
         override val iconId: Int = -1
@@ -81,19 +78,16 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
         var selected: Boolean by mutableStateOf(false)
 
         override fun onShortClick() {
-            if( selected )
-                SELECT_ALL.selected = false
-
             selected = !selected
         }
 
         @Composable
-        override fun ToolBarButton() {
-            LaunchedEffect( SELECT_ALL.selected ) {
-                if( SELECT_ALL.selected )
-                    selected = true
-            }
+        override fun ToolBarButton() = CheckboxRow(menuIconTitle, selected, ::onShortClick)
+    }
 
+    companion object {
+        @Composable
+        private fun CheckboxRow(label: String, selected: Boolean, onClick: () -> Unit) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -101,7 +95,7 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
                                    .clickable(
                                        interactionSource = remember { MutableInteractionSource() },
                                        indication = glassGlobalIndication(null),
-                                       onClick = ::onShortClick
+                                       onClick = onClick
                                    )
             ) {
                 Icon(
@@ -114,7 +108,7 @@ abstract class CheckboxDialog(activeState: MutableState<Boolean>): ConfirmDialog
                 Spacer( Modifier.width( 5.dp ) )
 
                 BasicText(
-                    text = menuIconTitle,
+                    text = label,
                     maxLines = 1,
                     modifier = Modifier.weight(1f).basicMarquee(iterations = Int.MAX_VALUE),
                     style = typography().xs.copy( color = colorPalette().text )

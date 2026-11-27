@@ -19,7 +19,6 @@ import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.R
 import app.n_zik.android.appContext
-import app.n_zik.android.components.dialog.common.CheckboxDialog
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -67,12 +66,10 @@ class UpdateSongDialogConfirmationTest {
         mockkObject(NzikDispatchers)
         every { NzikDispatchers.fireAndForget(any<kotlinx.coroutines.CoroutineDispatcher>()) } returns
             CoroutineScope(Dispatchers.Unconfined + SupervisorJob())
-        CheckboxDialog.Item.SELECT_ALL.selected = false
     }
 
     @After
     fun teardown() {
-        CheckboxDialog.Item.SELECT_ALL.selected = false
         unmockkAll()
     }
 
