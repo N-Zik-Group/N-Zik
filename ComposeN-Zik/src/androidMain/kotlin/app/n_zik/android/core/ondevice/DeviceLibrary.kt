@@ -3,6 +3,9 @@ package app.n_zik.android.core.ondevice
 import android.Manifest
 import android.content.Context
 import android.content.SharedPreferences
+import android.database.ContentObserver
+import android.net.Uri
+import android.provider.MediaStore
 import app.n_zik.android.core.profiles.profileDataPrefs
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -14,6 +17,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.components.ui.screens.home.onDevice.localSongRefreshRequests
 import app.n_zik.android.components.ui.screens.home.onDevice.withLocalFolderProfile
+import app.n_zik.android.core.profiles.ProfileStorageIdentity
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.utils.readDeviceLibrary
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -95,6 +100,36 @@ internal object DeviceLibraryResults {
 
     fun publish(profile: String, snapshot: DeviceLibrarySnapshot) {
         snapshots.update { it + (profile to snapshot) }
+    }
+}
+
+/** Keeps the scan revision current for the profile bound to this process. */
+internal object DeviceLibraryMediaObserver {
+    private var registered = false
+
+    @Synchronized
+    fun ensureRegistered(context: Context, owner: ProfileStorageIdentity) {
+        if (registered) return
+        val app = context.applicationContext
+        val observer = object : ContentObserver(null) {
+            override fun onChange(selfChange: Boolean) = invalidate()
+
+            override fun onChange(selfChange: Boolean, uris: Collection<Uri>, flags: Int) = invalidate()
+
+            private fun invalidate() {
+                if (app.hasDeviceAudioPermission() && app.isDeviceLibraryEnabled(owner.id) &&
+                    ProfileWorkOwner.isBound(app, owner)
+                ) {
+                    localSongRefreshRequests.request(owner.id)
+                }
+            }
+        }
+        try {
+            app.contentResolver.registerContentObserver(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, true, observer)
+            registered = true
+        } catch (error: SecurityException) {
+            Timber.tag("DeviceLibrary").w(error, "Could not observe MediaStore audio changes")
+        }
     }
 }
 

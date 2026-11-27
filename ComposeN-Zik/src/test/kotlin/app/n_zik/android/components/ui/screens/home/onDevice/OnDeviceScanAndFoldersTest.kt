@@ -1,6 +1,15 @@
 package app.n_zik.android.components.ui.screens.home.onDevice
 
+import android.app.Application
+import android.content.ContentUris
 import android.database.sqlite.SQLiteDatabase
+import android.provider.MediaStore
+import androidx.test.core.app.ApplicationProvider
+import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.ondevice.DeviceLibraryMediaObserver
+import app.n_zik.android.core.ondevice.deviceAudioPermission
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.utils.PathUtils
 import app.n_zik.android.core.utils.localAudioSelection
 import app.n_zik.android.core.utils.localAudioTitle
@@ -10,6 +19,7 @@ import app.n_zik.android.core.utils.DeviceSongOrder
 import app.n_zik.android.enums.OnDeviceSongSortBy
 import app.n_zik.android.enums.SortOrder
 import app.n_zik.android.models.Song
+import app.n_zik.android.utils.setActiveProfile
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -19,6 +29,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -106,6 +117,36 @@ class OnDeviceScanAndFoldersTest {
         requests.request("default")
         assertEquals(2L, requests.forProfile("default").first())
         assertEquals(0L, requests.forProfile("work").first())
+    }
+
+    @Test
+    fun audioChangesInvalidateTheBoundAndPermittedDeviceLibraryOnce() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        val owner = requireNotNull(ProfileWorkOwner.capture(app))
+        val prefs = profileDataPrefs(app, owner.id)
+        val audioUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, 1L)
+        val before = localSongRefreshRequests.current(owner.id)
+        prefs.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).apply()
+        shadowOf(app).grantPermissions(deviceAudioPermission)
+        DeviceLibraryMediaObserver.ensureRegistered(app, owner)
+        DeviceLibraryMediaObserver.ensureRegistered(app, owner)
+
+        app.contentResolver.notifyChange(audioUri, null)
+        assertEquals(before + 1L, localSongRefreshRequests.current(owner.id))
+
+        prefs.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, false).apply()
+        app.contentResolver.notifyChange(audioUri, null)
+        assertEquals(before + 1L, localSongRefreshRequests.current(owner.id))
+
+        prefs.edit().putBoolean(DEVICE_LIBRARY_ENABLED_KEY, true).apply()
+        shadowOf(app).denyPermissions(deviceAudioPermission)
+        app.contentResolver.notifyChange(audioUri, null)
+        assertEquals(before + 1L, localSongRefreshRequests.current(owner.id))
+
+        shadowOf(app).grantPermissions(deviceAudioPermission)
+        setActiveProfile("work", app)
+        app.contentResolver.notifyChange(audioUri, null)
+        assertEquals(before + 1L, localSongRefreshRequests.current(owner.id))
     }
 
     @Test

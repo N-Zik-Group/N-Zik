@@ -15,6 +15,7 @@ import app.n_zik.android.components.ui.screens.home.onDevice.localSongRefreshReq
 import app.n_zik.android.core.profiles.ProfileStorageIdentity
 import app.n_zik.android.components.ui.screens.home.onDevice.LocalFolderProfileContext
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.ondevice.DeviceLibraryMediaObserver
 import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.IndexedDeviceTrack
@@ -137,6 +138,7 @@ internal suspend fun Context.readDeviceLibrary(): DeviceScan {
     fun scanAllowed() = ProfileWorkOwner.isBound(ownerContext, owner) && ownerContext.isDeviceLibraryEnabled(owner.id) && ownerContext.hasDeviceAudioPermission()
     return deviceScanMutex.withLock {
         if (!scanAllowed()) return@withLock DeviceScan(emptyMap(), DeviceLibrarySnapshot())
+        DeviceLibraryMediaObserver.ensureRegistered(ownerContext, owner)
         val revision = localSongRefreshRequests.current(owner.id)
         cachedDeviceScan?.takeIf { it.owner == owner && it.revision == revision }?.let {
             return@withLock it.scan

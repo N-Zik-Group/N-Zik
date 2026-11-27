@@ -1972,3 +1972,7 @@ Theme Store:
 Menus / Information:
 - fix(menu): identify missing media metadata
   - Use translated fallbacks for missing album and collection metadata, while displaying identical title/author text once and keeping navigation.
+
+Playlists / On device:
+- fix(playlist): refresh On device tracks after MediaStore changes
+  - Invalidate the active profile's cached scan on audio change notifications.
