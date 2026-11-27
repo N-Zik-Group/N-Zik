@@ -1,14 +1,19 @@
 package app.n_zik.android.components.ui.screens.playlist
 
 import android.content.Context
+import android.net.Uri
 import androidx.media3.common.MediaItem
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.offline.Download
+import androidx.media3.exoplayer.offline.DownloadRequest
+import app.n_zik.android.components.dialog.media.runAdmittedDownloadBatch
 import app.n_zik.android.ui.screens.playlist.processPlaylistBatch
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.database.FormatTable
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.download.utils.MyDownloadHelper
+import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import io.mockk.Runs
@@ -60,6 +65,12 @@ class PlaylistDownloadBatchOffMainTest {
 
     private fun songs(count: Int) = (1..count).map { songItem("id_$it", "Song $it") }
 
+    private fun download(id: String, state: Int): Download {
+        val request = DownloadRequest.Builder(id, Uri.parse("https://example.com/$id")).build()
+        val failure = if (state == Download.STATE_FAILED) Download.FAILURE_REASON_UNKNOWN else Download.FAILURE_REASON_NONE
+        return Download(request, state, 0L, 0L, 0L, Download.STOP_REASON_NONE, failure)
+    }
+
     private fun binderWithCache(cache: Cache): PlayerServiceModern.Binder {
         val binder = mockk<PlayerServiceModern.Binder>()
         every { binder.cache } returns cache
@@ -109,7 +120,7 @@ class PlaylistDownloadBatchOffMainTest {
     }
 
     @Test
-    fun `addDownload runs once per song when the network is available`() = runBlocking {
+    fun `online playlist skips completed downloads and only evicts cache after admission`() = runBlocking {
         val cache = mockk<Cache>()
         every { cache.removeResource(any()) } just Runs
         val binder = binderWithCache(cache)
@@ -120,17 +131,30 @@ class PlaylistDownloadBatchOffMainTest {
         every { NetworkQualityHelper.isNetworkAvailable(any()) } returns true
 
         val threads = CopyOnWriteArrayList<Thread>()
+        val completed = download("id_3", Download.STATE_COMPLETED)
+        val failed = download("id_4", Download.STATE_FAILED)
+        val requested = CopyOnWriteArrayList<String>()
         mockkObject(MyDownloadHelper)
-        every { MyDownloadHelper.addDownload(any(), any()) } answers { threads += Thread.currentThread() }
+        every { MyDownloadHelper.downloads } returns MutableStateFlow(mapOf("id_3" to completed, "id_4" to failed))
+        every { MyDownloadHelper.addDownload(any(), any(), any()) } answers {
+            threads += Thread.currentThread()
+            val id = secondArg<MediaItem>().mediaId
+            requested += id
+            if (id != "id_2") thirdArg<() -> Unit>().invoke()
+        }
         stubWriteBatch()
 
         withContext(NzikDispatchers.DATA) {
-            processPlaylistBatch(songs(2), binder, context, downloadState = false)
+            processPlaylistBatch(songs(4), binder, context, downloadState = false)
         }
 
-        assertEquals(2, threads.size)
+        assertEquals(listOf("id_1", "id_2", "id_4"), requested)
+        assertEquals(3, threads.size)
         threads.forEach { assertNotEquals(callerThread, it) }
-        verify(exactly = 2) { MyDownloadHelper.addDownload(any(), any()) }
+        verify(exactly = 1) { cache.removeResource("id_1") }
+        verify(exactly = 0) { cache.removeResource("id_2") }
+        verify(exactly = 0) { cache.removeResource("id_3") }
+        verify(exactly = 1) { cache.removeResource("id_4") }
     }
 
     @Test
@@ -139,6 +163,7 @@ class PlaylistDownloadBatchOffMainTest {
         val binder = binderWithCache(cache)
         val context = mockk<Context>(relaxed = true)
         mockkObject(NetworkQualityHelper, MyDownloadHelper, Toaster)
+        every { MyDownloadHelper.downloads } returns MutableStateFlow(emptyMap())
         every { NetworkQualityHelper.isNetworkConnected(context) } returns false
         every { Toaster.noInternet() } just Runs
         stubWriteBatch()
@@ -148,8 +173,41 @@ class PlaylistDownloadBatchOffMainTest {
         }
 
         verify(exactly = 0) { cache.removeResource(any()) }
-        verify(exactly = 0) { MyDownloadHelper.addDownload(any(), any()) }
+        verify(exactly = 0) { MyDownloadHelper.addDownload(any(), any(), any()) }
         verify(exactly = 1) { Toaster.noInternet() }
+    }
+
+    @Test
+    fun `bulk download dialog preserves cache and format for a refused track`() = runBlocking {
+        val cache = mockk<Cache>(relaxed = true)
+        val formats = mockk<FormatTable>(relaxed = true)
+        val context = mockk<Context>(relaxed = true)
+        stubWriteBatch()
+        every { Database.formatTable } returns formats
+        coEvery { Database.awaitWriteBatch<Unit>(3, any()) } coAnswers {
+            secondArg<suspend Database.() -> Unit>().invoke(Database)
+        }
+        mockkObject(MyDownloadHelper)
+        coEvery { MyDownloadHelper.addDownloadInBatch(context, any(), any()) } coAnswers {
+            if (secondArg<MediaItem>().mediaId == "id_1") thirdArg<suspend () -> Unit>().invoke()
+        }
+        val tracks = (1..2).map {
+            Song(
+                id = "id_$it",
+                title = "Song $it",
+                durationText = null,
+                thumbnailUrl = "https://example.com/cover_$it.jpg",
+            )
+        }
+
+        withContext(NzikDispatchers.DATA) {
+            runAdmittedDownloadBatch(context, tracks, cache)
+        }
+
+        verify(exactly = 1) { cache.removeResource("id_1") }
+        verify(exactly = 0) { cache.removeResource("id_2") }
+        coVerify(exactly = 1) { formats.deleteBySongId("id_1") }
+        coVerify(exactly = 0) { formats.deleteBySongId("id_2") }
     }
 
     @Test

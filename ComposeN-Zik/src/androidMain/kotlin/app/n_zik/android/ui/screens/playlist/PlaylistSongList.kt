@@ -1261,14 +1261,17 @@ internal suspend fun processPlaylistBatch(
 
     Database.awaitWriteBatch(retries = 1) {
         for (songItem in songs) {
+            val mediaItem = songItem.asMediaItem
+            val existingDownload = MyDownloadHelper.downloads.value[mediaItem.mediaId]
+            if (downloadState && existingDownload == null) continue
+            if (!downloadState && existingDownload?.state == Download.STATE_COMPLETED) continue
             if (!downloadState && !isNetworkConnected(context)) {
                 Toaster.noInternet()
                 break
             }
-            val mediaItem = songItem.asMediaItem
-            if (downloadState && mediaItem.mediaId !in MyDownloadHelper.downloads.value) continue
-            if (!downloadState) binder?.cache?.removeResource(mediaItem.mediaId)
-            manageDownload(context, mediaItem, downloadState)
+            manageDownload(context, mediaItem, downloadState) {
+                binder?.cache?.removeResource(mediaItem.mediaId)
+            }
         }
     }
 }

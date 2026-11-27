@@ -544,19 +544,23 @@ fun Podcast(
                                                     downloadState = Download.STATE_DOWNLOADING
                                                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
                                                         for (mediaItem in episodes) {
+                                                            if (MyDownloadHelper.downloads.value[mediaItem.mediaId]?.state ==
+                                                                Download.STATE_COMPLETED
+                                                            ) continue
                                                             if (!isNetworkConnected(context)) {
                                                                 Toaster.noInternet()
                                                                 break
-                                                            }
-                                                            binder?.cache?.removeResource(mediaItem.mediaId)
-                                                            Database.asyncTransaction {
-                                                                formatTable.findBySongId(mediaItem.mediaId)
                                                             }
                                                             manageDownload(
                                                                 context = context,
                                                                 mediaItem = mediaItem,
                                                                 downloadState = false
-                                                            )
+                                                            ) {
+                                                                binder?.cache?.removeResource(mediaItem.mediaId)
+                                                                Database.asyncTransaction {
+                                                                    formatTable.findBySongId(mediaItem.mediaId)
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }

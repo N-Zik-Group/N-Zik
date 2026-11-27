@@ -18,7 +18,6 @@ import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
-import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.components.dialog.media.MediaDownloadDialog
 import app.n_zik.android.utils.isNetworkConnected
 
@@ -84,10 +83,6 @@ class DownloadAllSongsDialog(
             return
         }
         super.onConfirm()
-    }
-
-    override fun onAction( media: Song ) {
-        MyDownloadHelper.addDownload(appContext(), media.asMediaItem)
     }
 }
 

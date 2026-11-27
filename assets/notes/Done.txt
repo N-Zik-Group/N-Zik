@@ -1796,3 +1796,7 @@ Playlists:
 Settings:
 - fix(settings): reset on-device options under Data
   - Restore local music settings for the active profile and preserve Android permissions and folder exclusions.
+
+Playlists:
+- fix(playlist): preserve cache for rejected bulk downloads
+  - Prepare accepted requests only, keep completed downloads and retry failed requests.

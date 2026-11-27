@@ -588,11 +588,29 @@ object MyDownloadHelper {
         skipExisting: Boolean,
         beforeEnqueue: (() -> Unit)? = null,
     ) {
-        if (mediaItem.isLocal || owner != ProfileDownloadCommands.capture(context)) return
+        if (!canEnqueueDownload(context, mediaItem, owner)) return
+        beforeEnqueue?.invoke()
+        submitDownload(context, mediaItem, owner, skipExisting)
+    }
+
+    /** Allows a queued batch to finish suspending preparation before submitting an admitted track. */
+    internal suspend fun addDownloadInBatch(
+        context: Context,
+        mediaItem: MediaItem,
+        beforeEnqueue: suspend () -> Unit,
+    ) {
+        val owner = ProfileDownloadCommands.capture(context) ?: return
+        if (!canEnqueueDownload(context, mediaItem, owner)) return
+        beforeEnqueue()
+        submitDownload(context, mediaItem, owner, skipExisting = false)
+    }
+
+    private fun canEnqueueDownload(context: Context, mediaItem: MediaItem, owner: ProfileDownloadCommands): Boolean {
+        if (mediaItem.isLocal || owner != ProfileDownloadCommands.capture(context)) return false
 
         if( !isNetworkConnected( context ) ) {
             Toaster.noInternet()
-            return
+            return false
         }
 
         val parentalControlEnabled = context.preferences.getBoolean(parentalControlEnabledKey, false)
@@ -600,11 +618,19 @@ object MyDownloadHelper {
             val title = mediaItem.mediaMetadata.title?.toString().orEmpty()
             if (mediaItem.isExplicit || title.hasExplicitPrefix() || title.startsWith("\uD83C\uDD74 ")) {
                 Toaster.w(R.string.parental_control_is_enabled)
-                return
+                return false
             }
         }
 
-        beforeEnqueue?.invoke()
+        return true
+    }
+
+    private fun submitDownload(
+        context: Context,
+        mediaItem: MediaItem,
+        owner: ProfileDownloadCommands,
+        skipExisting: Boolean,
+    ) {
         Database.asyncTransaction {
             insertIgnore( mediaItem, autoFix = false )
         }

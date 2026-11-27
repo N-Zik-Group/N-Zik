@@ -93,13 +93,10 @@ class DeleteAllDownloadedSongsDialog(
         onDismiss()
         NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
             downloadedSongs.forEach {
-                onAction(it)
+                MyDownloadHelper.removeDownload(appContext(), it.asMediaItem)
             }
         }
     }
-
-    override fun onAction( media: Song ) =
-        MyDownloadHelper.removeDownload( appContext(), media.asMediaItem )
 }
 
 @UnstableApi
