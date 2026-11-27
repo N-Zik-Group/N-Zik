@@ -1,6 +1,7 @@
 package app.n_zik.android.components.settings.common
 
 import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+import app.n_zik.android.components.ui.screens.bridge.BridgePairedDevicesSettingsTarget
 
 import androidx.annotation.PluralsRes
 import app.n_zik.android.R
@@ -416,6 +417,7 @@ val SettingsEntryTargets: List<SettingsEntryTarget> = listOf(
     SettingsEntryTarget("network.quality.image_quality_format", 6, R.string.settings_network_quality_title, R.string.settings_network_image_quality_label, listOf(R.string.audio_quality_automatic, R.string.audio_quality_format_high, R.string.audio_quality_format_medium, R.string.audio_quality_format_low)),
     SettingsEntryTarget("network.settings_reset.settings_reset", 6, R.string.settings_reset, R.string.settings_reset, listOf(R.string.settings_restore_default_settings)),
     SettingsEntryTarget("network.bridge_server.bridge_server", 6, R.string.bridge_server, R.string.bridge_server, listOf(R.string.bridge_server_description)),
+    SettingsEntryTarget(BridgePairedDevicesSettingsTarget, 6, R.string.bridge_server, R.string.bridge_paired_devices),
     SettingsEntryTarget(BridgeAutoStopTarget.NoClient.id, 6, R.string.bridge_server, BridgeAutoStopTarget.NoClient.labelRes,
         listOf(R.string.bridge_auto_stop, R.string.bridge_auto_stop_description), groupTitleRes = R.string.bridge_auto_stop),
     SettingsEntryTarget(BridgeAutoStopTarget.Inactivity.id, 6, R.string.bridge_server, BridgeAutoStopTarget.Inactivity.labelRes,

@@ -68,6 +68,21 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
+internal const val BridgePairedDevicesSettingsTarget = "network.bridge_server.paired_devices"
+
+internal enum class BridgeSettingsSection(val itemKey: String) {
+    AutoStop("autoStop"),
+    PairedDevices("devices");
+
+    companion object {
+        fun forTarget(id: String): BridgeSettingsSection? = when {
+            id == BridgePairedDevicesSettingsTarget -> PairedDevices
+            BridgeAutoStopTarget.entries.any { it.id == id } -> AutoStop
+            else -> null
+        }
+    }
+}
+
 /** Manages the PC bridge, pairing and connected devices. */
 @Composable
 fun BridgeServerScreen(
@@ -88,20 +103,20 @@ fun BridgeServerScreen(
         )
     val listState = rememberLazyListState()
     val targetRegistry = remember { SettingsTargetRegistry() }
-    val target = BridgeAutoStopTarget.entries.firstOrNull { it.id == settingsTarget }
+    val targetSection = BridgeSettingsSection.forTarget(settingsTarget)
     val running = state as? BridgeState.Running
     val connected = activeDevice.takeIf { running != null }
-    val autoStopIndex = 3 + (if (connected != null) 1 else 0) + (if (running != null) 1 else 0)
+    val firstSettingsSectionIndex = 3 + (if (connected != null) 1 else 0) + (if (running != null) 1 else 0)
     var targetHandled by rememberSaveable(settingsTarget) { mutableStateOf(false) }
-    LaunchedEffect(target, autoStopIndex) {
-        if (target == null || targetHandled) return@LaunchedEffect
-        listState.scrollToItem(autoStopIndex)
+    LaunchedEffect(settingsTarget, firstSettingsSectionIndex) {
+        if (targetSection == null || targetHandled) return@LaunchedEffect
+        listState.scrollToItem(firstSettingsSectionIndex + targetSection.ordinal)
         val requester = withTimeoutOrNull(1500) {
-            snapshotFlow { targetRegistry.targets[target.id] }.first { it != null }
+            snapshotFlow { targetRegistry.targets[settingsTarget] }.first { it != null }
         } ?: return@LaunchedEffect
         requester.bringIntoView()
         targetHandled = true
-        targetRegistry.blink(target.id)
+        targetRegistry.blink(settingsTarget)
     }
     LaunchedEffect(Unit) { BridgeServerController.loadDeviceStore(context) }
     LaunchedEffect(Unit) { BridgeServerController.loadAutoStopSettings(context) }
@@ -182,13 +197,15 @@ fun BridgeServerScreen(
                         PairPcCard(running = running, code = pairingCode)
                     }
                 }
-                item(key = "autoStop", contentType = "card") {
-                    CompositionLocalProvider(LocalSettingsTargets provides targetRegistry.takeIf { target != null }) {
+                item(key = BridgeSettingsSection.AutoStop.itemKey, contentType = "card") {
+                    CompositionLocalProvider(LocalSettingsTargets provides targetRegistry.takeIf { targetSection == BridgeSettingsSection.AutoStop }) {
                         AutoStopCard(autoStopSettings)
                     }
                 }
-                item(key = "devices", contentType = "card") {
-                    PairedDevicesCard(pairedDevices)
+                item(key = BridgeSettingsSection.PairedDevices.itemKey, contentType = "card") {
+                    CompositionLocalProvider(LocalSettingsTargets provides targetRegistry.takeIf { targetSection == BridgeSettingsSection.PairedDevices }) {
+                        PairedDevicesCard(pairedDevices)
+                    }
                 }
             }
         }

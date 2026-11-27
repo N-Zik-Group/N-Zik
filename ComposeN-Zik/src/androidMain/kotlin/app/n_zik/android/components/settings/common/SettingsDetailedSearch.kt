@@ -30,7 +30,7 @@ import app.n_zik.android.components.settings.ui.GlassSectionGroupTitles
 import app.n_zik.android.components.settings.ui.defaultHomePageChoices
 import app.n_zik.android.components.settings.ui.glassSearchOption
 import app.n_zik.android.components.settings.ui.isGlassSearchLabelSupported
-import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+import app.n_zik.android.components.ui.screens.bridge.BridgeSettingsSection
 import app.n_zik.android.components.ui.screens.bridge.BridgeSettingsTargetArgument
 import app.n_zik.android.core.ondevice.hasDeviceAudioPermission
 import app.n_zik.android.extensions.pip.supportsPictureInPicture
@@ -332,7 +332,7 @@ fun SettingsEntryTarget.locationDescription(context: Context, searchCategoryId: 
 /** Uses the same destination for global and category results, including dedicated settings pages. */
 fun SettingsEntryTarget.destinationRoute(context: Context, searchCategoryId: String? = null): String {
     if (id.startsWith("glass.")) return "$SETTINGS_GLASS_ROUTE?target=${Uri.encode(id)}"
-    if (BridgeAutoStopTarget.entries.any { it.id == id }) {
+    if (BridgeSettingsSection.forTarget(id) != null) {
         return "${NavRoutes.bridgeServer.name}?$BridgeSettingsTargetArgument=${Uri.encode(id)}"
     }
     val card = parentCard(searchCategoryId)

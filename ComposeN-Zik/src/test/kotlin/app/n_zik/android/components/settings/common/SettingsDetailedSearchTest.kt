@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import app.n_zik.android.components.settings.appearance.PlayerSongSwipeSetting
 import app.n_zik.android.components.ui.screens.bridge.BridgeAutoStopTarget
+import app.n_zik.android.components.ui.screens.bridge.BridgePairedDevicesSettingsTarget
 import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.enums.PlayerType
 import app.n_zik.android.utils.getEnum
@@ -635,7 +636,7 @@ class SettingsDetailedSearchTest {
             assertEquals(entry.id, uri.getQueryParameter("target"))
             if (entry.id.startsWith("glass.")) {
                 assertEquals(SETTINGS_GLASS_ROUTE, uri.path)
-            } else if (BridgeAutoStopTarget.entries.any { it.id == entry.id }) {
+            } else if (entry.id == BridgePairedDevicesSettingsTarget || BridgeAutoStopTarget.entries.any { it.id == entry.id }) {
                 assertEquals(app.n_zik.android.enums.NavRoutes.bridgeServer.name, uri.path)
             } else {
                 val card = entry.parentCard()
@@ -643,6 +644,16 @@ class SettingsDetailedSearchTest {
                 assertEquals(settingsCardTargetId(context, card.tab, card.titleRes), uri.getQueryParameter("parent"))
             }
         }
+    }
+
+    @Test fun pairedDevicesSearchTargetsTheBridgeCardFromNetwork() {
+        val english = localized(Locale.ENGLISH)
+        val query = english.getString(R.string.bridge_paired_devices)
+        val target = searchSettingsEntries(english, query).single { it.id == BridgePairedDevicesSettingsTarget }
+        assertEquals("network", target.parentCard().categoryId())
+        assertEquals(R.string.bridge_server, target.parentCard().titleRes)
+        assertEquals(query, target.searchResultTitle(english))
+        assertEquals(target.destinationRoute(english), target.destinationRoute(english, "network"))
     }
 
     @Test fun nestedBreadcrumbNamesItsRealOpenerAndDialogSubsection() {

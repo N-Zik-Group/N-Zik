@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.R
 import app.n_zik.android.bridge.BridgeServerController
@@ -305,6 +306,7 @@ internal fun PairedDevicesCard(devices: List<PairedDevice>?) {
     SettingsSectionCard(
         title = stringResource(R.string.bridge_paired_devices),
         icon = R.drawable.devices,
+        headerModifier = Modifier.settingsSearchTarget(BridgePairedDevicesSettingsTarget),
         content = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 if (devices == null) {

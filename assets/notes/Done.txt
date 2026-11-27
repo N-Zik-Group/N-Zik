@@ -1684,3 +1684,7 @@ Menus:
 Playlist:
 - fix(playlist): align device destinations with Library
   - Exclude YouTube sources from the device chip and use its destination mode only while that chip is selected.
+
+Settings:
+- fix(settings): surface paired PC devices in search
+  - Focus the existing Paired devices card from Settings search without starting the PC server.
