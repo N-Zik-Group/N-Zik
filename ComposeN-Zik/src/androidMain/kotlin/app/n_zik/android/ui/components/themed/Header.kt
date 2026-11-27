@@ -166,6 +166,7 @@ fun HeaderWithIcon (
     showIcon: Boolean = true,
     enabled: Boolean = true,
     showBetaBadge: Boolean = false,
+    maxTitleLines: Int = 1,
     onClick: () -> Unit
 ){
     //val disableIconButtonOnTop by rememberPreference(disableIconButtonOnTopKey, false)
@@ -206,9 +207,9 @@ fun HeaderWithIcon (
                     fontSize = typography().xxl.bold.fontSize,
                     fontWeight = typography().xxl.bold.fontWeight,
                     color = colorPalette().text,
-                    textAlign = TextAlign.Start
+                    textAlign = if (maxTitleLines == 1) TextAlign.Start else TextAlign.Center
                 ),
-                maxLines = 1,
+                maxLines = maxTitleLines,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.semantics { heading() },
             )

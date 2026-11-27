@@ -61,8 +61,9 @@ import app.n_zik.android.components.glass.PageButton as Button
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
 import app.n_zik.android.components.settings.ListenTogetherSettingsCard
-import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsCardAlignedInset
 import app.n_zik.android.components.ui.InlineLoader
 import app.n_zik.android.components.ui.UiIconButton as IconButton
 import app.n_zik.android.core.utils.Toaster
@@ -74,7 +75,7 @@ import app.n_zik.android.listentogether.LISTEN_TOGETHER_JOIN_BLOCKED_REASON
 import app.n_zik.android.listentogether.ListenTogetherManager
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.LocalMenuState
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.components.settings.common.SettingsPageTitle
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.utils.DataStoreUtils
@@ -271,19 +272,8 @@ fun ListenTogetherScreen(
                 ),
             ) {
                 item {
-                    HeaderWithIcon(
-                        title = stringResource(R.string.listen_together_title),
-                        iconId = R.drawable.people,
-                        enabled = false,
-                        showIcon = true,
-                        modifier = Modifier,
-                        onClick = {},
-                    )
-                    SettingsDescription(
-                        text = stringResource(R.string.listen_together_description),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
+                    SettingsPageTitle(stringResource(R.string.listen_together_title), R.drawable.people)
+                    SettingsPageDescription(stringResource(R.string.listen_together_description))
                 }
 
                 item {
@@ -472,10 +462,9 @@ internal fun JoinCreateRoomSection(
     SettingsSectionCard(
         title = stringResource(R.string.listen_together_room),
         icon = R.drawable.people,
-        description = stringResource(R.string.listen_together_create_room_description),
         content = {
             Column(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().settingsCardAlignedInset(),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {

@@ -150,8 +150,6 @@ fun ListenTogetherSettingsCard(onOpenScreen: (() -> Unit)? = null) {
     SettingsSectionCard(
         title = stringResource(R.string.listen_together_title),
         icon = R.drawable.people,
-        showDescription = true,
-        description = stringResource(R.string.listen_together_settings_description),
         content = {
             CardCategoryLabel(
                 stringResource(R.string.settings_group_room_connection),

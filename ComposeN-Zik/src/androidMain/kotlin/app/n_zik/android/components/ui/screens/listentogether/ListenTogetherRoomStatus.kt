@@ -33,6 +33,7 @@ import app.n_zik.android.components.glass.PageButton as Button
 import app.n_zik.android.components.glass.glassAwareContentSize
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsCardAlignedInset
 import app.n_zik.android.components.ui.InlineLoader
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.listentogether.ConnectionState
@@ -64,6 +65,7 @@ internal fun ConnectionStatusCard(
                 modifier =
                     Modifier
                         .fillMaxWidth()
+                        .settingsCardAlignedInset()
                         .glassAwareContentSize(
                             animationSpec =
                                 spring(

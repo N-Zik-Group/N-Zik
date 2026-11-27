@@ -145,7 +145,7 @@ fun SettingsSectionCard(
                                 modifier = Modifier.fillMaxWidth()
                                     .padding(
                                         start = 4.dp,
-                                        top = 4.dp,
+                                        top = if (expanded == false) 4.dp else 8.dp,
                                         end = 4.dp,
                                         bottom = if (expanded == false) 4.dp else 12.dp,
                                     ),
@@ -363,7 +363,9 @@ internal fun SettingsCardSectionHeading(@StringRes title: Int) {
 @Composable
 internal fun SettingsCardSectionDivider() {
     HorizontalDivider(
-        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
+        modifier = Modifier
+            .settingsCardAlignedInset()
+            .padding(top = 16.dp, bottom = 4.dp),
         color = colorPalette().textSecondary.copy(alpha = 0.2f),
     )
 }

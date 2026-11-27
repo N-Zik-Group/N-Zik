@@ -18,7 +18,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.components.search.rememberSearchResultOpacity
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
 
 // Online Search uses 16dp around the bar before its full-width result list.
 internal val SettingsSearchBarPadding = PaddingValues(16.dp)
@@ -55,7 +54,7 @@ fun rememberSettingsSearchFocus(
 
 /**
  * Page title of a settings page: fades out and collapses while the search bar
- * is focused, so the bar rises to the title's level (same [HeaderWithIcon]
+ * is focused, so the bar rises to the title's level (same [SettingsPageTitle]
  * parameters as the plain settings page headers).
  */
 @Composable
@@ -65,14 +64,7 @@ fun ColumnScope.settingsSearchTitle(
     iconRes: Int,
 ) {
     SearchHeaderVisibility(focus.titleVisible) {
-        HeaderWithIcon(
-            title = stringResource(titleRes),
-            iconId = iconRes,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {}
-        )
+        SettingsPageTitle(stringResource(titleRes), iconRes)
     }
 }
 

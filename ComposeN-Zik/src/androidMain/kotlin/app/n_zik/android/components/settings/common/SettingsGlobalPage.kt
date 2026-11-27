@@ -57,7 +57,6 @@ import app.n_zik.android.components.navigation.header.LocalHeaderProfileFace
 import app.n_zik.android.components.navigation.header.rememberHeaderProfileFace
 import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
 import app.n_zik.android.ui.styling.Dimensions
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
 import app.n_zik.android.utils.lastUpdateCheckKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
@@ -166,14 +165,7 @@ fun SettingsGlobalPage(
                         enter = expandVertically(tween(250)) + fadeIn(tween(250)),
                         exit = shrinkVertically(tween(250)) + fadeOut(tween(250)),
                     ) {
-                        HeaderWithIcon(
-                            title = stringResource(R.string.settings_global_title),
-                            iconId = R.drawable.settings,
-                            enabled = false,
-                            showIcon = true,
-                            modifier = Modifier,
-                            onClick = {}
-                        )
+                        SettingsPageTitle(stringResource(R.string.settings_global_title), R.drawable.settings)
                     }
 
                     SettingsGlobalSearchBar(

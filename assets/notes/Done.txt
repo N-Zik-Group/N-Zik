@@ -1212,3 +1212,7 @@ Settings:
 Menus:
 - fix(menu): remove empty favorites cells from grids
   - Use the same visibility predicate before adding a grid cell and while drawing the action.
+
+Settings:
+- fix(settings): align card content and page headings
+  - Align room actions and dividers with card badges, use title-only Listen Together cards, and share wrapping page headings.

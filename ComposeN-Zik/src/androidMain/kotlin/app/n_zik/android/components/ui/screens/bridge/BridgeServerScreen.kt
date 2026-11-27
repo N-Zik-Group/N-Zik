@@ -49,8 +49,8 @@ import androidx.navigation.NavController
 import app.n_zik.android.enums.NavigationBarPosition
 import app.n_zik.android.components.navigation.Skeleton
 import app.n_zik.android.components.navigation.rememberPageChromeContentPadding
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
-import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsPageTitle
+import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.SettingsTargetRegistry
@@ -158,19 +158,8 @@ fun BridgeServerScreen(
                 contentPadding = rememberPageChromeContentPadding(PaddingValues(bottom = bottomContentSpacer)),
             ) {
                 item(key = "header", contentType = "header") {
-                    HeaderWithIcon(
-                        title = stringResource(R.string.bridge_server),
-                        iconId = R.drawable.devices,
-                        enabled = false,
-                        showIcon = true,
-                        modifier = Modifier,
-                        onClick = {},
-                    )
-                    SettingsDescription(
-                        text = stringResource(R.string.bridge_server_description),
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center,
-                    )
+                    SettingsPageTitle(stringResource(R.string.bridge_server), R.drawable.devices)
+                    SettingsPageDescription(stringResource(R.string.bridge_server_description))
                 }
                 if (connected != null) {
                     item(key = "connected", contentType = "card") {

@@ -51,7 +51,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.android.components.glass.GlassFloatingActions
@@ -680,11 +679,7 @@ fun SettingsCategoryPage(
                         Column {
                             settingsSearchTitle(searchFocus, category.labelRes, category.iconRes)
                             settingsSearchDescription(searchFocus) {
-                                SettingsDescription(
-                                    text = stringResource(category.descriptionRes),
-                                    modifier = Modifier.fillMaxWidth(),
-                                    textAlign = TextAlign.Center,
-                                )
+                                SettingsPageDescription(stringResource(category.descriptionRes))
                             }
                             if (categoryId != "about") {
                                 search.SearchBar(

@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -43,8 +42,8 @@ import app.n_zik.android.components.dialog.common.ButtonRow
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.common.DefaultDialog
 import app.n_zik.android.components.dialog.common.DialogButton
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
-import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsPageTitle
+import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.DEFAULT_PROFILE_ID
 import app.n_zik.android.utils.center
@@ -229,19 +228,8 @@ fun ProfileScreen(
             item(key = "header", contentType = 0) {
                 // Listen-Together-style header: the icon is shown and a centered
                 // description sits under the title.
-                HeaderWithIcon(
-                    title = stringResource(R.string.profile_title),
-                    iconId = R.drawable.person,
-                    enabled = false,
-                    showIcon = true,
-                    modifier = Modifier,
-                    onClick = {}
-                )
-                SettingsDescription(
-                    text = stringResource(R.string.profile_description),
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center,
-                )
+                SettingsPageTitle(stringResource(R.string.profile_title), R.drawable.person)
+                SettingsPageDescription(stringResource(R.string.profile_description))
             }
             if (page != null) {
                 items(

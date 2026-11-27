@@ -24,7 +24,6 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import kotlinx.coroutines.flow.first
@@ -40,7 +39,7 @@ import app.n_zik.android.components.search.SearchHistoryStore
 import app.n_zik.android.components.settings.common.filterSettingsSearchHistory
 import app.n_zik.android.components.search.rememberSearchHistory
 import app.n_zik.android.components.settings.common.SettingsCardSlot
-import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
 import app.n_zik.android.components.settings.common.settingsSearchContent
 import app.n_zik.android.components.settings.common.settingsSearchDescription
@@ -98,11 +97,7 @@ fun DataSettings(
         settingsSearchTitle(searchFocus, R.string.settings_data_title, R.drawable.server)
 
         settingsSearchDescription(searchFocus) {
-            SettingsDescription(
-                text = stringResource(R.string.settings_data_page_description),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+            SettingsPageDescription(stringResource(R.string.settings_data_page_description))
         }
 
         search.SearchBar(this, barPadding = searchFocus.barPadding, onSearch = { recordSearchQuery() })

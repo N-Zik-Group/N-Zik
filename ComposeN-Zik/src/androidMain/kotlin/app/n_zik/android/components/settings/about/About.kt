@@ -11,13 +11,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.components.settings.common.SettingsPageTitle
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SettingsCardSlot
-import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsPageDescription
 
 /** About page with autonomous information, support and contributor cards. */
 @Suppress("UNUSED_PARAMETER") // Retained navigation signature for existing callers.
@@ -32,19 +31,8 @@ fun About(navController: NavController) {
             .verticalScroll(rememberScrollState())
             .settingsTopContentPadding()
     ) {
-        HeaderWithIcon(
-             title = stringResource(R.string.about_title),
-             iconId = R.drawable.information,
-             enabled = false,
-             showIcon = true,
-             modifier = Modifier,
-             onClick = {}
-         )
-         SettingsDescription(
-            text = stringResource(R.string.settings_about_page_description),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center
-        )
+        SettingsPageTitle(stringResource(R.string.about_title), R.drawable.information)
+        SettingsPageDescription(stringResource(R.string.settings_about_page_description))
 
         AboutSettingsContent()
     }

@@ -45,6 +45,12 @@ internal fun settingsCardRowHorizontalPadding(outset: Dp): Dp =
     if (outset > 0.dp) outset + 4.dp else 12.dp
 
 @Composable
+internal fun Modifier.settingsCardAlignedInset(): Modifier {
+    val outset = LocalSettingsCardRowOutset.current
+    return if (outset > 0.dp) padding(horizontal = settingsCardRowHorizontalPadding(outset) - outset) else this
+}
+
+@Composable
 internal fun SettingsCardContent(
     padding: Dp = SettingsCardContentPadding,
     content: @Composable ColumnScope.() -> Unit,

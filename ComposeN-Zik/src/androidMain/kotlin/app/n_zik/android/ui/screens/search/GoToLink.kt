@@ -3,6 +3,7 @@ package app.n_zik.android.ui.screens.search
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,7 @@ import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.common.InputTextField
 import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
+import app.n_zik.android.components.settings.common.settingsCardAlignedInset
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.navigation.onlinePlaylistBrowseIdFromLink
 import app.n_zik.android.components.navigation.onlinePlaylistRoute
@@ -129,12 +131,14 @@ fun GoToLink(
                 title = stringResource(R.string.search_youtube_url_input_hint),
                 icon = R.drawable.link,
                 content = {
-                    InputTextField(
-                        initialValue = initialLink,
-                        placeholder = stringResource(R.string.search_youtube_open_url_example),
-                        enabled = pendingLink.isBlank(),
-                        onSubmit = { pendingLink = it },
-                    )
+                    Column(Modifier.settingsCardAlignedInset()) {
+                        InputTextField(
+                            initialValue = initialLink,
+                            placeholder = stringResource(R.string.search_youtube_open_url_example),
+                            enabled = pendingLink.isBlank(),
+                            onSubmit = { pendingLink = it },
+                        )
+                    }
                     Spacer(Modifier.height(16.dp))
                     SettingsDescription(
                         text = stringResource(R.string.search_youtube_url_supported_types_description),

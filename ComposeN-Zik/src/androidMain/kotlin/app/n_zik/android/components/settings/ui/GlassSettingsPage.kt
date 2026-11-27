@@ -56,14 +56,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
-import app.n_zik.android.ui.components.themed.HeaderWithIcon
+import app.n_zik.android.components.settings.common.SettingsPageTitle
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -115,7 +114,7 @@ import app.n_zik.android.components.settings.common.LocalSettingsTargets
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.SettingsDescription
+import app.n_zik.android.components.settings.common.SettingsPageDescription
 import app.n_zik.android.components.settings.common.SettingsEntryResultRow
 import app.n_zik.android.components.settings.common.SettingsScrollToTop
 import app.n_zik.android.components.settings.common.rememberSettingsSearchFocus
@@ -414,20 +413,8 @@ internal fun GlassSettingsContent(
 @Composable
 private fun GlassSettingsHeading(config: GlassSettings, pinPreview: Boolean) {
     Column {
-        HeaderWithIcon(
-            title = stringResource(R.string.glass_effect_title),
-            iconId = R.drawable.droplet,
-            showBetaBadge = true,
-            enabled = false,
-            showIcon = true,
-            modifier = Modifier,
-            onClick = {},
-        )
-        SettingsDescription(
-            text = stringResource(R.string.glass_effect_summary),
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
+        SettingsPageTitle(stringResource(R.string.glass_effect_title), R.drawable.droplet, showBetaBadge = true)
+        SettingsPageDescription(stringResource(R.string.glass_effect_summary))
         if (!pinPreview) GlassPreview(config)
     }
 }
