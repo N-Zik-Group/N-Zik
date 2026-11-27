@@ -18,7 +18,6 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.preferences
-import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.atomic.AtomicLong
 import kotlinx.coroutines.CancellationException
@@ -37,9 +36,9 @@ internal fun loadAutoQueueResumption(
     accessPolicy: () -> AutoAccessPolicy,
 ): ListenableFuture<MediaSession.MediaItemsWithStartPosition> {
     val defaultResult = MediaSession.MediaItemsWithStartPosition(emptyList(), 0, 0)
-    if (!context.preferences.getBoolean(persistentQueueKey, false)) return Futures.immediateFuture(defaultResult)
     return scope.future(NzikDispatchers.DATA) {
         playbackReady?.await()
+        if (!context.preferences.getBoolean(persistentQueueKey, false)) return@future defaultResult
         val requestProfile = getActiveProfile(context)
         val epoch = accessEpoch.get()
         try {

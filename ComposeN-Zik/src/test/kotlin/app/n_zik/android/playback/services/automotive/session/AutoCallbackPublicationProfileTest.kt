@@ -19,6 +19,8 @@ import app.n_zik.android.utils.activeProfileKey
 import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.profilePreferences
+import app.n_zik.android.utils.readProfileEntries
+import app.n_zik.android.utils.writeProfileEntries
 import app.n_zik.android.appContext
 import app.n_zik.android.core.coil.ImageCacheFactory
 import app.n_zik.android.core.database.Database
@@ -57,6 +59,7 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 class AutoCallbackPublicationProfileTest {
     private lateinit var context: Context
+    private lateinit var originalProfiles: List<Pair<String, String>>
     private lateinit var callback: AutoSessionCallback
     private lateinit var tree: AutoBrowseTree
     private val songs = mockk<SongTable>()
@@ -70,6 +73,8 @@ class AutoCallbackPublicationProfileTest {
         mockkObject(NetworkQualityHelper)
         every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
         context = RuntimeEnvironment.getApplication()
+        originalProfiles = context.readProfileEntries()
+        check(context.writeProfileEntries(listOf("A" to "A", "B" to "B")))
         mockkStatic("app.n_zik.android.GlobalVarsKt")
         every { appContext() } returns context
         switchProfile("A")
@@ -93,6 +98,7 @@ class AutoCallbackPublicationProfileTest {
             context.preferences.edit().remove(persistentQueueKey).commit()
         }
         context.profilePreferences.edit().remove(activeProfileKey).commit()
+        check(context.writeProfileEntries(originalProfiles))
         unmockkAll()
         bitmap?.recycle()
     }

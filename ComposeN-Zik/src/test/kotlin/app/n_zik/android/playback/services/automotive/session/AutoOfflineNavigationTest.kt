@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.os.Looper
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
@@ -28,6 +29,7 @@ import io.mockk.coEvery
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -214,6 +216,58 @@ class AutoOfflineNavigationTest {
 
     private fun browseArtists() = callback.onGetChildren(session, controller, PlayerServiceModern.ARTIST, 0, 20, null)
         .get(15, TimeUnit.SECONDS)
+
+    @Test fun `first cold artist page survives an unchanged initial network emission`() =
+        assertColdArtistPageSurvivesNetworkObservation(roundTrip = false)
+
+    @Test fun `first cold artist page reloads after a network round trip`() =
+        assertColdArtistPageSurvivesNetworkObservation(roundTrip = true)
+
+    private fun assertColdArtistPageSurvivesNetworkObservation(roundTrip: Boolean) {
+        val artists = artistsWithEmptySources()
+        val entered = CountDownLatch(1)
+        val release = CompletableDeferred<Unit>()
+        every { artists.sortInLibrary(any(), any(), any(), any()) } returns flow {
+            entered.countDown()
+            release.await()
+            emit(emptyList())
+        }
+        val connection = MutableStateFlow(true)
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.observeConnection(app) } returns connection
+        callback.release()
+        val playbackReady = CompletableDeferred<Unit>()
+        callback = AutoSessionCallback(app, database, downloads, playbackReady)
+        val pending = callback.onGetChildren(session, controller, PlayerServiceModern.ARTIST, 0, 20, null)
+        try {
+            assertFalse(pending.isDone)
+            playbackReady.complete(Unit)
+            assertTrue("First artist source did not reach gate", entered.await(15, TimeUnit.SECONDS))
+            callback.observeRepository(session) {}
+            val mainLooper = shadowOf(Looper.getMainLooper())
+            mainLooper.idle()
+            verify(exactly = 0) { session.notifyChildrenChanged(PlayerServiceModern.ARTIST, Int.MAX_VALUE, null) }
+
+            if (roundTrip) {
+                setPhysicalOnline(false)
+                connection.value = false
+                mainLooper.idle()
+                setPhysicalOnline(true)
+                connection.value = true
+                mainLooper.idle()
+                verify(exactly = 2) { session.notifyChildrenChanged(PlayerServiceModern.ARTIST, Int.MAX_VALUE, null) }
+            }
+
+            release.complete(Unit)
+            val result = pending.get(15, TimeUnit.SECONDS)
+            assertEquals(0, result.resultCode)
+            assertTrue(result.value.orEmpty().any { it.mediaId == AutoSessionConstants.ID_ARTISTS_LIBRARY })
+            verify(exactly = if (roundTrip) 2 else 1) { artists.sortInLibrary(any(), any(), any(), any()) }
+        } finally {
+            release.complete(Unit)
+            pending.cancel(true)
+        }
+    }
 
     @Test fun `access invalidation announces unknown for actual previously browsed artist categories`() {
         artistsWithEmptySources()

@@ -2008,3 +2008,7 @@ Fix:
 Fix:
 - fix(settings): retire conditional controls during exit
   - Animate conditional settings and prevent interaction with controls while they disappear.
+
+Fix:
+- fix(auto): handle cold browse and saved queue playback
+  - Keep the first browse request valid across initial network observation and defer saved queue playback until the library is ready (issue https://github.com/N-Zik-Group/N-Zik/issues/1015).

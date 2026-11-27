@@ -127,6 +127,7 @@ class AutoSessionCallback(
     }
     private var pendingSelection: ListenableFuture<MediaSession.MediaItemsWithStartPosition>? = null
     private val accessEpoch = java.util.concurrent.atomic.AtomicLong()
+    private var lastExplicitAccessInvalidation = 0L
     private val browsedParents = linkedMapOf<String, Int>()
     lateinit var binder: PlayerServiceModern.Binder
     var toggleLike: () -> Unit = {}
@@ -151,19 +152,30 @@ class AutoSessionCallback(
 
     private val connectionCommands = mutableMapOf<MediaSession.ControllerInfo, Pair<SessionCommands, Player.Commands>>()
 
-    fun observeRepository(session: MediaLibrarySession) {
+    internal fun observeRepository(session: MediaLibrarySession, onNetworkChange: () -> Unit) {
         observationJob?.cancel()
+        var online = accessPolicy().online
+        // A controller may have connected before the real player and network observer were installed.
+        refreshAccessCommands(session)
         observationJob = scope.launch {
-            NetworkQualityHelper.observeConnection(context).collect {
-                invalidateAccess(session)
+            NetworkQualityHelper.observeConnection(context).collect { connected ->
+                if (connected != online) {
+                    online = connected
+                    invalidatePublication(networkChange = true)
+                    publishAccess(session)
+                    onNetworkChange()
+                }
             }
         }
     }
 
     /** Synchronous ownership invalidation also catches rapid profile or offline round trips. */
-    fun invalidatePublication() {
+    internal fun invalidatePublication() = invalidatePublication(networkChange = false)
+
+    private fun invalidatePublication(networkChange: Boolean) {
         synchronized(selectionRequestLock) {
-            accessEpoch.incrementAndGet()
+            val epoch = accessEpoch.incrementAndGet()
+            if (!networkChange) lastExplicitAccessInvalidation = epoch
             queueApplicationOwner.invalidate()
             pendingSelection?.cancel(true)
             pendingSelection = null
@@ -176,10 +188,18 @@ class AutoSessionCallback(
     /** Invalidates pending publications and updates visible commands after policy changes. */
     fun invalidateAccess(session: MediaLibrarySession) {
         invalidatePublication()
+        publishAccess(session)
+    }
+
+    internal fun publishAccess(session: MediaLibrarySession) {
+        refreshAccessCommands(session)
+        notifyKnownChildren(session, accessChanged = true)
+    }
+
+    private fun refreshAccessCommands(session: MediaLibrarySession) {
         connectionCommands.forEach { (controller, commands) ->
             session.setAvailableCommands(controller, commandsForAccess(commands.first), commands.second)
         }
-        notifyKnownChildren(session, accessChanged = true)
     }
 
     private fun commandsForAccess(commands: SessionCommands): SessionCommands {
@@ -498,29 +518,41 @@ class AutoSessionCallback(
         return scope.future(NzikDispatchers.DATA) {
             playbackReady?.await()
             val requestProfile = if (waitingForStartup) getActiveProfile(context) else initialProfile
-            val epoch = if (waitingForStartup) accessEpoch.get() else initialEpoch
+            var epoch = if (waitingForStartup) accessEpoch.get() else initialEpoch
             val pageId = AutoMediaIdContract.parsePage(parentId)
             val pageIndex = pageId?.index ?: -1
             val actualParentId = pageId?.parentId ?: parentId
             noteCurrentContainer(actualParentId)
-            val list = (if (page > 0) autoBrowseTree.retainedChildren(parentId, browser) else null)
-                ?: autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null, browser)
-            val visible = PaginationHelper.slice(list, page, pageSize)
-            val credited = refreshAutoArtistCredits(context, database, requestProfile, visible)
-            synchronized(selectionRequestLock) {
-                synchronized(browsedParents) {
-                    // Publish counts, subscriptions and sliced rows in the same access epoch.
-                    if (epoch != accessEpoch.get() || getActiveProfile(context) != requestProfile ||
-                        !autoBrowseTree.selectionStore.retains(list)) {
-                        LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
-                    } else {
-                        autoBrowseTree.retainFolders(visible, requestProfile)
-                        browsedParents[parentId] = list.size
-                        while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
-                        LibraryResult.ofItemList(ImmutableList.copyOf(credited), params)
-                    }
+            repeat(2) { attempt ->
+                if (getActiveProfile(context) != requestProfile) {
+                    return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
                 }
+                val list = (if (page > 0) autoBrowseTree.retainedChildren(parentId, browser) else null)
+                    ?: autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null, browser)
+                val visible = PaginationHelper.slice(list, page, pageSize)
+                val credited = refreshAutoArtistCredits(context, database, requestProfile, visible)
+                val retryEpoch = synchronized(selectionRequestLock) {
+                    // Publish counts, subscriptions and sliced rows in the same access epoch.
+                    val currentEpoch = accessEpoch.get()
+                    val sameProfile = getActiveProfile(context) == requestProfile
+                    if (epoch == currentEpoch && sameProfile && autoBrowseTree.selectionStore.retains(list)) {
+                        autoBrowseTree.retainFolders(visible, requestProfile)
+                        synchronized(browsedParents) {
+                            browsedParents[parentId] = list.size
+                            while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                        }
+                        return@future LibraryResult.ofItemList(ImmutableList.copyOf(credited), params)
+                    }
+                    // Legacy browsers can render a rejected first page as an empty folder. Rebuild
+                    // after a network change, while preserving explicit policy and paging barriers.
+                    currentEpoch.takeIf {
+                        attempt == 0 && page == 0 && sameProfile &&
+                            epoch < currentEpoch && lastExplicitAccessInvalidation <= epoch
+                    }
+                } ?: return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
+                epoch = retryEpoch
             }
+            LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
         }
     }
 

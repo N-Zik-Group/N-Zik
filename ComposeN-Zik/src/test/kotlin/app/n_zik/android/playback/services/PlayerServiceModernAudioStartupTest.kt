@@ -39,6 +39,7 @@ import app.n_zik.android.playback.services.diagnostics.DiagExoPlayer
 import app.n_zik.android.playback.services.automotive.session.AutoSessionCallback
 import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.pauseListenHistoryKey
+import app.n_zik.android.utils.persistentQueueKey
 import app.n_zik.android.utils.syncDirectionKey
 import app.n_zik.android.utils.syncPushHistoryKey
 import io.mockk.every
@@ -191,6 +192,34 @@ class PlayerServiceModernAudioStartupTest {
             pumpMainUntil { remote.isCommandAvailable(Player.COMMAND_PLAY_PAUSE) }
             assertEquals(token, session.token)
             assertTrue(remote.isConnected)
+        } finally {
+            MediaController.releaseFuture(remoteFuture)
+            service.onDestroy()
+        }
+    }
+
+    @Test
+    fun `persistent queue can receive a play request while library recovery is pending`() {
+        mockkStatic("app.n_zik.android.core.backup.LibraryStartupWorkerGateKt")
+        every { any<Context>().isLibraryReady() } returns false
+        assertTrue(service.preferences.edit().putBoolean(persistentQueueKey, true).commit())
+        val controller = mockk<MediaSession.ControllerInfo> {
+            every { packageName } returns "test.browser"
+        }
+        val session = requireNotNull(service.onGetSession(controller))
+        val remoteFuture = MediaController.Builder(application, session.token).buildAsync()
+        try {
+            pumpMainUntil { remoteFuture.isDone }
+            val remote = remoteFuture.get()
+            assertTrue(remote.isCommandAvailable(Player.COMMAND_PLAY_PAUSE))
+            assertTrue(remote.isCommandAvailable(Player.COMMAND_SET_MEDIA_ITEM))
+            assertEquals(Player.STATE_IDLE, session.player.playbackState)
+            assertTrue(!session.player.playWhenReady)
+
+            val callback = field("mediaLibrarySessionCallback").get(service) as AutoSessionCallback
+            val resumption = callback.onPlaybackResumption(session, controller)
+            assertTrue("Resumption must wait for library readiness", !resumption.isDone)
+            verify(exactly = 0) { MyDownloadHelper.getDownloadCache(any()) }
         } finally {
             MediaController.releaseFuture(remoteFuture)
             service.onDestroy()

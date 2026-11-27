@@ -117,6 +117,8 @@ import app.n_zik.android.components.menu.menuLikeActionLabel
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.utils.excludeDislikedSongsKey
 
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import app.n_zik.android.components.song.isArtistIdForSong
 import app.n_zik.android.utils.isGenericReleaseChannel
@@ -763,12 +765,12 @@ class PlayerServiceModern : MediaLibraryService(),
         }
         bindPlaybackTrackIdentity(sessionPlayer)
 
-        mediaLibrarySessionCallback.observeRepository(mediaSession)
+        mediaLibrarySessionCallback.observeRepository(mediaSession) {
+            (mediaSession.player as? SessionArtworkPlayer)?.refreshArtwork()
+            updateDefaultNotification()
+        }
         ResolvedSessionDuration.bind(coroutineScope, playerUpdateTrigger) { mediaSession.player }
         bindStoredDurationSelections(coroutineScope, playerUpdateTrigger) { guestGuardPlayer }
-        sessionPolicyJob = coroutineScope.launch(NzikDispatchers.UI) {
-            NetworkQualityHelper.observeConnection(this@PlayerServiceModern).collect { refreshSessionAccess() }
-        }
 
         observeSessionArtwork()
 
@@ -1021,9 +1023,18 @@ class PlayerServiceModern : MediaLibraryService(),
         if (!playbackInitializationStarted && isLibraryReady()) initializePlaybackAndReplay()
         if (!::mediaSession.isInitialized) {
             // Legacy MediaBrowser needs a session binder and a synchronous root on connect.
-            // A silent player exposes no transport commands and owns no database or cache.
+            // Keep Play available for saved queues so Media3 can wait for resumption.
+            val commands = if (preferences.getBoolean(persistentQueueKey, false)) {
+                Player.Commands.Builder()
+                    .add(Player.COMMAND_PLAY_PAUSE)
+                    .add(Player.COMMAND_SET_MEDIA_ITEM)
+                    .build()
+            } else Player.Commands.EMPTY
             val waitingPlayer = object : SimpleBasePlayer(Looper.getMainLooper()) {
-                override fun getState(): State = State.Builder().build()
+                override fun getState(): State = State.Builder().setAvailableCommands(commands).build()
+
+                override fun handleSetPlayWhenReady(playWhenReady: Boolean): ListenableFuture<*> =
+                    Futures.immediateVoidFuture()
             }
             mediaSession = buildLibrarySession(waitingPlayer)
         }
@@ -1217,7 +1228,6 @@ class PlayerServiceModern : MediaLibraryService(),
              */
             lastFmScrobbleManager?.destroy()
             lastFmScrobbleManager = null
-            sessionPolicyJob?.cancel()
             sessionArtworkJob?.cancel()
             profilePreferences.unregisterOnSharedPreferenceChangeListener(sessionProfileListener)
             boundSessionPreferences?.unregisterOnSharedPreferenceChangeListener(this)
@@ -1300,7 +1310,6 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
 
-    private var sessionPolicyJob: Job? = null
     private var sessionArtworkJob: Job? = null
     private var playbackIdentityJob: Job? = null
     private var boundSessionPreferences: SharedPreferences? = null
@@ -1322,7 +1331,7 @@ class PlayerServiceModern : MediaLibraryService(),
         mediaLibrarySessionCallback.invalidatePublication()
         coroutineScope.launch(NzikDispatchers.UI) {
             (mediaSession.player as? SessionArtworkPlayer)?.refreshArtwork()
-            mediaLibrarySessionCallback.invalidateAccess(mediaSession)
+            mediaLibrarySessionCallback.publishAccess(mediaSession)
             updateDefaultNotification()
         }
     }
