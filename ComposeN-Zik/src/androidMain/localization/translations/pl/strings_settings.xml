@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Zaloguj się do przeglądania</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Użyj konta do wyszukiwania</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Wyczyścić wszystkie dane zsynchronizowane z YouTube? Spowoduje to usunięcie lubionych utworów, albumów, wykonawców i list odtwarzania zaimportowanych z YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Wyczyść zsynchronizowane dane YouTube</string>
     <string name="settings_youtube_connection_required_description">Najpierw połącz z YouTube aby włączyć tę opcję</string>
     <string name="settings_youtube_library_sync_content_description">Listy odtwarzania, albumy, artyści, historia, podobieństwo itp.</string>
     <string name="settings_youtube_login_enabled_label">Włącz logowanie do YouTube Music</string>

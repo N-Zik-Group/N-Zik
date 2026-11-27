@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Login für Browse</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Konto für Suchen verwenden</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Alle von YouTube synchronisierten Daten löschen? Dadurch werden von YouTube importierte Lieder, Alben, Künstler und Wiedergabelisten entfernt.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">YouTube synchronisierte Daten löschen</string>
     <string name="settings_youtube_connection_required_description">Zuerst mit YouTube verbinden, um diese Option zu aktivieren</string>
     <string name="settings_youtube_library_sync_content_description">Wiedergabelisten, Alben, Künstler, Geschichte, etc.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music Login aktivieren</string>

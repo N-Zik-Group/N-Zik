@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Σύνδεση για περιήγηση</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Χρήση λογαριασμού για αναζητήσεις</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Εκκαθάριση όλων των δεδομένων που συγχρονίζονται από το YouTube? Αυτό θα αφαιρέσει τα αγαπημένα τραγούδια, άλμπουμ, καλλιτέχνες και λίστες αναπαραγωγής που εισάγονται από το YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Εκκαθάριση συγχρονισμένων δεδομένων YouTube</string>
     <string name="settings_youtube_connection_required_description">Συνδεθείτε στο YouTube πρώτα για να ενεργοποιήσετε αυτήν την επιλογή</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, άλμπουμ, καλλιτέχνες, ιστορία, όπως, κλπ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>

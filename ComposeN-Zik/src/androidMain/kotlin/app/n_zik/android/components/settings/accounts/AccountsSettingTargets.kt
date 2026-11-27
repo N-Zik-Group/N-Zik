@@ -78,7 +78,7 @@ internal object AccountsSettingTargets {
         ),
         AccountsCardTargets("accounts.card.youtube",
             preferenceKeys = listOf(ytVisitorDataKey, ytDataSyncIdKey, ytAuthUserKey, ytCookieKey, ytAccountNameKey, ytAccountEmailKey, ytAccountChannelHandleKey, ytAccountThumbnailKey, enableYouTubeLoginKey, enableYouTubeSyncKey, streamClientRestartNeededKey, useLoginForBrowseKey, useLoginForSearchKey),
-            actions = listOf("connect", "changeAccount", "disconnect", "clearSyncedData"),
+            actions = listOf("connect", "changeAccount", "disconnect"),
         ),
         AccountsCardTargets("accounts.card.sync",
             preferenceKeys = listOf(enableYouTubeSyncKey, syncDirectionKey, syncCooldownKey, syncShowDetailsKey, syncBackgroundGuardKey),

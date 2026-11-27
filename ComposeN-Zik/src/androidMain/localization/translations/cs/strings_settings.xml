@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Přihlaste se pro procházení</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Použít účet pro vyhledávání</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Vymazat všechna data synchronizovaná z YouTube? Tímto odstraníte oblíbené písně, alba, umělce a seznamy skladeb importované z YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Vymazat synchronizovaná data YouTube</string>
     <string name="settings_youtube_connection_required_description">Pro povolení této volby se nejprve připojte k YouTube</string>
     <string name="settings_youtube_library_sync_content_description">Playlisty, alba, umělci, historie, atd.</string>
     <string name="settings_youtube_login_enabled_label">Povolení přihlášení k službě YouTube Music</string>

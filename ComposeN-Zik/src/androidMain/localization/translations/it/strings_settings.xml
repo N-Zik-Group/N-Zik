@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Accedi per Sfoglia</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Usa account per le ricerche</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Cancellare tutti i dati sincronizzati da YouTube? Questo rimuoverà brani, album, artisti e playlist importati da YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Cancella dati sincronizzati da YouTube</string>
     <string name="settings_youtube_connection_required_description">Connettiti prima a YouTube per abilitare questa opzione</string>
     <string name="settings_youtube_library_sync_content_description">Playlist, album, artisti, storia, come, ecc.</string>
     <string name="settings_youtube_login_enabled_label">Abilita l\'accesso a YouTube Music</string>

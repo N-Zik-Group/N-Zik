@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">登录以浏览</string>
     <string name="settings_youtube_authenticated_search_description">如果关闭，搜索将作为客人发送，没有您的帐户，所以他们不再在您的 YouTube 搜索历史和建议</string>
     <string name="settings_youtube_authenticated_search_label">用于搜索的帐户</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">清除从 YouTube 同步的所有数据？这将删除从YouTube 导入的喜欢歌曲、专辑、艺术家和播放列表。</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">清除 YouTube 同步数据</string>
     <string name="settings_youtube_connection_required_description">首先连接到 YouTube 以启用此选项</string>
     <string name="settings_youtube_library_sync_content_description">播放列表、 专辑、 艺术家、历史记录等</string>
     <string name="settings_youtube_login_enabled_label">启用YouTube音乐登录</string>

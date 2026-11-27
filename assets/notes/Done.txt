@@ -1836,3 +1836,7 @@ Playlists / Podcasts:
 Settings:
 - fix(download): admit quality replacements before removal
   - Bind refreshes to the confirmed profile and quality and protect existing audio when network or scheduling refuses the command.
+
+Settings / Accounts:
+- fix(sync): preserve the library and surface YouTube errors
+  - Disconnect the active session safely and report failed or partial pushes without linking incomplete copies.

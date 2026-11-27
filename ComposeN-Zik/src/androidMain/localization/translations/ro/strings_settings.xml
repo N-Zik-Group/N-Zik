@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Autentificare pentru navigare</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Utilizați contul pentru căutări</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Ștergeți toate datele sincronizate de pe YouTube? Aceasta va elimina melodiile, albumele, artiștii și listele de redare importate din YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Curăță datele sincronizate YouTube</string>
     <string name="settings_youtube_connection_required_description">Conectați-vă mai întâi la YouTube pentru a activa această opțiune</string>
     <string name="settings_youtube_library_sync_content_description">Liste de redare, albume, artiști, istorie, lucruri similare etc.</string>
     <string name="settings_youtube_login_enabled_label">Activează conectarea la YouTube Music</string>

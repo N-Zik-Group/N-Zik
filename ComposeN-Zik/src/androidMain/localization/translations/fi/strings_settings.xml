@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Kirjaudu sisään Selaa</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Käytä tiliä hakuja varten</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Tyhjennetäänkö kaikki YouTubesta synkronoidut tiedot? Tämä poistaa tykätyt kappaleet, albumit, artistit ja soittolistat YouTubesta.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Tyhjennä YouTube-synkronoidut tiedot</string>
     <string name="settings_youtube_connection_required_description">Yhdistä ensin YouTubeen, jotta voit ottaa tämän vaihtoehdon käyttöön</string>
     <string name="settings_youtube_library_sync_content_description">Soittolistat, albumit, artistit, historia, tykkää jne.</string>
     <string name="settings_youtube_login_enabled_label">Ota YouTube-musiikin kirjautuminen käyttöön</string>

@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,7 +34,6 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.hasYouTubeAuthCookie
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 import app.n_zik.android.extensions.youtubelogin.YouTubeLogin
 import app.n_zik.android.extensions.youtubelogin.clearSavedYouTubeSession
@@ -45,7 +43,6 @@ import app.n_zik.android.utils.autosyncArtistsKey
 import app.n_zik.android.utils.autosyncLikesKey
 import app.n_zik.android.utils.autosyncPlaylistsKey
 import app.n_zik.android.utils.cancelAllSyncs
-import app.n_zik.android.utils.clearAllSyncedData
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
 import app.n_zik.android.utils.encryptedPreferences
@@ -110,10 +107,9 @@ import app.n_zik.android.utils.coroutines.NzikDispatchers
 @Composable
 internal fun AccountsYouTubeCard(search: Search) {
     val context = LocalContext.current
-    var showClearSyncDialog by remember { mutableStateOf(false) }
-
     val accountPreferences = remember(context, encryptedPreferencesUpdateTrigger) { context.encryptedPreferences }
     val cookie = accountPreferences.getString(ytCookieKey, null)
+    var showLogoutDialog by remember(accountPreferences, cookie) { mutableStateOf(false) }
     val accountName = accountPreferences.getString(ytAccountNameKey, "").orEmpty()
     val accountEmail = accountPreferences.getString(ytAccountEmailKey, "").orEmpty()
     val accountChannelHandle = accountPreferences.getString(ytAccountChannelHandleKey, "").orEmpty()
@@ -347,7 +343,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 icon = if (isLoggedIn) R.drawable.logout else R.drawable.person,
                                 onClick = {
                                     if (isLoggedIn) {
-                                        showClearSyncDialog = true
+                                        showLogoutDialog = true
                                     } else {
                                         changingAccount = false
                                         loginYouTube = true
@@ -459,37 +455,32 @@ internal fun AccountsYouTubeCard(search: Search) {
         )
     }
 
-    // Clear synced data confirmation dialog
-    val dialogCoroutineScope = rememberCoroutineScope()
-    DialogPresence(visible = showClearSyncDialog) {
+    DialogPresence(visible = showLogoutDialog) {
         DefaultDialog(
-            title = stringResource(R.string.settings_youtube_clear_synced_data_dialog_title),
-            onDismiss = { showClearSyncDialog = false },
+            title = stringResource(R.string.account_action_logout),
+            onDismiss = { showLogoutDialog = false },
             footer = {
                 ButtonRow(listOf(
-                    DialogButton(stringResource(R.string.common_action_cancel), { showClearSyncDialog = false }, danger = true),
-                    DialogButton(stringResource(R.string.common_action_clear), primary = true, onClick = {
-                        showClearSyncDialog = false
-                        dialogCoroutineScope.launch(NzikDispatchers.DATA) {
-                            val cleared = runCatching { clearAllSyncedData() }.getOrElse { false }
-                            withContext(NzikDispatchers.UI) {
-                                clearSavedYouTubeSession(context.encryptedPreferences, clearWebSignIn = true)
-                                app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
-                                appContext().preferences.edit().putBoolean(streamClientRestartNeededKey, true).apply()
-                                if (cleared) {
-                                    Toaster.s(R.string.account_action_logout)
-                                } else {
-                                    Toaster.w(R.string.account_action_logout)
-                                }
+                    DialogButton(stringResource(R.string.common_action_cancel), { showLogoutDialog = false }),
+                    DialogButton(stringResource(R.string.account_action_logout), primary = true, onClick = {
+                        if (showLogoutDialog) {
+                            showLogoutDialog = false
+                            clearSavedYouTubeSession(accountPreferences)
+                            applyUseLoginForSearch(context, isLoginEnabled = false)
+                            app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
+                            context.preferences.edit {
+                                remove(ytCookieExpiredKey)
+                                putBoolean(useLoginForBrowseKey, false)
+                                putBoolean(streamClientRestartNeededKey, true)
                             }
+                            Toaster.done()
                         }
                     })
                 ))
             }
         ) {
             BasicText(
-                text = stringResource(R.string.settings_youtube_clear_synced_data_confirmation),
+                text = stringResource(R.string.settings_youtube_logout_confirmation),
                 style = typography().s.copy(color = colorPalette().text)
             )
 

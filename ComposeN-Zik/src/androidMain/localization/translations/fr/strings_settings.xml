@@ -493,8 +493,6 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_authenticated_browsing_label">Connectez-vous pour parcourir</string>
     <string name="settings_youtube_authenticated_search_description">Lorsque cette option est désactivée, les recherches sont effectuées en mode « invité », sans passer par votre compte ; elles n\'apparaissent donc pas dans votre historique de recherche ni dans vos suggestions YouTube.</string>
     <string name="settings_youtube_authenticated_search_label">Utiliser le compte pour effectuer des recherches</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Effacer toutes les données synchronisées depuis YouTube ? Cette opération supprimera les morceaux, albums, artistes et playlists que vous avez ajoutés à vos favoris et importés depuis YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Effacer les données synchronisées avec YouTube</string>
     <string name="settings_youtube_connection_required_description">Connectez-vous d\'abord à YouTube pour activer cette option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artistes, histoire, etc.</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>

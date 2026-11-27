@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Log ind for at søge</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Brug konto til søgninger</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Ryd alle data synkroniseret fra YouTube? Dette vil fjerne ønsket sange, album, kunstnere og afspilningslister importeret fra YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Ryd YouTube-synkroniserede data</string>
     <string name="settings_youtube_connection_required_description">Opret forbindelse til YouTube først for at aktivere denne indstilling</string>
     <string name="settings_youtube_library_sync_content_description">Spillelister, album, kunstnere, historie, lignende osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktivér Youtube Musik-login</string>

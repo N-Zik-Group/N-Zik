@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Login om te bladeren</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Account gebruiken voor zoekopdrachten</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Alle gegevens die zijn gesynchroniseerd op YouTube wissen? Dit verwijdert liked nummers, albums, artiesten en afspeellijsten die zijn geïmporteerd uit YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">YouTube-gesynchroniseerde gegevens wissen</string>
     <string name="settings_youtube_connection_required_description">Verbind eerst met YouTube om deze optie in te schakelen</string>
     <string name="settings_youtube_library_sync_content_description">Afspeellijsten, albums, artiesten, geschiedenis, enz.</string>
     <string name="settings_youtube_login_enabled_label">YouTube-muziek-login inschakelen</string>

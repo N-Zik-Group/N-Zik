@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Войти для просмотра</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Использовать учетную запись для поиска</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Очистить все данные, синхронизированные с YouTube? Это удалит понравившиеся песни, альбомы, исполнители и плейлисты, импортированные из YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Очистить синхронизированные данные YouTube</string>
     <string name="settings_youtube_connection_required_description">Подключитесь к YouTube для включения этой опции</string>
     <string name="settings_youtube_library_sync_content_description">Списки воспроизведения, альбомы, исполнители, история, подобные и т.д.</string>
     <string name="settings_youtube_login_enabled_label">Включить вход в YouTube Music</string>

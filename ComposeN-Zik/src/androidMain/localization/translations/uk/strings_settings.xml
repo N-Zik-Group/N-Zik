@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Вхід для перегляду</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Використати обліковий запис для пошуку</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Очистити всі дані, синхронізовані з YouTube? Це призведе до видалення вподобаних пісень, альбомів, виконавців та списків відтворення імпортовано з YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Видалити синхронізовані дані YouTube</string>
     <string name="settings_youtube_connection_required_description">Підключіться до YouTube, щоб увімкнути цей параметр</string>
     <string name="settings_youtube_library_sync_content_description">Плейлісти, альбоми, артисти, історію тощо.</string>
     <string name="settings_youtube_login_enabled_label">Увімкнути запис YouTube Music</string>

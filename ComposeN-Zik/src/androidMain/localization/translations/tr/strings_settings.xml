@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Göz atmak için oturum açın</string>
     <string name="settings_youtube_authenticated_search_description">Kapatıldığında, aramalar hesabınız olmadan misafir olarak gönderilir, bu aramalar YouTube arama geçmişinizde ve önerilerinizde yer almaz</string>
     <string name="settings_youtube_authenticated_search_label">Aramalar için hesabı kullan</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">YouTube\'dan senkronize edilen tüm verileri silmek ister misiniz? Bu işlem, YouTube\'dan içe aktarılan beğenilen şarkıları, albümleri, sanatçıları ve çalma listelerini silecektir.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">YouTube\'da senkronize edilmiş verileri sil</string>
     <string name="settings_youtube_connection_required_description">Bu seçeneği etkinleştirmek için önce YouTube\'a bağlanın</string>
     <string name="settings_youtube_library_sync_content_description">Çalma listeleri, albümler, sanatçılar, geçmiş, beğeniler vb.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music girişini etkinleştir</string>

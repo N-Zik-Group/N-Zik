@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Iniciar sesión para Navegar</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Usar cuenta para búsquedas</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">¿Borrar todos los datos sincronizados de YouTube? Esto eliminará las canciones, álbumes, artistas y listas de reproducción importados de YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Borrar datos sincronizados de YouTube</string>
     <string name="settings_youtube_connection_required_description">Conéctate a YouTube primero para activar esta opción</string>
     <string name="settings_youtube_library_sync_content_description">Listas de reproducción, álbumes, artistas, historia, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar inicio de sesión en YouTube Music</string>

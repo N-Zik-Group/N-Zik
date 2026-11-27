@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
     <string name="settings_youtube_connection_required_description">Connect to YouTube first to enable this option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artists, history, like, etc.</string>
     <string name="settings_youtube_login_enabled_label">啟用 YouTube Music 登入</string>

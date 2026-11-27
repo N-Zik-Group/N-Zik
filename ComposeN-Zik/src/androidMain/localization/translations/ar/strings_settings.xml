@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">تسجيل الدخول للتصفح</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">استخدام الحساب للبحث</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">مسح جميع البيانات التي تمت مزامنتها من يوتيوب؟ سيؤدي هذا إلى إزالة الأغاني والألبيوم والفنانين وقوائم التشغيل المستوردة من اليوتيوب.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">مسح بيانات يوتيوب المتزامنة</string>
     <string name="settings_youtube_connection_required_description">الاتصال باليوتيوب أولاً لتفعيل هذا الخيار</string>
     <string name="settings_youtube_library_sync_content_description">المشغلين، الألبومات، الفنانين، التاريخ، مثل، إلخ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>

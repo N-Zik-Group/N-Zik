@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Login para Navegação</string>
     <string name="settings_youtube_authenticated_search_description">Quando desativado, pesquisas são enviadas como um convidado sem sua conta, então elas ficam fora do seu histórico de pesquisa e sugestões do YouTube</string>
     <string name="settings_youtube_authenticated_search_label">Usar conta para pesquisas</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Limpar todos os dados sincronizados do YouTube? Isso removerá músicas gostadas, álbuns, artistas e playlists importadas do YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Limpar dados sincronizados do YouTube</string>
     <string name="settings_youtube_connection_required_description">Primeiro conecte ao YouTube para ativar esta opção</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, álbuns, artistas, histórico, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar \"login\" no YouTube Music</string>

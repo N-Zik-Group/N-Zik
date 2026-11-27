@@ -14,6 +14,9 @@ import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
 import app.n_zik.innertube.utils.completed
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.ondevice.isDeviceAlbumId
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.extensions.youtubelogin.readYouTubeSession
 import app.n_zik.android.appContext
 import app.n_zik.android.models.Album
 import app.n_zik.android.models.Playlist
@@ -42,6 +45,7 @@ import app.n_zik.android.appRunningInBackground
 import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.utils.SyncStatusDetail
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.NonCancellable
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -49,6 +53,15 @@ import app.n_zik.android.core.utils.Toaster
 import timber.log.Timber
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.core.utils.PropUtils
+
+private const val UnlinkedYouTubePlaylistPrefix = "youtubeUnlinkedPlaylist:"
+private val youtubeSyncVideoId = Regex("[A-Za-z0-9_-]{11}")
+
+internal fun isYouTubeSyncLike(songId: String, likedAt: Long?): Boolean =
+    (likedAt ?: 0) > 0 && youtubeSyncVideoId.matches(songId)
+
+internal fun canPushYouTubePlaylistSongs(songIds: List<String>): Boolean =
+    songIds.all(youtubeSyncVideoId::matches)
 
 fun getSyncDirection(): SyncDirection {
     return appContext().preferences.getString(syncDirectionKey, SyncDirection.TWO_WAY.name)?.let {
@@ -323,8 +336,15 @@ suspend fun importYTMPlaylists(force: Boolean = false, showDetails: Boolean = tr
         return@withContext false
     }
 
+    val context = appContext()
+    val owner = ProfileWorkOwner.capture(context) ?: return@withContext false
+    if (!ProfileWorkOwner.isBound(context, owner)) return@withContext false
+    val markerPrefix = "$UnlinkedYouTubePlaylistPrefix${owner.generation}:"
+    val unlinkedRemoteIds = context.encryptedPreferences.all.mapNotNull { (key, value) ->
+        (value as? String)?.removePrefix("VL")?.takeIf { key.startsWith(markerPrefix) }
+    }.toSet()
     val ytmPlaylists = page.items.filterIsInstance<Innertube.PlaylistItem>()
-        .filterNot { it.key == "LM" || it.key == "SE" }
+        .filterNot { it.key == "LM" || it.key == "SE" || it.key.removePrefix("VL") in unlinkedRemoteIds }
         .distinctBy { it.key }
 
     Timber.tag("SyncYTMusicUtils").d("YTM playlists: ${ytmPlaylists.size}")
@@ -630,9 +650,8 @@ suspend fun cleanupDuplicatePlaylists() = withContext(NzikDispatchers.DATA) {
 
 suspend fun savePodcast(podcastId: String): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
-    val result = runCatching {
-        YtMusic.likePlaylistOrAlbum(podcastId)
-    }
+    val result = YtMusic.likePlaylistOrAlbum(podcastId)
+    if (result.exceptionOrNull() is CancellationException) result.getOrThrow()
     if (result.isSuccess) Toaster.s( R.string.library_favorites_added )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
@@ -640,9 +659,8 @@ suspend fun savePodcast(podcastId: String): Boolean = withContext(NzikDispatcher
 
 suspend fun unsavePodcast(podcastId: String): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
-    val result = runCatching {
-        YtMusic.removelikePlaylistOrAlbum(podcastId)
-    }
+    val result = YtMusic.removelikePlaylistOrAlbum(podcastId)
+    if (result.exceptionOrNull() is CancellationException) result.getOrThrow()
     if (result.isSuccess) Toaster.s( R.string.library_favorites_removed )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
@@ -650,10 +668,10 @@ suspend fun unsavePodcast(podcastId: String): Boolean = withContext(NzikDispatch
 
 suspend fun addEpisodeToSavedEpisodes(videoId: String): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
-    val result = runCatching {
-        PlaylistEditThrottle.throttle("SE")
-        YtMusic.addToPlaylist("SE", videoId)
-    }
+    if (!youtubeSyncVideoId.matches(videoId)) return@withContext false
+    PlaylistEditThrottle.throttle("SE")
+    val result = YtMusic.addToPlaylist("SE", videoId)
+    if (result.exceptionOrNull() is CancellationException) result.getOrThrow()
     if (result.isSuccess) Toaster.s( R.string.library_favorites_added )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
@@ -661,10 +679,10 @@ suspend fun addEpisodeToSavedEpisodes(videoId: String): Boolean = withContext(Nz
 
 suspend fun removeEpisodeFromSavedEpisodes(videoId: String, setVideoId: String? = null): Boolean = withContext(NzikDispatchers.DATA) {
     if (!isYouTubeSyncEnabled() || !canPushToYTM() || !isNetworkConnected(appContext())) return@withContext false
-    val result = runCatching {
-        PlaylistEditThrottle.throttle("SE")
-        YtMusic.removeFromPlaylist("SE", videoId, setVideoId)
-    }
+    if (!youtubeSyncVideoId.matches(videoId)) return@withContext false
+    PlaylistEditThrottle.throttle("SE")
+    val result = YtMusic.removeFromPlaylist("SE", videoId, setVideoId)
+    if (result.exceptionOrNull() is CancellationException) result.getOrThrow()
     if (result.isSuccess) Toaster.s( R.string.library_favorites_removed )
     else Toaster.e( R.string.sync_failed )
     result.isSuccess
@@ -678,17 +696,18 @@ suspend fun pushYTMLikedSongs(force: Boolean = false): Boolean = withContext(Nzi
     if (!pushSongLike && !force) return@withContext false
     if (!isNetworkConnected(appContext())) return@withContext false
 
-    val likedSongs = Database.songTable.all().first().filter { it.likedAt != null }
+    val likedSongs = Database.songTable.all().first().filter { isYouTubeSyncLike(it.id, it.likedAt) }
     Timber.tag("SyncYTMusicUtils").d("pushYTMLikedSongs: ${likedSongs.size} liked songs to push")
 
     var success = 0
     var failed = 0
     likedSongs.forEach { song ->
         runCatching {
-            YtMusic.likeVideoOrSong(song.id)
+            YtMusic.likeVideoOrSong(song.id).getOrThrow()
         }.onSuccess {
             success++
         }.onFailure { e ->
+            if (e is CancellationException) throw e
             failed++
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMLikedSongs failed for song: ${song.id}")
         }
@@ -708,7 +727,9 @@ suspend fun pushYTMAlbumBookmarks(force: Boolean = false): Boolean = withContext
     if (!pushAlbumBookmark && !force) return@withContext false
     if (!isNetworkConnected(appContext())) return@withContext false
 
-    val bookmarkedAlbums = Database.albumTable.all().first().filter { it.bookmarkedAt != null }
+    val bookmarkedAlbums = Database.albumTable.all().first().filter {
+        it.bookmarkedAt != null && !isDeviceAlbumId(it.id)
+    }
     Timber.tag("SyncYTMusicUtils").d("pushYTMAlbumBookmarks: ${bookmarkedAlbums.size} bookmarked albums to push")
 
     var success = 0
@@ -719,10 +740,11 @@ suspend fun pushYTMAlbumBookmarks(force: Boolean = false): Boolean = withContext
             ?.takeIf { it.isNotBlank() }
             ?: album.id
         runCatching {
-            YtMusic.likePlaylistOrAlbum(playlistId)
+            YtMusic.likePlaylistOrAlbum(playlistId).getOrThrow()
         }.onSuccess {
             success++
         }.onFailure { e ->
+            if (e is CancellationException) throw e
             failed++
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMAlbumBookmarks failed for album: ${album.id}")
         }
@@ -751,10 +773,11 @@ suspend fun pushYTMArtistFollows(force: Boolean = false): Boolean = withContext(
     followedArtists.forEach { artist ->
         if (!YouTubeArtistProvenance.canShowOrigin()) return@withContext false
         runCatching {
-            YtMusic.subscribeChannel(artist.id)
+            YtMusic.subscribeChannel(artist.id).getOrThrow()
         }.onSuccess {
             success++
         }.onFailure { e ->
+            if (e is CancellationException) throw e
             failed++
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMArtistFollows failed for artist: ${artist.id}")
         }
@@ -774,30 +797,68 @@ suspend fun pushYTMPlaylists(force: Boolean = false): Boolean = withContext(Nzik
     if (!pushPlaylist && !force) return@withContext false
     if (!isNetworkConnected(appContext())) return@withContext false
 
+    val context = appContext()
+    val owner = ProfileWorkOwner.capture(context) ?: return@withContext false
+    val secure = context.encryptedPreferences
+    val session = secure.readYouTubeSession()
+    fun ownsSession(): Boolean = ProfileWorkOwner.isBound(context, owner) &&
+        isYouTubeSyncEnabled() && secure.readYouTubeSession() == session
+
     val localPlaylists = Database.playlistTable.getAll().filter { !it.isYoutubePlaylist && it.browseId.isNullOrBlank() }
     Timber.tag("SyncYTMusicUtils").d("pushYTMPlaylists: ${localPlaylists.size} local playlists to push")
 
     var success = 0
     var failed = 0
-    localPlaylists.forEach { playlist ->
+    for (playlist in localPlaylists) {
+        if (!ownsSession() || !canPushToYTM()) return@withContext false
         runCatching {
-            val createResult = YtMusic.createPlaylist(playlist.name)
-            createResult.getOrNull()?.let { ytPlaylistId ->
-                val songs = Database.songPlaylistMapTable.allSongsOf(playlist.id).first()
-                songs.forEach { song ->
-                    PlaylistEditThrottle.throttle(ytPlaylistId)
-                    YtMusic.addToPlaylist(ytPlaylistId, song.id)
+            val marker = "$UnlinkedYouTubePlaylistPrefix${owner.generation}:${playlist.id}"
+            check(!secure.contains(marker)) { "A previously created remote playlist has not been rolled back" }
+            val songIds = Database.songPlaylistMapTable.allSongsOf(playlist.id).first().map { it.id }
+            check(canPushYouTubePlaylistSongs(songIds)) { "Playlist contains tracks that YouTube cannot store" }
+            check(ownsSession()) { "YouTube account changed before playlist creation" }
+            val remoteId = YtMusic.createPlaylist(playlist.name).getOrThrow()
+                .takeIf(String::isNotBlank) ?: error("YouTube did not return the created playlist ID")
+            var linked = false
+            try {
+                withContext(NonCancellable) {
+                    // Keep the remote ID across process death until the link or rollback has committed.
+                    check(secure.edit().putString(marker, remoteId).commit()) {
+                        "Could not persist the newly created remote playlist ID"
+                    }
                 }
-                Database.playlistTable.update(
-                    playlist.copy(
-                        browseId = "VL$ytPlaylistId",
-                        isYoutubePlaylist = true
-                    )
-                )
+                for (songId in songIds) {
+                    PlaylistEditThrottle.throttle(remoteId)
+                    check(ownsSession() && canPushToYTM()) { "YouTube playlist upload is no longer enabled" }
+                    YtMusic.addToPlaylist(remoteId, songId).getOrThrow()
+                }
+                withContext(NonCancellable) {
+                    check(ownsSession() && canPushToYTM()) { "YouTube playlist upload is no longer enabled" }
+                    Database.transaction {
+                        val latest = playlistTable.findById(playlist.id).first()
+                        check(latest != null && latest.name == playlist.name && !latest.isYoutubePlaylist &&
+                            latest.browseId.isNullOrBlank() &&
+                            songPlaylistMapTable.allSongsOf(playlist.id).first().map { it.id } == songIds
+                        ) { "Local playlist changed before the remote link could be saved" }
+                        playlistTable.update(latest.copy(
+                            browseId = "VL${remoteId.removePrefix("VL")}",
+                            isYoutubePlaylist = true,
+                        ))
+                    }
+                    linked = true
+                    secure.edit().remove(marker).apply()
+                }
+            } finally {
+                if (!linked) withContext(NonCancellable) {
+                    if (ownsSession() && YtMusic.deletePlaylist(remoteId).isSuccess) {
+                        secure.edit().remove(marker).commit()
+                    }
+                }
             }
         }.onSuccess {
             success++
         }.onFailure { e ->
+            if (e is CancellationException) throw e
             failed++
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMPlaylists failed for playlist: ${playlist.name}")
         }
@@ -825,13 +886,14 @@ suspend fun pushYTMSavedEpisodes(force: Boolean = false): Boolean = withContext(
     }
 
     val episodes = Database.songPlaylistMapTable.allSongsOf(sePlaylist.id).first()
-    episodes.forEach { episode ->
+    episodes.filter { youtubeSyncVideoId.matches(it.id) }.forEach { episode ->
         runCatching {
             PlaylistEditThrottle.throttle("SE")
-            YtMusic.addToPlaylist("SE", episode.id)
+            YtMusic.addToPlaylist("SE", episode.id).getOrThrow()
         }.onSuccess {
             success++
         }.onFailure { e ->
+            if (e is CancellationException) throw e
             failed++
             Timber.tag("SyncYTMusicUtils").e(e, "pushYTMSavedEpisodes failed for episode: ${episode.title}")
         }
@@ -841,60 +903,3 @@ suspend fun pushYTMSavedEpisodes(force: Boolean = false): Boolean = withContext(
     Timber.tag("SyncYTMusicUtils").d("pushYTMSavedEpisodes completed: $success success, $failed failed")
     failed == 0
 }
-
-suspend fun clearAllSyncedData(): Boolean = withContext(NzikDispatchers.DATA) {
-    Timber.tag("SyncYTMusicUtils").d("clearAllSyncedData started")
-
-    // Cancel any running sync operations
-    cancelAllSyncs()
-
-    var hadErrors = false
-
-    // Clear all artist YouTube flags
-    runCatching {
-        YouTubeArtistProvenance.reset()
-    }.onFailure { e ->
-        Timber.tag("SyncYTMusicUtils").e(e, "Failed to clear artist YouTube flags")
-        hadErrors = true
-    }
-
-    // Clear all album YouTube flags
-    runCatching {
-        Database.albumTable.all().first().forEach { album ->
-            if (album.isYoutubeAlbum) {
-                Database.albumTable.updateReplace(album.copy(isYoutubeAlbum = false, bookmarkedAt = null))
-            }
-        }
-    }.onFailure { e ->
-        Timber.tag("SyncYTMusicUtils").e(e, "Failed to clear album YouTube flags")
-        hadErrors = true
-    }
-
-    // Clear all playlist YouTube flags
-    runCatching {
-        Database.playlistTable.getAll().forEach { playlist ->
-            if (playlist.isYoutubePlaylist) {
-                Database.playlistTable.update(playlist.copy(isYoutubePlaylist = false))
-            }
-        }
-    }.onFailure { e ->
-        Timber.tag("SyncYTMusicUtils").e(e, "Failed to clear playlist YouTube flags")
-        hadErrors = true
-    }
-
-    // Clear all song like states
-    runCatching {
-        Database.songTable.all().first().forEach { song ->
-            if (song.likedAt != null) {
-                Database.songTable.likeState(song.id, null)
-            }
-        }
-    }.onFailure { e ->
-        Timber.tag("SyncYTMusicUtils").e(e, "Failed to clear song like states")
-        hadErrors = true
-    }
-
-    Timber.tag("SyncYTMusicUtils").d("clearAllSyncedData completed, hadErrors=$hadErrors")
-    !hadErrors
-}
-

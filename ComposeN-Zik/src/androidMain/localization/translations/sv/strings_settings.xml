@@ -492,8 +492,6 @@
     <string name="settings_youtube_authenticated_browsing_label">Logga in för Bläddra</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Använd konto för sökningar</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Rensa all data synkroniserad från YouTube? Detta kommer att ta bort gillade låtar, album, artister och spellistor importerade från YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Rensa YouTube synkroniserad data</string>
     <string name="settings_youtube_connection_required_description">Anslut till YouTube först för att aktivera detta alternativ</string>
     <string name="settings_youtube_library_sync_content_description">Spellistor, album, artister, historia, osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktivera YouTube Music inloggning</string>

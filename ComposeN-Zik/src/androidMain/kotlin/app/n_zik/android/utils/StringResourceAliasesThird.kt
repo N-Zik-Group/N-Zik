@@ -486,8 +486,6 @@ private fun aliases13(): Map<String, String> = mapOf(
     "settings_youtube_authenticated_browsing_label" to "login_for_browse",
     "settings_youtube_authenticated_search_description" to "use_account_for_searches_description",
     "settings_youtube_authenticated_search_label" to "use_account_for_searches",
-    "settings_youtube_clear_synced_data_confirmation" to "clear_synced_data_confirm",
-    "settings_youtube_clear_synced_data_dialog_title" to "dialog_clear_synced_data",
     "settings_youtube_connection_required_description" to "youtube_connect_first",
     "settings_youtube_library_sync_content_description" to "playlists_albums_artists_history_like_etc",
     "settings_youtube_login_enabled_label" to "enable_youtube_music_login",
