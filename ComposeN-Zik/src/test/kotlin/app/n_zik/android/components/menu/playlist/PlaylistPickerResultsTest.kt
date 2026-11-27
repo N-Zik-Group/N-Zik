@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -24,6 +25,20 @@ class PlaylistPickerResultsTest {
         val result = playlistPickerResults(flowOf(emptyList<PlaylistPreview>())).first()
 
         assertEquals(emptyList<PlaylistPreview>(), result.getOrThrow())
+    }
+
+    @Test
+    fun `pending device scan keeps the picker loading and preserves library errors`() {
+        val previews = PlaylistPickerPreviews(emptyList())
+        val success = Result.success(previews)
+        val failure = IllegalStateException("unavailable")
+
+        assertNull(PlaylistPickerRead(success, emptySet(), deviceScanPending = true) {}.result)
+        assertEquals(previews, PlaylistPickerRead(success, emptySet(), deviceScanPending = false) {}.result?.getOrThrow())
+        assertSame(
+            failure,
+            PlaylistPickerRead(Result.failure(failure), emptySet(), deviceScanPending = true) {}.result?.exceptionOrNull(),
+        )
     }
 
     @Test
@@ -95,12 +110,35 @@ class PlaylistPickerResultsTest {
         val previews = listOf(local, linked)
         val ids = setOf(local.playlist.id, linked.playlist.id)
 
-        val online = playlistPickerSections(previews, online = true, devicePlaylistIds = ids)
+        val online = playlistPickerSections(
+            previews, online = true, devicePlaylistIds = ids, availableDevicePlaylistIds = ids,
+        )
         assertEquals(listOf(local), online.device)
         assertEquals(listOf(linked), online.youtube)
 
-        val offline = playlistPickerSections(previews, online = false, devicePlaylistIds = ids)
-        assertEquals(listOf(local), offline.groups().flatMap { it.second })
+        val offline = playlistPickerSections(
+            previews, online = false, devicePlaylistIds = ids, availableDevicePlaylistIds = ids,
+        )
+        assertEquals(listOf(local), offline.all)
+        assertEquals(listOf(local), offline.device)
+    }
+
+    @Test
+    fun `the device tab follows the current scan and All retains its library rows`() {
+        val mixed = PlaylistPreview(Playlist(id = 1, name = "Mixed tracks"), 2)
+        val unavailable = PlaylistPreview(Playlist(id = 2, name = "Missing local file"), 1)
+        val ordinary = PlaylistPreview(Playlist(id = 3, name = "Online tracks"), 1)
+        val library = listOf(unavailable, mixed, ordinary)
+
+        val sections = playlistPickerSections(
+            library,
+            online = true,
+            devicePlaylistIds = setOf(unavailable.playlist.id),
+            availableDevicePlaylistIds = setOf(mixed.playlist.id),
+        )
+
+        assertEquals(listOf(mixed), sections.device)
+        assertEquals(library, sections.all)
     }
 
     @Test

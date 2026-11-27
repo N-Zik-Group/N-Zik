@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.components.themed
 
 import android.app.Application
+import android.content.Context
 import android.os.Looper
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import io.mockk.unmockkObject
 import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -47,6 +49,8 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
 import app.n_zik.android.core.ondevice.DEVICE_LIBRARY_ENABLED_KEY
+import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.FontType
@@ -187,9 +191,11 @@ class PlaylistsMenuTargetTest {
         mockkObject(DatabaseInitializer.Companion, Dependencies)
         every { Dependencies.application } returns mainApplication
         every { DatabaseInitializer.Instance } returns database
+        val trackId = "local:device-track"
+        mockkStatic(Context::observeDeviceLibrary)
+        every { any<Context>().observeDeviceLibrary() } returns flowOf(DeviceLibrarySnapshot(songIds = setOf(trackId)))
         try {
             val playlistId = runBlocking {
-                val trackId = "local:device-track"
                 val id = database.playlistTable.insert(Playlist(name = "Device playlist"))
                 database.songTable.insertIgnore(
                     Song(id = trackId, title = "Device track", durationText = null, thumbnailUrl = null)
@@ -235,6 +241,7 @@ class PlaylistsMenuTargetTest {
                 if (originalDeviceLibraryEnabled == null) remove(DEVICE_LIBRARY_ENABLED_KEY)
                 else putBoolean(DEVICE_LIBRARY_ENABLED_KEY, originalDeviceLibraryEnabled)
             }.commit()
+            unmockkStatic(Context::observeDeviceLibrary)
             unmockkObject(DatabaseInitializer.Companion, Dependencies)
             database.close()
         }

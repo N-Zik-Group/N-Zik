@@ -77,15 +77,17 @@ internal data class PlaylistPickerPreviews(
 )
 
 internal class PlaylistPickerRead(
-    val result: Result<PlaylistPickerPreviews>?,
+    previewResult: Result<PlaylistPickerPreviews>?,
     val devicePlaylistIds: Set<Long>,
+    deviceScanPending: Boolean = false,
     val retry: () -> Unit,
 ) {
+    val result = previewResult.takeUnless { deviceScanPending && it?.isSuccess == true }
     val libraryPreviews: List<PlaylistPreview> get() = result?.getOrNull()?.library.orEmpty()
 }
 
 @Composable
-internal fun rememberPlaylistPickerRead(): PlaylistPickerRead {
+internal fun rememberPlaylistPickerRead(includeDeviceSort: Boolean, deviceScanPending: Boolean): PlaylistPickerRead {
     val libraryBy by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_BY)
     val libraryOrder by Preference.remember(Preference.HOME_LIBRARY_PLAYLIST_SORT_ORDER)
     val pinnedBy by Preference.remember(Preference.HOME_LIBRARY_PINNED_PLAYLIST_SORT_BY)
@@ -100,17 +102,17 @@ internal fun rememberPlaylistPickerRead(): PlaylistPickerRead {
     val librarySort = libraryBy to libraryOrder
     val pinnedSort = pinnedBy to pinnedOrder
     val youtubeSort = youtubeBy to youtubeOrder
-    val deviceSort = deviceBy to deviceOrder
+    val deviceSort = (deviceBy to deviceOrder).takeIf { includeDeviceSort }
     var retry by remember { mutableIntStateOf(0) }
-    val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, devicePlaylistIds, retry) {
-        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort, devicePlaylistIds))
+    val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, retry) {
+        playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort))
     }
     return key(retry) {
         val result by results.collectAsStateWithLifecycle<Result<PlaylistPickerPreviews>?>(
             initialValue = null,
             context = NzikDispatchers.DATA,
         )
-        PlaylistPickerRead(result, devicePlaylistIds) { retry++ }
+        PlaylistPickerRead(result, devicePlaylistIds, deviceScanPending) { retry++ }
     }
 }
 
@@ -118,10 +120,9 @@ private fun sortedPlaylistPickerPreviews(
     librarySort: Pair<PlaylistSortBy, SortOrder>,
     pinnedSort: Pair<PlaylistSortBy, SortOrder>,
     youtubeSort: Pair<PlaylistSortBy, SortOrder>,
-    deviceSort: Pair<PlaylistSortBy, SortOrder>,
-    devicePlaylistIds: Set<Long>,
+    deviceSort: Pair<PlaylistSortBy, SortOrder>?,
 ): Flow<PlaylistPickerPreviews> {
-    val sorts = (listOf(librarySort, pinnedSort, youtubeSort) + listOfNotNull(deviceSort.takeIf { devicePlaylistIds.isNotEmpty() })).distinct()
+    val sorts = (listOf(librarySort, pinnedSort, youtubeSort) + listOfNotNull(deviceSort)).distinct()
     val flows = sorts.map { (sortBy, sortOrder) -> Database.playlistTable.sortPreviews(sortBy, sortOrder) }
     if (flows.size == 1) return flows.single().map { PlaylistPickerPreviews(it) }
     return combine(flows) { previews ->
@@ -132,7 +133,7 @@ private fun sortedPlaylistPickerPreviews(
             if (sort == librarySort || index < 0) return emptyMap()
             return previews[index].mapIndexed { rank, preview -> preview.playlist.id to rank }.toMap()
         }
-        PlaylistPickerPreviews(library, rank(pinnedSort), rank(youtubeSort), rank(deviceSort))
+        PlaylistPickerPreviews(library, rank(pinnedSort), rank(youtubeSort), deviceSort?.let(::rank).orEmpty())
     }
 }
 

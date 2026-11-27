@@ -1,15 +1,27 @@
 package app.n_zik.android.components.ui.screens.home
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.n_zik.android.PINNED_PREFIX
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.components.tab.selectionActionTargets
+import app.n_zik.android.core.database.Database
 import app.n_zik.android.enums.PlaylistSortBy
 import app.n_zik.android.enums.PlaylistsType
 import app.n_zik.android.enums.SortOrder
+import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.SongPlaylistMap
 import app.n_zik.android.core.database.isYouTubePlaylistSource
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.rewind.RewindPlaylists
+import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.getActiveProfile
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 internal data class HomeLibraryPlaylistScope(
     val type: PlaylistsType,
@@ -25,12 +37,12 @@ internal data class HomeLibraryPlaylistScope(
     fun canOpenPlaylistPicker(hasTracks: Boolean, selectionActive: Boolean): Boolean =
         hasTracks || (type == PlaylistsType.Playlist && query.isBlank() && !selectionActive)
 
-    fun visible(candidates: List<PlaylistPreview>): List<PlaylistPreview> = candidates.filter { preview ->
+    fun visible(candidates: List<PlaylistPreview>, onDevicePlaylistIds: Set<Long>? = null): List<PlaylistPreview> = candidates.filter { preview ->
         val playlist = preview.playlist
         matchesName(playlist.name) && when (type) {
             PlaylistsType.YTPlaylist -> matchesYouTubeLibraryFilter(playlist, youtubeFilter)
             PlaylistsType.Playlist -> true
-            PlaylistsType.OnDevice -> !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
+            PlaylistsType.OnDevice -> playlist.matchesOnDevicePlaylist(onDevicePlaylistIds)
             PlaylistsType.MonthlyPlaylist -> RewindPlaylists.isShown(
                 playlist.name, monthlyEnabled, yearlyEnabled, rewindFilter,
             )
@@ -38,6 +50,9 @@ internal data class HomeLibraryPlaylistScope(
         }
     }
 }
+
+internal fun Playlist.matchesOnDevicePlaylist(playlistIds: Set<Long>?): Boolean =
+    (playlistIds == null || id in playlistIds) && !isYouTubePlaylistSource(browseId, isYoutubePlaylist)
 
 /** Only an unsearched position-sorted projection can safely rewrite global positions. */
 internal fun canReorderHomePlaylists(
@@ -60,3 +75,18 @@ internal fun availableDevicePlaylistIds(mappings: List<SongPlaylistMap>, availab
     mappings.mapNotNullTo(hashSetOf()) { mapping ->
         mapping.playlistId.takeIf { mapping.songId in availableSongIds }
     }
+
+@Composable
+internal fun rememberAvailableDevicePlaylistIds(): Set<Long>? {
+    val context = LocalContext.current
+    val profile = getActiveProfile(context)
+    return key(profile) {
+        val availablePlaylists = remember(context) {
+            combine(
+                context.observeDeviceLibrary(),
+                Database.songPlaylistMapTable.observeDeviceTrackMappings(),
+            ) { scan, mappings -> availableDevicePlaylistIds(mappings, scan.songIds) }.distinctUntilChanged()
+        }
+        availablePlaylists.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA).value
+    }
+}

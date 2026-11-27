@@ -1035,8 +1035,8 @@ fun LocalPlaylistSongs(
                     visibleToolbarOrder.forEach { id ->
 
                         when (id) {
-                            "insertion_position" -> if (playlist?.supportsInsertionPosition() == true) add(insertionDialog)
-                            "pin" -> if (playlist != null && playlistNotMonthlyType) add(pin)
+                            "insertion_position" -> if (!forceOnDevice && playlist?.supportsInsertionPosition() == true) add(insertionDialog)
+                            "pin" -> if (!forceOnDevice && playlist != null && playlistNotMonthlyType) add(pin)
                             "search" -> add( search )
                             // Spec 2: renumbering/position-lock rewrites position, destroying the top order
                             "position_lock" -> if ( !onDeviceOnly && sort.sortBy == PlaylistSongSortBy.Custom && !isRewindPlaylist ) add( positionLock )

@@ -97,7 +97,9 @@ import app.n_zik.android.utils.showPinnedPlaylistsKey
 import app.n_zik.android.utils.showYtPlaylistsKey
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilterChip
+import app.n_zik.android.components.ui.screens.home.matchesOnDevicePlaylist
 import app.n_zik.android.components.ui.screens.home.matchesYouTubeLibraryFilter
+import app.n_zik.android.components.ui.screens.home.rememberAvailableDevicePlaylistIds
 import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -119,9 +121,6 @@ internal fun isPlaylistPickerVisible(playlist: Playlist): Boolean =
 
 internal fun isYouTubePlaylistPickerEntry(playlist: Playlist): Boolean =
     isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
-
-private fun Playlist.isOnDevicePickerEntry(devicePlaylistIds: Set<Long>): Boolean =
-    id in devicePlaylistIds && !isYouTubePlaylistPickerEntry(this)
 
 internal fun isPinnedPlaylistPickerVisible(playlist: Playlist, online: Boolean): Boolean =
     playlist.name.startsWith(PINNED_PREFIX, ignoreCase = true) &&
@@ -196,7 +195,7 @@ private fun PlaylistPickerMenu(
     style: MenuStyle,
     playlistRead: PlaylistPickerRead,
     search: Search,
-    groups: List<Pair<Int, List<PlaylistPreview>>>,
+    sections: PlaylistPickerSections,
     filters: PlaylistPickerFilters,
     showDeviceTab: Boolean,
     header: @Composable ColumnScope.() -> Unit,
@@ -238,10 +237,8 @@ private fun PlaylistPickerMenu(
             }
         }
     }
-    val displayed = if (activeGroup == all) {
-        val visibleIds = groups.flatMap { it.second }.mapTo(HashSet()) { it.playlist.id }
-        playlistRead.libraryPreviews.filter { it.playlist.id in visibleIds }
-    } else groups.first { it.first == activeGroup }.second
+    val displayed = if (activeGroup == all) sections.all
+        else sections.groups().first { it.first == activeGroup }.second
     val matches = displayed.filter { preview ->
         val playlist = preview.playlist
         playlist.matchesPickerQuery(query) &&
@@ -291,6 +288,7 @@ private fun PlaylistPickerEntry(
 }
 
 internal data class PlaylistPickerSections(
+    val all: List<PlaylistPreview>,
     val pinned: List<PlaylistPreview>,
     val youtube: List<PlaylistPreview>,
     val local: List<PlaylistPreview>,
@@ -308,6 +306,7 @@ internal fun playlistPickerSections(
     previews: List<PlaylistPreview>,
     online: Boolean,
     devicePlaylistIds: Set<Long> = emptySet(),
+    availableDevicePlaylistIds: Set<Long> = emptySet(),
 ): PlaylistPickerSections {
     val visible = previews.filter {
         val playlist = it.playlist
@@ -318,14 +317,19 @@ internal fun playlistPickerSections(
             !it.playlist.name.startsWith(MONTHLY_PREFIX, ignoreCase = true) &&
             !isYouTubePlaylistPickerEntry(it.playlist)
     }
+    val pinned = visible.filter { isPinnedPlaylistPickerVisible(it.playlist, online) }
+    val youtube = visible.filter {
+        isYouTubePlaylistPickerEntry(it.playlist) &&
+            (online || !it.playlist.isYoutubePlaylist || !canEditPlaylistMembership(it.playlist))
+    }
+    val local = ordinary.filterNot { it.playlist.id in devicePlaylistIds }
+    val allIds = (pinned + youtube + local).mapTo(HashSet()) { it.playlist.id }
     return PlaylistPickerSections(
-        pinned = visible.filter { isPinnedPlaylistPickerVisible(it.playlist, online) },
-        youtube = visible.filter {
-            isYouTubePlaylistPickerEntry(it.playlist) &&
-                (online || !it.playlist.isYoutubePlaylist || !canEditPlaylistMembership(it.playlist))
-        },
-        local = ordinary.filterNot { it.playlist.id in devicePlaylistIds },
-        device = visible.filter { it.playlist.isOnDevicePickerEntry(devicePlaylistIds) },
+        all = visible.filter { it.playlist.id in allIds || it.playlist.matchesOnDevicePlaylist(devicePlaylistIds) },
+        pinned = pinned,
+        youtube = youtube,
+        local = local,
+        device = visible.filter { it.playlist.matchesOnDevicePlaylist(availableDevicePlaylistIds) },
     )
 }
 
@@ -642,13 +646,21 @@ class PlaylistsMenu private constructor(
 
     @Composable
     private fun PlaylistPicker(request: AddRequest) {
-        val playlistRead = rememberPlaylistPickerRead()
         val context = LocalContext.current
         val online by context.isNetworkAvailableComposable
-        val previews = playlistRead.result?.getOrNull()
         val showOnDevice by rememberPreference(showOnDevicePlaylistsKey, true)
         val showDeviceTab = deviceLibraryEnabled() && showOnDevice
-        val base = playlistPickerSections(playlistRead.libraryPreviews, online, playlistRead.devicePlaylistIds)
+        val availableDeviceIds = if (showDeviceTab && request.filters.group == R.string.library_on_device_title) {
+            rememberAvailableDevicePlaylistIds()
+        } else emptySet()
+        val playlistRead = rememberPlaylistPickerRead(
+            includeDeviceSort = showDeviceTab,
+            deviceScanPending = availableDeviceIds == null,
+        )
+        val previews = playlistRead.result?.getOrNull()
+        val base = playlistPickerSections(
+            playlistRead.libraryPreviews, online, playlistRead.devicePlaylistIds, availableDeviceIds.orEmpty(),
+        )
         fun List<PlaylistPreview>.ordered(rank: Map<Long, Int>?): List<PlaylistPreview> =
             if (rank.isNullOrEmpty()) this else sortedBy { rank[it.playlist.id] ?: Int.MAX_VALUE }
         val sections = base.copy(
@@ -684,7 +696,7 @@ class PlaylistsMenu private constructor(
             style = menuStyle,
             playlistRead = playlistRead,
             search = search,
-            groups = sections.groups(),
+            sections = sections,
             filters = request.filters,
             showDeviceTab = showDeviceTab,
             header = {
@@ -698,7 +710,7 @@ class PlaylistsMenu private constructor(
             entry = { preview, openOnDevice ->
                 PlaylistCard(
                     preview, preview.playlist.id in songPlaylistIds,
-                    onDevice = preview.playlist.isOnDevicePickerEntry(playlistRead.devicePlaylistIds),
+                    onDevice = preview.playlist.matchesOnDevicePlaylist(playlistRead.devicePlaylistIds),
                     openOnDevice = openOnDevice,
                     localDestinationsOnly = request.localDestinationsOnly,
                 ) {

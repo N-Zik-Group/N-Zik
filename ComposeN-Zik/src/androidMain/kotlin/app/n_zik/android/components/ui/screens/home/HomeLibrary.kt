@@ -8,7 +8,6 @@ import app.n_zik.android.components.playlist.playlistDeletionConfirmationText
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
 import app.n_zik.android.core.database.isYouTubePlaylistSource
-import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
 import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceCoverBadge
 import app.n_zik.android.components.ui.screens.home.onDevice.DeviceLibraryPullRefresh
@@ -146,7 +145,6 @@ import app.n_zik.android.utils.showPinnedPlaylistsKey
 
 import app.n_zik.android.utils.showYtPlaylistsKey
 import app.n_zik.android.utils.showOnDevicePlaylistsKey
-import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
 import app.n_zik.android.utils.homePlaylistsOrderKey
 import app.n_zik.android.utils.homeLibraryPlaylistSortMenuOrderKey
@@ -155,7 +153,6 @@ import app.n_zik.android.utils.homeLibraryYTPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryPinnedPlaylistSortMenuOrderKey
 import app.n_zik.android.utils.homeLibraryMonthlyPlaylistSortMenuOrderKey
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -262,20 +259,9 @@ fun HomeLibrary(
         else Database.songPlaylistMapTable.playlistIdsWithDeviceTracks().map { it.toSet() }
     }.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA)
     val onDeviceSource = showOnDevice && playlistType == PlaylistsType.OnDevice && previewSession == null
-    val devicePlaylistsWithAvailableTracks = if (onDeviceSource) {
-        val profile = getActiveProfile(context)
-        key(profile) {
-            val availablePlaylists = remember(context) {
-                combine(
-                    context.observeDeviceLibrary(),
-                    Database.songPlaylistMapTable.observeDeviceTrackMappings(),
-                ) { scan, mappings -> availableDevicePlaylistIds(mappings, scan.songIds) }.distinctUntilChanged()
-            }
-            availablePlaylists.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA).value
-        }
-    } else emptySet()
+    val devicePlaylistsWithAvailableTracks =
+        if (onDeviceSource) rememberAvailableDevicePlaylistIds() else emptySet()
     val scopeWithoutQuery = remember(libraryScope) { libraryScope.copy(query = "") }
-    val deviceIds = remember(devicePlaylistIds) { devicePlaylistIds?.toHashSet() }
     var filteredItems by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/filtered") }
     LaunchedEffect(libraryScope) { itemSelector.isActive = false }
 
@@ -363,16 +349,15 @@ fun HomeLibrary(
     }
 
     val searchReady = searchDataReady && completedSearchQuery == search.filterQuery
-    var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds) {
+    val deviceIdsReady = devicePlaylistIds != null
+    var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, devicePlaylistsWithAvailableTracks) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIds) {
-        if (!searchReady || deviceIds == null) return@LaunchedEffect
+    LaunchedEffect(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, devicePlaylistsWithAvailableTracks) {
+        if (!searchReady || !deviceIdsReady || devicePlaylistsWithAvailableTracks == null) return@LaunchedEffect
         val candidates = itemsOnDisplay
-        val deviceTab = playlistType == PlaylistsType.OnDevice
         filteredItems = withContext(NzikDispatchers.DATA) {
-            val visible = scopeWithoutQuery.visible(candidates)
-            if (deviceTab) visible.filter { it.playlist.id in deviceIds } else visible
+            scopeWithoutQuery.visible(candidates, devicePlaylistsWithAvailableTracks)
         }
         projectionReady = true
     }
@@ -571,7 +556,7 @@ fun HomeLibrary(
                 val toolbarOrder = HomeLibraryToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
                 val playlistAnchor = playlistActionsAnchor(toolbarOrder)
                 val hasTracksToAdd = actionTargets().any { preview ->
-                    if (playlistType == PlaylistsType.OnDevice) preview.playlist.id in devicePlaylistsWithAvailableTracks
+                    if (playlistType == PlaylistsType.OnDevice) preview.playlist.id in devicePlaylistsWithAvailableTracks.orEmpty()
                     else preview.songCount > 0
                 }
                 val addPlaylistAction = rememberCollectionAddAction(

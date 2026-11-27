@@ -103,12 +103,18 @@ class HomeLibraryPlaylistScopeTest {
             monthlyEnabled = true, yearlyEnabled = false).visible(rows))
     }
 
-    @Test fun `on device filters remote playlists while retaining pinned and search rules`() {
-        val remotePlaylist = remote.copy(playlist = remote.playlist.copy(isYoutubePlaylist = true))
+    @Test fun `on device shows scanned playlists in order while retaining pinned and search rules`() {
+        val remotePlaylist = remote.copy(playlist = remote.playlist.copy(name = "Local remote", isYoutubePlaylist = true))
         val pinned = preview(7, "${PINNED_PREFIX}Local pinned")
+        val missing = preview(8, "Local missing")
+        val mixed = preview(9, "Local mixed").copy(songCount = 2)
         val scope = podcastScope.copy(type = PlaylistsType.OnDevice, query = "local")
-        assertEquals(listOf(local, pinned), scope.visible(listOf(remotePlaylist, local, pinned)))
-        assertTrue(scope.copy(query = "science").visible(listOf(remotePlaylist, local)).isEmpty())
+        val rows = listOf(remotePlaylist, pinned, missing, mixed, local)
+        val scanned = setOf(remotePlaylist.playlist.id, local.playlist.id, pinned.playlist.id, mixed.playlist.id)
+        assertEquals(listOf(pinned, mixed, local), scope.visible(rows, scanned))
+        assertTrue(scope.copy(query = "science").visible(rows, scanned).isEmpty())
+        assertTrue(scope.visible(rows, emptySet()).isEmpty())
+        assertEquals(rows, scope.copy(type = PlaylistsType.Playlist, query = "").visible(rows, scanned))
     }
 
     @Test fun `localized playlist labels drive the search and the visible action targets`() {

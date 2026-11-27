@@ -1872,3 +1872,7 @@ Menus / Queue:
 Menus / Lyrics:
 - fix(menu): align lyrics cancel press feedback
   - Keep the content at its current position and apply the shared six dp ripple inset.
+
+Playlists:
+- fix(playlist): share available device playlists and loading state
+  - Use the same scan in Library and the picker, preserve All and block pin and insertion settings in the forced view.
