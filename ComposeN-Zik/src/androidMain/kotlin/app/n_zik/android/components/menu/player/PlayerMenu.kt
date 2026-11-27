@@ -227,7 +227,7 @@ fun AddToPlaylistItemMenu(
     PlaylistPickerMenu(
         style = style,
         playlistRead = playlistRead,
-        query = search.inputValue,
+        search = search,
         groups = listOf(
             R.string.playlist_pinned_title to pinnedPlaylists,
             R.string.sync_youtube_playlists_title to youtubePlaylists,

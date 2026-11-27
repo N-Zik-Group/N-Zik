@@ -66,6 +66,7 @@ object GridMenu {
         headerTrailing: (@Composable RowScope.() -> Unit)? = null,
         drawSurface: Boolean = true,
         headerContent: (@Composable ColumnScope.() -> Unit)? = null,
+        bodyHeader: (@Composable ColumnScope.() -> Unit)? = null,
         emptyBody: (@Composable () -> Unit)? = null,
         content: LazyGridScope.() -> Unit,
     ) {
@@ -137,6 +138,7 @@ object GridMenu {
                 foregroundFill = bodyFilm,
             ) { bodyModifier ->
                 Column(bodyModifier) {
+                    bodyHeader?.invoke(this)
                     if (emptyBody != null) {
                         Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                             emptyBody()

@@ -62,6 +62,7 @@ object ListMenu {
         headerTrailing: (@Composable RowScope.() -> Unit)? = null,
         drawSurface: Boolean = true,
         headerContent: (@Composable ColumnScope.() -> Unit)? = null,
+        bodyHeader: (@Composable ColumnScope.() -> Unit)? = null,
         emptyBody: (@Composable () -> Unit)? = null,
         content: @Composable ColumnScope.() -> Unit,
     ) {
@@ -139,6 +140,7 @@ object ListMenu {
                         },
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    bodyHeader?.invoke(this)
                     if (emptyBody != null) {
                         Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
                             emptyBody()

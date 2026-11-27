@@ -1288,3 +1288,7 @@ Menus:
 Menus:
 - fix(playlists): keep sorted picker groups from duplicating entries
   - Classify playlists from a single snapshot and use the other sort flows solely for ordering.
+
+Menus:
+- fix(playlists): keep the search field below the picker header
+  - Keep search pinned below the separator while leaving title controls in the header.

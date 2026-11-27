@@ -122,7 +122,7 @@ internal fun PlaylistPickerSearchRows(
 }
 
 @Composable
-internal fun ColumnScope.PlaylistPickerHeader(
+internal fun PlaylistPickerHeader(
     title: String,
     search: Search,
     onBack: (() -> Unit)?,
@@ -168,26 +168,27 @@ internal fun ColumnScope.PlaylistPickerHeader(
             )
         }
     }
-    search.SearchBar(this)
 }
 
 @Composable
 internal fun PlaylistPickerMenu(
     style: MenuStyle,
     playlistRead: PlaylistPickerRead,
-    query: String,
+    search: Search,
     groups: List<Pair<Int, List<PlaylistPreview>>>,
     header: @Composable ColumnScope.() -> Unit,
     heading: @Composable (Int) -> Unit,
     entry: @Composable (Int, PlaylistPreview) -> Unit,
 ) {
+    val query = search.inputValue
+    val searchField: @Composable ColumnScope.() -> Unit = { search.SearchBar(this) }
     val matchingGroups = groups.map { (label, previews) ->
         label to previews.filter { it.playlist.matchesPickerQuery(query) }
     }
     val empty = matchingGroups.all { (_, matches) -> matches.isEmpty() }
     val emptyBody = playlistPickerEmptyBody(playlistRead, query, empty)
     if (style == MenuStyle.List) {
-        ListMenu.Menu(headerContent = header, emptyBody = emptyBody) {
+        ListMenu.Menu(headerContent = header, bodyHeader = searchField, emptyBody = emptyBody) {
             PlaylistPickerFeedback(playlistRead, query, empty)
             groups.zip(matchingGroups).forEach { (group, matchingGroup) ->
                 val (label, previews) = group
@@ -199,7 +200,7 @@ internal fun PlaylistPickerMenu(
             }
         }
     } else {
-        GridMenu.Menu(headerContent = header, emptyBody = emptyBody) {
+        GridMenu.Menu(headerContent = header, bodyHeader = searchField, emptyBody = emptyBody) {
             playlistPickerGridFeedback(playlistRead, query, empty)
             matchingGroups.forEach { (label, matches) ->
                 if (matches.isNotEmpty()) {
@@ -520,7 +521,7 @@ class PlaylistsMenu private constructor(
         PlaylistPickerMenu(
             style = menuStyle,
             playlistRead = playlistRead,
-            query = search.inputValue,
+            search = search,
             groups = groups,
             header = {
                 PlaylistPickerHeader(
