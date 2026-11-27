@@ -23,6 +23,7 @@ import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
+import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
@@ -58,7 +59,7 @@ class PlaylistDetailHandler : BrowseHandler {
         playlistId.toLongOrNull()?.let { localId ->
             val section = parts.getOrNull(2)
             val songs = loadAutoPlaylistSongs(context, database, downloadHelper, localId)
-            val deviceSongs = songs.filter { it.isLocal }
+            val deviceSongs = if (showAutoDevicePlaylists(context)) songs.filter { it.isLocal } else emptyList()
             if (section == null && deviceSongs.isNotEmpty()) {
                 fun folder(sectionId: String, label: Int, icon: Int, count: Int) = browsableMediaItem(
                     "$parentId/$sectionId", context.getString(label), count.toString(),

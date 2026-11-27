@@ -63,6 +63,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.automotive.browse.PaginationHelper
 import app.n_zik.android.playback.services.automotive.browse.AutoBrowseTree
+import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
@@ -949,7 +950,9 @@ class AutoSessionCallback(
             val localId = playlistId.toLongOrNull()
             when {
                 deviceGroup != null -> autoBrowseTree.deviceGroupsHandler.songs(deviceGroup, context, database)
-                devicePlaylistId != null -> loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId).filter { it.isLocal }
+                devicePlaylistId != null -> if (showAutoDevicePlaylists(context)) {
+                    loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId).filter { it.isLocal }
+                } else emptyList()
                 localId != null -> loadAutoPlaylistSongs(context, database, downloadHelper, localId)
                 else -> AutoSearchState.playlistSongsById[playlistId].orEmpty()
             }

@@ -1404,3 +1404,7 @@ Menus:
 Menus:
 - fix(playlist): keep the parent menu when canceling import
   - Keep the import dialog above the originating menu in both appearance modes.
+
+Android Auto:
+- fix(auto): honor disabled device playlist folders
+  - Respect the device-category switch for browsing and scoped playback.
