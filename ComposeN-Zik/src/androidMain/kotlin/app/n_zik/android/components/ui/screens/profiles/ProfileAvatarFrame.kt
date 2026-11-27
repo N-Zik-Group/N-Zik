@@ -20,9 +20,14 @@ import app.n_zik.android.utils.ProfileFace
 internal val ProfileCardAvatarSize = 36.dp
 
 @Composable
-internal fun ProfileCardAvatar(face: ProfileFace, area: GlassArea, modifier: Modifier = Modifier) {
-    ProfileAvatarFrame(ProfileCardAvatarSize, area, modifier) {
-        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = ProfileCardAvatarSize)
+internal fun ProfileCardAvatar(
+    face: ProfileFace,
+    area: GlassArea,
+    modifier: Modifier = Modifier,
+    size: Dp = ProfileCardAvatarSize,
+) {
+    ProfileAvatarFrame(size, area, modifier) {
+        ProfileFaceAvatar(avatar = face.avatar, faceName = face.name, size = size)
     }
 }
 

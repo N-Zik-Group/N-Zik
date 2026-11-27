@@ -4,6 +4,8 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
 import app.n_zik.android.components.settings.common.SearchableSettingsSectionHeading
+import app.n_zik.android.components.settings.common.LocalSettingsCardRowOutset
+import app.n_zik.android.components.settings.common.settingsCardRowHorizontalPadding
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -208,15 +210,16 @@ fun ProfileFaceCard(
             }
 
             // Preview: the face avatar + the name shown in-app.
+            val outset = LocalSettingsCardRowOutset.current
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 10.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
+                    .padding(horizontal = settingsCardRowHorizontalPadding(outset) - outset, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ProfileCardAvatar(shownFace, GlassArea.SettingsCards)
+                ProfileCardAvatar(shownFace, GlassArea.SettingsCards, size = 32.dp)
 
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
                 Column {
                     BasicText(

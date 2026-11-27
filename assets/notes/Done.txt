@@ -1140,3 +1140,7 @@ Settings:
 Settings:
 - fix(settings): balance collapsed card heading padding
   - Match the bottom padding of collapsed card headers to their top padding.
+
+Settings:
+- fix(settings): align profile avatars with card badges
+  - Use the shared 32 dp badge column for profile shortcuts and the face preview.

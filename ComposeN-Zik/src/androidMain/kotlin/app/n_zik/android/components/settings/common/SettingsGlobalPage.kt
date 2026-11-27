@@ -327,10 +327,10 @@ private fun SettingsProfileShortcut(
             .clickable(role = Role.Button) { onItemSelected(profiles) }
             .testTag("settings_global_profile_open")
             .padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 14.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        ProfileCardAvatar(face, GlassArea.Images, Modifier.clearAndSetSemantics {})
+        ProfileCardAvatar(face, GlassArea.Images, Modifier.clearAndSetSemantics {}, size = 32.dp)
         Column(Modifier.weight(1f).padding(end = 2.dp)) {
             BasicText(
                 text = face.name,
