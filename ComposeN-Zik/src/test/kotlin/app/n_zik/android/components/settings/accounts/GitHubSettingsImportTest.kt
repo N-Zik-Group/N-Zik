@@ -18,6 +18,7 @@ import io.mockk.mockkConstructor
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import java.io.File
+import kotlinx.coroutines.Job
 import org.json.JSONObject
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -57,6 +58,48 @@ class GitHubSettingsImportTest {
         GitHubAccount.cancel()
         clearEncryptedPreferencesCache()
         unmockkAll()
+    }
+
+    @Test
+    fun completedAuthorizationReenablesUsageAfterReset() {
+        GitHubAccount.disableUsage(context)
+        assertNull(GitHubAccount.userId(context))
+        assertNull(GitHubAccount.tokenFor(context, 456))
+        assertTrue(secrets("default").contains("githubPublicationSession"))
+
+        val consent = Job()
+        val session = GitHubAccount.SetupSession(456, "active", "new-token", Long.MAX_VALUE, "default")
+        assertTrue(GitHubAccount.saveAuthorizedSession(context, session, consent))
+        assertEquals(456L, GitHubAccount.userId(context))
+        assertEquals("new-token", GitHubAccount.tokenFor(context, 456))
+        assertEquals("new-token", JSONObject(secrets("default").getString("githubPublicationSession", null)).getString("token"))
+    }
+
+    @Test
+    fun cancelledOrSwitchedAuthorizationLeavesUsageDisabled() {
+        GitHubAccount.disableUsage(context)
+        val session = GitHubAccount.SetupSession(456, "active", "new-token", Long.MAX_VALUE, "default")
+        val cancelledConsent = Job().apply { cancel() }
+        assertFalse(GitHubAccount.saveAuthorizedSession(context, session, cancelledConsent))
+
+        setActiveProfile("work", context)
+        assertFalse(GitHubAccount.saveAuthorizedSession(context, session, Job()))
+        assertEquals("work-token", GitHubAccount.tokenFor(context, 123))
+        setActiveProfile("default", context)
+
+        assertNull(GitHubAccount.tokenFor(context, 456))
+        assertEquals("default-token", JSONObject(secrets("default").getString("githubPublicationSession", null)).getString("token"))
+    }
+
+    @Test
+    fun failedSessionWriteLeavesUsageDisabledAndPreservesTheSavedAccount() {
+        GitHubAccount.disableUsage(context)
+        every { profileSecurePrefs(any(), "default") } throws IllegalStateException("Keystore unavailable")
+        val session = GitHubAccount.SetupSession(789, "new-account", "new-token", Long.MAX_VALUE, "default")
+
+        assertFalse(GitHubAccount.saveAuthorizedSession(context, session, Job()))
+        assertNull(GitHubAccount.accountLogin(context))
+        assertEquals("active", JSONObject(identities("default").getString("identity", null)).getString("login"))
     }
 
     @Test

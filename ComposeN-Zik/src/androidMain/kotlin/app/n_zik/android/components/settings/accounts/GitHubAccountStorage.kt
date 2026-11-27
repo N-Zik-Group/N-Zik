@@ -46,13 +46,13 @@ internal class GitHubAccountStorage(
     }
 
     fun save(id: Long, login: String, token: String, expires: Long, profile: String = activeProfile()): Boolean {
-        if (activeProfile() != profile) return false
+        if (activeProfile() != profile || token.isBlank() || expires <= now()) return false
         val identity = checkNotNull(parseIdentity(JSONObject().put("id", id).put("login", login).toString())).toString()
         val credentials = JSONObject().put("id", id).put("token", token).put("expires", expires)
         runCatching {
             encryptedStore(profile).edit().putString("githubPublicationSession", credentials.toString())
                 .putString("githubBackupIdentity", identity).apply()
-        }
+        }.getOrElse { return false }
         identityStore(profile).edit().putString("identity", identity).remove("signedOut")
             .remove("publicationTokenInvalidated").apply()
         cachedSession = CachedSession(profile, id, token, expires)

@@ -1720,3 +1720,7 @@ Settings:
 Settings / Player:
 - fix(player): apply crossfade settings to pending transitions
   - Rearm pending crossfades from current settings and preserve playback and handoffs already in flight.
+
+Settings / Theme Store:
+- fix(settings): resume GitHub usage after confirmed authorization
+  - Restore usage after saving a valid explicit OAuth session and preserve cancellation and profile ownership.

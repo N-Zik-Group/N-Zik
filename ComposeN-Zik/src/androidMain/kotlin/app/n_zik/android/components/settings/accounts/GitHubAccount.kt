@@ -49,6 +49,7 @@ import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.settingsSearchTarget
 import app.n_zik.android.components.ui.screens.profiles.profileSecurePrefs
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.getActiveProfile
@@ -232,14 +233,16 @@ internal object GitHubAccount {
         login.value = accountLogin(context)
     }
 
+    @Synchronized
     internal fun disableUsage(context: Context) {
         cancel()
         context.preferences.edit().putBoolean(GITHUB_ACCOUNT_USAGE_ENABLED_KEY, false).apply()
         read(context)
     }
 
+    @Synchronized
     internal fun resumeSavedAccount(context: Context): Boolean {
-        if (usageEnabled(context)) return false
+        if (usageEnabled(context) || storage(context).login() == null) return false
         context.preferences.edit().putBoolean(GITHUB_ACCOUNT_USAGE_ENABLED_KEY, true).apply()
         read(context)
         return login.value != null
@@ -259,6 +262,7 @@ internal object GitHubAccount {
     fun startSetup(context: Context) =
         authorize(context, expectedId = null, onSetup = installation::prepare)
 
+    @Synchronized
     fun startPublicationAuthorization(context: Context, expectedId: Long?): String? {
         if (!canAuthorize(context)) return null
         val key = publicationAuthorization.begin(getActiveProfile(context))
@@ -270,6 +274,7 @@ internal object GitHubAccount {
         !awaiting.value && !installation.state.value.preparing && installation.state.value.session == null &&
             !OfflineMode.enabled(context)
 
+    @Synchronized
     private fun authorize(
         context: Context,
         expectedId: Long?,
@@ -339,10 +344,18 @@ internal object GitHubAccount {
                     currentCoroutineContext().ensureActive()
                     check(getActiveProfile(app) == profileId)
                     val session = SetupSession(id, handle, token, expires, profileId)
+                    val authorizationJob = checkNotNull(currentCoroutineContext()[Job])
                     if (onSetup != null) {
-                        onSetup(session)
+                        synchronized(this@GitHubAccount) {
+                            if (authorizationJob.isActive && getActiveProfile(app) == profileId) onSetup(session)
+                        }
                     } else {
-                        saveSession(app, session)
+                        if (!saveAuthorizedSession(app, session, authorizationJob)) {
+                            if (authorizationJob.isActive && getActiveProfile(app) == profileId) {
+                                Toaster.e(R.string.github_account_login_failed)
+                            }
+                            break
+                        }
                         Toaster.s(R.string.github_account_connected)
                         publicationRequest?.let { publicationAuthorization.authorize(it, profileId) }
                     }
@@ -360,25 +373,38 @@ internal object GitHubAccount {
         }
     }
 
+    @Synchronized
     fun completeSetup(context: Context, session: SetupSession): Boolean {
-        if (!installation.consume(session)) return false
-        if (getActiveProfile(context) != session.profile) return false
-        saveSession(context.applicationContext, session)
+        if (!installation.consume(session) || getActiveProfile(context) != session.profile) return false
+        val saved = saveSession(context.applicationContext, session)
+        if (!saved) Toaster.e(R.string.github_account_login_failed)
+        return saved
+    }
+
+    // Share the reset and cancellation lock so they can invalidate an in-flight authorization.
+    @Synchronized
+    internal fun saveAuthorizedSession(context: Context, session: SetupSession, authorizationJob: Job): Boolean =
+        authorizationJob.isActive && saveSession(context, session)
+
+    private fun saveSession(context: Context, session: SetupSession): Boolean {
+        if (getActiveProfile(context) != session.profile ||
+            !storage(context).save(session.id, session.login, session.token, session.expires, session.profile) ||
+            getActiveProfile(context) != session.profile
+        ) return false
+
+        profileDataPrefs(context, session.profile).edit().putBoolean(GITHUB_ACCOUNT_USAGE_ENABLED_KEY, true).apply()
+        read(context)
         return true
     }
 
-    private fun saveSession(context: Context, session: SetupSession) {
-        check(getActiveProfile(context) == session.profile)
-        check(storage(context).save(session.id, session.login, session.token, session.expires, session.profile))
-        read(context)
-    }
-
+    @Synchronized
     fun cancel() {
         attempt?.cancel()
         installation.cancel()
         publicationAuthorization.cancel()
     }
 
+    @Synchronized
     fun disconnect(context: Context) {
         cancel()
         storage(context).disconnect()
