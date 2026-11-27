@@ -112,6 +112,14 @@ fun manageDownload(
     context: Context,
     mediaItem: MediaItem,
     downloadState: Boolean = false
+) = manageDownload(context, mediaItem, downloadState, beforeEnqueue = null)
+
+@UnstableApi
+internal fun manageDownload(
+    context: Context,
+    mediaItem: MediaItem,
+    downloadState: Boolean,
+    beforeEnqueue: (() -> Unit)?,
 ) {
 
     if (mediaItem.isLocal) return
@@ -121,7 +129,8 @@ fun manageDownload(
     }
     else {
         if (context.isNetworkAvailable) {
-            MyDownloadHelper.addDownload(context = context, mediaItem = mediaItem)
+            if (beforeEnqueue == null) MyDownloadHelper.addDownload(context, mediaItem)
+            else MyDownloadHelper.addDownload(context, mediaItem, beforeEnqueue)
         }
     }
 

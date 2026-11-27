@@ -9,6 +9,7 @@ import app.n_zik.android.components.ui.observeSwipeActionGesture
 import androidx.compose.runtime.rememberUpdatedState
 
 import androidx.annotation.OptIn
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,7 +33,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,16 +48,14 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
-import androidx.media3.exoplayer.offline.DownloadService
 import app.n_zik.innertube.Innertube
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.colorPalette
 import app.n_zik.android.enums.AlbumSwipeAction
 import app.n_zik.android.enums.DownloadedStateMedia
 import app.n_zik.android.enums.PlaylistSwipeAction
 import app.n_zik.android.enums.QueueSwipeAction
-import app.n_zik.android.download.services.MyDownloadService
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.albumSwipeLeftActionKey
 import app.n_zik.android.utils.albumSwipeRightActionKey
@@ -69,10 +67,8 @@ import app.n_zik.android.utils.playlistSwipeRightActionKey
 import app.n_zik.android.utils.queueSwipeLeftActionKey
 import app.n_zik.android.utils.queueSwipeRightActionKey
 import app.n_zik.android.utils.rememberPreference
-import kotlinx.coroutines.CoroutineScope
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import app.n_zik.android.core.sync.YouTubeSync
@@ -204,28 +200,8 @@ fun SwipeableQueueItem(
     val downloadedStateMedia = downloadedStateMediaParam ?: if (!mediaItem.isLocal) downloadedStateMedia(mediaItem.mediaId)
     else DownloadedStateMedia.DOWNLOADED
 
-    val onDownloadButtonClick: () -> Unit = {
-        if (
-            (
-                    (downloadState == Download.STATE_DOWNLOADING
-                    || downloadState == Download.STATE_QUEUED
-                    || downloadState == Download.STATE_RESTARTING
-                    )  && downloadedStateMedia == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-            ) ||
-            (
-                    downloadedStateMedia == DownloadedStateMedia.DOWNLOADED
-                   || downloadedStateMedia == DownloadedStateMedia.CACHED_AND_DOWNLOADED
-            )
-        ) {
-            DownloadService.sendRemoveDownload(
-                context,
-                MyDownloadService::class.java,
-                mediaItem.mediaId,
-                false
-            )
-        } else {
-            onDownload()
-        }
+    val onDownloadButtonClick = {
+        toggleSwipeDownload(context, mediaItem, downloadState, downloadedStateMedia, onDownload)
     }
 
     val songLikeState by if (likeState != null) {
@@ -248,10 +224,12 @@ fun SwipeableQueueItem(
         }
     }
 
-    val queueSwipeLeftAction = swipeLeftActionParam
-        ?: rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue).value
-    val queueSwipeRightAction = swipeRightActionParam
-        ?: rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext).value
+    val queueSwipeLeftAction = (swipeLeftActionParam
+        ?: rememberPreference(queueSwipeLeftActionKey, QueueSwipeAction.RemoveFromQueue).value)
+        .takeUnless { mediaItem.isLocal && it == QueueSwipeAction.Download } ?: QueueSwipeAction.NoAction
+    val queueSwipeRightAction = (swipeRightActionParam
+        ?: rememberPreference(queueSwipeRightActionKey, QueueSwipeAction.PlayNext).value)
+        .takeUnless { mediaItem.isLocal && it == QueueSwipeAction.Download } ?: QueueSwipeAction.NoAction
 
     fun getActionCallback(actionName: QueueSwipeAction): () -> Unit {
         return when (actionName) {
@@ -331,40 +309,15 @@ fun SwipeablePlaylistItem(
         }
     }
 
-    val playlistSwipeLeftAction = swipeLeftActionParam
-        ?: rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite).value
-    val playlistSwipeRightAction = swipeRightActionParam
-        ?: rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext).value
+    val playlistSwipeLeftAction = (swipeLeftActionParam
+        ?: rememberPreference(playlistSwipeLeftActionKey, PlaylistSwipeAction.Favourite).value)
+        .takeUnless { mediaItem.isLocal && it == PlaylistSwipeAction.Download } ?: PlaylistSwipeAction.NoAction
+    val playlistSwipeRightAction = (swipeRightActionParam
+        ?: rememberPreference(playlistSwipeRightActionKey, PlaylistSwipeAction.PlayNext).value)
+        .takeUnless { mediaItem.isLocal && it == PlaylistSwipeAction.Download } ?: PlaylistSwipeAction.NoAction
 
-    val onDownloadToggle: () -> Unit = {
-        if (
-            (downloadState == Download.STATE_DOWNLOADING
-            || downloadState == Download.STATE_QUEUED
-            || downloadState == Download.STATE_RESTARTING)
-            && downloadedStateMedia == DownloadedStateMedia.NOT_CACHED_OR_DOWNLOADED
-        ) {
-            // Cancel download in progress
-            DownloadService.sendRemoveDownload(
-                context,
-                MyDownloadService::class.java,
-                mediaItem.mediaId,
-                false
-            )
-        } else if (
-            downloadedStateMedia == DownloadedStateMedia.DOWNLOADED
-            || downloadedStateMedia == DownloadedStateMedia.CACHED_AND_DOWNLOADED
-        ) {
-            // Delete downloaded file
-            DownloadService.sendRemoveDownload(
-                context,
-                MyDownloadService::class.java,
-                mediaItem.mediaId,
-                false
-            )
-        } else {
-            // Start download
-            onDownload()
-        }
+    val onDownloadToggle = {
+        toggleSwipeDownload(context, mediaItem, downloadState, downloadedStateMedia, onDownload)
     }
 
     fun getActionCallback(actionName: PlaylistSwipeAction): () -> Unit {
@@ -381,13 +334,13 @@ fun SwipeablePlaylistItem(
 
     SwipeableContent(
         modifier = modifier,
-        swipeToLeftIcon =  playlistSwipeLeftAction.getStateIcon(
+        swipeToLeftIcon = playlistSwipeLeftAction.getStateIcon(
             songLikeState,
             downloadState,
             downloadedStateMedia,
             showDisliked
         ),
-        swipeToRightIcon =  playlistSwipeRightAction.getStateIcon(
+        swipeToRightIcon = playlistSwipeRightAction.getStateIcon(
             songLikeState,
             downloadState,
             downloadedStateMedia,
@@ -399,6 +352,24 @@ fun SwipeablePlaylistItem(
         content()
     }
 
+}
+
+/** Routes start and removal through the same download admission and ordering as other controls. */
+@OptIn(UnstableApi::class)
+internal fun toggleSwipeDownload(
+    context: Context,
+    mediaItem: MediaItem,
+    downloadState: Int,
+    downloadedState: DownloadedStateMedia,
+    start: () -> Unit,
+) {
+    if (mediaItem.isLocal) return
+    val removable = downloadState == Download.STATE_DOWNLOADING ||
+        downloadState == Download.STATE_QUEUED ||
+        downloadState == Download.STATE_RESTARTING ||
+        downloadedState == DownloadedStateMedia.DOWNLOADED ||
+        downloadedState == DownloadedStateMedia.CACHED_AND_DOWNLOADED
+    if (removable) MyDownloadHelper.removeDownload(context, mediaItem) else start()
 }
 
 @OptIn(UnstableApi::class)

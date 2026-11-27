@@ -1800,3 +1800,7 @@ Settings:
 Playlists:
 - fix(playlist): preserve cache for rejected bulk downloads
   - Prepare accepted requests only, keep completed downloads and retry failed requests.
+
+Playlists:
+- fix(playlist): use ordered download actions for swipe
+  - Route cancellation and removal through the common helper and hide download gestures on local tracks.
