@@ -39,7 +39,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
-import app.n_zik.android.cleanPrefix
+import app.n_zik.android.components.menu.menuMetadataValue
 import app.n_zik.android.enums.DislikeMode
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.NavRoutes
@@ -222,7 +222,7 @@ class LocalArtistItemMenu private constructor(
                     modifier = Modifier.weight(1f)
                 ) {
                     MenuMetadataText(
-                        text = cleanPrefix(title ?: ""),
+                        text = menuMetadataValue(title) ?: stringResource(R.string.metadata_unknown_artist),
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
                         ),

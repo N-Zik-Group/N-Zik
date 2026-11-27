@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.menu.MenuMetadataText
+import app.n_zik.android.components.menu.menuMetadataValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -175,6 +176,7 @@ class OnlineArtistItemMenu private constructor(
     private fun ArtistItemDisplay(
         entity: Artist,
         subscribersCount: String?,
+        loading: Boolean,
         modifier: Modifier = Modifier
     ) {
         val context = LocalContext.current
@@ -225,7 +227,8 @@ class OnlineArtistItemMenu private constructor(
                     modifier = Modifier.weight(1f)
                 ) {
                     MenuMetadataText(
-                        text = entity.cleanName(),
+                        text = menuMetadataValue(entity.name)
+                            ?: if (loading) "" else stringResource(R.string.metadata_unknown_artist),
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
                         ),
@@ -440,6 +443,7 @@ class OnlineArtistItemMenu private constructor(
             ArtistItemDisplay(
                 entity = entity,
                 subscribersCount = artistPage?.artist?.subscribersCountText ?: listedArtist?.subscribersCountText,
+                loading = isFetching && !offlineMode,
             )
 
             if (menuStyle == MenuStyle.List)

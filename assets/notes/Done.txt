@@ -2000,3 +2000,7 @@ Toolbars:
 Android Auto:
 - fix(auto): avoid reading song credits for empty browse results
   - Skip the metadata query on empty lists and keep the invalidation tests on the artist queries used by the browser.
+
+Fix:
+- fix(menu): show an unknown artist when the title is missing
+  - Use the translated unknown artist label when the artist title is unavailable.
