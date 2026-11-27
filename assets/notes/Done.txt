@@ -2075,3 +2075,24 @@ Settings:
 - fix(settings): reflect live notification actions and incomplete YouTube sessions
   - Apply notification button changes without a restart prompt.
   - Show incomplete sessions as invalid while keeping account recovery and sign-out available.
+
+Playback:
+- fix(player): animate the download action on source changes
+  - Fade the icon and resize its horizontal slot in the full player and mini-player.
+  - Keep the previous icon and its surface contrast during exit, while blocking taps.
+
+Menus and dialogs:
+- fix(menu): keep stop radio available offline
+  - Preserve the active radio action in the album toolbar and in Artist, Song, Player and Video menus.
+- fix(dialog): disable invalid Listen Together room actions
+  - Enable Create and Join after their required fields pass validation.
+
+Settings:
+- fix(notification): deduplicate configured player commands
+  - Publish each playback command once, including for existing profiles with identical configured slots.
+
+Playlists:
+- fix(playlist): hide download actions without remote tracks
+  - Hide those actions for device-only playlists and when a mixed playlist search or selection contains only device files.
+- fix(auto): use the saved database sort on legacy favorites routes
+  - Use mobile defaults for legacy browsing and apply the saved database-supported order during playback.
