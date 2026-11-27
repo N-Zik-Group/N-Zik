@@ -52,13 +52,14 @@ interface SongTable {
     @Query("""
         SELECT DISTINCT * 
         FROM Song 
-        WHERE totalPlayTimeMs >= :excludeHidden
+        WHERE CASE WHEN :dislikedOnly THEN likedAt < 0 ELSE totalPlayTimeMs >= :excludeHidden END
         ORDER BY ROWID 
         LIMIT :limit
     """)
     fun all(
         limit: Int = Int.MAX_VALUE,
-        excludeHidden: Boolean = false
+        excludeHidden: Boolean = false,
+        dislikedOnly: Boolean = false,
     ): Flow<List<Song>>
 
     /**
@@ -410,21 +411,21 @@ interface SongTable {
     @Query("""
         SELECT DISTINCT * 
         FROM Song 
-        WHERE totalPlayTimeMs >= :excludeHidden
+        WHERE CASE WHEN :dislikedOnly THEN likedAt < 0 ELSE totalPlayTimeMs >= :excludeHidden END
         ORDER BY 
             CASE WHEN position = -1 THEN 1 ELSE 0 END ASC,
             CASE WHEN position = -1 THEN ROWID ELSE position END ASC
         LIMIT :limit
     """)
-    fun sortAllByPosition( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>>
+    fun sortAllByPosition(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>>
 
-    fun sortAllByPlayTime( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>> =
-        all( limit, excludeHidden ).map { list ->
+    fun sortAllByPlayTime(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>> =
+        all(limit, excludeHidden, dislikedOnly).map { list ->
             list.sortedBy( Song::totalPlayTimeMs )
         }
 
-    fun sortAllByRelativePlayTime( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>> =
-        all( limit, excludeHidden ).map { list ->
+    fun sortAllByRelativePlayTime(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>> =
+        all(limit, excludeHidden, dislikedOnly).map { list ->
             list.sortedBy( Song::relativePlayTime )
         }
 
@@ -432,15 +433,15 @@ interface SongTable {
         SELECT DISTINCT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl, S.likedAt, S.totalPlayTimeMs, S.position, S.isYoutubeSong, COUNT(E.songId) as playCount
         FROM Song S
         LEFT JOIN Event E ON E.songId = S.id
-        WHERE S.totalPlayTimeMs >= :excludeHidden
+        WHERE CASE WHEN :dislikedOnly THEN S.likedAt < 0 ELSE S.totalPlayTimeMs >= :excludeHidden END
         GROUP BY S.id
         ORDER BY playCount ASC
         LIMIT :limit
     """)
-    fun sortAllByPlayCount( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>>
+    fun sortAllByPlayCount(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>>
 
-    fun sortAllByTitle( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>> =
-        all( limit, excludeHidden ).map { list ->
+    fun sortAllByTitle(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>> =
+        all(limit, excludeHidden, dislikedOnly).map { list ->
             list.sortedBy( Song::cleanTitle )
         }
 
@@ -448,24 +449,24 @@ interface SongTable {
         SELECT DISTINCT S.* 
         FROM Song S 
         LEFT JOIN Event E ON E.songId = S.id 
-        WHERE totalPlayTimeMs >= :excludeHidden
+        WHERE CASE WHEN :dislikedOnly THEN S.likedAt < 0 ELSE S.totalPlayTimeMs >= :excludeHidden END
         ORDER BY E.timestamp ASC
         LIMIT :limit
     """)
-    fun sortAllByDatePlayed( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>>
+    fun sortAllByDatePlayed(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>>
 
-    fun sortAllByLikedAt( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>> =
-        all( limit, excludeHidden ).map { list ->
+    fun sortAllByLikedAt(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>> =
+        all(limit, excludeHidden, dislikedOnly).map { list ->
             list.sortedBy( Song::likedAt )
         }
 
-    fun sortAllByArtist( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>> =
-        all( limit, excludeHidden ).map { list ->
+    fun sortAllByArtist(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>> =
+        all(limit, excludeHidden, dislikedOnly).map { list ->
             list.sortedBy( Song::cleanArtistsText )
         }
 
-    fun sortAllByDuration( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>> =
-        all( limit, excludeHidden ).map { list ->
+    fun sortAllByDuration(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>> =
+        all(limit, excludeHidden, dislikedOnly).map { list ->
             list.sortedBy {
                 durationToMillis( it.durationText ?: "0:0" )
             }
@@ -476,7 +477,7 @@ interface SongTable {
         FROM Song S
         LEFT JOIN SongAlbumMap sam ON sam.songId = S.id
         LEFT JOIN Album A ON A.id = sam.albumId
-        WHERE totalPlayTimeMs >= :excludeHidden
+        WHERE CASE WHEN :dislikedOnly THEN S.likedAt < 0 ELSE S.totalPlayTimeMs >= :excludeHidden END
         ORDER BY 
             CASE 
                 WHEN A.title LIKE '$MODIFIED_PREFIX%' THEN SUBSTR(A.title, LENGTH('$MODIFIED_PREFIX') + 1)
@@ -484,7 +485,7 @@ interface SongTable {
             END
         LIMIT :limit
     """)
-    fun sortAllByAlbumName( limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false ): Flow<List<Song>>
+    fun sortAllByAlbumName(limit: Int = Int.MAX_VALUE, excludeHidden: Boolean = false, dislikedOnly: Boolean = false): Flow<List<Song>>
 
     /**
      * All songs sorted by [sortBy] (a [SongSortBy] property) and [sortOrder]
@@ -494,25 +495,27 @@ interface SongTable {
      * @param sortBy which song property to sort by
      * @param sortOrder the sort direction
      * @param excludeHidden whether to exclude hidden songs
+     * @param dislikedOnly use the disliked collection, including hidden songs, as the source
      */
     fun sortAll(
         sortBy: SongSortBy,
         sortOrder: SortOrder,
         limit: Int = Int.MAX_VALUE,
-        excludeHidden: Boolean = false
+        excludeHidden: Boolean = false,
+        dislikedOnly: Boolean = false,
     ): Flow<List<Song>> = when( sortBy ){
-        SongSortBy.PlayTime         -> sortAllByPlayTime( limit, excludeHidden )
-        SongSortBy.RelativePlayTime -> sortAllByRelativePlayTime( limit, excludeHidden )
-        SongSortBy.PlayCount        -> sortAllByPlayCount( limit, excludeHidden )
-        SongSortBy.Title            -> sortAllByTitle( limit, excludeHidden )
-        SongSortBy.DateAdded        -> all( limit, excludeHidden )      // Already sorted by ROWID
-        SongSortBy.DatePlayed       -> sortAllByDatePlayed( limit, excludeHidden )
-        SongSortBy.DateLiked        -> sortAllByLikedAt( limit, excludeHidden )
-        SongSortBy.Artist           -> sortAllByArtist( limit, excludeHidden )
-        SongSortBy.Duration         -> sortAllByDuration( limit, excludeHidden )
-        SongSortBy.AlbumName        -> sortAllByAlbumName( limit, excludeHidden )
-        SongSortBy.Custom           -> sortAllByPosition( limit, excludeHidden )
-        SongSortBy.Downloaded       -> sortAllByTitle( limit, excludeHidden ) // Handled in-memory
+        SongSortBy.PlayTime         -> sortAllByPlayTime(limit, excludeHidden, dislikedOnly)
+        SongSortBy.RelativePlayTime -> sortAllByRelativePlayTime(limit, excludeHidden, dislikedOnly)
+        SongSortBy.PlayCount        -> sortAllByPlayCount(limit, excludeHidden, dislikedOnly)
+        SongSortBy.Title            -> sortAllByTitle(limit, excludeHidden, dislikedOnly)
+        SongSortBy.DateAdded        -> all(limit, excludeHidden, dislikedOnly) // Already sorted by ROWID
+        SongSortBy.DatePlayed       -> sortAllByDatePlayed(limit, excludeHidden, dislikedOnly)
+        SongSortBy.DateLiked        -> sortAllByLikedAt(limit, excludeHidden, dislikedOnly)
+        SongSortBy.Artist           -> sortAllByArtist(limit, excludeHidden, dislikedOnly)
+        SongSortBy.Duration         -> sortAllByDuration(limit, excludeHidden, dislikedOnly)
+        SongSortBy.AlbumName        -> sortAllByAlbumName(limit, excludeHidden, dislikedOnly)
+        SongSortBy.Custom           -> sortAllByPosition(limit, excludeHidden, dislikedOnly)
+        SongSortBy.Downloaded       -> sortAllByTitle(limit, excludeHidden, dislikedOnly) // Handled in-memory
     }.map( sortOrder::applyTo )
     //</editor-fold>
 

@@ -1,7 +1,6 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.compose.persist.persist
-import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.compactPlayTimeLabel
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewDemo
@@ -233,21 +232,6 @@ fun HomeSongs(
 
     var isLoading by remember { mutableStateOf(true) }
 
-    // Ensure "Downloaded" sort is not visible in Downloaded/Offline tabs
-    LaunchedEffect( builtInPlaylist ) {
-        if (builtInPlaylist == BuiltInPlaylist.Downloaded || builtInPlaylist == BuiltInPlaylist.Offline) {
-            val prefix = when (builtInPlaylist) {
-                BuiltInPlaylist.Offline -> "off"
-                BuiltInPlaylist.Downloaded -> "dl"
-                else -> ""
-            }
-            if (prefix.isNotEmpty()) {
-                val prefs = context.preferences
-                prefs.edit().putBoolean("${prefix}_sort_Downloaded_visible", false).apply()
-            }
-        }
-    }
-
     LaunchedEffect( itemSelector.isActive ) {
         if( itemSelector.isActive )
             positionLock.isFirstIcon = true
@@ -271,24 +255,25 @@ fun HomeSongs(
         }
         isLoading = true
 
+        fun List<Song>.sortByDownload(): List<Song> =
+            if (songSort.sortOrder == SortOrder.Ascending) sortedByDescending { it.id in downloadedIds }
+            else sortedBy { it.id in downloadedIds }
+
         val retrievedSongs = when( builtInPlaylist ) {
-            BuiltInPlaylist.All -> {
+            BuiltInPlaylist.All, BuiltInPlaylist.Disliked -> {
+                val dislikedOnly = builtInPlaylist == BuiltInPlaylist.Disliked
                 if (songSort.sortBy == SongSortBy.Downloaded) {
                     Database.songTable
-                        .sortAll( SongSortBy.Title, SortOrder.Ascending, excludeHidden = hiddenSongs.isHiddenExcluded() )
-                        .map { list ->
-                            list.let { filtered ->
-                                if (songSort.sortOrder == SortOrder.Ascending) {
-                                    filtered.sortedByDescending { it.id in downloadedIds }
-                                } else {
-                                    filtered.sortedBy { it.id in downloadedIds }
-                                }
-                            }
-                        }
+                        .sortAll(
+                            SongSortBy.Title, SortOrder.Ascending,
+                            excludeHidden = hiddenSongs.isHiddenExcluded(), dislikedOnly = dislikedOnly,
+                        )
+                        .map { it.sortByDownload() }
                 } else {
-                    Database.songTable
-                        .sortAll( songSort.sortBy, songSort.sortOrder, excludeHidden = hiddenSongs.isHiddenExcluded() )
-
+                    Database.songTable.sortAll(
+                        songSort.sortBy, songSort.sortOrder,
+                        excludeHidden = hiddenSongs.isHiddenExcluded(), dislikedOnly = dislikedOnly,
+                    )
                 }
             }
 
@@ -301,23 +286,22 @@ fun HomeSongs(
             }
 
             BuiltInPlaylist.Offline -> Database.formatTable
-                .sortAllWithSongs( songSort.sortBy, songSort.sortOrder, excludeHidden = hiddenSongs.isHiddenExcluded() )
+                .sortAllWithSongs(
+                    songSort.sortBy,
+                    if (songSort.sortBy == SongSortBy.Downloaded) SortOrder.Ascending else songSort.sortOrder,
+                    excludeHidden = hiddenSongs.isHiddenExcluded(),
+                )
                 .map { list ->
-                    list.fastFilter {
+                    val cachedSongs = list.fastFilter {
                         binder?.cache?.hasCachedStream(it.song.id, it.format.contentLength) == true
                     }.map( FormatWithSong::song )
+                    if (songSort.sortBy == SongSortBy.Downloaded) cachedSongs.sortByDownload() else cachedSongs
                 }
 
             BuiltInPlaylist.Favorites -> {
                 if (songSort.sortBy == SongSortBy.Downloaded) {
                     Database.songTable.sortFavorites( SongSortBy.Title, SortOrder.Ascending )
-                        .map { list ->
-                            if (songSort.sortOrder == SortOrder.Ascending) {
-                                list.sortedByDescending { it.id in downloadedIds }
-                            } else {
-                                list.sortedBy { it.id in downloadedIds }
-                            }
-                        }
+                        .map { it.sortByDownload() }
                 } else {
                     Database.songTable.sortFavorites( songSort.sortBy, songSort.sortOrder )
                 }
@@ -361,9 +345,6 @@ fun HomeSongs(
 
             BuiltInPlaylist.OnDevice -> flowOf( emptyList() )
 
-            BuiltInPlaylist.Disliked -> {
-                Database.songTable.allDisliked()
-            }
         }
 
         val selectedPlaylist = builtInPlaylist

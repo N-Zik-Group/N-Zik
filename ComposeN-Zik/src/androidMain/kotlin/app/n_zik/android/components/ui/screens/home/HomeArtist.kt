@@ -175,6 +175,7 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.components.menu.artist.LocalArtistItemMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.dialog.settings.HomeArtistsSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeArtistsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.visibleHomeToolbarIds
 import app.n_zik.android.artistThumbnailShape
@@ -223,10 +224,26 @@ fun HomeArtists(
     val itemSelector = ItemSelector<Artist>()
 
     val sort = when( artistType ) {
-        ArtistsType.Favorites -> Sort( HOME_ARTISTS_FAVORITES_SORT_BY, HOME_ARTISTS_FAVORITES_SORT_ORDER, homeArtistsFavoritesSortMenuOrderKey, "art_fav" )
-        ArtistsType.OnDevice -> Sort( HOME_ON_DEVICE_ARTISTS_SORT_BY, HOME_ON_DEVICE_ARTISTS_SORT_ORDER, homeArtistsOnDeviceSortMenuOrderKey, "art_dev" )
-        ArtistsType.Library -> Sort( HOME_ARTISTS_LIBRARY_SORT_BY, HOME_ARTISTS_LIBRARY_SORT_ORDER, homeArtistsLibrarySortMenuOrderKey, "art_lib" )
-        ArtistsType.Disliked -> Sort( HOME_ARTISTS_DISLIKED_SORT_BY, HOME_ARTISTS_DISLIKED_SORT_ORDER, homeArtistsDislikedSortMenuOrderKey, "art_dis" )
+        ArtistsType.Favorites -> Sort(
+            HOME_ARTISTS_FAVORITES_SORT_BY, HOME_ARTISTS_FAVORITES_SORT_ORDER,
+            homeArtistsFavoritesSortMenuOrderKey, "art_fav",
+            optionIds = HomeArtistsSortSettingsDialog.menuIds(homeArtistsFavoritesSortMenuOrderKey),
+        )
+        ArtistsType.OnDevice -> Sort(
+            HOME_ON_DEVICE_ARTISTS_SORT_BY, HOME_ON_DEVICE_ARTISTS_SORT_ORDER,
+            homeArtistsOnDeviceSortMenuOrderKey, "art_dev",
+            optionIds = HomeArtistsSortSettingsDialog.menuIds(homeArtistsOnDeviceSortMenuOrderKey),
+        )
+        ArtistsType.Library -> Sort(
+            HOME_ARTISTS_LIBRARY_SORT_BY, HOME_ARTISTS_LIBRARY_SORT_ORDER,
+            homeArtistsLibrarySortMenuOrderKey, "art_lib",
+            optionIds = HomeArtistsSortSettingsDialog.menuIds(homeArtistsLibrarySortMenuOrderKey),
+        )
+        ArtistsType.Disliked -> Sort(
+            HOME_ARTISTS_DISLIKED_SORT_BY, HOME_ARTISTS_DISLIKED_SORT_ORDER,
+            homeArtistsDislikedSortMenuOrderKey, "art_dis",
+            optionIds = HomeArtistsSortSettingsDialog.menuIds(homeArtistsDislikedSortMenuOrderKey),
+        )
     }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
 

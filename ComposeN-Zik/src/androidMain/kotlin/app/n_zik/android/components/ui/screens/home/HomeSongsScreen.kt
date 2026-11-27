@@ -167,6 +167,7 @@ import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.Sort
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
+import app.n_zik.android.components.dialog.settings.HomeSongsSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeSongsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
@@ -522,14 +523,33 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         isSelectionActive = { itemSelector.isActive }
     )
 
+    val sortMenuIds = HomeSongsSortSettingsDialog.tabAvailableIds.getValue(builtInPlaylist)
     val songSort = when( builtInPlaylist ) {
-        BuiltInPlaylist.Favorites -> Sort( Preference.HOME_SONGS_FAVORITES_SORT_BY, Preference.HOME_SONGS_FAVORITES_SORT_ORDER, homeSongsFavoritesSortMenuOrderKey, "favs" )
-        BuiltInPlaylist.Offline -> Sort( Preference.HOME_SONGS_OFFLINE_SORT_BY, Preference.HOME_SONGS_OFFLINE_SORT_ORDER, homeSongsCachedSortMenuOrderKey, "off" )
-        BuiltInPlaylist.Downloaded -> Sort( Preference.HOME_SONGS_DOWNLOADED_SORT_BY, Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER, homeSongsDownloadedSortMenuOrderKey, "dl" )
+        BuiltInPlaylist.Favorites -> Sort(
+            Preference.HOME_SONGS_FAVORITES_SORT_BY, Preference.HOME_SONGS_FAVORITES_SORT_ORDER,
+            homeSongsFavoritesSortMenuOrderKey, "favs", optionIds = sortMenuIds,
+        )
+        BuiltInPlaylist.Offline -> Sort(
+            Preference.HOME_SONGS_OFFLINE_SORT_BY, Preference.HOME_SONGS_OFFLINE_SORT_ORDER,
+            homeSongsCachedSortMenuOrderKey, "off", optionIds = sortMenuIds,
+        )
+        BuiltInPlaylist.Downloaded -> Sort(
+            Preference.HOME_SONGS_DOWNLOADED_SORT_BY, Preference.HOME_SONGS_DOWNLOADED_SORT_ORDER,
+            homeSongsDownloadedSortMenuOrderKey, "dl", optionIds = sortMenuIds,
+        )
         BuiltInPlaylist.Top -> Sort( Preference.HOME_SONGS_TOP_SORT_BY, Preference.HOME_SONGS_TOP_SORT_ORDER, homeSongsTopSortMenuOrderKey, "top" )
-        BuiltInPlaylist.OnDevice -> Sort( Preference.HOME_ON_DEVICE_SONGS_SORT_BY, Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER, homeSongsOnDeviceSortMenuOrderKey, "dev" )
-        BuiltInPlaylist.Disliked -> Sort( Preference.HOME_SONGS_DISLIKED_SORT_BY, Preference.HOME_SONGS_DISLIKED_SORT_ORDER, homeSongsDislikedSortMenuOrderKey, "disliked" )
-        else -> Sort( Preference.HOME_SONGS_SORT_BY, Preference.HOME_SONGS_SORT_ORDER, homeSongsAllSortMenuOrderKey, "all" )
+        BuiltInPlaylist.OnDevice -> Sort(
+            Preference.HOME_ON_DEVICE_SONGS_SORT_BY, Preference.HOME_ON_DEVICE_SONGS_SORT_ORDER,
+            homeSongsOnDeviceSortMenuOrderKey, "dev", optionIds = sortMenuIds,
+        )
+        BuiltInPlaylist.Disliked -> Sort(
+            Preference.HOME_SONGS_DISLIKED_SORT_BY, Preference.HOME_SONGS_DISLIKED_SORT_ORDER,
+            homeSongsDislikedSortMenuOrderKey, "disliked", optionIds = sortMenuIds,
+        )
+        BuiltInPlaylist.All -> Sort(
+            Preference.HOME_SONGS_SORT_BY, Preference.HOME_SONGS_SORT_ORDER,
+            homeSongsAllSortMenuOrderKey, "all", optionIds = sortMenuIds,
+        )
     }
     val positionLock = remember( songSort.sortOrder ) { PositionLock(songSort.sortOrder) }
     val topPlaylists = PeriodSelector( Preference.HOME_SONGS_TOP_PLAYLIST_PERIOD, homeSongsTopSortMenuOrderKey, "top" )

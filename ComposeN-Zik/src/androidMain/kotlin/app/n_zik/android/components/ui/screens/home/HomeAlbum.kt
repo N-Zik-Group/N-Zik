@@ -171,6 +171,7 @@ import app.n_zik.android.ui.components.themed.Enqueue
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
+import app.n_zik.android.components.dialog.settings.HomeAlbumsSortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeAlbumsToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.visibleHomeToolbarIds
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -211,11 +212,35 @@ fun HomeAlbums(
     val search = Search.forHome()
     val itemSelector = ItemSelector<Album>()
 
+    val sortOptionId: (AlbumSortBy) -> String = { option ->
+        // The existing menu preferences use AlbumName outside the on-device view.
+        if (albumType != AlbumsType.OnDevice && option == AlbumSortBy.Title) "AlbumName" else option.name
+    }
     val sort = when( albumType ) {
-        AlbumsType.Favorites -> Sort( HOME_ALBUMS_FAVORITES_SORT_BY, HOME_ALBUMS_FAVORITES_SORT_ORDER, homeAlbumsFavoritesSortMenuOrderKey, "alb_fav" )
-        AlbumsType.OnDevice -> Sort( HOME_ON_DEVICE_ALBUMS_SORT_BY, HOME_ON_DEVICE_ALBUMS_SORT_ORDER, homeAlbumsOnDeviceSortMenuOrderKey, "alb_dev" )
-        AlbumsType.Library -> Sort( HOME_ALBUMS_LIBRARY_SORT_BY, HOME_ALBUMS_LIBRARY_SORT_ORDER, homeAlbumsLibrarySortMenuOrderKey, "alb_lib" )
-        AlbumsType.Disliked -> Sort( HOME_ALBUMS_DISLIKED_SORT_BY, HOME_ALBUMS_DISLIKED_SORT_ORDER, homeAlbumsDislikedSortMenuOrderKey, "alb_dis" )
+        AlbumsType.Favorites -> Sort(
+            HOME_ALBUMS_FAVORITES_SORT_BY, HOME_ALBUMS_FAVORITES_SORT_ORDER,
+            homeAlbumsFavoritesSortMenuOrderKey, "alb_fav",
+            optionIds = HomeAlbumsSortSettingsDialog.menuIds(homeAlbumsFavoritesSortMenuOrderKey),
+            optionId = sortOptionId,
+        )
+        AlbumsType.OnDevice -> Sort(
+            HOME_ON_DEVICE_ALBUMS_SORT_BY, HOME_ON_DEVICE_ALBUMS_SORT_ORDER,
+            homeAlbumsOnDeviceSortMenuOrderKey, "alb_dev",
+            optionIds = HomeAlbumsSortSettingsDialog.menuIds(homeAlbumsOnDeviceSortMenuOrderKey),
+            optionId = sortOptionId,
+        )
+        AlbumsType.Library -> Sort(
+            HOME_ALBUMS_LIBRARY_SORT_BY, HOME_ALBUMS_LIBRARY_SORT_ORDER,
+            homeAlbumsLibrarySortMenuOrderKey, "alb_lib",
+            optionIds = HomeAlbumsSortSettingsDialog.menuIds(homeAlbumsLibrarySortMenuOrderKey),
+            optionId = sortOptionId,
+        )
+        AlbumsType.Disliked -> Sort(
+            HOME_ALBUMS_DISLIKED_SORT_BY, HOME_ALBUMS_DISLIKED_SORT_ORDER,
+            homeAlbumsDislikedSortMenuOrderKey, "alb_dis",
+            optionIds = HomeAlbumsSortSettingsDialog.menuIds(homeAlbumsDislikedSortMenuOrderKey),
+            optionId = sortOptionId,
+        )
     }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
 

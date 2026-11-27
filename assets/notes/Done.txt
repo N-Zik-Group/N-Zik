@@ -1240,3 +1240,7 @@ Settings:
 Settings:
 - fix(dialog): highlight the selected value like sorting menus
   - Use the current accent on the selected radio and a subtle background on its row.
+
+Menus:
+- fix(library): honor configurable sort options across views
+  - Use matching sort choices for List and Grid, keep the historical album key, and apply sorting to disliked and cached songs.

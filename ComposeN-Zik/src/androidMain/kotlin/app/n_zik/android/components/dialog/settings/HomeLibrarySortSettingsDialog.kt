@@ -56,6 +56,9 @@ object HomeLibrarySortSettingsDialog : ContentFramedDialog {
 
     private val tabs = LibraryTab.entries
 
+    internal fun menuIds(orderKey: String): List<String> =
+        tabs.first { getSortOrderKey(it) == orderKey }.availableIds
+
     private fun getPrefix(tab: LibraryTab): String = when (tab) {
         LibraryTab.Playlist -> "lib_pl"
         LibraryTab.OnDevice -> "lib_dev"

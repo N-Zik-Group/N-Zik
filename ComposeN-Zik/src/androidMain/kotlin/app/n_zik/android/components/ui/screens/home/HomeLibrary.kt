@@ -182,6 +182,7 @@ import app.n_zik.android.components.tab.ImportPlaylistsMenu
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.typography
 import kotlinx.coroutines.withContext
+import app.n_zik.android.components.dialog.settings.HomeLibrarySortSettingsDialog
 import app.n_zik.android.components.dialog.settings.HomeLibraryToolbarSettingsDialog
 import app.n_zik.android.components.dialog.settings.visibleHomeToolbarIds
 import app.n_zik.android.core.rewind.RewindPlaylists
@@ -260,12 +261,32 @@ fun HomeLibrary(
     LaunchedEffect(libraryScope) { itemSelector.isActive = false }
 
     val sort = when( playlistType ) {
-        PlaylistsType.OnDevice -> Sort( HOME_ON_DEVICE_PLAYLISTS_SORT_BY, HOME_ON_DEVICE_PLAYLISTS_SORT_ORDER, homeLibraryOnDeviceSortMenuOrderKey, "lib_dev" )
-        PlaylistsType.Playlist -> Sort( HOME_LIBRARY_PLAYLIST_SORT_BY, HOME_LIBRARY_PLAYLIST_SORT_ORDER, homeLibraryPlaylistSortMenuOrderKey, "lib_pl" )
-        PlaylistsType.YTPlaylist -> Sort( HOME_LIBRARY_YT_PLAYLIST_SORT_BY, HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER, homeLibraryYTPlaylistSortMenuOrderKey, "lib_yt" )
+        PlaylistsType.OnDevice -> Sort(
+            HOME_ON_DEVICE_PLAYLISTS_SORT_BY, HOME_ON_DEVICE_PLAYLISTS_SORT_ORDER,
+            homeLibraryOnDeviceSortMenuOrderKey, "lib_dev",
+            optionIds = HomeLibrarySortSettingsDialog.menuIds(homeLibraryOnDeviceSortMenuOrderKey),
+        )
+        PlaylistsType.Playlist -> Sort(
+            HOME_LIBRARY_PLAYLIST_SORT_BY, HOME_LIBRARY_PLAYLIST_SORT_ORDER,
+            homeLibraryPlaylistSortMenuOrderKey, "lib_pl",
+            optionIds = HomeLibrarySortSettingsDialog.menuIds(homeLibraryPlaylistSortMenuOrderKey),
+        )
+        PlaylistsType.YTPlaylist -> Sort(
+            HOME_LIBRARY_YT_PLAYLIST_SORT_BY, HOME_LIBRARY_YT_PLAYLIST_SORT_ORDER,
+            homeLibraryYTPlaylistSortMenuOrderKey, "lib_yt",
+            optionIds = HomeLibrarySortSettingsDialog.menuIds(homeLibraryYTPlaylistSortMenuOrderKey),
+        )
 
-        PlaylistsType.PinnedPlaylist -> Sort( HOME_LIBRARY_PINNED_PLAYLIST_SORT_BY, HOME_LIBRARY_PINNED_PLAYLIST_SORT_ORDER, homeLibraryPinnedPlaylistSortMenuOrderKey, "lib_pin" )
-        PlaylistsType.MonthlyPlaylist -> Sort( HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY, HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER, homeLibraryMonthlyPlaylistSortMenuOrderKey, "lib_rw" )
+        PlaylistsType.PinnedPlaylist -> Sort(
+            HOME_LIBRARY_PINNED_PLAYLIST_SORT_BY, HOME_LIBRARY_PINNED_PLAYLIST_SORT_ORDER,
+            homeLibraryPinnedPlaylistSortMenuOrderKey, "lib_pin",
+            optionIds = HomeLibrarySortSettingsDialog.menuIds(homeLibraryPinnedPlaylistSortMenuOrderKey),
+        )
+        PlaylistsType.MonthlyPlaylist -> Sort(
+            HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_BY, HOME_LIBRARY_MONTHLY_PLAYLIST_SORT_ORDER,
+            homeLibraryMonthlyPlaylistSortMenuOrderKey, "lib_rw",
+            optionIds = HomeLibrarySortSettingsDialog.menuIds(homeLibraryMonthlyPlaylistSortMenuOrderKey),
+        )
     }
     val positionLock = remember( sort.sortOrder ) { PositionLock(sort.sortOrder) }
     val itemSize = ItemSize.init( HOME_LIBRARY_ITEM_SIZE )

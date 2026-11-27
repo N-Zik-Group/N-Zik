@@ -53,11 +53,11 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
 
     private val topSortIds = listOf("Today", "OneWeek", "OneMonth", "ThreeMonths", "SixMonths", "OneYear", "All")
 
-    // Match each home tab's sort choices, including Custom and the cached/downloaded exclusions.
+    // The cache can contain both streamed and downloaded songs, unlike the Downloaded tab.
     internal val tabAvailableIds = mapOf(
         BuiltInPlaylist.All to songSortIds,
         BuiltInPlaylist.Favorites to songSortIds,
-        BuiltInPlaylist.Offline to songSortIds.filter { it != "Downloaded" },
+        BuiltInPlaylist.Offline to songSortIds,
         BuiltInPlaylist.Downloaded to songSortIds.filter { it != "Downloaded" },
         BuiltInPlaylist.Top to topSortIds,
         BuiltInPlaylist.OnDevice to onDeviceSortIds,
@@ -285,13 +285,7 @@ object HomeSongsSortSettingsDialog : ContentFramedDialog {
             val key = getSortOrderKey(tab)
             val available = tabAvailableIds[tab] ?: songSortIds
             available.forEach { id ->
-                // "Downloaded" sort should not be visible in Downloaded/Offline tabs
-                val isVisible = if (id == "Downloaded" && (tab == BuiltInPlaylist.Downloaded || tab == BuiltInPlaylist.Offline)) {
-                    false
-                } else {
-                    true
-                }
-                edit.putBoolean("${tp}_sort_${id}_visible", isVisible)
+                edit.putBoolean("${tp}_sort_${id}_visible", true)
             }
             edit.putString(key, serializeOrder(available))
         }

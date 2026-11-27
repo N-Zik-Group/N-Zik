@@ -53,6 +53,9 @@ object HomeArtistsSortSettingsDialog : ContentFramedDialog {
 
     private val tabs = ArtistTab.entries
 
+    internal fun menuIds(orderKey: String): List<String> =
+        tabs.first { getSortOrderKey(it) == orderKey }.availableIds
+
     internal fun portableLists(): Map<String, PortableControlList> = tabs.associate { tab ->
         val prefix = getTabPrefix(tab)
         prefix to PortableControlList(getSortOrderKey(tab), tab.availableIds, "${prefix}_sort_", "_visible")

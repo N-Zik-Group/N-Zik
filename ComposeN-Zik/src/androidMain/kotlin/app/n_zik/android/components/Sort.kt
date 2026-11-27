@@ -59,7 +59,9 @@ open class Sort<T> (
     sortOrderState: MutableState<SortOrder>,
     styleState: MutableState<MenuStyle>,
     private val sortMenuOrderKey: String? = null,
-    private val sortMenuPrefix: String? = null
+    private val sortMenuPrefix: String? = null,
+    private val optionIds: List<String>? = null,
+    private val optionId: (T) -> String = { it.name },
 ): MenuIcon, Clickable, Menu where T : Enum<T>, T : TextView {
 
     companion object {
@@ -68,14 +70,18 @@ open class Sort<T> (
             sortByPrefKey: Preference.Key<T>,
             sortOrderPrefKey: Preference.Key<SortOrder>,
             sortMenuOrderKey: String? = null,
-            sortMenuPrefix: String? = null
+            sortMenuPrefix: String? = null,
+            optionIds: List<String>? = null,
+            noinline optionId: (T) -> String = { it.name },
         ): Sort<T> where T : Enum<T>, T : TextView = Sort(
             LocalMenuState.current,
             Preference.remember( sortByPrefKey ),
             Preference.remember( sortOrderPrefKey ),
             rememberPreference( menuStyleKey, MenuStyle.List ),
             sortMenuOrderKey,
-            sortMenuPrefix
+            sortMenuPrefix,
+            optionIds,
+            optionId,
         )
     }
 
@@ -114,7 +120,8 @@ open class Sort<T> (
         val savedOrderJson = remember(prefs, sortMenuOrderKey) {
             prefs.getString(sortMenuOrderKey, "") ?: ""
         }
-        val allConstants = getEnumConstants()
+        val constantsById = getEnumConstants().associateBy(optionId)
+        val availableIds = optionIds ?: constantsById.keys.toList()
 
         val savedIds = remember(savedOrderJson) {
             if (savedOrderJson.isBlank()) null
@@ -130,32 +137,15 @@ open class Sort<T> (
             } catch (_: Exception) { null }
         }
 
-        val visibleIds = remember(allConstants, prefs, sortMenuPrefix) {
-            allConstants.map { it.name }.filter { id ->
+        val visibleIds = remember(availableIds, prefs, sortMenuPrefix) {
+            availableIds.filter { id ->
                 prefs.getBoolean("${sortMenuPrefix}_sort_${id}_visible", true)
             }.toSet()
         }
 
-        if (savedIds == null) {
-            return allConstants.filter { it.name in visibleIds }
+        return (savedIds.orEmpty() + availableIds).distinct().mapNotNull { id ->
+            constantsById[id].takeIf { id in visibleIds }
         }
-
-        val enumMap: Map<String, T> = remember(allConstants) { allConstants.associateBy { it.name } }
-        val result = mutableListOf<T>()
-        val added = mutableSetOf<String>()
-
-        for (id in savedIds) {
-            if (id in visibleIds && id in enumMap && added.add(id)) {
-                result.add(enumMap[id] ?: continue)
-            }
-        }
-        for (id in allConstants.map { it.name }) {
-            if (id in visibleIds && added.add(id)) {
-                result.add(enumMap[id] ?: continue)
-            }
-        }
-
-        return result
     }
 
     @Composable
