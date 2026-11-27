@@ -37,6 +37,7 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.isGlassMotionAllowed
+import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.components.search.SearchMotionDurationMillis
 import app.n_zik.android.components.search.UnifiedSearchBar
@@ -52,7 +53,6 @@ class Search private constructor(
     private val lazyListState: LazyListState?,
     private val lazyGridState: LazyGridState?,
     private val persistent: Boolean = false,
-    private val onOpen: () -> Unit = {},
 ): MenuIcon, Descriptive{
 
     companion object {
@@ -93,17 +93,7 @@ class Search private constructor(
         )
 
         @Composable
-        internal fun detail(): Search {
-            val menu = LocalMenuState.current
-            return Search(
-                rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) },
-                rememberSaveable { mutableStateOf(false) },
-                remember { mutableStateOf(false) },
-                null,
-                null,
-                onOpen = menu::hide,
-            )
-        }
+        internal fun detail() = forHome()
 
         /** Hosts may retain input across nested destinations without restoring keyboard focus. */
         @Composable
@@ -150,7 +140,21 @@ class Search private constructor(
     override fun onShortClick() {
         isVisible = !isVisible
         isFocused = isVisible
-        if (isVisible) onOpen()
+    }
+
+    @Composable
+    override fun ListMenuItem() = overflowEntry().ListMenuItem()
+
+    @Composable
+    override fun GridMenuItem() = overflowEntry().GridMenuItem()
+
+    @Composable
+    private fun overflowEntry(): MenuIcon {
+        val menu = LocalMenuState.current
+        return withMenuClick {
+            onShortClick()
+            menu.hide()
+        }
     }
 
     internal fun clearAndClose() {

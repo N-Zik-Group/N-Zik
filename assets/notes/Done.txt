@@ -1248,3 +1248,7 @@ Menus:
 Menus:
 - fix(menu): center drag handles on untitled sheets
   - Give the handle equal top and bottom spacing in titleless List and Grid menus.
+
+Menus:
+- fix(menu): reveal searches opened from overflow
+  - Close the overflow sheet after activating search on the underlying screen.
