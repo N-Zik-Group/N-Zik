@@ -24,7 +24,6 @@ import timber.log.Timber
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.enums.ExoPlayerMinTimeForEvent
 import app.n_zik.android.utils.exoPlayerMinTimeForEventKey
-import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.pauseListenHistoryKey
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
@@ -42,13 +41,6 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.core.database.Database
-import app.n_zik.android.core.profiles.waveformsDir
-import app.n_zik.android.core.profiles.ProfileDataItem
-import app.n_zik.android.core.profiles.isLegacyStorageShared
-import app.n_zik.android.core.profiles.profileStorageIdentity
-import app.n_zik.android.core.backup.DatabaseRestoreJournal
-import app.n_zik.android.core.rescue.ProfileResetSnapshot
-import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 
 /** Owns history preferences and the existing history actions. */
@@ -170,20 +162,10 @@ internal fun DataHistoryCard(
                     confirmText = stringResource(R.string.common_action_clear),
                     onDismiss = { confirmListenClear = false },
                     onConfirm = {
-                        val profile = getActiveProfile(context)
                         NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch(start = CoroutineStart.UNDISPATCHED) {
                             try {
                                 Database.awaitWriteBatch<Unit> {
                                     transaction { eventTable.deleteAll() }
-                                    DatabaseRestoreJournal.withProfileStorageMutation(context) {
-                                        if (profile == getActiveProfile(context) && profileStorageIdentity(context, profile) != null &&
-                                            !isLegacyStorageShared(context, profile, ProfileDataItem.WAVEFORMS)
-                                        ) {
-                                            val root = context.filesDir.canonicalFile
-                                            ProfileResetSnapshot.deleteVerifiedTree(root.resolve(waveformsDir(context, profile).name))
-                                        }
-                                    }
-                                    WaveformExtractor.refreshSignal.tryEmit(System.currentTimeMillis())
                                 }
                                 Toaster.done()
                             } catch (error: CancellationException) {

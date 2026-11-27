@@ -1532,3 +1532,7 @@ Menus:
 Menus:
 - fix(menu): announce removal for active bookmarks
   - Use the existing Remove bookmark label for active playlist bookmarks.
+
+Settings:
+- fix(history): keep waveform cache when clearing listens
+  - Delete playback events and leave waveform cleanup to its dedicated storage action.
