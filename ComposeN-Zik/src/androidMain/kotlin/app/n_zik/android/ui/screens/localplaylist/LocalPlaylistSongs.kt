@@ -65,7 +65,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.offline.Download
 import androidx.navigation.NavController
 import com.github.doyaaaaaken.kotlincsv.client.KotlinCsvExperimental
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
@@ -111,7 +110,6 @@ import app.n_zik.android.components.glass.GlassArea
 import app.n_zik.android.components.glass.GlassControlOverflowColumn
 import app.n_zik.android.components.glass.GlassToolbarButtons
 import app.n_zik.android.components.glass.GlassToolbarColumn
-import app.n_zik.android.components.glass.GlassToolbarLoading
 import app.n_zik.android.components.glass.GlassToolbarRow
 import app.n_zik.android.components.glass.glassGlobalIndication
 import app.n_zik.android.components.glass.rememberGlassSettings
@@ -163,6 +161,7 @@ import app.n_zik.android.core.database.editStoredPlaylistMembership
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.core.ondevice.DeviceLibraryResults
 import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.ondevice.deviceLibraryEnabled
@@ -656,23 +655,25 @@ fun LocalPlaylistSongs(
     }
     var isRecommendationsLoading by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect( isRecommendationEnabled ) {
-        if( !isRecommendationEnabled ) {
-            relatedSongs = emptyMap()
+    val networkAvailable by NetworkQualityHelper.isNetworkAvailableComposable(context)
+    val hasRecommendationSeeds = remember(items) { items.any { !it.isLocal } }
+    val canStartRecommendations = !onDeviceOnly && !offlineMode && networkAvailable && hasRecommendationSeeds
+    val showRecommendationButton = isRecommendationEnabled || canStartRecommendations
+
+    LaunchedEffect(isRecommendationEnabled, canStartRecommendations) {
+        relatedSongs = emptyMap()
+        if (!isRecommendationEnabled || !canStartRecommendations) {
             isRecommendationsLoading = false
             return@LaunchedEffect
         }
 
-        while( items.isEmpty() )
-            delay( 100L )
-
         isRecommendationsLoading = true
-
-        relatedSongs = loadLocalPlaylistRecommendations(items, recommendationsNumber)
-        isRecommendationsLoading = false
-        
-        // Enable position lock
-        positionLock.isFirstIcon = true
+        try {
+            relatedSongs = loadLocalPlaylistRecommendations(items, recommendationsNumber)
+            positionLock.isFirstIcon = true
+        } finally {
+            isRecommendationsLoading = false
+        }
     }
     //</editor-fold>
     val query = search.filterQuery
@@ -992,25 +993,18 @@ fun LocalPlaylistSongs(
                     }
 
                     val recommendationButton: @Composable () -> Unit = {
-                        if (isRecommendationsLoading) {
-                            if (!GlassToolbarLoading()) InlineCircularLoader(
-                                modifier = Modifier.size(24.dp),
-                                color = colorPalette().text,
-                            )
-                        } else {
-                            HeaderIconButton(
-                                icon = R.drawable.smart_shuffle,
-                                enabled = true,
-                                color = if (isRecommendationEnabled) colorPalette().text else colorPalette().textDisabled,
-                                modifier = Modifier.clip(uiRoundnessShape()),
-                                        onClick = {
-                                            isRecommendationEnabled = !isRecommendationEnabled
-                                        },
-                                        onLongClick = {
-                                            Toaster.i( R.string.recommendations_action_smart_shuffle )
-                                        }
-                            )
-                        }
+                        HeaderIconButton(
+                            icon = R.drawable.smart_shuffle,
+                            enabled = showRecommendationButton,
+                            color = if (isRecommendationEnabled) colorPalette().text else colorPalette().textDisabled,
+                            modifier = Modifier.clip(uiRoundnessShape()),
+                            onClick = {
+                                if (isRecommendationEnabled || canStartRecommendations) {
+                                    isRecommendationEnabled = !isRecommendationEnabled
+                                }
+                            },
+                            onLongClick = { Toaster.i(R.string.recommendations_action_smart_shuffle) },
+                        )
                     }
 
                     Column(
@@ -1019,8 +1013,8 @@ fun LocalPlaylistSongs(
                         modifier = Modifier.padding(end = 12.dp)
                     ) {
                         if (glassActions) {
-                            GlassToolbarColumn(actionCount = 2, settings = glassSettings) {
-                                if (!onDeviceOnly) recommendationButton()
+                            GlassToolbarColumn(actionCount = if (showRecommendationButton) 2 else 1, settings = glassSettings) {
+                                if (showRecommendationButton) recommendationButton()
                                 shuffle.ToolBarButton()
                             }
                             if (canBookmarkPlaylist(playlist)) {
@@ -1034,7 +1028,7 @@ fun LocalPlaylistSongs(
                                 modifier = Modifier.size(48.dp), // Standard IconButton size
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (!onDeviceOnly) recommendationButton()
+                                if (showRecommendationButton) recommendationButton()
                             }
                             Spacer(modifier = Modifier.height(10.dp))
                             shuffle.ToolBarButton()
