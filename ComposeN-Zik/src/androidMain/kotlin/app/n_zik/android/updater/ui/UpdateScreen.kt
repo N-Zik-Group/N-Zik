@@ -600,6 +600,8 @@ private fun UpdateScreenContent(navController: NavController, settingsTarget: St
                                         }
                                     )
                                     if (BuildConfig.IS_AUTOUPDATE) {
+                                        val canChangeDownload = downloadState !is UpdateDownloadManager.DownloadState.Starting &&
+                                            downloadState !is UpdateDownloadManager.DownloadState.Downloading
                                         val currentVersionStr = BuildConfig.VERSION_NAME
                                         val currentDownloadUrl = Updater.redownloadUrl(BuildConfig.APP_NAME, currentVersionStr)
 
@@ -611,6 +613,7 @@ private fun UpdateScreenContent(navController: NavController, settingsTarget: St
                                                 iconId = R.drawable.download,
                                                 customText = downloadText,
                                                 colors = colorsFor(UpdaterSettingsOption.DownloadCurrentVersion),
+                                                enabled = canChangeDownload,
                                             ) {
                                                 dismissOptions()
                                                 try {
@@ -632,8 +635,7 @@ private fun UpdateScreenContent(navController: NavController, settingsTarget: St
                                                 R.drawable.trash,
                                                 R.string.recovery_clear_cache,
                                                 colors = colorsFor(UpdaterSettingsOption.ClearCache),
-                                                enabled = downloadState !is UpdateDownloadManager.DownloadState.Starting &&
-                                                    downloadState !is UpdateDownloadManager.DownloadState.Downloading,
+                                                enabled = canChangeDownload,
                                             ) {
                                                 dismissOptions()
                                                 NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {

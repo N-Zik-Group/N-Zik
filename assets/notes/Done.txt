@@ -1324,3 +1324,7 @@ Settings:
 Menus:
 - fix(menu): preserve the parent scroll when returning
   - Keep independent List and Grid positions for each menu entry and retain the existing transitions.
+
+Menus:
+- fix(update): keep active downloads from being replaced
+  - Disable transfer replacement and cache clearing while a download starts or runs.
