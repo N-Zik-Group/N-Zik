@@ -78,9 +78,8 @@ internal fun rememberCollectionAddAction(
         onDismiss = { setChoiceOpen(false) },
         onImport = { openImport { setChoiceOpen(false) } },
         onAdd = {
-            val hasAlternative = canImportCollection || exportAvailable
-            if (menuEntry == null || !hasAlternative) setChoiceOpen(false)
-            val onReturn = if (menuEntry == null && hasAlternative) {
+            if (menuEntry == null) setChoiceOpen(false)
+            val onReturn = if (menuEntry == null) {
                 { setChoiceOpen(true) }
             } else null
             openPicker(onReturn)

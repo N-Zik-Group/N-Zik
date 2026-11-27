@@ -91,7 +91,6 @@ internal open class CustomToolbarSettingsDialog(
                 itemId(surface, action), action.icon, stringResource(action.label),
                 surface.visibilityKey(action), surface.defaultVisible(prefs, action),
                 description = when {
-                    surface == ToolbarSurface.QUEUE && action in queuePlaylistActions -> stringResource(R.string.playlist_actions_title)
                     action in surface.overflowActions -> stringResource(R.string.common_menu_label)
                     else -> null
                 },

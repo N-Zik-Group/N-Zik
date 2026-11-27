@@ -1200,7 +1200,7 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                         onAdd = {
                             val request = playlistActions
                             if (request?.parentMenu == null) playlistActions = null
-                            val onReturn = if (request?.parentMenu == null && request?.canImportFiles == true) {
+                            val onReturn = if (request != null && request.parentMenu == null) {
                                 { playlistActions = request }
                             } else null
                             request?.openPicker?.invoke(onReturn)
