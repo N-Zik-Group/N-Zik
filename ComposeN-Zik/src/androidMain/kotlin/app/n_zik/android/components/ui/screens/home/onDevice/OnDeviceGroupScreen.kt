@@ -45,6 +45,7 @@ import app.n_zik.android.ui.items.SongItemPlaceholder
 import app.n_zik.android.components.glass.GlassActionCellHeight
 import app.n_zik.android.components.glass.GlassStandaloneActionSize
 import app.n_zik.android.components.glass.PageButton
+import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.ui.CollectionButtonToolbar
 import app.n_zik.android.components.settings.ui.ToolbarAction as ToolbarControl
 import app.n_zik.android.components.settings.ui.ToolbarSurface
@@ -84,6 +85,7 @@ import app.n_zik.android.enums.PlayerPosition
 import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.models.Song
 import app.n_zik.android.typography
+import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.onOverlay
 import app.n_zik.android.ui.styling.overlay
@@ -286,25 +288,27 @@ private fun OnDeviceGroupScreen(
     }
 
     val itemSelector = ItemSelector<Song>()
+    val menuState = LocalMenuState.current
     fun actionTracks() = itemSelector.actionTargets(matchingTracks, Song::id, Song::id)
     fun hasSelection() = actionTracks().isNotEmpty()
     val shuffle = SongShuffler(::actionTracks)
-    val playNext = PlayNext {
-        val songs = actionTracks().ifEmpty { return@PlayNext }
-        itemSelector.isActive = false
+    fun queueSelection(playNext: Boolean) {
+        val player = binder?.player ?: return
+        val songs = actionTracks().ifEmpty { return }
+        val endSelection = itemSelector.captureSelectionCompletion()
+        val menuKey = menuState.transitionKey
         scope.launch {
             val items = withContext(NzikDispatchers.DATA) { songs.map(Song::asMediaItem) }
-            binder?.player?.addNextOffMain(items, context)
+            val queued = if (playNext) player.addNextOffMain(items, context)
+                else player.enqueueOffMain(items, context)
+            if (queued) {
+                endSelection()
+                if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+            }
         }
     }
-    val enqueue = Enqueue {
-        val songs = actionTracks().ifEmpty { return@Enqueue }
-        itemSelector.isActive = false
-        scope.launch {
-            val items = withContext(NzikDispatchers.DATA) { songs.map(Song::asMediaItem) }
-            binder?.player?.enqueueOffMain(items, context)
-        }
-    }
+    val playNext = PlayNext(dismissOnClick = false) { queueSelection(playNext = true) }
+    val enqueue = Enqueue(dismissOnClick = false) { queueSelection(playNext = false) }
 
     val artworkPainter = ImageCacheFactory.Painter(artwork)
     val isArtist = placeholder == R.drawable.artist

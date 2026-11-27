@@ -43,6 +43,7 @@ import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -127,6 +128,7 @@ import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.network.OfflineMode
+import app.n_zik.android.core.ondevice.observeDeviceLibrary
 import app.n_zik.android.core.rewind.RewindPlaylists
 import app.n_zik.android.playback.services.automotive.models.ArtworkRevisions
 import app.n_zik.android.surfaceColor
@@ -399,10 +401,18 @@ class LocalPlaylistItemMenu private constructor(
     @Composable
     override fun MenuComponent() {
         if (!ObserveEntityMenuSnapshot(snapshot, { Database.playlistTable.findById(it) }, menuState::hide)) return
+        val context = LocalContext.current
         val observedSongs = remember(snapshot) { Database.songPlaylistMapTable.allSongsOf(snapshot.id) }
             .collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA).value
-        SideEffect { songs = if (onDevice) observedSongs?.filter { it.isLocal } else observedSongs }
-        val context = LocalContext.current
+        val projectedSongs = if (onDevice) {
+            val deviceSongIds by remember(context, snapshot) {
+                context.observeDeviceLibrary().map { it.songIds }
+            }.collectAsStateWithLifecycle<Set<String>?>(null, context = NzikDispatchers.DATA)
+            remember(observedSongs, deviceSongIds) {
+                deviceSongIds?.let { ids -> observedSongs?.filter { it.isLocal && it.id in ids } }
+            }
+        } else observedSongs
+        SideEffect { songs = projectedSongs }
         val observedOfflineMode by OfflineMode.rememberEnabled()
         offlineMode = observedOfflineMode
         val binder = LocalPlayerServiceBinder.current
