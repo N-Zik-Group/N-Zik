@@ -15,8 +15,10 @@ import app.n_zik.android.core.profiles.isCurrentProcessStorageProfile
 import app.n_zik.android.core.profiles.profileDataPrefs
 import app.n_zik.android.core.profiles.profileStorageIdentity
 import app.n_zik.android.core.profiles.settingsProfileFor
+import app.n_zik.android.enums.DownloadQualityFormat
 
 internal const val DOWNLOAD_REMOVE_TOKEN_EXTRA = "app.n_zik.android.download.REMOVE_TOKEN"
+internal const val DOWNLOAD_REPLACEMENT_QUALITY_EXTRA = "app.n_zik.android.download.REPLACEMENT_QUALITY"
 
 @UnstableApi
 internal data class ProfileDownloadCommands(
@@ -39,10 +41,20 @@ internal data class ProfileDownloadCommands(
 
     fun stamp(intent: Intent): Intent = Intent(intent).setData(identityUri())
 
-    fun sendAdd(context: Context, request: DownloadRequest): Result<Unit> = runCatching {
+    fun sendAdd(context: Context, request: DownloadRequest): Result<Unit> =
+        sendAdd(context, request, replacementQuality = null)
+
+    fun sendReplacement(
+        context: Context,
+        request: DownloadRequest,
+        quality: DownloadQualityFormat,
+    ): Result<Unit> = sendAdd(context, request, replacementQuality = quality.name)
+
+    private fun sendAdd(context: Context, request: DownloadRequest, replacementQuality: String?): Result<Unit> = runCatching {
         check(this == capture(context)) { "The download profile changed" }
         val intent = DownloadService.buildAddDownloadIntent(context, MyDownloadService::class.java, request, true)
             .setData(identityUri())
+        if (replacementQuality != null) intent.putExtra(DOWNLOAD_REPLACEMENT_QUALITY_EXTRA, replacementQuality)
         try {
             ContextCompat.startForegroundService(context, intent)
         } catch (_: IllegalStateException) {

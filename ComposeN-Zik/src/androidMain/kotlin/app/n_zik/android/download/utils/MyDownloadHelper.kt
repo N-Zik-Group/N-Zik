@@ -124,6 +124,7 @@ object MyDownloadHelper {
 
     private val downloadCommandLocks = mutableMapOf<Pair<ProfileDownloadCommands, String>, DownloadCommandLock>()
     private val pendingDownloadAdds = mutableMapOf<Pair<ProfileDownloadCommands, String>, String>()
+    private val pendingQualityReplacements = mutableMapOf<Pair<ProfileDownloadCommands, String>, String>()
     private data class PendingRemoval(val token: String, val previousAdd: String?)
 
     private val pendingDownloadRemovals = mutableMapOf<Pair<ProfileDownloadCommands, String>, PendingRemoval>()
@@ -703,6 +704,37 @@ object MyDownloadHelper {
     }
 
     @Synchronized
+    internal fun reserveQualityReplacement(owner: ProfileDownloadCommands, request: DownloadRequest): Boolean {
+        val token = downloadAddToken(request.data) ?: return false
+        val key = owner to request.id
+        if (key in pendingDownloadAdds || key in pendingDownloadRemovals ||
+            key in pendingQualityReplacements || !isSongDownloaded(request.id)
+        ) return false
+        pendingDownloadAdds[key] = token
+        pendingQualityReplacements[key] = token
+        return true
+    }
+
+    /** Consumes the authorization once, even if Android subsequently redelivers the intent. */
+    @Synchronized
+    internal fun admitQualityReplacement(owner: ProfileDownloadCommands, request: DownloadRequest): Boolean {
+        val token = downloadAddToken(request.data) ?: return false
+        val key = owner to request.id
+        if (pendingDownloadAdds[key] != token || key in pendingDownloadRemovals || !isSongDownloaded(request.id)) return false
+        return pendingQualityReplacements.remove(key, token)
+    }
+
+    @Synchronized
+    internal fun releaseRejectedQualityReplacement(request: DownloadRequest): Boolean {
+        val token = downloadAddToken(request.data) ?: return false
+        val key = pendingQualityReplacements.entries.firstOrNull { it.key.second == request.id && it.value == token }?.key
+            ?: return false
+        pendingQualityReplacements.remove(key)
+        pendingDownloadAdds.remove(key, token)
+        return true
+    }
+
+    @Synchronized
     internal fun releaseDownloadAdd(request: DownloadRequest) {
         val token = downloadAddToken(request.data) ?: return
         pendingDownloadAdds.entries.removeAll { it.key.second == request.id && it.value == token }
@@ -713,6 +745,7 @@ object MyDownloadHelper {
         mediaItem: MediaItem,
         owner: ProfileDownloadCommands,
         skipExisting: Boolean = false,
+        replacementQuality: DownloadQualityFormat? = null,
     ): Boolean = downloadPreparationSemaphore.withPermit {
         if (owner != ProfileDownloadCommands.capture(context)) return@withPermit false
         if (skipExisting && isDownloadAlreadyRequested(owner, mediaItem.mediaId)) return@withPermit false
@@ -734,10 +767,20 @@ object MyDownloadHelper {
             .setData(encodeDownloadDisplayName(notificationTitle, token))
             .build()
 
-        if (!reserveDownloadAdd(owner, mediaItem.mediaId, token, skipExisting)) return@withPermit false
+        val reserved = if (replacementQuality == null) {
+            reserveDownloadAdd(owner, mediaItem.mediaId, token, skipExisting)
+        } else {
+            reserveQualityReplacement(owner, downloadRequest)
+        }
+        if (!reserved) return@withPermit false
         var accepted = false
         try {
-            val error = scheduleDownloadRequest(owner, context, downloadRequest).exceptionOrNull()
+            val submission = if (replacementQuality == null) {
+                scheduleDownloadRequest(owner, context, downloadRequest)
+            } else {
+                owner.sendReplacement(context, downloadRequest, replacementQuality)
+            }
+            val error = submission.exceptionOrNull()
             if (error is CancellationException) throw error
             if (error != null) {
                 Timber.tag("MyDownloadHelper").e(error, "Unable to schedule download")
@@ -747,7 +790,10 @@ object MyDownloadHelper {
             accepted = true
             true
         } finally {
-            if (!accepted) releaseDownloadAdd(downloadRequest)
+            if (!accepted) {
+                if (replacementQuality == null) releaseDownloadAdd(downloadRequest)
+                else releaseRejectedQualityReplacement(downloadRequest)
+            }
         }
     }
 
@@ -834,59 +880,69 @@ object MyDownloadHelper {
      * [downloadQualityFormat]. A NULL tracking value (download made before quality tracking
      * existed) counts as non-compliant.
      */
-    private suspend fun nonCompliantDownloadedSongIds(): List<String> =
-        withContext( NzikDispatchers.DATA ) {
-            val trackedIds = trackedCompletedSongIds()
-            if ( trackedIds.isEmpty() ) return@withContext emptyList()
+    internal data class QualityRefresh(
+        val owner: ProfileDownloadCommands,
+        val quality: DownloadQualityFormat,
+        val songIds: List<String>,
+    )
 
-            Database.formatTable.findNonCompliantSongIds( trackedIds, downloadQualityFormat.name )
+    internal suspend fun prepareQualityRefresh(context: Context): QualityRefresh? =
+        withContext(NzikDispatchers.DATA) {
+            val owner = ProfileDownloadCommands.capture(context) ?: return@withContext null
+            val quality = downloadQualityFormat
+            val trackedIds = trackedCompletedSongIds()
+            val targets = if (trackedIds.isEmpty()) emptyList() else
+                Database.formatTable.findNonCompliantSongIds(trackedIds, quality.name)
+            if (owner == ProfileDownloadCommands.capture(context) && quality == downloadQualityFormat) {
+                QualityRefresh(owner, quality, targets)
+            } else null
         }
 
     /**
-     * @return the number of completed downloads that [updateDownloads] would re-download.
+     * Submits only the confirmed tracks. The service admits removal and re-add together
+     * after checking that the profile, quality and network are still valid.
      */
-    suspend fun countNonCompliantDownloads(): Int =
-        withContext( NzikDispatchers.DATA ) {
-            val trackedIds = trackedCompletedSongIds()
-            if ( trackedIds.isEmpty() ) return@withContext 0
-
-            Database.formatTable.countNonCompliantDownloaded( trackedIds, downloadQualityFormat.name )
+    internal suspend fun updateDownloads(context: Context, refresh: QualityRefresh) {
+        if (!isNetworkConnected(context)) {
+            Toaster.noInternet()
+            return
         }
+        val (owner, quality, targets) = refresh
+        if (owner != ProfileDownloadCommands.capture(context) || quality != downloadQualityFormat || owner.isPaused(context)) {
+            Toaster.e(R.string.downloads_failed)
+            return
+        }
+        if (targets.isEmpty()) return
 
-    /**
-     * Re-downloads every completed download that does not match [downloadQualityFormat].
-     *
-     * Each target is removed then re-added sequentially in the same coroutine: the remove
-     * intent must reach [MyDownloadService] before the add intent for the same id, because
-     * media3 rejects an add targeting a download that is not in
-     * [Download.STATE_REMOVING] or [Download.STATE_FAILED]. Batch counters drive the
-     * existing progress notification, and the download path records the new quality on
-     * each re-downloaded song.
-     */
-    suspend fun updateDownloads(context: Context) {
-        val owner = ProfileDownloadCommands.capture(context) ?: return
-        val targets = nonCompliantDownloadedSongIds()
-        if ( targets.isEmpty() ) return
+        Timber.tag("MyDownloadHelper").i("updateDownloads: re-downloading ${targets.size} downloads with $quality")
+        startBatchDownload(targets.size)
 
-        Timber.tag("MyDownloadHelper").i("updateDownloads: re-downloading ${targets.size} downloads with $downloadQualityFormat")
-        startBatchDownload( targets.size )
-
-        targets.forEach { songId ->
-            val mediaItem = withDownloadCommand(owner, songId) {
-                if (owner != ProfileDownloadCommands.capture(context)) return@withDownloadCommand null
-                // A stream URL cached under the previous quality must not be reused by the re-download.
-                songUrlCache.invalidate(songId)
-                val item = Database.songTable.findByIdDirect(songId)?.asMediaItem
-                    ?: MediaItem.Builder()
-                        .setMediaId(songId)
-                        .setUri(Uri.parse(ExternalUris.youtubeMusic(songId)))
-                        .build()
-
-                removeDownloadInternal(context, songId, owner)
-                prepareAndScheduleDownload(context, item, owner)
-                item
-            } ?: return
-            preloadDownloadMetadata(context, mediaItem, owner)
+        var submitted = 0
+        try {
+            targets.forEach { songId ->
+                if (!isNetworkConnected(context)) {
+                    Toaster.noInternet()
+                    return
+                }
+                if (owner != ProfileDownloadCommands.capture(context) || quality != downloadQualityFormat) {
+                    Toaster.e(R.string.downloads_failed)
+                    return
+                }
+                val mediaItem = withDownloadCommand(owner, songId) {
+                    if (owner != ProfileDownloadCommands.capture(context)) return@withDownloadCommand null
+                    val item = Database.songTable.findByIdDirect(songId)?.asMediaItem
+                        ?: MediaItem.Builder()
+                            .setMediaId(songId)
+                            .setUri(Uri.parse(ExternalUris.youtubeMusic(songId)))
+                            .build()
+                    songUrlCache.invalidate(songId)
+                    item.takeIf { prepareAndScheduleDownload(context, item, owner, replacementQuality = quality) }
+                } ?: return@forEach
+                submitted++
+                preloadDownloadMetadata(context, mediaItem, owner)
+            }
+        } finally {
+            if (submitted == 0) resetBatch() else skipBatchCompleted(targets.size - submitted)
         }
     }
 

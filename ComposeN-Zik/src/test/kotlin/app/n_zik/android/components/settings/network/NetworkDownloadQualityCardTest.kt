@@ -19,6 +19,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.rememberNavController
 import app.n_zik.android.components.tab.Search
 import androidx.test.core.app.ApplicationProvider
@@ -33,6 +34,8 @@ import app.n_zik.android.Dependencies
 import app.n_zik.android.MainApplication
 import app.n_zik.android.R
 import app.n_zik.android.core.coil.ImageCacheFactory
+import app.n_zik.android.core.network.fullOfflineModeKey
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
 import app.n_zik.android.enums.AudioQualityFormat
@@ -50,6 +53,8 @@ import org.robolectric.annotation.Config
 import org.robolectric.Shadows
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.coVerify
 import io.mockk.unmockkAll
 import java.time.Duration
 
@@ -163,6 +168,19 @@ class NetworkDownloadQualityCardTest {
         composeRule.onNodeWithText(context.getString(R.string.audio_quality_format)).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.settings_network_image_quality_label)).assertDoesNotExist()
         assertEquals(before, context.preferences.all)
+    }
+
+    @Test fun `refresh does not prepare a replacement or open confirmation in offline mode`() {
+        context.preferences.edit().putBoolean(fullOfflineModeKey, true).commit()
+        mockkObject(MyDownloadHelper)
+        content { NetworkDownloadQualityCard("", connectionMetered = false) }
+        composeRule.onNodeWithText(context.getString(R.string.downloads_action_refresh_quality)).performClick()
+        composeRule.waitForIdle()
+        coVerify(exactly = 0) { MyDownloadHelper.prepareQualityRefresh(any()) }
+        composeRule.onNodeWithText(
+            context.getString(R.string.downloads_refresh_quality_confirmation, 1),
+            substring = true,
+        ).assertDoesNotExist()
     }
 
     @Test fun `automatic audio follows metering while automatic artwork follows network quality`() {

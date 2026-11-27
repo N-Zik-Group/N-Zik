@@ -1832,3 +1832,7 @@ Menus:
 Playlists / Podcasts:
 - fix(podcast): keep available episodes after continuation failures
   - Allow adding validated episodes after a load failure and require a complete source for collection import.
+
+Settings:
+- fix(download): admit quality replacements before removal
+  - Bind refreshes to the confirmed profile and quality and protect existing audio when network or scheduling refuses the command.

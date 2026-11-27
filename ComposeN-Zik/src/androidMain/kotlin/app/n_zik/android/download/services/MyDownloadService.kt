@@ -31,6 +31,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper.resetBatch
 import app.n_zik.android.download.utils.downloadDisplayName
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.playback.exceptions.ExplicitContentException
 import app.n_zik.android.playback.exceptions.LoginRequiredException
@@ -158,6 +159,12 @@ class MyDownloadService : DownloadService(
                     }
                     ACTION_PAUSE_DOWNLOADS -> target.setPaused(this, true)
                     ACTION_RESUME_DOWNLOADS -> target.setPaused(this, false)
+                    ACTION_ADD_DOWNLOAD -> {
+                        val replacementQuality = intent.getStringExtra(DOWNLOAD_REPLACEMENT_QUALITY_EXTRA)
+                        if (replacementQuality != null && !prepareDownloadReplacement(intent, target, replacementQuality)) {
+                            return rejectStart(intent, startId)
+                        }
+                    }
                 }
             }
         }
@@ -171,11 +178,34 @@ class MyDownloadService : DownloadService(
         return START_NOT_STICKY
     }
 
+    private fun prepareDownloadReplacement(intent: Intent, target: ProfileDownloadCommands, quality: String): Boolean {
+        @Suppress("DEPRECATION")
+        val request = intent.getParcelableExtra<DownloadRequest>(KEY_DOWNLOAD_REQUEST) ?: return false
+        if (!isNetworkConnected(this)) {
+            Toaster.noInternet()
+            return false
+        }
+        if (target.isPaused(this) || MyDownloadHelper.downloadQualityFormat.name != quality) {
+            Toaster.e(R.string.downloads_failed)
+            return false
+        }
+        if (!MyDownloadHelper.admitQualityReplacement(target, request)) return false
+        // Both operations are admitted together. Media3 must remove the previous cached
+        // bytes before the normal ADD handling below schedules the replacement.
+        MyDownloadHelper.getDownloadManager(this).removeDownload(request.id)
+        return true
+    }
+
     private fun releaseRejectedCommand(intent: Intent?) {
         when (intent?.action) {
             ACTION_ADD_DOWNLOAD -> {
                 @Suppress("DEPRECATION")
-                intent.getParcelableExtra<DownloadRequest>(KEY_DOWNLOAD_REQUEST)?.let(MyDownloadHelper::releaseDownloadAdd)
+                val request = intent.getParcelableExtra<DownloadRequest>(KEY_DOWNLOAD_REQUEST) ?: return
+                if (intent.hasExtra(DOWNLOAD_REPLACEMENT_QUALITY_EXTRA)) {
+                    if (MyDownloadHelper.releaseRejectedQualityReplacement(request)) MyDownloadHelper.skipBatchCompleted(1)
+                } else {
+                    MyDownloadHelper.releaseDownloadAdd(request)
+                }
             }
             ACTION_REMOVE_DOWNLOAD -> {
                 val mediaId = intent.getStringExtra(KEY_CONTENT_ID) ?: return

@@ -5,9 +5,7 @@ import app.n_zik.android.components.settings.common.settingsSearchTarget
 
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,6 +27,7 @@ import app.n_zik.android.enums.DownloadQualityFormat
 import app.n_zik.android.enums.downloadQualityFormatKey
 import app.n_zik.android.typography
 import app.n_zik.android.utils.coroutines.NzikDispatchers
+import app.n_zik.android.utils.isNetworkConnected
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -80,8 +79,7 @@ fun DownloadQualityEntry(automaticQualityText: String? = null, onQualityChanged:
 fun UpdateDownloadsButton() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val dialogVisible = rememberSaveable { mutableStateOf(false) }
-    val dialogCount = remember { mutableIntStateOf(0) }
+    var pendingRefresh by remember { mutableStateOf<MyDownloadHelper.QualityRefresh?>(null) }
     var isChecking by remember { mutableStateOf(false) }
 
     OtherSettingsEntry(
@@ -92,10 +90,14 @@ fun UpdateDownloadsButton() {
         isEnabled = !isChecking,
         onClick = {
             if (isChecking) return@OtherSettingsEntry
+            if (!isNetworkConnected(context)) {
+                Toaster.noInternet()
+                return@OtherSettingsEntry
+            }
             isChecking = true
             coroutineScope.launch {
-                val count = try {
-                    MyDownloadHelper.countNonCompliantDownloads()
+                val refresh = try {
+                    MyDownloadHelper.prepareQualityRefresh(context)
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (error: Exception) {
@@ -105,27 +107,29 @@ fun UpdateDownloadsButton() {
                 } finally {
                     isChecking = false
                 }
-                if (count == 0) {
-                    Toaster.i(R.string.downloads_refresh_quality_already_current)
-                } else {
-                    dialogCount.value = count
-                    dialogVisible.value = true
+                when {
+                    refresh == null -> Toaster.e(R.string.downloads_failed)
+                    refresh.songIds.isEmpty() -> Toaster.i(R.string.downloads_refresh_quality_already_current)
+                    else -> pendingRefresh = refresh
                 }
             }
         }
     )
 
-    DialogPresence(visible = dialogVisible.value) {
-        val dialog = remember(dialogCount.value) {
+    DialogPresence(target = pendingRefresh) { refresh ->
+        val dialog = remember(refresh) {
             UpdateDownloadsDialog(
-                activeState = dialogVisible,
-                count = dialogCount.value,
+                isDialogOpen = { pendingRefresh == refresh },
+                dismissDialog = { pendingRefresh = null },
+                count = refresh.songIds.size,
                 onConfirmAction = {
                     NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                        runCatching {
-                            MyDownloadHelper.updateDownloads(context)
-                        }.onFailure { e ->
-                            Timber.tag("UpdateDownloads").e(e, "updateDownloads failed")
+                        try {
+                            MyDownloadHelper.updateDownloads(context, refresh)
+                        } catch (cancelled: CancellationException) {
+                            throw cancelled
+                        } catch (error: Exception) {
+                            Timber.tag("UpdateDownloads").e(error, "updateDownloads failed")
                             Toaster.e(R.string.player_error_unknown)
                         }
                     }
@@ -139,12 +143,17 @@ fun UpdateDownloadsButton() {
 /** Confirmation dialog shown before re-downloading all downloads whose recorded quality does not match the selected [DownloadQualityFormat]. */
 @UnstableApi
 private class UpdateDownloadsDialog(
-    activeState: MutableState<Boolean>,
+    private val isDialogOpen: () -> Boolean,
+    private val dismissDialog: () -> Unit,
     private val count: Int,
     private val onConfirmAction: () -> Unit
 ) : ConfirmDialog {
 
-    override var isActive: Boolean by activeState
+    override var isActive: Boolean
+        get() = isDialogOpen()
+        set(value) {
+            if (!value) dismissDialog()
+        }
 
     override val dialogTitle: String
         @Composable
@@ -154,8 +163,9 @@ private class UpdateDownloadsDialog(
         @Composable get() = stringResource(R.string.downloads_title)
 
     override fun onConfirm() {
-        onConfirmAction()
+        if (!isActive) return
         hideDialog()
+        onConfirmAction()
     }
 
     @Composable
