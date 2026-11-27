@@ -1436,3 +1436,7 @@ Library:
 Android Auto:
 - fix(auto): preserve category navigation and local favorites
   - Show the folders even when a count fails and include eligible device tracks and collections across compatible filters.
+
+Menus:
+- fix(playlist): finish newly confirmed playlist additions
+  - Finish creating and filling a playlist even if the picker closes, while retaining profile ownership.

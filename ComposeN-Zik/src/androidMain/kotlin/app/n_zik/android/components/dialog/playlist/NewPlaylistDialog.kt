@@ -9,7 +9,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
@@ -21,6 +20,7 @@ import app.n_zik.android.components.dialog.common.InputDialogConstraints
 import app.n_zik.android.components.dialog.common.TextInputDialog
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.models.Playlist
@@ -33,7 +33,6 @@ import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.innertube.YtMusic
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -41,7 +40,6 @@ import timber.log.Timber
 class NewPlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
     valueState: MutableState<TextFieldValue>,
-    private val coroutineScope: CoroutineScope,
     private val suggestedNamePrefix: String,
     private val localOnly: Boolean,
     private val onPlaylistCreated: ((Playlist) -> Unit)?,
@@ -53,13 +51,11 @@ class NewPlaylistDialog private constructor(
             localOnly: Boolean = false,
             onPlaylistCreated: ((Playlist) -> Unit)? = null,
         ): NewPlaylistDialog {
-            val coroutineScope = rememberCoroutineScope()
             return NewPlaylistDialog(
                 remember { mutableStateOf(false) },
                 remember {
                     mutableStateOf( TextFieldValue() )
                 },
-                coroutineScope,
                 stringResource(R.string.playlist_action_create),
                 localOnly,
                 onPlaylistCreated
@@ -108,13 +104,15 @@ class NewPlaylistDialog private constructor(
         if( errorMessage.isNotEmpty() ) return
 
         val context = appContext()
+        val owner = ProfileWorkOwner.capture(context) ?: return
         val createOnYouTube = !localOnly && isYouTubeSyncEnabled() &&
             context.preferences.getBoolean(syncPushPlaylistKey, false) &&
             getSyncDirection() != SyncDirection.YT_TO_APP && isNetworkConnected(context)
         hideDialog()
-        coroutineScope.launch(NzikDispatchers.UI) {
+        NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
             val playlist = try {
                 withContext(NzikDispatchers.DATA) {
+                    if (!ProfileWorkOwner.isBound(context, owner)) return@withContext null
                     val browseId = if (createOnYouTube) {
                         YtMusic.createPlaylist(newValue).onFailure {
                             if (it is CancellationException) throw it
@@ -125,7 +123,10 @@ class NewPlaylistDialog private constructor(
                         browseId = browseId,
                         isYoutubePlaylist = browseId != null,
                     )
-                    Database.awaitWriteBatch { draft.copy(id = playlistTable.insert(draft)) }
+                    Database.awaitWriteBatch {
+                        if (ProfileWorkOwner.isBound(context, owner)) draft.copy(id = playlistTable.insert(draft))
+                        else null
+                    }
                 }
             } catch (cancelled: CancellationException) {
                 throw cancelled
@@ -134,6 +135,7 @@ class NewPlaylistDialog private constructor(
                 Toaster.e(R.string.common_error_title)
                 return@launch
             }
+            if (playlist == null || !ProfileWorkOwner.isBound(context, owner)) return@launch
             if (onPlaylistCreated != null) onPlaylistCreated.invoke(playlist) else Toaster.done()
         }
     }

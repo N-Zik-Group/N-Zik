@@ -15,6 +15,7 @@ import app.n_zik.android.core.database.canEditPlaylistMembership
 import app.n_zik.android.core.database.PlaylistLinkKind
 import app.n_zik.android.core.database.playlistLinkKind
 import app.n_zik.android.core.database.PlaylistAddResult
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.core.database.isPlaylistBookmarked
 import app.n_zik.android.core.database.isYouTubePlaylistSource
 import app.n_zik.android.core.navigation.LocalPlaylistPickerNavigation
@@ -591,7 +592,8 @@ class PlaylistsMenu private constructor(
     @Composable
     private fun PlaylistPicker(request: AddRequest) {
         val playlistRead = rememberPlaylistPickerRead()
-        val online = isNetworkConnected(LocalContext.current)
+        val context = LocalContext.current
+        val online = isNetworkConnected(context)
         val previews = playlistRead.result?.getOrNull()
         val showOnDevice by rememberPreference(showOnDevicePlaylistsKey, true)
         val showDeviceTab = deviceLibraryEnabled() && showOnDevice
@@ -606,19 +608,22 @@ class PlaylistsMenu private constructor(
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
         val search = Search.retained(request.filters.input, request.filters.searchVisible)
         val menuKey = menuState.transitionKey
-        fun add(preview: PlaylistPreview) {
-            if (request.isAdding || !menuState.isCurrentMenu(menuKey)) return
-            request.isAdding = true
+        fun add(preview: PlaylistPreview, createdAfterConfirmation: Boolean = false) {
+            if (!createdAfterConfirmation && (request.isAdding || !menuState.isCurrentMenu(menuKey))) return
+            val owner = ProfileWorkOwner.capture(context) ?: return
+            if (!createdAfterConfirmation) request.isAdding = true
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 try {
-                    withContext(NzikDispatchers.DATA) { addToPlaylist(preview, request, menuKey) }
+                    withContext(NzikDispatchers.DATA) {
+                        if (ProfileWorkOwner.isBound(context, owner)) addToPlaylist(preview, request, menuKey)
+                    }
                 } finally {
-                    request.isAdding = false
+                    if (!createdAfterConfirmation) request.isAdding = false
                 }
             }
         }
         val newPlaylistButton = NewPlaylistDialog(localOnly = localDestinationsOnly) { playlist ->
-            add(PlaylistPreview(playlist, 0))
+            add(PlaylistPreview(playlist, 0), createdAfterConfirmation = true)
         }
         newPlaylistButton.Render()
 
