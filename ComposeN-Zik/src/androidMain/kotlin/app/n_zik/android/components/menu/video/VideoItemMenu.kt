@@ -110,6 +110,7 @@ import app.n_zik.android.extensions.audiobar.utils.WaveformResult
 import app.n_zik.android.extensions.lastfm.LastFmActions
 import app.n_zik.android.extensions.lastfm.isLastfmScrobblingEnabledKey
 import app.n_zik.android.extensions.lastfm.lastfmSessionKey
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.surfaceColor
 import app.n_zik.android.typography
@@ -326,14 +327,15 @@ class VideoItemMenu private constructor(
         val changeCover = ChangeCoverDialog{ song }
         fun mediaItemForPlayback() = playerMenuMediaItem(source, song)
         val startRadio = Radio.fromMediaItem { mediaItemForPlayback() }
-        val playNext = PlayNext {
+        val canEditQueue = binder != null && !rememberListenTogetherGuestLock()
+        val playNext = PlayNext(enabled = canEditQueue) {
             val queueEdit = binder?.captureMenuQueueEdit() ?: return@PlayNext
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 val mediaItem = withContext(NzikDispatchers.DATA) { mediaItemForPlayback() }
                 queueEdit.queue(listOf(mediaItem), appContext(), playNext = true)
             }
         }
-        val enqueue = Enqueue {
+        val enqueue = Enqueue(enabled = canEditQueue) {
             val queueEdit = binder?.captureMenuQueueEdit() ?: return@Enqueue
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 val mediaItem = withContext(NzikDispatchers.DATA) { mediaItemForPlayback() }

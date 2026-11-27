@@ -10,6 +10,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.core.utils.Toaster
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.models.Song
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -34,6 +35,7 @@ internal fun collectionQueueActions(
     mediaItemForQueue: (Song) -> MediaItem,
 ): Pair<MenuIcon, MenuIcon> {
     var pending by remember { mutableStateOf(false) }
+    val canEditQueue = !rememberListenTogetherGuestLock() && !pending
 
     fun queue(playNext: Boolean) {
         if (pending) return
@@ -68,6 +70,6 @@ internal fun collectionQueueActions(
         }
     }
 
-    return PlayNext(enabled = !pending, dismissOnClick = false) { queue(playNext = true) } to
-        Enqueue(dismissOnClick = false, enabled = !pending) { queue(playNext = false) }
+    return PlayNext(enabled = canEditQueue, dismissOnClick = false) { queue(playNext = true) } to
+        Enqueue(dismissOnClick = false, enabled = canEditQueue) { queue(playNext = false) }
 }

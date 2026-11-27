@@ -1460,3 +1460,7 @@ Playback:
 Favorites:
 - fix(library): confirm all favorite state changes
   - Show persisted changes immediately and supply the name required by dislike messages.
+
+Menus:
+- fix(menu): disable queue edits for listening guests
+  - Match the song menu when Listen Together grants no queue editing permission.
