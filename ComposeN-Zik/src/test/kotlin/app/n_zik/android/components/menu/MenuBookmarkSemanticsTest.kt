@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.R
+import app.n_zik.android.ui.components.themed.Bookmark
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.styling.Appearance
 import app.n_zik.android.ui.styling.ColorPalette
@@ -33,6 +34,27 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33], application = Application::class)
 class MenuBookmarkSemanticsTest {
     @get:Rule val composeRule = createComposeRule()
+
+    @Test
+    fun `playlist toolbar bookmark describes the available action`() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        val bookmarked = mutableStateOf(false)
+        composeRule.setContent {
+            val appearance = Appearance(ColorPalette.fallback, Typography.fallback, CircleShape, CircleShape, CircleShape)
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                Bookmark(isBookmarked = bookmarked.value) {
+                    bookmarked.value = !bookmarked.value
+                }.ToolBarButton()
+            }
+        }
+
+        composeRule.onNode(
+            hasClickAction() and hasContentDescription(app.getString(R.string.library_action_bookmark)),
+        ).performClick()
+        composeRule.onNode(
+            hasClickAction() and hasContentDescription(app.getString(R.string.library_action_remove_bookmark)),
+        ).assertExists()
+    }
 
     @Test
     fun `artwork badge adds no click target and the action describes each transition`() {

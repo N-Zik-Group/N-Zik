@@ -124,7 +124,8 @@ fun Bookmark(
 
     val menuState: MenuState = LocalMenuState.current
     override val iconId: Int = if (isBookmarked) R.drawable.bookmark else R.drawable.bookmark_outline
-    override val messageId: Int = R.string.library_action_bookmark
+    override val messageId: Int =
+        if (isBookmarked) R.string.library_action_remove_bookmark else R.string.library_action_bookmark
     override val menuIconTitle: String
         @Composable
         get() = stringResource( messageId )

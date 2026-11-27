@@ -1528,3 +1528,7 @@ Menus:
 Menus:
 - fix(menu): label debug log cleanup explicitly
   - State that disabling debug logs also clears them.
+
+Menus:
+- fix(menu): announce removal for active bookmarks
+  - Use the existing Remove bookmark label for active playlist bookmarks.
