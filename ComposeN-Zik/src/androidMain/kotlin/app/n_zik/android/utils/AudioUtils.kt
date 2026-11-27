@@ -8,18 +8,14 @@ import androidx.annotation.MainThread
 import androidx.annotation.OptIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import app.n_zik.android.playback.services.PlayerServiceModern
-import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 import timber.log.Timber
 
@@ -40,19 +36,12 @@ fun setDeviceVolume(context: Context, volume: Float) {
 @Composable
 @OptIn(UnstableApi::class)
 fun MedleyMode(binder: PlayerServiceModern.Binder?, seconds: Int) {
-    if (seconds == 0) return
-    if (binder != null) {
-        val coroutineScope = rememberCoroutineScope()
-        LaunchedEffect(Unit) {
-            coroutineScope.launch {
-                while (isActive) {
-                    delay(1.seconds * seconds)
-                    withContext(NzikDispatchers.UI) {
-                        if (binder.player.isPlaying)
-                            binder.player.playNext()
-                    }
-                }
-            }
+    if (binder == null || seconds <= 0) return
+
+    LaunchedEffect(binder, seconds) {
+        while (isActive) {
+            delay(seconds.seconds)
+            if (binder.player.isPlaying) binder.player.playNext()
         }
     }
 }

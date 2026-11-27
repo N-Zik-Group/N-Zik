@@ -1520,3 +1520,7 @@ Menus:
 Menus:
 - fix(menu): share and align menu header actions
   - Use the same aligned Back control for menu headers and restore the Information handle and the Listen Together return transition.
+
+Menus:
+- fix(player): apply medley duration changes live
+  - Restart the playback timer with the selected duration without retaining the previous timer.
