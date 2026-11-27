@@ -41,6 +41,7 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
 import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.player.coverDimmingAlpha
 import app.n_zik.android.components.glass.OverlayFade
 import app.n_zik.android.components.glass.overlayViewportShape
 import app.n_zik.android.thumbnailShape
@@ -52,6 +53,8 @@ import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.utils.showvisthumbnailKey
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.defaultVisualizerCoverDimmingOpacity
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.extensions.nextvisualizer.NextVisualizer
 
@@ -67,7 +70,8 @@ fun NextVisualizer(
         val visualizerEnabled by rememberPreference(visualizerEnabledKey, false)
         val savedVisualizerOnCover by rememberPreference(showvisthumbnailKey, true)
         val showvisthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedVisualizerOnCover)
-        var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
+        val blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
+        val coverDimmingOpacity by rememberPreference(visualizerCoverDimmingOpacityKey, defaultVisualizerCoverDimmingOpacity)
 
         val binder = LocalPlayerServiceBinder.current
         var isPlaying by remember(binder) { mutableStateOf(binder?.player?.isPlaying == true) }
@@ -135,7 +139,12 @@ fun NextVisualizer(
             } else {
                 Box(Modifier.fillMaxSize()) {
                     val backgroundColor by animateColorAsState(
-                        targetValue = if (!showvisthumbnail || !blackBackgroundForVisThumbnail || !isPlaying) Color.Transparent else Color.Black.copy(0.6f),
+                        targetValue = Color.Black.copy(alpha = coverDimmingAlpha(
+                            eligible = showvisthumbnail && isPlaying,
+                            enabled = blackBackgroundForVisThumbnail,
+                            opacity = coverDimmingOpacity,
+                            fallback = defaultVisualizerCoverDimmingOpacity,
+                        )),
                         animationSpec = tween(500),
                         label = stringResource(R.string.visualizer_debug_background)
                     )

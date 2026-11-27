@@ -31,6 +31,8 @@ import app.n_zik.android.utils.showVisualizerStateKey
 import app.n_zik.android.utils.showvisthumbnailKey
 import app.n_zik.android.utils.showVisualizerButtonsKey
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.defaultVisualizerCoverDimmingOpacity
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.utils.visualizerEnabledKey
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.utils.visualizerWhiteColorOptionKey
@@ -42,6 +44,8 @@ import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.ColorSettingEntry
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
+import app.n_zik.android.components.settings.common.CoverDimmingSlider
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import androidx.compose.ui.platform.testTag
 import app.n_zik.android.components.settings.common.settingsCardEnter
 import app.n_zik.android.components.settings.common.settingsCardExit
@@ -114,11 +118,16 @@ internal fun AppearanceBehaviorCard(search: Search) {
     )
     var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
     var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
+    var coverDimmingOpacity by rememberPreference(visualizerCoverDimmingOpacityKey, defaultVisualizerCoverDimmingOpacity)
     var showVisualizerButtons by rememberPreference(showVisualizerButtonsKey, true)
     val playerType by rememberPreference(playerTypeKey, PlayerType.Essential)
     val swipeSetting = PlayerSongSwipeSetting.forLayout(playerType, isLandscape)
     var showVisualizerStateKey by rememberPreference(showVisualizerStateKey, false)
-    val searchCtx_0_5 = search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_description).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true) || stringResource(R.string.visualizer_title).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.visualizer_microphone_permission_message).contains(search.inputValue, true)
+    val showDimmingToggle = search.inputValue.isBlank() ||
+        stringResource(R.string.visualizer_dark_background_title).contains(search.inputValue, true)
+    val showDimmingSlider = search.inputValue.isBlank() ||
+        stringResource(R.string.visualizer_cover_dimming_opacity).contains(search.inputValue, true)
+    val searchCtx_0_5 = showDimmingToggle || showDimmingSlider || search.inputValue.isBlank() || stringResource(R.string.player_behavior_and_visuals).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_disable_text_marquee_description).contains(search.inputValue, true) || stringResource(R.string.player_rotating_buttons).contains(search.inputValue, true) || stringResource(R.string.player_enable_rotation_buttons).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true) || stringResource(R.string.settings_player_background_progress_label).contains(search.inputValue, true) || stringResource(R.string.visualizer_title).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_visualizer_remember_state_description).contains(search.inputValue, true) || stringResource(R.string.visualizer_microphone_permission_message).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_0_5,
                 enter = settingsCardEnter,
@@ -290,18 +299,6 @@ internal fun AppearanceBehaviorCard(search: Search) {
                                 modifier = (Modifier.padding(start = 25.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.showvisthumbnail")
                             )
                         }
-                        AnimatedVisibility(visible = showvisthumbnail) {
-                            if (search.inputValue.isBlank() || stringResource(R.string.visualizer_dark_background_title).contains(search.inputValue, true)) {
-                                OtherSwitchSettingEntry(
-                                    icon = R.drawable.images_sharp,
-                                    title = stringResource(R.string.visualizer_dark_background_title),
-                                    text = stringResource(R.string.visualizer_dark_background_description),
-                                    isChecked = blackBackgroundForVisThumbnail,
-                                    onCheckedChange = { blackBackgroundForVisThumbnail = it },
-                                    modifier = (Modifier.padding(start = 45.dp)).settingsSearchTarget("appearance.player_behavior_and_visuals.black_background_for_visualizer")
-                                )
-                            }
-                        }
                         if (search.inputValue.isBlank() || stringResource(R.string.visualizer_auto_hide_buttons_title).contains(search.inputValue, true)) {
                             OtherSwitchSettingEntry(
                                 icon = R.drawable.menu,
@@ -314,6 +311,29 @@ internal fun AppearanceBehaviorCard(search: Search) {
                         }
                     }
                 }
+            }
+
+            if (showDimmingToggle || showDimmingSlider && !blackBackgroundForVisThumbnail) {
+                OtherSwitchSettingEntry(
+                    icon = R.drawable.images_sharp,
+                    title = stringResource(R.string.visualizer_dark_background_title),
+                    text = stringResource(R.string.visualizer_dark_background_description),
+                    isChecked = blackBackgroundForVisThumbnail,
+                    onCheckedChange = { blackBackgroundForVisThumbnail = it },
+                    modifier = Modifier.padding(start = 25.dp)
+                        .settingsSearchTarget("appearance.player_behavior_and_visuals.black_background_for_visualizer"),
+                )
+            }
+
+            SettingsEntryVisibility(visible = showDimmingSlider && blackBackgroundForVisThumbnail) {
+                CoverDimmingSlider(
+                    title = stringResource(R.string.visualizer_cover_dimming_opacity),
+                    opacity = coverDimmingOpacity,
+                    defaultOpacity = defaultVisualizerCoverDimmingOpacity,
+                    onOpacityChange = { if (blackBackgroundForVisThumbnail) coverDimmingOpacity = it },
+                    modifier = Modifier.padding(start = 41.dp)
+                        .settingsSearchTarget("appearance.player_behavior_and_visuals.visualizer_cover_dimming_opacity"),
+                )
             }
 
             ImportantSettingsDescription(text = stringResource(R.string.visualizer_microphone_permission_message))

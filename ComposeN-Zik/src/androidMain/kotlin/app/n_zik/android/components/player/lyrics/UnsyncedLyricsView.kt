@@ -42,6 +42,7 @@ private val LYRICS_SPACING = 24.dp
 fun UnsyncedLyricsView(
     text: String,
     showlyricsthumbnail: Boolean,
+    coverScrim: Color,
     isDisplayed: Boolean,
     showSecondLine: Boolean,
     translateEnabled: Boolean,
@@ -91,8 +92,7 @@ fun UnsyncedLyricsView(
         else -> Color.Transparent
     } else Color.Transparent
     val coverInk = if (lyricsColor == LyricsColor.Cover) {
-        // Even the brightest cover is dark under the on-cover scene scrim.
-        val underlay = if (showlyricsthumbnail) LyricsCoverScrim.compositeOver(Color.White)
+        val underlay = if (showlyricsthumbnail) coverScrim.compositeOver(Color.White)
             else LocalSurfaceBackdropColor.current ?: LocalPlayerBackdropSampling.current?.foregroundSurface
         val highlight = if (!showlyricsthumbnail) when (lyricsHighlight) {
             LyricsHighlight.Black -> Color.Black.copy(alpha = .5f)

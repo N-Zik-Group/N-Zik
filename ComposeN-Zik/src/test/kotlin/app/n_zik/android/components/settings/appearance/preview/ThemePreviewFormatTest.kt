@@ -53,6 +53,10 @@ import app.n_zik.android.components.glass.glassBlurKey
 import app.n_zik.android.components.glass.glassJellyEnabledKey
 import app.n_zik.android.utils.navigationBarPositionKey
 import app.n_zik.android.utils.m3eAlwaysShowShapesKey
+import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 
 class ThemePreviewFormatTest {
     @Test
@@ -377,6 +381,42 @@ class ThemePreviewFormatTest {
             (customPrefix + defaultOrder).distinct(),
             resolvePlayerActionBarOrder("""["lyrics","shuffle","lyrics","retired"]"""),
         )
+    }
+
+    @Test
+    fun `cover dimming exports only explicitly saved V3 options`() {
+        val empty = emptyMap<String, Any>()
+        assertEquals(ThemeAppearanceV2, themeAppearanceSchemaFor(100))
+
+        for (schema in listOf(ThemeAppearanceV2, ThemeAppearanceV3)) {
+            val defaults = encodeThemeAppearance(empty, empty, schemaVersion = schema)
+            val settings = parseThemeAppearance(defaults).getValue(ThemeCategory.PLAYER_AND_QUEUE).plain
+            assertFalse(visualizerCoverDimmingOpacityKey in settings)
+            assertFalse(lyricsCoverDimmingEnabledKey in settings)
+            assertFalse(lyricsCoverDimmingOpacityKey in settings)
+        }
+
+        val appearance = mapOf(
+            blackBackgroundForVisThumbnailKey to false,
+            visualizerCoverDimmingOpacityKey to 0f,
+            lyricsCoverDimmingEnabledKey to true,
+            lyricsCoverDimmingOpacityKey to 1f,
+        )
+        val schema = themeAppearanceSchemaFor(100, appearance)
+        assertEquals(ThemeAppearanceV3, schema)
+        val encoded = encodeThemeAppearance(appearance, empty, schemaVersion = schema)
+        val imported = parseThemeAppearance(encoded)
+        val groups = imported.toStoreGroups()
+        val player = groups.getValue(StoreGroup.PlayerAndQueue).plain
+        val lyrics = groups.getValue(StoreGroup.Lyrics).plain
+        assertEquals(false, player[blackBackgroundForVisThumbnailKey])
+        assertEquals(0f, player[visualizerCoverDimmingOpacityKey])
+        assertEquals(true, lyrics[lyricsCoverDimmingEnabledKey])
+        assertEquals(1f, lyrics[lyricsCoverDimmingOpacityKey])
+        assertEquals(101, themeAppearancePublicationMinimumVersionCode(encoded))
+        assertThrows(IllegalArgumentException::class.java) {
+            parseThemeAppearance(encoded.replace("\"visualizerCoverDimmingOpacity\":0.0", "\"visualizerCoverDimmingOpacity\":1.01"))
+        }
     }
 
     @Test

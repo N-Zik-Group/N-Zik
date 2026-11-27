@@ -36,6 +36,7 @@ import app.n_zik.android.utils.albumCoverRotationKey
 import app.n_zik.android.utils.animatedGradientKey
 import app.n_zik.android.utils.backgroundProgressKey
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.utils.blackgradientKey
 import app.n_zik.android.utils.blurStrengthKey
 import app.n_zik.android.utils.bottomgradientKey
@@ -223,6 +224,7 @@ internal fun applyAppearanceDefaults(context: Context) {
         putEnum(thumbnailTypeKey, ThumbnailType.Modern)
         putBoolean(showvisthumbnailKey, true)
         putBoolean(blackBackgroundForVisThumbnailKey, true)
+        remove(visualizerCoverDimmingOpacityKey)
         putBoolean(showVisualizerButtonsKey, true)
         putBoolean(buttonzoomoutKey, true)
         putBoolean(thumbnailpauseKey, true)

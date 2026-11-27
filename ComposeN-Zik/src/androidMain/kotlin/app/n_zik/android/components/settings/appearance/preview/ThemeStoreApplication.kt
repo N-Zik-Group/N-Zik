@@ -34,6 +34,9 @@ import app.n_zik.android.utils.hideStatusBarKey
 import app.n_zik.android.utils.showButtonPlayerLyricsKey
 import app.n_zik.android.utils.showFloatingIconKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.utils.floatActionIconOffsetXkey
 import app.n_zik.android.utils.floatActionIconOffsetYkey
@@ -147,6 +150,11 @@ internal fun StoreAppearance.selectedSettings(
             addAll(MiniPlayerButtonsSettingsDialog.preferenceKeys())
             add(playerActionBarButtonOrderKey)
             add(playerActionBarBottomAudioVideoKey)
+            add(visualizerCoverDimmingOpacityKey)
+        }
+        if (StoreGroup.Lyrics in selection) {
+            add(lyricsCoverDimmingEnabledKey)
+            add(lyricsCoverDimmingOpacityKey)
         }
         ToolbarSurface.entries.forEach { surface ->
             if (storeGroup(ThemeCategory.NAVIGATION, surface.orderKey) in selection) {

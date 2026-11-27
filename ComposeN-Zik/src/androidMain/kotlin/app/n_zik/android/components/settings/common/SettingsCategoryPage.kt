@@ -250,11 +250,6 @@ private fun settingsSearchPrerequisite(
             } else {
                 SearchPrerequisite(VisualizerSettingsTarget, listOf(R.string.common_state_on))
             }
-        "appearance.player_behavior_and_visuals.black_background_for_visualizer" ->
-            return SearchPrerequisite(
-                VisualizerArtworkTarget.takeIf(hasTarget) ?: VisualizerSettingsTarget,
-                listOf(R.string.common_state_on),
-            )
         GradientSettingsTarget -> return SearchPrerequisite(
             BackgroundSettingsTarget, listOf(R.string.player_background_animated_gradient_label),
         )
@@ -406,6 +401,8 @@ private val requiredEnabledSettingTargets = mapOf(
     "appearance.player_behavior_and_visuals.visualizer_line_thickness" to VisualizerSettingsTarget,
     VisualizerArtworkTarget to VisualizerSettingsTarget,
     "appearance.player_behavior_and_visuals.show_visualizer_buttons" to VisualizerSettingsTarget,
+    "appearance.player_behavior_and_visuals.visualizer_cover_dimming_opacity" to "appearance.player_behavior_and_visuals.black_background_for_visualizer",
+    "appearance.txt_lyrics.cover_dimming_opacity" to "appearance.txt_lyrics.cover_dimming_enabled",
     "appearance.cover_and_thumbnail.hold_to_speed_up_rate" to "appearance.cover_and_thumbnail.hold_to_speed_up",
     "appearance.full_screen_lyrics_components.show_total_time_of_queue" to "appearance.colors_and_background.show_total_time_of_queue",
     "other.proxy.proxy_mode" to "other.proxy.enable_proxy",

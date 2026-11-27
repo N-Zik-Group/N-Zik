@@ -1960,3 +1960,7 @@ Settings / Sliders:
 Playlists / Export:
 - fix(playlist): preserve the export destination if data is unavailable
   - Require a valid export payload before opening the document chosen in Android's file picker.
+
+Player / Appearance:
+- feat(player): adjust lyrics and visualizer cover dimming
+  - Give each overlay a toggle and animated intensity control, store values per profile and share the V3 appearance fields.

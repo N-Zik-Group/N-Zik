@@ -102,6 +102,11 @@ import app.n_zik.android.utils.applyFontPaddingKey
 import app.n_zik.android.utils.artistThumbnailRoundnessDpKey
 import app.n_zik.android.utils.backgroundProgressKey
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.defaultLyricsCoverDimmingOpacity
+import app.n_zik.android.utils.defaultVisualizerCoverDimmingOpacity
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.utils.blackgradientKey
 import app.n_zik.android.utils.blurStrengthKey
 import app.n_zik.android.utils.bottomgradientKey
@@ -323,6 +328,10 @@ internal const val ThemeM3eAlwaysShowShapesMinimumVersionCode = 101
 internal const val ThemeCustomToolbarsMinimumVersionCode = 101
 internal const val ThemeBurgerMenuShortcutsMinimumVersionCode = 101
 
+private val coverDimmingKeys = setOf(
+    visualizerCoverDimmingOpacityKey, lyricsCoverDimmingEnabledKey, lyricsCoverDimmingOpacityKey,
+)
+
 /** Feature compatibility is independent of the portable document schema. */
 internal fun themeAppearanceFeatureMinimumVersionCode(settings: Map<ThemeCategory, ThemeSettings>): Int {
     val pureBlack = if (settings[ThemeCategory.COLORS]?.plain?.get(colorPaletteModeKey) == ColorPaletteMode.PureBlack.name)
@@ -347,7 +356,8 @@ internal fun themeAppearanceSchemaFor(
     preferences: Map<String, *> = emptyMap<String, Any>(),
 ): Int = when {
     versionCode >= ThemeAppearanceV3MinimumVersionCode || playerActionBarTopSlotsKey in preferences ||
-        preferences[playerActionBarBottomAudioVideoKey] == true -> ThemeAppearanceV3
+        preferences[playerActionBarBottomAudioVideoKey] == true ||
+        coverDimmingKeys.any(preferences::containsKey) -> ThemeAppearanceV3
     versionCode >= ThemeAppearanceV2MinimumVersionCode -> ThemeAppearanceV2
     else -> 1
 }
@@ -421,6 +431,9 @@ internal fun encodeThemeAppearance(
             (playerActionBarTopSlotsKey !in plain && plain[playerActionBarBottomAudioVideoKey] != true)
         ) {
             "Player top action slots require theme appearance V3"
+        }
+        require(schemaVersion >= ThemeAppearanceV3 || coverDimmingKeys.none(plain::containsKey)) {
+            "Cover dimming settings require theme appearance V3"
         }
         val navigationPreferences = plain.withoutDefaultBurgerMenuShortcuts()
         require(schemaVersion >= ThemeAppearanceV2 || plain[colorPaletteModeKey] != ColorPaletteMode.PureBlack.name) {
@@ -693,6 +706,7 @@ internal val portableLyricsKeys: Set<String> = setOf(
     showLyricsStateKey, clickOnLyricsTextKey, playerEnableLyricsPopupMessageKey, lyricsAlignmentKey, lyricsHighlightKey, lyricsBackgroundKey, lyricsTypeKey, lyricsSizeAnimateKey,
     showBackgroundLyricsKey, lyricsIntervalIndicatorKey,
     landscapeControlsKey, romanizationEnabledKey, showSecondLineKey, karaokeRespectAgentPositionKey,
+    lyricsCoverDimmingEnabledKey, lyricsCoverDimmingOpacityKey,
 )
 
 private val legacyGlassAreas = setOf(GlassArea.Nav, GlassArea.MiniPlayer, GlassArea.NowPlaying)
@@ -747,6 +761,11 @@ private fun ThemeFields.player(schemaVersion: Int) {
     optional("playerSwapControlsWithTimeline") { flag("playerSwapControlsWithTimeline", playerSwapControlsWithTimelineKey, false) }
     optional("showvisthumbnail") { flag("showvisthumbnail", showvisthumbnailKey, true) }
     optional("blackBackgroundForVisThumbnail") { flag("blackBackgroundForVisThumbnail", blackBackgroundForVisThumbnailKey, true) }
+    if (schemaVersion >= ThemeAppearanceV3 && acceptsPortableKey(visualizerCoverDimmingOpacityKey)) {
+        optional("visualizerCoverDimmingOpacity") {
+            number("visualizerCoverDimmingOpacity", visualizerCoverDimmingOpacityKey, 0.0..1.0, defaultVisualizerCoverDimmingOpacity)
+        }
+    }
     optional("showVisualizerButtons") { flag("showVisualizerButtons", showVisualizerButtonsKey, true) }
     optional("buttonzoomout") { flag("buttonzoomout", buttonzoomoutKey, true) }
     optional("thumbnailpause") { flag("thumbnailpause", thumbnailpauseKey, true) }
@@ -784,6 +803,14 @@ private fun ThemeFields.player(schemaVersion: Int) {
             option<LyricsType>("mode", lyricsTypeKey, LyricsType.Auto)
             flag("animateSize", lyricsSizeAnimateKey, false)
             flag("showBackground", showBackgroundLyricsKey, false)
+            if (schemaVersion >= ThemeAppearanceV3 && acceptsPortableKey(lyricsCoverDimmingEnabledKey)) {
+                optional("coverDimmingEnabled") { flag("coverDimmingEnabled", lyricsCoverDimmingEnabledKey, true) }
+            }
+            if (schemaVersion >= ThemeAppearanceV3 && acceptsPortableKey(lyricsCoverDimmingOpacityKey)) {
+                optional("coverDimmingOpacity") {
+                    number("coverDimmingOpacity", lyricsCoverDimmingOpacityKey, 0.0..1.0, defaultLyricsCoverDimmingOpacity)
+                }
+            }
             flag("showIntervalIndicator", lyricsIntervalIndicatorKey, true)
             optional("landscapeControls") { flag("landscapeControls", landscapeControlsKey, true) }
             optional("romanization") { flag("romanization", romanizationEnabledKey, true) }
@@ -1087,7 +1114,7 @@ internal class ImportThemeFields(content: JsonElement, private val schemaVersion
     }
 
     private fun primitive(field: String): JsonPrimitive =
-        remaining.remove(field) as? JsonPrimitive ?: error("Missing or invalid field $field")
+        requireNotNull(remaining.remove(field) as? JsonPrimitive) { "Missing or invalid field $field" }
 }
 
 // Dock IDs are drawable resource entry names registered across all destinations.

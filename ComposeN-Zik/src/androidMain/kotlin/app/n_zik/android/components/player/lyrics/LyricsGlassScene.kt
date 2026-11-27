@@ -15,8 +15,6 @@ import androidx.compose.ui.unit.dp
 import app.n_zik.android.components.glass.GlassOverlayScene
 import app.n_zik.android.components.glass.GlassScope
 
-internal val LyricsCoverScrim = Color.Black.copy(alpha = .8f)
-
 /** Owns the lyrics scene separately from foreground utility controls. */
 @Composable
 internal fun LyricsGlassScene(

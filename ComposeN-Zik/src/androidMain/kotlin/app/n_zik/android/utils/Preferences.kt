@@ -352,6 +352,9 @@ const val customThemeDark_accentKey = "customThemeDark_accent"
 
 const val showthumbnailKey = "showthumbnail"
 const val showlyricsthumbnailKey = "showlyricsthumbnail"
+internal const val lyricsCoverDimmingEnabledKey = "lyricsCoverDimmingEnabled"
+internal const val lyricsCoverDimmingOpacityKey = "lyricsCoverDimmingOpacity"
+internal const val defaultLyricsCoverDimmingOpacity = 0.8f
 const val miniPlayerTypeKey = "miniPlayerType"
 const val miniPlayerSlot1Key = "miniPlayerSlot1"
 const val miniPlayerSlot2Key = "miniPlayerSlot2"
@@ -390,6 +393,8 @@ const val textoutlineKey = "textoutline"
 const val thumbnailTypeKey = "thumbnailType"
 const val showvisthumbnailKey = "showvisthumbnail"
 const val blackBackgroundForVisThumbnailKey = "blackBackgroundForVisThumbnail"
+internal const val visualizerCoverDimmingOpacityKey = "visualizerCoverDimmingOpacity"
+internal const val defaultVisualizerCoverDimmingOpacity = 0.6f
 const val expandedlyricsKey = "expandedlyrics"
 const val lyricsHighlightKey = "lyricsHighlight"
 const val buttonStateKey = "buttonState"
@@ -804,30 +809,32 @@ fun rememberPreference(key: String, defaultValue: Int): MutableState<Int> {
 
 @Composable
 fun rememberPreference(key: String, defaultValue: Float): MutableState<Float> {
-    val context = LocalContext.current
-    val prefs = context.preferences
-    val state = remember {
-        mutableStatePreferenceOf(prefs.getFloat(key, defaultValue)) {
-            prefs.edit { putFloat(key, it) }
+    val prefs = LocalContext.current.preferences
+    val observed = remember(prefs, key, defaultValue) { mutableStateOf(prefs.getFloat(key, defaultValue)) }
+    val state = remember(observed) {
+        object : MutableState<Float> {
+            override var value: Float
+                get() = observed.value
+                set(value) {
+                    if (observed.value == value) return
+                    observed.value = value
+                    prefs.edit { putFloat(key, value) }
+                }
+
+            override fun component1(): Float = value
+            override fun component2(): (Float) -> Unit = { value = it }
         }
     }
-    
-    val listener = remember(prefs, key) {
-        SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, changedKey ->
-            if (changedKey == key) {
-                val newValue = sharedPreferences.getFloat(key, defaultValue)
-                if (state.value != newValue) {
-                    state.value = newValue
-                }
+
+    DisposableEffect(prefs, observed) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, changedKey ->
+            if (changedKey == key || changedKey == null) {
+                observed.value = sharedPreferences.getFloat(key, defaultValue)
             }
         }
-    }
-    
-    DisposableEffect(prefs, listener) {
         prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
+        observed.value = prefs.getFloat(key, defaultValue)
+        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
     return state

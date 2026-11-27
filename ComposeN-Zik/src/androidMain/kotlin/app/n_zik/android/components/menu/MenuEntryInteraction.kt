@@ -1,11 +1,21 @@
 package app.n_zik.android.components.menu
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Shape
@@ -32,6 +42,27 @@ internal fun Modifier.menuPageInteraction(active: Boolean): Modifier =
         .then(if (active) Modifier else Modifier.clearAndSetSemantics { hideFromAccessibility() })
         .focusProperties { onEnter = { if (!active) cancelFocusChange() } }
         .focusGroup()
+
+@Composable
+internal fun AnimatedMenuContent(visible: Boolean, content: @Composable () -> Unit) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = expandVertically(expandFrom = Alignment.Top) + fadeIn(),
+        exit = shrinkVertically(shrinkTowards = Alignment.Top) + fadeOut(),
+    ) {
+        Column(Modifier.menuPageInteraction(visible)) { content() }
+    }
+}
+
+internal fun LazyGridScope.animatedMenuItem(
+    key: Int,
+    fullWidth: Boolean = false,
+    content: @Composable () -> Unit,
+) {
+    item(key = key, span = if (fullWidth) ({ GridItemSpan(maxLineSpan) }) else null) {
+        Box(Modifier.animateItem(), propagateMinConstraints = true) { content() }
+    }
+}
 
 @Composable
 internal fun Modifier.menuSectionHeading(): Modifier {

@@ -28,7 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.animation.AnimatedVisibility
+import app.n_zik.android.components.menu.AnimatedMenuContent
+import app.n_zik.android.components.menu.animatedMenuItem
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.draw.scale
@@ -50,6 +51,8 @@ import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.ui.sliders.SliderControl
 import app.n_zik.android.ui.components.themed.TitleMiniSection
 import app.n_zik.android.utils.blackBackgroundForVisThumbnailKey
+import app.n_zik.android.utils.defaultVisualizerCoverDimmingOpacity
+import app.n_zik.android.utils.visualizerCoverDimmingOpacityKey
 import app.n_zik.android.utils.currentVisualizerKey
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.visualizerWhiteColorOptionKey
@@ -64,6 +67,7 @@ import app.n_zik.android.R
 import app.n_zik.android.components.ui.iconBadgeBackground
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.settings.common.SliderSettingsEntry
+import app.n_zik.android.components.settings.common.CoverDimmingSlider
 import app.n_zik.android.uiRoundnessShape
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -95,6 +99,7 @@ class VisualizerSettingsMenu private constructor(
     override fun MenuComponent() {
         var showvisthumbnail by rememberPreference(showvisthumbnailKey, true)
         var blackBackgroundForVisThumbnail by rememberPreference(blackBackgroundForVisThumbnailKey, true)
+        var coverDimmingOpacity by rememberPreference(visualizerCoverDimmingOpacityKey, defaultVisualizerCoverDimmingOpacity)
         var showVisualizerButtons by rememberPreference(showVisualizerButtonsKey, true)
         var showVisualizerStateKeyPref by rememberPreference(showVisualizerStateKey, false)
         
@@ -112,6 +117,17 @@ class VisualizerSettingsMenu private constructor(
                 isShowingCustomColorPicker = false
                 Toaster.n(R.string.settings_theme_color_applied_format, customColorString)
             }
+        }
+
+        @Composable
+        fun dimmingSlider() {
+            CoverDimmingSlider(
+                title = stringResource(R.string.visualizer_cover_dimming_opacity),
+                opacity = coverDimmingOpacity,
+                defaultOpacity = defaultVisualizerCoverDimmingOpacity,
+                onOpacityChange = { coverDimmingOpacity = it },
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
 
         @Composable
@@ -133,7 +149,7 @@ class VisualizerSettingsMenu private constructor(
                 onValueSelected = { visualizerWhiteColorOption = it }
             )
             
-            AnimatedVisibility(visible = visualizerWhiteColorOption == VisualizerWhiteColorOption.Custom) {
+            AnimatedMenuContent(visible = visualizerWhiteColorOption == VisualizerWhiteColorOption.Custom) {
                 ListMenu.Entry(
                     text = stringResource(R.string.common_color_custom),
                     icon = { SettingIcon(R.drawable.color_palette) },
@@ -166,14 +182,13 @@ class VisualizerSettingsMenu private constructor(
                 onCheckedChange = { showvisthumbnail = it }
             )
 
-            AnimatedVisibility(visible = showvisthumbnail) {
-                ToggleSettingEntry(
-                    title = stringResource(R.string.visualizer_dark_background_title),
-                    icon = R.drawable.images_sharp,
-                    isChecked = blackBackgroundForVisThumbnail,
-                    onCheckedChange = { blackBackgroundForVisThumbnail = it }
-                )
-            }
+            ToggleSettingEntry(
+                title = stringResource(R.string.visualizer_dark_background_title),
+                icon = R.drawable.images_sharp,
+                isChecked = blackBackgroundForVisThumbnail,
+                onCheckedChange = { blackBackgroundForVisThumbnail = it }
+            )
+            AnimatedMenuContent(visible = blackBackgroundForVisThumbnail) { dimmingSlider() }
 
             // Auto-hide buttons
             ToggleSettingEntry(
@@ -204,7 +219,7 @@ class VisualizerSettingsMenu private constructor(
         }
 
         fun LazyGridScope.settingsGridContent() {
-            item {
+            animatedMenuItem(R.string.visualizer_color_source) {
                 EnumSettingEntry(
                     title = stringResource(R.string.visualizer_color_source),
                     icon = R.drawable.color_palette,
@@ -223,7 +238,7 @@ class VisualizerSettingsMenu private constructor(
             }
             
             if (visualizerWhiteColorOption == VisualizerWhiteColorOption.Custom) {
-                item {
+                animatedMenuItem(R.string.common_color_custom) {
                     GridMenu.Entry(
                         text = stringResource(R.string.common_color_custom),
                         icon = { SettingIcon(R.drawable.color_palette) },
@@ -242,7 +257,7 @@ class VisualizerSettingsMenu private constructor(
                 }
             }
 
-            item {
+            animatedMenuItem(R.string.settings_visualizer_remember_state_label) {
                 ToggleSettingEntry(
                     title = stringResource(R.string.settings_visualizer_remember_state_label),
                     icon = R.drawable.bookmark,
@@ -251,7 +266,7 @@ class VisualizerSettingsMenu private constructor(
                 )
             }
             
-            item {
+            animatedMenuItem(R.string.settings_visualizer_artwork_visible_label) {
                 ToggleSettingEntry(
                     title = stringResource(R.string.settings_visualizer_artwork_visible_label),
                     icon = R.drawable.equalizer,
@@ -260,18 +275,19 @@ class VisualizerSettingsMenu private constructor(
                 )
             }
 
-            if (showvisthumbnail) {
-                item {
-                    ToggleSettingEntry(
-                        title = stringResource(R.string.visualizer_dark_background_title),
-                        icon = R.drawable.images_sharp,
-                        isChecked = blackBackgroundForVisThumbnail,
-                        onCheckedChange = { blackBackgroundForVisThumbnail = it }
-                    )
-                }
+            animatedMenuItem(R.string.visualizer_dark_background_title) {
+                ToggleSettingEntry(
+                    title = stringResource(R.string.visualizer_dark_background_title),
+                    icon = R.drawable.images_sharp,
+                    isChecked = blackBackgroundForVisThumbnail,
+                    onCheckedChange = { blackBackgroundForVisThumbnail = it }
+                )
+            }
+            if (blackBackgroundForVisThumbnail) {
+                animatedMenuItem(R.string.visualizer_cover_dimming_opacity, fullWidth = true) { dimmingSlider() }
             }
 
-            item {
+            animatedMenuItem(R.string.visualizer_auto_hide_buttons_title) {
                 ToggleSettingEntry(
                     title = stringResource(R.string.visualizer_auto_hide_buttons_title),
                     icon = R.drawable.menu,
@@ -280,7 +296,7 @@ class VisualizerSettingsMenu private constructor(
                 )
             }
             
-            item(span = { GridItemSpan(maxLineSpan) }) {
+            animatedMenuItem(R.string.visualizer_line_thickness, fullWidth = true) {
                 SliderSettingsEntry(
                     title = stringResource(R.string.visualizer_line_thickness),
                     text = "",

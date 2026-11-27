@@ -6,9 +6,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasClickAction
@@ -33,6 +37,9 @@ import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.lyricsTypeKey
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
+import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.putEnum
@@ -41,6 +48,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -87,7 +95,60 @@ class LyricsSettingsMenuTest {
         verifyLyricsModeSelector(MenuStyle.Grid)
     }
 
-    private fun verifyLyricsModeSelector(style: MenuStyle) {
+    @Test
+    fun `list keeps lyrics dimming intensity editable outside the cover`() {
+        verifyCoverDimming(MenuStyle.List)
+    }
+
+    @Test
+    fun `grid keeps lyrics dimming intensity editable outside the cover`() {
+        verifyCoverDimming(MenuStyle.Grid)
+    }
+
+    @Test
+    fun `list shows landscape transport controls when lyrics render outside the cover`() {
+        verifyStandaloneLandscapeOptions(MenuStyle.List)
+    }
+
+    @Test
+    fun `grid shows landscape transport controls when lyrics render outside the cover`() {
+        verifyStandaloneLandscapeOptions(MenuStyle.Grid)
+    }
+
+    private fun verifyStandaloneLandscapeOptions(style: MenuStyle) {
+        context.preferences.edit().putBoolean(showlyricsthumbnailKey, true).commit()
+        showMenu(style, isLandscape = true, isOnCover = false)
+
+        compose.onNode(hasText(context.getString(R.string.settings_lyrics_artwork_visible_label)) and hasClickAction())
+            .assertIsOn()
+        compose.onNode(hasText(context.getString(R.string.lyrics_action_toggle_landscape_controls)) and hasClickAction())
+            .assertExists()
+    }
+
+    private fun verifyCoverDimming(style: MenuStyle) {
+        context.preferences.edit().putBoolean(showlyricsthumbnailKey, false).commit()
+        showMenu(style)
+
+        val toggle = compose.onNode(hasText(context.getString(R.string.lyrics_cover_dimming_title)) and hasClickAction())
+        val slider = compose.onNode(SemanticsMatcher.keyIsDefined(SemanticsActions.SetProgress))
+        toggle.assertIsOn()
+        slider.performSemanticsAction(SemanticsActions.SetProgress) { it(0f) }
+        toggle.performClick()
+        toggle.assertIsOff()
+        slider.assertDoesNotExist()
+        compose.runOnIdle {
+            assertFalse(context.preferences.getBoolean(lyricsCoverDimmingEnabledKey, true))
+            assertEquals(0f, context.preferences.getFloat(lyricsCoverDimmingOpacityKey, -1f), 0f)
+        }
+
+        toggle.performClick().assertIsOn()
+        slider.assertExists()
+        compose.runOnIdle {
+            assertEquals(0f, context.preferences.getFloat(lyricsCoverDimmingOpacityKey, -1f), 0f)
+        }
+    }
+
+    private fun showMenu(style: MenuStyle, isLandscape: Boolean = false, isOnCover: Boolean = false) {
         context.preferences.edit().apply {
             putEnum(menuStyleKey, style)
             putEnum(lyricsTypeKey, LyricsType.Synced)
@@ -98,7 +159,8 @@ class LyricsSettingsMenuTest {
         compose.setContent {
             CompositionLocalProvider(LocalAppearance provides appearance) {
                 LyricsSettingsMenu(
-                    isLandscape = false,
+                    isLandscape = isLandscape,
+                    isOnCover = { isOnCover },
                     translateEnabled = translateEnabled,
                     canRefetchLyrics = { false },
                     actualLyricsType = { null },
@@ -114,7 +176,10 @@ class LyricsSettingsMenuTest {
                 ).MenuComponent()
             }
         }
+    }
 
+    private fun verifyLyricsModeSelector(style: MenuStyle) {
+        showMenu(style)
         val title = hasText("Lyrics mode")
         val inDialog = hasAnyAncestor(isDialog())
         val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)

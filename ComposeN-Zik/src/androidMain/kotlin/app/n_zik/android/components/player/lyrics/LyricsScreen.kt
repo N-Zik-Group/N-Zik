@@ -2,6 +2,7 @@ package app.n_zik.android.components.player.lyrics
 
 import app.n_zik.android.components.settings.appearance.preview.LocalThemePreview
 import app.n_zik.android.components.player.LocalPlayerCoverOverlay
+import app.n_zik.android.components.player.coverDimmingAlpha
 import app.n_zik.android.components.player.PlayerTransportControlMotion
 import app.n_zik.android.components.player.playerTransportFeedback
 import app.n_zik.android.components.player.playerTransportIndication
@@ -41,6 +42,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -133,6 +135,9 @@ import app.n_zik.android.utils.romanizationEnabledKey
 import app.n_zik.android.utils.showBackgroundLyricsKey
 import app.n_zik.android.utils.showSecondLineKey
 import app.n_zik.android.utils.showlyricsthumbnailKey
+import app.n_zik.android.utils.defaultLyricsCoverDimmingOpacity
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -212,6 +217,15 @@ fun LyricsScreen(
 
         val savedLyricsOnCover by rememberPreference(showlyricsthumbnailKey, true)
         val showlyricsthumbnail = onCover ?: (LocalPlayerCoverOverlay.current || savedLyricsOnCover)
+        val currentLyricsOnCover = rememberUpdatedState(showlyricsthumbnail)
+        val coverDimmingEnabled by rememberPreference(lyricsCoverDimmingEnabledKey, true)
+        val coverDimmingOpacity by rememberPreference(lyricsCoverDimmingOpacityKey, defaultLyricsCoverDimmingOpacity)
+        val coverScrim = Color.Black.copy(alpha = coverDimmingAlpha(
+            eligible = showlyricsthumbnail,
+            enabled = coverDimmingEnabled,
+            opacity = coverDimmingOpacity,
+            fallback = defaultLyricsCoverDimmingOpacity,
+        ))
         var lyricsType by rememberPreference(lyricsTypeKey, LyricsType.Auto)
         val providerPreferences = LyricsType.entries.associateWith { mode ->
             key(mode) { rememberPreference(LyricsProvider.preferenceKey(mode), "") }
@@ -436,7 +450,7 @@ fun LyricsScreen(
         val overlayCanvasViewport = Modifier.glassOverlayCanvasViewport(glass, showThumbnail = showlyricsthumbnail)
         var transportHeightPx by remember { mutableIntStateOf(0) }
         LyricsGlassScene(
-            background = if (showlyricsthumbnail) LyricsCoverScrim else Color.Transparent,
+            background = coverScrim,
             modifier = modifier
                 .pointerInput(Unit) { detectTapGestures(onTap = { onDismiss() }) }
                 .fillMaxSize()
@@ -572,6 +586,7 @@ fun LyricsScreen(
                         actualLyricsType == LyricsType.Unsynced -> {
                             UnsyncedLyricsView(
                                 text = text,
+                                coverScrim = coverScrim,
                                 showlyricsthumbnail = showlyricsthumbnail,
                                 isDisplayed = true,
                                 showSecondLine = showSecondLine,
@@ -804,6 +819,7 @@ fun LyricsScreen(
                                 menuState.display {
                                     LyricsSettingsMenu(
                                         isLandscape = isLandscape,
+                                         isOnCover = { currentLyricsOnCover.value },
                                         translateEnabled = translateEnabledState,
                                         canRefetchLyrics = { lyrics?.isEdited == false },
                                         actualLyricsType = {

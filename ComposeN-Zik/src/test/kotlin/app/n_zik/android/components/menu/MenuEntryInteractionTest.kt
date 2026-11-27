@@ -1,9 +1,12 @@
 package app.n_zik.android.components.menu
 
 import android.app.Application
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -160,6 +163,64 @@ class MenuEntryInteractionTest {
             composeRule.onNodeWithText("Track options").assert(isHeading)
             composeRule.onNodeWithText("Playback").assert(isHeading)
         }
+    }
+
+    @Test
+    fun `conditional list content loses interaction before its exit finishes`() {
+        val visible = mutableStateOf(true)
+        var clicks = 0
+        composeRule.setContent {
+            Box(Modifier.testTag("menu")) {
+                AnimatedMenuContent(visible = visible.value) {
+                    Text("Opacity", modifier = Modifier.size(80.dp, 48.dp).clickable { clicks++ })
+                }
+            }
+        }
+
+        val root = composeRule.onNodeWithTag("menu")
+        val itemCenter = composeRule.onNodeWithText("Opacity").fetchSemanticsNode().boundsInRoot.center -
+            root.fetchSemanticsNode().boundsInRoot.topLeft
+        composeRule.mainClock.autoAdvance = false
+        composeRule.runOnIdle {
+            visible.value = false
+            Snapshot.sendApplyNotifications()
+        }
+        composeRule.mainClock.advanceTimeBy(48)
+
+        val inaccessible = SemanticsMatcher.keyIsDefined(SemanticsProperties.HideFromAccessibility)
+        composeRule.onNode(hasText("Opacity") and hasAnyAncestor(inaccessible), useUnmergedTree = true).assertExists()
+        root.performTouchInput { click(itemCenter) }
+        composeRule.runOnIdle { assertEquals(0, clicks) }
+
+        composeRule.mainClock.autoAdvance = true
+        composeRule.onNodeWithText("Opacity", useUnmergedTree = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun `conditional grid cell closes its gap while neighboring items retain their identity`() {
+        val visible = mutableStateOf(true)
+        composeRule.setContent {
+            LazyVerticalGrid(columns = GridCells.Fixed(2), modifier = Modifier.size(200.dp, 120.dp)) {
+                if (visible.value) {
+                    animatedMenuItem(1) { Spacer(Modifier.size(48.dp).testTag("optional")) }
+                }
+                animatedMenuItem(2) { Spacer(Modifier.size(48.dp).testTag("first")) }
+                animatedMenuItem(3) { Spacer(Modifier.size(48.dp).testTag("second")) }
+            }
+        }
+
+        val first = composeRule.onNodeWithTag("first")
+        val second = composeRule.onNodeWithTag("second")
+        val firstId = first.fetchSemanticsNode().id
+        val secondId = second.fetchSemanticsNode().id
+        assertTrue(first.fetchSemanticsNode().boundsInRoot.top < second.fetchSemanticsNode().boundsInRoot.top)
+
+        composeRule.runOnIdle { visible.value = false }
+
+        composeRule.onNodeWithTag("optional").assertDoesNotExist()
+        assertEquals(firstId, first.fetchSemanticsNode().id)
+        assertEquals(secondId, second.fetchSemanticsNode().id)
+        assertEquals(first.fetchSemanticsNode().boundsInRoot.top, second.fetchSemanticsNode().boundsInRoot.top, .5f)
     }
 
     @Test

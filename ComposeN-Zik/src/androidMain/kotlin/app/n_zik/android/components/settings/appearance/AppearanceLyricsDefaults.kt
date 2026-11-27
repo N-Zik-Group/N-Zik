@@ -5,6 +5,8 @@ import app.n_zik.android.utils.karaokeRespectAgentPositionKey
 import app.n_zik.android.utils.landscapeControlsKey
 import app.n_zik.android.utils.lyricsAlignmentKey
 import app.n_zik.android.utils.lyricsBackgroundKey
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
 import app.n_zik.android.utils.lyricsHighlightKey
 import app.n_zik.android.utils.lyricsIntervalIndicatorKey
 import app.n_zik.android.utils.lyricsOutlineKey
@@ -19,12 +21,13 @@ import app.n_zik.android.components.player.lyrics.LyricsProvider
 import app.n_zik.android.components.player.lyrics.karaokeClipRectsDebugKey
 import app.n_zik.android.enums.lyrics.LyricsType
 
-/** Restore menu-only controls through their first-run readers without touching saved lyrics. */
+/** Restore lyrics controls through their first-run readers without touching saved lyrics. */
 internal fun SharedPreferences.Editor.resetLyricsMenuDefaults() {
     listOf(
         landscapeControlsKey, lyricsAlignmentKey, lyricsOutlineKey, romanizationEnabledKey,
         lyricsIntervalIndicatorKey, showSecondLineKey, lyricsSizeAnimateKey, lyricsHighlightKey,
-        lyricsBackgroundKey, lyricsTypeKey, karaokeRespectAgentPositionKey,
+        lyricsBackgroundKey, lyricsCoverDimmingEnabledKey, lyricsCoverDimmingOpacityKey,
+        lyricsTypeKey, karaokeRespectAgentPositionKey,
         otherLanguageAppLyricsKey, karaokeClipRectsDebugKey, lyricsSizeKey, lyricsSizeLKey,
     ).forEach { key -> remove(key) }
     LyricsType.entries.forEach { mode -> remove(LyricsProvider.preferenceKey(mode)) }

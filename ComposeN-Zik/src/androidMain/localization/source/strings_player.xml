@@ -74,6 +74,9 @@
     <string name="lyrics_alignment_left_label">Left</string>
     <string name="lyrics_alignment_right_label">Right</string>
     <string name="lyrics_artwork_overlay_description">Display lyrics over the player artwork.</string>
+    <string name="lyrics_cover_dimming_title">Dim cover behind lyrics</string>
+    <string name="lyrics_cover_dimming_description">Darken the player artwork when lyrics are displayed over it.</string>
+    <string name="lyrics_cover_dimming_opacity">Lyrics cover dimming intensity</string>
     <string name="lyrics_background_enabled_description">Draw a background behind lyrics to improve their readability.</string>
     <string name="lyrics_background_label">Lyrics background</string>
     <string name="lyrics_behavior_section_title">Behavior</string>
@@ -400,6 +403,7 @@
     <string name="visualizer_custom_color_description">Choose the custom color used by this component.</string>
     <string name="visualizer_dark_background_description">Use a black background behind the audio visualization.</string>
     <string name="visualizer_dark_background_title">Dark background for visualizer</string>
+    <string name="visualizer_cover_dimming_opacity">Visualizer cover dimming intensity</string>
     <string name="visualizer_debug_background">VisualizerBackground</string>
     <string name="visualizer_enabled_description">Display an animated visualization that responds to the audio.</string>
     <string name="visualizer_line_thickness">Visualizer Line Thickness</string>

@@ -35,9 +35,14 @@ import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.components.dialog.common.DialogColorPicker
 import app.n_zik.android.enums.lyrics.LyricsColor
 import app.n_zik.android.utils.lyricsColorKey
+import app.n_zik.android.utils.defaultLyricsCoverDimmingOpacity
+import app.n_zik.android.utils.lyricsCoverDimmingEnabledKey
+import app.n_zik.android.utils.lyricsCoverDimmingOpacityKey
 import app.n_zik.android.utils.lyricsCustomColorKey
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
+import app.n_zik.android.components.settings.common.CoverDimmingSlider
+import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherEnumValueSelectorSettingsEntry
 import androidx.compose.ui.platform.testTag
@@ -49,6 +54,8 @@ import app.n_zik.android.components.settings.common.settingsCardExit
 @Composable
 internal fun AppearanceLyricsCard(search: Search) {
     var showlyricsthumbnail by rememberPreference(showlyricsthumbnailKey, true)
+    var coverDimmingEnabled by rememberPreference(lyricsCoverDimmingEnabledKey, true)
+    var coverDimmingOpacity by rememberPreference(lyricsCoverDimmingOpacityKey, defaultLyricsCoverDimmingOpacity)
     val showthumbnail by rememberPreference(showthumbnailKey, true)
     var thumbnailTapEnabled by rememberPreference(thumbnailTapEnabledKey, true)
     var clickLyricsText by rememberPreference(clickOnLyricsTextKey, true)
@@ -60,7 +67,11 @@ internal fun AppearanceLyricsCard(search: Search) {
         true
     )
     var showLyricsStateKey by rememberPreference(showLyricsStateKey, false)
-    val searchCtx_lyrics = search.inputValue.isBlank() || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.lyrics_color).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true)
+    val showDimmingToggle = search.inputValue.isBlank() ||
+        stringResource(R.string.lyrics_cover_dimming_title).contains(search.inputValue, true)
+    val showDimmingSlider = search.inputValue.isBlank() ||
+        stringResource(R.string.lyrics_cover_dimming_opacity).contains(search.inputValue, true)
+    val searchCtx_lyrics = showDimmingToggle || showDimmingSlider || search.inputValue.isBlank() || stringResource(R.string.settings_player_tap_artwork_toggle_lyrics_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_seek_on_line_press_label).contains(search.inputValue, true) || stringResource(R.string.lyrics_color).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_remember_state_label).contains(search.inputValue, true) || stringResource(R.string.settings_lyrics_match_player_background_label).contains(search.inputValue, true) || stringResource(R.string.player_enable_lyrics_popup_message).contains(search.inputValue, true)
     AnimatedVisibility(
                 visible = searchCtx_lyrics,
                 enter = settingsCardEnter,
@@ -153,6 +164,28 @@ internal fun AppearanceLyricsCard(search: Search) {
                         onCheckedChange = { showlyricsthumbnail = it }
                     )
                 }
+
+            if (showDimmingToggle || showDimmingSlider && !coverDimmingEnabled) {
+                OtherSwitchSettingEntry(
+                    icon = R.drawable.images_sharp,
+                    title = stringResource(R.string.lyrics_cover_dimming_title),
+                    text = stringResource(R.string.lyrics_cover_dimming_description),
+                    isChecked = coverDimmingEnabled,
+                    onCheckedChange = { coverDimmingEnabled = it },
+                    modifier = Modifier.settingsSearchTarget("appearance.txt_lyrics.cover_dimming_enabled"),
+                )
+            }
+
+            SettingsEntryVisibility(visible = showDimmingSlider && coverDimmingEnabled) {
+                CoverDimmingSlider(
+                    title = stringResource(R.string.lyrics_cover_dimming_opacity),
+                    opacity = coverDimmingOpacity,
+                    defaultOpacity = defaultLyricsCoverDimmingOpacity,
+                    onOpacityChange = { if (coverDimmingEnabled) coverDimmingOpacity = it },
+                    modifier = Modifier.padding(start = 16.dp)
+                        .settingsSearchTarget("appearance.txt_lyrics.cover_dimming_opacity"),
+                )
+            }
 
             if (showthumbnail && showlyricsthumbnail)
                 if (search.inputValue.isBlank() || stringResource(R.string.settings_lyrics_match_player_background_label).contains(
