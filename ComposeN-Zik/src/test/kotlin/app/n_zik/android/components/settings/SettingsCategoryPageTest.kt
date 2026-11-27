@@ -509,6 +509,32 @@ class SettingsCategoryPageTest {
         assertEquals(before, context.preferences.all)
     }
 
+    @Test fun artworkStatsSearchExplainsThePlayerTypePrerequisite() {
+        val before = context.preferences.all.toMap()
+        val target = "appearance.cover_and_thumbnail.statsfornerdsplayer"
+        val playerType = "appearance.player_presets_and_layout.playertype"
+        val messages = mutableListOf<String>()
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsSearchMessage provides { message -> messages.add(message) },
+            ) {
+                SettingsCategoryPage(categoryId = "player", navController = mockk(relaxed = true), target = target)
+            }
+        }
+        pumpUntil("the unavailable Artwork option must highlight Player type") {
+            runCatching {
+                composeRule.onNodeWithTag("settings.target.$playerType", useUnmergedTree = true)
+                    .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
+            }.isSuccess
+        }
+        val prerequisite = "${context.getString(R.string.player_type)} › ${context.getString(R.string.player_controls_style_modern)}"
+        assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, prerequisite)), messages)
+        assertEquals(before, context.preferences.all)
+    }
+
     @Test fun mixedSourceCategoryHasOneScrollContainerAndTargetsTheActualSetting() {
         val before = context.preferences.all.toMap()
         val target = "ui.swipe_to_action.queue_and_local_playlists_right_swipe"

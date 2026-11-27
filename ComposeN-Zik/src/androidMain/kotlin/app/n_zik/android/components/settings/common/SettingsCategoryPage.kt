@@ -1,5 +1,6 @@
 package app.n_zik.android.components.settings.common
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.net.Uri
@@ -77,6 +78,7 @@ import app.n_zik.android.components.settings.about.AboutSettingsContent
 import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
 import app.n_zik.android.components.settings.accounts.discordSettingsSearchFallback
 import app.n_zik.android.components.settings.accounts.githubSettingsSearchFallback
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
 import app.n_zik.android.components.settings.ai.AIRecommendationSettingsContent
 import app.n_zik.android.components.settings.appearance.AppearanceSettingsContent
 import app.n_zik.android.components.settings.appearance.appearanceBehaviorSearchFallback
@@ -104,6 +106,9 @@ import app.n_zik.android.components.tab.Search
 import app.n_zik.android.themed.n_zik.screen.player.readPlayerActionBarTopSlots
 import app.n_zik.android.utils.StringResourceIdentity
 import app.n_zik.android.utils.enableQuickPicksPageKey
+import app.n_zik.android.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.expandedplayerKey
 import app.n_zik.android.utils.expandedplayertoggleKey
 import app.n_zik.android.utils.getEnum
@@ -114,6 +119,9 @@ import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.useSystemFontKey
+import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.ytCookieKey
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.Proxy
@@ -134,6 +142,7 @@ private const val CoverAnimationStyleTarget = "appearance.cover_and_thumbnail.co
 private const val BackgroundSettingsTarget = "appearance.colors_and_background.background_colors"
 private const val GradientSettingsTarget = "appearance.colors_and_background.gradienttype"
 private const val PlayerTypeSettingsTarget = "appearance.player_presets_and_layout.playertype"
+private const val ArtworkStatsSettingsTarget = "appearance.cover_and_thumbnail.statsfornerdsplayer"
 private val expandedArtworkTargets = setOf(
     "appearance.cover_and_thumbnail.carousel",
     "appearance.cover_and_thumbnail.carouselsize",
@@ -150,6 +159,7 @@ private const val AutoBackupIntervalTarget = "embedded.auto_backup.auto_backup_i
 private const val LocalMusicEnabledTarget = "other.on_device.enabled"
 private const val LocalMusicFolderModeTarget = "other.on_device.folders"
 internal const val LocalMusicPermissionTarget = "other.on_device.permission"
+private const val YouTubeSyncMasterTarget = "accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"
 
 private data class SearchPrerequisite(
     val target: String,
@@ -238,6 +248,7 @@ private fun settingsSearchPrerequisite(
 
     val requiredPlayerType = when {
         target == "appearance.cover_and_thumbnail.thumbnailpause" -> PlayerType.Essential
+        target == ArtworkStatsSettingsTarget && preferences.getBoolean(showthumbnailKey, true) -> PlayerType.Modern
         target in expandedArtworkTargets ||
             target == "appearance.cover_and_thumbnail.fadingedge" ||
             target == "appearance.cover_and_thumbnail.swipe_Animation_No_Thumbnail" ||
@@ -370,8 +381,7 @@ internal fun playerSettingsSearchFallback(
     return when (target) {
         "appearance.cover_and_thumbnail.carousel", "appearance.cover_and_thumbnail.carouselsize" ->
             if (isLandscape) null else if (playerType != PlayerType.Modern) layout else actionButtons
-        "appearance.cover_and_thumbnail.fadingedge", "appearance.cover_and_thumbnail.thumbnailpause",
-        "appearance.cover_and_thumbnail.statsfornerdsplayer" -> layout
+        "appearance.cover_and_thumbnail.fadingedge", "appearance.cover_and_thumbnail.thumbnailpause" -> layout
         "appearance.full_screen_lyrics_components.show_total_time_of_queue" ->
             "appearance.colors_and_background.show_total_time_of_queue"
         "appearance.full_screen_lyrics_components.statsfornerds" ->
@@ -397,6 +407,26 @@ private fun youtubeLoginSearchFallback(target: String, hasTarget: (String) -> Bo
         else -> return null
     }
     return prerequisite.takeIf(hasTarget) ?: "accounts.youtube_music.enable_youtube_music_login"
+}
+
+private fun youtubeSyncSearchPrerequisite(context: Context, needsEnabledSync: Boolean): SearchPrerequisite? {
+    if (!isYouTubeSyncBuild()) return null
+
+    val account = context.encryptedPreferences
+    val cookie = account.getString(ytCookieKey, null)
+    val on = listOf(R.string.common_state_on)
+    return when {
+        !account.getBoolean(enableYouTubeLoginKey, false) ->
+            SearchPrerequisite("accounts.youtube_music.enable_youtube_music_login", on)
+        !hasYouTubeAuthCookie(cookie) -> SearchPrerequisite(
+            if (cookie.isNullOrBlank()) "accounts.youtube_music.account_login" else "accounts.youtube_music.change_account",
+        )
+        !context.preferences.getBoolean(useLoginForBrowseKey, true) ->
+            SearchPrerequisite("accounts.youtube_music.login_for_browse", on)
+        needsEnabledSync && !account.getBoolean(enableYouTubeSyncKey, false) ->
+            SearchPrerequisite(YouTubeSyncMasterTarget, on)
+        else -> null
+    }
 }
 
 fun settingsCardTargetId(context: android.content.Context, tab: Int, titleRes: Int): String =
@@ -638,22 +668,30 @@ fun SettingsCategoryPage(
         val hiddenFullscreenLyricsTarget = categoryId == "player" && coverVisible &&
             originalCardId == settingsCardTargetId(context, 2, R.string.settings_section_fullscreen_lyrics_title) &&
             context.preferences.getBoolean(showlyricsthumbnailKey, true)
-        val syncOverview = "accounts.sync_data_with_ytm_account.sync_data_with_ytm_account"
+        val syncOverviewCard = settingsCardTargetId(context, 5, R.string.sync_data_with_ytm_account)
         val youtubeSyncTarget = categoryId == "youtube" && (requestedTarget.startsWith("accounts.autosync.") ||
             requestedTarget.startsWith("accounts.sync_import_from_youtube.") ||
             requestedTarget.startsWith("accounts.sync_push_to_youtube.") ||
             requestedTarget.startsWith("accounts.sync_data_with_ytm_account.") ||
             originalCardId in setOf(
+                syncOverviewCard,
                 settingsCardTargetId(context, 5, R.string.sync_imported_playlists_automatic_title),
                 settingsCardTargetId(context, 5, R.string.sync_import_from_youtube),
                 settingsCardTargetId(context, 5, R.string.sync_push_to_youtube),
             ))
+        val youtubeSyncPrerequisite = if (youtubeSyncTarget) {
+            youtubeSyncSearchPrerequisite(context, requestedTarget != YouTubeSyncMasterTarget && requestedTarget != syncOverviewCard)
+        } else null
         val cardId = when {
             hiddenQuickPicksTarget -> settingsCardTargetId(context, 3, R.string.settings_section_quick_picks_visibility_title)
             hiddenCoverLyricsTarget -> settingsCardTargetId(context, 2, R.string.settings_player_artwork_section_title)
             hiddenFullscreenLyricsTarget -> settingsCardTargetId(context, 2, R.string.lyrics_title)
+            youtubeSyncPrerequisite != null -> settingsCardTargetId(
+                context, 5, if (youtubeSyncPrerequisite.target == YouTubeSyncMasterTarget) R.string.sync_data_with_ytm_account
+                else R.string.settings_youtube_music_title,
+            )
             youtubeSyncTarget && latestRows.none { (tab, title) -> settingsCardTargetId(context, tab, title) == originalCardId } ->
-                settingsCardTargetId(context, 5, R.string.sync_data_with_ytm_account)
+                syncOverviewCard
             else -> originalCardId
         }
         val row = latestRows.indexOfFirst { (tab, title) ->
@@ -707,12 +745,14 @@ fun SettingsCategoryPage(
         }
         val disabledFontTarget = requestedTarget == "ui.settings_use_font_type.settings_use_font_type" &&
             preferences.getBoolean(useSystemFontKey, false)
-        val unavailable = disabledFontTarget || hiddenFullscreenLyricsTarget || hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
+        val unavailable = youtubeSyncPrerequisite != null || disabledFontTarget || hiddenFullscreenLyricsTarget ||
+            hiddenCoverLyricsTarget || !registry.targets.containsKey(requestedTarget)
         if (unavailable && registry.sheetTarget == requestedTarget) registry.sheetTarget = null
         val needsQuickPicksForYou = requestedTarget != rawTarget &&
             rawTarget in setOf("ai.quick_picks.tips", "ai.quick_picks.quick_selection_type")
         val searchPrerequisite = when {
             unavailable -> when {
+                youtubeSyncPrerequisite != null -> youtubeSyncPrerequisite
                 entry?.paletteTitleRes != null -> SearchPrerequisite(
                     ThemeSettingsTarget, listOf(ColorPaletteName.Customized.textId),
                 )
@@ -754,7 +794,7 @@ fun SettingsCategoryPage(
                 hiddenCoverLyricsTarget -> ShowCoverSettingsTarget
                 hiddenFullscreenLyricsTarget || requestedTarget == LyricsBackgroundSettingsTarget -> LyricsOnCoverSettingsTarget
                 requestedTarget.startsWith("other.on_device.") -> "other.on_device.enabled"
-                youtubeSyncTarget -> syncOverview
+                youtubeSyncTarget -> YouTubeSyncMasterTarget
                 else -> playerSettingsSearchFallback(requestedTarget, context.preferences, isLandscape, registry.targets::containsKey)
                     ?: appearanceBehaviorSearchFallback(requestedTarget, registry.targets::containsKey)
                     ?: youtubeLoginSearchFallback(requestedTarget, registry.targets::containsKey)

@@ -54,7 +54,9 @@ import app.n_zik.android.components.settings.accounts.AccountsDiscordCard
 import app.n_zik.android.components.settings.accounts.AccountsSyncCards
 import app.n_zik.android.components.settings.accounts.AccountsYouTubeCard
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
+import app.n_zik.android.components.settings.common.LocalSettingsSearchMessage
 import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.SettingsCategoryPage
 import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.ui.styling.Appearance
@@ -107,6 +109,7 @@ import org.junit.After
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assume.assumeTrue
 
 import org.junit.Rule
 
@@ -329,6 +332,89 @@ class AccountsSettingsEmbeddingWiringTest {
     }
 
 
+
+    @Test
+    fun `searching for the disabled sync master points to the login switch`() {
+        assertSyncSearchPrerequisite(
+            target = "accounts.sync_data_with_ytm_account.sync_data_with_ytm_account",
+            loginEnabled = false,
+            expectedTarget = "accounts.youtube_music.enable_youtube_music_login",
+            expectedLabel = R.string.settings_youtube_login_enabled_label,
+        )
+    }
+
+    @Test
+    fun `searching for a sync detail while logged out points to sign in`() {
+        assertSyncSearchPrerequisite(
+            expectedTarget = "accounts.youtube_music.account_login",
+            expectedLabel = R.string.account_action_login,
+            requiresOn = false,
+        )
+    }
+
+    @Test
+    fun `searching for a sync detail with an incomplete saved session points to change account`() {
+        assertSyncSearchPrerequisite(
+            cookie = "VISITOR_INFO1_LIVE=fixture",
+            expectedTarget = "accounts.youtube_music.change_account",
+            expectedLabel = R.string.account_youtube_change_account,
+            requiresOn = false,
+        )
+    }
+
+    @Test
+    fun `searching for a sync detail without authenticated browsing points to browse settings`() {
+        assertSyncSearchPrerequisite(
+            cookie = "SAPISID=fixture",
+            browseEnabled = false,
+            expectedTarget = "accounts.youtube_music.login_for_browse",
+            expectedLabel = R.string.settings_youtube_authenticated_browsing_label,
+        )
+    }
+
+    @Test
+    fun `searching for a sync detail when sync alone is off points to the sync master`() {
+        assertSyncSearchPrerequisite(
+            cookie = "SAPISID=fixture",
+            expectedTarget = "accounts.sync_data_with_ytm_account.sync_data_with_ytm_account",
+            expectedLabel = R.string.sync_data_with_ytm_account,
+        )
+    }
+
+    private fun assertSyncSearchPrerequisite(
+        expectedTarget: String,
+        expectedLabel: Int,
+        target: String = "accounts.sync_data_with_ytm_account.sync_direction",
+        cookie: String = "",
+        loginEnabled: Boolean = true,
+        browseEnabled: Boolean = true,
+        requiresOn: Boolean = true,
+    ) {
+        assumeTrue(isYouTubeSyncBuild())
+        mockEncryptedPrefs(cookie, loginEnabled)
+        context.preferences.edit().putBoolean(useLoginForBrowseKey, browseEnabled).commit()
+        val messages = mutableListOf<String>()
+        composeRule.setContent {
+            CompositionLocalProvider(
+                LocalPlayerAwareWindowInsets provides WindowInsets(0, 0, 0, 0),
+                LocalAppearance provides appearance,
+                LocalSettingsSearchMessage provides { messages.add(it) },
+            ) {
+                SettingsCategoryPage(categoryId = "youtube", navController = navController, target = target)
+            }
+        }
+
+        val targetLabel = context.getString(expectedLabel)
+        val requirement = if (requiresOn) {
+            "$targetLabel › ${context.getString(R.string.common_state_on)}"
+        } else targetLabel
+        composeRule.waitUntil(timeoutMillis = 5_000) { messages.isNotEmpty() }
+        composeRule.onNodeWithTag("settings.target.$expectedTarget", useUnmergedTree = true).assertIsDisplayed()
+        assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, requirement)), messages)
+        assertEquals(loginEnabled, context.encryptedPreferences.getBoolean(enableYouTubeLoginKey, false))
+        assertEquals(cookie.ifBlank { null }, context.encryptedPreferences.getString(ytCookieKey, null))
+        assertEquals(browseEnabled, context.preferences.getBoolean(useLoginForBrowseKey, true))
+    }
 
     // AccountsSettings is @ExperimentalAnimationApi (its section fades).
 

@@ -1672,3 +1672,7 @@ Menus:
 Menus:
 - fix(menu): keep Listen Together form actions contextual
   - Show Back only over the room menu and preserve the username draft when joining a room during editing.
+
+Settings:
+- fix(settings): guide search to sync and artwork prerequisites
+  - Point search results to available account controls and to the Modern player when artwork hides the requested setting.
