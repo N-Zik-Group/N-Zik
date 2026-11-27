@@ -11,7 +11,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.R
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.LocalPlayerServiceBinder
+import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.models.Song
 import app.n_zik.android.playback.services.LOCAL_KEY_PREFIX
 import app.n_zik.android.playback.services.PlayerServiceModern
@@ -25,6 +27,7 @@ import java.io.File
 import java.util.Optional
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
 import app.n_zik.android.appContext
+import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -64,6 +67,8 @@ open class DeleteSongDialog(
 
     override fun onConfirm() {
         song.ifPresent { s ->
+            val context = appContext()
+            val owner = ProfileWorkOwner.capture(context)
             menuState.hide()
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 try {
@@ -77,8 +82,11 @@ open class DeleteSongDialog(
                                 songTable.delete(s)
                             }
                         }
-                        WaveformExtractor.deleteWaveform(appContext(), s.id)
+                        WaveformExtractor.deleteWaveform(context, s.id)
                         deleteSongFiles(s)
+                    }
+                    if (owner != null && ProfileWorkOwner.isBound(context, owner)) {
+                        MyDownloadHelper.removeDownload(context, s.asMediaItem)
                     }
                     Toaster.i(R.string.common_delete_success)
                 } catch (cancelled: CancellationException) {

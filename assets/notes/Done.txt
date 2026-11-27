@@ -1188,3 +1188,7 @@ Menus:
 Settings:
 - fix(network): apply authenticated proxy per profile
   - Load profile proxy credentials securely, accept valid hostnames and reconfigure supported clients when settings change.
+
+Menus:
+- fix(downloads): clear download state when deleting a song
+  - Remove the Media3 download request after successful song deletion within the active profile.
