@@ -151,9 +151,9 @@ class HomeParentRoomTest {
             val memberships = database.songPlaylistMapTable
             assertEquals(listOf(1L), memberships.onDeviceOnlyPlaylistIds().first())
             val deviceMappings = memberships.observeDeviceTrackMappings().first()
-            assertEquals(setOf(1L), availableDevicePlaylistIds(deviceMappings, setOf("local:1", "online")))
-            assertEquals(setOf(2L), availableDevicePlaylistIds(deviceMappings, setOf("local:2")))
-            assertEquals(emptySet<Long>(), availableDevicePlaylistIds(deviceMappings, emptySet()))
+            assertEquals(mapOf(1L to 1), availableDevicePlaylistSongCounts(deviceMappings, setOf("local:1", "online")))
+            assertEquals(mapOf(2L to 1), availableDevicePlaylistSongCounts(deviceMappings, setOf("local:2")))
+            assertEquals(emptyMap<Long, Int>(), availableDevicePlaylistSongCounts(deviceMappings, emptySet()))
             assertEquals(listOf(1L), memberships.onDeviceOnlyPlaylistIds().first())
         } finally {
             database.close()

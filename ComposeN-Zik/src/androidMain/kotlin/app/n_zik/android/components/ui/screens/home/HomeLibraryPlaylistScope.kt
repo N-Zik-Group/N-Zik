@@ -70,14 +70,31 @@ internal fun homeLibraryActionTargets(
 ): List<PlaylistPreview> =
     selectionActionTargets(selectionActive, selected, visible, { it.playlist.id }, { it.playlist.id })
 
-/** Keeps persisted playlist membership separate from the tracks the current scan can use. */
-internal fun availableDevicePlaylistIds(mappings: List<SongPlaylistMap>, availableSongIds: Set<String>): Set<Long> =
-    mappings.mapNotNullTo(hashSetOf()) { mapping ->
-        mapping.playlistId.takeIf { mapping.songId in availableSongIds }
+/** Counts only mapped tracks available in the current scan. */
+internal fun availableDevicePlaylistSongCounts(
+    mappings: List<SongPlaylistMap>,
+    availableSongIds: Set<String>,
+): Map<Long, Int> = mappings.asSequence()
+    .filter { it.songId in availableSongIds }
+    .groupingBy(SongPlaylistMap::playlistId)
+    .eachCount()
+
+internal fun projectDevicePlaylistPreviews(
+    previews: List<PlaylistPreview>,
+    availableSongCounts: Map<Long, Int>,
+    songCountSortOrder: SortOrder?,
+): List<PlaylistPreview> {
+    val availablePreviews = previews.mapNotNull { preview ->
+        availableSongCounts[preview.playlist.id]?.let { preview.copy(songCount = it) }
     }
+    // Playlist IDs are Room row IDs, the tie order used by the library's regular song count sort.
+    return songCountSortOrder?.applyTo(
+        availablePreviews.sortedWith(compareBy({ it.songCount }, { it.playlist.id })),
+    ) ?: availablePreviews
+}
 
 @Composable
-internal fun rememberAvailableDevicePlaylistIds(): Set<Long>? {
+internal fun rememberAvailableDevicePlaylistSongCounts(): Map<Long, Int>? {
     val context = LocalContext.current
     val profile = getActiveProfile(context)
     return key(profile) {
@@ -85,7 +102,7 @@ internal fun rememberAvailableDevicePlaylistIds(): Set<Long>? {
             combine(
                 context.observeDeviceLibrary(),
                 Database.songPlaylistMapTable.observeDeviceTrackMappings(),
-            ) { scan, mappings -> availableDevicePlaylistIds(mappings, scan.songIds) }.distinctUntilChanged()
+            ) { scan, mappings -> availableDevicePlaylistSongCounts(mappings, scan.songIds) }.distinctUntilChanged()
         }
         availablePlaylists.collectAsStateWithLifecycle(initialValue = null, context = NzikDispatchers.DATA).value
     }

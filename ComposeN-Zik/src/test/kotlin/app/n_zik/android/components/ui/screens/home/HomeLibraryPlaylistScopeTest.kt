@@ -129,4 +129,28 @@ class HomeLibraryPlaylistScopeTest {
         assertEquals(listOf(october), matches)
         assertEquals(listOf(october), homeLibraryActionTargets(matches, listOf(october, september), selectionActive = true))
     }
+
+    @Test fun `device cards count only available tracks and sort by count with the library tie order`() {
+        val mixed = preview(9, "Mixed").copy(songCount = 8)
+        val available = preview(10, "Available").copy(songCount = 3)
+        val tied = preview(11, "Tied").copy(songCount = 4)
+        val missing = preview(12, "Missing")
+        val previews = listOf(tied, available, mixed, missing)
+        val counts = mapOf(mixed.playlist.id to 1, tied.playlist.id to 1, available.playlist.id to 3)
+        val mixedDevice = mixed.copy(songCount = 1)
+        val tiedDevice = tied.copy(songCount = 1)
+
+        assertEquals(
+            listOf(tiedDevice, available, mixedDevice),
+            projectDevicePlaylistPreviews(previews, counts, songCountSortOrder = null),
+        )
+        assertEquals(
+            listOf(mixedDevice, tiedDevice, available),
+            projectDevicePlaylistPreviews(previews, counts, SortOrder.Ascending),
+        )
+        assertEquals(
+            listOf(available, tiedDevice, mixedDevice),
+            projectDevicePlaylistPreviews(previews, counts, SortOrder.Descending),
+        )
+    }
 }

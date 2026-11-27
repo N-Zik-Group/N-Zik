@@ -80,6 +80,7 @@ internal class PlaylistPickerRead(
     previewResult: Result<PlaylistPickerPreviews>?,
     val devicePlaylistIds: Set<Long>,
     deviceScanPending: Boolean = false,
+    val deviceSongCountOrder: SortOrder? = null,
     val retry: () -> Unit,
 ) {
     val result = previewResult.takeUnless { deviceScanPending && it?.isSuccess == true }
@@ -102,7 +103,8 @@ internal fun rememberPlaylistPickerRead(includeDeviceSort: Boolean, deviceScanPe
     val librarySort = libraryBy to libraryOrder
     val pinnedSort = pinnedBy to pinnedOrder
     val youtubeSort = youtubeBy to youtubeOrder
-    val deviceSort = (deviceBy to deviceOrder).takeIf { includeDeviceSort }
+    val deviceSort = (deviceBy to deviceOrder).takeIf { includeDeviceSort && deviceBy != PlaylistSortBy.SongCount }
+    val deviceSongCountOrder = deviceOrder.takeIf { includeDeviceSort && deviceBy == PlaylistSortBy.SongCount }
     var retry by remember { mutableIntStateOf(0) }
     val results = remember(librarySort, pinnedSort, youtubeSort, deviceSort, retry) {
         playlistPickerResults(sortedPlaylistPickerPreviews(librarySort, pinnedSort, youtubeSort, deviceSort))
@@ -112,7 +114,7 @@ internal fun rememberPlaylistPickerRead(includeDeviceSort: Boolean, deviceScanPe
             initialValue = null,
             context = NzikDispatchers.DATA,
         )
-        PlaylistPickerRead(result, devicePlaylistIds, deviceScanPending) { retry++ }
+        PlaylistPickerRead(result, devicePlaylistIds, deviceScanPending, deviceSongCountOrder) { retry++ }
     }
 }
 

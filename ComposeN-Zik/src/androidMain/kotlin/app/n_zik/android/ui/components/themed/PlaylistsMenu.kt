@@ -100,7 +100,8 @@ import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilter
 import app.n_zik.android.components.ui.screens.home.YouTubeLibraryFilterChip
 import app.n_zik.android.components.ui.screens.home.matchesOnDevicePlaylist
 import app.n_zik.android.components.ui.screens.home.matchesYouTubeLibraryFilter
-import app.n_zik.android.components.ui.screens.home.rememberAvailableDevicePlaylistIds
+import app.n_zik.android.components.ui.screens.home.projectDevicePlaylistPreviews
+import app.n_zik.android.components.ui.screens.home.rememberAvailableDevicePlaylistSongCounts
 import app.n_zik.android.core.utils.Toaster
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
@@ -666,23 +667,25 @@ class PlaylistsMenu private constructor(
         val online by context.isNetworkAvailableComposable
         val showOnDevice by rememberPreference(showOnDevicePlaylistsKey, true)
         val showDeviceTab = deviceLibraryEnabled() && showOnDevice
-        val availableDeviceIds = if (showDeviceTab && request.filters.group == R.string.library_on_device_title) {
-            rememberAvailableDevicePlaylistIds()
-        } else emptySet()
+        val availableDeviceCounts = if (showDeviceTab && request.filters.group == R.string.library_on_device_title) {
+            rememberAvailableDevicePlaylistSongCounts()
+        } else emptyMap()
         val playlistRead = rememberPlaylistPickerRead(
             includeDeviceSort = showDeviceTab,
-            deviceScanPending = availableDeviceIds == null,
+            deviceScanPending = availableDeviceCounts == null,
         )
         val previews = playlistRead.result?.getOrNull()
         val base = playlistPickerSections(
-            playlistRead.libraryPreviews, online, playlistRead.devicePlaylistIds, availableDeviceIds.orEmpty(),
+            playlistRead.libraryPreviews, online, playlistRead.devicePlaylistIds, availableDeviceCounts.orEmpty().keys,
         )
         fun List<PlaylistPreview>.ordered(rank: Map<Long, Int>?): List<PlaylistPreview> =
             if (rank.isNullOrEmpty()) this else sortedBy { rank[it.playlist.id] ?: Int.MAX_VALUE }
         val sections = base.copy(
             pinned = base.pinned.ordered(previews?.pinnedRank),
             youtube = base.youtube.ordered(previews?.youtubeRank),
-            device = base.device.ordered(previews?.deviceRank),
+            device = projectDevicePlaylistPreviews(
+                base.device.ordered(previews?.deviceRank), availableDeviceCounts.orEmpty(), playlistRead.deviceSongCountOrder,
+            ),
         )
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
         val search = Search.retained(request.filters.input, request.filters.searchVisible, menuState)

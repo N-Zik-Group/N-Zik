@@ -261,8 +261,8 @@ fun HomeLibrary(
         else Database.songPlaylistMapTable.playlistIdsWithDeviceTracks().map { it.toSet() }
     }.collectAsStateWithLifecycle(emptySet(), context = NzikDispatchers.DATA)
     val onDeviceSource = showOnDevice && playlistType == PlaylistsType.OnDevice && previewSession == null
-    val devicePlaylistsWithAvailableTracks =
-        if (onDeviceSource) rememberAvailableDevicePlaylistIds() else emptySet()
+    val availableDevicePlaylistSongCounts =
+        if (onDeviceSource) rememberAvailableDevicePlaylistSongCounts() else emptyMap()
     val scopeWithoutQuery = remember(libraryScope) { libraryScope.copy(query = "") }
     var filteredItems by key(playlistType) { persistList<PlaylistPreview>("home/playlists/$playlistType/filtered") }
     LaunchedEffect(libraryScope) { itemSelector.isActive = false }
@@ -352,14 +352,22 @@ fun HomeLibrary(
 
     val searchReady = searchDataReady && completedSearchQuery == search.filterQuery
     val deviceIdsReady = devicePlaylistIds != null
-    var projectionReady by remember(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, devicePlaylistsWithAvailableTracks) {
+    val deviceSongCountOrder = sort.sortOrder.takeIf { onDeviceSource && sort.sortBy == PlaylistSortBy.SongCount }
+    var projectionReady by remember(
+        searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, availableDevicePlaylistSongCounts, deviceSongCountOrder,
+    ) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, devicePlaylistsWithAvailableTracks) {
-        if (!searchReady || !deviceIdsReady || devicePlaylistsWithAvailableTracks == null) return@LaunchedEffect
+    LaunchedEffect(
+        searchReady, itemsOnDisplay, scopeWithoutQuery, deviceIdsReady, availableDevicePlaylistSongCounts, deviceSongCountOrder,
+    ) {
+        if (!searchReady || !deviceIdsReady || availableDevicePlaylistSongCounts == null) return@LaunchedEffect
         val candidates = itemsOnDisplay
         filteredItems = withContext(NzikDispatchers.DATA) {
-            scopeWithoutQuery.visible(candidates, devicePlaylistsWithAvailableTracks)
+            val visible = scopeWithoutQuery.visible(candidates, availableDevicePlaylistSongCounts.keys)
+            if (scopeWithoutQuery.type == PlaylistsType.OnDevice) {
+                projectDevicePlaylistPreviews(visible, availableDevicePlaylistSongCounts, deviceSongCountOrder)
+            } else visible
         }
         projectionReady = true
     }
@@ -570,10 +578,7 @@ fun HomeLibrary(
                 }
                 val toolbarOrder = HomeLibraryToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
                 val playlistAnchor = playlistActionsAnchor(toolbarOrder)
-                val hasTracksToAdd = actionTargets().any { preview ->
-                    if (playlistType == PlaylistsType.OnDevice) preview.playlist.id in devicePlaylistsWithAvailableTracks.orEmpty()
-                    else preview.songCount > 0
-                }
+                val hasTracksToAdd = actionTargets().any { it.songCount > 0 }
                 val addPlaylistAction = rememberCollectionAddAction(
                     sourceId = "library",
                     menuState = menuState,

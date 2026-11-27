@@ -1920,3 +1920,7 @@ Playlists / Export:
 Menus / Playback:
 - fix(player): preserve the sleep timer when opening the dial
   - Keep duration on opening the dial and hold the final dialog state during dismissal.
+
+Playlists / On device:
+- fix(playlist): count available device tracks in Library
+  - Share scanned-track counts between the Library and the picker, including count sorting and ties.
