@@ -1208,3 +1208,7 @@ Menus:
 Settings:
 - fix(settings): index server values and show Quick Picks prerequisites
   - Use the displayed PC server timer options for search and describe the For you switch needed for hidden Quick Picks options.
+
+Menus:
+- fix(menu): remove empty favorites cells from grids
+  - Use the same visibility predicate before adding a grid cell and while drawing the action.

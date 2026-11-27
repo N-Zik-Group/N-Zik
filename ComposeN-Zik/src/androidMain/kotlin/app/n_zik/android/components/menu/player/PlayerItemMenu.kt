@@ -291,7 +291,9 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             for (i in (playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT - 2) until playbackStart + LOCAL_PLAYER_PLAYBACK_COUNT) {
-                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+                val action = buttons.getOrNull(i) as? MenuIcon ?: continue
+                if (action is LikeComponent && !action.isMenuVisible) continue
+                item { action.GridMenuItem() }
             }
 
             item(span = { GridItemSpan(maxLineSpan) }) {
@@ -330,7 +332,7 @@ class PlayerItemMenu private constructor(
             buttons.getOrNull(2)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
-            buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            (buttons.getOrNull(8) as? LikeComponent)?.takeIf { it.isMenuVisible }?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(9)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             if (!offlineMode) buttons.getOrNull(10)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }

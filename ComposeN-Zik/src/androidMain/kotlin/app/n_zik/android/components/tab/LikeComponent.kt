@@ -39,14 +39,16 @@ class LikeComponent private constructor(
         @Composable
         get() = stringResource( messageId )
 
+    internal val isMenuVisible: Boolean get() = isVisible()
+
     @Composable
     override fun ListMenuItem() {
-        if (isVisible()) super.ListMenuItem()
+        if (isMenuVisible) super.ListMenuItem()
     }
 
     @Composable
     override fun GridMenuItem() {
-        if (isVisible()) super.GridMenuItem()
+        if (isMenuVisible) super.GridMenuItem()
     }
 
     override fun onShortClick() {

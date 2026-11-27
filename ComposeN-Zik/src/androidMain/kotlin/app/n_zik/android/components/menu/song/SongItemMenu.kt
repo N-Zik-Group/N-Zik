@@ -282,7 +282,9 @@ class SongItemMenu private constructor(
             }
             buttons.filterIsInstance<ExportCacheDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             for (i in (playbackStart + LOCAL_PLAYBACK_COUNT - 2) until playbackStart + LOCAL_PLAYBACK_COUNT) {
-                buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+                val action = buttons.getOrNull(i) as? MenuIcon ?: continue
+                if (action is LikeComponent && !action.isMenuVisible) continue
+                item { action.GridMenuItem() }
             }
 
             // Section: Playback
@@ -327,7 +329,7 @@ class SongItemMenu private constructor(
             buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             buttons.filterIsInstance<ChangeAlbumBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<ChangeArtistBrowseIdDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
-            buttons.getOrNull(7)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
+            (buttons.getOrNull(7) as? LikeComponent)?.takeIf { it.isMenuVisible }?.let { item { it.GridMenuItem() } }
             buttons.getOrNull(8)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
             if (!offlineMode) buttons.filterIsInstance<UpdateSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
             buttons.filterIsInstance<DeleteSongDialog>().firstOrNull()?.let { item { it.GridMenuItem() } }
