@@ -1900,3 +1900,7 @@ Menus / Playlists:
 Settings / Search:
 - fix(settings): explain Rewind alert prerequisites
   - Explain which Rewind options make alert settings available after opening a search result.
+
+Menus / Search:
+- fix(menu): scope picker search back to the active page
+  - Keep the retained search filter from consuming Back while its sheet page animates out.

@@ -1,5 +1,7 @@
 package app.n_zik.android.components.search
 
+import android.os.Handler
+import android.os.Looper
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.runtime.Composable
@@ -13,17 +15,28 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /** Registers only active sessions, after the destination's existing navigation callbacks. */
 @Composable
-internal fun SearchBackHandler(active: Boolean, onDismiss: () -> Unit) {
-    if (!active) return
+internal fun SearchBackHandler(
+    active: Boolean,
+    canConsumeBack: (() -> Boolean)? = null,
+    onDismiss: () -> Unit,
+) {
+    if (!active || canConsumeBack?.invoke() == false) return
     val dispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher ?: return
     val lifecycleOwner = LocalLifecycleOwner.current
     val currentDismiss = rememberUpdatedState(onDismiss)
+    val currentCanConsumeBack = rememberUpdatedState(canConsumeBack)
     val lifecycle = lifecycleOwner.lifecycle
     val callback = remember(dispatcher, lifecycleOwner) {
         object : OnBackPressedCallback(false) {
             override fun handleOnBackPressed() {
                 isEnabled = false
-                currentDismiss.value()
+                // A retained menu entry can lose ownership before its composition updates.
+                if (currentCanConsumeBack.value?.invoke() == false) {
+                    // Dispatch after AndroidX finishes the current gesture.
+                    Handler(Looper.getMainLooper()).post { dispatcher.onBackPressed() }
+                } else {
+                    currentDismiss.value()
+                }
             }
         }
     }

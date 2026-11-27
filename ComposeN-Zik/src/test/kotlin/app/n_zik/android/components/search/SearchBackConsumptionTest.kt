@@ -39,7 +39,10 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 import app.n_zik.android.R
 import app.n_zik.android.components.tab.Search
+import app.n_zik.android.components.ui.app.MenuStackContent
 import app.n_zik.android.core.navigation.rememberAppBackAction
+import app.n_zik.android.enums.TransitionEffect
+import app.n_zik.android.ui.components.MenuState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -278,6 +281,65 @@ class SearchBackConsumptionTest {
         composeRule.runOnIdle { dispatcher.onBackPressed() }
         assertEquals(1, parentBacks)
 
+    }
+
+    @Test
+    fun `retained picker search only consumes back for its active entry`() {
+        val menu = MenuState()
+        val input = mutableStateOf(TextFieldValue("retained filter"))
+        val visible = mutableStateOf(true)
+        var sheetBacks = 0
+        menu.display { Box(Modifier.testTag("root_menu")) }
+        menu.display {
+            val search = Search.retained(input, visible, menu)
+            Column { search.SearchBar(this) }
+        }
+        content {
+            BackHandler {
+                sheetBacks++
+                menu.hide()
+            }
+            MenuStackContent(menu, TransitionEffect.Fade)
+        }
+        settle()
+
+        composeRule.runOnIdle {
+            dispatcher.onBackPressed()
+            assertFalse(visible.value)
+            assertTrue(menu.hasPrevious)
+        }
+        composeRule.runOnIdle { visible.value = true }
+        settle()
+        for (predictive in listOf(false, true)) {
+            val picker = menu.presentationState.second
+            composeRule.runOnIdle {
+                if (predictive) {
+                    dispatcher.dispatchOnBackStarted(BackEventCompat(0f, 0f, 0f, BackEventCompat.EDGE_LEFT))
+                }
+                menu.display { Box(Modifier.testTag("nested_menu")) }
+                dispatcher.onBackPressed()
+                assertTrue(visible.value)
+            }
+            settle()
+            composeRule.runOnIdle {
+                assertTrue(menu.presentationState.second === picker)
+                assertTrue(menu.hasPrevious)
+                assertTrue(visible.value)
+            }
+        }
+
+        composeRule.runOnIdle { menu.pop() }
+        composeRule.mainClock.advanceTimeBy(64)
+        composeRule.runOnIdle {
+            dispatcher.onBackPressed()
+            assertTrue(visible.value)
+        }
+        settle()
+        composeRule.runOnIdle {
+            assertEquals(1, sheetBacks)
+            assertTrue(visible.value)
+            assertEquals("retained filter", input.value.text)
+        }
     }
 
     @Test

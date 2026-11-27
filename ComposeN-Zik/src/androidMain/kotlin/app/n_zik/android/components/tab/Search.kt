@@ -41,7 +41,9 @@ import app.n_zik.android.components.menu.withMenuClick
 import app.n_zik.android.components.search.SearchHeaderVisibility
 import app.n_zik.android.components.search.SearchMotionDurationMillis
 import app.n_zik.android.components.search.UnifiedSearchBar
+import app.n_zik.android.ui.components.LocalMenuEntry
 import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.ui.components.MenuState
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.first
@@ -53,6 +55,7 @@ class Search private constructor(
     private val lazyListState: LazyListState?,
     private val lazyGridState: LazyGridState?,
     private val persistent: Boolean = false,
+    private val canConsumeBack: (() -> Boolean)? = null,
 ): MenuIcon, Descriptive{
 
     companion object {
@@ -96,9 +99,20 @@ class Search private constructor(
         internal fun detail() = forHome()
 
         @Composable
-        internal fun retained(input: MutableState<TextFieldValue>, visible: MutableState<Boolean>) = Search(
-            input, visible, remember { mutableStateOf(false) }, null, null,
-        )
+        internal fun retained(
+            input: MutableState<TextFieldValue>,
+            visible: MutableState<Boolean>,
+            menuState: MenuState,
+        ): Search {
+            val entry = LocalMenuEntry.current
+            val ownsBack: (() -> Boolean)? = entry?.let {
+                { menuState.isDisplayed && menuState.presentationState.second === entry }
+            }
+            return Search(
+                input, visible, remember { mutableStateOf(false) }, null, null,
+                canConsumeBack = ownsBack,
+            )
+        }
 
         /** Hosts may retain input across nested destinations without restoring keyboard focus. */
         @Composable
@@ -271,6 +285,7 @@ class Search private constructor(
                                 isFocused = false
                                 if (!persistent) isVisible = false
                             },
+                            canConsumeBack = canConsumeBack,
                         )
                     }
                 }

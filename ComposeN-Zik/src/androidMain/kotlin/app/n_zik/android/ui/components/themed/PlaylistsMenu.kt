@@ -685,7 +685,7 @@ class PlaylistsMenu private constructor(
             device = base.device.ordered(previews?.deviceRank),
         )
         val songPlaylistIds = if (songId != null) rememberSongPlaylistIds(songId) else emptyList()
-        val search = Search.retained(request.filters.input, request.filters.searchVisible)
+        val search = Search.retained(request.filters.input, request.filters.searchVisible, menuState)
         val menuKey = menuState.transitionKey
         fun add(preview: PlaylistPreview, createdAfterConfirmation: Boolean = false) {
             if (!createdAfterConfirmation && (request.isAdding || !menuState.isCurrentMenu(menuKey))) return

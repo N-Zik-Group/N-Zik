@@ -103,6 +103,7 @@ fun UnifiedSearchBar(
     onFocused: (Boolean) -> Unit = {},
     textFieldTestTag: String? = null,
     backSessionActive: Boolean? = null,
+    canConsumeBack: (() -> Boolean)? = null,
     onBackDismiss: () -> Unit = {},
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -112,7 +113,7 @@ fun UnifiedSearchBar(
     val barShape = uiRoundnessShape()
 
     key(isFocused) {
-        SearchBackHandler(active = backSessionActive ?: isFocused) {
+        SearchBackHandler(active = backSessionActive ?: isFocused, canConsumeBack = canConsumeBack) {
             onBackDismiss()
             keyboardController?.hide()
             focusManager.clearFocus(force = true)
