@@ -26,6 +26,12 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
 
 import androidx.compose.ui.test.junit4.createComposeRule
 
@@ -45,6 +51,11 @@ import app.n_zik.android.enums.FontType
 import app.n_zik.android.enums.NavRoutes
 import app.n_zik.android.components.settings.accounts.AccountsSettings
 import app.n_zik.android.components.settings.accounts.AccountsDiscordCard
+import app.n_zik.android.components.settings.accounts.AccountsSyncCards
+import app.n_zik.android.components.settings.accounts.AccountsYouTubeCard
+import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
+import app.n_zik.android.components.settings.common.LocalSettingsTargets
+import app.n_zik.android.components.settings.common.SettingsTargetRegistry
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.ui.styling.Appearance
 
@@ -55,6 +66,10 @@ import app.n_zik.android.ui.styling.LocalAppearance
 import app.n_zik.android.ui.styling.typographyOf
 
 import app.n_zik.android.utils.enableYouTubeLoginKey
+import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.cancelAllSyncs
+import app.n_zik.android.utils.syncImportHistoryKey
+import app.n_zik.android.utils.useLoginForBrowseKey
 
 import app.n_zik.android.utils.encryptedPreferences
 
@@ -90,6 +105,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 
 import org.junit.Rule
 
@@ -188,6 +205,100 @@ class AccountsSettingsEmbeddingWiringTest {
     }
 
 
+
+    private fun seedEnabledYouTubeSync(): SharedPreferences {
+        mockEncryptedPrefs(cookie = "SAPISID=test", loginEnabled = true)
+        val secure = context.getSharedPreferences("youtube-sync-wiring", Context.MODE_PRIVATE)
+        secure.edit().putString(ytCookieKey, "SAPISID=test")
+            .putBoolean(enableYouTubeLoginKey, true)
+            .putBoolean(enableYouTubeSyncKey, true)
+            .apply()
+        context.preferences.edit().putBoolean(useLoginForBrowseKey, true)
+            .putBoolean(syncImportHistoryKey, true)
+            .apply()
+        every { any<Context>().encryptedPreferences } returns secure
+        mockkStatic(::cancelAllSyncs)
+        every { cancelAllSyncs() } answers {
+            assertFalse(secure.getBoolean(enableYouTubeSyncKey, true))
+            assertFalse(context.preferences.getBoolean(syncImportHistoryKey, true))
+        }
+        return secure
+    }
+
+    @Test
+    fun disablingTheSyncMasterCancelsQueuedAndRunningSync() {
+        val secure = seedEnabledYouTubeSync()
+        mockkStatic(::isYouTubeSyncBuild)
+        every { isYouTubeSyncBuild(any()) } returns true
+        val registry = SettingsTargetRegistry()
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides registry) {
+                AccountsSyncCards(selectedCards = setOf(R.string.sync_data_with_ytm_account))
+            }
+        }
+
+        composeRule.onNodeWithTag("settings.target.accounts.sync_data_with_ytm_account.sync_data_with_ytm_account")
+            .performClick()
+
+        verify(exactly = 1) { cancelAllSyncs() }
+        assertTrue(secure.getBoolean(enableYouTubeLoginKey, false))
+        assertEquals("SAPISID=test", secure.getString(ytCookieKey, null))
+    }
+
+    @Test
+    fun disablingTheLoginMasterCancelsSyncButKeepsTheAccount() {
+        val secure = seedEnabledYouTubeSync()
+        val registry = SettingsTargetRegistry()
+        val previousSession = Innertube.youtubeSessionSnapshot()
+        val previousBrowse = Innertube.useLoginForBrowse
+        try {
+            composeRule.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides registry) {
+                    AccountsYouTubeCard(search = Search(initialVisible = false))
+                }
+            }
+
+            composeRule.onNodeWithTag("settings.target.accounts.youtube_music.enable_youtube_music_login")
+                .performClick()
+
+            verify(exactly = 1) { cancelAllSyncs() }
+            assertFalse(secure.getBoolean(enableYouTubeLoginKey, true))
+            assertEquals("SAPISID=test", secure.getString(ytCookieKey, null))
+        } finally {
+            Innertube.replaceYouTubeSession(previousSession)
+            Innertube.useLoginForBrowse = previousBrowse
+        }
+    }
+
+    @Test
+    fun disablingAuthenticatedBrowsingCancelsSyncButKeepsTheAccount() {
+        val secure = seedEnabledYouTubeSync()
+        val registry = SettingsTargetRegistry()
+        val previousBrowse = Innertube.useLoginForBrowse
+        try {
+            composeRule.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides registry) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        AccountsYouTubeCard(search = Search(initialVisible = false))
+                    }
+                }
+            }
+
+            composeRule.onNodeWithTag("settings.target.accounts.youtube_music.login_for_browse")
+                .performScrollTo()
+                .assertIsOn()
+                .assertIsEnabled()
+                .performClick()
+            composeRule.waitForIdle()
+
+            verify(exactly = 1) { cancelAllSyncs() }
+            assertFalse(context.preferences.getBoolean(useLoginForBrowseKey, true))
+            assertTrue(secure.getBoolean(enableYouTubeLoginKey, false))
+            assertEquals("SAPISID=test", secure.getString(ytCookieKey, null))
+        } finally {
+            Innertube.useLoginForBrowse = previousBrowse
+        }
+    }
 
     /** Stubs the keystore-backed prefs: [cookie] under [ytCookieKey] ("" = logged out), [loginEnabled] under [enableYouTubeLoginKey], everything else absent (visitorData, dataSyncId, sync toggle, …). */
     private fun mockEncryptedPrefs(cookie: String, loginEnabled: Boolean) {

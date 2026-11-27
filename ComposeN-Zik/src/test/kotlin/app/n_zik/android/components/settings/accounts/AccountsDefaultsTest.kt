@@ -97,7 +97,6 @@ class AccountsDefaultsTest {
             mapOf(
                 "restartActivity" to false,
                 useLoginForBrowseKey to false,
-                useLoginForSearchKey to false,
                 "githubAccountUsageEnabled" to false,
             ),
             context.preferences.all,

@@ -44,6 +44,7 @@ import app.n_zik.android.utils.autosyncAlbumsKey
 import app.n_zik.android.utils.autosyncArtistsKey
 import app.n_zik.android.utils.autosyncLikesKey
 import app.n_zik.android.utils.autosyncPlaylistsKey
+import app.n_zik.android.utils.cancelAllSyncs
 import app.n_zik.android.utils.clearAllSyncedData
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
@@ -187,6 +188,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                     putBoolean(syncPushPlaylistKey, false)
                                     putBoolean(syncPushEpisodeKey, false)
                                 }
+                                cancelAllSyncs()
 
                                 // Clear cached data
                                 appContext().preferences.edit {
@@ -441,6 +443,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                             putBoolean(syncPushPlaylistKey, false)
                                             putBoolean(syncPushEpisodeKey, false)
                                         }
+                                        cancelAllSyncs()
                                     }
                                 },
                                 icon = R.drawable.person

@@ -6,6 +6,12 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.core.content.edit
@@ -17,6 +23,7 @@ import app.n_zik.android.utils.autosyncAlbumsKey
 import app.n_zik.android.utils.autosyncArtistsKey
 import app.n_zik.android.utils.autosyncLikesKey
 import app.n_zik.android.utils.autosyncPlaylistsKey
+import app.n_zik.android.utils.cancelAllSyncs
 import app.n_zik.android.utils.getLastSyncTime
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.queueSync
@@ -84,6 +91,7 @@ internal fun AccountsSyncOverviewCard(isSyncEnabled: Boolean, disabledReason: In
                             putBoolean(syncPushPlaylistKey, false)
                             putBoolean(syncPushEpisodeKey, false)
                         }
+                        cancelAllSyncs()
                     }
                 },
                 icon = R.drawable.sync
@@ -92,12 +100,24 @@ internal fun AccountsSyncOverviewCard(isSyncEnabled: Boolean, disabledReason: In
             AnimatedVisibility(visible = isSyncEnabled) {
                 Column {
                     // Sync status overview
+                    val lifecycle = LocalLifecycleOwner.current.lifecycle
+                    val now by produceState(System.currentTimeMillis(), lifecycle, syncStatusState.isRunning) {
+                        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                            while (isActive) {
+                                value = System.currentTimeMillis()
+                                delay(60_000)
+                            }
+                        }
+                    }
                     val statusText = when {
-                        syncStatusState.isRunning -> stringResource(R.string.sync_status_running, syncStatusState.currentOperation)
+                        syncStatusState.isRunning -> stringResource(
+                            R.string.sync_status_running,
+                            stringResource(syncStatusState.currentOperationLabel ?: R.string.sync_data_with_ytm_account),
+                        )
                         else -> {
                             val lastSync = getLastSyncTime()
                             if (lastSync > 0) {
-                                val elapsed = ((System.currentTimeMillis() - lastSync) / 60000).toInt()
+                                val elapsed = ((now - lastSync).coerceAtLeast(0) / 60_000).toInt()
                                 stringResource(R.string.sync_status_last, elapsed)
                             } else stringResource(R.string.sync_status_never)
                         }
@@ -124,13 +144,14 @@ internal fun AccountsSyncOverviewCard(isSyncEnabled: Boolean, disabledReason: In
                         text = stringResource(R.string.sync_now_description),
                         icon = R.drawable.sync,
                         onClick = {
-                            // Queue all imports + pushes via sync queue (forced)
-                            queueSync(SyncOperation.FullSync)
-                            queueSync(SyncOperation.PushLikedSongs(force = true))
-                            queueSync(SyncOperation.PushAlbumBookmarks(force = true))
-                            queueSync(SyncOperation.PushArtistFollows(force = true))
-                            queueSync(SyncOperation.PushPlaylists(force = true))
-                            queueSync(SyncOperation.PushEpisodes(force = true))
+                            if (syncDirection != SyncDirection.APP_TO_YT) queueSync(SyncOperation.FullSync)
+                            if (syncDirection != SyncDirection.YT_TO_APP) {
+                                queueSync(SyncOperation.PushLikedSongs(force = true))
+                                queueSync(SyncOperation.PushAlbumBookmarks(force = true))
+                                queueSync(SyncOperation.PushArtistFollows(force = true))
+                                queueSync(SyncOperation.PushPlaylists(force = true))
+                                queueSync(SyncOperation.PushEpisodes(force = true))
+                            }
                         }
                     )
                     OtherEnumValueSelectorSettingsEntry(

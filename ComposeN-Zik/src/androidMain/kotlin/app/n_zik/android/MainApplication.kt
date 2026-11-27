@@ -329,7 +329,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             }
             val useLoginForBrowse = preferences.getBoolean(useLoginForBrowseKey, true)
             Innertube.useLoginForBrowse = useLoginForBrowse
-            val youtubeLoginEnabled = encryptedPreferences.getBoolean(enableYouTubeLoginKey, true)
+            val youtubeLoginEnabled = encryptedPreferences.getBoolean(enableYouTubeLoginKey, false)
             applyUseLoginForSearch(this, youtubeLoginEnabled)
             
             // The JVM modules use this app-provided connectivity gate because they have no Android context.

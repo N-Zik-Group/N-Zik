@@ -29,6 +29,18 @@ sealed class SyncOperation {
     data class PushEpisodes(val force: Boolean = false) : SyncOperation()
 }
 
+private val SyncOperation.labelRes: Int
+    get() = when (this) {
+        SyncOperation.FullSync -> R.string.sync_data_with_ytm_account
+        is SyncOperation.SinglePlaylist -> R.string.library_playlists_title
+        SyncOperation.CleanupDuplicates -> R.string.sync_data_with_ytm_account
+        is SyncOperation.PushLikedSongs -> R.string.sync_push_song_like
+        is SyncOperation.PushAlbumBookmarks -> R.string.sync_push_album_bookmark
+        is SyncOperation.PushArtistFollows -> R.string.sync_push_artist_follow
+        is SyncOperation.PushPlaylists -> R.string.sync_push_playlist
+        is SyncOperation.PushEpisodes -> R.string.sync_push_episode
+    }
+
 data class SyncItemStatus(
     val state: String = "idle",
     val detail: SyncStatusDetail? = null
@@ -36,7 +48,7 @@ data class SyncItemStatus(
 
 data class SyncStatus(
     val isRunning: Boolean = false,
-    val currentOperation: String = "",
+    val currentOperationLabel: Int? = null,
     val likedSongs: SyncItemStatus = SyncItemStatus(),
     val librarySongs: SyncItemStatus = SyncItemStatus(),
     val uploadedSongs: SyncItemStatus = SyncItemStatus(),
@@ -121,14 +133,14 @@ private fun startSyncQueue() {
 
             syncMutex.lock()
             try {
-                _syncStatus.update { it.copy(isRunning = true, currentOperation = operation::class.simpleName.orEmpty()) }
+                _syncStatus.update { it.copy(isRunning = true, currentOperationLabel = operation.labelRes) }
                 executeOperation(operation)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Timber.tag("SyncYTMusicUtils").e(e, "Sync operation failed: $operation")
             } finally {
-                _syncStatus.update { it.copy(isRunning = false, currentOperation = "") }
+                _syncStatus.update { it.copy(isRunning = false, currentOperationLabel = null) }
                 syncMutex.unlock()
             }
         }
@@ -163,7 +175,7 @@ fun cancelAllSyncs() {
 private suspend fun trackSyncItem(
     replace: SyncStatus.(SyncItemStatus) -> SyncStatus,
     operation: suspend () -> Boolean,
-) {
+): Boolean {
     val capture = SyncDetailCapture()
     _syncStatus.update { it.replace(SyncItemStatus("syncing")) }
     try {
@@ -175,6 +187,7 @@ private suspend fun trackSyncItem(
         }
         val state = if (succeeded) "idle" else "error"
         _syncStatus.update { it.replace(SyncItemStatus(state, capture.detail)) }
+        return succeeded
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
@@ -187,16 +200,19 @@ private suspend fun trackSyncItem(
 private suspend fun executeOperation(operation: SyncOperation) {
     when (operation) {
         is SyncOperation.FullSync -> {
-            trackSyncItem({ item -> copy(likedSongs = item) }) { importYTMLikedSongs(force = true) }
-            trackSyncItem({ item -> copy(librarySongs = item) }) { importYTMLibrarySongs(force = true) }
-            trackSyncItem({ item -> copy(uploadedSongs = item) }) { importYTMUploadedSongs(force = true) }
-            trackSyncItem({ item -> copy(likedAlbums = item) }) { importYTMLikedAlbums(force = true) }
-            trackSyncItem({ item -> copy(uploadedAlbums = item) }) { importYTMUploadedAlbums(force = true) }
-            trackSyncItem({ item -> copy(artists = item) }) { importYTMSubscribedChannels(force = true) }
-            trackSyncItem({ item -> copy(playlists = item) }) { importYTMPlaylists(force = true) }
-            trackSyncItem({ item -> copy(episodes = item) }) { importYTMEpisodesForLater(force = true) }
+            if (!canImportFromYTM()) return
+            val imported = listOf(
+                trackSyncItem({ item -> copy(likedSongs = item) }) { importYTMLikedSongs(force = true) },
+                trackSyncItem({ item -> copy(librarySongs = item) }) { importYTMLibrarySongs(force = true) },
+                trackSyncItem({ item -> copy(uploadedSongs = item) }) { importYTMUploadedSongs(force = true) },
+                trackSyncItem({ item -> copy(likedAlbums = item) }) { importYTMLikedAlbums(force = true) },
+                trackSyncItem({ item -> copy(uploadedAlbums = item) }) { importYTMUploadedAlbums(force = true) },
+                trackSyncItem({ item -> copy(artists = item) }) { importYTMSubscribedChannels(force = true) },
+                trackSyncItem({ item -> copy(playlists = item) }) { importYTMPlaylists(force = true) },
+                trackSyncItem({ item -> copy(episodes = item) }) { importYTMEpisodesForLater(force = true) },
+            )
             withRetry { cleanupDuplicatePlaylists() }
-            setLastSyncTime()
+            if (imported.all { it }) setLastSyncTime()
         }
         is SyncOperation.SinglePlaylist -> {
             val playlist = Database.playlistTable.findById(operation.playlistId).first()
@@ -209,19 +225,19 @@ private suspend fun executeOperation(operation: SyncOperation) {
         }
 
         // Push operations (App → YTM) — respect direction + individual toggles
-        is SyncOperation.PushLikedSongs -> trackSyncItem({ item -> copy(pushLikedSongs = item) }) {
+        is SyncOperation.PushLikedSongs -> if (canPushToYTM()) trackSyncItem({ item -> copy(pushLikedSongs = item) }) {
             pushYTMLikedSongs(force = operation.force)
         }
-        is SyncOperation.PushAlbumBookmarks -> trackSyncItem({ item -> copy(pushAlbumBookmarks = item) }) {
+        is SyncOperation.PushAlbumBookmarks -> if (canPushToYTM()) trackSyncItem({ item -> copy(pushAlbumBookmarks = item) }) {
             pushYTMAlbumBookmarks(force = operation.force)
         }
-        is SyncOperation.PushArtistFollows -> trackSyncItem({ item -> copy(pushArtistFollows = item) }) {
+        is SyncOperation.PushArtistFollows -> if (canPushToYTM()) trackSyncItem({ item -> copy(pushArtistFollows = item) }) {
             pushYTMArtistFollows(force = operation.force)
         }
-        is SyncOperation.PushPlaylists -> trackSyncItem({ item -> copy(pushPlaylists = item) }) {
+        is SyncOperation.PushPlaylists -> if (canPushToYTM()) trackSyncItem({ item -> copy(pushPlaylists = item) }) {
             pushYTMPlaylists(force = operation.force)
         }
-        is SyncOperation.PushEpisodes -> trackSyncItem({ item -> copy(pushEpisodes = item) }) {
+        is SyncOperation.PushEpisodes -> if (canPushToYTM()) trackSyncItem({ item -> copy(pushEpisodes = item) }) {
             pushYTMSavedEpisodes(force = operation.force)
         }
     }

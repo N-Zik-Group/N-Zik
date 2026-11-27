@@ -1544,3 +1544,7 @@ Settings:
 Settings:
 - fix(settings): tighten search result card padding
   - Use consistent spacing for global and page search results while keeping multiline paths readable.
+
+Settings:
+- fix(sync): respect YouTube sync settings and report progress
+  - Keep queued work, sync direction and status aligned with the active profile settings.
