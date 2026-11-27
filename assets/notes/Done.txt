@@ -1440,3 +1440,7 @@ Android Auto:
 Menus:
 - fix(playlist): finish newly confirmed playlist additions
   - Finish creating and filling a playlist even if the picker closes, while retaining profile ownership.
+
+Menus:
+- fix(menu): disable queue edits for locked guests
+  - Show the queue controls in their disabled state without dismissing the menu.

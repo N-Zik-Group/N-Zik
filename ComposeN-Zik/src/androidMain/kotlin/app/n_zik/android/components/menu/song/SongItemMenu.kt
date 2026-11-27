@@ -103,6 +103,7 @@ import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.showAddToFavoritesShortcut
 import app.n_zik.android.components.tab.Radio
 import app.n_zik.android.core.database.Database
+import app.n_zik.android.listentogether.rememberListenTogetherGuestLock
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.extensions.audiobar.utils.WaveformExtractor
@@ -439,14 +440,15 @@ class SongItemMenu private constructor(
             return if (explicitAlbum != null) item.withPlaybackAlbum(explicitAlbum, albumTitle) else item
         }
         val startRadio = Radio.fromMediaItem { mediaItemForPlayback() }
-        val playNext = PlayNext {
+        val canEditQueue = binder != null && !rememberListenTogetherGuestLock()
+        val playNext = PlayNext(enabled = canEditQueue) {
             val queueEdit = binder?.captureMenuQueueEdit() ?: return@PlayNext
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 val mediaItem = withContext(NzikDispatchers.DATA) { mediaItemForPlayback() }
                 queueEdit.queue(listOf(mediaItem), appContext(), playNext = true)
             }
         }
-        val enqueue = Enqueue {
+        val enqueue = Enqueue(enabled = canEditQueue) {
             val queueEdit = binder?.captureMenuQueueEdit() ?: return@Enqueue
             NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
                 val mediaItem = withContext(NzikDispatchers.DATA) { mediaItemForPlayback() }
