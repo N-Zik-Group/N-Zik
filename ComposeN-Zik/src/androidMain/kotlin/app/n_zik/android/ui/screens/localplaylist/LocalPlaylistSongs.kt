@@ -83,6 +83,8 @@ import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
+import app.n_zik.android.components.menu.playlist.playlistActionsAnchor
 import app.n_zik.android.appContext
 import app.n_zik.android.cleanPrefix
 import app.n_zik.android.colorPalette
@@ -130,7 +132,7 @@ import app.n_zik.android.components.search.SearchEmptySpace
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.settings.appearance.preview.ThemePreviewAssets
 import app.n_zik.android.components.shuffleButtonIcon
-import app.n_zik.android.components.tab.ImportPlaylistsMenu
+import app.n_zik.android.components.dialog.playlist.ImportPlaylistFormatDialog
 import app.n_zik.android.components.tab.ImportSongsFromCSV
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.tab.ItemSelector
@@ -481,7 +483,7 @@ fun LocalPlaylistSongs(
         )
     }
 
-    val importMenu = remember { ImportPlaylistsMenu(
+    val importMenu = remember { ImportPlaylistFormatDialog(
         onImportNzik = { importNzikDialog.onShortClick() },
         onImportSpotify = { importSpotifyDialog.onShortClick() },
         onImportRiplay = { importRiplayDialog.onShortClick() },
@@ -614,7 +616,9 @@ fun LocalPlaylistSongs(
         },
         itemSelector = itemSelector,
         localDestinationsOnly = onDeviceOnly || getSongs().any(Song::isLocal),
+        allowImportChoice = false,
     )
+
 
     fun sync() {
         launchPlaylistSourceRefresh(playlist, coroutineScope)
@@ -1007,13 +1011,25 @@ fun LocalPlaylistSongs(
                 val order = LocalPlaylistToolbarSettingsDialog.parseOrder(toolbarOrderPref)
 
                 val toolbarPreferences = LocalContext.current.preferences
+                val visibleToolbarOrder = order.filter { id ->
+                    id in LocalPlaylistToolbarSettingsDialog.lockedActionIds ||
+                        toolbarPreferences.getBoolean("pl_ts_$id", true)
+                }
+                val playlistAnchor = playlistActionsAnchor(visibleToolbarOrder, exportId = "export")
+                val playlistActions = rememberCollectionAddAction(
+                    sourceId = playlistId.toString(),
+                    menuState = queueMenuState,
+                    canImportCollection = "import_menu" in visibleToolbarOrder && !onDeviceOnly && membershipEditable,
+                    hasTracks = "add_to_playlist" in visibleToolbarOrder && getSongs().isNotEmpty(),
+                    importFromCurrentCollection = false,
+                    canExport = "export" in visibleToolbarOrder && (getSongs().isNotEmpty()),
+                    importDialogOpen = importMenu.isOpen,
+                    openImport = importMenu::open,
+                    openPicker = addToPlaylist::openPicker,
+                    openExport = exportDialog::onShortClick,
+                )
                 val toolbarButtons = buildList {
-                    order.forEach { id ->
-                        // Check toggle state - if disabled, skip this button
-                        val toggleKey = "pl_ts_$id"
-                        val isEnabled = id in LocalPlaylistToolbarSettingsDialog.lockedActionIds ||
-                            toolbarPreferences.getBoolean(toggleKey, true)
-                        if (!isEnabled) return@forEach
+                    visibleToolbarOrder.forEach { id ->
 
                         when (id) {
                             "insertion_position" -> if (playlist?.supportsInsertionPosition() == true) add(insertionDialog)
@@ -1031,11 +1047,10 @@ fun LocalPlaylistSongs(
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
                             "add_to_favorite" -> add(collectionFavorites)
-                            "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
+                            playlistAnchor -> add(playlistActions)
                             "sync" -> if (!onDeviceOnly && !offlineMode && canRefreshPlaylist(playlist)) add( syncComponent )
                             "refresh_on_open" -> if (!onDeviceOnly && canRefreshPlaylist(playlist)) add(refreshOnOpen)
                             "listen_on_yt" -> if (!onDeviceOnly && !offlineMode && playlistLinkKind(playlist?.browseId) != PlaylistLinkKind.Local) add( listenOnYT )
-                            "import_menu" -> if (!onDeviceOnly && membershipEditable) add( importMenu )
                             // Spec 2: rewind-* keep their language-neutral name â€” no rename
                             "rename" -> if (canEditPlaylistMetadata) add(renameDialog)
                             "rename_author" -> if (canEditPlaylistMetadata && sourceKind != PlaylistLinkKind.Local) add(renameAuthorDialog)
@@ -1043,7 +1058,6 @@ fun LocalPlaylistSongs(
                             "delete" -> if (!forceOnDevice) add(itemSelector.guard(deleteDialog) {
                                 canOfferPlaylistDeleteAction(playlist, true) && hasEligibleSelection()
                             })
-                            "export" -> add(itemSelector.guard(exportDialog, hasEligibleSelection))
                             "thumbnail_picker" -> if (!forceOnDevice) add(thumbnailPicker)
                             "reset_thumbnail" -> if (!forceOnDevice) add(resetThumbnail)
                             "update" -> if (!onDeviceOnly && !offlineMode) add(itemSelector.guard(updateSongsDialog, hasEligibleSelection))

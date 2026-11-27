@@ -123,6 +123,7 @@ import app.n_zik.android.ui.items.SongItemPlaceholders
 import app.n_zik.android.ui.components.themed.MultiFloatingActionsContainer
 import app.n_zik.android.ui.components.themed.PlayNext
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.components.menu.playlist.rememberAlbumPlaylistActions
 import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.ui.items.AlbumItem
@@ -221,9 +222,11 @@ internal fun OnlineAlbumToolbar(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    val offlineMode by OfflineMode.rememberEnabled()
+    val availableActions = if (offlineMode) actions - ToolbarControl.DOWNLOAD - ToolbarControl.RADIO else actions
     CollectionButtonToolbar(
         bookmark = bookmark,
-        buttons = ToolbarSurface.ALBUM_ONLINE.ordered(actions),
+        buttons = ToolbarSurface.ALBUM_ONLINE.ordered(availableActions),
         modifier = modifier,
         enabled = enabled,
     )
@@ -639,6 +642,18 @@ fun AlbumDetails(
         },
         itemSelector = itemSelector,
     )
+    val playlistActions = rememberAlbumPlaylistActions(
+        sourceId = browseId,
+        sourcePlaylistId = album?.shareUrl?.let { Uri.parse(it).getQueryParameter("list") },
+        title = album?.title,
+        author = album?.authorsText,
+        menuState = menuState,
+        importAvailable = preview == null && !itemSelector.isActive,
+        loading = songsLoading || initialSongsLoading,
+        loadedTracks = items.takeIf { !songsLoading && !initialSongsLoading && !songsLoadFailed },
+        canAdd = hasSelection(),
+        openPicker = addToPlaylist::openPicker,
+    )
     val changeTitle = AlbumModifier(
         iconId = R.drawable.title_edit,
         messageId = R.string.metadata_action_change_title,
@@ -794,7 +809,7 @@ fun AlbumDetails(
                                 ToolbarControl.CHANGE_COVER to changeCover,
                                 ToolbarControl.PLAY_NEXT to itemSelector.guard(playNext, ::hasSelection),
                                 ToolbarControl.ENQUEUE to itemSelector.guard(enqueue, ::hasSelection),
-                                ToolbarControl.ADD_TO_PLAYLIST to itemSelector.guard(addToPlaylist, ::hasSelection),
+                                ToolbarControl.ADD_TO_PLAYLIST to playlistActions,
                                 ToolbarControl.FAVORITES to favorites,
                             )
                             OnlineAlbumToolbar(

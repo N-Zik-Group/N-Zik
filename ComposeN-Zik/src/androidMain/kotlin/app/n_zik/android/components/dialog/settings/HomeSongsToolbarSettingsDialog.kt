@@ -58,7 +58,7 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
         "add_to_favorite" to R.string.library_favorites_action_add,
-        "add_to_playlist" to R.string.playlist_action_add,
+        "add_to_playlist" to R.string.playlist_actions_title,
         "import_menu" to R.string.playlist_action_import,
         "export_dialog" to R.string.playlist_action_export,
         "export_cache" to R.string.export_cached_songs_action,
@@ -235,9 +235,9 @@ object HomeSongsToolbarSettingsDialog : ContentFramedDialog {
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
                 "add_to_favorite" -> ToggleItem(uid, R.drawable.heart, addToFavoriteLabel, pk, true)
-                "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
-                "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
-                "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
+                "add_to_playlist" -> ToggleItem(uid, R.drawable.playlist, addToPlaylistLabel, pk, true)
+                "import_menu" -> ToggleItem(uid, R.drawable.import_playlist_source, importMenuLabel, pk, true)
+                "export_dialog" -> ToggleItem(uid, R.drawable.export_playlist, exportDialogLabel, pk, true)
                 "export_cache" -> ToggleItem(uid, R.drawable.export_outline, exportCacheLabel, pk, true)
                 "smart_trash" -> ToggleItem(uid, R.drawable.trash, smartTrashLabel, pk, true)
                 "sync_ytm_likes" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)

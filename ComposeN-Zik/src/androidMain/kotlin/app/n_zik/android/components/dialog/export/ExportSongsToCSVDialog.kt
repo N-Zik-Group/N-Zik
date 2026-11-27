@@ -108,6 +108,11 @@ class ExportSongsToCSVDialog private constructor(
                         }
                         return@launch
                     }
+                    if (songs.isEmpty()) {
+                        removeEmptyExport(uri)
+                        Toaster.w(R.string.player_no_song_found)
+                        return@launch
+                    }
                     val songsToWrite = songs.map { SongCSV(it, playlistBrowseId, playlistName) }
                     appContext().contentResolver.openOutputStream(uri)?.use { output ->
                         writeToCsvFile(output, songsToWrite)
@@ -141,7 +146,7 @@ class ExportSongsToCSVDialog private constructor(
     }
 
     override val extension: String = "csv"
-    override val iconId: Int = R.drawable.export_outline
+    override val iconId: Int = R.drawable.export_playlist
     override val messageId: Int = R.string.playlist_action_export
     override val dialogTitle: String
         @Composable

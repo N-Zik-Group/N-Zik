@@ -29,6 +29,7 @@ import androidx.test.core.app.ApplicationProvider
 import app.n_zik.android.components.settings.ui.ToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarSurface
 import app.n_zik.android.components.ui.screens.album.OnlineAlbumToolbar
+import app.n_zik.android.core.network.fullOfflineModeKey
 import app.n_zik.android.enums.FontType
 import app.n_zik.android.ui.components.LocalMenuState
 import app.n_zik.android.ui.components.MenuState
@@ -126,13 +127,14 @@ class CollectionToolbarTest {
         val online = ToolbarSurface.ALBUM_ONLINE
         val device = ToolbarSurface.ALBUM_DEVICE
         prefs.edit().putBoolean(glassEnabledKey, false)
+            .putBoolean(fullOfflineModeKey, false)
             .putString(online.orderKey, """["enqueue","download","shuffle"]""")
             .putBoolean(online.visibilityKey(ToolbarAction.SHUFFLE), false)
             .putBoolean(device.visibilityKey(ToolbarAction.ENQUEUE), false)
             .commit()
         compose.setContent {
             AppearanceProvider {
-                val actions = listOf(ToolbarAction.ENQUEUE, ToolbarAction.DOWNLOAD, ToolbarAction.SHUFFLE).associateWith { action ->
+                val actions = listOf(ToolbarAction.ENQUEUE, ToolbarAction.DOWNLOAD, ToolbarAction.SHUFFLE, ToolbarAction.RADIO).associateWith { action ->
                     object : Button {
                         @Composable override fun ToolBarButton() {
                             GlassToolbarIcon(painterResource(action.icon), Color.White, 20.dp, true,
@@ -162,6 +164,16 @@ class CollectionToolbarTest {
         assertEquals(primary, centerX("album-bookmark"), 1f)
         assertTrue(centerX("enqueue") < enqueue && centerX("download") < download)
         assertTrue(centerX("download") < centerX("shuffle"))
+        compose.onNodeWithContentDescription("radio", useUnmergedTree = true).assertIsEnabled()
+
+        compose.runOnIdle { prefs.edit().putBoolean(fullOfflineModeKey, true).apply() }
+        compose.onNodeWithContentDescription("download", useUnmergedTree = true).assertDoesNotExist()
+        compose.onNodeWithContentDescription("radio", useUnmergedTree = true).assertDoesNotExist()
+        assertTrue(centerX("enqueue") < centerX("shuffle"))
+
+        compose.runOnIdle { prefs.edit().putBoolean(fullOfflineModeKey, false).apply() }
+        assertTrue(centerX("enqueue") < centerX("download"))
+        compose.onNodeWithContentDescription("radio", useUnmergedTree = true).assertIsEnabled()
     }
 
     @Test fun `hiding the bookmark centers the remaining actions in native and Glass`() {

@@ -1,31 +1,31 @@
 package app.n_zik.android.components.dialog.playlist
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.unit.dp
+import app.n_zik.android.components.dialog.common.AboveMenuDialogPresence
 import app.n_zik.android.components.dialog.common.InputDialogConstraints
-import app.n_zik.android.components.dialog.common.DialogPresence
-import app.n_zik.android.components.dialog.common.LocalRequireNativeDialogWindow
+import app.n_zik.android.components.dialog.common.ButtonRow
+import app.n_zik.android.components.dialog.common.DialogButton
 import app.n_zik.android.components.dialog.common.TextInputDialog
-import app.n_zik.android.components.glass.LocalGlassMenuHost
-import app.n_zik.android.components.glass.canHostGlassMenuSheet
-import app.n_zik.android.components.glass.glassRenderer
-import app.n_zik.android.components.glass.rememberGlassSettings
-import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
+import app.n_zik.android.typography
 import app.n_zik.android.ui.components.MenuState
 import app.n_zik.android.ui.components.tab.toolbar.Descriptive
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
@@ -34,24 +34,29 @@ class ImportPlaylistDialog private constructor(
     activeState: MutableState<Boolean>,
     valueState: MutableState<TextFieldValue>,
     private val initialValue: () -> String,
+    private val unavailableMessage: () -> Int?,
     private val onImport: (String) -> Unit
 ): TextInputDialog(InputDialogConstraints.ALL), MenuIcon, Descriptive {
 
-    private var onMenuImportAccepted: (() -> Unit)? = null
+    private var onImportAccepted: (() -> Unit)? = null
+    private var nameEdited by mutableStateOf(false)
 
     companion object {
         @Composable
         operator fun invoke(
             initialValue: String,
+            unavailableMessage: Int? = null,
             onImport: (String) -> Unit
         ): ImportPlaylistDialog {
             val currentInitialValue = rememberUpdatedState(initialValue)
+            val currentUnavailableMessage = rememberUpdatedState(unavailableMessage)
             val currentOnImport = rememberUpdatedState(onImport)
             return remember {
                 ImportPlaylistDialog(
                     mutableStateOf(false),
                     mutableStateOf(TextFieldValue()),
                     initialValue = { currentInitialValue.value },
+                    unavailableMessage = { currentUnavailableMessage.value },
                     onImport = { currentOnImport.value(it) },
                 )
             }
@@ -62,7 +67,7 @@ class ImportPlaylistDialog private constructor(
         @Composable get() = stringResource(R.string.common_action_import)
 
     override val keyboardOption: KeyboardOptions = KeyboardOptions.Default
-    override val iconId: Int = R.drawable.import_outline
+    override val iconId: Int = R.drawable.import_playlist
     override val messageId: Int = R.string.playlist_action_import
     override val dialogTitle: String
         @Composable
@@ -76,42 +81,28 @@ class ImportPlaylistDialog private constructor(
 
     override fun onShortClick() = showDialog()
 
-    internal fun openFromMenu(menuState: MenuState) {
+    internal fun open(onAccepted: () -> Unit) {
         if (isActive) return
-        val menuKey = menuState.transitionKey
-        onMenuImportAccepted = {
-            if (menuState.isCurrentMenu(menuKey)) menuState.hide()
-        }
+        onImportAccepted = onAccepted
         showDialog()
     }
 
     override fun showDialog() {
         if (isActive) return
         value = TextFieldValue(initialValue())
+        nameEdited = false
         errorMessage = ""
         super.showDialog()
     }
 
     override fun hideDialog() {
-        onMenuImportAccepted = null
+        onImportAccepted = null
         super.hideDialog()
     }
 
     @Composable
     internal fun RenderAboveMenu(menuState: MenuState) {
-        DialogPresence(visible = isActive) {
-            val glass = rememberGlassSettings()
-            val host = LocalGlassMenuHost.current
-            val sameWindow = host?.dialogs?.windowRoot === LocalView.current.rootView
-            val menuSharesActivityWindow = canHostGlassMenuSheet(glass, glassRenderer(glass), sameWindow && host?.backdrop != null)
-            val requiresNativeDialog = LocalRequireNativeDialogWindow.current ||
-                (menuState.isDisplayed && !menuSharesActivityWindow)
-            // Keep the same window while the confirmation dismisses the menu underneath it.
-            val nativeDialog = remember { requiresNativeDialog }
-            CompositionLocalProvider(LocalRequireNativeDialogWindow provides nativeDialog) {
-                Render()
-            }
-        }
+        AboveMenuDialogPresence(menuState, visible = isActive) { Render() }
     }
 
     @Composable
@@ -121,12 +112,43 @@ class ImportPlaylistDialog private constructor(
         contentDescription = stringResource(R.string.accessibility_import_playlist_name)
     )
 
+    @Composable
+    override fun DialogBody() {
+        val sourceTitle = initialValue()
+        LaunchedEffect(isActive, sourceTitle) {
+            if (isActive && !nameEdited) value = TextFieldValue(sourceTitle)
+        }
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            super.DialogBody()
+            unavailableMessage()?.let { message ->
+                BasicText(
+                    text = stringResource(message),
+                    style = typography().xs.copy(color = colorPalette().textSecondary),
+                )
+            }
+        }
+    }
+
+    @Composable
+    override fun Buttons() = ButtonRow(
+        listOf(
+            DialogButton(stringResource(R.string.common_action_cancel), ::hideDialog, danger = true),
+            DialogButton(submitText, { onSet(value.text) }, primary = true, enabled = unavailableMessage() == null),
+        ),
+    )
+
+    override fun onValueChanged(newValue: String): Boolean {
+        if (newValue != value.text) nameEdited = true
+        return super.onValueChanged(newValue)
+    }
+
     override fun onSet( newValue: String ) {
+        if (unavailableMessage() != null) return
         super.onSet( newValue )
         if( errorMessage.isNotEmpty() ) return
 
         onImport(newValue)
-        onMenuImportAccepted?.invoke()
+        onImportAccepted?.invoke()
         hideDialog()
     }
 }

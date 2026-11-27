@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.album
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import app.n_zik.android.core.sync.showFavoriteChange
 import android.content.Intent
 import android.net.Uri
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
@@ -35,7 +37,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -69,6 +70,10 @@ import app.n_zik.android.ui.components.tab.toolbar.Menu
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
+import app.n_zik.android.components.menu.playlist.CollectionAddChoiceState
+import app.n_zik.android.components.menu.playlist.rememberAlbumPlaylistActions
+import app.n_zik.android.hasExplicitPrefix
+import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.ui.screens.playlist.loadPlaylistTrackContinuations
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.ui.styling.favoritesIcon
@@ -140,6 +145,7 @@ class OnlineAlbumItemMenu private constructor(
 ) : Menu {
 
     private val ownerProfile = getActiveProfile(appContext())
+    private val playlistChoice = CollectionAddChoiceState()
 
     companion object {
         @Composable
@@ -161,13 +167,13 @@ class OnlineAlbumItemMenu private constructor(
     @Composable
     private fun ListMenu(buttons: List<Button>, offlineMode: Boolean) = ListMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
-        SectionTitle(stringResource(R.string.common_playback_section_title))
+        MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         buttons.getOrNull(0)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(1)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(2)?.let { if (it is MenuIcon) it.ListMenuItem() }
 
         // Section: Management
-        SectionTitle(stringResource(R.string.library_management_section_title))
+        MenuSectionTitle(stringResource(R.string.library_management_section_title))
         buttons.getOrNull(3)?.let { if (it is MenuIcon) it.ListMenuItem() }
         if (!offlineMode) buttons.getOrNull(4)?.let { if (it is MenuIcon) it.ListMenuItem() }
         buttons.getOrNull(5)?.let { if (it is MenuIcon) it.ListMenuItem() }
@@ -178,7 +184,7 @@ class OnlineAlbumItemMenu private constructor(
         // Section: Navigation
         val navRange = 6 until (buttons.size - 4)
         if (!navRange.isEmpty()) {
-            SectionTitle(stringResource(R.string.common_navigation_section_title))
+            MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             for (i in navRange) {
                 buttons.getOrNull(i)?.let { if (it is MenuIcon) it.ListMenuItem() }
             }
@@ -192,7 +198,7 @@ class OnlineAlbumItemMenu private constructor(
     private fun GridMenu(buttons: List<Button>, offlineMode: Boolean) = GridMenu.Menu(title = null, showDragHandle = false) {
         // Section: Playback
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.common_playback_section_title))
+            MenuSectionTitle(stringResource(R.string.common_playback_section_title))
         }
         buttons.getOrNull(0)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         buttons.getOrNull(1)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -200,7 +206,7 @@ class OnlineAlbumItemMenu private constructor(
 
         // Section: Management
         item(span = { GridItemSpan(maxLineSpan) }) {
-            SectionTitle(stringResource(R.string.library_management_section_title))
+            MenuSectionTitle(stringResource(R.string.library_management_section_title))
         }
         buttons.getOrNull(3)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
         if (!offlineMode) buttons.getOrNull(4)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -213,7 +219,7 @@ class OnlineAlbumItemMenu private constructor(
         val navRange = 6 until (buttons.size - 4)
         if (!navRange.isEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(R.string.common_navigation_section_title))
+                MenuSectionTitle(stringResource(R.string.common_navigation_section_title))
             }
             for (i in navRange) {
                 buttons.getOrNull(i)?.let { item { if (it is MenuIcon) it.GridMenuItem() } }
@@ -283,7 +289,7 @@ class OnlineAlbumItemMenu private constructor(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    BasicText(
+                    MenuMetadataText(
                         text = cleanPrefix(title ?: ""),
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
@@ -296,7 +302,7 @@ class OnlineAlbumItemMenu private constructor(
 
                     authorsText?.let { authors ->
                         if (authors.isNotBlank()) {
-                            BasicText(
+                            MenuMetadataText(
                                 text = cleanPrefix(authors),
                                 style = typography().xs.semiBold.secondary.copy(
                                     color = colorPalette().textSecondary,
@@ -311,7 +317,7 @@ class OnlineAlbumItemMenu private constructor(
 
                     year?.let {
                         if (it.isNotBlank()) {
-                            BasicText(
+                            MenuMetadataText(
                                 text = it,
                                 style = typography().xxs.semiBold.secondary.copy(
                                     color = colorPalette().textSecondary,
@@ -383,7 +389,7 @@ class OnlineAlbumItemMenu private constructor(
                                     }
                                     val cachedFetch = Database.albumTable.findByIdDirect(browseId)?.lastFetch
                                     val updated = if (dislikesEnabled) Database.albumTable.rotateLikeState(browseId)
-                                        else Database.albumTable.toggleBookmark(browseId)
+                                        else Database.albumTable.bookmarkState(browseId, newState == true)
                                     if (updated == 0) {
                                         Toaster.e(R.string.common_error_title)
                                         return@launch
@@ -458,12 +464,12 @@ class OnlineAlbumItemMenu private constructor(
 
         val dbAlbum by remember(browseId) { Database.albumTable.findById(browseId) }
             .collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-        val storedSongs = if (offlineMode || isLocalAlbum) {
+        val storedSongs = if (offlineMode || isLocalAlbum || songsLoadFailed) {
             remember(browseId) { Database.songAlbumMapTable.allSongsOf(browseId) }
                 .collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA).value
         } else null
         val songs by rememberMenuSongs(fetchedSongs ?: storedSongs)
-        val songsUnavailable = songsLoadFailed || (offlineMode && !isLocalAlbum)
+        val songsUnavailable = (songsLoadFailed || (offlineMode && !isLocalAlbum)) && storedSongs.isNullOrEmpty()
         val listedCredits = remember(sourceAlbum) { sourceAlbum?.authors.toAlbumCreditArtists() }
         var headerArtists by remember(browseId, listedCredits) {
             mutableStateOf(if (isLocalAlbum) emptyList() else listedCredits)
@@ -550,21 +556,33 @@ class OnlineAlbumItemMenu private constructor(
             if (songsUnavailable) Toaster.e(R.string.common_load_failed) else ToastRelay.loadingWarning()
         }
 
+        val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
-            mediaItems = { songs?.map { it.asMediaItem } ?: emptyList() },
+            mediaItems = {
+                songs.orEmpty().filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }.map { it.asMediaItem }
+            },
+            localDestinationsOnly = isLocalAlbum,
             onFailure = { _, _ -> },
             finalAction = { menuState.hide() }
         )
 
-        val addToPlaylist = playlistsMenu.withMenuClick {
-            val currentSongs = songs
-            when {
-                currentSongs == null -> warnAlbumSongsUnavailable()
-                currentSongs.isEmpty() -> Toaster.e(R.string.player_no_song_found)
-                else -> playlistsMenu.onShortClick()
-            }
+        val importTracks = remember(fetchedSongs, parentalControlEnabled) {
+            fetchedSongs?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
         }
+        val addToPlaylist = rememberAlbumPlaylistActions(
+            sourceId = browseId,
+            sourcePlaylistId = sourcePlaylistId,
+            title = displayedAlbum.title,
+            author = displayAuthors,
+            menuState = menuState,
+            importAvailable = !isLocalAlbum,
+            loading = fetchedSongs == null && !songsLoadFailed && !offlineMode && !isLocalAlbum,
+            loadedTracks = importTracks,
+            canAdd = songs?.any { !parentalControlEnabled || !it.title.hasExplicitPrefix() } == true,
+            menuChoice = playlistChoice,
+            openPicker = playlistsMenu::openPicker,
+        )
 
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
         val downloadAll = downloadAllDialog.withMenuClick {
@@ -677,20 +695,6 @@ class OnlineAlbumItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }
 
 internal fun onlineAlbumMenuDisplay(

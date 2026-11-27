@@ -86,6 +86,8 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
+import app.n_zik.android.components.menu.playlist.playlistActionsAnchor
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.innertube.utils.from
 import app.n_zik.innertube.YtMusic
@@ -425,6 +427,12 @@ fun HomeArtists(
         derivedStateOf { gridReady && itemSelector.isNotEmpty() && actionTargets().isNotEmpty() }
     }
     val hasEligibleSelection = { eligibleSelection }
+    val trackCounts by remember(preview) {
+        if (preview == null) Database.songArtistMapTable.observeSongCounts() else flowOf(emptyList())
+    }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
+    val collectionIdsWithTracks = remember(trackCounts) { trackCounts.mapTo(hashSetOf()) { it.id } }
+    val hasPlaylistTargets = actionTargets().any { it.id in collectionIdsWithTracks || isDeviceArtistId(it.id) }
+
 
     SearchEmptyFeedback(
         query = search.filterQuery,
@@ -477,6 +485,18 @@ fun HomeArtists(
                     else -> "all"
                 }
                 val toolbarOrder = HomeArtistsToolbarSettingsDialog.portableLists().getValue(toolbarTab).visibleHomeToolbarIds()
+                val playlistAnchor = playlistActionsAnchor(toolbarOrder)
+                val playlistActions = rememberCollectionAddAction(
+                    sourceId = "home-artists",
+                    menuState = menuState,
+                    canImportCollection = false,
+                    hasTracks = "add_to_playlist" in toolbarOrder && gridReady && hasPlaylistTargets,
+                    importFromCurrentCollection = false,
+                    canExport = "export_dialog" in toolbarOrder && (gridReady && artistType != ArtistsType.OnDevice && hasPlaylistTargets),
+                    openImport = {},
+                    openPicker = addToPlaylist::openPicker,
+                    openExport = exportDialog::onShortClick,
+                )
 
                 val toolbarButtons = buildList<Button> {
                     toolbarOrder.forEach { id ->
@@ -490,8 +510,7 @@ fun HomeArtists(
                             "item_selector" -> add(itemSelector)
                             "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                             "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
-                            "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
-                            "export_dialog" -> add(itemSelector.guard(exportDialog, hasEligibleSelection))
+                            playlistAnchor -> add(playlistActions)
                             "item_size" -> add(itemSize)
                         }
                     }

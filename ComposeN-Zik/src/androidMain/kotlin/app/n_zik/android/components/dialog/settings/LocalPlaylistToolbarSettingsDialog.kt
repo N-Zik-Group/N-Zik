@@ -41,7 +41,7 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
         "add_to_favorite" to R.string.library_collection_favorites_action_manage,
-        "add_to_playlist" to R.string.playlist_action_add,
+        "add_to_playlist" to R.string.playlist_actions_title,
         "sync" to R.string.sync_action_sync,
         "refresh_on_open" to R.string.playlist_refresh_on_open,
         "listen_on_yt" to R.string.player_action_listen_on_youtube,
@@ -158,16 +158,16 @@ object LocalPlaylistToolbarSettingsDialog : ContentFramedDialog {
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
                 "add_to_favorite" -> ToggleItem(uid, R.drawable.heart_outline, favoritesLabel, pk, true)
-                "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
+                "add_to_playlist" -> ToggleItem(uid, R.drawable.playlist, addToPlaylistLabel, pk, true)
                 "sync" -> ToggleItem(uid, R.drawable.sync, syncLabel, pk, true)
                 "refresh_on_open" -> ToggleItem(uid, R.drawable.sync, refreshOnOpenLabel, pk, true)
                 "listen_on_yt" -> ToggleItem(uid, R.drawable.play, listenOnYTLabel, pk, true)
-                "import_menu" -> ToggleItem(uid, R.drawable.import_outline, importMenuLabel, pk, true)
+                "import_menu" -> ToggleItem(uid, R.drawable.import_playlist_source, importMenuLabel, pk, true)
                 "rename" -> ToggleItem(uid, R.drawable.title_edit, renameLabel, pk, true)
                 "rename_author" -> ToggleItem(uid, R.drawable.artists_edit, stringResource(searchLabelResources.getValue(id)), pk, true)
                 "change_browse_id" -> ToggleItem(uid, R.drawable.title_edit, stringResource(searchLabelResources.getValue(id)), pk, true)
                 "delete" -> ToggleItem(uid, R.drawable.trash, deleteLabel, pk, true)
-                "export" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
+                "export" -> ToggleItem(uid, R.drawable.export_playlist, exportDialogLabel, pk, true)
                 "thumbnail_picker" -> ToggleItem(uid, R.drawable.image, thumbnailLabel, pk, true)
                 "reset_thumbnail" -> ToggleItem(uid, R.drawable.image, resetThumbnailLabel, pk, true)
                 "update" -> ToggleItem(uid, R.drawable.refresh, updateLabel, pk, true)

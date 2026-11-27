@@ -27,7 +27,7 @@ internal enum class ToolbarAction(val id: String, val label: Int, val icon: Int)
     CHANGE_COVER("changeCover", R.string.metadata_action_change_cover, R.drawable.cover_edit),
     PLAY_NEXT("playNext", R.string.player_action_play_next, R.drawable.play_skip_forward),
     ENQUEUE("enqueue", R.string.player_action_enqueue, R.drawable.enqueue),
-    ADD_TO_PLAYLIST("addToPlaylist", R.string.playlist_action_add, R.drawable.add_in_playlist),
+    ADD_TO_PLAYLIST("addToPlaylist", R.string.playlist_actions_title, R.drawable.playlist),
     FAVORITES("favorites", R.string.library_collection_favorites_action_manage, R.drawable.heart),
     SEARCH("search", R.string.search_title, R.drawable.search_circle),
     NOTIFICATIONS("notifications", R.string.notification_inbox_title, R.drawable.notification2),
@@ -39,7 +39,7 @@ internal enum class ToolbarAction(val id: String, val label: Int, val icon: Int)
     POSITION_LOCK("positionLock", R.string.playlist_reorder_lock_toggle_label, R.drawable.locked),
     REPEAT("repeat", MiniPlayerButton.Repeat),
     REMOVE("remove", R.string.player_queue_action_remove, R.drawable.trash),
-    EXPORT("export", R.string.playlist_action_export, R.drawable.export_outline),
+    EXPORT("export", R.string.playlist_action_export, R.drawable.export_playlist),
     SORT("sort", R.string.library_sort_order_title, R.drawable.arrow_up);
 
     constructor(id: String, button: MiniPlayerButton) : this(id, button.labelRes, button.iconRes)

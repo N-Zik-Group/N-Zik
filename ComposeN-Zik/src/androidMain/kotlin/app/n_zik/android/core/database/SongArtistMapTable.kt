@@ -159,5 +159,13 @@ interface SongArtistMapTable {
         GROUP BY sam.artistId
     """)
     suspend fun songCountsDirect(): List<SongCount>
+
+    @Query("""
+        SELECT sam.artistId AS id, COUNT(DISTINCT sam.songId) AS count
+        FROM SongArtistMap sam
+        JOIN Song S ON S.id = sam.songId
+        GROUP BY sam.artistId
+    """)
+    fun observeSongCounts(): Flow<List<SongCount>>
 }
 

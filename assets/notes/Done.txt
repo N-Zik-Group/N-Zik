@@ -1608,3 +1608,7 @@ Settings:
 Playlist:
 - refactor(playlist): share the actions, formats and destination picker
   - Use one four-action dialog, keep import format cancellation and picker Back, and follow Library filters, order and availability.
+
+Playlist:
+- fix(playlist): route collection and toolbar actions through the shared dialog
+  - Remove the legacy menu paths, keep supported import and export behavior, and disable operations on empty collections.

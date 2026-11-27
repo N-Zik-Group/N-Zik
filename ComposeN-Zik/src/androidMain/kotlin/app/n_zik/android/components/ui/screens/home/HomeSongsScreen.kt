@@ -123,6 +123,8 @@ import app.n_zik.android.components.ui.screens.home.onDevice.OnDeviceSong
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
+import app.n_zik.android.components.menu.playlist.playlistActionsAnchor
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassFloatingActions
@@ -163,7 +165,7 @@ import app.n_zik.android.components.dialog.common.InProgressDialog
 import app.n_zik.android.components.dialog.common.ConfirmationDialog
 import app.n_zik.android.components.dialog.search.MatchResultsDialog
 import app.n_zik.android.components.dialog.media.YouTubeLinkImportDialog
-import app.n_zik.android.components.tab.ImportPlaylistsMenu
+import app.n_zik.android.components.dialog.playlist.ImportPlaylistFormatDialog
 import app.n_zik.android.components.tab.ImportSongsFromServices
 import app.n_zik.android.components.Sort
 import app.n_zik.android.themed.n_zik.component.playlist.PositionLock
@@ -476,7 +478,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     }
 
     val importMenu = remember(builtInPlaylist) {
-        ImportPlaylistsMenu(
+        ImportPlaylistFormatDialog(
             onImportNzik = { import.onShortClick() },
             onImportSpotify = { importSpotify.onShortClick() },
             onImportRiplay = { importRiplay.onShortClick() },
@@ -526,6 +528,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         itemSelector = itemSelector,
         localDestinationsOnly = getSongs().any(Song::isLocal),
     )
+
     val smartTrash = SmartTrash(
         builtInPlaylist = { builtInPlaylist },
         getSongs = ::getRemoteSongs,
@@ -625,22 +628,37 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     } catch (_: Exception) { defaultToolbarOrder }
 
+    fun toolbarActionEnabled(id: String): Boolean {
+        val toggleKey = "${when (builtInPlaylist) {
+            BuiltInPlaylist.All -> "all"
+            BuiltInPlaylist.Favorites -> "favs"
+            BuiltInPlaylist.Offline -> "off"
+            BuiltInPlaylist.Downloaded -> "dl"
+            BuiltInPlaylist.Top -> "top"
+            BuiltInPlaylist.OnDevice -> "dev"
+            BuiltInPlaylist.Disliked -> "disliked"
+            else -> "x"
+        }}_ts_$id"
+        return id in HomeSongsToolbarSettingsDialog.lockedIds ||
+            context.preferences.getBoolean(toggleKey, true)
+    }
+    val visibleToolbarOrder = order.filter(::toolbarActionEnabled)
+    val playlistAnchor = playlistActionsAnchor(visibleToolbarOrder)
+    val addPlaylistAction = rememberCollectionAddAction(
+        sourceId = builtInPlaylist.name,
+        menuState = queueMenuState,
+        canImportCollection = "import_menu" in visibleToolbarOrder &&
+            (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites),
+        hasTracks = "add_to_playlist" in visibleToolbarOrder && getSongs().isNotEmpty(),
+        importFromCurrentCollection = false,
+        canExport = "export_dialog" in visibleToolbarOrder && (builtInPlaylist != BuiltInPlaylist.OnDevice && getSongs().isNotEmpty()),
+        openExport = exportDialog::onShortClick,
+        importDialogOpen = importMenu.isOpen,
+        openImport = importMenu::open,
+        openPicker = addToPlaylist::openPicker,
+    )
     val buttons = mutableListOf<Button>().apply {
-        order.forEach { id ->
-            // Check toggle state - if disabled, skip this button
-            val toggleKey = "${when (builtInPlaylist) {
-                BuiltInPlaylist.All -> "all"
-                BuiltInPlaylist.Favorites -> "favs"
-                BuiltInPlaylist.Offline -> "off"
-                BuiltInPlaylist.Downloaded -> "dl"
-                BuiltInPlaylist.Top -> "top"
-                BuiltInPlaylist.OnDevice -> "dev"
-                BuiltInPlaylist.Disliked -> "disliked"
-                else -> "x"
-            }}_ts_$id"
-            val isEnabled = id in HomeSongsToolbarSettingsDialog.lockedIds ||
-                context.preferences.getBoolean(toggleKey, true)
-            if (!isEnabled) return@forEach
+        visibleToolbarOrder.forEach { id ->
 
             when (id) {
                 "sort" -> add( if( builtInPlaylist == BuiltInPlaylist.Top ) topPlaylists else songSort )
@@ -656,10 +674,8 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 "play_next" -> add(itemSelector.guard(playNext, hasEligibleSelection))
                 "enqueue" -> add(itemSelector.guard(enqueue, hasEligibleSelection))
                 "add_to_favorite" -> add(itemSelector.guard(addToFavorite, hasEligibleSelection))
-                "add_to_playlist" -> add(itemSelector.guard(addToPlaylist, hasEligibleSelection))
-                "import_menu" -> if (builtInPlaylist == BuiltInPlaylist.All || builtInPlaylist == BuiltInPlaylist.Favorites) add( importMenu )
+                playlistAnchor -> add(addPlaylistAction)
                 "sync_ytm_likes" -> if (!offlineMode && builtInPlaylist == BuiltInPlaylist.Favorites && isYouTubeSyncEnabled()) add( sync )
-                "export_dialog" -> if (builtInPlaylist != BuiltInPlaylist.OnDevice) add(itemSelector.guard(exportDialog, hasEligibleSelection))
                 // The FFmpeg gate is gone (spec-ffmpeg-extension-module): the module is
                 // downloaded on first use, so the export is always offered (Offline/Downloaded)
                 "export_cache" -> if (builtInPlaylist == BuiltInPlaylist.Offline || builtInPlaylist == BuiltInPlaylist.Downloaded) add(

@@ -123,10 +123,11 @@ import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.ui.components.themed.IconButton
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
+import app.n_zik.android.components.menu.playlist.CollectionImportStatus
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistAuthorDialog
 import app.n_zik.android.components.dialog.playlist.RenamePlaylistDialog
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
-import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.ui.components.themed.adaptiveThumbnailContent
 import app.n_zik.android.core.network.OfflineMode
@@ -338,16 +339,6 @@ fun PlaylistSongList(
                 .distinctUntilChanged()
     }.collectAsStateWithLifecycle(emptyList(), context = NzikDispatchers.DATA)
 
-    val importPlaylistDialog = ImportPlaylistDialog(
-        initialValue = playlistPage?.playlist?.title ?: ""
-    ) { text ->
-        val page = playlistPage?.takeIf { it.songsContinuation == null }
-        val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(page?.playlist?.channel)
-        val songs = page?.let { playlistSongs.map { it.asMediaItem.asSong } }
-        launchLoadedPlaylistImport(context, playlist, songs)
-    }
-    importPlaylistDialog.RenderAboveMenu(menuState)
-
     val isInitialLoading = playlistPage == null && playlistSongs.isEmpty() && !initialLoadFailed
     val showSongPlaceholders = forceSongPlaceholders || isInitialLoading
     SearchEmptyFeedback(
@@ -434,15 +425,59 @@ fun PlaylistSongList(
     renameAuthor.Render()
     changePlaylistId.Render()
 
+    // Once pagination settles, the picker can add the tracks already available; full import still requires every page.
+    val canAddLoadedSongs = playlistPage != null && !continuationLoading && !forceSongPlaceholders
     val addToPlaylist = PlaylistsMenu.deferred(
         navController = navController,
         captureMediaItems = {
-            val items = selectedSongs().map(Innertube.SongItem::asMediaItem)
+            val items = if (itemSelector.isActive || canAddLoadedSongs) {
+                selectedSongs().map(Innertube.SongItem::asMediaItem)
+            } else emptyList()
             if (items.isEmpty()) null else suspend { items }
         },
         onFailure = { error, _ -> Timber.tag("PlaylistSongList").e(error, "Could not add items to playlist") },
         itemSelector = itemSelector,
     )
+    val offlineMode by OfflineMode.rememberEnabled()
+    val completePage = playlistPage?.takeIf { it.songsContinuation == null }
+    val canImportCollection = browseId.isNotBlank() && preview == null && !forceSongPlaceholders
+    val importStatus = when {
+        !canImportCollection -> CollectionImportStatus.Unavailable
+        completePage != null && playlistSongs.isEmpty() -> CollectionImportStatus.Empty
+        completePage != null -> CollectionImportStatus.Ready
+        !offlineMode && (isInitialLoading || continuationLoading) -> CollectionImportStatus.Loading
+        else -> CollectionImportStatus.Unavailable
+    }
+    val importPlaylistDialog = key(browseId) {
+        ImportPlaylistDialog(
+            initialValue = headerPlaylist?.title.orEmpty(),
+            unavailableMessage = importStatus.unavailableMessage,
+        ) { text ->
+            val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(sourceOwner)
+            launchLoadedPlaylistImport(context, playlist, playlistSongs.map { it.asMediaItem.asSong })
+        }
+    }
+    importPlaylistDialog.RenderAboveMenu(menuState)
+    val addAction = rememberCollectionAddAction(
+        sourceId = browseId,
+        menuState = menuState,
+        canImportCollection = importStatus.canOpenImport && !itemSelector.isActive,
+        hasTracks = actionSongs.isNotEmpty() && (itemSelector.isActive || canAddLoadedSongs),
+        importDialogOpen = importPlaylistDialog.isActive,
+        openImport = importPlaylistDialog::open,
+        openPicker = addToPlaylist::openPicker,
+    )
+    val addToolbarAction: @Composable () -> Unit = {
+        HeaderIconButton(
+            icon = addAction.iconId,
+            contentDescription = addAction.menuIconTitle,
+            enabled = addAction.isEnabled,
+            color = if (addAction.isEnabled) colorPalette().text else colorPalette().textDisabled,
+            modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+            onClick = addAction::onShortClick,
+            onLongClick = { Toaster.i(R.string.playlist_action_add_hint) },
+        )
+    }
     val toolbarOrder = ToolbarSurface.ONLINE_PLAYLIST.visibleActions()
     val overflowActions = toolbarOrder.mapNotNull {
         when (it) {
@@ -483,7 +518,6 @@ fun PlaylistSongList(
             if (playlistPage == null && playlistSongs.isEmpty() && initialLoadFailed) {
                 CollectionPageStatus {
                     val isOnline by NetworkQualityHelper.isNetworkAvailableComposable(context)
-                    val offlineMode by OfflineMode.rememberEnabled()
                     BasicText(
                         text = stringResource(if (offlineMode || !isOnline) R.string.common_load_failed_no_connection else R.string.common_load_failed),
                         style = typography().s.copy(color = colorPalette().textSecondary),
@@ -888,35 +922,7 @@ fun PlaylistSongList(
 
 
                                 },
-                                ToolbarControl.ADD_TO_PLAYLIST to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.add_in_playlist,
-                                        contentDescription = stringResource(R.string.playlist_action_add),
-                                        enabled = canTargetSongs,
-                                        color = if (canTargetSongs) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    val usingSelection = itemSelector.isActive
-                                                    menuState.display {
-                                                        PlaylistsItemMenu(
-                                                            navController = navController,
-                                                            modifier = Modifier.fillMaxHeight(0.4f),
-                                                            onDismiss = menuState::hide,
-                                                            onImportOnlinePlaylist = if (usingSelection) null else {
-                                                                { importPlaylistDialog.openFromMenu(menuState) }
-                                                            },
-                                                            onOpenAddToPlaylist = if (actionSongs.isNotEmpty()) {
-                                                                addToPlaylist::onShortClick
-                                                            } else null,
-                                                            disableScrollingText = disableScrollingText
-                                                        )
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( R.string.playlist_action_add_hint )
-                                                }
-                                    )
-                                },
+                                ToolbarControl.ADD_TO_PLAYLIST to addToolbarAction,
                                 ToolbarControl.MENU to {
                                     val menuLabel = stringResource(R.string.common_menu_label)
                                     HeaderIconButton(
@@ -938,12 +944,15 @@ fun PlaylistSongList(
 
 
                         } else if (isInitialLoading) {
-                            val actionIcons = inlineActionIds.map { action ->
-                                when (action) {
-                                    ToolbarControl.SHUFFLE -> shuffleButtonIcon()
-                                    ToolbarControl.RADIO -> radioButtonIcon()
-                                    ToolbarControl.MENU -> moreActions.iconId
-                                    else -> action.icon
+                            val loadingActions = inlineActionIds.map<ToolbarControl, @Composable () -> Unit> { action ->
+                                {
+                                    if (action == ToolbarControl.ADD_TO_PLAYLIST) addToolbarAction()
+                                    else DisabledPlaylistAction(when (action) {
+                                            ToolbarControl.SHUFFLE -> shuffleButtonIcon()
+                                            ToolbarControl.RADIO -> radioButtonIcon()
+                                            ToolbarControl.MENU -> moreActions.iconId
+                                            else -> action.icon
+                                        })
                                 }
                             }
                             CollectionToolbar(
@@ -953,7 +962,7 @@ fun PlaylistSongList(
                                         else R.drawable.bookmark_outline,
                                     )
                                 },
-                                actions = actionIcons.map { icon -> @Composable { DisabledPlaylistAction(icon) } },
+                                actions = loadingActions,
                                 trailingSeparator = hasOverflowActions,
                             )
                         } else {

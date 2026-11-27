@@ -1,5 +1,6 @@
 package app.n_zik.android.components.menu.playlist
 
+import app.n_zik.android.components.menu.MenuSectionTitle
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -15,10 +16,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
+import app.n_zik.android.components.menu.MenuMetadataText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
@@ -32,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import app.n_zik.android.components.menu.menuSectionHeading
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
@@ -76,11 +78,13 @@ import app.n_zik.android.utils.disableScrollingTextKey
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.rememberPreference
+import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
+import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.appContext
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.dialog.playlist.ChangePlaylistBrowseIdDialog
@@ -137,6 +141,7 @@ class OnlinePlaylistItemMenu private constructor(
 ) : Menu {
 
     private val ownerProfile = getActiveProfile(appContext())
+    private val addChoice = CollectionAddChoiceState()
 
     companion object {
         @Composable
@@ -160,7 +165,7 @@ class OnlinePlaylistItemMenu private constructor(
     @Composable
     private fun PlaylistListMenu(sections: List<MenuSection>) = ListMenu.Menu(title = null, showDragHandle = false) {
         sections.forEach { section ->
-            SectionTitle(stringResource(section.title))
+            MenuSectionTitle(stringResource(section.title))
             section.actions.forEach { it.ListMenuItem() }
         }
     }
@@ -172,7 +177,7 @@ class OnlinePlaylistItemMenu private constructor(
     private fun PlaylistGridMenu(sections: List<MenuSection>) = GridMenu.Menu(title = null, showDragHandle = false) {
         sections.forEach { section ->
             item(span = { GridItemSpan(maxLineSpan) }) {
-                SectionTitle(stringResource(section.title))
+                MenuSectionTitle(stringResource(section.title))
             }
             section.actions.forEach { action -> item { action.GridMenuItem() } }
         }
@@ -240,7 +245,7 @@ class OnlinePlaylistItemMenu private constructor(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f)
                 ) {
-                    BasicText(
+                    MenuMetadataText(
                         text = cleanPrefix(title ?: ""),
                         style = typography().xs.semiBold.copy(
                             color = colorPalette().text,
@@ -251,7 +256,7 @@ class OnlinePlaylistItemMenu private constructor(
                             .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
 
-                    BasicText(
+                    MenuMetadataText(
                         text = cleanPrefix(authorText.orEmpty()),
                         style = typography().xs.semiBold.secondary.copy(
                             color = colorPalette().textSecondary,
@@ -272,6 +277,7 @@ class OnlinePlaylistItemMenu private constructor(
                 val coroutineScope = rememberCoroutineScope()
                 var bookmarkBusy by remember(sourceId) { mutableStateOf(false) }
                 val bookmarkContent by rememberUpdatedState(Triple(songs, contentLoadFailed, owner))
+                val openExistingPodcastImport by rememberUpdatedState(onExistingPodcastImport)
                 val isPodcast = isPodcastBrowseId(sourceId)
 
                 Column(
@@ -304,7 +310,7 @@ class OnlinePlaylistItemMenu private constructor(
                                             ready.first.orEmpty().map { it.asMediaItem },
                                             owner = ready.third ?: authorText?.let { Innertube.Info(it, null) },
                                         )
-                                        if (operation == PodcastBookmarkOperation.ExistingImport) onExistingPodcastImport()
+                                        if (operation == PodcastBookmarkOperation.ExistingImport) openExistingPodcastImport()
                                         else Toaster.done()
                                     } catch (cancelled: CancellationException) {
                                         throw cancelled
@@ -412,7 +418,6 @@ class OnlinePlaylistItemMenu private constructor(
         if (!ObserveMenuProfile(ownerProfile, menuState::hide)) return
         val binder = LocalPlayerServiceBinder.current
         val context = LocalContext.current
-        val coroutineScope = rememberCoroutineScope()
         val offlineMode by OfflineMode.rememberEnabled()
 
         val kind = if (isPodcastBrowseId(playlist.key)) LibraryBrowseKind.Podcast else LibraryBrowseKind.Playlist
@@ -434,11 +439,19 @@ class OnlinePlaylistItemMenu private constructor(
 
         val localPlaylistFlow = remember(sourceId) { Database.playlistTable.findMusicBookmarkByBrowseId(sourceId) }
         val localPlaylist by localPlaylistFlow.collectAsStateWithLifecycle(null, context = NzikDispatchers.DATA)
-        val savedPlaylistId = localPlaylist?.id?.takeIf { offlineMode }
+        val savedPlaylistId = localPlaylist?.id?.takeIf { offlineMode || contentLoadFailed }
         val savedSongs by remember(savedPlaylistId) {
             savedPlaylistId?.let { Database.songPlaylistMapTable.allSongsOf(it) } ?: flowOf(null)
         }.collectAsStateWithLifecycle<List<Song>?>(null, context = NzikDispatchers.DATA)
-        val songs by rememberMenuSongs(fetchedSongs ?: savedSongs?.takeIf { offlineMode && it.isNotEmpty() })
+        val parentalControlEnabled by rememberPreference(parentalControlEnabledKey, false)
+        val importSource = fetchedSongs ?: savedSongs.takeIf { offlineMode }
+        val importableSongs = remember(importSource, parentalControlEnabled) {
+            importSource?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
+        }
+        val menuSongs = remember(importableSongs, savedSongs, parentalControlEnabled) {
+            importableSongs ?: savedSongs?.filterNot { parentalControlEnabled && it.title.hasExplicitPrefix() }
+        }
+        val songs by rememberMenuSongs(menuSongs)
         val contentUnavailable = contentLoadFailed || offlineMode
         val rename = RenamePlaylistDialog { localPlaylist }
         val renameAuthor = RenamePlaylistAuthorDialog { localPlaylist }
@@ -467,22 +480,14 @@ class OnlinePlaylistItemMenu private constructor(
             it.asMediaItem.withPodcastSource(sourceId)
         }
 
+        val pickerSongs = songs
         val playlistsMenu = PlaylistsMenu.init(
             navController = navController,
-            mediaItems = { songs?.map { it.asMediaItem } ?: emptyList() },
+            mediaItems = { pickerSongs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) } },
             onFailure = { _, _ -> },
             finalAction = { menuState.hide() }
         )
 
-        val addToPlaylist = playlistsMenu.withMenuClick {
-            val currentSongs = songs
-            when {
-                currentSongs == null -> warnPlaylistSongsUnavailable(contentUnavailable)
-                currentSongs.isEmpty() -> Toaster.e(R.string.player_no_song_found)
-                else -> playlistsMenu.onShortClick()
-            }
-        }
-        
         val downloadAllDialog = DownloadAllSongsDialog { songs ?: emptyList() }
         val downloadAll = downloadAllDialog.withMenuClick {
             if (OfflineMode.enabled(context)) return@withMenuClick
@@ -504,55 +509,54 @@ class OnlinePlaylistItemMenu private constructor(
             }
         }
         
-        val importDialog = ImportPlaylistDialog(
-            initialValue = cleanPrefix(localPlaylist?.name ?: displayTitle ?: "")
-        ) { text ->
-            val importSongs = songs?.takeIf { it.isNotEmpty() }
-            if (importSongs == null) {
-                warnPlaylistSongsUnavailable(contentUnavailable)
-                return@ImportPlaylistDialog
-            }
-            val appContext = context.applicationContext
-            val owner = ProfileWorkOwner.capture(appContext) ?: return@ImportPlaylistDialog
-            val newPlaylist = Playlist(name = text, browseId = sourceId).withSourcePlaylistOwner(ownerChannel)
-            val menuKey = menuState.transitionKey
-            NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
-                try {
-                    val committed = Database.awaitWriteBatch {
-                        if (!ProfileWorkOwner.isBound(appContext, owner)) return@awaitWriteBatch false
-                        importOnlinePlaylist(newPlaylist, importSongs)
-                        true
+        val importStatus = when {
+            importableSongs?.isNotEmpty() == true -> CollectionImportStatus.Ready
+            importableSongs != null -> CollectionImportStatus.Empty
+            contentUnavailable -> CollectionImportStatus.Unavailable
+            else -> CollectionImportStatus.Loading
+        }
+        val importDialog = key(sourceId) {
+            ImportPlaylistDialog(
+                initialValue = cleanPrefix(localPlaylist?.name ?: displayTitle ?: ""),
+                unavailableMessage = importStatus.unavailableMessage,
+            ) { text ->
+                val importSongs = songs?.takeIf { it.isNotEmpty() } ?: return@ImportPlaylistDialog
+                val appContext = context.applicationContext
+                val owner = ProfileWorkOwner.capture(appContext) ?: return@ImportPlaylistDialog
+                val newPlaylist = Playlist(name = text, browseId = sourceId).withSourcePlaylistOwner(ownerChannel)
+                val menuKey = menuState.transitionKey
+                NzikDispatchers.fireAndForget(NzikDispatchers.DATA).launch {
+                    try {
+                        val committed = Database.awaitWriteBatch {
+                            if (!ProfileWorkOwner.isBound(appContext, owner)) return@awaitWriteBatch false
+                            importOnlinePlaylist(newPlaylist, importSongs)
+                            true
+                        }
+                        if (!committed || !ProfileWorkOwner.isBound(appContext, owner)) return@launch
+                        withContext(NzikDispatchers.UI) {
+                            if (menuState.isCurrentMenu(menuKey)) menuState.hide()
+                            Toaster.done()
+                        }
+                    } catch (error: CancellationException) {
+                        throw error
+                    } catch (error: Exception) {
+                        Timber.tag("OnlinePlaylistItemMenu").e(error, "Unable to import playlist")
+                        Toaster.e(R.string.playlist_import_failed)
                     }
-                    if (!committed || !ProfileWorkOwner.isBound(appContext, owner)) return@launch
-                    withContext(NzikDispatchers.UI) {
-                        if (menuState.isCurrentMenu(menuKey)) menuState.hide()
-                        Toaster.done()
-                    }
-                } catch (error: CancellationException) {
-                    throw error
-                } catch (error: Exception) {
-                    Timber.tag("OnlinePlaylistItemMenu").e(error, "Unable to import playlist")
-                    Toaster.e(R.string.playlist_import_failed)
                 }
             }
         }
-        importDialog.Render()
-
-        val importPlaylist = object : MenuIcon, Descriptive, Clickable {
-            override val iconId: Int = R.drawable.add_in_playlist
-            override val messageId: Int = R.string.playlist_action_import
-            @get:Composable override val menuIconTitle: String get() = stringResource(messageId)
-            override fun onShortClick() {
-                if (songs == null) {
-                    warnPlaylistSongsUnavailable(contentUnavailable)
-                } else if (songs?.isNotEmpty() == true) {
-                    importDialog.onShortClick()
-                } else {
-                    Toaster.e(R.string.player_no_song_found)
-                }
-            }
-            override fun onLongClick() {}
-        }
+        importDialog.RenderAboveMenu(menuState)
+        val addToPlaylist = rememberCollectionAddAction(
+            sourceId = sourceId,
+            menuState = menuState,
+            canImportCollection = importStatus.canOpenImport,
+            hasTracks = !pickerSongs.isNullOrEmpty(),
+            importDialogOpen = importDialog.isActive,
+            openImport = importDialog::open,
+            menuChoice = addChoice,
+            openPicker = playlistsMenu::openPicker,
+        )
 
         val shuffleAction = SongShuffler.fromMediaItems {
             songs.orEmpty().map { it.asMediaItem.withPodcastSource(sourceId) }
@@ -590,7 +594,7 @@ class OnlinePlaylistItemMenu private constructor(
             MenuSection(
                 R.string.library_management_section_title,
                 buildList {
-                    addAll(listOf(addToPlaylist, importPlaylist))
+                    add(addToPlaylist)
                     if (!offlineMode) add(downloadAll)
                     add(deleteAll)
                     if (localPlaylist != null) {
@@ -621,7 +625,10 @@ class OnlinePlaylistItemMenu private constructor(
                 songs = songs,
                 contentLoadFailed = contentUnavailable,
                 owner = ownerChannel,
-                onExistingPodcastImport = importPlaylist::onShortClick,
+                onExistingPodcastImport = {
+                    if (importStatus == CollectionImportStatus.Ready) importDialog.onShortClick()
+                    else warnPlaylistSongsUnavailable(contentUnavailable)
+                },
             )
 
             if (menuStyle == MenuStyle.List)
@@ -631,20 +638,6 @@ class OnlinePlaylistItemMenu private constructor(
         }
     }
 
-    @Composable
-    private fun SectionTitle(title: String) {
-        BasicText(
-            text = title,
-            style = typography().xxs.semiBold.copy(
-                color = colorPalette().accent,
-                textAlign = TextAlign.Start
-            ),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .menuSectionHeading()
-        )
-    }
 }
 
 internal suspend fun Database.importOnlinePlaylist(playlist: Playlist, songs: List<Song>) {

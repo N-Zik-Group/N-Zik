@@ -107,8 +107,10 @@ import app.n_zik.android.ui.components.tab.toolbar.EllipsisMenuComponent
 import app.n_zik.android.components.ui.screens.CollectionArtworkShareButton
 import app.n_zik.android.components.ui.screens.CollectionArtworkTopAction
 import app.n_zik.android.components.dialog.playlist.ImportPlaylistDialog
+import app.n_zik.android.components.menu.playlist.CollectionImportStatus
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
+import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.components.ui.screens.LayoutWithAdaptiveThumbnail
-import app.n_zik.android.ui.components.themed.PlaylistsItemMenu
 import app.n_zik.android.ui.components.themed.PlaylistsMenu
 import app.n_zik.android.components.SongItem
 import app.n_zik.android.ui.components.ArtworkShimmerPlaceholder
@@ -217,18 +219,6 @@ fun Podcast(
             durationTextToMillis(it1) }?.toLong() ?: 0
     }
 
-    val importDialog = ImportPlaylistDialog(
-        initialValue = podcastTitle.orEmpty(),
-        onImport = { text ->
-            val page = podcastLoadState.page
-            val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(page?.owner)
-            val songs = page?.listEpisode?.map { it.asPodcastMediaItem(browseId).asSong }
-            launchLoadedPlaylistImport(context, playlist, songs)
-        }
-    )
-
-    importDialog.RenderAboveMenu(menuState)
-
     val thumbnailContent: @Composable () -> Unit = {
         PodcastBannerThumbnail(
             podcastLoadState.status == PodcastPageStatus.Loading,
@@ -309,6 +299,47 @@ fun Podcast(
         onFailure = { error, _ -> Timber.tag("Podcast").e(error, "Could not add items to playlist") },
         itemSelector = itemSelector,
     )
+    val offlineMode by OfflineMode.rememberEnabled()
+    val canImportCollection = browseId.isNotBlank() && !forceShimmer
+    val importStatus = when {
+        !canImportCollection -> CollectionImportStatus.Unavailable
+        podcastLoadState.status == PodcastPageStatus.Content -> CollectionImportStatus.Ready
+        podcastLoadState.status == PodcastPageStatus.Empty -> CollectionImportStatus.Empty
+        !offlineMode && initialLoading -> CollectionImportStatus.Loading
+        else -> CollectionImportStatus.Unavailable
+    }
+    val importDialog = key(browseId) {
+        ImportPlaylistDialog(
+            initialValue = podcastTitle.orEmpty(),
+            unavailableMessage = importStatus.unavailableMessage,
+        ) { text ->
+            val page = checkNotNull(podcastLoadState.page)
+            val playlist = Playlist(name = text, browseId = browseId).withSourcePlaylistOwner(page.owner)
+            val songs = page.listEpisode.map { it.asPodcastMediaItem(browseId).asSong }
+            launchLoadedPlaylistImport(context, playlist, songs)
+        }
+    }
+    importDialog.RenderAboveMenu(menuState)
+    val addAction = rememberCollectionAddAction(
+        sourceId = browseId,
+        menuState = menuState,
+        canImportCollection = importStatus.canOpenImport && !itemSelector.isActive,
+        hasTracks = hasEpisodeTargets,
+        importDialogOpen = importDialog.isActive,
+        openImport = importDialog::open,
+        openPicker = addToPlaylist::openPicker,
+    )
+    val addToolbarAction: @Composable () -> Unit = {
+        HeaderIconButton(
+            icon = addAction.iconId,
+            contentDescription = addAction.menuIconTitle,
+            enabled = addAction.isEnabled,
+            color = if (addAction.isEnabled) colorPalette().text else colorPalette().textDisabled,
+            modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
+            onClick = addAction::onShortClick,
+            onLongClick = { Toaster.i(R.string.playlist_action_add_hint) },
+        )
+    }
     val toolbarOrder = ToolbarSurface.PODCAST.visibleActions()
     val overflowActions = toolbarOrder.mapNotNull {
         when (it) {
@@ -643,35 +674,7 @@ fun Podcast(
 
 
                                 },
-                                ToolbarControl.ADD_TO_PLAYLIST to {
-                                    HeaderIconButton(
-                                        icon = R.drawable.add_in_playlist,
-                                        contentDescription = stringResource(R.string.playlist_action_add),
-                                        enabled = collectionActionEnabled,
-                                        color = if (collectionActionEnabled) colorPalette().text else colorPalette().textDisabled,
-                                        modifier = Modifier.padding(horizontal = 5.dp).clip(uiRoundnessShape()),
-                                                onClick = {
-                                                    val usingSelection = itemSelector.isActive
-                                                    menuState.display {
-                                                        PlaylistsItemMenu(
-                                                            navController = navController,
-                                                            modifier = Modifier.fillMaxHeight(0.4f),
-                                                            onDismiss = menuState::hide,
-                                                            onImportOnlinePlaylist = if (usingSelection) null else {
-                                                                { importDialog.openFromMenu(menuState) }
-                                                            },
-                                                            onOpenAddToPlaylist = if (hasEpisodeTargets) {
-                                                                addToPlaylist::onShortClick
-                                                            } else null,
-                                                            disableScrollingText = disableScrollingText
-                                                        )
-                                                    }
-                                                },
-                                                onLongClick = {
-                                                    Toaster.i( R.string.playlist_action_add_hint )
-                                                }
-                                    )
-                                },
+                                ToolbarControl.ADD_TO_PLAYLIST to addToolbarAction,
                                 ToolbarControl.MENU to {
                                     val menuLabel = stringResource(R.string.common_menu_label)
                                     HeaderIconButton(
@@ -690,17 +693,20 @@ fun Podcast(
                                 trailingSeparator = hasOverflowActions,
                             )
                         } else {
-                            val actionIcons = inlineActionIds.map { action ->
-                                when (action) {
-                                    ToolbarControl.SHUFFLE -> shuffleButtonIcon()
-                                    ToolbarControl.RADIO -> radioButtonIcon()
-                                    ToolbarControl.MENU -> moreActions.iconId
-                                    else -> action.icon
+                            val loadingActions = inlineActionIds.map<ToolbarControl, @Composable () -> Unit> { action ->
+                                {
+                                    if (action == ToolbarControl.ADD_TO_PLAYLIST) addToolbarAction()
+                                    else DisabledPodcastAction(when (action) {
+                                            ToolbarControl.SHUFFLE -> shuffleButtonIcon()
+                                            ToolbarControl.RADIO -> radioButtonIcon()
+                                            ToolbarControl.MENU -> moreActions.iconId
+                                            else -> action.icon
+                                        })
                                 }
                             }
                             CollectionToolbar(
                                 bookmark = { DisabledPodcastAction(R.drawable.bookmark_outline) },
-                                actions = actionIcons.map { icon -> @Composable { DisabledPodcastAction(icon) } },
+                                actions = loadingActions,
                                 trailingSeparator = hasOverflowActions,
                             )
                         }

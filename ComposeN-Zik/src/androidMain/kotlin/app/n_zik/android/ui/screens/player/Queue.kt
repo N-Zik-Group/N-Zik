@@ -79,6 +79,9 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.navigation.NavController
 import app.n_zik.android.R
+import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
+import app.n_zik.android.ui.components.LocalMenuState
+import app.n_zik.android.components.settings.ui.visibleActions
 import app.n_zik.android.compose.persist.persistList
 import app.n_zik.android.compose.persist.persistMap
 import sh.calvin.reorderable.ReorderableItem
@@ -129,7 +132,6 @@ import app.n_zik.android.components.dialog.tab.DeleteAllDownloadedSongsDialog
 import app.n_zik.android.components.dialog.tab.DownloadAllSongsDialog
 import app.n_zik.android.components.settings.ui.ToolbarAction
 import app.n_zik.android.components.settings.ui.ToolbarSurface
-import app.n_zik.android.components.settings.ui.ordered
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.utils.currentWindow
@@ -351,6 +353,7 @@ fun Queue(
                 Timber.tag("Queue").e(throwable, "Failed to add songs to playlist ${preview.playlist.name}")
             },
             itemSelector = itemSelector,
+            allowImportChoice = false,
             localDestinationsOnly = selectedQueueWindows().any { it.mediaItem.isLocal },
             onMenuDestinationOpened = revealMenuDestination,
         )
@@ -387,6 +390,18 @@ fun Queue(
                 else selectedQueueWindows().map { it.mediaItem },
             kind = CollectionFavoritesKind.Queue,
         )
+        val visibleToolbarActions = ToolbarSurface.QUEUE.visibleActions()
+        val playlistActions = rememberCollectionAddAction(
+            sourceId = "player-queue",
+            menuState = LocalMenuState.current,
+            canImportCollection = false,
+            hasTracks = ToolbarAction.ADD_TO_PLAYLIST in visibleToolbarActions && getSongs().isNotEmpty(),
+            importFromCurrentCollection = false,
+            canExport = ToolbarAction.EXPORT in visibleToolbarActions && getSongs().isNotEmpty(),
+            openImport = {},
+            openPicker = addToPlaylist::openPicker,
+            openExport = exportDialog::onShortClick,
+        )
         val actions = buildMap<ToolbarAction, Button> {
             put(ToolbarAction.LOCATE, locator)
             put(ToolbarAction.SEARCH, search)
@@ -409,10 +424,11 @@ fun Queue(
             put(ToolbarAction.SELECT, itemSelector)
             put(ToolbarAction.FAVORITES, favorites)
             put(ToolbarAction.REMOVE, deleteDialog)
-            put(ToolbarAction.ADD_TO_PLAYLIST, itemSelector.guard(addToPlaylist, ::hasCurrentSelection))
-            put(ToolbarAction.EXPORT, itemSelector.guard(exportDialog, ::hasCurrentSelection))
+            val playlistAnchor = ToolbarAction.ADD_TO_PLAYLIST.takeIf { it in visibleToolbarActions }
+                ?: ToolbarAction.EXPORT.takeIf { it in visibleToolbarActions }
+            if (playlistAnchor != null) put(playlistAnchor, playlistActions)
         }
-        val buttonsList = ToolbarSurface.QUEUE.ordered(actions)
+        val buttonsList = visibleToolbarActions.mapNotNull(actions::get)
 
         val searchVisible = search.isVisible
         SideEffect {

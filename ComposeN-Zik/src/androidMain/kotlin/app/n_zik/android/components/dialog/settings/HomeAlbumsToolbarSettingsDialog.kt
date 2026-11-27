@@ -50,7 +50,7 @@ object HomeAlbumsToolbarSettingsDialog : ContentFramedDialog {
         "item_selector" to R.string.common_action_select,
         "play_next" to R.string.player_action_play_next,
         "enqueue" to R.string.player_action_enqueue,
-        "add_to_playlist" to R.string.playlist_action_add,
+        "add_to_playlist" to R.string.playlist_actions_title,
         "export_dialog" to R.string.playlist_action_export,
         "item_size" to R.string.common_size_label,
     )
@@ -162,8 +162,8 @@ object HomeAlbumsToolbarSettingsDialog : ContentFramedDialog {
                 "item_selector" -> ToggleItem(uid, R.drawable.checked_filled, itemSelectorLabel, pk, true)
                 "play_next" -> ToggleItem(uid, R.drawable.play_skip_forward, playNextLabel, pk, true)
                 "enqueue" -> ToggleItem(uid, R.drawable.enqueue, enqueueLabel, pk, true)
-                "add_to_playlist" -> ToggleItem(uid, R.drawable.add_in_playlist, addToPlaylistLabel, pk, true)
-                "export_dialog" -> ToggleItem(uid, R.drawable.export_outline, exportDialogLabel, pk, true)
+                "add_to_playlist" -> ToggleItem(uid, R.drawable.playlist, addToPlaylistLabel, pk, true)
+                "export_dialog" -> ToggleItem(uid, R.drawable.export_playlist, exportDialogLabel, pk, true)
                 "item_size" -> ToggleItem(uid, R.drawable.resize, itemSizeLabel, pk, true)
                 else -> null
             }
