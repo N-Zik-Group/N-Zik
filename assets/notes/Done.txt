@@ -1384,3 +1384,7 @@ Menus:
 Android Auto:
 - fix(auto): embed local collection artwork
   - Load artist and album artwork from local media URIs before sending it to Android Auto.
+
+Settings:
+- fix(settings): align proxy and visualizer options with their modes
+  - Describe available options and their prerequisites using the active mode.

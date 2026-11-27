@@ -112,6 +112,7 @@ import app.n_zik.android.utils.showlyricsthumbnailKey
 import app.n_zik.android.utils.showthumbnailKey
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
+import java.net.Proxy
 import kotlin.math.roundToInt
 
 private val rewindNotificationPrerequisites = mapOf(
@@ -135,6 +136,10 @@ private val expandedArtworkTargets = setOf(
 )
 private const val ThemeSettingsTarget = "ui.theme.theme"
 private const val SwipeActionsSettingsTarget = "ui.swipe_to_action.swipe_to_action"
+private const val VisualizerSettingsTarget = "appearance.player_behavior_and_visuals.visualizer"
+private const val VisualizerColorSourceTarget = "appearance.player_behavior_and_visuals.visualizer_white_color_option"
+private const val VisualizerArtworkTarget = "appearance.player_behavior_and_visuals.showvisthumbnail"
+private const val ProxyModeSettingsTarget = "other.proxy.proxy_mode"
 private const val AutoBackupEnabledTarget = "embedded.auto_backup.enabled"
 private const val AutoBackupContentTarget = "embedded.auto_backup.auto_backup_target"
 private const val AutoBackupIntervalTarget = "embedded.auto_backup.auto_backup_interval"
@@ -146,6 +151,7 @@ private data class SearchPrerequisite(
     val target: String,
     val choices: List<Int> = emptyList(),
     val labelRes: Int? = null,
+    val literalChoices: List<String> = emptyList(),
 )
 
 private fun settingsSearchPrerequisite(
@@ -153,6 +159,16 @@ private fun settingsSearchPrerequisite(
     preferences: SharedPreferences,
     hasTarget: (String) -> Boolean,
 ): SearchPrerequisite? {
+    if (hasTarget(ProxyModeSettingsTarget)) {
+        val modes = when (target) {
+            "other.proxy.proxy_host", "other.proxy.proxy_port" -> listOf(Proxy.Type.HTTP, Proxy.Type.SOCKS)
+            "other.proxy.settings_proxy_username", "other.proxy.settings_proxy_password" -> listOf(Proxy.Type.HTTP)
+            else -> emptyList()
+        }
+        if (modes.isNotEmpty()) {
+            return SearchPrerequisite(ProxyModeSettingsTarget, literalChoices = modes.map { it.name })
+        }
+    }
     requiredEnabledSettingTargets[target]?.let {
         return SearchPrerequisite(it, listOf(R.string.common_state_on))
     }
@@ -170,6 +186,17 @@ private fun settingsSearchPrerequisite(
         "appearance.txt_lyrics.color_custom" -> return SearchPrerequisite(
             "appearance.txt_lyrics.lyricscolor", listOf(R.string.common_color_custom),
         )
+        "appearance.player_behavior_and_visuals.color_custom" ->
+            return if (hasTarget(VisualizerColorSourceTarget)) {
+                SearchPrerequisite(VisualizerColorSourceTarget, listOf(R.string.common_color_custom))
+            } else {
+                SearchPrerequisite(VisualizerSettingsTarget, listOf(R.string.common_state_on))
+            }
+        "appearance.player_behavior_and_visuals.black_background_for_visualizer" ->
+            return SearchPrerequisite(
+                VisualizerArtworkTarget.takeIf(hasTarget) ?: VisualizerSettingsTarget,
+                listOf(R.string.common_state_on),
+            )
         GradientSettingsTarget -> return SearchPrerequisite(
             BackgroundSettingsTarget, listOf(R.string.player_background_animated_gradient_label),
         )
@@ -293,6 +320,11 @@ private val requiredEnabledSettingTargets = mapOf(
     "general.picture_in_picture.open" to "general.picture_in_picture.settings_enable_pip",
     "appearance.player_behavior_and_visuals.songs_number_to_show" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
     "appearance.player_behavior_and_visuals.showalbumcover" to "appearance.player_behavior_and_visuals.show_next_songs_in_player",
+    "appearance.player_behavior_and_visuals.save_visualizer_state" to VisualizerSettingsTarget,
+    VisualizerColorSourceTarget to VisualizerSettingsTarget,
+    "appearance.player_behavior_and_visuals.visualizer_line_thickness" to VisualizerSettingsTarget,
+    VisualizerArtworkTarget to VisualizerSettingsTarget,
+    "appearance.player_behavior_and_visuals.show_visualizer_buttons" to VisualizerSettingsTarget,
     "appearance.cover_and_thumbnail.hold_to_speed_up_rate" to "appearance.cover_and_thumbnail.hold_to_speed_up",
     "other.proxy.proxy_mode" to "other.proxy.enable_proxy",
     "other.proxy.proxy_host" to "other.proxy.enable_proxy",
@@ -669,7 +701,7 @@ fun SettingsCategoryPage(
                 val labelRes = prerequisite.labelRes ?: AllSettingsEntryTargets.firstOrNull { it.id == prerequisite.target }?.labelRes
                 labelRes?.let {
                     val label = context.getString(it)
-                    val choices = prerequisite.choices.joinToString(" / ") { context.getString(it) }
+                    val choices = (prerequisite.choices.map(context::getString) + prerequisite.literalChoices).joinToString(" / ")
                     if (choices.isEmpty()) label else "$label › $choices"
                 }
             }

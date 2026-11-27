@@ -568,7 +568,7 @@ val SettingsCards: List<SettingsCardRegistryEntry> = listOf(
     SettingsCardRegistryEntry(7, R.string.settings_section_proxy_title, R.drawable.link, groupTitleRes = R.string.settings_group_proxy_connection,
         keywordRes = listOf(
             R.string.settings_section_proxy_title, R.string.settings_proxy_enabled_label, R.string.settings_proxy_mode_label, R.string.settings_proxy_host_label,
-            R.string.settings_proxy_port_label, R.string.settings_restart_required_message,
+            R.string.settings_proxy_port_label,
         )),
     SettingsCardRegistryEntry(7, R.string.parental_control, R.drawable.parental_control, groupTitleRes = R.string.settings_group_content_restrictions,
         keywordRes = listOf(R.string.parental_control, R.string.settings_parental_age_restriction_description)),

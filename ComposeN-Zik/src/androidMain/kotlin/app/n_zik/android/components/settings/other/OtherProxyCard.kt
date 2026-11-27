@@ -34,7 +34,6 @@ import app.n_zik.android.components.dialog.common.ValueSelectorDialog
 import app.n_zik.android.components.dialog.settings.SettingsInputDialog
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
-import app.n_zik.android.components.settings.common.SettingsDescription
 import app.n_zik.android.components.settings.common.SettingsSectionCard
 import app.n_zik.android.components.tab.Search
 import app.n_zik.innertube.Innertube
@@ -49,6 +48,8 @@ internal fun OtherProxyCard(search: Search) {
     var proxyPort by rememberPreference(proxyPortKey, defaultProxyPort)
     var proxyMode by rememberPreference(proxyModeKey, Proxy.Type.HTTP)
     var proxyUsername by rememberPreference(proxyUsernameKey, "")
+    val usesEndpoint = proxyMode != Proxy.Type.DIRECT
+    val supportsAuthentication = proxyMode == Proxy.Type.HTTP
 
     var proxyPassword by rememberEncryptedPreference(proxyPasswordEncryptedKey, "")
 
@@ -62,8 +63,6 @@ internal fun OtherProxyCard(search: Search) {
         title = stringResource(R.string.settings_section_proxy_title),
         icon = R.drawable.link,
         content = {
-            SettingsDescription(text = stringResource(R.string.settings_restart_required_message))
-
             if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_enabled_label).contains(search.inputValue, true)) {
                 OtherSwitchSettingEntry(
                     modifier = Modifier.settingsSearchTarget("other.proxy.enable_proxy"),
@@ -110,7 +109,7 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyHostDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_host_label).contains(search.inputValue, true)) {
+                    if (usesEndpoint && (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_host_label).contains(search.inputValue, true))) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_host"),
                             title = stringResource(R.string.settings_proxy_host_label),
@@ -121,7 +120,7 @@ internal fun OtherProxyCard(search: Search) {
                         )
                     }
 
-                    DialogPresence(visible = showProxyHostDialog) {
+                    DialogPresence(visible = usesEndpoint && showProxyHostDialog) {
                         SettingsInputDialog(
                             title = stringResource(R.string.settings_proxy_host_label),
                             initialValue = proxyHost,
@@ -135,7 +134,7 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyPortDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_port_label).contains(search.inputValue, true)) {
+                    if (usesEndpoint && (search.inputValue.isBlank() || stringResource(R.string.settings_proxy_port_label).contains(search.inputValue, true))) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.proxy_port"),
                             title = stringResource(R.string.settings_proxy_port_label),
@@ -149,7 +148,7 @@ internal fun OtherProxyCard(search: Search) {
                         )
                     }
 
-                    DialogPresence(visible = showProxyPortDialog) {
+                    DialogPresence(visible = usesEndpoint && showProxyPortDialog) {
                         SettingsInputDialog(
                             title = stringResource(R.string.settings_proxy_port_label),
                             initialValue = proxyPort.toString(),
@@ -165,7 +164,7 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyUsernameDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || usernameTitle.contains(search.inputValue, true)) {
+                    if (supportsAuthentication && (search.inputValue.isBlank() || usernameTitle.contains(search.inputValue, true))) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_username"),
                             title = stringResource(R.string.settings_proxy_username),
@@ -175,7 +174,7 @@ internal fun OtherProxyCard(search: Search) {
                             onClick = { showProxyUsernameDialog = true }
                         )
                     }
-                    DialogPresence(visible = showProxyUsernameDialog) {
+                    DialogPresence(visible = supportsAuthentication && showProxyUsernameDialog) {
                         SettingsInputDialog(
                             title = usernameTitle,
                             initialValue = proxyUsername,
@@ -190,7 +189,7 @@ internal fun OtherProxyCard(search: Search) {
                     }
 
                     var showProxyPasswordDialog by remember { mutableStateOf(false) }
-                    if (search.inputValue.isBlank() || passwordTitle.contains(search.inputValue, true)) {
+                    if (supportsAuthentication && (search.inputValue.isBlank() || passwordTitle.contains(search.inputValue, true))) {
                         OtherSettingsEntry(
                             modifier = Modifier.settingsSearchTarget("other.proxy.settings_proxy_password"),
                             title = stringResource(R.string.settings_proxy_password),
@@ -200,7 +199,7 @@ internal fun OtherProxyCard(search: Search) {
                             onClick = { showProxyPasswordDialog = true }
                         )
                     }
-                    DialogPresence(visible = showProxyPasswordDialog) {
+                    DialogPresence(visible = supportsAuthentication && showProxyPasswordDialog) {
                         SettingsInputDialog(
                             title = passwordTitle,
                             initialValue = proxyPassword,
