@@ -103,10 +103,8 @@ class ExportSongsToCSVDialog private constructor(
                     try {
                         val songs = load?.invoke()
                         if (songs == null) {
-                            if (selectedExport) {
-                                if (load == null) Toaster.e(R.string.export_selection_lost)
-                                removeEmptyExport(uri)
-                            }
+                            if (selectedExport && load == null) Toaster.e(R.string.export_selection_lost)
+                            removeEmptyExport(uri)
                             return@launch
                         }
                         if (songs.isEmpty()) {

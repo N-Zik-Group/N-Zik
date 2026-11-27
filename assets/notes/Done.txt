@@ -1768,3 +1768,7 @@ Menus:
 Playlists:
 - fix(playlist): disable reordering during library search
   - Keep custom order editing available on the full playlist list and disallow mutations from filtered positions.
+
+Playlists:
+- fix(playlist): clean up unused export documents
+  - Remove a newly created empty export document when the picker has no usable data and preserve existing bytes.
