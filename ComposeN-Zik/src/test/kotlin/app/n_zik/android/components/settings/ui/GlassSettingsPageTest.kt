@@ -35,7 +35,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assert
@@ -345,32 +344,30 @@ class GlassSettingsPageTest {
         assertEquals(before, context.preferences.all)
     }
 
-    @Test fun `search reveals disabled dependent interaction without changing its switch`() {
-        store.setBoolean(app.n_zik.android.components.glass.glassRippleEnabledKey, false)
-        val target = "glass.ripple.size"
+    @Test fun `search highlights the switch for an inactive Glass interaction`() {
+        store.setBoolean(app.n_zik.android.components.glass.glassJellyEnabledKey, false)
+        val messages = mutableListOf<String>()
         val before = context.preferences.all.toMap()
         composeRule.mainClock.autoAdvance = false
-        showPage(target = target)
+        showPage(target = "glass.jelly.intensity", onSearchMessage = { messages.add(it) })
+        val switch = composeRule.onNode(
+            SemanticsMatcher.expectValue(SettingsTargetId, "glass.jelly.enabled"),
+            useUnmergedTree = true,
+        )
         pumpSearchUntil {
             runCatching {
-                composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true)
-                    .assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
+                switch.assertIsDisplayed().assert(SemanticsMatcher.expectValue(SettingsTargetHighlighted, true))
             }.isSuccess
         }
-        composeRule.onNode(SemanticsMatcher.expectValue(SettingsTargetId, target), useUnmergedTree = true).assertIsDisplayed()
-        composeRule.onNodeWithText(context.getString(R.string.glass_effect_ripple_size)).assertIsNotEnabled()
-        val prerequisite = "${context.getString(R.string.glass_effect_ripple_enabled)} › ${context.getString(R.string.common_state_on)}"
-        composeRule.onNode(
-            hasText(context.getString(R.string.settings_target_prerequisite, prerequisite), substring = true) and
-                hasAnyAncestor(SemanticsMatcher.expectValue(SettingsTargetId, target)),
-            useUnmergedTree = true,
-        ).assertIsDisplayed()
-        assertFalse(store.read().rippleEnabled)
+        composeRule.onNodeWithTag("settings.glass.jelly.intensity").assertDoesNotExist()
+        val prerequisite = "${context.getString(R.string.glass_effect_jelly_enabled)} › ${context.getString(R.string.common_state_on)}"
+        assertEquals(listOf(context.getString(R.string.settings_target_prerequisite, prerequisite)), messages)
+        assertFalse(store.read().jellyEnabled)
         assertEquals(before, context.preferences.all)
     }
 
     @Test fun `page search selects and highlights a Glass control while keeping the comparison pinned`() {
-        store.setBoolean(app.n_zik.android.components.glass.glassRippleEnabledKey, false)
+        store.setBoolean(app.n_zik.android.components.glass.glassRippleEnabledKey, true)
         val before = store.read()
         showPage()
         val preview = composeRule.onNodeWithTag("settings.glass.preview")
@@ -393,6 +390,9 @@ class GlassSettingsPageTest {
         assertEquals(before, store.read())
         result.assertDoesNotExist()
         composeRule.mainClock.autoAdvance = true
+        composeRule.onNodeWithTag("settings.glass.ripple.enabled").performScrollTo().performClick()
+        composeRule.onNodeWithTag("settings.glass.ripple.intensity").assertDoesNotExist()
+        composeRule.onNodeWithTag("settings.glass.ripple.size").assertDoesNotExist()
         composeRule.onNodeWithTag("settings.glass.controls").performScrollToKey("header")
         search.assert(SemanticsMatcher.expectValue(SemanticsProperties.EditableText, AnnotatedString("")))
     }

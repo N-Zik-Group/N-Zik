@@ -163,6 +163,7 @@ internal fun GlassSettingsContent(
     var searchFocused by remember { mutableStateOf(false) }
     var requestedTarget by rememberSaveable(target) { mutableStateOf(target) }
     var searchTargetHandled by rememberSaveable(target) { mutableStateOf(false) }
+    val pendingTarget = requestedTarget.takeUnless { searchTargetHandled }.orEmpty()
     val query = searchInput.text
     val historyPage = SearchHistoryStore.PAGE_SETTINGS_GLASS
     val history = if (searchEnabled) {
@@ -192,9 +193,14 @@ internal fun GlassSettingsContent(
     val showMessage = LocalSettingsSearchMessage.current
     val unavailableMessage = stringResource(R.string.settings_target_unavailable)
     LaunchedEffect(requestedTarget) {
-        val option = glassSearchOption(requestedTarget)
-        if (option == null || searching || searchTargetHandled) return@LaunchedEffect
-        val targetId = option.target.id
+        val option = glassSearchOption(pendingTarget)
+        if (option == null || searching) return@LaunchedEffect
+        val interactionPrerequisite = when (pendingTarget) {
+            "glass.ripple.intensity", "glass.ripple.size" -> "glass.ripple.enabled".takeUnless { config.rippleEnabled }
+            "glass.jelly.intensity" -> "glass.jelly.enabled".takeUnless { config.jellyEnabled }
+            else -> null
+        }?.let(::glassSearchOption)
+        val targetId = interactionPrerequisite?.target?.id ?: option.target.id
         val keys = listOf("header") + GlassSearchOptions.map { it.section }.distinct()
         scroll.scrollToItem(0)
         scroll.animateScrollToItem(keys.indexOf(option.section))
@@ -202,7 +208,12 @@ internal fun GlassSettingsContent(
         val found = withTimeoutOrNull(1500) {
             snapshotFlow { registry.targets[targetId] }.first { it != null }
         }
-        val resolved = if (found != null) targetId else {
+        val resolved = if (interactionPrerequisite != null) {
+            val label = context.getString(interactionPrerequisite.target.labelRes)
+            val enabled = context.getString(R.string.common_state_on)
+            showMessage(context.getString(R.string.settings_target_prerequisite, "$label › $enabled"))
+            targetId
+        } else if (found != null) targetId else {
             val requirement = when {
                 option.requiredTintSource != null -> {
                     val label = context.getString(R.string.glass_effect_tint_source)
@@ -414,10 +425,9 @@ internal fun GlassSettingsContent(
                             GlassSlider("menuDimming", stringResource(R.string.glass_effect_menu_dimming), config.menuDimming, defaults.menuDimming, 0f..1f, percentLabel((config.menuDimming * 100).roundToInt()), R.drawable.menu, inputScale = 100f) { store.setFloat(glassMenuDimmingKey, it) }
                         }
                     }
-                    settingsGroup("interactions") { GlassInteractionSettingsCard(config, store, requestedTarget, showGroupHeading = searchEnabled) }
+                    settingsGroup("interactions") { GlassInteractionSettingsCard(config, store, showGroupHeading = searchEnabled) }
                     GlassDestinationGroup.entries.forEach { group ->
                         settingsGroup("destination.${group.name}") {
-                            val pendingTarget = requestedTarget.takeUnless { searchTargetHandled }.orEmpty()
                             GlassDestinationCard(group, config, store, pendingTarget, showGroupHeading = searchEnabled)
                         }
                     }

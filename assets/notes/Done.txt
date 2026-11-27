@@ -1988,3 +1988,7 @@ Settings / Search:
 UI / Toast:
 - fix(toast): place notifications above the keyboard
   - Use the highest visible obstruction and give the keyboard a 12 dp gap.
+
+Settings / Glass:
+- fix(settings): collapse Glass effect controls after search
+  - Route inactive Ripple and Jelly searches to their switches and keep active slider targets exact.
