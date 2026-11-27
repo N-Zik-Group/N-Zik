@@ -1756,3 +1756,7 @@ Playlist:
 Settings:
 - fix(settings): explain room and notification prerequisites
   - Show why approval is host-only for a guest, and what enables Rewind alert delivery while preserving notification choices.
+
+Settings:
+- fix(settings): search the actual About contributor counts
+  - Reuse the bundled contributor lists for localized counted results and reject incorrect number matches.

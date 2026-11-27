@@ -15,6 +15,8 @@ import app.n_zik.android.components.settings.LastFmSettingsLogoutTarget
 import app.n_zik.android.components.settings.lastFmSettingsSearchFallback
 import app.n_zik.android.components.settings.accounts.discordSettingsSearchFallback
 import app.n_zik.android.enums.Languages
+import app.n_zik.android.extensions.contributors.countDevelopers
+import app.n_zik.android.extensions.contributors.countTranslators
 import app.n_zik.android.utils.isAtLeastAndroid12
 import java.util.Locale
 import org.junit.Assert.assertEquals
@@ -302,18 +304,27 @@ class SettingsEntrySearchIndexTest {
 
     @Test
     fun `About search resolves counted contributor labels in the language of the card`() {
-        val groups = listOf(
-            Triple("about.contributors.translators", R.plurals.about_translator_count, 14),
-            Triple("about.contributors.about_developers_designers", R.plurals.about_developer_designer_count, 30),
-        )
         val locales = listOf(Locale.ENGLISH, Locale.FRENCH, Locale.forLanguageTag("ar"), Locale.forLanguageTag("pt"))
         locales.forEach { locale ->
             val context = localizedContext(locale)
-            groups.forEach { (id, labelRes, count) ->
+            val countedLabels = aboutContributorSearchLabels(context)
+            val groups = mapOf(
+                R.plurals.about_translator_count to countTranslators(context),
+                R.plurals.about_developer_designer_count to countDevelopers(context),
+            )
+            fun matches(query: String) = searchSettingsEntries(context, query, profileShortcutIndex = null, countedLabels = countedLabels)
+            AboutSettingsEntryTargets.filter { it.countedLabelRes != null }.forEach { target ->
+                val labelRes = requireNotNull(target.countedLabelRes)
+                val count = groups.getValue(labelRes)
                 val title = context.resources.getQuantityString(labelRes, count, count)
-                assertEquals(id, searchSettingsEntries(context, title).first().id)
-                assertFalse(searchSettingsEntries(context, count.toString()).any { it.id == id })
-                assertFalse(searchSettingsEntries(context, "$count unrelated text").any { it.id == id })
+                val wrongCount = count + 100
+                val wrongTitle = context.resources.getQuantityString(labelRes, wrongCount, wrongCount)
+                assertEquals(target.id, matches(title).first().id)
+                assertEquals(title, matches(title).first().searchResultTitle(context))
+                assertTrue(matches(context.getString(target.labelRes)).any { it.id == target.id })
+                assertFalse(matches(wrongTitle).any { it.id == target.id })
+                assertFalse(matches(count.toString()).any { it.id == target.id })
+                assertFalse(matches("$count unrelated text").any { it.id == target.id })
             }
         }
     }

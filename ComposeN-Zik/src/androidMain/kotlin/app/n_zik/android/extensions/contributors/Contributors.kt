@@ -17,7 +17,6 @@ import com.google.gson.JsonArray
 import app.n_zik.android.extensions.contributors.models.Developer
 import app.n_zik.android.extensions.contributors.models.Translator
 import timber.log.Timber
-import java.io.InputStream
 
 private val GSON = Gson()
 private lateinit var developersList: List<Developer>
@@ -25,97 +24,70 @@ private lateinit var translatorsList: List<Translator>
 
 
 @Composable
-fun countDevelopers(): Int {
-    val context = LocalContext.current
+fun countDevelopers(): Int = countDevelopers(LocalContext.current)
 
-    if( !::developersList.isInitialized )
-        initDevelopers( context )
+internal fun countDevelopers(context: Context): Int = developers(context).size
 
-    return if ( developersList.isEmpty() ) 0
-    else
-        developersList.size
-}
+@Synchronized
+private fun developers(context: Context): List<Developer> {
+    if (!::developersList.isInitialized) {
+        developersList = try {
+            val json = context.resources.openRawResource(R.raw.contributors).bufferedReader().use {
+                GSON.fromJson(it, JsonArray::class.java)
+            }
 
-
-
-private fun initDevelopers( context: Context) {
-    try {
-        val fileStream: InputStream =
-            context.resources.openRawResource(R.raw.contributors)
-
-        val json: JsonArray =
-            GSON.fromJson(fileStream.bufferedReader(), JsonArray::class.java)
-
-//        val json = GSON.fromJson(result, JsonArray::class.java)
-
-        developersList = json.map { GSON.fromJson(it, Developer::class.java) }
-            .sortedBy { it.username }
-    } catch ( e: Exception ) {
-        Timber.tag("Contributors").e(e.stackTraceToString())
-        Timber.tag("Contributors").e("initDevelopers Exception: ${e.message}")
-        developersList = emptyList()
+            json.map { GSON.fromJson(it, Developer::class.java) }.sortedBy { it.username }
+        } catch (e: Exception) {
+            Timber.tag("Contributors").e(e, "Unable to load developers")
+            emptyList()
+        }
     }
+    return developersList
 }
 
 @Composable
 fun ShowDevelopers() {
-    val context = LocalContext.current
-
-    if( !::developersList.isInitialized )
-        initDevelopers( context )
-
-    if ( developersList.isEmpty() ) return
+    val developers = developers(LocalContext.current)
+    if (developers.isEmpty()) return
 
     Box( Modifier.fillMaxWidth().height( 600.dp ) ) {
         LazyColumn( Modifier.fillMaxWidth().padding( top = 15.dp ) ) {
-            items(developersList, key = { it.id }, contentType = { "developer" }) { it.Draw() }
+            items(developers, key = { it.id }, contentType = { "developer" }) { it.Draw() }
         }
     }
 }
 
 
-private fun initTranslators( context: Context) {
-    try {
-        val fileStream: InputStream =
-            context.resources.openRawResource(R.raw.translators)
-        val json: JsonArray =
-            GSON.fromJson(fileStream.bufferedReader(), JsonArray::class.java)
+@Synchronized
+private fun translators(context: Context): List<Translator> {
+    if (!::translatorsList.isInitialized) {
+        translatorsList = try {
+            val json = context.resources.openRawResource(R.raw.translators).bufferedReader().use {
+                GSON.fromJson(it, JsonArray::class.java)
+            }
 
-//        val json = GSON.fromJson(result, JsonArray::class.java)
-
-        translatorsList = json.map { GSON.fromJson(it, Translator::class.java) }
-            .sortedBy { it.displayName }
-    } catch ( e: Exception ) {
-        Timber.tag("Contributors").e(e.stackTraceToString())
-        Timber.tag("Contributors").e("initTranslators Exception: ${e.message}")
-        translatorsList = emptyList()
+            json.map { GSON.fromJson(it, Translator::class.java) }.sortedBy { it.displayName }
+        } catch (e: Exception) {
+            Timber.tag("Contributors").e(e, "Unable to load translators")
+            emptyList()
+        }
     }
+    return translatorsList
 }
 
 @Composable
-fun countTranslators(): Int {
-    val context = LocalContext.current
+fun countTranslators(): Int = countTranslators(LocalContext.current)
 
-    if( !::translatorsList.isInitialized )
-        initTranslators( context )
-
-    return if ( translatorsList.isEmpty() ) 0
-    else
-        translatorsList.size
-}
+internal fun countTranslators(context: Context): Int = translators(context).size
 
 @Composable
 fun ShowTranslators() {
-    val context = LocalContext.current
-
-    if( !::translatorsList.isInitialized )
-        initTranslators( context )
-
-    if ( translatorsList.isEmpty() ) return
+    val translators = translators(LocalContext.current)
+    if (translators.isEmpty()) return
 
     Box( Modifier.fillMaxWidth().height( 600.dp ) ) {
         LazyColumn( Modifier.fillMaxWidth().padding( top = 15.dp ) ) {
-            items(translatorsList, key = { it.username }, contentType = { "translator" }) { it.Draw() }
+            items(translators, key = { it.username }, contentType = { "translator" }) { it.Draw() }
         }
     }
 }

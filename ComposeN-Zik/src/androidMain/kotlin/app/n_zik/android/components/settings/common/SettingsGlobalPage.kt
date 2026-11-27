@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -59,6 +60,7 @@ import app.n_zik.android.components.navigation.header.rememberHeaderProfileFace
 import app.n_zik.android.components.ui.screens.profiles.ProfileCardAvatar
 import app.n_zik.android.ui.styling.Dimensions
 import app.n_zik.android.utils.lastUpdateCheckKey
+import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
@@ -81,6 +83,7 @@ import app.n_zik.android.updater.services.Updater
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.withContext
 
 /** Searchable settings hub; an empty query displays the registry groups. */
 @OptIn(ExperimentalAnimationApi::class)
@@ -116,8 +119,14 @@ fun SettingsGlobalPage(
     val profileShortcutIndex = rememberProfileShortcutSettingsIndex(context)
     val hasAudioPermission = rememberSettingsAudioPermission(context)
     val defaultHomePageChoices = rememberDefaultHomePageChoices()
-    val entryResults = remember(context, configuration, query, playerType, profileShortcutIndex, hasAudioPermission, defaultHomePageChoices) {
-        searchSettingsEntries(context, query, profileShortcutIndex, hasAudioPermission)
+    val countedLabels by produceState(emptyMap(), context, configuration) {
+        value = withContext(NzikDispatchers.DATA) { aboutContributorSearchLabels(context) }
+    }
+    val entryResults = remember(
+        context, configuration, query, playerType, profileShortcutIndex,
+        hasAudioPermission, defaultHomePageChoices, countedLabels,
+    ) {
+        searchSettingsEntries(context, query, profileShortcutIndex, hasAudioPermission, countedLabels)
     }
     val categoryResults = remember(context, configuration, query) {
         searchSettingsCategories(context, query)

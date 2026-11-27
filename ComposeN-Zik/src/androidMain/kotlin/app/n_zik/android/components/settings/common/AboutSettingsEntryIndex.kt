@@ -1,12 +1,26 @@
 package app.n_zik.android.components.settings.common
 
+import android.content.Context
 import app.n_zik.android.R
+import app.n_zik.android.extensions.contributors.countDevelopers
+import app.n_zik.android.extensions.contributors.countTranslators
 import app.n_zik.android.updater.models.UpdateEndpoints
 
 internal const val AboutAuthorSettingsTarget = "about.app.author"
 
 internal fun aboutAuthorSearchLabel(resolve: (Int) -> String): String =
     "${resolve(R.string.about_authorship_preposition)} ${UpdateEndpoints.REAL_OWNER}"
+
+internal fun aboutContributorSearchLabels(context: Context): Map<Int, String> {
+    val translators = countTranslators(context)
+    val developers = countDevelopers(context)
+    val resources = context.resources
+    return mapOf(
+        R.plurals.about_translator_count to resources.getQuantityString(R.plurals.about_translator_count, translators, translators),
+        R.plurals.about_developer_designer_count to
+            resources.getQuantityString(R.plurals.about_developer_designer_count, developers, developers),
+    )
+}
 
 /** About actions map to visible rows; opening search never invokes their destinations. */
 val AboutSettingsEntryTargets: List<SettingsEntryTarget> = listOf(

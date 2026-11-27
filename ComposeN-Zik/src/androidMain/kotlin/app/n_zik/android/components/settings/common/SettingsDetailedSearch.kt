@@ -103,11 +103,13 @@ internal fun searchSettingsEntries(
     query: String,
     profileShortcutIndex: SettingsEntrySearchIndex?,
     hasAudioPermission: Boolean? = null,
+    countedLabels: Map<Int, String> = emptyMap(),
 ): List<SettingsEntryTarget> =
     searchSettingsEntries(
         context, query, isYouTubeSyncBuild(),
         profileShortcutIndex = profileShortcutIndex,
         hasAudioPermission = hasAudioPermission,
+        countedLabels = countedLabels,
     )
 
 @Composable
@@ -131,6 +133,7 @@ internal fun searchSettingsEntries(
     lastFmSupported: Boolean = isLastFmSettingsAvailable(),
     profileShortcutIndex: SettingsEntrySearchIndex? = null,
     hasAudioPermission: Boolean? = null,
+    countedLabels: Map<Int, String> = emptyMap(),
 ): List<SettingsEntryTarget> {
     if (query.isBlank()) return emptyList()
     val resources = context.resources
@@ -141,9 +144,7 @@ internal fun searchSettingsEntries(
     )
     val homePageLabels = defaultHomePageChoices(context).map { resources.getString(it.textId) }
     val currentChoiceLabels = mapOf("ui.user_interface.default_page" to homePageLabels)
-    return settingsEntrySearchIndex(resources).search(query, profileShortcutIndex, currentChoiceLabels) { id, count ->
-        resources.getQuantityString(id, count, count)
-    }.filter { result ->
+    return settingsEntrySearchIndex(resources).search(query, profileShortcutIndex, currentChoiceLabels, countedLabels).filter { result ->
         when {
             !youtubeSyncSupported && result.requiresYouTubeSyncBuild() -> false
             !lastFmSupported && result.cardTitleRes == R.string.settings_lastfm_title -> false
@@ -155,6 +156,9 @@ internal fun searchSettingsEntries(
             PlayerSongSwipeSetting.entries.any { it.target == result.id } -> result.id == activeSwipeSetting.target
             else -> true
         }
+    }.map { result ->
+        val countedLabel = result.countedLabelRes?.let(countedLabels::get)
+        if (countedLabel == null) result else result.copy(displayLabel = countedLabel)
     }
 }
 
@@ -218,25 +222,24 @@ internal class SettingsEntrySearchIndex(
         }
     }
 
-    fun search(query: String, resolveCountedLabel: ((Int, Int) -> String)? = null): List<SettingsEntryTarget> =
-        search(query, additionalIndex = null, resolveCountedLabel = resolveCountedLabel)
+    fun search(query: String): List<SettingsEntryTarget> = search(query, additionalIndex = null)
 
     fun search(
         query: String,
         additionalIndex: SettingsEntrySearchIndex?,
         currentChoiceLabels: Map<String, List<String>> = emptyMap(),
-        resolveCountedLabel: ((Int, Int) -> String)? = null,
+        countedLabels: Map<Int, String> = emptyMap(),
     ): List<SettingsEntryTarget> {
         val needle = normalizedSettingsText(query)
         if (needle.isEmpty()) return emptyList()
         val tokens = needle.split(' ').sortedByDescending(String::length)
-        val count = settingsCountedLabelNumber.find(needle)?.value?.takeUnless { it == needle }?.toIntOrNull()
+        val hasCount = settingsCountedLabelNumber.find(needle)?.value?.let { it != needle } == true
         // Keep the original four ranks; available choices are a lower-priority fallback.
         val matches = Array(5) { mutableListOf<SettingsEntryTarget>() }
         (entries.asSequence() + additionalIndex?.entries.orEmpty().asSequence()).forEach { entry ->
             val labels = entry.labels
-            val countedLabel = if (count != null && resolveCountedLabel != null) {
-                entry.target.countedLabelRes?.let { normalizedSettingsText(resolveCountedLabel(it, count)) }
+            val countedLabel = if (hasCount) {
+                entry.target.countedLabelRes?.let(countedLabels::get)?.let(::normalizedSettingsText)
             } else null
             val score = when {
                 needle in labels || countedLabel == needle -> 0
