@@ -111,6 +111,7 @@ import app.n_zik.android.components.dialog.common.DialogPresence
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.enums.FilterBy
 import app.n_zik.android.components.menu.FilterMenu
+import app.n_zik.android.components.menu.originLabelRes
 import app.n_zik.android.utils.filterByKey
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.ui.components.LocalMenuState
@@ -207,6 +208,9 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val offlineMode by OfflineMode.rememberEnabled()
 
     var builtInPlaylist by rememberPreference( builtInPlaylistKey, BuiltInPlaylist.All )
+    var filterBy by rememberPreference(filterByKey, FilterBy.All)
+    val showOriginFilter = builtInPlaylist.hasSongOriginFilter(isYouTubeSyncEnabled())
+    val sourceFilter = if (showOriginFilter) filterBy else FilterBy.All
     val onDeviceTabEnabled by rememberPreference(showOnDevicePlaylistKey, true)
     val showOnDeviceChip = deviceLibraryEnabled() && onDeviceTabEnabled
     LaunchedEffect(showOnDeviceChip, builtInPlaylist) {
@@ -799,20 +803,15 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
 
                             androidx.compose.animation.AnimatedVisibility(
                                 modifier = Modifier.padding(start = 16.dp),
-                                visible = isYouTubeSyncEnabled() && (builtInPlaylist == BuiltInPlaylist.Favorites || builtInPlaylist == BuiltInPlaylist.Disliked),
+                                visible = showOriginFilter,
                                 enter = androidx.compose.animation.fadeIn(animationSpec = tween(200)) + androidx.compose.animation.expandVertically(animationSpec = tween(200)),
                                 exit = androidx.compose.animation.fadeOut(animationSpec = tween(200)) + androidx.compose.animation.shrinkVertically(animationSpec = tween(200))
                             ) {
                                 val menuState = LocalMenuState.current
-                                var filterBy by rememberPreference(filterByKey, FilterBy.All)
                                 GlassHomeFilterChip(
                                     label = {
                                         Text(
-                                            text = when (filterBy) {
-                                                FilterBy.All -> stringResource(R.string.common_option_all)
-                                                FilterBy.Local -> stringResource(R.string.library_on_device_title)
-                                                FilterBy.YoutubeLibrary -> stringResource(R.string.library_youtube_music_title)
-                                            }
+                                            text = stringResource(filterBy.originLabelRes)
                                         )
                                     },
                                     selected = true,
@@ -889,7 +888,17 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                 val headerPadding = with(androidx.compose.ui.platform.LocalDensity.current) { headerHeight.toDp() }
                 when( builtInPlaylist ) {
                     BuiltInPlaylist.OnDevice -> OnDeviceSong( navController, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, headerPadding, scrollContentInsetProvider )
-                    else                     -> HomeSongs( navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState, matchButton = null, onRecommendationCountChange = { count -> recommendationCount = count }, onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading }, isRecommendationEnabled = isRecommendationEnabled, refreshKey = matchRefreshKey, onMatchClick = openMatch, headerPadding = headerPadding, topContentInsetProvider = scrollContentInsetProvider )
+                    else -> HomeSongs(
+                        navController, builtInPlaylist, lazyListState, itemSelector, search, buttons, itemsOnDisplayState,
+                        onRecommendationCountChange = { count -> recommendationCount = count },
+                        onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading },
+                        isRecommendationEnabled = isRecommendationEnabled,
+                        refreshKey = matchRefreshKey,
+                        onMatchClick = openMatch,
+                        headerPadding = headerPadding,
+                        topContentInsetProvider = scrollContentInsetProvider,
+                        sourceFilter = sourceFilter,
+                    )
                 }
             }
         }

@@ -1,6 +1,7 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.enums.BuiltInPlaylist
 import app.n_zik.android.models.Song
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancelAndJoin
@@ -17,6 +18,16 @@ import java.util.concurrent.atomic.AtomicReference
 class HomeSongsProjectionTest {
     private fun song(id: String, title: String = id, artist: String? = null) =
         Song(id, title, artist, durationText = null, thumbnailUrl = null)
+
+    @Test
+    fun `song origin filter is limited to synchronized favorites and disliked songs`() {
+        val tabs = BuiltInPlaylist.entries
+        assertEquals(
+            setOf(BuiltInPlaylist.Favorites, BuiltInPlaylist.Disliked),
+            tabs.filter { it.hasSongOriginFilter(youtubeSyncEnabled = true) }.toSet(),
+        )
+        assertTrue(tabs.none { it.hasSongOriginFilter(youtubeSyncEnabled = false) })
+    }
 
     @Test
     fun `preserves sequential clamped insertion and first occurrence before filtering`() = runTest {

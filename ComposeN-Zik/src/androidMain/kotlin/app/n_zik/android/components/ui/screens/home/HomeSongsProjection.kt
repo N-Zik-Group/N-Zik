@@ -1,11 +1,15 @@
 package app.n_zik.android.components.ui.screens.home
 
 import app.n_zik.android.EXPLICIT_PREFIX
+import app.n_zik.android.enums.BuiltInPlaylist
 import app.n_zik.android.models.Song
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+
+internal fun BuiltInPlaylist.hasSongOriginFilter(youtubeSyncEnabled: Boolean): Boolean =
+    youtubeSyncEnabled && (this == BuiltInPlaylist.Favorites || this == BuiltInPlaylist.Disliked)
 
 internal data class HomeSongsBaseInput(
     val items: List<Song>,

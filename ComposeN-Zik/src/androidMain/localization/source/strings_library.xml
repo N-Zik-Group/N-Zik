@@ -75,6 +75,7 @@
     <string name="library_export_cached_songs_confirmation_format">Export %d cached/downloaded songs?</string>
     <string name="library_favorites_title">Favorites</string>
     <string name="library_filter_by_title">Filter By</string>
+    <string name="library_filter_nzik_origin_label">N-Zik only</string>
     <string name="library_filter_online_songs_label">Online Songs</string>
     <string name="library_filter_unmatched_songs_label">Unmatched Songs</string>
     <string name="library_history_title">History</string>

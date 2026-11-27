@@ -87,7 +87,6 @@ import app.n_zik.android.utils.color
 import app.n_zik.android.utils.durationTextToMillis
 import app.n_zik.android.utils.enqueue
 import app.n_zik.android.utils.excludeSongsWithDurationLimitKey
-import app.n_zik.android.utils.filterByKey
 import app.n_zik.android.utils.forcePlayAtIndex
 import app.n_zik.android.utils.homeSongsAllSortMenuOrderKey
 import app.n_zik.android.utils.homeSongsCachedSortMenuOrderKey
@@ -187,6 +186,7 @@ fun HomeSongs(
     headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
     visibleHeaderPadding: () -> androidx.compose.ui.unit.Dp = { headerPadding },
     topContentInsetProvider: () -> androidx.compose.ui.unit.Dp = { 0.dp },
+    sourceFilter: FilterBy = FilterBy.All,
 ) {
     val binder = LocalPlayerServiceBinder.current
     val context = LocalContext.current
@@ -195,7 +195,6 @@ fun HomeSongs(
     val maxTopPlaylistItems by rememberPreference( MaxTopPlaylistItemsKey, MaxTopPlaylistItems.`10` )
     val maxTopPlaylistItemsCustomValue by rememberPreference( MaxTopPlaylistItemsCustomValueKey, 10 )
     val excludeSongWithDurationLimit by rememberPreference( excludeSongsWithDurationLimitKey, DurationInMinutes.Disabled )
-    var filterBy by rememberPreference(filterByKey, FilterBy.All)
     val showDislikedPlaylist by rememberPreference(excludeDislikedSongsKey, DislikeMode.Enabled)
 
     val preview = LocalThemePreview.current
@@ -264,7 +263,7 @@ fun HomeSongs(
     var relatedSongsPositions by remember { mutableStateOf(emptyMap<Song, Int>()) }
     var isRecommendationsLoading by remember { mutableStateOf(false) }
 
-    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, filterBy,
+    LaunchedEffect( builtInPlaylist, topPlaylists.period, songSort.sortBy, songSort.sortOrder, hiddenSongs.isFirstIcon, refreshKey, sourceFilter,
         binder.takeIf { builtInPlaylist == BuiltInPlaylist.Offline }, downloadedIds ) {
         if (preview != null) {
             isLoading = false
@@ -367,11 +366,10 @@ fun HomeSongs(
             }
         }
 
-        val selectedFilter = filterBy
         val selectedPlaylist = builtInPlaylist
         retrievedSongs.map { retrieved ->
                 val songs = retrieved.filterNot(Song::isLocal)
-                when(selectedFilter) {
+                when(sourceFilter) {
                     FilterBy.All -> songs
                     FilterBy.YoutubeLibrary -> songs.filter { song -> song.isYoutubeSong }
                     FilterBy.Local -> songs.filterNot { song -> song.isYoutubeSong }

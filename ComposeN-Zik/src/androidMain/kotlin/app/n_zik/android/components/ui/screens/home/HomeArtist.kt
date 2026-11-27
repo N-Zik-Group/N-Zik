@@ -114,6 +114,7 @@ import app.n_zik.android.ui.components.tab.TabHeader
 import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Randomizer
 import app.n_zik.android.components.menu.FilterMenu
+import app.n_zik.android.components.menu.originLabelRes
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.HeaderInfo
@@ -546,11 +547,7 @@ fun HomeArtists(
                             GlassHomeFilterChip(
                                 label = {
                                     Text(
-                                        text = when (filterBy) {
-                                            FilterBy.All -> stringResource(R.string.common_option_all)
-                                            FilterBy.Local -> stringResource(R.string.library_on_device_title)
-                                            FilterBy.YoutubeLibrary -> stringResource(R.string.library_youtube_music_title)
-                                        }
+                                        text = stringResource(filterBy.originLabelRes)
                                     )
                                 },
                                 selected = true,

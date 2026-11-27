@@ -106,6 +106,7 @@ import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Randomizer
 import app.n_zik.android.components.menu.album.AlbumItemMenu
 import app.n_zik.android.components.menu.FilterMenu
+import app.n_zik.android.components.menu.originLabelRes
 import app.n_zik.android.components.tab.ItemSelector
 import app.n_zik.android.ui.components.themed.FloatingActionsContainerWithScrollToTop
 import app.n_zik.android.ui.components.themed.HeaderInfo
@@ -265,9 +266,8 @@ fun HomeAlbums(
         if (!showFavoritesAlbum && albumType == AlbumsType.Favorites) albumType = AlbumsType.Library
     }
 
-    if (!isYouTubeSyncEnabled()) {
-        filterBy = FilterBy.All
-    }
+    val showOriginFilter = albumType != AlbumsType.OnDevice && isYouTubeSyncEnabled()
+    val sourceFilter = if (showOriginFilter) filterBy else FilterBy.All
 
     val context = LocalContext.current
     val preview = LocalThemePreview.current
@@ -316,13 +316,13 @@ fun HomeAlbums(
         }
     }
     val groups = eligibleDeviceGroups
-    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, albumType, filterBy, groups) {
+    var baseReady by remember(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups) {
         mutableStateOf(false)
     }
-    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, albumType, filterBy, groups) {
+    LaunchedEffect(searchDataReady, groupsReady, itemsToFilter, albumType, sourceFilter, groups) {
         if (!searchDataReady || !groupsReady) return@LaunchedEffect
         val type = albumType
-        val source = filterBy
+        val source = sourceFilter
         val candidates = itemsToFilter
         items = withContext(NzikDispatchers.DATA) {
             candidates.filter { item ->
@@ -526,7 +526,7 @@ fun HomeAlbums(
                         )
                     }
                     AnimatedVisibility(
-                        visible = albumType != AlbumsType.OnDevice && isYouTubeSyncEnabled(),
+                        visible = showOriginFilter,
                         enter = fadeIn(animationSpec = tween(200)) + expandVertically(animationSpec = tween(200)),
                         exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
                     ) {
@@ -541,11 +541,7 @@ fun HomeAlbums(
                             GlassHomeFilterChip(
                                 label = {
                                     Text(
-                                        text = when (filterBy) {
-                                            FilterBy.All -> stringResource(R.string.common_option_all)
-                                            FilterBy.Local -> stringResource(R.string.library_on_device_title)
-                                            FilterBy.YoutubeLibrary -> stringResource(R.string.library_youtube_music_title)
-                                        }
+                                        text = stringResource(filterBy.originLabelRes)
                                     )
                                 },
                                 selected = true,
