@@ -247,7 +247,7 @@ fun HomeLibrary(
     val rewindYearlyPlaylistEnabled by rememberDataStoreBooleanPreference(DataStoreUtils.KEY_REWIND_YEARLY_PLAYLIST_ENABLED, true)
     var rewindPlaylistsFilter by rememberPreference(RewindPlaylists.REWIND_PLAYLISTS_FILTER_KEY, RewindPlaylists.Filter.All)
     val libraryScope = HomeLibraryPlaylistScope(
-        playlistType, youtubeLibraryFilter, search.filterQuery, showRewind, showPinnedPlaylists,
+        playlistType, youtubeLibraryFilter, search.filterQuery,
         rewindEnabled && rewindMonthlyPlaylistEnabled, rewindEnabled && rewindYearlyPlaylistEnabled, rewindPlaylistsFilter,
     )
     val devicePlaylistIds by remember(previewSession) {

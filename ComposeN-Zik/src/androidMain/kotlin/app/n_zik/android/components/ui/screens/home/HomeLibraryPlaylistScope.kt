@@ -12,8 +12,6 @@ internal data class HomeLibraryPlaylistScope(
     val type: PlaylistsType,
     val youtubeFilter: YouTubeLibraryFilter,
     val query: String,
-    val showRewind: Boolean,
-    val showPinned: Boolean,
     val monthlyEnabled: Boolean,
     val yearlyEnabled: Boolean,
     val rewindFilter: RewindPlaylists.Filter,
@@ -25,10 +23,8 @@ internal data class HomeLibraryPlaylistScope(
         val playlist = preview.playlist
         matchesName(playlist.name) && when (type) {
             PlaylistsType.YTPlaylist -> matchesYouTubeLibraryFilter(playlist, youtubeFilter)
-            PlaylistsType.Playlist, PlaylistsType.OnDevice ->
-                (type != PlaylistsType.OnDevice || !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)) &&
-                (!RewindPlaylists.isRewind(playlist.name) || showRewind) &&
-                (!playlist.name.startsWith(PINNED_PREFIX, true) || showPinned)
+            PlaylistsType.Playlist -> true
+            PlaylistsType.OnDevice -> !isYouTubePlaylistSource(playlist.browseId, playlist.isYoutubePlaylist)
             PlaylistsType.MonthlyPlaylist -> RewindPlaylists.isShown(
                 playlist.name, monthlyEnabled, yearlyEnabled, rewindFilter,
             )

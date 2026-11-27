@@ -902,7 +902,10 @@ class AutoSessionCallback(
                     } else {
                         val playlistId = selection.containerId
                         songId = selection.songId
-                        queryList = playlistSongs(playlistId)
+                        val token = if (selection.section == AutoMediaIdContract.PLAYLIST_SECTION_DEVICE) {
+                            playlistId.toLongOrNull()?.let(AutoMediaIdContract::devicePlaylistAction)
+                        } else playlistId
+                        queryList = token?.let { playlistSongs(it) }.orEmpty()
                     }
                 }
             }
@@ -941,9 +944,15 @@ class AutoSessionCallback(
         // Online playlists keep their songs scoped by playlist id so queues
         // never mix previously opened playlists (issue #777).
         else -> {
+            val devicePlaylistId = AutoMediaIdContract.devicePlaylistFromAction(playlistId)
+            val deviceGroup = AutoMediaIdContract.deviceGroupFromAction(playlistId)
             val localId = playlistId.toLongOrNull()
-            if (localId == null) AutoSearchState.playlistSongsById[playlistId].orEmpty()
-            else loadAutoPlaylistSongs(context, database, downloadHelper, localId)
+            when {
+                deviceGroup != null -> autoBrowseTree.deviceGroupsHandler.songs(deviceGroup, context, database)
+                devicePlaylistId != null -> loadAutoPlaylistSongs(context, database, downloadHelper, devicePlaylistId).filter { it.isLocal }
+                localId != null -> loadAutoPlaylistSongs(context, database, downloadHelper, localId)
+                else -> AutoSearchState.playlistSongsById[playlistId].orEmpty()
+            }
         }
     }
 

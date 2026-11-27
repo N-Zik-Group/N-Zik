@@ -8,6 +8,23 @@ object AutoMediaIdContract {
     private const val SELECT = "AA_SELECT"
     private const val ACTION = "AA_ACTION"
     private const val PLAY_ALL = "PLAYLIST_PLAY_ALL"
+    private const val DEVICE_PLAYLIST_ACTION = "device-playlist:"
+    private const val DEVICE_GROUP_ACTION = "device-group:"
+    internal const val PLAYLIST_SECTION_ALL = "all"
+    internal const val PLAYLIST_SECTION_DEVICE = "on_device"
+
+    internal fun devicePlaylistAction(id: Long): String = "$DEVICE_PLAYLIST_ACTION$id"
+
+    internal fun devicePlaylistFromAction(token: String): Long? =
+        token.takeIf { it.startsWith(DEVICE_PLAYLIST_ACTION) }?.removePrefix(DEVICE_PLAYLIST_ACTION)?.toLongOrNull()
+
+    internal fun deviceGroupAction(parentId: String): String = DEVICE_GROUP_ACTION + Uri.encode(parentId)
+
+    internal fun deviceGroupFromAction(token: String): String? =
+        token.takeIf { it.startsWith(DEVICE_GROUP_ACTION) }?.removePrefix(DEVICE_GROUP_ACTION)?.let(Uri::decode)
+
+    internal fun isPlaylistSection(value: String): Boolean =
+        value == PLAYLIST_SECTION_ALL || value == PLAYLIST_SECTION_DEVICE
 
     /** A song selection within a detail container. */
     data class ParsedSongSelection(val containerId: String, val section: String?, val songId: String)
@@ -62,6 +79,7 @@ object AutoMediaIdContract {
         return when (parentId) {
             AutoSessionConstants.ID_PLAYLISTS_YT -> AutoSessionConstants.ID_PLAYLISTS_YT_ALL
             AutoSessionConstants.ID_PLAYLISTS_LOCAL,
+            AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE,
             AutoSessionConstants.ID_PLAYLISTS_YT_ALL,
             AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
             AutoSessionConstants.ID_PLAYLISTS_YT_PODCASTS,

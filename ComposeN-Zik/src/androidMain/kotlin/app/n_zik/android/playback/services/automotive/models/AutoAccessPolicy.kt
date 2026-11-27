@@ -69,6 +69,7 @@ class AutoAccessPolicy(
             AutoSessionConstants.ID_ARTISTS_LIBRARY,
             AutoSessionConstants.ID_ARTISTS_FAVORITES,
             AutoSessionConstants.ID_PLAYLISTS_LOCAL,
+            AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE,
             AutoSessionConstants.ID_PLAYLISTS_YT,
             AutoSessionConstants.ID_PLAYLISTS_YT_ALL,
             AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,

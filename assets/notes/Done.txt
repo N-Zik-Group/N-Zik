@@ -1308,3 +1308,7 @@ Menus:
 Settings:
 - fix(settings): explain cover and Glass search prerequisites
   - Focus the applicable prerequisites for hidden cover and custom tint controls.
+
+Android Auto:
+- fix(auto): show device playlist folders and scoped playback
+  - Share the full All library, show device playlists and detail folders, and map each action to its own contents with visible folder and artwork icons.

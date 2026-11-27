@@ -3,6 +3,10 @@ package app.n_zik.android.playback.services.automotive.browse.handlers
 import android.content.Context
 import app.n_zik.android.core.ondevice.isDeviceLibraryEnabled
 import androidx.media3.common.MediaItem
+import app.n_zik.android.R
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
+import app.n_zik.android.playback.services.automotive.session.AutoMediaIdContract
+import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.ondevice.DeviceLibrarySnapshot
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
@@ -88,15 +92,27 @@ internal class AutoDeviceGroupsBrowseHandler(
         ID_ALBUMS_ONDEVICE -> albums(context, database).map { album ->
             CancellableAutoMediaItemMapper.mapAlbumToMediaItem(
                 parentId, album.id, album.title.orEmpty(), album.authorsText, album.thumbnailUrl,
-            )
+            ).withDeviceGroupFallback(context)
         }
         ID_ARTISTS_ONDEVICE -> artists(context, database).map { artist ->
             CancellableAutoMediaItemMapper.mapArtistToMediaItem(
                 parentId, artist.id, artist.name.orEmpty(), artist.thumbnailUrl,
-            )
+            ).withDeviceGroupFallback(context)
         }
-        else -> songs(parentId, context, database).map { song ->
-            CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = true)
+        else -> {
+            val visibleSongs = songs(parentId, context, database)
+            if (visibleSongs.isEmpty()) emptyList() else {
+                val action = AutoMediaIdContract.playlistShuffle(AutoMediaIdContract.deviceGroupAction(parentId))
+                listOf(AutoSessionConstants.shuffleItem(context, action)) + visibleSongs.map { song ->
+                    CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = true)
+                }
+            }
         }
     }
+
+    private fun MediaItem.withDeviceGroupFallback(context: Context): MediaItem =
+        if (mediaMetadata.artworkUri != null || mediaMetadata.artworkData != null) this
+        else buildUpon().setMediaMetadata(
+            mediaMetadata.buildUpon().setArtworkUri(drawableUri(context, R.drawable.ic_launcher_box)).build()
+        ).build()
 }

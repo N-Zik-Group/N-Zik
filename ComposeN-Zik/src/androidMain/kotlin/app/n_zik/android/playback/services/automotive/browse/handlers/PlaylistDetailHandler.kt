@@ -7,6 +7,10 @@ import androidx.compose.ui.util.fastMap
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
 import android.content.Context
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import app.n_zik.android.R
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
+import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.enums.MaxTopPlaylistItems
 import app.n_zik.android.enums.SongSortBy
@@ -39,7 +43,7 @@ class PlaylistDetailHandler : BrowseHandler {
     override fun handles(parentId: String): Boolean {
         if (!parentId.startsWith("${PlayerServiceModern.PLAYLIST}/")) return false
         val parts = parentId.split("/")
-        return parts.size == 2
+        return parts.size == 2 || (parts.size == 3 && parts[1].toLongOrNull() != null && AutoMediaIdContract.isPlaylistSection(parts[2]))
     }
 
     override suspend fun getChildren(
@@ -51,6 +55,27 @@ class PlaylistDetailHandler : BrowseHandler {
     ): List<MediaItem> {
         val parts = parentId.split("/")
         val playlistId = parts[1]
+        playlistId.toLongOrNull()?.let { localId ->
+            val section = parts.getOrNull(2)
+            val songs = loadAutoPlaylistSongs(context, database, downloadHelper, localId)
+            val deviceSongs = songs.filter { it.isLocal }
+            if (section == null && deviceSongs.isNotEmpty()) {
+                fun folder(sectionId: String, label: Int, icon: Int, count: Int) = browsableMediaItem(
+                    "$parentId/$sectionId", context.getString(label), count.toString(),
+                    drawableUri(context, icon), MediaMetadata.MEDIA_TYPE_FOLDER_PLAYLISTS, parentId,
+                )
+                return listOf(
+                    folder(AutoMediaIdContract.PLAYLIST_SECTION_ALL, R.string.common_option_all, R.drawable.library, songs.size),
+                    folder(AutoMediaIdContract.PLAYLIST_SECTION_DEVICE, R.string.library_on_device_title, R.drawable.folder, deviceSongs.size),
+                )
+            }
+            val deviceOnly = section == AutoMediaIdContract.PLAYLIST_SECTION_DEVICE
+            val visible = if (deviceOnly) deviceSongs else songs
+            if (visible.isEmpty()) return emptyList()
+            val action = if (deviceOnly) AutoMediaIdContract.devicePlaylistAction(localId) else playlistId
+            return listOf(AutoSessionConstants.shuffleItem(context, AutoMediaIdContract.playlistShuffle(action))) +
+                visible.map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }
+        }
         // The shuffle item must carry the playlist id so queue resolution can
         // find the right song list (issue #777).
         val shuffleItem = AutoSessionConstants.shuffleItem(context, AutoMediaIdContract.playlistShuffle(playlistId))
@@ -87,16 +112,12 @@ class PlaylistDetailHandler : BrowseHandler {
                 }
             }
             else -> {
-                if (playlistId.toLongOrNull() != null) {
-                    flowOf(loadAutoPlaylistSongs(context, database, downloadHelper, playlistId.toLong()))
-                } else {
-                    val playlistPage = if (AutoAccessPolicy(context, database, downloadHelper, binder).online) Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull() else null
-                    val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()
-                    // Scope the songs to their own playlist id so playback queues
-                    // never mix songs from previously opened playlists (issue #777).
-                    AutoSearchState.playlistSongsById = AutoSearchState.playlistSongsById + (playlistId to songs.distinctBy { s -> s.id })
-                    flowOf(songs)
-                }
+                val playlistPage = if (AutoAccessPolicy(context, database, downloadHelper, binder).online) Innertube.playlistPage(browseId = playlistId.removePrefix(MODIFIED_PREFIX))?.getOrNull() else null
+                val songs = playlistPage?.songsPage?.items?.map { item -> item.asSong } ?: emptyList()
+                // Scope the songs to their own playlist id so playback queues
+                // never mix songs from previously opened playlists (issue #777).
+                AutoSearchState.playlistSongsById = AutoSearchState.playlistSongsById + (playlistId to songs.distinctBy { s -> s.id })
+                flowOf(songs)
             }
         }
         return listOf(shuffleItem) + listFlow.first().map { song -> CancellableAutoMediaItemMapper.mapSongToMediaItem(song, parentId, loadArtwork = song.isLocal) }

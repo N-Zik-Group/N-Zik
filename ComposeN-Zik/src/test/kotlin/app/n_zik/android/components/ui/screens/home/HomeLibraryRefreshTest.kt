@@ -19,7 +19,7 @@ class HomeLibraryRefreshTest {
     private val playlist = preview(3, "VLPLordinary")
     private val local = preview(4, null)
     private val scope = HomeLibraryPlaylistScope(PlaylistsType.YTPlaylist, YouTubeLibraryFilter.Podcasts,
-        "", true, true, true, true, RewindPlaylists.Filter.All)
+        "", true, true, RewindPlaylists.Filter.All)
 
     @Test fun `podcast-only pull refresh loads visible exact IDs and ignores ordinary playlists`() = runBlocking {
         val visible = scope.copy(query = "Playlist 1").visible(listOf(podcast, otherPodcast, playlist, local))

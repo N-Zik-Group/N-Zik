@@ -24,6 +24,7 @@ import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.playback.services.PlayerServiceModern
 import app.n_zik.android.playback.services.automotive.browse.autoLibraryPlaylistScope
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
+import app.n_zik.android.playback.services.automotive.browse.showAutoDevicePlaylists
 import app.n_zik.android.playback.services.automotive.browse.visibleAutoLibraryPlaylists
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.browsableMediaItem
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper.drawableUri
@@ -70,6 +71,7 @@ class PlaylistsBrowseHandler : BrowseHandler {
                 }
             }
             AutoSessionConstants.ID_PLAYLISTS_LOCAL,
+            AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE,
             AutoSessionConstants.ID_PLAYLISTS_PINNED,
             AutoSessionConstants.ID_PLAYLISTS_YT_ALL,
             AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
@@ -94,10 +96,15 @@ class PlaylistsBrowseHandler : BrowseHandler {
 
     private suspend fun libraryRoot(context: Context, database: Database): List<MediaItem> {
         val previews = database.playlistTable.allAsPreview().first()
-        fun count(id: String) = visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews).size
+        val deviceIds = if (showAutoDevicePlaylists(context)) {
+            database.songPlaylistMapTable.onDeviceOnlyPlaylistIds().first().toSet()
+        } else emptySet()
+        fun count(id: String) = visibleAutoLibraryPlaylists(autoLibraryPlaylistScope(context, id), id, previews, deviceIds).size
         val categories = mapOf(
             "all" to folder(context, AutoSessionConstants.ID_PLAYLISTS_LOCAL, R.string.library_title,
                 R.drawable.library, count(AutoSessionConstants.ID_PLAYLISTS_LOCAL)),
+            "on_device" to folder(context, AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE, R.string.library_on_device_title,
+                R.drawable.folder, count(AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE)),
             "pinned_playlists" to folder(context, AutoSessionConstants.ID_PLAYLISTS_PINNED, R.string.playlist_pinned_title,
                 R.drawable.pin_filled, count(AutoSessionConstants.ID_PLAYLISTS_PINNED)),
             "rewind" to folder(context, AutoSessionConstants.ID_PLAYLISTS_REWIND, R.string.rewind_title,
@@ -105,9 +112,10 @@ class PlaylistsBrowseHandler : BrowseHandler {
             "yt_playlists" to folder(context, AutoSessionConstants.ID_PLAYLISTS_YT, R.string.sync_youtube_playlists_title,
                 R.drawable.ytmusic, count(AutoSessionConstants.ID_PLAYLISTS_YT)),
         )
-        return homeCategoryOrder(context, homePlaylistsOrderKey, listOf("all", "pinned_playlists", "rewind", "yt_playlists"))
+        return homeCategoryOrder(context, homePlaylistsOrderKey, listOf("all", "pinned_playlists", "rewind", "yt_playlists", "on_device"))
             .mapNotNull { id ->
                 val visible = when (id) {
+                    "on_device" -> showAutoDevicePlaylists(context)
                     "pinned_playlists" -> context.preferences.getBoolean(showPinnedPlaylistsKey, true)
                     "rewind" -> isRewindEnabled(context) && context.preferences.getBoolean(showMonthlyPlaylistsKey, true)
                     "yt_playlists" -> context.preferences.getBoolean(showYtPlaylistsKey, true)

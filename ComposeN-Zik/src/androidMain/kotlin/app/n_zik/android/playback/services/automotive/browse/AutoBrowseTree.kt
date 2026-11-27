@@ -183,7 +183,11 @@ class AutoBrowseTree(
         if (mediaId == AutoSuggestedQueueLoader.ROOT_ID) return rootItem(suggested = true)
         RootBrowseHandler().getChildren(PlayerServiceModern.ROOT, context, database, downloadHelper, binder)
             .firstOrNull { it.mediaId == mediaId }?.let { return it }
-        val parent = STATIC_PARENTS[mediaId] ?: deviceGroupsHandler.detailParent(mediaId) ?: return null
+        val parts = mediaId.split('/')
+        val playlistParent = if (parts.size == 3 && parts[0] == PlayerServiceModern.PLAYLIST &&
+            parts[1].toLongOrNull() != null && AutoMediaIdContract.isPlaylistSection(parts[2])
+        ) parts.take(2).joinToString("/") else null
+        val parent = STATIC_PARENTS[mediaId] ?: deviceGroupsHandler.detailParent(mediaId) ?: playlistParent ?: return null
         return handlers.firstOrNull { it.handles(parent) }
             ?.getChildren(parent, context, database, downloadHelper, binder)
             ?.firstOrNull { it.mediaId == mediaId && it.mediaMetadata.isBrowsable == true }
@@ -205,7 +209,7 @@ class AutoBrowseTree(
                 AutoSessionConstants.ID_ARTISTS_DISLIKED, AutoSessionConstants.ID_ARTISTS_ONDEVICE).forEach { put(it, PlayerServiceModern.ARTIST) }
             listOf(AutoSessionConstants.ID_ALBUMS_LIBRARY, AutoSessionConstants.ID_ALBUMS_FAVORITES,
                 AutoSessionConstants.ID_ALBUMS_DISLIKED, AutoSessionConstants.ID_ALBUMS_ONDEVICE).forEach { put(it, PlayerServiceModern.ALBUM) }
-            listOf(AutoSessionConstants.ID_PLAYLISTS_LOCAL, AutoSessionConstants.ID_PLAYLISTS_PINNED,
+            listOf(AutoSessionConstants.ID_PLAYLISTS_LOCAL, AutoSessionConstants.ID_PLAYLISTS_PINNED, AutoSessionConstants.ID_PLAYLISTS_ON_DEVICE,
                 AutoSessionConstants.ID_PLAYLISTS_REWIND, AutoSessionConstants.ID_PLAYLISTS_YT)
                 .forEach { put(it, PlayerServiceModern.PLAYLIST) }
             listOf(AutoSessionConstants.ID_PLAYLISTS_YT_ALL, AutoSessionConstants.ID_PLAYLISTS_YT_PLAYLISTS,
