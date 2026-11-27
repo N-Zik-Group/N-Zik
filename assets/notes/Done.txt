@@ -1120,3 +1120,7 @@ Interface:
 Menus:
 - fix(menu): label sliders and disable unavailable volume control
   - Apply the volume lock to the slider itself and expose names for player adjustments.
+
+Menus:
+- fix(menu): present each selector choice as a single radio action
+  - Keep the label and selection state on the same accessible row.

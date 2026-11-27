@@ -2,7 +2,6 @@ package app.n_zik.android.components.dialog.common
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.basicMarquee
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.RadioButton
@@ -24,6 +25,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
@@ -109,6 +111,7 @@ internal fun <T> ValueSelectorDialog(
                 .verticalScroll(rememberScrollState())
                 .weight(1f, false)
                 .testTag("valueSelectorList")
+                .selectableGroup()
                 .padding(vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -131,7 +134,11 @@ internal fun <T> ValueSelectorDialog(
                         .fillMaxWidth()
                         .clip(uiRoundnessShape())
                         .then(valueModifier(value))
-                        .clickable(enabled = !isLocked) {
+                        .selectable(
+                            selected = selectedValue == value,
+                            enabled = !isLocked,
+                            role = Role.RadioButton,
+                        ) {
                             if (dismissOnSelection) onDismiss()
                             onValueSelected(value)
                         }
@@ -141,10 +148,6 @@ internal fun <T> ValueSelectorDialog(
                     SettingsChoiceRadio(
                         selected = selectedValue == value,
                         enabled = !isLocked,
-                        onClick = {
-                            if (dismissOnSelection) onDismiss()
-                            onValueSelected(value)
-                        },
                     )
 
                     Spacer(modifier = Modifier.width(12.dp))

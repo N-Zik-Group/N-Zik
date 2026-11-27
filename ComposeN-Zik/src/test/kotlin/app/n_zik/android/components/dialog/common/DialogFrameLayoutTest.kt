@@ -5,7 +5,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
@@ -13,6 +19,7 @@ import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertEquals
@@ -66,6 +73,32 @@ class DialogFrameLayoutTest {
 
     @Test fun `selector subtitle has a real description gap while outer body padding remains balanced`() {
         selectorBodySpacing(subtitle = "Choose the source used for playback")
+    }
+
+    @Test fun `each choice exposes one named radio action with its selected state`() {
+        val selected = mutableStateOf("Automatic")
+        composeRule.mainClock.autoAdvance = false
+        composeRule.setContent {
+            CompositionLocalProvider(LocalAppearance provides appearance) {
+                ValueSelectorDialog(
+                    onDismiss = {},
+                    title = "Lyrics mode",
+                    selectedValue = selected.value,
+                    values = listOf("Automatic", "Synchronized", "Unavailable"),
+                    onValueSelected = { selected.value = it },
+                    lockedValues = setOf("Unavailable"),
+                    dismissOnSelection = false,
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(300)
+        val radio = SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
+        composeRule.onAllNodes(radio, useUnmergedTree = true).assertCountEquals(3)
+        composeRule.onNodeWithText("Automatic").assert(radio).assertIsSelected()
+        composeRule.onNodeWithText("Unavailable").assert(radio).assertIsNotEnabled()
+        composeRule.onNodeWithText("Synchronized").assert(radio).performClick()
+        composeRule.mainClock.advanceTimeByFrame()
+        composeRule.onNodeWithText("Synchronized").assertIsSelected()
     }
 
     private fun selectorBodySpacing(subtitle: String?) {
