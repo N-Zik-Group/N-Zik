@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Connecting to server</string>
     <string name="listen_together_log_event_connection_closed">Connection closed</string>
     <string name="listen_together_log_event_connection_failure">Connection failure</string>
+    <string name="listen_together_invalid_server_address">The Listen Together server address is invalid. Update it in settings and try again.</string>
+    <string name="listen_together_session_server_changed">The server redirected the Listen Together session to a different address.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Connection failure, waiting for network</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Connection lost, will attempt to reconnect</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Discarding stale playback event</string>
