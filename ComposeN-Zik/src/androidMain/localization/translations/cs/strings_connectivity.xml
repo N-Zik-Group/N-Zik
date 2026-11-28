@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Připojování k serveru</string>
     <string name="listen_together_log_event_connection_closed">Připojení bylo uzavřeno</string>
     <string name="listen_together_log_event_connection_failure">Připojení selhalo</string>
+    <string name="listen_together_invalid_server_address">Adresa serveru poslouchat Together je neplatná. Aktualizujte ji v nastavení a zkuste to znovu.</string>
+    <string name="listen_together_session_server_changed">Server přesměroval relaci společně na jinou adresu.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Selhání připojení, čekání na síť</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Připojení ztraceno, pokusí se znovu připojit</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Discarding stale playback událost</string>
