@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Sursă culoare sticlă</string>
     <string name="glass_effect_tint_source_custom">Personalizat</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Alegeți o sursă de culoare sticla care se aplică o nuanță pentru a ajusta intensitatea nuanței.</string>
     <string name="glass_effect_unsupported">Acest telefon nu are nici un fel de hardware încețoșat, așa că fiecare suprafață folosește filmul colorat.</string>
     <string name="glass_effect_where_action_buttons">Butoane de acţiune</string>
     <string name="glass_effect_where_action_buttons_description">Căutarea obișnuită după butoane și bare de instrumente. Alegerile din celelalte grupuri o pot înlocui.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Versiunea minimă N-Zik</string>
     <string name="theme_store_submission_minimum_description">Cea mai veche versiune care poate aplica această temă. Teme noi sunt implicite pentru versiunea %3$d. Utilizați N-Zik %1$s (codul versiunii %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Această temă necesită codul de versiune Android N-Zik %1$d înainte de a putea fi publicată.</string>
+    <string name="theme_store_local_feature_requires_update">Această temă necesită codul de versiune Android N-Zik %1$d înainte de a putea fi salvat.</string>
+    <string name="theme_store_submission_appearance_unsupported">Această versiune de N-Zik nu poate citi aspectul salvat. Actualizează N-Zik sau alege Folosește aspectul curent pentru a-l înlocui.</string>
     <string name="theme_store_submission_version_code_label">Codul minim al versiunii</string>
     <string name="theme_store_submission_find_version_code">Găsește versiunile și codurile N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (cod %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Editează profilul meu</string>
     <string name="theme_store_creator_sign_in">Conectați GitHub pentru a edita profilul creatorului.</string>
+    <string name="theme_store_creator_action_sign_in_required">Conectați-vă contul GitHub pentru a accesa această acțiune a creatorului.</string>
     <string name="theme_store_creator_draft">Modificările sunt salvate pe acest dispozitiv ca ciornă.</string>
     <string name="theme_store_creator_display_name">Nume public</string>
     <string name="theme_store_creator_bio">Bio</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d din 5</string>
     <string name="theme_store_support_pending">Compatibilitatea este în așteptare. Încă puteți descărca această temă.</string>
     <string name="theme_store_support_requires_update">Actualizează N-Zik pentru a utiliza această temă.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik nu a putut citi aspectul acestei teme.</string>
     <string name="theme_store_support_minimum">Funcționează cu versiunea ta de N-Zik.</string>
     <string name="theme_store_preview_normal">Normală</string>
     <string name="theme_store_preview_glass">Sticlă</string>
