@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Tilslut GitHub</string>
+    <string name="github_account_background_checks">GitHub baggrundskontrol</string>
+    <string name="github_account_background_checks_description">Tjek din GitHub konto og gennemse status automatisk.</string>
     <string name="github_account_logout">Afbryd GitHub</string>
     <string name="github_account_description">Brug din GitHub konto i Tema Butik.</string>
     <string name="github_account_offline">Gå online for at forbinde GitHub.</string>
