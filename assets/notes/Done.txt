@@ -2168,3 +2168,7 @@ Android Auto:
   - Refresh visible playlist metadata on database changes without reloading for listening counters.
   - Remember playlist visits within the active profile and refresh action availability when radio or the current track changes.
   - Preserve Stop radio and prevent unsupported starts on local tracks.
+
+Playback:
+- test(selection): cover delayed queue completion
+  - Verify that an earlier action completion preserves a later selection in the queue.

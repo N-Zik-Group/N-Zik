@@ -44,4 +44,25 @@ class ItemSelectorCompletionTest {
             assertTrue(selector.isEmpty())
         }
     }
+
+    @Test
+    fun `queue completion leaves subsequent taps in the active selection`() {
+        lateinit var selector: ItemSelector<String>
+        compose.setContent {
+            val current = ItemSelector<String>()
+            SideEffect { selector = current }
+        }
+
+        compose.runOnIdle {
+            selector.isActive = true
+            selector.toggle("First track") { it }
+            val completeQueueEdit = selector.captureSelectionCompletion()
+
+            selector.toggle("Second track") { it }
+            completeQueueEdit()
+
+            assertTrue(selector.isActive)
+            assertEquals(listOf("First track", "Second track"), selector.toList())
+        }
+    }
 }
