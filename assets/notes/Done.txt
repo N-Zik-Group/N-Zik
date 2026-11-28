@@ -2131,3 +2131,8 @@ Settings:
 - fix(toolbars): preserve configured actions during loading and overflow
   - Use the saved button order for both inline actions and overflow.
   - Keep collection toolbars stable during loading and support the added controls in Theme Store V3.
+
+Playlists:
+- fix(playlist): keep saved playlist metadata current
+  - Share the bookmark path between playlists and podcasts and keep the online source identity.
+  - Update titles, authors and tracks together during source refresh, with a fallback for unknown authors.

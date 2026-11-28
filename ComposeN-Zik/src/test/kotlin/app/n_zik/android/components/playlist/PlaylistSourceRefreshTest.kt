@@ -50,7 +50,11 @@ import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.verify
 import io.mockk.unmockkAll
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -108,6 +112,49 @@ class PlaylistSourceRefreshTest {
         assertEquals(listOf("b", "a", "new"), ids(row))
         assertEquals(listOf("removed"), ids(other))
         assertEquals(row, db.playlistTable.getAll().first { it.id == row.id })
+    }
+
+    @Test fun `refresh keeps the original date added order for surviving tracks`() = runBlocking {
+        val row = saved()
+        Database.mapIgnore(row, media("first"), media("second"), media("removed"))
+        db.songPlaylistMapTable.updatePosition(row.id, "first", 2)
+        db.songPlaylistMapTable.updatePosition(row.id, "second", 0)
+
+        assertTrue(refreshPlaylistSource(row) { listOf(media("first"), media("new"), media("second")) })
+
+        assertEquals(listOf("second", "first", "new"), ids(row))
+        assertEquals(listOf("first", "second", "new"), db.songPlaylistMapTable.allSongsOf(row.id).first().map(Song::id))
+    }
+
+    @Test fun `concurrent refreshes fetch and publish a playlist in request order`() = runBlocking {
+        val row = saved()
+        val firstFetchStarted = CompletableDeferred<Unit>()
+        val finishFirstFetch = CompletableDeferred<Unit>()
+        val secondFetchStarted = CompletableDeferred<Unit>()
+        val first = async {
+            refreshPlaylistSource(row) {
+                firstFetchStarted.complete(Unit)
+                finishFirstFetch.await()
+                listOf(media("first"))
+            }
+        }
+        firstFetchStarted.await()
+        val second = async {
+            refreshPlaylistSource(row) {
+                secondFetchStarted.complete(Unit)
+                listOf(media("second"))
+            }
+        }
+        val overlappingFetch = try {
+            withTimeoutOrNull(300) { secondFetchStarted.await() } != null
+        } finally {
+            finishFirstFetch.complete(Unit)
+        }
+
+        assertFalse(overlappingFetch)
+        assertTrue(first.await())
+        assertTrue(second.await())
+        assertEquals(listOf("second"), ids(row))
     }
 
     @Test fun `null empty and failed source preserve snapshot and source race refuses replacement`() = runBlocking {

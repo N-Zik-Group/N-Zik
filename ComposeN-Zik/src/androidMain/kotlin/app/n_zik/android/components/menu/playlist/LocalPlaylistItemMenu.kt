@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.text.BasicText
 import app.n_zik.android.components.menu.MenuMetadataText
-import app.n_zik.android.components.menu.distinctMenuMetadataSubtitle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.MutableState
@@ -42,8 +41,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.n_zik.innertube.YtMusic
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -53,7 +50,6 @@ import app.n_zik.android.cleanPrefix
 import app.n_zik.android.MODIFIED_PREFIX
 import app.n_zik.android.enums.MenuStyle
 import app.n_zik.android.enums.NavRoutes
-import app.n_zik.android.enums.SyncDirection
 import app.n_zik.android.models.PlaylistPreview
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.models.Song
@@ -75,15 +71,12 @@ import app.n_zik.android.utils.withPodcastSource
 import app.n_zik.android.utils.checkFileExists
 import app.n_zik.android.utils.conditional
 import app.n_zik.android.utils.disableScrollingTextKey
-import app.n_zik.android.utils.getSyncDirection
-import app.n_zik.android.utils.isNetworkConnected
 import app.n_zik.android.utils.menuStyleKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.secondary
 import app.n_zik.android.utils.semiBold
-import app.n_zik.android.utils.syncPushPlaylistKey
 import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.LocalPlayerServiceBinder
 import app.n_zik.android.R
@@ -111,6 +104,7 @@ import app.n_zik.android.components.menu.MenuSheetSurface
 import app.n_zik.android.components.menu.menuLikeActionDescription
 import app.n_zik.android.components.menu.openExternalMenuLink
 import app.n_zik.android.components.playlist.launchPlaylistSourceRefresh
+import app.n_zik.android.components.playlist.launchSavedPlaylistBookmarkToggle
 import app.n_zik.android.components.playlist.DeletePlaylistConfirmation
 import app.n_zik.android.components.playlist.launchLocalPlaylistDeletion
 import app.n_zik.android.components.playlist.playlistRefreshOnOpenAction
@@ -118,7 +112,6 @@ import app.n_zik.android.components.podcast.launchSavedPodcastBookmarkToggle
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncEnabled
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.core.coil.ImageCacheFactory
-import app.n_zik.android.download.utils.MyDownloadHelper
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.components.menu.collectionQueueActions
 import app.n_zik.android.components.menu.withMenuClick
@@ -352,7 +345,11 @@ class LocalPlaylistItemMenu private constructor(
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
-                    distinctMenuMetadataSubtitle(playlistPreview.playlist.name, ownerName)?.let { name ->
+                    playlistMenuAuthorSubtitle(
+                        title = playlistPreview.playlist.name,
+                        author = ownerName,
+                        missingAuthor = if (hasYouTubeLink) stringResource(R.string.metadata_unknown_author) else null,
+                    )?.let { name ->
                         MenuMetadataText(
                             text = name,
                             style = typography().xs.semiBold.secondary.copy(color = colorPalette().textSecondary),
@@ -515,54 +512,8 @@ class LocalPlaylistItemMenu private constructor(
                 )
             ) return
 
-            val app = context.applicationContext
-            val owner = ProfileWorkOwner.capture(app) ?: run {
+            launchSavedPlaylistBookmarkToggle(context, savedPlaylist, browseId) {
                 bookmarkPending = false
-                return Toaster.e(R.string.common_error_title)
-            }
-            val bookmarked = !isBookmarked
-            NzikDispatchers.fireAndForget(NzikDispatchers.UI).launch {
-                try {
-                    val updated = withContext(NzikDispatchers.DATA) {
-                        if (!ProfileWorkOwner.isBound(app, owner)) return@withContext null
-                        val current = Database.playlistTable.findById(savedPlaylist.id).first()
-                            ?.takeIf { it.browseId == browseId && isPlaylistBookmarked(it) == isBookmarked }
-                            ?: return@withContext null
-                        val pushPlaylist = app.preferences.getBoolean(syncPushPlaylistKey, false)
-                        if (isYouTubeSyncEnabled() && pushPlaylist && getSyncDirection() != SyncDirection.YT_TO_APP &&
-                            isNetworkConnected(app)) {
-                            val sourceId = browseId.removePrefix("VL")
-                            if (bookmarked) YtMusic.likePlaylistOrAlbum(sourceId).getOrThrow()
-                            else YtMusic.removelikePlaylistOrAlbum(sourceId).getOrThrow()
-                        }
-                        Database.awaitWriteBatch {
-                            var saved: Playlist? = null
-                            transaction {
-                                if (!ProfileWorkOwner.isBound(app, owner)) return@transaction
-                                val latest = playlistTable.findById(current.id).first()
-                                    ?.takeIf { it.browseId == browseId && isPlaylistBookmarked(it) == isBookmarked }
-                                    ?: return@transaction
-                                val changed = latest.copy(isYoutubePlaylist = bookmarked)
-                                if (playlistTable.update(changed) > 0) saved = changed
-                            }
-                            saved
-                        }
-                    }
-                    if (!ProfileWorkOwner.isBound(app, owner)) return@launch
-                    if (updated != null) {
-                        Toaster.s(if (bookmarked) R.string.library_favorites_added else R.string.library_favorites_removed)
-                        if (bookmarked) MyDownloadHelper.downloadBookmarkedPlaylist(app, browseId, updated)
-                    } else {
-                        Toaster.e(R.string.common_error_title)
-                    }
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (error: Exception) {
-                    Timber.tag("LocalPlaylistItemMenu").e(error, "Failed to toggle playlist bookmark")
-                    if (ProfileWorkOwner.isBound(app, owner)) Toaster.e(R.string.common_error_title)
-                } finally {
-                    bookmarkPending = false
-                }
             }
         }
 

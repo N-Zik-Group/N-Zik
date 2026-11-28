@@ -2,6 +2,8 @@ package app.n_zik.android.components.playlist
 
 import androidx.media3.common.MediaItem
 import app.n_zik.android.MODIFIED_PREFIX
+import app.n_zik.android.appContext
+import app.n_zik.android.core.profiles.ProfileWorkOwner
 import app.n_zik.android.models.Playlist
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.asPodcastMediaItem
@@ -12,6 +14,7 @@ import app.n_zik.android.core.database.Database
 import app.n_zik.android.core.database.canRefreshPlaylist
 import app.n_zik.android.core.database.isPodcastBrowseId
 import app.n_zik.android.core.database.isReadOnlyPlaylistSource
+import app.n_zik.android.playback.services.isLocal
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import app.n_zik.innertube.Innertube
 import app.n_zik.innertube.YtMusic
@@ -19,6 +22,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -42,27 +47,46 @@ internal suspend fun loadPlaylistSource(browseId: String): List<MediaItem>? {
     return songs.map(Innertube.SongItem::asMediaItem)
 }
 
+private val playlistSourceRefreshLocks = List(32) { Mutex() }
+
 /** Refresh preserves local order for surviving songs and appends newly discovered source songs. */
 internal suspend fun refreshPlaylistSource(
     playlist: Playlist,
+    refreshAllowed: () -> Boolean = { true },
     load: suspend (String) -> List<MediaItem>? = ::loadPlaylistSource,
 ): Boolean = withContext(NzikDispatchers.DATA) {
     val browseId = playlist.browseId ?: return@withContext false
-    if (!canRefreshPlaylist(playlist)) return@withContext false
-    val source = load(browseId)?.distinctBy(MediaItem::mediaId)?.takeIf { it.isNotEmpty() }
-        ?: return@withContext false
+    if (!refreshAllowed() || !canRefreshPlaylist(playlist)) return@withContext false
+    val context = appContext()
+    val owner = ProfileWorkOwner.capture(context) ?: return@withContext false
+    val lock = playlistSourceRefreshLocks[(owner to playlist.id).hashCode() and (playlistSourceRefreshLocks.size - 1)]
+    lock.withLock {
+        if (!refreshAllowed() || !ProfileWorkOwner.isBound(context, owner)) return@withLock false
+        publishPlaylistSource(playlist, browseId, requestAllowed = {
+            refreshAllowed() && ProfileWorkOwner.isBound(context, owner)
+        }, load)
+    }
+}
+
+private suspend fun publishPlaylistSource(
+    playlist: Playlist,
+    browseId: String,
+    requestAllowed: () -> Boolean,
+    load: suspend (String) -> List<MediaItem>?,
+): Boolean {
+    val source = load(browseId)?.filterNot(MediaItem::isLocal)?.distinctBy(MediaItem::mediaId)?.takeIf { it.isNotEmpty() }
+        ?: return false
     var refreshed = false
     Database.transaction {
         val latest = playlistTable.findById(playlist.id).first() ?: return@transaction
-        if (latest.browseId != browseId || latest.isEditable != playlist.isEditable ||
+        if (!requestAllowed() || latest.browseId != browseId || latest.isEditable != playlist.isEditable ||
             !canRefreshPlaylist(latest)) return@transaction
-        val ordered = if (isReadOnlyPlaylistSource(latest)) {
-            val byId = source.associateBy(MediaItem::mediaId)
-            val surviving = songPlaylistMapTable.songsByPositionDirect(latest.id)
-                .mapNotNull { byId[it.id] }
-            val survivingIds = surviving.mapTo(mutableSetOf(), MediaItem::mediaId)
-            surviving + source.filterNot { it.mediaId in survivingIds }
-        } else source
+        val sourceById = source.associateBy(MediaItem::mediaId)
+        val mappings = songPlaylistMapTable.mappingsByPosition(latest.id)
+        val previousById = mappings.associateBy { it.songId }
+        val orderedIds = if (isReadOnlyPlaylistSource(latest)) {
+            mappings.map { it.songId }.filter(sourceById::containsKey) + sourceById.keys.filterNot(previousById::containsKey)
+        } else sourceById.keys.toList()
         source.forEach { mediaItem ->
             val sourceTitle = mediaItem.mediaMetadata.title?.toString()
             if (!sourceTitle.isNullOrBlank() && sourceTitle != "null") {
@@ -74,11 +98,21 @@ internal suspend fun refreshPlaylistSource(
                 }
             }
         }
-        songPlaylistMapTable.clear(latest.id)
-        mapIgnore(latest, *ordered.toTypedArray())
+        mappings.filterNot { it.songId in sourceById }.forEach { mapping ->
+            songPlaylistMapTable.deleteBySongId(mapping.songId, latest.id)
+        }
+        orderedIds.forEachIndexed { index, songId ->
+            val previous = previousById[songId]
+            if (previous == null) {
+                songTable.insertIgnore(sourceById.getValue(songId).asSong)
+                songPlaylistMapTable.mapAtPosition(songId, latest.id, index)
+            } else if (previous.position != index) {
+                songPlaylistMapTable.updatePosition(latest.id, songId, index)
+            }
+        }
         refreshed = true
     }
-    refreshed
+    return refreshed
 }
 
 /** Starts a source-only refresh; automatic opening refresh avoids transient toast noise. */

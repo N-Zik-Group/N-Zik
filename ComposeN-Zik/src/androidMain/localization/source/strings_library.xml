@@ -180,6 +180,7 @@
     <string name="metadata_track">Track</string>
     <string name="metadata_unknown_album">Unknown Album</string>
     <string name="metadata_unknown_artist">Unknown Artist</string>
+    <string name="metadata_unknown_author">Unknown Author</string>
     <string name="metadata_unknown_playlist">Unknown Playlist</string>
     <string name="metadata_unknown_podcast">Unknown Podcast</string>
     <string name="metadata_unknown_title">Unknown Title</string>

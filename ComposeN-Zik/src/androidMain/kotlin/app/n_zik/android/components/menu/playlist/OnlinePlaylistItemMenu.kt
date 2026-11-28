@@ -189,6 +189,7 @@ class OnlinePlaylistItemMenu private constructor(
         shareUrl: String?,
         title: String,
         authorText: String?,
+        metadataLoading: Boolean,
         thumbnailUrl: String?,
         songs: List<Song>?,
         contentLoadFailed: Boolean,
@@ -251,7 +252,11 @@ class OnlinePlaylistItemMenu private constructor(
                             .conditional(!disableScrollingText) { basicMarquee(iterations = Int.MAX_VALUE) }
                     )
 
-                    distinctMenuMetadataSubtitle(title, authorText)?.let { author ->
+                    playlistMenuAuthorSubtitle(
+                        title = title,
+                        author = authorText,
+                        missingAuthor = if (metadataLoading) null else stringResource(R.string.metadata_unknown_author),
+                    )?.let { author ->
                         MenuMetadataText(
                             text = author,
                             style = typography().xs.semiBold.secondary.copy(
@@ -630,6 +635,7 @@ class OnlinePlaylistItemMenu private constructor(
             MenuSection(R.string.common_navigation_section_title, navigationActions),
         )
         SideEffect { sections = menuSections }
+        val metadataLoading = fetchedSongs == null && !contentUnavailable
 
         MenuSheetSurface {
             downloadAllDialog.Render()
@@ -643,12 +649,13 @@ class OnlinePlaylistItemMenu private constructor(
                 title = onlinePlaylistMenuTitle(
                     savedTitle = localPlaylist?.name,
                     sourceTitle = displayTitle,
-                    loading = fetchedSongs == null && !contentUnavailable,
+                    loading = metadataLoading,
                     fallbackTitle = stringResource(
                         if (isPodcastSource) R.string.metadata_unknown_podcast else R.string.metadata_unknown_playlist
                     ),
                 ),
-                authorText = localPlaylist?.displayAuthorName() ?: displayAuthor,
+                authorText = menuMetadataValue(localPlaylist?.displayAuthorName()) ?: menuMetadataValue(displayAuthor),
+                metadataLoading = metadataLoading,
                 thumbnailUrl = displayThumbnailUrl,
                 songs = songs,
                 contentLoadFailed = contentUnavailable,
@@ -676,6 +683,11 @@ internal fun onlinePlaylistMenuTitle(
 ): String = menuMetadataValue(savedTitle)
     ?: menuMetadataValue(sourceTitle)
     ?: fallbackTitle.takeUnless { loading }.orEmpty()
+
+internal fun playlistMenuAuthorSubtitle(title: String?, author: String?, missingAuthor: String?): String? {
+    val knownAuthor = menuMetadataValue(author) ?: return missingAuthor
+    return distinctMenuMetadataSubtitle(title, knownAuthor)
+}
 
 internal suspend fun Database.importOnlinePlaylist(playlist: Playlist, songs: List<Song>) {
     val importSongs = songs.distinctBy(Song::id)

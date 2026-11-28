@@ -92,5 +92,5 @@ internal suspend fun refreshPodcastPlaylist(
     if (!isPodcastBrowseId(browseId)) return@withContext false
     val latest = Database.playlistTable.findById(playlistId).first()
         ?.takeIf { it.browseId == browseId && !it.isEditable } ?: return@withContext false
-    refreshPlaylistSource(latest, loadEpisodes)
+    refreshPlaylistSource(latest, load = loadEpisodes)
 }

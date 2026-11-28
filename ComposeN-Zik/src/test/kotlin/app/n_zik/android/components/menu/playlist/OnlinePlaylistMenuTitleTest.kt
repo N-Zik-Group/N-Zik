@@ -1,6 +1,7 @@
 package app.n_zik.android.components.menu.playlist
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class OnlinePlaylistMenuTitleTest {
@@ -18,5 +19,13 @@ class OnlinePlaylistMenuTitleTest {
         assertEquals("", onlinePlaylistMenuTitle(null, null, true, "Unknown Playlist"))
         assertEquals("Unknown Playlist", onlinePlaylistMenuTitle(" ", "NULL", false, "Unknown Playlist"))
         assertEquals("Unknown Podcast", onlinePlaylistMenuTitle(null, null, false, "Unknown Podcast"))
+    }
+
+    @Test
+    fun `author fallback renders only when the caller expects a credit and none is known`() {
+        assertEquals("Channel", playlistMenuAuthorSubtitle("Playlist", "  Channel  ", "Unknown Author"))
+        assertEquals("Unknown Author", playlistMenuAuthorSubtitle("Playlist", " NULL ", "Unknown Author"))
+        assertNull(playlistMenuAuthorSubtitle("Playlist", null, null))
+        assertNull(playlistMenuAuthorSubtitle("Playlist", "Playlist", "Unknown Author"))
     }
 }
