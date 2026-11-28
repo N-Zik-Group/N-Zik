@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Glass color source</string>
     <string name="glass_effect_tint_source_custom">自定義</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Choose a Glass color source that applies a tint to adjust tint strength.</string>
     <string name="glass_effect_unsupported">This phone has no hardware blur, so every surface uses the tinted film.</string>
     <string name="glass_effect_where_action_buttons">Action buttons</string>
     <string name="glass_effect_where_action_buttons_description">The usual look for buttons and toolbars. Choices in the other groups can replace it.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Minimum N-Zik version</string>
     <string name="theme_store_submission_minimum_description">The oldest version that can apply this theme. New themes default to version code %3$d. You are using N-Zik %1$s (version code %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">This theme requires N-Zik Android version code %1$d before it can be published.</string>
+    <string name="theme_store_local_feature_requires_update">This theme requires N-Zik Android version code %1$d before it can be saved.</string>
+    <string name="theme_store_submission_appearance_unsupported">This version of N-Zik cannot read the saved appearance. Update N-Zik or choose Use current appearance to replace it.</string>
     <string name="theme_store_submission_version_code_label">Minimum version code</string>
     <string name="theme_store_submission_find_version_code">Find N-Zik versions and codes</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Edit my profile</string>
     <string name="theme_store_creator_sign_in">Connect GitHub to edit your creator profile.</string>
+    <string name="theme_store_creator_action_sign_in_required">Connect your GitHub account to access this creator action.</string>
     <string name="theme_store_creator_draft">Changes are saved on this device as a draft.</string>
     <string name="theme_store_creator_display_name">Public name</string>
     <string name="theme_store_creator_bio">Bio</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d out of 5</string>
     <string name="theme_store_support_pending">Compatibility is pending. You can still download this theme.</string>
     <string name="theme_store_support_requires_update">Update N-Zik to use this theme.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik could not read the appearance for this theme.</string>
     <string name="theme_store_support_minimum">Works with your version of N-Zik.</string>
     <string name="theme_store_preview_normal">Normal</string>
     <string name="theme_store_preview_glass">Glass</string>
