@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Назад</string>
     <string name="common_answer_no">Нет</string>
     <string name="common_artist_conjunction_and">и</string>
     <string name="common_clipboard_copy_failed">Не удалось скопировать текст в буфер обмена, попробуйте еще раз</string>
