@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Je me sens chanceux</string>
     <string name="automotive_action_play_all">Tout lire</string>
+    <string name="automotive_page_range">Page %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choisissez l\'action à effectuer en faisant glisser vers la gauche un morceau de l\'album.</string>
     <string name="gestures_album_track_swipe_right_description">Choisissez l\'action à effectuer en faisant glisser vers la droite un morceau de l\'album.</string>
@@ -222,6 +224,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_interface_right_to_left_description">Reproduire l\'interface indépendamment de la langue de l\'application.</string>
     <string name="settings_interface_page_description">La section « Interface Utilisateur » contient des paramètres permettant de modifier l\'interface générale et la navigation.</string>
     <string name="settings_interface_page_title">Interface Utilisateur</string>
+    <string name="settings_interface_shortcuts_title">Raccourcis</string>
     <string name="settings_interface_group_display">Affichage</string>
     <string name="settings_interface_group_indicators">Indicateurs</string>
     <string name="settings_group_profile_name">Nom d\'affichage</string>
@@ -247,7 +250,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_group_list_swipes">Liste des gestes de balayage</string>
     <string name="settings_group_home_navigation">Navigation sur la page d\'accueil</string>
     <string name="settings_group_menu_entries">Entrées du menu</string>
-    <string name="settings_group_sort_defaults">Ordres de tri par défaut</string>
+    <string name="settings_group_sort_defaults">Ordre du menu de tri</string>
     <string name="settings_group_player_layout">Disposition du lecteur</string>
     <string name="settings_group_background_style">Style et couleurs d\'arrière-plan</string>
     <string name="settings_group_fullscreen_elements">Éléments à l\'écran</string>
@@ -445,6 +448,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_player_action_bar_transparent_background_label">Arrière-plan transparent</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Bouton « Visualiseur »</string>
     <string name="settings_player_action_restart_service">Redémarrer le service</string>
+    <string name="settings_app_action_restart">Redémarrer l\'application</string>
     <string name="settings_player_actions_spaced_evenly_label">Espacement sévère</string>
     <string name="settings_player_album_cover_visible_label">Afficher la pochette de l\'album</string>
     <string name="settings_player_appearance_page_description">La section « Apparence » contient les paramètres relatifs à l\'apparence visuelle du lecteur.</string>
@@ -526,9 +530,16 @@ Volume BAS : titre précédent</string>
     <string name="settings_recommendations_title">Recommandations AI</string>
     <string name="settings_region_override">Surcharge de région</string>
     <string name="settings_reset">Réinitialiser</string>
+    <string name="settings_reset_account_usage_notice">Les comptes connectés seront désactivés. Vous pouvez les réactiver dans les paramètres.</string>
+    <string name="settings_reset_glass">Réinitialiser les paramètres du verre</string>
+    <string name="settings_reset_glass_appearance_description">Restaurer le matériau et les effets par défaut du verre.</string>
+    <string name="settings_reset_downloads">Réinitialiser les paramètres de téléchargement</string>
     <string name="settings_reset_all">Réinitialiser tous les paramètres</string>
     <string name="settings_reset_all_confirm">Tout réinitialiser</string>
     <string name="settings_reset_all_confirmation">Réinitialiser tous les paramètres de l\'application ? Les comptes enregistrés, les identifiants, les profils, les listes de lecture, les téléchargements et les fichiers seront conservés.</string>
+    <string name="settings_reset_profile_scope_notice">Cela réinitialise les paramètres et les paramètres du profil actif partagés sur cet appareil. Les autres profils gardent leurs propres paramètres.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Votre serveur Écoutez Ensemble, votre nom d\'utilisateur et vos utilisateurs bloqués sont conservés.</string>
+    <string name="settings_reset_playback_description">Réinitialiser les paramètres de lecture, de file d’attente et de contrôle parental.</string>
     <string name="settings_reset_all_description">Restaurer tous les paramètres de l\'application par défaut.</string>
     <string name="settings_reset_choose_scope">Choisissez les paramètres à restaurer</string>
     <string name="settings_reset_choose_scope_description">Sélectionnez une section des paramètres, puis rétablissez ses paramètres par défaut.</string>
@@ -562,6 +573,8 @@ Volume BAS : titre précédent</string>
     <string name="settings_swipe_actions_title">Action associée au balayage</string>
     <string name="settings_target_gain_loudness_info">Gain cible pour la normalisation du volume sonore</string>
     <string name="settings_target_unavailable">Ce paramètre n\'est pas disponible dans la configuration actuelle. Sa section s\'affiche à la place.</string>
+    <string name="settings_target_prerequisite">Pour utiliser ce paramètre, configurez %1$s d\'abord.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Activez au moins un de ces paramètres pour afficher les notifications de retour.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Couleur d\'accentuation</string>
     <string name="settings_theme_background_1_color_label">Arrière-plan 1</string>
     <string name="settings_theme_background_2_color_label">Arrière-plan 2</string>
@@ -599,8 +612,7 @@ Volume BAS : titre précédent</string>
     <string name="settings_youtube_authenticated_browsing_label">Connectez-vous pour parcourir</string>
     <string name="settings_youtube_authenticated_search_description">Lorsque cette option est désactivée, les recherches sont effectuées en mode « invité », sans passer par votre compte ; elles n\'apparaissent donc pas dans votre historique de recherche ni dans vos suggestions YouTube.</string>
     <string name="settings_youtube_authenticated_search_label">Utiliser le compte pour effectuer des recherches</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Effacer toutes les données synchronisées depuis YouTube ? Cette opération supprimera les morceaux, albums, artistes et playlists que vous avez ajoutés à vos favoris et importés depuis YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Effacer les données synchronisées avec YouTube</string>
+    <string name="settings_youtube_logout_confirmation">Se déconnecter de YouTube Music en N-Zik? Votre bibliothèque locale et les téléchargements resteront sur cet appareil.</string>
     <string name="settings_youtube_connection_required_description">Connectez-vous d\'abord à YouTube pour activer cette option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artistes, histoire, etc.</string>
     <string name="settings_youtube_login_enabled_label">Activer la connexion à YouTube Music</string>
