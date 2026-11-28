@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Disabilita e cancella i log di debug</string>
     <string name="logs_action_export">Esporta log</string>
     <string name="logs_action_export_both">Esporta entrambi i log</string>
     <string name="logs_action_export_crash">Esporta crash log</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFICATO</string>
     <string name="updates_build_release_label">RILASCIO</string>
     <string name="updates_cache_cleared">Cache cancellata</string>
+    <string name="updates_cache_clear_failed">Impossibile cancellare la cache di aggiornamento.</string>
+    <string name="updates_changelog_search_label">Changelog</string>
     <string name="updates_changelog_title">Cosa c\'è di nuovo in %s</string>
     <string name="updates_channel_name">Aggiornamenti App</string>
     <string name="updates_check_mode_ask">Chiedi</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Stai passando a una build Beta. Questa versione potrebbe contenere bug o essere instabile. Si consiglia vivamente di eseguire il backup dei dati prima di procedere o segnalare qualsiasi problema.</string>
     <string name="updates_stable_to_beta_warning_title">Passa alla build Beta</string>
     <string name="updates_starting_status">Avvio…</string>
-    <string name="updates_unavailable_build_description">Se vedi questo messaggio significa che la tua build non ha l\'aggiornamento automatico abilitato, pls aggiorna l\'applicazione manualmente da github</string>
+    <string name="updates_manual_update_install_source_message">Gli aggiornamenti automatici non sono disponibili su questa costruzione. Aggiorna N-Zik tramite il provider da cui l\'hai installata.</string>
     <string name="updates_up_to_date">Fino ad oggi</string>
     <string name="updates_warning_acknowledge">Io capisco</string>
     <string name="updates_check_failed">Impossibile controllare gli aggiornamenti.</string>
