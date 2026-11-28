@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Bookmark album</string>
     <string name="album_action_open">Ga naar album</string>
+    <string name="playlist_action_open">Ga naar de afspeellijst</string>
+    <string name="podcast_action_open">Ga naar podcast</string>
     <string name="album_alternative_versions">Alternatieve versies</string>
     <string name="album_art">Album afbeelding</string>
-    <string name="album_found_online_verify">Album is online gevonden! Controleer of het de juiste is.</string>
     <string name="album_left_swipe">Album naar links vegen</string>
     <string name="album_loading_song_count_format">Laden van %1$d nummers…</string>
     <string name="album_lookup_failed">Fout bij ophalen van album</string>
-    <string name="album_lookup_running">Album opzoeken vanaf internet</string>
     <string name="album_no_alternative_version">Dit album heeft geen alternatieve versie</string>
-    <string name="album_not_found">Album niet gevonden</string>
     <string name="album_related_title">Gerelateerde albums</string>
     <string name="album_right_swipe">Album naar rechts vegen</string>
     <!-- Artist -->
     <string name="artist_action_follow">Volgen</string>
+    <string name="artist_action_unfollow">Ontvolgen</string>
+    <string name="artist_action_open">Ga naar artiest</string>
     <string name="artist_action_play_local_songs">Speel alle lokale nummers af</string>
+    <string name="artist_action_play_library_songs">Alle nummers afspelen in de bibliotheek</string>
     <string name="artist_deduplication_result">Samengevoegd %d dubbele artiesten met de juiste artiest</string>
     <string name="artist_following_status">Gevolgd</string>
-    <string name="artist_found_online_verify">Kunstenaar online gevonden! Controleer of het de juiste is.</string>
     <string name="artist_link_cleanup_result">Verwijderde %d onjuiste artiest link(s)</string>
     <string name="artist_lookup_failed">Kunst ophalen mislukt</string>
-    <string name="artist_lookup_running">Online zoeken naar %s...</string>
     <string name="artist_more_from">Meer van</string>
     <string name="artist_overview_title">Overzicht</string>
     <string name="artist_roundness">Kunstenaar afronding</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Artiest</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Verwijder opgeslagen afspeelgebeurtenissen uit luistergeschiedenis.</string>
+    <string name="history_clear_listen_history_failed">Het wissen van luistergeschiedenis is niet voltooid.</string>
     <string name="history_clear_search_history_description">Opgeslagen zoekopdrachten van elke zoekpagina verwijderen zonder de voorkeuren van geschiedenis te wijzigen.</string>
     <!-- Home -->
     <string name="home_albums_settings">Thuis albums</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">U bent een nummer één, klik en geniet van de verrassing</string>
     <!-- Library -->
     <string name="library_action_bookmark">Bladwijzer</string>
+    <string name="library_action_remove_bookmark">Bladwijzer verwijderen</string>
     <string name="library_action_randomize">Willekeurig</string>
     <string name="library_albums_title">Albums</string>
     <string name="library_artists_title">Artiesten</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">%d gecachet/gedownloade nummers exporteren?</string>
     <string name="library_favorites_title">Favorieten</string>
     <string name="library_filter_by_title">Filteren op</string>
+    <string name="library_filter_nzik_origin_label">Alleen N-Zik</string>
     <string name="library_filter_online_songs_label">Online nummers</string>
     <string name="library_filter_unmatched_songs_label">Niet-geëvenaarde nummers</string>
     <string name="library_history_title">Geschiedenis</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM Bibliotheek</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Verwijderen uit niet-likes</string>
     <string name="library_dislikes_added">Niet leuk %s</string>
     <string name="library_dislikes_removed">Verwijderd %s van niet-likes</string>
+    <string name="library_dislikes_added_generic">Toegevoegd aan niet-likes</string>
+    <string name="library_dislikes_removed_generic">Verwijderd van niet-likes</string>
     <string name="library_favorites_action_add">Toevoegen aan favorieten</string>
+    <string name="library_favorites_action_remove">Verwijderen uit favorieten</string>
+    <string name="library_favorites_already_added">Al in favorieten.</string>
     <string name="library_collection_favorites_action_manage">Favorieten beheren</string>
     <string name="library_favorites_added">Toegevoegd aan favorieten</string>
     <string name="library_favorites_removed">Verwijderd uit favorieten</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Kon favorieten niet bijwerken.</string>
     <string name="library_collection_favorites_sync_failed">Kan sommige favorieten niet synchroniseren met YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Kies sorteercriterium</string>
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album Jaar</string>
     <string name="library_sort_artist">Artiest</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Sleutelwoorden</string>
     <string name="metadata_loading">Loading…</string>
+    <string name="metadata_link_searching">Searching…</string>
+    <string name="metadata_link_manual_required">ID niet bevestigd. Koppel deze handmatig aan.</string>
     <string name="metadata_lyricist">Songtekst</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d stemmen op MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Wijzig Afspeellijst Blader ID</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Titel</string>
     <string name="metadata_track">Bijhouden</string>
+    <string name="metadata_unknown_album">Onbekend album</string>
     <string name="metadata_unknown_artist">Onbekende artiest</string>
+    <string name="metadata_unknown_author">Onbekende auteur</string>
+    <string name="metadata_unknown_playlist">Onbekende afspeellijst</string>
+    <string name="metadata_unknown_podcast">Onbekende Podcast</string>
     <string name="metadata_unknown_title">Onbekende titel</string>
+    <string name="metadata_unknown_year">Onbekend jaar</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Vind-ik-leuk</string>
     <string name="metadata_video_subscribers_label">Ontvangers</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Toevoegen aan afspeellijst</string>
     <string name="playlist_action_add_hint">Toevoegen aan afspeellijst</string>
+    <string name="playlist_add_destination_locked">Je kunt geen nummers toevoegen aan deze afspeellijst.</string>
     <string name="playlist_add_destination_unavailable">Deze afspeellijst is niet langer beschikbaar om nummers toe te voegen. Kies een andere afspeellijst.</string>
     <string name="playlist_action_create">Nieuwe afspeellijst</string>
     <string name="playlist_action_delete_selected">Afspeellijsten verwijderen</string>
     <string name="playlist_action_export">Afspeellijst exporteren</string>
     <string name="playlist_action_import">Afspeellijst importeren</string>
+    <string name="playlist_actions_title">Afspeellijst acties</string>
+    <string name="playlist_action_import_collection">Deze collectie importeren</string>
+    <string name="playlist_action_import_from_source">Importeren uit een bestand of link</string>
     <string name="playlist_action_import_favorites">Favorieten importeren</string>
     <string name="playlist_action_like_favorites_on_youtube">Net als N-Zik favorieten op YouTube</string>
     <string name="playlist_action_remove_songs">Verwijderen uit afspeellijst</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Weet je zeker dat je ALLE %d afspeellijsten wilt verwijderen?</string>
     <string name="playlist_delete_confirmation">Wil je deze afspeellijst echt verwijderen?</string>
     <string name="playlist_delete_dialog_title">Afspeellijst verwijderen</string>
+    <string name="playlist_deletion_failed">Kan de afspeellijst niet verwijderen van dit apparaat.</string>
+    <string name="playlist_deletion_partial">Sommige afspeellijsten zijn van dit apparaat verwijderd.</string>
+    <string name="playlist_deletion_local_success">Verwijderd van dit apparaat.</string>
+    <string name="playlist_deletion_remote_success">Verwijderd van YouTube-muziek.</string>
+    <string name="playlist_deletion_remote_failed">Sommige afspeellijsten van YouTube-muziek konden niet verwijderd worden.</string>
+    <string name="playlist_deletion_youtube_confirmation">Gekoppelde afspeellijsten kunnen ook worden verwijderd uit YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Afspeellijsten verwijderen</string>
     <string name="playlist_delete_selected_confirmation_count_format">Weet je zeker dat je deze %d afspeellijsten wilt verwijderen?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Kan deze actie niet uitvoeren als alle nummers niet leuk zijn</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Vind alle nummers leuk</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(geschatte tijd) is vereist voor alle liedjes. U moet de app sluiten om dit proces te annuleren. Wilt u doorgaan?</string>
     <string name="playlist_name_input_hint">Afspeellijstnaam invoeren</string>
+    <string name="playlist_name_reserved">Deze naam is gereserveerd voor de Rewind playlists.</string>
     <string name="playlist_operation_wait_message">Even geduld, dit kan enkele minuten duren...</string>
     <string name="playlist_pinned_title">Vastgezet</string>
     <string name="playlist_positions_shuffled">%d posities verschoven</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Snelle keuzes zijn gereset</string>
     <string name="recommendations_reset_content_description">Herlaad Quick Picks met nieuwe aanbevelingen. Je luistergeschiedenis wordt bewaard.</string>
     <string name="recommendations_section_other_youtube_title">Andere secties</string>
+    <string name="recommendations_smart_shuffle_add_failed">Slimme Shuffle kon geen nummers toevoegen.</string>
     <string name="recommendations_section_visibility_description">Uitschakelen als u dit niet wilt zien</string>
     <string name="recommendations_show_section_label">Weergeven</string>
     <string name="recommendations_smart_song_count_description">Stel het aantal slimme aanbevelingen in of laat de app deze automatisch aanpassen.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Geen suggesties</string>
     <string name="search_suggestions_title">Suggesties</string>
     <string name="search_title">Zoeken</string>
+    <string name="search_action_edit_query">Zoekopdracht bewerken</string>
     <string name="search_video_download_unsupported_message">Video\'s downloaden niet ondersteund</string>
     <string name="search_videos_title">Video\'s</string>
     <string name="search_voice_action_start">Spraakgestuurd zoeken</string>
