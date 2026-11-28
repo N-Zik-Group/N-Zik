@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">この電話</string>
     <string name="audio_output_title">音声出力</string>
     <string name="audio_output_wired_headphones_label">有線ヘッドホン（有線）</string>
+    <string name="audio_quality_auto_effective_fmt">自動 (%1$s)</string>
     <string name="audio_quality_auto_fmt">自動 (検出: %1$s)</string>
     <string name="audio_quality_automatic">自動</string>
     <string name="audio_quality_format">オーディオ品質</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">プレート</string>
     <string name="audio_reverb_small_room">小さな部屋</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">このルームでは、ホストのみが自動承認を変更できます。自分の設定を編集するには、ルームから離れてください。</string>
     <string name="listen_together_auto_approval_joins_description">手動で確認せずに参加リクエストを自動的に承認する</string>
     <string name="listen_together_auto_approval_suggestions_description">ゲストからの曲の候補を自動的に承認してキューに入れる</string>
     <string name="listen_together_blocked_users_description">リッスンルームからブロックされた参加者を表示および管理します。</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">左</string>
     <string name="lyrics_alignment_right_label">右</string>
     <string name="lyrics_artwork_overlay_description">プレーヤーのアートワークに歌詞を表示します。</string>
+    <string name="lyrics_cover_dimming_title">歌詞の背後にある薄暗いカバー</string>
+    <string name="lyrics_cover_dimming_description">歌詞が表示されると、プレイヤーのアートワークを暗くします。</string>
+    <string name="lyrics_cover_dimming_opacity">歌詞は調光の強さを表します</string>
     <string name="lyrics_background_enabled_description">歌詞の後ろに背景を描いて読みやすくしましょう。</string>
     <string name="lyrics_background_label">歌詞の背景</string>
     <string name="lyrics_behavior_section_title">動作</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">カラオケが見つかれば置き換えられます。</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">カラオケの歌詞</string>
+    <string name="lyrics_mode_label">歌詞モード</string>
     <string name="lyrics_mode_synchronized_label">同期している歌詞</string>
     <string name="lyrics_mode_unsynchronized_label">歌詞を同期しない</string>
     <string name="lyrics_not_available">歌詞がありません。もう一度試すか、手動で入力してください。</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">次に再生</string>
     <string name="player_action_previous">前</string>
     <string name="player_action_repeat">繰り返す</string>
+    <string name="player_repeat_mode_off">オフ</string>
+    <string name="player_repeat_mode_one">1回繰り返す</string>
+    <string name="player_repeat_mode_all">すべて繰り返す</string>
     <string name="player_action_seek_forward">転送</string>
     <string name="player_action_seek_forward_30_seconds">30秒前に進む</string>
     <string name="player_action_seek_forward_5_seconds">5秒転送</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">統計、履歴、提案に使用される再生イベントを保存しない</string>
     <string name="player_pause_on_volume_zero">音量ゼロで停止</string>
     <string name="player_picture_in_picture_content_description">画像ウィンドウに表示されるコンテンツを選択します。</string>
+    <string name="player_picture_in_picture_fixed_content_description">picture-in-picture ウィンドウにトラックカバーが表示されます。</string>
     <string name="player_picture_in_picture_enabled_description">小さなピクチャーインピクチャーウィンドウにプレイヤーが表示されるようにします。</string>
     <string name="player_play_button_rectangular_label">長方形</string>
     <string name="player_play_button_square_label">四角</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">キューがシャッフルされました (%d 曲)</string>
     <string name="player_remaining_time_visible_description">現在のトラックに残り時間を表示します。</string>
     <string name="player_restart_required_message">有効な変更を行うには、プレイヤーを再起動する必要があります！</string>
+    <string name="player_restart_service_unavailable_message">プレイヤーは利用できません。次回起動時に変更が適用されます。</string>
+    <string name="player_restart_disconnect_android_auto_message">Android Auto の接続を解除してプレーヤーを再起動します。</string>
     <string name="player_rotating_buttons">回転ボタン</string>
     <string name="player_seek_backward_five_seconds">5秒巻き戻す</string>
     <string name="player_seek_backward_thirty_seconds">30秒巻き戻し</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">このコンポーネントで使用されるカスタムカラーを選択します。</string>
     <string name="visualizer_dark_background_description">オーディオビジュアライゼーションの背後にある黒い背景を使用します。</string>
     <string name="visualizer_dark_background_title">ビジュアライザーの背景を暗くする</string>
+    <string name="visualizer_cover_dimming_opacity">Visualizer カバー調光強度</string>
     <string name="visualizer_debug_background">ビジュアライザー背景</string>
     <string name="visualizer_enabled_description">オーディオに応答するアニメーション表示を表示します。</string>
     <string name="visualizer_line_thickness">ビジュアライザーの線の太さ</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Bluetoothデバイス</string>
     <string name="audio_output_usb_audio_label">USBオーディオ</string>
     <string name="audio_output_external_speaker_label">外部スピーカー</string>
+    <string name="audio_output_device_unavailable">このオーディオ出力は使用できません。</string>
     <string name="audio_output_load_failed">デバイスの読み込みに失敗しました: %1$s</string>
     <string name="player_audio_mode">オーディオ</string>
     <string name="player_video_mode">ビデオ</string>
