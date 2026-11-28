@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description"> Geri Sarma ana sayfasında ay tablosunu göster.</string>
     <string name="rewind_settings_monthly_notification">Aylık geri sarma bildirimi</string>
     <string name="rewind_settings_monthly_notification_description">Her ayın 1\'inde, bir önceki ayın geri sarma özetinin hazır olduğu konusunda bildirim alın.</string>
+    <string name="rewind_settings_notification_permission_hint">Allow notifications for N-Zik in Android settings to receive Rewind alerts.</string>
     <string name="rewind_settings_notifications">Geri Sarma bildirimleri</string>
     <string name="rewind_settings_playlists_monthly">Aylık geri sarma çalma listesi</string>
     <string name="rewind_settings_playlists_monthly_description">Aylık geri sarma çalma listesini oluştur.</string>
