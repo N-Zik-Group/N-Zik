@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">أشعر بالحظ</string>
     <string name="automotive_action_play_all">تشغيل الكل</string>
+    <string name="automotive_page_range">الصفحة %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">اختر الإجراء الذي تم تنفيذه عن طريق سحب مسار الألبوم إلى اليسار.</string>
     <string name="gestures_album_track_swipe_right_description">اختر الإجراء الذي تم القيام به بالسحب إلى يمين مسار الألبوم.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">عكس الواجهة بشكل مستقل عن لغة التطبيق.</string>
     <string name="settings_interface_page_description">قسم واجهة المستخدم يحتوي على إعدادات لتعديل الواجهة العالمية والملاحة</string>
     <string name="settings_interface_page_title">واجهة المستخدم</string>
+    <string name="settings_interface_shortcuts_title">الاختصارات</string>
     <string name="settings_interface_group_display">عرض</string>
     <string name="settings_interface_group_indicators">المؤشرات</string>
     <string name="settings_group_profile_name">اسم العرض</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">إيماءات القائمة التمرير</string>
     <string name="settings_group_home_navigation">التنقل في المنزل</string>
     <string name="settings_group_menu_entries">إدخالات القائمة</string>
-    <string name="settings_group_sort_defaults">طلبات الفرز الافتراضية</string>
+    <string name="settings_group_sort_defaults">ترتيب قائمة الترتيب</string>
     <string name="settings_group_player_layout">تخطيط المشغل</string>
     <string name="settings_group_background_style">نمط الخلفية والألوان</string>
     <string name="settings_group_fullscreen_elements">عناصر على الشاشة</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">تخصيص التوصيات، الرموز السريعة والرؤى المستمعة.</string>
     <string name="settings_page_audio_description">ضبط تأثيرات معالجة الصوت والتأثير الصوتي.</string>
     <string name="settings_page_behavior_description">تخصيص الإيماءات والإجراءات أثناء التصفح والاستماع.</string>
-    <string name="settings_page_data_description">إدارة الموسيقى التي تم تنزيلها، والملفات المخزنة مؤقتاً والنسخ الاحتياطية.</string>
+    <string name="settings_page_data_description">إدارة الموسيقى المحلية والمخابئ والنسخ الاحتياطية وبيانات التطبيقات المخزنة.</string>
     <string name="settings_page_downloads_description">اختر جودة وسلوك تنزيلات الموسيقى.</string>
     <string name="settings_page_interface_description">تخصيص السمة والخطوط والتنقل وتخطيط الواجهة.</string>
     <string name="settings_page_maintenance_description">الحفاظ على التطبيق، وإدارة الملحقات والوصول إلى أدوات الاسترداد.</string>
     <string name="settings_page_network_description">تهيئة الاتصال، جودة البث وإعدادات البروكسي.</string>
-    <string name="settings_page_playback_description">التحكم في التشغيل والسلوك في قائمة الانتظار والقيود على المحتوى.</string>
+    <string name="settings_page_playback_description">اختر كيف يبدأ التشغيل، يستمر ويدير قائمة الانتظار.</string>
     <string name="settings_page_player_description">تخصيص مظهر اللاعب والتحكم فيه والكلمات والإشعارات.</string>
-    <string name="settings_page_privacy_description">إيقاف مؤقت أو مسح سجل الاستماع والبحث. إدارة نشاط الإذن وحماية الشاشة.</string>
+    <string name="settings_page_privacy_description">التحكم في النشاط المحفوظ، سجل الأذونات وحماية الشاشة.</string>
     <string name="settings_page_profiles_description">إدارة هوية الملف الشخصي الخاص بك والتفضيلات.</string>
     <string name="settings_page_rewind_description">تخصيص ملخصات الاستماع وقوائم التشغيل Rewind الخاصة بك.</string>
     <string name="settings_page_services_description">قم بتوصيل الخدمات الخارجية والاستماع مع الآخرين.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">خلفية شفافة</string>
     <string name="settings_player_action_bar_visualizer_visible_label">زر المرئيات</string>
     <string name="settings_player_action_restart_service">Restart service</string>
+    <string name="settings_app_action_restart">إعادة تشغيل التطبيق</string>
     <string name="settings_player_actions_spaced_evenly_label">Spaced Evenly</string>
     <string name="settings_player_album_cover_visible_label">Show Album Cover</string>
     <string name="settings_player_appearance_page_description">قسم المظهر يحتوي على إعدادات لمظهر اللاعب البصري</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">توصيات منظمة العفو الدولية</string>
     <string name="settings_region_override">تجاوز المنطقة</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_account_usage_notice">سيتم تعطيل الحسابات المتصلة. يمكنك إعادة تشغيلها في الإعدادات.</string>
+    <string name="settings_reset_glass">إعادة تعيين إعدادات الزجاج</string>
+    <string name="settings_reset_glass_appearance_description">استعادة المواد والأثر الزجاجي الافتراضي.</string>
+    <string name="settings_reset_downloads">إعادة تعيين إعدادات التحميل</string>
     <string name="settings_reset_all">إعادة تعيين كافة الإعدادات</string>
     <string name="settings_reset_all_confirm">إعادة تعيين الكل</string>
     <string name="settings_reset_all_confirmation">إعادة تعيين كافة إعدادات التطبيق؟ سيتم الاحتفاظ بالحسابات المحفوظة، بيانات الاعتماد، الملفات الشخصية، قوائم التشغيل، التنزيلات والملفات.</string>
+    <string name="settings_reset_profile_scope_notice">هذا يعيد تعيين إعدادات الملف الشخصي النشط والإعدادات المشتركة على هذا الجهاز. تحتفظ ملفات شخصية أخرى بإعداداتها.</string>
+    <string name="settings_reset_listen_together_preservation_notice">يتم الاحتفاظ بخادم الاستماع معا، واسم المستخدم والمستخدمين المحظورين.</string>
+    <string name="settings_reset_playback_description">إعادة تعيين إعدادات التشغيل والانتظار والتحكم الأبوي.</string>
     <string name="settings_reset_all_description">استعادة كافة إعدادات التطبيق إلى الإعدادات الافتراضية الخاصة بهم.</string>
     <string name="settings_reset_choose_scope">اختر الإعدادات التي تريد استعادتها</string>
     <string name="settings_reset_choose_scope_description">حدد قسم الإعدادات، ثم استعادة الإعدادات الافتراضية.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Swipe to action</string>
     <string name="settings_target_gain_loudness_info">تحقيق مكاسب مستهدفة لتطبيع الصوت</string>
     <string name="settings_target_unavailable">هذا الإعداد غير متوفر مع التكوين الحالي. يتم عرض قسمه بدلاً من ذلك.</string>
+    <string name="settings_target_prerequisite">لاستخدام هذا الإعداد، تكوين %1$s أولاً.</string>
+    <string name="settings_target_rewind_notification_prerequisite">قم بتشغيل واحد على الأقل من هذه الإعدادات لإظهار إشعارات Rewind\n%1$s</string>
     <string name="settings_theme_accent_color_label">Accent</string>
     <string name="settings_theme_background_1_color_label">الخلفية 1</string>
     <string name="settings_theme_background_2_color_label">الخلفية 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">تسجيل الدخول للتصفح</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">استخدام الحساب للبحث</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">مسح جميع البيانات التي تمت مزامنتها من يوتيوب؟ سيؤدي هذا إلى إزالة الأغاني والألبيوم والفنانين وقوائم التشغيل المستوردة من اليوتيوب.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">مسح بيانات يوتيوب المتزامنة</string>
+    <string name="settings_youtube_logout_confirmation">هل تريد إيقاف تشغيل موسيقى اليوتيوب في N-Zik؟ ستبقى مكتبتك المحلية والتنزيلات على هذا الجهاز.</string>
     <string name="settings_youtube_connection_required_description">الاتصال باليوتيوب أولاً لتفعيل هذا الخيار</string>
     <string name="settings_youtube_library_sync_content_description">المشغلين، الألبومات، الفنانين، التاريخ، مثل، إلخ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
