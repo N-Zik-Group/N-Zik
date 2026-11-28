@@ -79,6 +79,7 @@ import app.n_zik.android.components.settings.accounts.AccountsSettingsContent
 import app.n_zik.android.components.settings.accounts.discordSettingsSearchFallback
 import app.n_zik.android.components.settings.accounts.githubSettingsSearchFallback
 import app.n_zik.android.components.settings.accounts.isYouTubeSyncBuild
+import app.n_zik.android.components.settings.accounts.isUsableYouTubeSession
 import app.n_zik.android.components.settings.ai.AIRecommendationSettingsContent
 import app.n_zik.android.components.settings.appearance.AppearanceSettingsContent
 import app.n_zik.android.components.settings.appearance.appearanceBehaviorSearchFallback
@@ -124,8 +125,8 @@ import app.n_zik.android.utils.showthumbnailKey
 import app.n_zik.android.utils.colorPaletteNameKey
 import app.n_zik.android.utils.useSystemFontKey
 import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.utils.ytCookieKey
-import app.n_zik.innertube.hasYouTubeAuthCookie
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.Proxy
@@ -447,7 +448,7 @@ private fun youtubeAccountSearchPrerequisite(context: Context): SearchPrerequisi
     return when {
         !account.getBoolean(enableYouTubeLoginKey, false) ->
             SearchPrerequisite(YouTubeLoginTarget, listOf(R.string.common_state_on))
-        !hasYouTubeAuthCookie(cookie) -> SearchPrerequisite(
+        !isUsableYouTubeSession(cookie, context.preferences.getBoolean(ytCookieExpiredKey, false)) -> SearchPrerequisite(
             if (cookie.isNullOrBlank()) "accounts.youtube_music.account_login" else "accounts.youtube_music.change_account",
         )
         else -> null

@@ -4,6 +4,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import app.n_zik.android.components.settings.common.SettingsEntryVisibility
 import app.n_zik.android.R
 import androidx.compose.runtime.Composable
@@ -14,10 +15,13 @@ import androidx.media3.common.util.UnstableApi
 import app.n_zik.android.components.menu.menuPageInteraction
 import app.n_zik.android.utils.enableYouTubeLoginKey
 import app.n_zik.android.utils.enableYouTubeSyncKey
+import app.n_zik.android.utils.encryptedPreferences
 import app.n_zik.android.utils.encryptedPreferencesUpdateTrigger
 import app.n_zik.android.utils.rememberEncryptedPreference
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.ytCookieExpiredKey
+import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.components.settings.common.SettingsCardSlot
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -37,7 +41,9 @@ internal fun AccountsSyncCards(
         rememberEncryptedPreference(enableYouTubeLoginKey, false)
     }
     val isSyncBuild = isYouTubeSyncBuild()
-    val isLoggedIn = isYouTubeLoggedIn()
+    val cookieExpired by rememberPreference(ytCookieExpiredKey, false)
+    val cookie = LocalContext.current.encryptedPreferences.getString(ytCookieKey, null)
+    val isLoggedIn = isUsableYouTubeSession(cookie, cookieExpired)
     val canEnableSync = isSyncBuild && isYouTubeLoginActive && isLoggedIn && useLoginForBrowseSync
     val disabledReason = when {
         !isSyncBuild -> R.string.account_youtube_sync_build_required

@@ -341,37 +341,19 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
             BetterLyrics.offlineGate = NetworkGate::isOnline
             GatewayWebSocket.offlineGate = NetworkGate::isOnline
 
-            // Preserve the search preference across login changes. Guests already search anonymously.
-            if (youtubeLoginEnabled) {
+            val savedCookie = if (youtubeLoginEnabled) encryptedPreferences.getString(ytCookieKey, null) else null
+            cookieStatus = when {
+                savedCookie.isNullOrBlank() -> CookieStatus.NOT_LOGGED_IN
+                preferences.getBoolean(ytCookieExpiredKey, false) -> CookieStatus.EXPIRED
+                !hasYouTubeAuthCookie(savedCookie) -> CookieStatus.INVALID
+                else -> CookieStatus.VALID
+            }
+            if (cookieStatus == CookieStatus.VALID) {
                 Store.initSession(this@MainApplication)
+                Innertube.useLoginForBrowse = useLoginForBrowse
+                applyUseLoginForSearch(this, isLoginEnabled = true)
             } else {
                 Store.setSession(YouTubeSession(null, null, null, null))
-            }
-            val savedCookie = Innertube.cookie
-            if (!savedCookie.isNullOrBlank()) {
-                val hasAuthCookie = hasYouTubeAuthCookie(savedCookie)
-                val wasExpired = preferences.getBoolean(ytCookieExpiredKey, false)
-                if (!hasAuthCookie) {
-                    Timber.tag("MainApplication").w("YouTube cookie has no authentication token; disabling authenticated browsing")
-                    cookieStatus = CookieStatus.INVALID
-                    Innertube.useLoginForBrowse = false
-                    preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
-                } else if (wasExpired) {
-                    Timber.tag("MainApplication").w("YouTube cookie was previously marked expired — session is expired, disabling useLoginForBrowse")
-                    cookieStatus = CookieStatus.EXPIRED
-                    Innertube.useLoginForBrowse = false
-                    preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
-                } else {
-                    Timber.tag("MainApplication").d("YouTube cookie loaded")
-                    cookieStatus = CookieStatus.VALID
-                    Innertube.useLoginForBrowse = useLoginForBrowse
-                    applyUseLoginForSearch(this, isLoginEnabled = true)
-                }
-            } else {
-                Timber.tag("MainApplication").w("No YouTube cookie — disabling useLoginForBrowse")
-                cookieStatus = CookieStatus.NOT_LOGGED_IN
-                Innertube.useLoginForBrowse = false
-                if (youtubeLoginEnabled) preferences.edit().putBoolean(useLoginForBrowseKey, false).apply()
             }
 
             Store.prefetchCookie()

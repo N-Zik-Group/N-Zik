@@ -36,6 +36,7 @@ import app.n_zik.android.utils.pauseSearchHistoryKey
 import app.n_zik.android.utils.preferences
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.utils.useLoginForBrowseKey
+import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.utils.ytCookieKey
 import app.n_zik.android.BuildConfig
 import app.n_zik.android.R
@@ -228,6 +229,12 @@ fun isYouTubeSyncEnabled(): Boolean {
 }
 
 fun isYouTubeLoggedIn(): Boolean {
-    val cookie = appContext().encryptedPreferences.getString(ytCookieKey, "")
-    return hasYouTubeAuthCookie(cookie)
+    val context = appContext()
+    return isUsableYouTubeSession(
+        cookie = context.encryptedPreferences.getString(ytCookieKey, null),
+        expired = context.preferences.getBoolean(ytCookieExpiredKey, false),
+    )
 }
+
+internal fun isUsableYouTubeSession(cookie: String?, expired: Boolean): Boolean =
+    !expired && hasYouTubeAuthCookie(cookie)

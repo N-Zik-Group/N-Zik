@@ -78,6 +78,7 @@ import app.n_zik.android.utils.encryptedPreferences
 
 import app.n_zik.android.utils.preferences
 
+import app.n_zik.android.utils.ytCookieExpiredKey
 import app.n_zik.android.utils.ytCookieKey
 
 import app.n_zik.android.Dependencies
@@ -298,6 +299,44 @@ class AccountsSettingsEmbeddingWiringTest {
     }
 
     @Test
+    fun togglingTheLoginMasterKeepsAnExpiredAccountInRecovery() {
+        val secure = seedEnabledYouTubeSync()
+        context.preferences.edit().putBoolean(ytCookieExpiredKey, true).apply()
+        val registry = SettingsTargetRegistry()
+        val previousSession = Innertube.youtubeSessionSnapshot()
+        val previousBrowse = Innertube.useLoginForBrowse
+        try {
+            composeRule.setContent {
+                CompositionLocalProvider(LocalAppearance provides appearance, LocalSettingsTargets provides registry) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        AccountsYouTubeCard(search = Search(initialVisible = false))
+                    }
+                }
+            }
+
+            val loginSwitch = composeRule.onNodeWithTag("settings.target.accounts.youtube_music.enable_youtube_music_login")
+            loginSwitch.performClick()
+            loginSwitch.performClick()
+            composeRule.waitForIdle()
+
+            assertTrue(secure.getBoolean(enableYouTubeLoginKey, false))
+            assertEquals("SAPISID=test", secure.getString(ytCookieKey, null))
+            assertTrue(context.preferences.getBoolean(ytCookieExpiredKey, false))
+            assertTrue(context.preferences.getBoolean(useLoginForBrowseKey, false))
+            assertEquals(MainApplication.CookieStatus.EXPIRED, MainApplication.cookieStatus)
+            assertFalse(Innertube.useLoginForBrowse)
+            assertFalse(Innertube.useLoginForSearch)
+            composeRule.onNodeWithText(context.getString(R.string.account_youtube_change_account)).assertExists()
+            composeRule.onNodeWithText(context.getString(R.string.settings_youtube_authenticated_browsing_label)).assertIsNotEnabled()
+            composeRule.onNodeWithText(title).assertIsNotEnabled()
+        } finally {
+            context.preferences.edit().remove(ytCookieExpiredKey).apply()
+            Innertube.replaceYouTubeSession(previousSession)
+            Innertube.useLoginForBrowse = previousBrowse
+        }
+    }
+
+    @Test
     fun disablingAuthenticatedBrowsingCancelsSyncButKeepsTheAccount() {
         val secure = seedEnabledYouTubeSync()
         val registry = SettingsTargetRegistry()
@@ -387,6 +426,17 @@ class AccountsSettingsEmbeddingWiringTest {
     }
 
     @Test
+    fun `searching for a sync detail with an expired session points to change account`() {
+        assertSyncSearchPrerequisite(
+            cookie = "SAPISID=fixture",
+            expired = true,
+            expectedTarget = "accounts.youtube_music.change_account",
+            expectedLabel = R.string.account_youtube_change_account,
+            requiresOn = false,
+        )
+    }
+
+    @Test
     fun `searching for a sync detail without authenticated browsing points to browse settings`() {
         assertSyncSearchPrerequisite(
             cookie = "SAPISID=fixture",
@@ -423,10 +473,12 @@ class AccountsSettingsEmbeddingWiringTest {
         loginEnabled: Boolean = true,
         browseEnabled: Boolean = true,
         requiresOn: Boolean = true,
+        expired: Boolean = false,
     ) {
         assumeTrue(isYouTubeSyncBuild())
         mockEncryptedPrefs(cookie, loginEnabled)
-        context.preferences.edit().putBoolean(useLoginForBrowseKey, browseEnabled).commit()
+        context.preferences.edit().putBoolean(useLoginForBrowseKey, browseEnabled)
+            .putBoolean(ytCookieExpiredKey, expired).commit()
         val messages = mutableListOf<String>()
         composeRule.setContent {
             CompositionLocalProvider(

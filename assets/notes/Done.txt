@@ -2136,3 +2136,8 @@ Playlists:
 - fix(playlist): keep saved playlist metadata current
   - Share the bookmark path between playlists and podcasts and keep the online source identity.
   - Update titles, authors and tracks together during source refresh, with a fallback for unknown authors.
+
+Settings:
+- fix(accounts): handle expired YouTube sessions consistently
+  - Apply the same YouTube session validity checks during startup, account changes and playback authentication failures.
+  - Use the saved detailed-progress preference when running a full YouTube Music sync.

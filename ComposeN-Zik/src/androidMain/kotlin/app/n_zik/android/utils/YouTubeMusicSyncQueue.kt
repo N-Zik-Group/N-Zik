@@ -1,6 +1,7 @@
 package app.n_zik.android.utils
 
 import app.n_zik.android.R
+import app.n_zik.android.appContext
 import app.n_zik.android.core.database.Database
 import app.n_zik.android.utils.coroutines.NzikDispatchers
 import kotlin.coroutines.AbstractCoroutineContextElement
@@ -201,15 +202,16 @@ private suspend fun executeOperation(operation: SyncOperation) {
     when (operation) {
         is SyncOperation.FullSync -> {
             if (!canImportFromYTM()) return
+            val showDetails = appContext().preferences.getBoolean(syncShowDetailsKey, true)
             val imported = listOf(
-                trackSyncItem({ item -> copy(likedSongs = item) }) { importYTMLikedSongs(force = true) },
-                trackSyncItem({ item -> copy(librarySongs = item) }) { importYTMLibrarySongs(force = true) },
-                trackSyncItem({ item -> copy(uploadedSongs = item) }) { importYTMUploadedSongs(force = true) },
-                trackSyncItem({ item -> copy(likedAlbums = item) }) { importYTMLikedAlbums(force = true) },
-                trackSyncItem({ item -> copy(uploadedAlbums = item) }) { importYTMUploadedAlbums(force = true) },
-                trackSyncItem({ item -> copy(artists = item) }) { importYTMSubscribedChannels(force = true) },
-                trackSyncItem({ item -> copy(playlists = item) }) { importYTMPlaylists(force = true) },
-                trackSyncItem({ item -> copy(episodes = item) }) { importYTMEpisodesForLater(force = true) },
+                trackSyncItem({ item -> copy(likedSongs = item) }) { importYTMLikedSongs(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(librarySongs = item) }) { importYTMLibrarySongs(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(uploadedSongs = item) }) { importYTMUploadedSongs(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(likedAlbums = item) }) { importYTMLikedAlbums(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(uploadedAlbums = item) }) { importYTMUploadedAlbums(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(artists = item) }) { importYTMSubscribedChannels(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(playlists = item) }) { importYTMPlaylists(force = true, showDetails = showDetails) },
+                trackSyncItem({ item -> copy(episodes = item) }) { importYTMEpisodesForLater(force = true, showDetails = showDetails) },
             )
             withRetry { cleanupDuplicatePlaylists() }
             if (imported.all { it }) setLastSyncTime()

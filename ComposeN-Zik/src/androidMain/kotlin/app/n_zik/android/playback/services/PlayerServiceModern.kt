@@ -126,7 +126,10 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import app.n_zik.android.components.song.isArtistIdForSong
 import app.n_zik.android.utils.isGenericReleaseChannel
+import app.n_zik.android.core.network.client.Store
 import app.n_zik.innertube.Innertube
+import app.n_zik.innertube.YouTubeSession
+import app.n_zik.innertube.hasYouTubeAuthCookie
 import io.ktor.client.call.body
 import app.n_zik.innertube.models.NavigationEndpoint
 import app.n_zik.android.MainActivity
@@ -1928,9 +1931,12 @@ class PlayerServiceModern : MediaLibraryService(),
                         val httpCode = getHttpResponseCode(error)
                         Timber.tag("PlayerServiceModern").d("Handling $httpCode expired URL error for $currentMediaId")
                         // 401 = cookie expired server-side, not just stream URL
-                        if (httpCode == 401) {
+                        if (httpCode == 401 && hasYouTubeAuthCookie(Innertube.cookie)) {
                             MainApplication.cookieStatus = MainApplication.CookieStatus.EXPIRED
                             preferences.edit().putBoolean(ytCookieExpiredKey, true).apply()
+                            Innertube.useLoginForBrowse = false
+                            Innertube.useLoginForSearch = false
+                            Store.setSession(YouTubeSession(null, null, null, null))
                             Timber.tag("PlayerServiceModern").w("Cookie expired (401) — marking session as EXPIRED")
                             Toaster.w(R.string.account_youtube_session_expired)
                         }

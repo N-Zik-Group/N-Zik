@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.media3.common.util.UnstableApi
 import app.n_zik.innertube.Innertube
-import app.n_zik.innertube.hasYouTubeAuthCookie
 import kotlinx.coroutines.launch
 
 import app.n_zik.android.extensions.youtubelogin.YouTubeLogin
@@ -117,7 +116,8 @@ internal fun AccountsYouTubeCard(search: Search) {
     val accountChannelHandle = accountPreferences.getString(ytAccountChannelHandleKey, "").orEmpty()
     val accountThumbnail = accountPreferences.getString(ytAccountThumbnailKey, "").orEmpty()
     val hasSavedCookie = !cookie.isNullOrBlank()
-    val isLoggedIn = hasYouTubeAuthCookie(cookie)
+    val cookieExpired by rememberPreference(ytCookieExpiredKey, false)
+    val isLoggedIn = isUsableYouTubeSession(cookie, cookieExpired)
 
     // YouTube Music Section
     AnimatedVisibility(
@@ -152,9 +152,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 Store.setSession(YouTubeSession(null, null, null, null))
                                 Innertube.useLoginForBrowse = false
                                 Innertube.useLoginForSearch = false
-                                // Reset cookie status
-                                app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.NOT_LOGGED_IN
-                                appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
+                                MainApplication.cookieStatus = CookieStatus.NOT_LOGGED_IN
 
                                 // Disable sync and all sub-toggles
                                 appContext().encryptedPreferences.edit {
@@ -187,19 +185,19 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 }
                             } else {
                                 // Re-enable: restore Innertube from saved preferences
-                                val savedCookie = appContext().encryptedPreferences.getString(ytCookieKey, "") ?: ""
-                                applyUseLoginForSearch(context, isLoginEnabled = hasYouTubeAuthCookie(savedCookie))
-                                if (savedCookie.isNotEmpty()) {
-                                    Store.initSession(context)
-                                }
-                                Innertube.useLoginForBrowse = hasYouTubeAuthCookie(savedCookie) &&
+                                val savedCookie = context.encryptedPreferences.getString(ytCookieKey, null)
+                                val expired = context.preferences.getBoolean(ytCookieExpiredKey, false)
+                                val canUseSession = isUsableYouTubeSession(savedCookie, expired)
+                                if (canUseSession) Store.initSession(context)
+                                applyUseLoginForSearch(context, isLoginEnabled = canUseSession)
+                                Innertube.useLoginForBrowse = canUseSession &&
                                     context.preferences.getBoolean(useLoginForBrowseKey, true)
                                 MainApplication.cookieStatus = when {
-                                    hasYouTubeAuthCookie(savedCookie) -> CookieStatus.VALID
-                                    savedCookie.isBlank() -> CookieStatus.NOT_LOGGED_IN
+                                    canUseSession -> CookieStatus.VALID
+                                    savedCookie.isNullOrBlank() -> CookieStatus.NOT_LOGGED_IN
+                                    expired -> CookieStatus.EXPIRED
                                     else -> CookieStatus.INVALID
                                 }
-                                appContext().preferences.edit().remove(ytCookieExpiredKey).apply()
                             }
                             // Clear stream caches and mark restart needed
                             clearStreamCaches()
@@ -315,9 +313,7 @@ internal fun AccountsYouTubeCard(search: Search) {
                             }
                         }
 
-                        val cookieStatus = MainApplication.cookieStatus
-                        val needsSessionRecovery = !isLoggedIn || cookieStatus == CookieStatus.INVALID || cookieStatus == CookieStatus.EXPIRED
-                        if (hasSavedCookie && needsSessionRecovery) {
+                        if (hasSavedCookie && !isLoggedIn) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -383,8 +379,9 @@ internal fun AccountsYouTubeCard(search: Search) {
                                         remove(quickPicsYtmQuickPicksKey)
                                         remove(quickPicsDiscoverPageKey)
                                     }
-                                    app.n_zik.android.MainApplication.cookieStatus = app.n_zik.android.MainApplication.CookieStatus.VALID
-                                    if (!changingAccount) Innertube.useLoginForBrowse = true
+                                    MainApplication.cookieStatus = CookieStatus.VALID
+                                    Innertube.useLoginForBrowse = context.preferences.getBoolean(useLoginForBrowseKey, true)
+                                    applyUseLoginForSearch(context)
                                     Toaster.i(context.getString(R.string.account_youtube_login_success))
                                 },
                                 onCancel = { loginYouTube = false },
@@ -403,7 +400,8 @@ internal fun AccountsYouTubeCard(search: Search) {
                                 text = if (!isLoggedIn) stringResource(R.string.settings_youtube_connection_required_description) else stringResource(R.string.settings_youtube_authenticated_browsing_description),
                                 isChecked = isLoggedIn && useLoginForBrowse,
                                 enabled = isLoggedIn,
-                                onCheckedChange = {
+                                onCheckedChange = updateBrowse@{
+                                    if (!isLoggedIn) return@updateBrowse
                                     useLoginForBrowse = it
                                     Innertube.useLoginForBrowse = it
                                     if (!it) {
