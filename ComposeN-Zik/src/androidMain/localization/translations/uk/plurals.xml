@@ -67,6 +67,18 @@
         <item quantity="many">Видалити треки %1$d у цьому списку відтворення з обраного?</item>
         <item quantity="other">Видалити треки %1$d у цьому списку відтворення з обраного?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Додати пісню %1$d для вибраного?</item>
+        <item quantity="few">Додати пісні %1$d для уподобання?</item>
+        <item quantity="many">Додати пісні %1$d для уподобання?</item>
+        <item quantity="other">Додати пісні %1$d для уподобання?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Видалити пісню %1$d з обраного?</item>
+        <item quantity="few">Видалити пісні %1$d з обраного?</item>
+        <item quantity="many">Видалити пісні %1$d з обраного?</item>
+        <item quantity="other">Видалити пісні %1$d з обраного?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Додати трек %1$d з цього альбому до улюблених?</item>
         <item quantity="few">Додати треки %1$d з цього альбому до улюблених?</item>
@@ -156,6 +168,12 @@
         <item quantity="few">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
         <item quantity="many">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
         <item quantity="other">%1$d завантажені пісні відсутні їх файли і видалені. Будь ласка, завантажте їх знову.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Smart перемішувати додається %d трек.</item>
+        <item quantity="few">Smart перемішати додані треки %d коміти.</item>
+        <item quantity="many">Smart перемішати додані треки %d коміти.</item>
+        <item quantity="other">Smart перемішати додані треки %d коміти.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">Рекомендована пісня %1$d</item>
