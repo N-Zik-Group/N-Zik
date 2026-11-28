@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">私は幸運を感じています</string>
     <string name="automotive_action_play_all">すべて再生</string>
+    <string name="automotive_page_range">ページ %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">アルバムトラックを左にスワイプして実行したアクションを選択します。</string>
     <string name="gestures_album_track_swipe_right_description">アルバムトラックを右にスワイプして実行したアクションを選択します。</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">インターフェイスをアプリの言語とは関係なくミラーします。</string>
     <string name="settings_interface_page_description">ユーザーインターフェイスセクションには、グローバルインターフェイスとナビゲーションを変更するための設定が含まれています。</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">ショートカット</string>
     <string name="settings_interface_group_display">表示</string>
     <string name="settings_interface_group_indicators">指標</string>
     <string name="settings_group_profile_name">表示名</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">スワイプジェスチャーの一覧</string>
     <string name="settings_group_home_navigation">ホームナビゲーション</string>
     <string name="settings_group_menu_entries">メニュー項目</string>
-    <string name="settings_group_sort_defaults">デフォルトの並べ替え順</string>
+    <string name="settings_group_sort_defaults">メニューの並び順</string>
     <string name="settings_group_player_layout">プレイヤーのレイアウト</string>
     <string name="settings_group_background_style">背景のスタイルと色</string>
     <string name="settings_group_fullscreen_elements">オンスクリーン要素</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">おすすめ、クイックピック、リスニングインサイトをパーソナライズします。</string>
     <string name="settings_page_audio_description">サウンド処理とオーディオエフェクトを調整します。</string>
     <string name="settings_page_behavior_description">閲覧中のジェスチャーやアクションをカスタマイズします。</string>
-    <string name="settings_page_data_description">ダウンロードした音楽、キャッシュされたファイルとバックアップを管理します。</string>
+    <string name="settings_page_data_description">ローカル音楽、キャッシュ、バックアップ、保存されたアプリデータを管理します。</string>
     <string name="settings_page_downloads_description">音楽ダウンロードの品質と動作を選択します。</string>
     <string name="settings_page_interface_description">テーマ、フォント、ナビゲーション、インターフェイスのレイアウトをカスタマイズします。</string>
     <string name="settings_page_maintenance_description">アプリを維持し、拡張機能を管理し、回復ツールにアクセスします。</string>
     <string name="settings_page_network_description">接続、ストリーミングの品質、プロキシ設定を設定します。</string>
-    <string name="settings_page_playback_description">再生、キューの動作、コンテンツの制限を制御します。</string>
+    <string name="settings_page_playback_description">再生の開始方法、キューの継続および管理方法を選択します。</string>
     <string name="settings_page_player_description">プレイヤーの外観、コントロール、歌詞、通知をカスタマイズします。</string>
-    <string name="settings_page_privacy_description">一時停止または検索履歴のクリア権限アクティビティと画面保護を管理します。</string>
+    <string name="settings_page_privacy_description">保存されたアクティビティ、権限履歴、画面保護を制御します。</string>
     <string name="settings_page_profiles_description">プロフィールのアイデンティティと設定を管理します。</string>
     <string name="settings_page_rewind_description">リスニングサマリーと再生リストをカスタマイズします。</string>
     <string name="settings_page_services_description">外部サービスを接続し、他の人と一緒に聞く。</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">透明な背景</string>
     <string name="settings_player_action_bar_visualizer_visible_label">ビジュアライザーボタン</string>
     <string name="settings_player_action_restart_service">プレーヤーを再起動</string>
+    <string name="settings_app_action_restart">アプリを再起動</string>
     <string name="settings_player_actions_spaced_evenly_label">均等に広がります</string>
     <string name="settings_player_album_cover_visible_label">アルバムカバーを表示</string>
     <string name="settings_player_appearance_page_description">外観セクションにはプレイヤーの視覚的な外観の設定が含まれています</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI推奨事項</string>
     <string name="settings_region_override">地域の上書き</string>
     <string name="settings_reset">リセット</string>
+    <string name="settings_reset_account_usage_notice">接続されたアカウントは無効になります。設定で再度有効にすることができます。</string>
+    <string name="settings_reset_glass">ガラスの設定をリセット</string>
+    <string name="settings_reset_glass_appearance_description">デフォルトのガラス素材と効果を復元します。</string>
+    <string name="settings_reset_downloads">ダウンロード設定をリセット</string>
     <string name="settings_reset_all">すべての設定をリセット</string>
     <string name="settings_reset_all_confirm">すべてリセット</string>
     <string name="settings_reset_all_confirmation">すべてのアプリケーション設定をリセットしますか? 保存されたアカウント、資格情報、プロファイル、プレイリスト、ダウンロード、ファイルは保持されます。</string>
+    <string name="settings_reset_profile_scope_notice">このデバイスで共有されているアクティブなプロファイルの設定と設定をリセットします。他のプロファイルは、独自の設定を保持します。</string>
+    <string name="settings_reset_listen_together_preservation_notice">Listen 一緒にサーバー、ユーザー名、ブロックされたユーザーは保持されます。</string>
+    <string name="settings_reset_playback_description">再生、キュー、ペアレンタルコントロールの設定をリセットします。</string>
     <string name="settings_reset_all_description">すべてのアプリケーション設定をデフォルトに戻します。</string>
     <string name="settings_reset_choose_scope">復元する設定を選択してください</string>
     <string name="settings_reset_choose_scope_description">設定セクションを選択し、デフォルトを復元します。</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">スワイプしてアクション</string>
     <string name="settings_target_gain_loudness_info">ラウドネスノーマライゼーションの目標ゲイン</string>
     <string name="settings_target_unavailable">この設定は現在の設定では使用できません。代わりにセクションが表示されます。</string>
+    <string name="settings_target_prerequisite">この設定を使用するには、まず %1$s を設定してください。</string>
+    <string name="settings_target_rewind_notification_prerequisite">少なくともこれらの設定のいずれかをオンにして巻き戻し通知を表示します。\n%1$s</string>
     <string name="settings_theme_accent_color_label">色のアクセント</string>
     <string name="settings_theme_background_1_color_label">背景1</string>
     <string name="settings_theme_background_2_color_label">背景2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">ログインして参照する</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">検索にアカウントを使用</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">YouTubeから同期されたすべてのデータを消去しますか? これにより、YouTubeからインポートされたいいね曲、アルバム、アーティスト、プレイリストが削除されます。</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">YouTube の同期データを消去</string>
+    <string name="settings_youtube_logout_confirmation">N-ZikでYouTubeの音楽からログオフしますか？ローカルライブラリとダウンロードはこのデバイスに残ります。</string>
     <string name="settings_youtube_connection_required_description">このオプションを有効にするにはまずYouTubeに接続してください</string>
     <string name="settings_youtube_library_sync_content_description">プレイリスト、アルバム、アーティスト、歴史、などなど</string>
     <string name="settings_youtube_login_enabled_label">YouTube音楽ログインを有効にする</string>
