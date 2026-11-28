@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">الرجوع</string>
     <string name="common_answer_no">لا</string>
     <string name="common_artist_conjunction_and">و</string>
     <string name="common_clipboard_copy_failed">فشل نسخ النص إلى الحافظة، حاول مرة أخرى</string>
