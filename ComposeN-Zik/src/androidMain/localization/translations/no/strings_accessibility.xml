@@ -11,6 +11,8 @@
     <string name="accessibility_filter">Filtrer</string>
     <string name="accessibility_import_playlist_name">Importer spilleliste navn</string>
     <string name="accessibility_loading">laster...</string>
+    <string name="accessibility_menu_closed">Lukket</string>
+    <string name="accessibility_menu_open">Åpne</string>
     <string name="accessibility_new_playlist_name">nytt navn på spilleliste</string>
     <string name="accessibility_number_of_songs_in_queue">Antall sanger i kø</string>
     <string name="accessibility_origin_indicator">origin_indikator</string>
