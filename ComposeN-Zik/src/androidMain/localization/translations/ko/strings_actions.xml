@@ -19,6 +19,7 @@
     <string name="common_action_reset">초기화</string>
     <string name="common_action_retry">Retry</string>
     <string name="common_action_save">Save</string>
+    <string name="common_action_scroll_to_top">Scroll to top</string>
     <string name="common_action_select">선택</string>
     <string name="common_action_show_less">Show less</string>
     <string name="common_action_show_more">Show more</string>
