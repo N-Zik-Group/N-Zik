@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">북마크 앨범</string>
     <string name="album_action_open">앨범으로 이동</string>
+    <string name="playlist_action_open">Go to playlist</string>
+    <string name="podcast_action_open">Go to podcast</string>
     <string name="album_alternative_versions">앨범</string>
     <string name="album_art">Album art</string>
-    <string name="album_found_online_verify">Album found online! Please verify it\'s the correct one.</string>
     <string name="album_left_swipe">앨범 왼쪽으로 스와이프</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">Failed to fetch album</string>
-    <string name="album_lookup_running">Looking up album from the internet</string>
     <string name="album_no_alternative_version">이 앨범의 다른 버전이 없습니다</string>
-    <string name="album_not_found">Album not found</string>
     <string name="album_related_title">관련 앨범</string>
     <string name="album_right_swipe">앨범 오른쪽으로 스와이프</string>
     <!-- Artist -->
     <string name="artist_action_follow">팔로우</string>
+    <string name="artist_action_unfollow">Unfollow</string>
+    <string name="artist_action_open">Go to artist</string>
     <string name="artist_action_play_local_songs">Play all local songs</string>
+    <string name="artist_action_play_library_songs">Play all songs in library</string>
     <string name="artist_deduplication_result">Merged %d duplicate artist(s) with the right artist</string>
     <string name="artist_following_status">팔로잉</string>
-    <string name="artist_found_online_verify">Artist found online! Please verify it\'s the correct one.</string>
     <string name="artist_link_cleanup_result">Removed %d incorrect artist link(s)</string>
     <string name="artist_lookup_failed">Failed to fetch aritst</string>
-    <string name="artist_lookup_running">Looking up %s online...</string>
     <string name="artist_more_from">더 보기:</string>
     <string name="artist_overview_title">개요</string>
     <string name="artist_roundness">Artist roundness</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">아티스트</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Delete saved playback events from listening history.</string>
+    <string name="history_clear_listen_history_failed">Could not finish clearing listening history.</string>
     <string name="history_clear_search_history_description">Delete saved searches from every search-history page without changing history preferences.</string>
     <!-- Home -->
     <string name="home_albums_settings">Home Albums</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">You are a number one, click and enjoy the surprise</string>
     <!-- Library -->
     <string name="library_action_bookmark">북마크</string>
+    <string name="library_action_remove_bookmark">Remove bookmark</string>
     <string name="library_action_randomize">Randomizer</string>
     <string name="library_albums_title">앨범</string>
     <string name="library_artists_title">아티스트</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Export %d cached/downloaded songs?</string>
     <string name="library_favorites_title">즐겨찾기</string>
     <string name="library_filter_by_title">Filter By</string>
+    <string name="library_filter_nzik_origin_label">N-Zik only</string>
     <string name="library_filter_online_songs_label">Online Songs</string>
     <string name="library_filter_unmatched_songs_label">Unmatched Songs</string>
     <string name="library_history_title">기록</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM Library</string>
     <string name="library_youtube_playlists_label">유튜브/유튜브 뮤직</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Remove from dislikes</string>
     <string name="library_dislikes_added">Disliked %s</string>
     <string name="library_dislikes_removed">Removed %s from dislikes</string>
+    <string name="library_dislikes_added_generic">Added to dislikes</string>
+    <string name="library_dislikes_removed_generic">Removed from dislikes</string>
     <string name="library_favorites_action_add">즐겨찾기에 추가</string>
+    <string name="library_favorites_action_remove">Remove from favorites</string>
+    <string name="library_favorites_already_added">Already in favorites.</string>
     <string name="library_collection_favorites_action_manage">Manage favorites</string>
     <string name="library_favorites_added">즐겨찾기에 추가</string>
     <string name="library_favorites_removed">즐겨찾기에서 제거됨</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Couldn’t update favorites.</string>
     <string name="library_collection_favorites_sync_failed">Couldn’t sync some favorites with YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Choose sort criterion</string>
     <string name="library_sort_album">앨범</string>
     <string name="library_sort_album_year">앨범 연도</string>
     <string name="library_sort_artist">아티스트</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Keywords</string>
     <string name="metadata_loading">Loading…</string>
+    <string name="metadata_link_searching">Searching…</string>
+    <string name="metadata_link_manual_required">ID not confirmed. Link it manually.</string>
     <string name="metadata_lyricist">Lyricist</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes on MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Change Playlist Browse ID</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">제목</string>
     <string name="metadata_track">Track</string>
+    <string name="metadata_unknown_album">Unknown Album</string>
     <string name="metadata_unknown_artist">Unknown Artist</string>
+    <string name="metadata_unknown_author">Unknown Author</string>
+    <string name="metadata_unknown_playlist">Unknown Playlist</string>
+    <string name="metadata_unknown_podcast">Unknown Podcast</string>
     <string name="metadata_unknown_title">Unknown Title</string>
+    <string name="metadata_unknown_year">Unknown Year</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Likes</string>
     <string name="metadata_video_subscribers_label">Subscribers</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">재생목록에 추가</string>
     <string name="playlist_action_add_hint">재생목록에 추가</string>
+    <string name="playlist_add_destination_locked">You can’t add songs to this playlist.</string>
     <string name="playlist_add_destination_unavailable">This playlist is no longer available for adding device songs. Choose another playlist.</string>
     <string name="playlist_action_create">새 재생목록</string>
     <string name="playlist_action_delete_selected">Delete playlists</string>
     <string name="playlist_action_export">재생목록 내보내기</string>
     <string name="playlist_action_import">재생목록 가져오기</string>
+    <string name="playlist_actions_title">Playlist actions</string>
+    <string name="playlist_action_import_collection">Import this collection</string>
+    <string name="playlist_action_import_from_source">Import from a file or link</string>
     <string name="playlist_action_import_favorites">즐겨찾기 가져오기</string>
     <string name="playlist_action_like_favorites_on_youtube">Like N-Zik favorites on YouTube</string>
     <string name="playlist_action_remove_songs">재생목록에서 삭제</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Are you sure you want to delete ALL %d playlists?</string>
     <string name="playlist_delete_confirmation">정말로 이 재생목록을 삭제하실건가요?</string>
     <string name="playlist_delete_dialog_title">Delete playlist</string>
+    <string name="playlist_deletion_failed">Couldn’t delete the playlist from this device.</string>
+    <string name="playlist_deletion_partial">Some playlists were deleted from this device.</string>
+    <string name="playlist_deletion_local_success">Deleted from this device.</string>
+    <string name="playlist_deletion_remote_success">Deleted from YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Couldn’t delete some playlists from YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Linked playlists may also be deleted from YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Delete playlists</string>
     <string name="playlist_delete_selected_confirmation_count_format">Are you sure you want to delete these %d playlists?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Cannot Perform this Action when all the Songs are Disliked</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Like all songs</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(estimated time) is required to like all the songs. You need to close the app to cancel this process. Do you want to continue?</string>
     <string name="playlist_name_input_hint">재생목록 이름</string>
+    <string name="playlist_name_reserved">This name is reserved for Rewind playlists.</string>
     <string name="playlist_operation_wait_message">Please wait, this may take few minutes...</string>
     <string name="playlist_pinned_title">Pinned</string>
     <string name="playlist_positions_shuffled">%d positions shuffled</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">추천이 초기화되었습니다</string>
     <string name="recommendations_reset_content_description">Reload Quick Picks with fresh recommendations. Your listening history is kept.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle could not add any tracks.</string>
     <string name="recommendations_section_visibility_description">보고 싶지 않으면 비활성화:</string>
     <string name="recommendations_show_section_label">표시:</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">추천 없음</string>
     <string name="search_suggestions_title">추천</string>
     <string name="search_title">검색</string>
+    <string name="search_action_edit_query">Edit search query</string>
     <string name="search_video_download_unsupported_message">동영상 다운로드는 지원되지 않습니다</string>
     <string name="search_videos_title">동영상</string>
     <string name="search_voice_action_start">Voice search</string>
