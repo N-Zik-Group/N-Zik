@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Verbindung zum Server</string>
     <string name="listen_together_log_event_connection_closed">Verbindung geschlossen</string>
     <string name="listen_together_log_event_connection_failure">Verbindungsfehler</string>
+    <string name="listen_together_invalid_server_address">Die Serveradresse \"Gemeinsam hören\" ist ungültig. Aktualisieren Sie sie in den Einstellungen und versuchen Sie es erneut.</string>
+    <string name="listen_together_session_server_changed">Der Server führte die Listen-Session an eine andere Adresse weiter.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Verbindungsfehler, warte auf Netzwerk</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Verbindung verloren, versucht neu zu verbinden</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Abgelaufenes Abspielereignis verwerfen</string>
