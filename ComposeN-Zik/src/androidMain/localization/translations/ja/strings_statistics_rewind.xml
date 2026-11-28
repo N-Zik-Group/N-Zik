@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Rewindホームに月のグリッドを表示します。</string>
     <string name="rewind_settings_monthly_notification">毎月の巻き戻し通知</string>
     <string name="rewind_settings_monthly_notification_description">1日目に、前月の巻き戻しが完了したことを通知します。</string>
+    <string name="rewind_settings_notification_permission_hint">Android の設定で N-Zik への通知を許可して巻き戻しアラートを受信します。</string>
     <string name="rewind_settings_notifications">通知の巻き戻し</string>
     <string name="rewind_settings_playlists_monthly">月間再生リストを巻き戻します</string>
     <string name="rewind_settings_playlists_monthly_description">月次巻き戻しプレイリストを作成します。</string>
