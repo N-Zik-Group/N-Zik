@@ -67,6 +67,18 @@
         <item quantity="many">Удалить %1$d треков в этом плейлисте из избранного?</item>
         <item quantity="other">Удалить %1$d треков в этом плейлисте из избранного?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Добавить %1$d песню в избранное?</item>
+        <item quantity="few">Добавить в избранное %1$d песен?</item>
+        <item quantity="many">Добавить в избранное %1$d песен?</item>
+        <item quantity="other">Добавить в избранное %1$d песен?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Удалить %1$d трек из избранного?</item>
+        <item quantity="few">Удалить %1$d песен из избранного?</item>
+        <item quantity="many">Удалить %1$d песен из избранного?</item>
+        <item quantity="other">Удалить %1$d песен из избранного?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Добавить %1$d трек из этого альбома в избранное?</item>
         <item quantity="few">Добавить %1$d треков из этого альбома в избранное?</item>
@@ -156,6 +168,12 @@
         <item quantity="few">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
         <item quantity="many">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
         <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Смарт-перемешивание добавлено трек %d.</item>
+        <item quantity="few">Смарт-перемешивание добавлено треков %d.</item>
+        <item quantity="many">Смарт-перемешивание добавлено треков %d.</item>
+        <item quantity="other">Смарт-перемешивание добавлено треков %d.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d рекомендуемая песня</item>
