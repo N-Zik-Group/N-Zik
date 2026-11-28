@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Экспортировать базу данных и настройки отдельно. База данных использует ZIP, если она включает пользовательские обложки.</string>
     <string name="backup_export_database_with_covers_description">Сохраняйте песни, плейлисты и историю как SQLite. Если у вас есть пользовательские обложки, экспорт является ZIP с базой данных и обложек.</string>
     <string name="backup_export_profile_state_failed">Не удалось экспортировать состояние профиля</string>
-    <string name="backup_export_settings_description">Экспорт настроек и настроек приложения</string>
+    <string name="backup_export_settings_description">Экспорт сохраненных настроек профиля, включая стекло</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Импортировать список профилей и фото лица из файла .txt</string>
     <string name="backup_import_all">Импортировать все</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Импорт состояния профиля: %1$d профилей</string>
     <string name="backup_import_profile_state_complete_base">Состояние профиля импортировано: базовый профиль</string>
     <string name="backup_import_profile_state_failed">Не удалось импортировать состояние профиля</string>
-    <string name="backup_import_settings_description">Импорт настроек и настроек приложения</string>
+    <string name="backup_import_settings_description">Объединить сохраненные настройки профиля и восстановить любой снимок Стекла</string>
     <string name="backup_import_target_from_file">Из файла</string>
     <string name="backup_import_target_profile_title">Импортировать в какой профиль?</string>
     <!-- Cache -->
