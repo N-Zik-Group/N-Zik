@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Denne telefon</string>
     <string name="audio_output_title">Lyd output</string>
     <string name="audio_output_wired_headphones_label">Ledte hovedtelefoner</string>
+    <string name="audio_quality_auto_effective_fmt">Automatisk (%1$s)</string>
     <string name="audio_quality_auto_fmt">Auto (Detekteret: %1$s)</string>
     <string name="audio_quality_automatic">Automatisk</string>
     <string name="audio_quality_format">Lydkvalitet</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Plade</string>
     <string name="audio_reverb_small_room">Lille Rum</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Kun værten kan ændre automatiske godkendelser i dette rum. Forlad rummet for at redigere dine egne indstillinger.</string>
     <string name="listen_together_auto_approval_joins_description">Godkend automatisk tilmeldingsanmodninger uden at gennemgå dem manuelt</string>
     <string name="listen_together_auto_approval_suggestions_description">Godkend og kø forslag fra gæster automatisk</string>
     <string name="listen_together_blocked_users_description">Se og administrer deltagerne blokeret fra dine lytterum.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Venstre</string>
     <string name="lyrics_alignment_right_label">Højre</string>
     <string name="lyrics_artwork_overlay_description">Vis sangtekster over afspillerens kunstværk.</string>
+    <string name="lyrics_cover_dimming_title">Dæmp dække bag sangtekster</string>
+    <string name="lyrics_cover_dimming_description">Gør spilleren mere mørk, når sangtekster vises over den.</string>
+    <string name="lyrics_cover_dimming_opacity">Lyrics cover dæmpning intensitet</string>
     <string name="lyrics_background_enabled_description">Tegn en baggrund bag sangteksterne for at forbedre deres læsbarhed.</string>
     <string name="lyrics_background_label">Sangtekstbaggrund</string>
     <string name="lyrics_behavior_section_title">Opførsel</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Karaoke vil erstatte den, hvis den findes.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke sangtekster</string>
+    <string name="lyrics_mode_label">Sangteksttilstand</string>
     <string name="lyrics_mode_synchronized_label">synkroniserede sangtekster</string>
     <string name="lyrics_mode_unsynchronized_label">usynkroniserede sangtekster</string>
     <string name="lyrics_not_available">Ingen tilgængelige sangtekster. Prøv igen eller indtast dem manuelt.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Afspil næste</string>
     <string name="player_action_previous">Forrige</string>
     <string name="player_action_repeat">Gentag</string>
+    <string name="player_repeat_mode_off">Fra</string>
+    <string name="player_repeat_mode_one">Gentag en</string>
+    <string name="player_repeat_mode_all">Gentag alle</string>
     <string name="player_action_seek_forward">Fremad</string>
     <string name="player_action_seek_forward_30_seconds">Videresend 30 sekunder</string>
     <string name="player_action_seek_forward_5_seconds">Videresend 5 sekunder</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Gemmer ikke afspilningshændelser til statistikker, historik eller forslag i Hurtige Valg</string>
     <string name="player_pause_on_volume_zero">Pause ved nul lydstyrke</string>
     <string name="player_picture_in_picture_content_description">Vælg det indhold, der vises i vinduet billede-i-billede.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Billede-i-billede vinduet viser spordækningen.</string>
     <string name="player_picture_in_picture_enabled_description">Tillad spilleren at blive vist i et lille billede-i-billede vindue.</string>
     <string name="player_play_button_rectangular_label">Rektangulær</string>
     <string name="player_play_button_square_label">Firkantet</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Kø blandet (%d sange)</string>
     <string name="player_remaining_time_visible_description">Vis den resterende tid i det aktuelle spor.</string>
     <string name="player_restart_required_message">Afspilleren skal genstartes for at ændringerne træder i kraft!</string>
+    <string name="player_restart_service_unavailable_message">Spilleren er ikke tilgængelig. Ændringer gælder næste gang den starter.</string>
+    <string name="player_restart_disconnect_android_auto_message">Afbryd Android Auto for at genstarte spilleren.</string>
     <string name="player_rotating_buttons">Roterende knapper</string>
     <string name="player_seek_backward_five_seconds">Vend tilbage 5 sekunder</string>
     <string name="player_seek_backward_thirty_seconds">Vind 30 sekunder</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Vælg den brugerdefinerede farve der bruges af denne komponent.</string>
     <string name="visualizer_dark_background_description">Brug en sort baggrund bag lydvisualiseringen.</string>
     <string name="visualizer_dark_background_title">Mørk baggrund for visualisering</string>
+    <string name="visualizer_cover_dimming_opacity">Visualizer cover dæmpning intensitet</string>
     <string name="visualizer_debug_background">VisualizerBaggrund</string>
     <string name="visualizer_enabled_description">Vis en animeret visualisering, der reagerer på lyden.</string>
     <string name="visualizer_line_thickness">Visualizer Linje Tykkelse</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Bluetooth enhed</string>
     <string name="audio_output_usb_audio_label">USB lyd</string>
     <string name="audio_output_external_speaker_label">Ekstern højttaler</string>
+    <string name="audio_output_device_unavailable">Dette lydoutput er ikke længere tilgængeligt.</string>
     <string name="audio_output_load_failed">Kunne ikke indlæse enheder: %1$s</string>
     <string name="player_audio_mode">Lyd</string>
     <string name="player_video_mode">Video</string>
