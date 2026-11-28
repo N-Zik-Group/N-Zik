@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Minulla on onnea</string>
     <string name="automotive_action_play_all">Toista Kaikki</string>
+    <string name="automotive_page_range">Page %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Valitse tehtävä pyyhkäisemällä albumin kappaletta vasemmalle.</string>
     <string name="gestures_album_track_swipe_right_description">Valitse tehtävä pyyhkäisemällä albumin kappale oikealle.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Peilaa käyttöliittymä sovelluksen kielestä riippumatta.</string>
     <string name="settings_interface_page_description">Käyttöliittymäosiossa on asetuksia globaalin käyttöliittymän ja navigoinnin muokkaamiseen</string>
     <string name="settings_interface_page_title">Käyttöliittymä</string>
+    <string name="settings_interface_shortcuts_title">Pikanäppäimet</string>
     <string name="settings_interface_group_display">Näyttö</string>
     <string name="settings_interface_group_indicators">Indikaattorit</string>
     <string name="settings_group_profile_name">Näytä nimi</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Listaa eleiden pyyhkäisy</string>
     <string name="settings_group_home_navigation">Kotisivu navigointi</string>
     <string name="settings_group_menu_entries">Valikon merkinnät</string>
-    <string name="settings_group_sort_defaults">Oletus lajittelu tilaukset</string>
+    <string name="settings_group_sort_defaults">Lajittele valikon järjestys</string>
     <string name="settings_group_player_layout">Soittimen asettelu</string>
     <string name="settings_group_background_style">Taustan tyyli ja värit</string>
     <string name="settings_group_fullscreen_elements">Näytön osat</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Mukauta suosituksia, pikavalintoja ja kuuntelevia oivalluksia.</string>
     <string name="settings_page_audio_description">Säädä ääni- ja prosessointiefektejä.</string>
     <string name="settings_page_behavior_description">Muokkaa eleitä ja toimintoja selailussa ja kuuntelussa.</string>
-    <string name="settings_page_data_description">Hallitse ladattua musiikkia, välimuistissa olevia tiedostoja ja varmuuskopioita.</string>
+    <string name="settings_page_data_description">Hallinnoi paikallista musiikkia, kätköjä, varmuuskopioita ja tallennettuja sovellustietoja.</string>
     <string name="settings_page_downloads_description">Valitse musiikin latausten laatu ja käyttäytyminen.</string>
     <string name="settings_page_interface_description">Mukauta teema, fontit, navigointi ja käyttöliittymän asettelu.</string>
     <string name="settings_page_maintenance_description">Ylläpidä sovellusta, hallitse laajennuksia ja käytä palautustyökaluja.</string>
     <string name="settings_page_network_description">Määritä yhteystiedot, suoratoistolaadun ja välityspalvelimen asetukset.</string>
-    <string name="settings_page_playback_description">Ohjaa toistoa, jonon käyttäytymistä ja sisällön rajoituksia.</string>
+    <string name="settings_page_playback_description">Valitse, miten soitto alkaa, jatkuu ja hallitsee jonoasi.</string>
     <string name="settings_page_player_description">Muokkaa soittimen ulkonäköä, hallintaa, sanoituksia ja ilmoituksia.</string>
-    <string name="settings_page_privacy_description">Keskeytä tai tyhjennä kuuntelu ja hae historiaa. Hallitse käyttöoikeuksia ja näytön suojausta.</string>
+    <string name="settings_page_privacy_description">Ohjaus tallennettu toiminta, käyttöhistoria ja näytön suojaus.</string>
     <string name="settings_page_profiles_description">Hallitse profiilin identiteettiä ja asetuksia.</string>
     <string name="settings_page_rewind_description">Muokkaa kuuntelevia yhteenvetoja ja Rewind-soittolistoja.</string>
     <string name="settings_page_services_description">Yhdistä ulkoiset palvelut ja kuuntele yhdessä muiden kanssa.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Läpinäkyvä tausta</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualisoijan painike</string>
     <string name="settings_player_action_restart_service">Käynnistä uudelleen</string>
+    <string name="settings_app_action_restart">Käynnistä sovellus uudelleen</string>
     <string name="settings_player_actions_spaced_evenly_label">Tasainen väli</string>
     <string name="settings_player_album_cover_visible_label">Näytä albumin kansi</string>
     <string name="settings_player_appearance_page_description">Ulkonäkö osio sisältää asetukset pelaajan visuaaliselle ulkonäölle</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">Tekoälyn Suositukset</string>
     <string name="settings_region_override">Alueen Ohitus</string>
     <string name="settings_reset">Nollaa</string>
+    <string name="settings_reset_account_usage_notice">Yhdistetyt tilit poistetaan käytöstä. Voit ottaa ne takaisin käyttöön asetuksissa.</string>
+    <string name="settings_reset_glass">Nollaa lasin asetukset</string>
+    <string name="settings_reset_glass_appearance_description">Palauta oletus lasimateriaalia ja vaikutuksia.</string>
+    <string name="settings_reset_downloads">Nollaa latausasetukset</string>
     <string name="settings_reset_all">Nollaa kaikki asetukset</string>
     <string name="settings_reset_all_confirm">Nollaa kaikki</string>
     <string name="settings_reset_all_confirmation">Palauta kaikki sovellusasetukset? Tallennetut tilit, käyttäjätunnukset, profiilit, soittolistat, lataukset ja tiedostot säilytetään.</string>
+    <string name="settings_reset_profile_scope_notice">Tämä palauttaa tällä laitteella jaetut aktiivisen profiilin asetukset ja asetukset. Muut profiilit pitävät omat asetuksensa.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Kuuntele Yhdessä palvelin, käyttäjätunnus ja estetty käyttäjät säilytetään.</string>
+    <string name="settings_reset_playback_description">Nollaa toiston, jonon ja vanhempien kontrollien asetukset.</string>
     <string name="settings_reset_all_description">Palauta kaikki sovelluksen asetukset oletusarvoihinsa.</string>
     <string name="settings_reset_choose_scope">Valitse palautettavat asetukset</string>
     <string name="settings_reset_choose_scope_description">Valitse asetusosio ja palauta sen oletukset.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Pyyhkäise toimintoa varten</string>
     <string name="settings_target_gain_loudness_info">Tavoitevahvistus äänenvoimakkuuden normalisoimiseksi</string>
     <string name="settings_target_unavailable">Tämä asetus ei ole käytettävissä nykyisessä konfiguraatiossa. Sen sijaan sen osio näytetään.</string>
+    <string name="settings_target_prerequisite">Käyttääksesi tätä asetusta, määritä %1$s ensin.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Ota käyttöön ainakin yksi näistä asetuksista nähdäksesi Rewind-ilmoitukset.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Värin aksentti</string>
     <string name="settings_theme_background_1_color_label">Tausta 1</string>
     <string name="settings_theme_background_2_color_label">Tausta 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Kirjaudu sisään Selaa</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Käytä tiliä hakuja varten</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Tyhjennetäänkö kaikki YouTubesta synkronoidut tiedot? Tämä poistaa tykätyt kappaleet, albumit, artistit ja soittolistat YouTubesta.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Tyhjennä YouTube-synkronoidut tiedot</string>
+    <string name="settings_youtube_logout_confirmation">Kirjaudu pois YouTube-musiikista N-Zikissä? Paikallinen kirjasto ja lataukset pysyvät tällä laitteella.</string>
     <string name="settings_youtube_connection_required_description">Yhdistä ensin YouTubeen, jotta voit ottaa tämän vaihtoehdon käyttöön</string>
     <string name="settings_youtube_library_sync_content_description">Soittolistat, albumit, artistit, historia, tykkää jne.</string>
     <string name="settings_youtube_login_enabled_label">Ota YouTube-musiikin kirjautuminen käyttöön</string>
