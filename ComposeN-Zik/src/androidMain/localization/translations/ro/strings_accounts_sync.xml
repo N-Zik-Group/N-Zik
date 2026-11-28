@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Conectează GitHub</string>
+    <string name="github_account_background_checks">Verificare fundal GitHub</string>
+    <string name="github_account_background_checks_description">Verificați starea contului GitHub și examinați în mod automat.</string>
     <string name="github_account_logout">Deconectare GitHub</string>
     <string name="github_account_description">Utilizați contul GitHub în Magazinul Temelor.</string>
     <string name="github_account_offline">Mergeți online pentru a conecta GitHub.</string>
