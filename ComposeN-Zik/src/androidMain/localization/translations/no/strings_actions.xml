@@ -19,6 +19,7 @@
     <string name="common_action_reset">Tilbakestill</string>
     <string name="common_action_retry">Prøv igjen</string>
     <string name="common_action_save">Lagre</string>
+    <string name="common_action_scroll_to_top">Rull til toppen</string>
     <string name="common_action_select">Velg</string>
     <string name="common_action_show_less">Vis mindre</string>
     <string name="common_action_show_more">Vis mer</string>
