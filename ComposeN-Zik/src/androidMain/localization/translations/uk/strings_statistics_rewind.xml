@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Показати місячну сітку на назад додому.</string>
     <string name="rewind_settings_monthly_notification">Щомісячне перенаправлення</string>
     <string name="rewind_settings_monthly_notification_description">Отримайте сповіщення про те, що вітер попереднього місяця готовий.</string>
+    <string name="rewind_settings_notification_permission_hint">Дозволити сповіщення N-Zik в налаштуваннях Android, щоб отримувати сповіщення про відмогу.</string>
     <string name="rewind_settings_notifications">Перемотати сповіщення</string>
     <string name="rewind_settings_playlists_monthly">Щомісячний перемотний плейліст</string>
     <string name="rewind_settings_playlists_monthly_description">Створіть плейлист щомісячного відтворення.</string>
