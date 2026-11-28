@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Eksportuj bazę danych i ustawienia oddzielnie. Baza danych używa ZIP, jeśli zawiera niestandardowe okładki.</string>
     <string name="backup_export_database_with_covers_description">Zapisz utwory, listy odtwarzania i historię jako SQLite. Jeśli posiadasz niestandardowe okładki, eksport jest ZIP z bazą danych i okładkami.</string>
     <string name="backup_export_profile_state_failed">Eksport stanu profilu nie powiódł się</string>
-    <string name="backup_export_settings_description">Eksportuj ustawienia i ustawienia aplikacji</string>
+    <string name="backup_export_settings_description">Eksportuj zapisane ustawienia profilu, w tym szkło</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importuj listę profili i zdjęcia twarzy z pliku .txt</string>
     <string name="backup_import_all">Importuj wszystko</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Zaimportowano stan profilu: %1$d profili</string>
     <string name="backup_import_profile_state_complete_base">Stan profilu zaimportowany: profil bazowy</string>
     <string name="backup_import_profile_state_failed">Importowanie stanu profilu nie powiodło się</string>
-    <string name="backup_import_settings_description">Importuj ustawienia i ustawienia aplikacji</string>
+    <string name="backup_import_settings_description">Scal zapisane ustawienia profilu i przywróć każdy szklany zrzut</string>
     <string name="backup_import_target_from_file">Z pliku</string>
     <string name="backup_import_target_profile_title">Importować do którego profilu?</string>
     <!-- Cache -->
