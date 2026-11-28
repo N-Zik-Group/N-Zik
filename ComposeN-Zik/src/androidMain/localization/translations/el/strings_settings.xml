@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Νιώθω τυχερός</string>
     <string name="automotive_action_play_all">Αναπαραγωγή Όλων</string>
+    <string name="automotive_page_range">Σελίδα %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Επιλέξτε την ενέργεια που εκτελείται σύροντας ένα κομμάτι άλμπουμ αριστερά.</string>
     <string name="gestures_album_track_swipe_right_description">Επιλέξτε την ενέργεια που εκτελείται σύροντας ένα κομμάτι άλμπουμ δεξιά.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Κατοπτρισμός της διεπαφής ανεξάρτητα από τη γλώσσα εφαρμογής.</string>
     <string name="settings_interface_page_description">Η ενότητα διασύνδεσης χρήστη περιέχει ρυθμίσεις για την τροποποίηση της καθολικής διεπαφής και πλοήγησης</string>
     <string name="settings_interface_page_title">Διεπαφή</string>
+    <string name="settings_interface_shortcuts_title">Συντομεύσεις</string>
     <string name="settings_interface_group_display">Εμφάνιση</string>
     <string name="settings_interface_group_indicators">Δείκτες</string>
     <string name="settings_group_profile_name">Εμφανιζόμενο όνομα</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Χειρονομίες συρσίματος λίστας</string>
     <string name="settings_group_home_navigation">Αρχική πλοήγηση</string>
     <string name="settings_group_menu_entries">Καταχωρίσεις μενού</string>
-    <string name="settings_group_sort_defaults">Προεπιλεγμένες παραγγελίες ταξινόμησης</string>
+    <string name="settings_group_sort_defaults">Σειρά μενού ταξινόμησης</string>
     <string name="settings_group_player_layout">Διάταξη παίκτη</string>
     <string name="settings_group_background_style">Στυλ φόντου και χρώματα</string>
     <string name="settings_group_fullscreen_elements">Στοιχεία οθόνης</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Εξατομικεύστε τις συστάσεις, Γρήγορες επιλογές και συμβουλές ακρόασης.</string>
     <string name="settings_page_audio_description">Προσαρμογή εφέ επεξεργασίας ήχου και ήχου.</string>
     <string name="settings_page_behavior_description">Προσαρμόστε χειρονομίες και ενέργειες κατά την περιήγηση και την ακρόαση.</string>
-    <string name="settings_page_data_description">Διαχείριση κατεβασμένης μουσικής, προσωρινά αποθηκευμένων αρχείων και αντιγράφων ασφαλείας.</string>
+    <string name="settings_page_data_description">Διαχείριση τοπικής μουσικής, προσωρινής μνήμης, αντιγράφων ασφαλείας και αποθηκευμένων δεδομένων εφαρμογών.</string>
     <string name="settings_page_downloads_description">Επιλέξτε την ποιότητα και τη συμπεριφορά των λήψεων μουσικής.</string>
     <string name="settings_page_interface_description">Προσαρμόστε το θέμα, τις γραμματοσειρές, την πλοήγηση και τη διάταξη διασύνδεσης.</string>
     <string name="settings_page_maintenance_description">Διατηρήστε την εφαρμογή, διαχειριστείτε επεκτάσεις και αποκτήστε πρόσβαση στα εργαλεία ανάκτησης.</string>
     <string name="settings_page_network_description">Ρυθμίστε τη συνδεσιμότητα, την ποιότητα ροής και τις ρυθμίσεις διαμεσολαβητή.</string>
-    <string name="settings_page_playback_description">Έλεγχος αναπαραγωγής, συμπεριφοράς αναμονής και περιορισμών περιεχομένου.</string>
+    <string name="settings_page_playback_description">Επιλέξτε πώς η αναπαραγωγή ξεκινά, συνεχίζει και διαχειρίζεται την ουρά σας.</string>
     <string name="settings_page_player_description">Προσαρμόστε την εμφάνιση του παίκτη, τα κουμπιά, τους στίχους και τις ειδοποιήσεις.</string>
-    <string name="settings_page_privacy_description">Παύση ή εκκαθάριση ιστορικού ακρόασης και αναζήτησης. Διαχειριστείτε τη δραστηριότητα δικαιωμάτων και την προστασία οθόνης.</string>
+    <string name="settings_page_privacy_description">Έλεγχος αποθηκευμένης δραστηριότητας, δικαιώματα ιστορικό και προστασία οθόνης.</string>
     <string name="settings_page_profiles_description">Διαχειριστείτε την ταυτότητα και τις προτιμήσεις του προφίλ σας.</string>
     <string name="settings_page_rewind_description">Προσαρμόστε τις περιλήψεις ακρόασης και τις λίστες αναπαραγωγής Rewind.</string>
     <string name="settings_page_services_description">Συνδέστε εξωτερικές υπηρεσίες και ακούστε μαζί με άλλους.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Διαφανές φόντο</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Κουμπί οπτικοποίησης</string>
     <string name="settings_player_action_restart_service">Restart service</string>
+    <string name="settings_app_action_restart">Επανεκκίνηση εφαρμογής</string>
     <string name="settings_player_actions_spaced_evenly_label">Spaced Evenly</string>
     <string name="settings_player_album_cover_visible_label">Show Album Cover</string>
     <string name="settings_player_appearance_page_description">Η ενότητα εμφάνισης περιέχει ρυθμίσεις για την οπτική εμφάνιση του παίκτη</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI Συστάσεις</string>
     <string name="settings_region_override">Παράκαμψη Περιοχής</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_account_usage_notice">Οι συνδεδεμένοι λογαριασμοί θα απενεργοποιηθούν. Μπορείτε να τους ενεργοποιήσετε ξανά στις Ρυθμίσεις.</string>
+    <string name="settings_reset_glass">Επαναφορά ρυθμίσεων γυαλιού</string>
+    <string name="settings_reset_glass_appearance_description">Επαναφορά του προεπιλεγμένου υλικού γυαλιού και εφέ.</string>
+    <string name="settings_reset_downloads">Επαναφορά ρυθμίσεων λήψης</string>
     <string name="settings_reset_all">Επαναφορά όλων των ρυθμίσεων</string>
     <string name="settings_reset_all_confirm">Επαναφορά όλων</string>
     <string name="settings_reset_all_confirmation">Επαναφορά όλων των ρυθμίσεων εφαρμογής? Αποθηκευμένοι λογαριασμοί, διαπιστευτήρια, προφίλ, λίστες αναπαραγωγής, λήψεις και αρχεία θα διατηρηθούν.</string>
+    <string name="settings_reset_profile_scope_notice">Αυτό επαναφέρει τις ρυθμίσεις και τις ρυθμίσεις του ενεργού προφίλ που μοιράζονται σε αυτήν τη συσκευή. Άλλα προφίλ διατηρούν τις δικές τους ρυθμίσεις.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Ο διακομιστής Μαζί Ακούστε, το όνομα χρήστη και οι αποκλεισμένοι χρήστες διατηρούνται.</string>
+    <string name="settings_reset_playback_description">Επαναφορά ρυθμίσεων αναπαραγωγής, ουράς και γονικού ελέγχου.</string>
     <string name="settings_reset_all_description">Επαναφορά όλων των ρυθμίσεων εφαρμογής στις προεπιλογές τους.</string>
     <string name="settings_reset_choose_scope">Επιλέξτε ποιες ρυθμίσεις θα επαναφέρετε</string>
     <string name="settings_reset_choose_scope_description">Επιλέξτε μια ενότητα ρυθμίσεων και στη συνέχεια επαναφέρετε τις προεπιλογές της.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Swipe to action</string>
     <string name="settings_target_gain_loudness_info">Στόχος έντασης για ομαλοποίηση έντασης</string>
     <string name="settings_target_unavailable">Αυτή η ρύθμιση δεν είναι διαθέσιμη με την τρέχουσα διαμόρφωση. Η ενότητα του εμφανίζεται αντ \'αυτού.</string>
+    <string name="settings_target_prerequisite">Για να χρησιμοποιήσετε αυτή τη ρύθμιση, ρυθμίστε πρώτα το %1$s.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Ενεργοποιήστε τουλάχιστον μία από αυτές τις ρυθμίσεις για να εμφανίσετε τις ειδοποιήσεις Rewind.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Accent</string>
     <string name="settings_theme_background_1_color_label">Φόντο 1</string>
     <string name="settings_theme_background_2_color_label">Φόντο 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Σύνδεση για περιήγηση</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Χρήση λογαριασμού για αναζητήσεις</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Εκκαθάριση όλων των δεδομένων που συγχρονίζονται από το YouTube? Αυτό θα αφαιρέσει τα αγαπημένα τραγούδια, άλμπουμ, καλλιτέχνες και λίστες αναπαραγωγής που εισάγονται από το YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Εκκαθάριση συγχρονισμένων δεδομένων YouTube</string>
+    <string name="settings_youtube_logout_confirmation">Αποσυνδεθείτε από το YouTube Music στο N-Zik? Η τοπική βιβλιοθήκη σας και οι λήψεις θα παραμείνουν σε αυτή τη συσκευή.</string>
     <string name="settings_youtube_connection_required_description">Συνδεθείτε στο YouTube πρώτα για να ενεργοποιήσετε αυτήν την επιλογή</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, άλμπουμ, καλλιτέχνες, ιστορία, όπως, κλπ.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
