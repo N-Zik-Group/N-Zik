@@ -84,6 +84,7 @@ import app.n_zik.android.utils.player.addNextOffMain
 import app.n_zik.android.utils.player.enqueueOffMain
 import app.n_zik.android.components.menu.isCurrentMenu
 import app.n_zik.android.R
+import app.n_zik.android.components.tab.showSmartShuffleResult
 import app.n_zik.android.components.menu.playlist.rememberCollectionAddAction
 import app.n_zik.android.components.menu.playlist.playlistActionsAnchor
 import app.n_zik.android.appContext
@@ -635,6 +636,7 @@ fun LocalPlaylistSongs(
         mutableStateOf( emptyMap<Song, Int>() )
     }
     var isRecommendationsLoading by rememberSaveable { mutableStateOf(false) }
+    var reportRecommendationResult by remember { mutableStateOf(false) }
 
     val networkAvailable by NetworkQualityHelper.isNetworkAvailableComposable(context)
     val recommendationSeedIds = remember(items) {
@@ -651,7 +653,10 @@ fun LocalPlaylistSongs(
         override val color
             @Composable get() = if (isRecommendationEnabled) colorPalette().accent else colorPalette().text
         override fun onShortClick() {
-            if (isRecommendationEnabled || canStartRecommendations) isRecommendationEnabled = !isRecommendationEnabled
+            if (isRecommendationEnabled || canStartRecommendations) {
+                isRecommendationEnabled = !isRecommendationEnabled
+                reportRecommendationResult = isRecommendationEnabled
+            }
         }
     }
 
@@ -659,7 +664,11 @@ fun LocalPlaylistSongs(
         relatedSongs = emptyMap()
         if (!isRecommendationEnabled || !canStartRecommendations) {
             isRecommendationsLoading = false
-            if (!canStartRecommendations) isRecommendationEnabled = false
+            if (!canStartRecommendations) {
+                if (reportRecommendationResult) showSmartShuffleResult(0)
+                reportRecommendationResult = false
+                isRecommendationEnabled = false
+            }
             return@LaunchedEffect
         }
 
@@ -669,6 +678,10 @@ fun LocalPlaylistSongs(
                 !parentalControlEnabled || !it.title.hasExplicitPrefix()
             }
             positionLock.isFirstIcon = true
+            if (reportRecommendationResult) {
+                reportRecommendationResult = false
+                showSmartShuffleResult(smartShuffleRecommendationIds(items, relatedSongs).size)
+            }
         } finally {
             isRecommendationsLoading = false
         }

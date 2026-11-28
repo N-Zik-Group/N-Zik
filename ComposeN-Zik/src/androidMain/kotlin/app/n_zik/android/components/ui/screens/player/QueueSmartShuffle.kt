@@ -15,6 +15,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import app.n_zik.android.components.tab.SmartShuffle
+import app.n_zik.android.components.tab.showSmartShuffleResult
 import app.n_zik.android.core.network.OfflineMode
 import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import app.n_zik.android.enums.MaxSongs
@@ -221,6 +222,7 @@ internal fun rememberQueueSmartShuffle(binder: PlayerServiceModern.Binder?): Que
                             !parentalControl || !it.title.hasExplicitPrefix()
                         }.keys.map { it.asMediaItem.asSmartShuffleRecommendation(true, queueRecommendationOwner) }
                     }
+                    var addedCount = 0
                     withFilteredQueueItems(recommended, context, { binder.player.takeIf { it === player } }) { livePlayer, eligible ->
                         val liveTimeline = livePlayer.currentTimeline
                         if (offline || QueueToolBarState.selectionActive || QueueToolBarState.dragInProgress || livePlayer.currentMediaItem.isQueuePodcast || liveTimeline.isEmpty ||
@@ -245,8 +247,10 @@ internal fun rememberQueueSmartShuffle(binder: PlayerServiceModern.Binder?): Que
                             // Publish a single edit while keeping the playing window.
                             livePlayer.replaceMediaItems(start, count, insertQueueRecommendations(upcoming, additions))
                         }
+                        addedCount = (livePlayer.mediaItemCount - count).coerceAtLeast(0)
                         state = livePlayer.currentTimeline.queueRecommendationState(livePlayer.shuffleModeEnabled)
                     }
+                    showSmartShuffleResult(addedCount)
                 } finally {
                     request = null
                 }

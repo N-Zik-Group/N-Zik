@@ -42,6 +42,7 @@ import kotlin.random.Random
 import app.n_zik.android.typography
 import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.components.tab.SmartShuffle
+import app.n_zik.android.components.tab.showSmartShuffleResult
 import app.n_zik.android.ui.screens.localplaylist.loadLocalPlaylistRecommendations
 import app.n_zik.android.utils.asMediaItem
 import app.n_zik.android.utils.coroutines.NzikDispatchers
@@ -110,12 +111,17 @@ internal fun rememberCollectionSmartShuffle(
     val available = enabled && (!fetchRecommendations || (!offline && connected && (seedIds.isNotEmpty() || loadSource != null)))
     var active by remember(key) { mutableStateOf(initiallyActive) }
     var loading by remember(key) { mutableStateOf(false) }
+    var reportResult by remember(key) { mutableStateOf(false) }
     var suggestions by remember(key) { mutableStateOf(emptyList<Song>()) }
     LaunchedEffect(key, available, active, seedIds, source.size, amount, parentalControl, fetchRecommendations, player) {
         suggestions = emptyList()
         if (!available || !active || !fetchRecommendations) {
             loading = false
-            if (!available) active = false
+            if (!available) {
+                if (reportResult) showSmartShuffleResult(0)
+                reportResult = false
+                active = false
+            }
             return@LaunchedEffect
         }
         loading = true
@@ -130,6 +136,10 @@ internal fun rememberCollectionSmartShuffle(
                     matches.filter { it.id in allowedIds }
                 }
             }
+            if (reportResult) {
+                reportResult = false
+                showSmartShuffleResult(suggestions.size)
+            }
         } finally {
             loading = false
         }
@@ -137,7 +147,10 @@ internal fun rememberCollectionSmartShuffle(
     val action = SmartShuffle(
         isRecommendationEnabled = { active },
         isRecommendationsLoading = { loading },
-        onToggleRecommendation = { active = !active },
+        onToggleRecommendation = {
+            active = !active
+            reportResult = active
+        },
         isActionAvailable = { available && actionEnabled },
     )
     return CollectionSmartShuffle(

@@ -2147,3 +2147,8 @@ Playback:
   - Use the selected mini-player button color for active playback modes and a disabled tint for inactive ones.
   - Keep the configured Radio button visible and unavailable when it cannot start, and retain Stop for an active radio.
   - Match the queue counters' icon, text and color. Use the accent for active Smart Shuffle in the full player.
+
+Playback:
+- feat(player): report Smart Shuffle results
+  - Show one localized result message for each completed activation in Songs, collections and the queue.
+  - Report the number of recommendations accepted by the active collection or applied to the queue, including an empty-result message.

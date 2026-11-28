@@ -363,6 +363,7 @@
     <string name="recommendations_reset_complete">Quick picks are cleared</string>
     <string name="recommendations_reset_content_description">Reload Quick Picks with fresh recommendations. Your listening history is kept.</string>
     <string name="recommendations_section_other_youtube_title">Other sections</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle could not add any tracks.</string>
     <string name="recommendations_section_visibility_description">Disable if you do not want to see</string>
     <string name="recommendations_show_section_label">Show</string>
     <string name="recommendations_smart_song_count_description">Set the number of smart recommendations, or let the app adjust it automatically.</string>

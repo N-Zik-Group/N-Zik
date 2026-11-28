@@ -13,6 +13,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
+import app.n_zik.android.appTextResources
+import app.n_zik.android.core.utils.Toaster
 import app.n_zik.android.uiRoundnessShape
 import app.n_zik.android.colorPalette
 import app.n_zik.android.components.glass.GlassToolbarIcon
@@ -23,6 +25,14 @@ import app.n_zik.android.ui.components.tab.toolbar.MenuIcon
 import app.n_zik.android.utils.isRecommendationEnabledKey
 import app.n_zik.android.utils.rememberPreference
 import app.n_zik.android.ui.components.tab.toolbar.DynamicColor
+
+internal fun showSmartShuffleResult(addedCount: Int) {
+    if (addedCount > 0) {
+        Toaster.s(appTextResources().getQuantityString(R.plurals.recommendations_smart_shuffle_added, addedCount, addedCount))
+    } else {
+        Toaster.e(R.string.recommendations_smart_shuffle_add_failed)
+    }
+}
 
 class SmartShuffle private constructor(
     private val isRecommendationEnabled: () -> Boolean,

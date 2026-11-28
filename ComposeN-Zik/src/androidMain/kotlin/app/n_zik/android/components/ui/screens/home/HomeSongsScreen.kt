@@ -139,6 +139,7 @@ import app.n_zik.android.components.tab.LikeComponent
 import app.n_zik.android.components.tab.Locator
 import app.n_zik.android.components.tab.Search
 import app.n_zik.android.components.tab.SmartShuffle
+import app.n_zik.android.components.tab.showSmartShuffleResult
 import app.n_zik.android.components.tab.SmartTrash
 import app.n_zik.android.components.tab.SongShuffler
 import app.n_zik.android.components.dialog.export.ExportSongsToCSVDialog
@@ -229,6 +230,7 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
         }
     }
     var isRecommendationEnabled by remember { mutableStateOf(false) }
+    var reportRecommendationResult by remember(builtInPlaylist) { mutableStateOf(false) }
     val showRecommendations = isRecommendationEnabled && !offlineMode &&
         "smart_shuffle" in HomeSongsToolbarSettingsDialog.tabAvailableIds[builtInPlaylist].orEmpty()
     var recommendationCount by remember { mutableStateOf(0) }
@@ -503,7 +505,10 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
     val smartShuffle = SmartShuffle(
         isRecommendationEnabled = { isRecommendationEnabled },
         isRecommendationsLoading = { isRecommendationsLoading },
-        onToggleRecommendation = { isRecommendationEnabled = !isRecommendationEnabled }
+        onToggleRecommendation = {
+            isRecommendationEnabled = !isRecommendationEnabled
+            reportRecommendationResult = isRecommendationEnabled
+        }
     )
     fun queueSelection(playNext: Boolean) {
         val player = binder?.player ?: return
@@ -922,6 +927,12 @@ fun HomeSongsScreen(navController: NavController, topContentInsetProvider: () ->
                                 onRecommendationCountChange = { count -> recommendationCount = count },
                                 onRecommendationsLoadingChange = { loading -> isRecommendationsLoading = loading },
                                 isRecommendationEnabled = showRecommendations,
+                                onRecommendationLoadFinished = { count ->
+                                    if (reportRecommendationResult) {
+                                        reportRecommendationResult = false
+                                        showSmartShuffleResult(count)
+                                    }
+                                },
                                 refreshKey = matchRefreshKey,
                                 onMatchClick = openMatch,
                                 headerPadding = headerPadding,

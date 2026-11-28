@@ -189,6 +189,7 @@ fun HomeSongs(
     onRecommendationCountChange: (Int) -> Unit = {},
     onRecommendationsLoadingChange: (Boolean) -> Unit = {},
     isRecommendationEnabled: Boolean = false,
+    onRecommendationLoadFinished: (Int) -> Unit = {},
     refreshKey: Int = 0,
     onMatchClick: (() -> Unit)? = null,
     headerPadding: androidx.compose.ui.unit.Dp = 0.dp,
@@ -368,12 +369,14 @@ fun HomeSongs(
             }
     }
 
-    LaunchedEffect(isRecommendationEnabled, items) {
+    LaunchedEffect(isRecommendationEnabled, items, isLoading) {
+        if (isLoading && isRecommendationEnabled) return@LaunchedEffect
         val remoteSongs = items.filterNot(Song::isLocal)
         if (!isRecommendationEnabled || remoteSongs.isEmpty()) {
             relatedSongs = emptyList()
             isRecommendationsLoading = false
             onRecommendationsLoadingChange(false)
+            if (isRecommendationEnabled) onRecommendationLoadFinished(0)
             return@LaunchedEffect
         }
 
@@ -456,6 +459,7 @@ fun HomeSongs(
 
         relatedSongs = allRelatedSongs.take(targetRecommendations)
         relatedSongsPositions = smartShuffleInsertionPositions(items.size, relatedSongs)
+        onRecommendationLoadFinished(smartShuffleRecommendationIds(items, relatedSongsPositions).size)
 
         isRecommendationsLoading = false
         onRecommendationsLoadingChange(false)

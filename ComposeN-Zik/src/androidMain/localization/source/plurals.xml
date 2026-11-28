@@ -114,6 +114,10 @@
         <item quantity="one">%1$d downloaded song is missing its file and was removed. Please download it again.</item>
         <item quantity="other">%1$d downloaded songs are missing their files and were removed. Please download them again.</item>
     </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Smart Shuffle added %d track.</item>
+        <item quantity="other">Smart Shuffle added %d tracks.</item>
+    </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d recommended song</item>
         <item quantity="other">%1$d recommended songs</item>
