@@ -19,6 +19,7 @@
     <string name="common_action_reset">Resetează</string>
     <string name="common_action_retry">Reîncercați</string>
     <string name="common_action_save">Salvează</string>
+    <string name="common_action_scroll_to_top">Derulează sus</string>
     <string name="common_action_select">Selectează</string>
     <string name="common_action_show_less">Arată mai puțin</string>
     <string name="common_action_show_more">Arată mai mult</string>
