@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Glazen kleurbron</string>
     <string name="glass_effect_tint_source_custom">Aangepast</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Kies een glazen kleurenbron die een tint toepast om de tint sterkte aan te passen.</string>
     <string name="glass_effect_unsupported">Deze telefoon heeft geen hardware blur, dus elk oppervlak gebruikt de getinteerde film.</string>
     <string name="glass_effect_where_action_buttons">Actie knoppen</string>
     <string name="glass_effect_where_action_buttons_description">De gebruikelijke zoektocht naar knoppen en werkbalken. Keuzes in andere groepen kunnen dit vervangen.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Minimale N-Zik versie</string>
     <string name="theme_store_submission_minimum_description">De oudste versie die dit thema kan toepassen. Nieuwe thema\'s standaard versie %3$d. U gebruikt N-Zik %1$s (versiecode %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Dit thema vereist een N-Zik Android versiecode %1$d voordat deze kan worden gepubliceerd.</string>
+    <string name="theme_store_local_feature_requires_update">Dit thema vereist een N-Zik Android versiecode %1$d voordat het kan worden opgeslagen.</string>
+    <string name="theme_store_submission_appearance_unsupported">Deze versie van N-Zik kan de opgeslagen weergave niet lezen. Update N-Zik of kies het gebruik van het huidige uiterlijk om het te vervangen.</string>
     <string name="theme_store_submission_version_code_label">Minimale versiecode</string>
     <string name="theme_store_submission_find_version_code">Vind N-Zik versies en codes</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Mijn profiel bewerken</string>
     <string name="theme_store_creator_sign_in">Verbind GitHub om je profiel te bewerken.</string>
+    <string name="theme_store_creator_action_sign_in_required">Verbind je GitHub account om toegang te krijgen tot deze maker actie.</string>
     <string name="theme_store_creator_draft">Wijzigingen worden opgeslagen op dit apparaat als concept.</string>
     <string name="theme_store_creator_display_name">Openbare naam</string>
     <string name="theme_store_creator_bio">Bio</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d van 5</string>
     <string name="theme_store_support_pending">De compatibiliteit is in behandeling. U kunt dit thema nog steeds downloaden.</string>
     <string name="theme_store_support_requires_update">Update N-Zik om dit thema te gebruiken.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik kon het uiterlijk van dit thema niet lezen.</string>
     <string name="theme_store_support_minimum">Werkt met je versie van N-Zik.</string>
     <string name="theme_store_preview_normal">normaal</string>
     <string name="theme_store_preview_glass">Glas</string>
