@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exporta baza de date si setarile separat. Baza de date foloseste ZIP daca include coperte personalizate.</string>
     <string name="backup_export_database_with_covers_description">Salvează melodiile, listele de redare și istoricul ca SQLite. Dacă ai coperte personalizate, exportul este un ZIP cu baza de date și coperte.</string>
     <string name="backup_export_profile_state_failed">Export stare profil eșuat</string>
-    <string name="backup_export_settings_description">Exportă setările și preferințele aplicației</string>
+    <string name="backup_export_settings_description">Exportă setările de profil salvate, inclusiv sticla</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importă lista de profil și fotografiile feței dintr-un fișier .txt</string>
     <string name="backup_import_all">Importați toate</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Starea profilului importat: %1$d profiluri</string>
     <string name="backup_import_profile_state_complete_base">Stare profil importat: profil de bază</string>
     <string name="backup_import_profile_state_failed">Importarea stării profilului a eșuat</string>
-    <string name="backup_import_settings_description">Importă setările și preferințele aplicației</string>
+    <string name="backup_import_settings_description">Îmbinați setările de profil salvate și restaurați orice instantaneu din sticlă</string>
     <string name="backup_import_target_from_file">Din fișier</string>
     <string name="backup_import_target_profile_title">Importă în ce profil?</string>
     <!-- Cache -->
