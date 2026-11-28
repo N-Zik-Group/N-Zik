@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">连接 GitHub</string>
+    <string name="github_account_background_checks">GitHub 背景检查</string>
+    <string name="github_account_background_checks_description">检查您的 GitHub 帐户并自动审查状态。</string>
     <string name="github_account_logout">断开连接 GitHub</string>
     <string name="github_account_description">在主题商店使用您的 GitHub 帐户。</string>
     <string name="github_account_offline">上线以连接 GitHub</string>
