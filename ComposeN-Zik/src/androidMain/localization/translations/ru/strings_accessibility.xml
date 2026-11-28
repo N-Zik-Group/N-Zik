@@ -11,6 +11,8 @@
     <string name="accessibility_filter">Фильтр</string>
     <string name="accessibility_import_playlist_name">Импортировать имя плейлиста</string>
     <string name="accessibility_loading">загрузка...</string>
+    <string name="accessibility_menu_closed">Закрыто</string>
+    <string name="accessibility_menu_open">Открыть</string>
     <string name="accessibility_new_playlist_name">новое имя плейлиста</string>
     <string name="accessibility_number_of_songs_in_queue">Количество треков в очереди</string>
     <string name="accessibility_origin_indicator">origin_индикатор</string>
