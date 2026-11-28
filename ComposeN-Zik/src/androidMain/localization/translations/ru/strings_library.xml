@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Добавить альбом в закладки</string>
     <string name="album_action_open">Перейти в альбом</string>
+    <string name="playlist_action_open">Перейти к плейлисту</string>
+    <string name="podcast_action_open">Перейти к подкасту</string>
     <string name="album_alternative_versions">Альтернативные версии</string>
     <string name="album_art">Обложка</string>
-    <string name="album_found_online_verify">Альбом найден онлайн! Пожалуйста, убедитесь, что он верный.</string>
     <string name="album_left_swipe">Альбом Свайп влево</string>
     <string name="album_loading_song_count_format">Загрузка %1$d песен…</string>
     <string name="album_lookup_failed">Не удалось получить альбом</string>
-    <string name="album_lookup_running">Поиск альбома из интернета</string>
     <string name="album_no_alternative_version">Этот альбом не имеет других версий</string>
-    <string name="album_not_found">Альбом не найден</string>
     <string name="album_related_title">Похожие альбомы</string>
     <string name="album_right_swipe">Альбом Свайп вправо</string>
     <!-- Artist -->
     <string name="artist_action_follow">Подписаться</string>
+    <string name="artist_action_unfollow">Отписаться</string>
+    <string name="artist_action_open">Перейти к исполнителю</string>
     <string name="artist_action_play_local_songs">Воспроизвести все локальные песни</string>
+    <string name="artist_action_play_library_songs">Воспроизвести все песни в библиотеке</string>
     <string name="artist_deduplication_result">Объединенный %d дубликат(ов) с нужным исполнителем</string>
     <string name="artist_following_status">Подписан</string>
-    <string name="artist_found_online_verify">Художник найден в сети! Пожалуйста, убедитесь, что это верно.</string>
     <string name="artist_link_cleanup_result">Удалено %d неверная ссылка(и) исполнителя</string>
     <string name="artist_lookup_failed">Не удалось получить aritst</string>
-    <string name="artist_lookup_running">Поиск %s в сети...</string>
     <string name="artist_more_from">Больше от</string>
     <string name="artist_overview_title">Обзор</string>
     <string name="artist_roundness">Художник круглый</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">По исполнителю</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Удалить сохраненные события воспроизведения из истории прослушивания.</string>
+    <string name="history_clear_listen_history_failed">Не удалось завершить очистку истории прослушивания.</string>
     <string name="history_clear_search_history_description">Удалять сохраненные данные поиска из каждой страницы истории поиска без изменения настроек истории.</string>
     <!-- Home -->
     <string name="home_albums_settings">Домашние Альбомы</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Вы номер один, нажмите и наслаждайтесь сюрпризом</string>
     <!-- Library -->
     <string name="library_action_bookmark">Закладка</string>
+    <string name="library_action_remove_bookmark">Удалить закладку</string>
     <string name="library_action_randomize">Случайный мастер</string>
     <string name="library_albums_title">Альбомы</string>
     <string name="library_artists_title">Исполнители</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Экспортировать %d кэшированные/загруженные песни?</string>
     <string name="library_favorites_title">Избранное</string>
     <string name="library_filter_by_title">Фильтровать по</string>
+    <string name="library_filter_nzik_origin_label">Только N-Zik</string>
     <string name="library_filter_online_songs_label">Онлайн песни</string>
     <string name="library_filter_unmatched_songs_label">Несовпадающие песни</string>
     <string name="library_history_title">История</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">Библиотека YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Удалить из «Не нравится»</string>
     <string name="library_dislikes_added">Не понравилось %s</string>
     <string name="library_dislikes_removed">%s удалён из запрещенных</string>
+    <string name="library_dislikes_added_generic">Добавлено в не лайки</string>
+    <string name="library_dislikes_removed_generic">Удалено из неприятностей</string>
     <string name="library_favorites_action_add">Добавить в Избранное</string>
+    <string name="library_favorites_action_remove">Удалить из избранного</string>
+    <string name="library_favorites_already_added">Уже в избранном.</string>
     <string name="library_collection_favorites_action_manage">Управление избранным</string>
     <string name="library_favorites_added">Добавлено в избранное</string>
     <string name="library_favorites_removed">Удалено из избранного</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Не удалось обновить избранное.</string>
     <string name="library_collection_favorites_sync_failed">Не удалось синхронизировать некоторые избранные с YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Выберите критерий сортировки</string>
     <string name="library_sort_album">Альбом</string>
     <string name="library_sort_album_year">По году</string>
     <string name="library_sort_artist">По исполнителю</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Ключевые слова</string>
     <string name="metadata_loading">Загрузка…</string>
+    <string name="metadata_link_searching">Поиск…</string>
+    <string name="metadata_link_manual_required">ID не подтвержден. Свяжите его вручную.</string>
     <string name="metadata_lyricist">Авторист</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d голосов на MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Изменить ID просмотра плейлиста</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Название</string>
     <string name="metadata_track">Трек</string>
+    <string name="metadata_unknown_album">Неизвестный альбом</string>
     <string name="metadata_unknown_artist">Неизвестный художник</string>
+    <string name="metadata_unknown_author">Неизвестный автор</string>
+    <string name="metadata_unknown_playlist">Неизвестный плейлист</string>
+    <string name="metadata_unknown_podcast">Неизвестный подкаст</string>
     <string name="metadata_unknown_title">Неизвестное название</string>
+    <string name="metadata_unknown_year">Неизвестный год</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Лайки</string>
     <string name="metadata_video_subscribers_label">Подписчики</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Добавить в плейлист</string>
     <string name="playlist_action_add_hint">Добавить в плейлист</string>
+    <string name="playlist_add_destination_locked">Вы не можете добавить песни в этот плейлист.</string>
     <string name="playlist_add_destination_unavailable">Этот плейлист больше не доступен для добавления треков устройства. Выберите другой плейлист.</string>
     <string name="playlist_action_create">Новый плейлист</string>
     <string name="playlist_action_delete_selected">Удалить плейлисты</string>
     <string name="playlist_action_export">Экспортировать плейлист</string>
     <string name="playlist_action_import">Импортировать плейлист</string>
+    <string name="playlist_actions_title">Действия плейлиста</string>
+    <string name="playlist_action_import_collection">Импортировать эту коллекцию</string>
+    <string name="playlist_action_import_from_source">Импортировать из файла или ссылки</string>
     <string name="playlist_action_import_favorites">Импортировать Избранное</string>
     <string name="playlist_action_like_favorites_on_youtube">Отметить любимые треки N-Zik как понравившиеся на YouTube</string>
     <string name="playlist_action_remove_songs">Удалить из плейлиста</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Вы уверены, что хотите удалить ВСЕ плейлисты %d?</string>
     <string name="playlist_delete_confirmation">Вы действительно хотите удалить этот плейлист?</string>
     <string name="playlist_delete_dialog_title">Удалить плейлист</string>
+    <string name="playlist_deletion_failed">Не удалось удалить плейлист с этого устройства.</string>
+    <string name="playlist_deletion_partial">Некоторые плейлисты были удалены с этого устройства.</string>
+    <string name="playlist_deletion_local_success">Удалено с этого устройства.</string>
+    <string name="playlist_deletion_remote_success">Удалено из YouTube музыки.</string>
+    <string name="playlist_deletion_remote_failed">Не удалось удалить некоторые плейлисты из YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Связанные плейлисты также могут быть удалены из YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Удалить плейлисты</string>
     <string name="playlist_delete_selected_confirmation_count_format">Вы уверены, что хотите удалить эти плейлисты %d?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Невозможно выполнить это действие, если все треки не понравились</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Как и все песни</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(расчетное время) необходимо, чтобы поставить отметку «Нравится» всем песням. Чтобы отменить этот процесс, необходимо закрыть приложение. Хотите продолжить?</string>
     <string name="playlist_name_input_hint">Введите название плейлиста</string>
+    <string name="playlist_name_reserved">Это название зарезервировано для плейлистов перемороза.</string>
     <string name="playlist_operation_wait_message">Пожалуйста, подождите, это может занять несколько минут...</string>
     <string name="playlist_pinned_title">Прикреплено</string>
     <string name="playlist_positions_shuffled">Перемещено %d позиций</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Данные Обзора очищены</string>
     <string name="recommendations_reset_content_description">Перезагрузите Быстрые Пики с новыми рекомендациями. Ваша история прослушивания сохранена.</string>
     <string name="recommendations_section_other_youtube_title">Другие разделы</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle не может добавлять треки.</string>
     <string name="recommendations_section_visibility_description">Отключите, если не хотите видеть</string>
     <string name="recommendations_show_section_label">Показать</string>
     <string name="recommendations_smart_song_count_description">Задайте количество умных рекомендаций или позвольте приложению настроить их автоматически.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Нет рекомендаций</string>
     <string name="search_suggestions_title">Рекомендации</string>
     <string name="search_title">Поиск</string>
+    <string name="search_action_edit_query">Изменить поисковый запрос</string>
     <string name="search_video_download_unsupported_message">Загрузка видео не поддерживается</string>
     <string name="search_videos_title">Видео</string>
     <string name="search_voice_action_start">Голосовой поиск</string>
