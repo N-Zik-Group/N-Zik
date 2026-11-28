@@ -34,6 +34,12 @@
     <plurals name="library_collection_favorites_remove_playlist_tracks">
         <item quantity="other">お気に入りからこのプレイリストの %1$d トラックを削除しますか？</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="other">%1$d 曲をお気に入りに追加しますか？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="other">%1$d 曲をお気に入りから削除しますか？</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="other">このアルバムからお気に入りに %1$d トラックを追加しますか？</item>
     </plurals>
@@ -78,6 +84,9 @@
     </plurals>
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="other">%1$d ダウンロードした曲にファイルがありません。もう一度ダウンロードしてください。</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="other">スマートシャッフルが %d トラックを追加しました。</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="other">%1$d 推奨曲</item>
