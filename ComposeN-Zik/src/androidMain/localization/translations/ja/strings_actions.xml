@@ -19,6 +19,7 @@
     <string name="common_action_reset">リセット</string>
     <string name="common_action_retry">再試行する</string>
     <string name="common_action_save">保存</string>
+    <string name="common_action_scroll_to_top">上までスクロール</string>
     <string name="common_action_select">選択</string>
     <string name="common_action_show_less">表示を減らす</string>
     <string name="common_action_show_more">詳細を表示</string>
