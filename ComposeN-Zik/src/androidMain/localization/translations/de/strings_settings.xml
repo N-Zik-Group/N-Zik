@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Ich fühle mich glücklich</string>
     <string name="automotive_action_play_all">Alle abspielen</string>
+    <string name="automotive_page_range">Seite %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Wählen Sie die Aktion aus, indem Sie einen Albumtitel nach links wischen.</string>
     <string name="gestures_album_track_swipe_right_description">Wählen Sie die Aktion aus, indem Sie einen Albumtitel nach rechts wischen.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Spiegeln Sie die Schnittstelle unabhängig von der App-Sprache.</string>
     <string name="settings_interface_page_description">Der Abschnitt der Benutzeroberfläche enthält Einstellungen zum Ändern der globalen Schnittstelle und der Navigation</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">Verknüpfungen</string>
     <string name="settings_interface_group_display">Anzeige</string>
     <string name="settings_interface_group_indicators">Indikatoren</string>
     <string name="settings_group_profile_name">Anzeigename</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Wischgesten auflisten</string>
     <string name="settings_group_home_navigation">Startseite</string>
     <string name="settings_group_menu_entries">Menüeinträge</string>
-    <string name="settings_group_sort_defaults">Standard Sortieraufträge</string>
+    <string name="settings_group_sort_defaults">Sortiermenü-Reihenfolge</string>
     <string name="settings_group_player_layout">Player-Layout</string>
     <string name="settings_group_background_style">Hintergrundstil und Farben</string>
     <string name="settings_group_fullscreen_elements">Bildschirm-Elemente</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Personalisieren Sie Empfehlungen, Schnellauswahlen und Höreinsichten.</string>
     <string name="settings_page_audio_description">Tonverarbeitung und Audioeffekte anpassen.</string>
     <string name="settings_page_behavior_description">Passen Sie Gesten und Aktionen beim Surfen und Hören an.</string>
-    <string name="settings_page_data_description">Verwalten Sie heruntergeladene Musik, zwischengespeicherte Dateien und Backups.</string>
+    <string name="settings_page_data_description">Verwalten Sie lokale Musik, Caches, Backups und gespeicherte App-Daten.</string>
     <string name="settings_page_downloads_description">Wählen Sie die Qualität und das Verhalten von Musik-Downloads.</string>
     <string name="settings_page_interface_description">Personalisieren Sie das Theme, die Schriftarten, die Navigation und das Interface-Layout.</string>
     <string name="settings_page_maintenance_description">Die App pflegen, Erweiterungen verwalten und auf Wiederherstellungswerkzeuge zugreifen.</string>
     <string name="settings_page_network_description">Konfigurieren Sie Konnektivität, Streaming-Qualität und Proxy-Einstellungen.</string>
-    <string name="settings_page_playback_description">Kontrollieren Sie Wiedergabe, Warteschlangenverhalten und Inhaltsbeschränkungen.</string>
+    <string name="settings_page_playback_description">Wählen Sie, wie die Wiedergabe beginnt, fortfährt und Ihre Warteschlange verwaltet.</string>
     <string name="settings_page_player_description">Passen Sie das Erscheinungsbild des Spielers an, Steuerelemente, Songtexte und Benachrichtigungen.</string>
-    <string name="settings_page_privacy_description">Hör- und Suchverlauf pausieren oder löschen. Berechtigungsaktivität und Bildschirmschutz verwalten.</string>
+    <string name="settings_page_privacy_description">Kontrollieren Sie gespeicherte Aktivitäten, Verlauf und Bildschirmschutz.</string>
     <string name="settings_page_profiles_description">Verwalten Sie Ihre Profil-Identität und Einstellungen.</string>
     <string name="settings_page_rewind_description">Passen Sie Ihre Hörzusammenfassungen an und rewind Wiedergabelisten.</string>
     <string name="settings_page_services_description">Verbinden Sie externe Dienste und hören Sie mit anderen.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Transparenter Hintergrund</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer Button</string>
     <string name="settings_player_action_restart_service">Player neu starten</string>
+    <string name="settings_app_action_restart">App neu starten</string>
     <string name="settings_player_actions_spaced_evenly_label">Gleichmäßiger Abstand</string>
     <string name="settings_player_album_cover_visible_label">Albumcover anzeigen</string>
     <string name="settings_player_appearance_page_description">Der Aussehen Bereich enthält Einstellungen für das Aussehen des Spielers</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI-Empfehlungen</string>
     <string name="settings_region_override">Region überschreiben</string>
     <string name="settings_reset">Zurücksetzen</string>
+    <string name="settings_reset_account_usage_notice">Verbundene Konten werden deaktiviert. Sie können sie in den Einstellungen wieder aktivieren.</string>
+    <string name="settings_reset_glass">Glaseinstellungen zurücksetzen</string>
+    <string name="settings_reset_glass_appearance_description">Wiederherstellen des Standard-Glasmaterials und -Effekte.</string>
+    <string name="settings_reset_downloads">Download-Einstellungen zurücksetzen</string>
     <string name="settings_reset_all">Alle Einstellungen zurücksetzen</string>
     <string name="settings_reset_all_confirm">Alle zurücksetzen</string>
     <string name="settings_reset_all_confirmation">Alle Einstellungen zurücksetzen? Gespeicherte Konten, Anmeldeinformationen, Profile, Wiedergabelisten, Downloads und Dateien werden beibehalten.</string>
+    <string name="settings_reset_profile_scope_notice">Dies setzt die Einstellungen und Einstellungen des aktiven Profils auf diesem Gerät zurück. Andere Profile behalten ihre eigenen Einstellungen.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Ihr Hörfunk-Server, Benutzername und gesperrte Benutzer werden beibehalten.</string>
+    <string name="settings_reset_playback_description">Wiedergabe, Warteschlange und Kindersicherung Einstellungen zurücksetzen.</string>
     <string name="settings_reset_all_description">Alle App-Einstellungen auf ihre Standardwerte zurücksetzen.</string>
     <string name="settings_reset_choose_scope">Wählen Sie die wiederherzustellenden Einstellungen</string>
     <string name="settings_reset_choose_scope_description">Wählen Sie einen Einstellungsbereich aus und stellen Sie dann seine Standardwerte wieder her.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Wischgesten</string>
     <string name="settings_target_gain_loudness_info">Zielverstärkung für die Lautstärkenormalisierung</string>
     <string name="settings_target_unavailable">Diese Einstellung ist mit der aktuellen Konfiguration nicht verfügbar. Stattdessen wird der Abschnitt angezeigt.</string>
+    <string name="settings_target_prerequisite">Um diese Einstellung zu verwenden, konfigurieren Sie zuerst %1$s.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Aktivieren Sie mindestens eine dieser Einstellungen, um Rewind Benachrichtigungen anzuzeigen.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Akzent</string>
     <string name="settings_theme_background_1_color_label">Hintergrund 1</string>
     <string name="settings_theme_background_2_color_label">Hintergrund 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Login für Browse</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Konto für Suchen verwenden</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Alle von YouTube synchronisierten Daten löschen? Dadurch werden von YouTube importierte Lieder, Alben, Künstler und Wiedergabelisten entfernt.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">YouTube synchronisierte Daten löschen</string>
+    <string name="settings_youtube_logout_confirmation">Von YouTube Musik in N-Zik abmelden? Ihre lokale Bibliothek und Downloads bleiben auf diesem Gerät erhalten.</string>
     <string name="settings_youtube_connection_required_description">Zuerst mit YouTube verbinden, um diese Option zu aktivieren</string>
     <string name="settings_youtube_library_sync_content_description">Wiedergabelisten, Alben, Künstler, Geschichte, etc.</string>
     <string name="settings_youtube_login_enabled_label">YouTube Music Login aktivieren</string>
