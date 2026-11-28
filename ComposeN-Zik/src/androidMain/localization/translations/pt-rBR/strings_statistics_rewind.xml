@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Mostrar a grelha do mês no Rewind home.</string>
     <string name="rewind_settings_monthly_notification">Notificação mensal de retrocesso</string>
     <string name="rewind_settings_monthly_notification_description">Seja notificado no primeiro dia de que o rebentamento do mês anterior está pronto.</string>
+    <string name="rewind_settings_notification_permission_hint">Permitir que as notificações para N-Zik nas configurações do Android recebam alertas de Reebol.</string>
     <string name="rewind_settings_notifications">Retroceder notificações</string>
     <string name="rewind_settings_playlists_monthly">Playlist mensal de retrocesso</string>
     <string name="rewind_settings_playlists_monthly_description">Crie a lista mensal de reprodução.</string>
