@@ -19,6 +19,7 @@
     <string name="common_action_reset">Nollaa</string>
     <string name="common_action_retry">Yritä Uudelleen</string>
     <string name="common_action_save">Tallenna</string>
+    <string name="common_action_scroll_to_top">Vieritä ylös</string>
     <string name="common_action_select">Valitse</string>
     <string name="common_action_show_less">Näytä vähemmän</string>
     <string name="common_action_show_more">Näytä lisää</string>
