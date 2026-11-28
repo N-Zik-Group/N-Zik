@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Albümü yer imlerine ekle</string>
     <string name="album_action_open">Albüme git</string>
+    <string name="playlist_action_open">Go to playlist</string>
+    <string name="podcast_action_open">Go to podcast</string>
     <string name="album_alternative_versions">Alternatif versiyonlar</string>
     <string name="album_art">Albüm kapağı</string>
-    <string name="album_found_online_verify">Albüm internette bulundu! Lütfen doğru albüm olup olmadığını kontrol edin.</string>
     <string name="album_left_swipe">Albüm Sola Kaydırma</string>
     <string name="album_loading_song_count_format">%1$d şarkı yükleniyor…</string>
     <string name="album_lookup_failed">Albüm getirilemedi</string>
-    <string name="album_lookup_running">Albüm internetten aranıyor</string>
     <string name="album_no_alternative_version">Bu albümün alternatif versiyonu yok</string>
-    <string name="album_not_found">Albüm bulunamadı</string>
     <string name="album_related_title">İlgili albümler</string>
     <string name="album_right_swipe">Albüm Sağa Kaydırma</string>
     <!-- Artist -->
     <string name="artist_action_follow">Takip et</string>
+    <string name="artist_action_unfollow">Unfollow</string>
+    <string name="artist_action_open">Go to artist</string>
     <string name="artist_action_play_local_songs">Tüm yerel şarkıları çal</string>
+    <string name="artist_action_play_library_songs">Play all songs in library</string>
     <string name="artist_deduplication_result">%d adet yinelenen sanatçı, doğru sanatçıyla birleştirildi</string>
     <string name="artist_following_status">Takip ediliyor</string>
-    <string name="artist_found_online_verify">Sanatçı internette bulundu! Lütfen doğru kişi olup olmadığını kontrol edin.</string>
     <string name="artist_link_cleanup_result">%d adet yanlış sanatçı bağlantısı kaldırıldı</string>
     <string name="artist_lookup_failed">Sanatçı getirilemedi</string>
-    <string name="artist_lookup_running">%s çevrimiçi aranıyor...</string>
     <string name="artist_more_from">Daha fazlası</string>
     <string name="artist_overview_title">Genel bakış</string>
     <string name="artist_roundness">Sanatçının yuvarlaklığı</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Sanatçı</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Dinleme geçmişinden kaydedilmiş çalma olaylarını sil.</string>
+    <string name="history_clear_listen_history_failed">Could not finish clearing listening history.</string>
     <string name="history_clear_search_history_description">Arama geçmişi tercihlerini değiştirmeden, her arama geçmişi sayfasından kaydedilmiş aramaları silin.</string>
     <!-- Home -->
     <string name="home_albums_settings">Ana Sayfa Albümler</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Sen bir numarasın, tıkla ve sürprizin tadını çıkar</string>
     <!-- Library -->
     <string name="library_action_bookmark">Yer imi</string>
+    <string name="library_action_remove_bookmark">Remove bookmark</string>
     <string name="library_action_randomize">Rastgeleleştirme</string>
     <string name="library_albums_title">Albümler</string>
     <string name="library_artists_title">Sanatçılar</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Önbelleğe alınmış/indirilmiş %d şarkıyı dışa aktarmak ister misiniz?</string>
     <string name="library_favorites_title">Favoriler</string>
     <string name="library_filter_by_title">Filtrele</string>
+    <string name="library_filter_nzik_origin_label">N-Zik only</string>
     <string name="library_filter_online_songs_label">Çevrimiçi Şarkılar</string>
     <string name="library_filter_unmatched_songs_label">Eşleşmeyen Şarkılar</string>
     <string name="library_history_title">Geçmiş</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM Kütüphanesi</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Remove from dislikes</string>
     <string name="library_dislikes_added">%s Beğenilmeyenlere eklendi</string>
     <string name="library_dislikes_removed">%s Beğenilmeyenlerden çıkarıldı</string>
+    <string name="library_dislikes_added_generic">Added to dislikes</string>
+    <string name="library_dislikes_removed_generic">Removed from dislikes</string>
     <string name="library_favorites_action_add">Favorilere ekle</string>
+    <string name="library_favorites_action_remove">Favorilerden kaldır</string>
+    <string name="library_favorites_already_added">Already in favorites.</string>
     <string name="library_collection_favorites_action_manage">Favorileri yönet</string>
     <string name="library_favorites_added">Favorilere eklendi</string>
     <string name="library_favorites_removed">Favorilerden çıkarıldı</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Favoriler güncellenemedi.</string>
     <string name="library_collection_favorites_sync_failed">Bazı favoriler YouTube ile senkronize edilemedi.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Choose sort criterion</string>
     <string name="library_sort_album">Albüm</string>
     <string name="library_sort_album_year">Albüm Yılı</string>
     <string name="library_sort_artist">Sanatçı</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Anahtar kelimeler</string>
     <string name="metadata_loading">Yükleniyor…</string>
+    <string name="metadata_link_searching">Searching…</string>
+    <string name="metadata_link_manual_required">ID not confirmed. Link it manually.</string>
     <string name="metadata_lyricist">Söz yazarı</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">MusicBrainz\'de %1$d oy</string>
     <string name="metadata_playlist_action_change_browse_id">Çalma Listesi Gözatma Kimliğini Değiştir</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remiksçi</string>
     <string name="metadata_title">Başlık</string>
     <string name="metadata_track">Parça</string>
+    <string name="metadata_unknown_album">Bilinmeyen Albüm</string>
     <string name="metadata_unknown_artist">Bilinmeyen Sanatçı</string>
+    <string name="metadata_unknown_author">Unknown Author</string>
+    <string name="metadata_unknown_playlist">Unknown Playlist</string>
+    <string name="metadata_unknown_podcast">Unknown Podcast</string>
     <string name="metadata_unknown_title">Bilinmeyen Başlık</string>
+    <string name="metadata_unknown_year">Unknown Year</string>
     <string name="metadata_video_dislikes_label">Beğenmemeler</string>
     <string name="metadata_video_likes_label">Beğeniler</string>
     <string name="metadata_video_subscribers_label">Aboneler</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Çalma listesine ekle</string>
     <string name="playlist_action_add_hint">Çalma listesine ekle</string>
+    <string name="playlist_add_destination_locked">You can’t add songs to this playlist.</string>
     <string name="playlist_add_destination_unavailable">Bu çalma listesine artık cihazınızdaki şarkıları ekleyemezsiniz. Başka bir çalma listesi seçin.</string>
     <string name="playlist_action_create">Yeni çalma listesi</string>
     <string name="playlist_action_delete_selected">Çalma listelerini sil</string>
     <string name="playlist_action_export">Çalma listesini dışa aktar</string>
     <string name="playlist_action_import">Çalma listesini içe aktar</string>
+    <string name="playlist_actions_title">Playlist actions</string>
+    <string name="playlist_action_import_collection">Import this collection</string>
+    <string name="playlist_action_import_from_source">Import from a file or link</string>
     <string name="playlist_action_import_favorites">Favorileri içe aktar</string>
     <string name="playlist_action_like_favorites_on_youtube">YouTube\'da N-Zik\'in favori videolarını beğenin</string>
     <string name="playlist_action_remove_songs">Çalma listesinden kaldır</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">%d adet çalma listesinin TÜMÜNÜ silmek istediğinizden emin misiniz?</string>
     <string name="playlist_delete_confirmation">Bu çalma listesini gerçekten silmek istiyor musunuz?</string>
     <string name="playlist_delete_dialog_title">Çalma listesini sil</string>
+    <string name="playlist_deletion_failed">Couldn’t delete the playlist from this device.</string>
+    <string name="playlist_deletion_partial">Some playlists were deleted from this device.</string>
+    <string name="playlist_deletion_local_success">Deleted from this device.</string>
+    <string name="playlist_deletion_remote_success">Deleted from YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Couldn’t delete some playlists from YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Linked playlists may also be deleted from YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Çalma listelerini sil</string>
     <string name="playlist_delete_selected_confirmation_count_format">Bu %d çalma listesini silmek istediğinizden emin misiniz?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Tüm Şarkılar Beğenilmediğinde Bu İşlem Gerçekleştirilemez</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Beğenilen tüm şarkılar</string>
     <string name="playlist_like_all_duration_confirmation_suffix">Tüm şarkıları beğenmek için (tahmini süre) gereklidir. Bu işlemi iptal etmek için uygulamayı kapatmanız gerekir. Devam etmek istiyor musunuz?</string>
     <string name="playlist_name_input_hint">Çalma listesi adını girin</string>
+    <string name="playlist_name_reserved">This name is reserved for Rewind playlists.</string>
     <string name="playlist_operation_wait_message">Lütfen bekleyin, bu işlem birkaç dakika sürebilir...</string>
     <string name="playlist_pinned_title">Sabitlenmiş</string>
     <string name="playlist_positions_shuffled">%d sıra karıştırıldı</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Hızlı seçimler temizlendi</string>
     <string name="recommendations_reset_content_description">Hızlı Seçimleri yeni önerilerle yenileyin. Dinleme geçmişiniz korunur.</string>
     <string name="recommendations_section_other_youtube_title">Diğer bölümler</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle could not add any tracks.</string>
     <string name="recommendations_section_visibility_description">Görmek istemiyorsanız devre dışı bırakın</string>
     <string name="recommendations_show_section_label">Göster</string>
     <string name="recommendations_smart_song_count_description">Akıllı önerilerin sayısını ayarlayın ya da uygulamanın bunu otomatik olarak ayarlamasına izin verin.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Öneri yok</string>
     <string name="search_suggestions_title">Öneriler</string>
     <string name="search_title">Ara</string>
+    <string name="search_action_edit_query">Edit search query</string>
     <string name="search_video_download_unsupported_message">Videoların indirilmesi desteklenmiyor</string>
     <string name="search_videos_title">Videolar</string>
     <string name="search_voice_action_start">Sesli arama</string>
