@@ -19,6 +19,7 @@
     <string name="common_action_reset">Restablecer</string>
     <string name="common_action_retry">Reintentar</string>
     <string name="common_action_save">Guardar</string>
+    <string name="common_action_scroll_to_top">Desplazar hasta arriba</string>
     <string name="common_action_select">Seleccionar</string>
     <string name="common_action_show_less">Mostrar menos</string>
     <string name="common_action_show_more">Mostrar más</string>
