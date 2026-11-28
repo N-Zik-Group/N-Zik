@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exportez la base de données et les paramètres séparément. La base de données est compressée au format ZIP si elle contient des couvertures personnalisées.</string>
     <string name="backup_export_database_with_covers_description">Enregistrez les morceaux, les playlists et l\'historique au format SQLite. Si vous disposez de pochettes personnalisées, l\'exportation se fait sous forme de fichier ZIP contenant la base de données et les pochettes.</string>
     <string name="backup_export_profile_state_failed">Échec de l\'exportation de l\'état du profil</string>
-    <string name="backup_export_settings_description">Exporter les paramètres et les préférences de l\'application</string>
+    <string name="backup_export_settings_description">Exporter les paramètres de profil enregistrés, y compris le verre</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importer la liste des profils et les photos de visage à partir d\'un fichier .txt</string>
     <string name="backup_import_all">Tout importer</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">État des profils importés : %1$d profils</string>
     <string name="backup_import_profile_state_complete_base">État du profil importé : profil de base</string>
     <string name="backup_import_profile_state_failed">Échec de l\'importation de l\'état du profil</string>
-    <string name="backup_import_settings_description">Importer les paramètres et les préférences de l\'application</string>
+    <string name="backup_import_settings_description">Fusionner les paramètres de profil enregistrés et restaurer tous les instantanés de verre</string>
     <string name="backup_import_target_from_file">À partir du fichier</string>
     <string name="backup_import_target_profile_title">Dans quel profil l\'importer ?</string>
     <!-- Cache -->
