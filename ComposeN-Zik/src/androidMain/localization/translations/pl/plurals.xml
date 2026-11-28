@@ -67,6 +67,18 @@
         <item quantity="many">Usunąć utwory %1$d z tej playlisty z ulubionych?</item>
         <item quantity="other">Usunąć utwory %1$d z tej playlisty z ulubionych?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Dodać utwór %1$d do ulubionych?</item>
+        <item quantity="few">Dodać %1$d piosenek do ulubionych?</item>
+        <item quantity="many">Dodać %1$d piosenek do ulubionych?</item>
+        <item quantity="other">Dodać %1$d piosenek do ulubionych?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Usunąć utwór %1$d z ulubionych?</item>
+        <item quantity="few">Usunąć %1$d utworów z ulubionych?</item>
+        <item quantity="many">Usunąć %1$d utworów z ulubionych?</item>
+        <item quantity="other">Usunąć %1$d utworów z ulubionych?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Dodać utwór %1$d z tego albumu do ulubionych?</item>
         <item quantity="few">Add %1$d tracks from this album to favorites?</item>
@@ -156,6 +168,12 @@
         <item quantity="few">%1$d pobranych utworów brakuje ich plików i zostały usunięte. Proszę pobrać je ponownie.</item>
         <item quantity="many">%1$d pobranych utworów brakuje ich plików i zostały usunięte. Proszę pobrać je ponownie.</item>
         <item quantity="other">%1$d pobranych utworów brakuje ich plików i zostały usunięte. Proszę pobrać je ponownie.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Inteligentne przetasowanie dodane %d utworu.</item>
+        <item quantity="few">Inteligentne przetasowanie dodane %d utworów.</item>
+        <item quantity="many">Inteligentne przetasowanie dodane %d utworów.</item>
+        <item quantity="other">Inteligentne przetasowanie dodane %d utworów.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d polecany utwór</item>
