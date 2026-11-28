@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Ce téléphone</string>
     <string name="audio_output_title">Sortie audio</string>
     <string name="audio_output_wired_headphones_label">Casque filaire</string>
+    <string name="audio_quality_auto_effective_fmt">Automatique (%1$s)</string>
     <string name="audio_quality_auto_fmt">Automatique (Détecté : %1$s)</string>
     <string name="audio_quality_automatic">Automatique</string>
     <string name="audio_quality_format">Qualité audio</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Plaque</string>
     <string name="audio_reverb_small_room">Petite chambre</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Seul l\'hôte peut modifier les approbations automatiques dans cette pièce. Quittez la salle pour modifier vos propres paramètres.</string>
     <string name="listen_together_auto_approval_joins_description">Approuver automatiquement les demandes d\'adhésion sans les examiner manuellement</string>
     <string name="listen_together_auto_approval_suggestions_description">Approuver et mettre en file d\'attente automatiquement les suggestions de titres des invités</string>
     <string name="listen_together_blocked_users_description">Voir et gérer les participants bloqués de vos salles d\'écoute.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">À gauche</string>
     <string name="lyrics_alignment_right_label">À droite</string>
     <string name="lyrics_artwork_overlay_description">Affiche les paroles sur l\'œuvre du lecteur.</string>
+    <string name="lyrics_cover_dimming_title">Réduire la couverture derrière les paroles</string>
+    <string name="lyrics_cover_dimming_description">Assombrir l\'œuvre du joueur quand les paroles sont affichées par-dessus.</string>
+    <string name="lyrics_cover_dimming_opacity">Intensité de la couverture des paroles</string>
     <string name="lyrics_background_enabled_description">Dessine un arrière-plan derrière les paroles pour améliorer leur lisibilité.</string>
     <string name="lyrics_background_label">Arrière-plan des paroles</string>
     <string name="lyrics_behavior_section_title">Comportement</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Le karaoké le remplacera s\'il est trouvé.</string>
     <string name="lyrics_mode_automatic_label">paroles automatiques</string>
     <string name="lyrics_mode_karaoke_label">paroles de karaoké</string>
+    <string name="lyrics_mode_label">Mode paroles</string>
     <string name="lyrics_mode_synchronized_label">Paroles synchronisées</string>
     <string name="lyrics_mode_unsynchronized_label">Paroles non synchronisées</string>
     <string name="lyrics_not_available">Aucune parole disponible. Réessayez ou saisissez-les manuellement.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Musique suivante</string>
     <string name="player_action_previous">Précédent</string>
     <string name="player_action_repeat">Répéter</string>
+    <string name="player_repeat_mode_off">Désactivé</string>
+    <string name="player_repeat_mode_one">Répéter un</string>
+    <string name="player_repeat_mode_all">Répéter tout</string>
     <string name="player_action_seek_forward">Transférer</string>
     <string name="player_action_seek_forward_30_seconds">Avancer 30 secondes</string>
     <string name="player_action_seek_forward_5_seconds">Avancer 5 secondes</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">N\'enregistre pas les événements de lecture utilisés pour les statistiques, l\'historique et les suggestions dans la « Sélection Rapide »</string>
     <string name="player_pause_on_volume_zero">Mettre en pause quand le volume est à 0</string>
     <string name="player_picture_in_picture_content_description">Choisissez le contenu affiché dans la fenêtre d\'image.</string>
+    <string name="player_picture_in_picture_fixed_content_description">La fenêtre image en image affiche la couverture de la piste.</string>
     <string name="player_picture_in_picture_enabled_description">Permettre au lecteur d\'apparaître dans une petite fenêtre d\'image.</string>
     <string name="player_play_button_rectangular_label">Rectangulaire</string>
     <string name="player_play_button_square_label">Carré</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">File d\'attente aléatoire (%d titres)</string>
     <string name="player_remaining_time_visible_description">Afficher le temps restant dans la piste actuelle.</string>
     <string name="player_restart_required_message">Le lecteur doit être redémarré pour que les modifications soient effectives !</string>
+    <string name="player_restart_service_unavailable_message">Le lecteur n\'est pas disponible. Les modifications s\'appliquent au prochain démarrage.</string>
+    <string name="player_restart_disconnect_android_auto_message">Déconnectez Android Auto pour redémarrer le lecteur.</string>
     <string name="player_rotating_buttons">Boutons rotatifs</string>
     <string name="player_seek_backward_five_seconds">Revenir en arrière de 5 secondes</string>
     <string name="player_seek_backward_thirty_seconds">Rembobine 30 secondes</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Sélectionnez la couleur personnalisée utilisée par ce composant.</string>
     <string name="visualizer_dark_background_description">Utilisez un fond noir derrière la visualisation audio.</string>
     <string name="visualizer_dark_background_title">Fond sombre pour le visualiseur</string>
+    <string name="visualizer_cover_dimming_opacity">Intensité de la couverture du visualiseur</string>
     <string name="visualizer_debug_background">Fond d\'écran</string>
     <string name="visualizer_enabled_description">Affiche une visualisation animée qui répond à l\'audio.</string>
     <string name="visualizer_line_thickness">Épaisseur de la ligne du visualiseur</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Périphérique Bluetooth</string>
     <string name="audio_output_usb_audio_label">Audio USB</string>
     <string name="audio_output_external_speaker_label">Haut-parleur externe</string>
+    <string name="audio_output_device_unavailable">Cette sortie audio n\'est plus disponible.</string>
     <string name="audio_output_load_failed">Impossible de charger les appareils : %1$s</string>
     <string name="player_audio_mode">Audio</string>
     <string name="player_video_mode">Vidéo</string>
