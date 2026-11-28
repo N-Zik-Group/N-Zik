@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Dit telefoonnummer</string>
     <string name="audio_output_title">Audio uitvoer</string>
     <string name="audio_output_wired_headphones_label">Bedrade hoofdtelefoon</string>
+    <string name="audio_quality_auto_effective_fmt">Automatisch (%1$s)</string>
     <string name="audio_quality_auto_fmt">Automatisch (gedetecteerd: %1$s)</string>
     <string name="audio_quality_automatic">Automatisch</string>
     <string name="audio_quality_format">Audio Kwaliteit</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Plaat</string>
     <string name="audio_reverb_small_room">Kleine Kamer</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Alleen de host kan de automatische goedkeuring in deze kamer wijzigen. Laat de ruimte achter om je eigen instellingen te wijzigen.</string>
     <string name="listen_together_auto_approval_joins_description">Automatisch join verzoeken goedkeuren zonder ze handmatig te bekijken</string>
     <string name="listen_together_auto_approval_suggestions_description">Automatisch goedkeuren en in de wachtrij plaatsen van suggesties van gasten</string>
     <string name="listen_together_blocked_users_description">Bekijk en beheer de deelnemers die geblokkeerd zijn in uw luisterkamers.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Links</string>
     <string name="lyrics_alignment_right_label">Rechts</string>
     <string name="lyrics_artwork_overlay_description">Geef songtekst weer via het spelersbestand.</string>
+    <string name="lyrics_cover_dimming_title">Dim dekking achter songteksten</string>
+    <string name="lyrics_cover_dimming_description">Verdonker het bestand van de speler wanneer er songteksten over worden getoond.</string>
+    <string name="lyrics_cover_dimming_opacity">Dikte dimintensiteit van songtekst</string>
     <string name="lyrics_background_enabled_description">Teken een achtergrond achter songteksten om de leesbaarheid te verbeteren.</string>
     <string name="lyrics_background_label">Songtekst achtergrond</string>
     <string name="lyrics_behavior_section_title">Gedrag</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Karaoke zal het vervangen als het gevonden wordt.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke songteksten</string>
+    <string name="lyrics_mode_label">Songtekst modus</string>
     <string name="lyrics_mode_synchronized_label">gesynchroniseerde songtekst</string>
     <string name="lyrics_mode_unsynchronized_label">niet-gesynchroniseerde songtekst</string>
     <string name="lyrics_not_available">Geen songteksten beschikbaar. Probeer het opnieuw of voer ze handmatig in.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Volgende afspelen</string>
     <string name="player_action_previous">named@@0</string>
     <string name="player_action_repeat">Herhalen</string>
+    <string name="player_repeat_mode_off">UIT</string>
+    <string name="player_repeat_mode_one">Eén herhalen</string>
+    <string name="player_repeat_mode_all">Alles herhalen</string>
     <string name="player_action_seek_forward">Doorsturen</string>
     <string name="player_action_seek_forward_30_seconds">30 seconden doorsturen</string>
     <string name="player_action_seek_forward_5_seconds">5 seconden doorsturen</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Bewaar geen afspeelgebeurtenissen die worden gebruikt voor statistieken, geschiedenis en suggesties in snelle foto\'s</string>
     <string name="player_pause_on_volume_zero">Pauzeer bij volume nul</string>
     <string name="player_picture_in_picture_content_description">Kies de inhoud die weergegeven wordt in het beeld-in-afbeeldingsvenster.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Het beeld-in-afbeeldingsvenster geeft het track cover weer.</string>
     <string name="player_picture_in_picture_enabled_description">Toestaan dat de speler in een klein afbeeldingsvenster verschijnt.</string>
     <string name="player_play_button_rectangular_label">Rechthoekig</string>
     <string name="player_play_button_square_label">Vierkant</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Wachtrij verschoven (%d nummers)</string>
     <string name="player_remaining_time_visible_description">Toon de resterende tijd in het huidige nummer.</string>
     <string name="player_restart_required_message">Speler moet opnieuw worden opgestart om de veranderingen door te voeren!</string>
+    <string name="player_restart_service_unavailable_message">De speler is niet beschikbaar. Wijzigingen zijn van toepassing op de volgende keer dat hij start.</string>
+    <string name="player_restart_disconnect_android_auto_message">Koppel Android automatisch los om de speler opnieuw te starten.</string>
     <string name="player_rotating_buttons">Draaiknoppen</string>
     <string name="player_seek_backward_five_seconds">5 seconden terugspoelen</string>
     <string name="player_seek_backward_thirty_seconds">Terugspoelt 30 seconden</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Kies de aangepaste kleur voor dit component.</string>
     <string name="visualizer_dark_background_description">Gebruik een zwarte achtergrond achter de audio-visualisatie.</string>
     <string name="visualizer_dark_background_title">Donkere achtergrond voor visualizer</string>
+    <string name="visualizer_cover_dimming_opacity">Intensiteit van Visualizer cover</string>
     <string name="visualizer_debug_background">Weergave Achtergrond</string>
     <string name="visualizer_enabled_description">Een geanimeerde visualisatie weergeven die reageert op de audio.</string>
     <string name="visualizer_line_thickness">Visualizer lijndikte</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Bluetooth apparaat</string>
     <string name="audio_output_usb_audio_label">USB audio</string>
     <string name="audio_output_external_speaker_label">Externe spreker</string>
+    <string name="audio_output_device_unavailable">Deze audio-uitvoer is niet meer beschikbaar.</string>
     <string name="audio_output_load_failed">Fout bij het laden van apparaten: %1$s</string>
     <string name="player_audio_mode">Geluid</string>
     <string name="player_video_mode">Video</string>
