@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">I\'m feeling lucky</string>
     <string name="automotive_action_play_all">Play All</string>
+    <string name="automotive_page_range">Page %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Choose the action performed by swiping an album track left.</string>
     <string name="gestures_album_track_swipe_right_description">Choose the action performed by swiping an album track right.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Mirror the interface independently of the app language.</string>
     <string name="settings_interface_page_description">The user interface section contains settings to modify the global interface and navigation</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">Shortcuts</string>
     <string name="settings_interface_group_display">Display</string>
     <string name="settings_interface_group_indicators">Indicators</string>
     <string name="settings_group_profile_name">Display name</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">List swipe gestures</string>
     <string name="settings_group_home_navigation">Home navigation</string>
     <string name="settings_group_menu_entries">Menu entries</string>
-    <string name="settings_group_sort_defaults">Default sort orders</string>
+    <string name="settings_group_sort_defaults">Sort menu order</string>
     <string name="settings_group_player_layout">Player layout</string>
     <string name="settings_group_background_style">Background style and colors</string>
     <string name="settings_group_fullscreen_elements">On-screen elements</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Personalize recommendations, Quick Picks and listening insights.</string>
     <string name="settings_page_audio_description">Adjust sound processing and audio effects.</string>
     <string name="settings_page_behavior_description">Customize gestures and actions while browsing and listening.</string>
-    <string name="settings_page_data_description">Manage downloaded music, cached files and backups.</string>
+    <string name="settings_page_data_description">Manage local music, caches, backups and stored app data.</string>
     <string name="settings_page_downloads_description">Choose the quality and behavior of music downloads.</string>
     <string name="settings_page_interface_description">Personalize the theme, fonts, navigation and interface layout.</string>
     <string name="settings_page_maintenance_description">Maintain the app, manage extensions and access recovery tools.</string>
     <string name="settings_page_network_description">Configure connectivity, streaming quality and proxy settings.</string>
-    <string name="settings_page_playback_description">Control playback, queue behavior and content restrictions.</string>
+    <string name="settings_page_playback_description">Choose how playback starts, continues and manages your queue.</string>
     <string name="settings_page_player_description">Customize the player appearance, controls, lyrics and notifications.</string>
-    <string name="settings_page_privacy_description">Pause or clear listening and search history. Manage permission activity and screen protection.</string>
+    <string name="settings_page_privacy_description">Control saved activity, permission history and screen protection.</string>
     <string name="settings_page_profiles_description">Manage your profile identity and preferences.</string>
     <string name="settings_page_rewind_description">Customize your listening summaries and Rewind playlists.</string>
     <string name="settings_page_services_description">Connect external services and listen together with others.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Prozirna pozadina</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer button</string>
     <string name="settings_player_action_restart_service">Restart service</string>
+    <string name="settings_app_action_restart">Restart app</string>
     <string name="settings_player_actions_spaced_evenly_label">Espaciados uniformemente</string>
     <string name="settings_player_album_cover_visible_label">Prikaži Omot Albuma</string>
     <string name="settings_player_appearance_page_description">The appearance section contains settings for the player\'s visual appearance</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI Recommendations</string>
     <string name="settings_region_override">Region Override</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_account_usage_notice">Connected accounts will be disabled. You can turn them back on in Settings.</string>
+    <string name="settings_reset_glass">Reset Glass settings</string>
+    <string name="settings_reset_glass_appearance_description">Restore the default Glass material and effects.</string>
+    <string name="settings_reset_downloads">Reset download settings</string>
     <string name="settings_reset_all">Reset all settings</string>
     <string name="settings_reset_all_confirm">Reset all</string>
     <string name="settings_reset_all_confirmation">Reset all application settings? Saved accounts, credentials, profiles, playlists, downloads and files will be kept.</string>
+    <string name="settings_reset_profile_scope_notice">This resets the active profile’s settings and settings shared on this device. Other profiles keep their own settings.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Your Listen Together server, username and blocked users are kept.</string>
+    <string name="settings_reset_playback_description">Reset playback, queue and parental control settings.</string>
     <string name="settings_reset_all_description">Restore all application settings to their defaults.</string>
     <string name="settings_reset_choose_scope">Choose which settings to restore</string>
     <string name="settings_reset_choose_scope_description">Select a settings section, then restore its defaults.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Prevucite prstom do akcije</string>
     <string name="settings_target_gain_loudness_info">Target gain for the loudness normalization</string>
     <string name="settings_target_unavailable">This setting is unavailable with the current configuration. Its section is shown instead.</string>
+    <string name="settings_target_prerequisite">To use this setting, configure %1$s first.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Turn on at least one of these settings to show Rewind notifications.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Naglašena boja</string>
     <string name="settings_theme_background_1_color_label">Pozadina 1</string>
     <string name="settings_theme_background_2_color_label">Pozadina 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Login for Browse</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest without your account, so they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Use account for searches</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Clear all data synced from YouTube? This will remove liked songs, albums, artists, and playlists imported from YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Clear YouTube synced data</string>
+    <string name="settings_youtube_logout_confirmation">Log off from YouTube Music in N-Zik? Your local library and downloads will stay on this device.</string>
     <string name="settings_youtube_connection_required_description">Connect to YouTube first to enable this option</string>
     <string name="settings_youtube_library_sync_content_description">Playlists, albums, artists, history, like, etc.</string>
     <string name="settings_youtube_login_enabled_label">Enable YouTube Music Login</string>
