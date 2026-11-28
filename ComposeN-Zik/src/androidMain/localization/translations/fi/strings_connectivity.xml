@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Yhdistetään palvelimeen</string>
     <string name="listen_together_log_event_connection_closed">Yhteys suljettu</string>
     <string name="listen_together_log_event_connection_failure">Yhteys epäonnistui</string>
+    <string name="listen_together_invalid_server_address">Kuuntele Yhdessä palvelimen osoite on virheellinen. Päivitä se asetuksissa ja yritä uudelleen.</string>
+    <string name="listen_together_session_server_changed">Palvelin ohjasi Kuuntele Yhdessä -istunnon toiseen osoitteeseen.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Yhteyden pettäminen, verkon odottaminen</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Yhteys katkesi, yrittää yhdistää uudelleen</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Hylkää pysähdyksen toiston tapahtuma</string>
