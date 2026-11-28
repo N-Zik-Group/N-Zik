@@ -2172,3 +2172,10 @@ Android Auto:
 Playback:
 - test(selection): cover delayed queue completion
   - Verify that an earlier action completion preserves a later selection in the queue.
+
+Settings:
+- fix(settings): restore playback after restarting the player
+  - Release the Listen Together binding while stopping the old player service, then reconnect it.
+  - Suppress Media3 foreground notification updates during that stop to prevent a stale foreground-service start from crashing the app.
+  - Restore the queue, current track, position and playback state even when the persistent queue is disabled. Preserve shuffle order and apply parental controls to the restored queue.
+  - Keep the player sheet in its prior position during the service handoff.

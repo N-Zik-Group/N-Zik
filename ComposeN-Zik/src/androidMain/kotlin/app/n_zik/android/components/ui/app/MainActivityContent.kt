@@ -1040,7 +1040,8 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
                         mutableStateOf(sheetPlayer?.currentMediaItem != null)
                     }
 
-                    LaunchedEffect(sheetPlayer, currentMediaId, playerSheetState) {
+                    LaunchedEffect(sheetPlayer, currentMediaId, playerSheetState, settingsPlayerRestartInProgress) {
+                        if (settingsPlayerRestartInProgress) return@LaunchedEffect
                         val presence = resolvePlayerSheetMediaPresence {
                             binder?.player?.takeIf { it === sheetPlayer }?.let { it.currentMediaItem != null }
                         } ?: return@LaunchedEffect
@@ -1293,6 +1294,7 @@ internal fun MainActivity.MainActivityContent(launchedFromNotification: Boolean)
 
             val listener = object : Player.Listener {
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                    if (settingsPlayerRestartInProgress) return
                     if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED && mediaItem != null) {
                         if (mediaItem.mediaMetadata.extras?.getBoolean("isFromPersistentQueue") != true) {
                             if (playerSheetState.isExpanded) return

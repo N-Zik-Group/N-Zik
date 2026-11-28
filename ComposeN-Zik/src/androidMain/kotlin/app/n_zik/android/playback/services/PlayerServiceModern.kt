@@ -198,6 +198,7 @@ import app.n_zik.android.utils.fadeInEffect
 import app.n_zik.android.utils.getActiveProfile
 import app.n_zik.android.utils.getEnum
 import app.n_zik.android.utils.isExplicit
+import app.n_zik.android.utils.parentalControlEnabledKey
 import app.n_zik.android.utils.intent
 import app.n_zik.android.utils.isAtLeastAndroid10
 import app.n_zik.android.utils.isAtLeastAndroid6
@@ -1035,11 +1036,18 @@ class PlayerServiceModern : MediaLibraryService(),
         return super.onBind(intent) ?: binder.takeIf { playbackInitializationStarted }
     }
 
-    override fun onUpdateNotification(session: MediaSession, startInForegroundRequired: Boolean) {
-        if (!playbackInitializationStarted) return
+    private var stoppingForSettingsRestart = false
+
+    override fun onUpdateNotificationAsync(
+        session: MediaSession,
+        startInForegroundRequired: Boolean,
+    ): ListenableFuture<Void?> {
+        if (!playbackInitializationStarted || stoppingForSettingsRestart) {
+            return Futures.immediateVoidFuture()
+        }
         // The Media3 provider now replaces or removes the startup notification.
         startupForeground = false
-        super.onUpdateNotification(session, startInForegroundRequired)
+        return super.onUpdateNotificationAsync(session, startInForegroundRequired)
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
@@ -1261,7 +1269,6 @@ class PlayerServiceModern : MediaLibraryService(),
             DataStoreUtils.prefs(this).unregisterOnSharedPreferenceChangeListener(autoRewindPreferenceListener)
             autoBrowseRefreshJob?.cancel()
             stopService(intent<MyDownloadService>())
-            stopService(intent<PlayerServiceModern>())
             mediaLibrarySessionCallback.release()
             releasePlaybackPlayersOnDestroy()
             try{
@@ -3063,6 +3070,28 @@ class PlayerServiceModern : MediaLibraryService(),
                 mediaSession.connectedControllers.none { mediaSession.isAutoCompanionController(it) }
 
         internal suspend fun awaitDestruction() = destructionCompleted.await()
+
+        internal fun captureSettingsRestartPlayback(): SettingsRestartPlayback? =
+            SettingsRestartPlayback.capture(this@PlayerServiceModern.player)
+
+        internal suspend fun restoreSettingsRestartPlayback(playback: SettingsRestartPlayback) {
+            playbackReady.await()
+            val replacement = this@PlayerServiceModern.player
+            playback.restore(replacement, preferences.getBoolean(parentalControlEnabledKey, false)) {
+                replacement.setShuffleOrder(DefaultShuffleOrder(it, System.currentTimeMillis()))
+            }
+        }
+
+        internal fun stopForSettingsRestart() {
+            // Media3 can issue a new foreground-service start when the old playback pauses.
+            stoppingForSettingsRestart = true
+            pauseAllPlayersAndStopSelf()
+        }
+
+        internal fun cancelSettingsRestartStop() {
+            stoppingForSettingsRestart = false
+            if (!isDestroying) updateDefaultNotification()
+        }
 
         fun restartForegroundOrStop() {
             player.pause()

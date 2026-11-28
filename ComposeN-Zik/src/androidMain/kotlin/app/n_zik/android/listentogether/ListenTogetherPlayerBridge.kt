@@ -123,9 +123,9 @@ object ListenTogetherPlayerBridge {
                 service = (ibinder as PlayerServiceModern.Binder).service
                 Timber.tag(TAG).d("Bound to PlayerServiceModern")
                 // Attach the queue-tracking listener and any listener registered before bind.
-                attachBridgeListener()
                 reattachAllListeners()
                 refreshUpcomingQueue()
+                observePlayerSwaps()
             }
 
             override fun onServiceDisconnected(name: android.content.ComponentName) {
@@ -142,7 +142,6 @@ object ListenTogetherPlayerBridge {
             serviceConnection = null
             Timber.tag(TAG).e("Failed to bind PlayerServiceModern for Listen Together")
         }
-        observePlayerSwaps()
     }
 
     private fun observePlayerSwaps() {
@@ -555,10 +554,30 @@ object ListenTogetherPlayerBridge {
         )
     }
 
+    internal suspend fun <T> withoutPlayerServiceBinding(block: suspend () -> T): T {
+        val context = boundContext ?: return block()
+        disconnectPlayerService()
+        return try {
+            block()
+        } finally {
+            ensureBound(context)
+        }
+    }
+
     fun release() {
+        disconnectPlayerService()
+        registeredListeners.clear()
+        _upcomingQueue.value = emptyList()
+    }
+
+    private fun disconnectPlayerService() {
         playerTriggerJob?.cancel()
         playerTriggerJob = null
-        registeredListeners.clear()
+        cancelPendingHeadTrim()
+        player?.let { current ->
+            current.removeListener(bridgePlayerListener)
+            registeredListeners.filterValues { it }.keys.forEach(current::removeListener)
+        }
         boundContext?.let { ctx ->
             val connection = serviceConnection
             if (connection != null) {
@@ -572,6 +591,6 @@ object ListenTogetherPlayerBridge {
         service = null
         serviceConnection = null
         boundContext = null
-        _upcomingQueue.value = emptyList()
+        currentListenTogetherVideoId = null
     }
 }

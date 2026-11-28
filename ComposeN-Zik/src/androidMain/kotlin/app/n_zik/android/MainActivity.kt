@@ -265,7 +265,8 @@ class MainActivity :
 
     private var libraryUiStarted = false
     private var libraryUiBound = false
-    private var settingsPlayerRestartInProgress = false
+    internal var settingsPlayerRestartInProgress by mutableStateOf(false)
+        private set
     private var settingsPlayerDestructionPending = false
     private val deferredLaunchIntents = DeferredLibraryIntents()
     private var waitingColdLaunch = false
@@ -298,14 +299,17 @@ class MainActivity :
             return
         }
         val profileId = getActiveProfile(this)
+        val playback = service.captureSettingsRestartPlayback()
         settingsPlayerRestartInProgress = true
         lifecycleScope.launch(NzikDispatchers.UI.immediate) {
             val restarted = try {
                 settingsPlayerDestructionPending = true
                 val destroyed = try {
-                    service.restartForegroundOrStop()
-                    unbindLibraryUi()
-                    withTimeoutOrNull(2_000L) { service.awaitDestruction() } != null
+                    app.n_zik.android.listentogether.ListenTogetherPlayerBridge.withoutPlayerServiceBinding {
+                        service.stopForSettingsRestart()
+                        unbindLibraryUi()
+                        withTimeoutOrNull(2_000L) { service.awaitDestruction() } != null
+                    }
                 } finally {
                     settingsPlayerDestructionPending = false
                 }
@@ -315,12 +319,15 @@ class MainActivity :
                         bindLibraryUi()
                         libraryUiBound
                     }
-                    // Confirm the service connection. Playback itself can finish initializing independently.
                     bindingRequested && withTimeoutOrNull(5_000L) {
-                        snapshotFlow { binder }.filterNotNull().first { it !== service }
-                        getActiveProfile(this@MainActivity) == profileId
+                        val replacement = snapshotFlow { binder }.filterNotNull().first { it !== service }
+                        if (getActiveProfile(this@MainActivity) != profileId) return@withTimeoutOrNull false
+                        if (playback != null) replacement.restoreSettingsRestartPlayback(playback)
+                        true
                     } == true
                 } else {
+                    Timber.tag("MainActivity").w("Player restart timed out waiting for service destruction")
+                    service.cancelSettingsRestartStop()
                     if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) &&
                         getActiveProfile(this@MainActivity) == profileId
                     ) {
