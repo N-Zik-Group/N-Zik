@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">توصيل GitHub</string>
+    <string name="github_account_background_checks">فحص الخلفية GitHub</string>
+    <string name="github_account_background_checks_description">تحقق من حسابك في GitHub ومراجعة الحالة تلقائياً.</string>
     <string name="github_account_logout">قطع اتصال GitHub</string>
     <string name="github_account_description">استخدم حسابك في GitHub في متجر السمة.</string>
     <string name="github_account_offline">اتصل بالإنترنت للاتصال بـ GitHub.</string>
