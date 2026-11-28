@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Sunucuya bağlanıyor</string>
     <string name="listen_together_log_event_connection_closed">Bağlantı kapandı</string>
     <string name="listen_together_log_event_connection_failure">Bağlantı başarısız</string>
+    <string name="listen_together_invalid_server_address">The Listen Together server address is invalid. Update it in settings and try again.</string>
+    <string name="listen_together_session_server_changed">The server redirected the Listen Together session to a different address.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Bağlantı hatası, ağ bekleniyor</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Bağlantı kesildi, yeniden bağlanmaya çalışılacak</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Geçerliliğini yitirmiş oynatma olayını silme</string>
