@@ -35,6 +35,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.offline.Download
 import app.n_zik.android.components.settings.common.ImportantSettingsDescription
+import app.n_zik.android.components.settings.common.LocalSettingsCardRowOutset
+import app.n_zik.android.components.settings.common.settingsCardRowHorizontalPadding
+import app.n_zik.android.components.ui.horizontalLayoutOutset
 import app.n_zik.android.components.settings.common.OtherSettingsEntry
 import app.n_zik.android.components.settings.common.OtherSwitchSettingEntry
 import app.n_zik.android.components.settings.common.SettingsSectionCard
@@ -186,15 +189,16 @@ private fun MaintenanceHealthRow(
     modifier: Modifier = Modifier,
 ) {
     val palette = colorPalette()
+    val outset = LocalSettingsCardRowOutset.current
     Surface(
-        modifier = modifier
+        modifier = Modifier.horizontalLayoutOutset(outset).then(modifier)
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clip(uiRoundnessShape()),
         color = Color.Transparent,
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = settingsCardRowHorizontalPadding(outset), vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
