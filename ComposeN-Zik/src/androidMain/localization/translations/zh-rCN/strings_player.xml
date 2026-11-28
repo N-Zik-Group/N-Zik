@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">这个手机</string>
     <string name="audio_output_title">音频输出</string>
     <string name="audio_output_wired_headphones_label">有线耳机</string>
+    <string name="audio_quality_auto_effective_fmt">自动(%1$s)</string>
     <string name="audio_quality_auto_fmt">自动(检测到： %1$s)</string>
     <string name="audio_quality_automatic">自动</string>
     <string name="audio_quality_format">音频质量格式</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">板块</string>
     <string name="audio_reverb_small_room">小房间</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">只有主机可以更改此房间的自动批准。离开房间来编辑您自己的设置。</string>
     <string name="listen_together_auto_approval_joins_description">自动批准加入请求而无需手动审核</string>
     <string name="listen_together_auto_approval_suggestions_description">自动审核和排队访客的歌曲建议</string>
     <string name="listen_together_blocked_users_description">查看和管理从您的侦听室被屏蔽的参与者。</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">左</string>
     <string name="lyrics_alignment_right_label">右</string>
     <string name="lyrics_artwork_overlay_description">在播放器艺术作品上显示歌词。</string>
+    <string name="lyrics_cover_dimming_title">歌词背后降低封面</string>
+    <string name="lyrics_cover_dimming_description">当歌词显示在播放器上时，让玩家做美术。</string>
+    <string name="lyrics_cover_dimming_opacity">歌词覆盖暗淡强度</string>
     <string name="lyrics_background_enabled_description">绘制歌词背后的背景来提高歌词的可读性。</string>
     <string name="lyrics_background_label">歌词背景</string>
     <string name="lyrics_behavior_section_title">行为</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">如果找到它，Karaoke将会替换它。</string>
     <string name="lyrics_mode_automatic_label">自动歌词</string>
     <string name="lyrics_mode_karaoke_label">卡拉奥克歌词</string>
+    <string name="lyrics_mode_label">歌词模式</string>
     <string name="lyrics_mode_synchronized_label">同步歌词</string>
     <string name="lyrics_mode_unsynchronized_label">不同步的歌词</string>
     <string name="lyrics_not_available">没有可用的歌词。请重试或手动输入歌词。</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">播放下一首</string>
     <string name="player_action_previous">上一个</string>
     <string name="player_action_repeat">重复</string>
+    <string name="player_repeat_mode_off">关闭</string>
+    <string name="player_repeat_mode_one">重复一个</string>
+    <string name="player_repeat_mode_all">全部重复</string>
     <string name="player_action_seek_forward">转发方式</string>
     <string name="player_action_seek_forward_30_seconds">轉發30秒</string>
     <string name="player_action_seek_forward_5_seconds">转发5秒</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">不会保存用于统计、历史和建议的快速播放历史</string>
     <string name="player_pause_on_volume_zero">已静音且暂停</string>
     <string name="player_picture_in_picture_content_description">选择画面窗口中显示的内容。</string>
+    <string name="player_picture_in_picture_fixed_content_description">图片窗口显示曲目封面。</string>
     <string name="player_picture_in_picture_enabled_description">允许玩家在图片窗口中显示。</string>
     <string name="player_play_button_rectangular_label">矩形</string>
     <string name="player_play_button_square_label">正方形</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">队列已随机播放(%d 歌曲)</string>
     <string name="player_remaining_time_visible_description">显示当前曲目的剩余时间。</string>
     <string name="player_restart_required_message">播放器必须重启才能使更改生效！</string>
+    <string name="player_restart_service_unavailable_message">该玩家不可用。更改在下次开始时应用。</string>
+    <string name="player_restart_disconnect_android_auto_message">断开安卓系统自动重启播放器。</string>
     <string name="player_rotating_buttons">旋转按钮</string>
     <string name="player_seek_backward_five_seconds">后退 5 秒</string>
     <string name="player_seek_backward_thirty_seconds">返回 30 秒</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">选择此组件使用的自定义颜色。</string>
     <string name="visualizer_dark_background_description">在音频可视化后使用黑色背景。</string>
     <string name="visualizer_dark_background_title">可视化器的暗淡背景</string>
+    <string name="visualizer_cover_dimming_opacity">可视化器覆盖暗淡强度</string>
     <string name="visualizer_debug_background">可视化器背景</string>
     <string name="visualizer_enabled_description">显示响应音频的动画视觉化。</string>
     <string name="visualizer_line_thickness">可视化器线厚度</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">蓝牙设备</string>
     <string name="audio_output_usb_audio_label">USB 音频</string>
     <string name="audio_output_external_speaker_label">外部扬声器</string>
+    <string name="audio_output_device_unavailable">此音频输出已不可用。</string>
     <string name="audio_output_load_failed">加载设备失败: %1$s</string>
     <string name="player_audio_mode">音频</string>
     <string name="player_video_mode">视频</string>
