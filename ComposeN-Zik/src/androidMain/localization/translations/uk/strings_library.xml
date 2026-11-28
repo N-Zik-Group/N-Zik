@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Альбом обраного</string>
     <string name="album_action_open">Перейти до альбому</string>
+    <string name="playlist_action_open">Перейти до списку відтворення</string>
+    <string name="podcast_action_open">Перейти до podcast</string>
     <string name="album_alternative_versions">Альтернативні версії</string>
     <string name="album_art">Обкладинка альбому</string>
-    <string name="album_found_online_verify">Альбом знайдено! Будь ласка, перевірте правильність.</string>
     <string name="album_left_swipe">Альбом Свайп вліво</string>
     <string name="album_loading_song_count_format">Завантаження %1$d пісень…</string>
     <string name="album_lookup_failed">Не вдалося завантажити альбом</string>
-    <string name="album_lookup_running">Пошук альбому з Інтернету</string>
     <string name="album_no_alternative_version">Цей альбом не має альтернативної версії</string>
-    <string name="album_not_found">Альбом не знайдено</string>
     <string name="album_related_title">Схожі альбоми</string>
     <string name="album_right_swipe">Альбом Свайп праворуч</string>
     <!-- Artist -->
     <string name="artist_action_follow">Підписатися</string>
+    <string name="artist_action_unfollow">Не стежити</string>
+    <string name="artist_action_open">Перейти до виконавця</string>
     <string name="artist_action_play_local_songs">Грати всі локальні пісні</string>
+    <string name="artist_action_play_library_songs">Відтворити усі пісні у бібліотеці</string>
     <string name="artist_deduplication_result">Merged %d duplicate artist(s) with the right artist</string>
     <string name="artist_following_status">Підписаний</string>
-    <string name="artist_found_online_verify">Художник знайдений онлайн! Будь ласка впевніться, що він вірний.</string>
     <string name="artist_link_cleanup_result">Removed %d incorrect artist link(s)</string>
     <string name="artist_lookup_failed">Не вдалося завантажити арист</string>
-    <string name="artist_lookup_running">Пошук %s онлайн...</string>
     <string name="artist_more_from">Більше</string>
     <string name="artist_overview_title">Огляд</string>
     <string name="artist_roundness">Круглий художник</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Виконавець</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Видалити збережені події відтворення з історії прослуховування.</string>
+    <string name="history_clear_listen_history_failed">Не вдалося закінчити очищення історії прослуховування.</string>
     <string name="history_clear_search_history_description">Видалити збережені пошукові запити з кожної сторінки історії без зміни налаштувань історії.</string>
     <!-- Home -->
     <string name="home_albums_settings">Домашні альбоми</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Ви - номер один, клік і насолоджуйтеся сюрпризом</string>
     <!-- Library -->
     <string name="library_action_bookmark">Закладка</string>
+    <string name="library_action_remove_bookmark">Видалити з обраного</string>
     <string name="library_action_randomize">Рандомізатор</string>
     <string name="library_albums_title">Альбоми</string>
     <string name="library_artists_title">Виконавці</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Експорт пісень %d кешовано/завантажених пісень?</string>
     <string name="library_favorites_title">Вибране</string>
     <string name="library_filter_by_title">Фільтрувати по</string>
+    <string name="library_filter_nzik_origin_label">Тільки N-Зик</string>
     <string name="library_filter_online_songs_label">Онлайн пісні</string>
     <string name="library_filter_unmatched_songs_label">Неспівпадаючі пісні</string>
     <string name="library_history_title">Історія</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">Бібліотека YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Видалити з несхожих</string>
     <string name="library_dislikes_added">Не сподобалося %s</string>
     <string name="library_dislikes_removed">Видалено %s з несхожих</string>
+    <string name="library_dislikes_added_generic">Додано до невподобань</string>
+    <string name="library_dislikes_removed_generic">Видалено з несхожих</string>
     <string name="library_favorites_action_add">Додати до Обраного</string>
+    <string name="library_favorites_action_remove">Видалити з улюблених</string>
+    <string name="library_favorites_already_added">Вже є в улюбленому.</string>
     <string name="library_collection_favorites_action_manage">Керувати обраним</string>
     <string name="library_favorites_added">Додано до обраного</string>
     <string name="library_favorites_removed">Видалено з обраного</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Не вдалося оновити улюблені.</string>
     <string name="library_collection_favorites_sync_failed">Не вдалося синхронізувати деякі закладки з YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Виберіть критерій сортування</string>
     <string name="library_sort_album">Альбом</string>
     <string name="library_sort_album_year">Рік альбому</string>
     <string name="library_sort_artist">Виконавець</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Ключові слова</string>
     <string name="metadata_loading">Завантаження…</string>
+    <string name="metadata_link_searching">Пошук…</string>
+    <string name="metadata_link_manual_required">ID не підтверджено. Зв\'яжіть його вручну.</string>
     <string name="metadata_lyricist">Лірицист</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes on MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Змінити ID списку відтворення</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Назва</string>
     <string name="metadata_track">Доріжка</string>
+    <string name="metadata_unknown_album">Невідомий альбом</string>
     <string name="metadata_unknown_artist">Невідомий виконавець</string>
+    <string name="metadata_unknown_author">Невідомий автор</string>
+    <string name="metadata_unknown_playlist">Невідомий список відтворення</string>
+    <string name="metadata_unknown_podcast">Невідомий подкаст</string>
     <string name="metadata_unknown_title">Невідомий заголовок</string>
+    <string name="metadata_unknown_year">Невідомий рік</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Сподобалося</string>
     <string name="metadata_video_subscribers_label">Підписники</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Додати до плейлиста</string>
     <string name="playlist_action_add_hint">Додати до плейлиста</string>
+    <string name="playlist_add_destination_locked">Не можна додати пісні до цього списку відтворення.</string>
     <string name="playlist_add_destination_unavailable">Цей список відтворення більше недоступний для додавання пісень пристрою. Виберіть інший список відтворення.</string>
     <string name="playlist_action_create">Новий плейлист</string>
     <string name="playlist_action_delete_selected">Видалити списки відтворення</string>
     <string name="playlist_action_export">Експортувати список відтворення</string>
     <string name="playlist_action_import">Імпортувати плейлист</string>
+    <string name="playlist_actions_title">Дії списку відтворення</string>
+    <string name="playlist_action_import_collection">Імпортувати цю колекцію</string>
+    <string name="playlist_action_import_from_source">Імпортувати з файлу або посилання</string>
     <string name="playlist_action_import_favorites">Імпортувати Обране</string>
     <string name="playlist_action_like_favorites_on_youtube">Позначити улюблені треки N-Zik як уподобані на YouTube</string>
     <string name="playlist_action_remove_songs">Видалити з плейлиста</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Are you sure you want to delete ALL %d playlists?</string>
     <string name="playlist_delete_confirmation">Ви дійсно хочете видалити цей плейлист?</string>
     <string name="playlist_delete_dialog_title">Видалити список відтворення</string>
+    <string name="playlist_deletion_failed">Не вдалося видалити список відтворення з цього пристрою.</string>
+    <string name="playlist_deletion_partial">Деякі списки відтворення були видалені з цього пристрою.</string>
+    <string name="playlist_deletion_local_success">Видалено з цього пристрою.</string>
+    <string name="playlist_deletion_remote_success">Видалено з YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Не вдалося видалити деякі списки відтворення з YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Пов\'язані списки відтворення також можуть бути видалені з YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Видалити списки відтворення</string>
     <string name="playlist_delete_selected_confirmation_count_format">Ви впевнені, що хочете видалити ці плейлісти %d</string>
     <string name="playlist_error_action_on_all_disliked_songs">Неможливо виконати цю дію, коли усі пісні не сподобалися</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Вподобати всі пісні</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(розрахунковий час) необхідно, щоб поставити позначку \"Подобається\" всім пісням. Щоб скасувати цей процес, необхідно закрити програму. Бажаєте продовжити?</string>
     <string name="playlist_name_input_hint">Введіть назву плейлиста</string>
+    <string name="playlist_name_reserved">Це ім\'я зарезервовано для Ревітерних плейлістів.</string>
     <string name="playlist_operation_wait_message">Зачекайте, це може зайняти кілька хвилин...</string>
     <string name="playlist_pinned_title">Закріплено</string>
     <string name="playlist_positions_shuffled">%d позиції зміщені</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Швидкий вибір очищено</string>
     <string name="recommendations_reset_content_description">Перезавантажте швидкі піки з свіжими рекомендаціями. Ваш прослуховування збережений.</string>
     <string name="recommendations_section_other_youtube_title">Інші розділи</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle не вдалося додати жодного треку.</string>
     <string name="recommendations_section_visibility_description">Вимкніть, якщо ви не хочете бачити</string>
     <string name="recommendations_show_section_label">Показати</string>
     <string name="recommendations_smart_song_count_description">Встановіть кількість розумних рекомендацій, або дозвольте програмі налаштувати їх автоматично.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Немає пропозицій</string>
     <string name="search_suggestions_title">Пропозиції</string>
     <string name="search_title">Пошук</string>
+    <string name="search_action_edit_query">Редагувати пошуковий запит</string>
     <string name="search_video_download_unsupported_message">Завантаження відео не підтримується</string>
     <string name="search_videos_title">Відео</string>
     <string name="search_voice_action_start">Голосовий пошук</string>
