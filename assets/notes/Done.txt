@@ -2156,3 +2156,9 @@ Playback:
 Settings:
 - fix(settings): align the live subsystems row
   - Use the shared settings-card outset and horizontal padding for the subsystem icon and status text.
+
+Settings:
+- fix(settings): confirm player restart on service reconnect
+  - Keep the Restart player action and confirm a fresh service connection after stopping the old service.
+  - Wait for the activity to return to the foreground when needed and keep audio initialization outside the restart result.
+  - Keep the restart request available when Android Auto still holds the player service.

@@ -3050,8 +3050,6 @@ class PlayerServiceModern : MediaLibraryService(),
 
         internal suspend fun awaitDestruction() = destructionCompleted.await()
 
-        internal suspend fun awaitPlaybackReady() = playbackReady.await()
-
         fun restartForegroundOrStop() {
             player.pause()
             stopSelf()

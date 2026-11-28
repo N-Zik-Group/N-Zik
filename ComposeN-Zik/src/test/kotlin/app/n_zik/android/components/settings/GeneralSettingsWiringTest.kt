@@ -331,6 +331,7 @@ class GeneralSettingsWiringTest {
     @Test
     fun restartBarStaysPendingOnFailureAndClearsOnSuccess() {
         val binder = mockk<PlayerServiceModern.Binder>(relaxed = true)
+        every { binder.canRestartFromSettings } returns true
         lateinit var completeRestart: (Boolean) -> Unit
         showGeneralTab(binder = binder, restartPlayer = { requestedBinder, onComplete ->
             requestedBinder.restartForegroundOrStop()

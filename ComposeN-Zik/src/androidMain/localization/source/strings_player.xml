@@ -319,6 +319,7 @@
     <string name="player_remaining_time_visible_description">Show the time remaining in the current track.</string>
     <string name="player_restart_required_message">Player has to be restarted for effective changes!</string>
     <string name="player_restart_service_unavailable_message">The player is unavailable. Changes apply the next time it starts.</string>
+    <string name="player_restart_disconnect_android_auto_message">Disconnect Android Auto to restart the player.</string>
     <string name="player_rotating_buttons">Rotating buttons</string>
     <string name="player_seek_backward_five_seconds">Rewind 5 seconds</string>
     <string name="player_seek_backward_thirty_seconds">Rewinds 30 seconds</string>

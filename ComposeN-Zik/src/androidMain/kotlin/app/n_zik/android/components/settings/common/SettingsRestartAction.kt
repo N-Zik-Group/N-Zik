@@ -106,6 +106,10 @@ internal fun RestartPlayerService() {
         val preferences = context.preferences
         val hadStreamRestart = preferences.getBoolean(streamClientRestartNeededKey, false)
         if (!state.pending && !hadStreamRestart) return@SettingsRestartAction
+        if (!connectedBinder.canRestartFromSettings) {
+            Toaster.w(R.string.player_restart_disconnect_android_auto_message)
+            return@SettingsRestartAction
+        }
         val request = state.begin() ?: return@SettingsRestartAction
         requestRestart(connectedBinder) { restarted ->
             val applied = state.complete(request, ready = restarted)
@@ -114,6 +118,8 @@ internal fun RestartPlayerService() {
                     preferences.edit().putBoolean(streamClientRestartNeededKey, false).apply()
                 }
                 Toaster.done()
+            } else if (!connectedBinder.canRestartFromSettings) {
+                Toaster.w(R.string.player_restart_disconnect_android_auto_message)
             } else {
                 Toaster.e(R.string.common_error_title)
             }

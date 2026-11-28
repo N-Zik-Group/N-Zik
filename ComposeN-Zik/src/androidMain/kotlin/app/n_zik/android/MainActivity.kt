@@ -310,20 +310,20 @@ class MainActivity :
                     settingsPlayerDestructionPending = false
                 }
                 if (destroyed) {
-                    withTimeoutOrNull(5_000L) {
-                        val bound = lifecycle.withStarted {
-                            if (getActiveProfile(this@MainActivity) != profileId) return@withStarted false
-                            bindLibraryUi()
-                            libraryUiBound
-                        }
-                        if (!bound) return@withTimeoutOrNull false
-                        val replacement = snapshotFlow { binder }.filterNotNull().first { it !== service }
-                        replacement.awaitPlaybackReady()
-                        binder === replacement && getActiveProfile(this@MainActivity) == profileId
+                    val bindingRequested = lifecycle.withStarted {
+                        if (getActiveProfile(this@MainActivity) != profileId) return@withStarted false
+                        bindLibraryUi()
+                        libraryUiBound
+                    }
+                    // Confirm the service connection. Playback itself can finish initializing independently.
+                    bindingRequested && withTimeoutOrNull(5_000L) {
+                        snapshotFlow { binder }.filterNotNull().first { it !== service }
+                        getActiveProfile(this@MainActivity) == profileId
                     } == true
                 } else {
-                    // A controller may still hold the old service. Restore the UI connection.
-                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) && getActiveProfile(this@MainActivity) == profileId) {
+                    if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED) &&
+                        getActiveProfile(this@MainActivity) == profileId
+                    ) {
                         bindLibraryUi()
                     }
                     false
