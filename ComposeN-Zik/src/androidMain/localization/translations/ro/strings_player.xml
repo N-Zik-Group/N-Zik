@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Acest telefon</string>
     <string name="audio_output_title">Ieşire audio</string>
     <string name="audio_output_wired_headphones_label">Căști cu fir</string>
+    <string name="audio_quality_auto_effective_fmt">Automat (%1$s)</string>
     <string name="audio_quality_auto_fmt">Auto (Detectat: %1$s)</string>
     <string name="audio_quality_automatic">Automat</string>
     <string name="audio_quality_format">Calitate audio</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Placă</string>
     <string name="audio_reverb_small_room">Cameră mică</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Doar gazda poate schimba aprobările automate în această cameră. Lăsați camera pentru a vă edita propriile setări.</string>
     <string name="listen_together_auto_approval_joins_description">Aprobă automat cererile de conectare fără a le revizui manual</string>
     <string name="listen_together_auto_approval_suggestions_description">Aprobă automat sugestiile melodiei în așteptare de la vizitatori</string>
     <string name="listen_together_blocked_users_description">Vizualizează și gestionează participanții blocați din camerele tale de ascultare.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Stânga</string>
     <string name="lyrics_alignment_right_label">Dreapta</string>
     <string name="lyrics_artwork_overlay_description">Afișează versurile peste arta jucătorului.</string>
+    <string name="lyrics_cover_dimming_title">Întunecare copertă în spatele versurilor</string>
+    <string name="lyrics_cover_dimming_description">Întunecă opera de artă a jucătorului atunci când versurile sunt afişate peste ea.</string>
+    <string name="lyrics_cover_dimming_opacity">Intensitatea acoperirii versurilor</string>
     <string name="lyrics_background_enabled_description">Desenează un fundal în spatele versurilor pentru a le îmbunătăţi lizibilitatea.</string>
     <string name="lyrics_background_label">Fundal versuri</string>
     <string name="lyrics_behavior_section_title">Comportament</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Karaoke îl va înlocui dacă va fi găsit.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">versuri karaoke</string>
+    <string name="lyrics_mode_label">Mod versuri</string>
     <string name="lyrics_mode_synchronized_label">versurile sincronizate</string>
     <string name="lyrics_mode_unsynchronized_label">versurile nesincronizate</string>
     <string name="lyrics_not_available">Nu sunt disponibile versuri. Vă rugăm să încercaţi din nou sau să le introduceţi manual.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Ascultă după</string>
     <string name="player_action_previous">Anterior</string>
     <string name="player_action_repeat">Repetă</string>
+    <string name="player_repeat_mode_off">Dezactivat</string>
+    <string name="player_repeat_mode_one">Repetă una</string>
+    <string name="player_repeat_mode_all">Repetă tot</string>
     <string name="player_action_seek_forward">Redirecționare</string>
     <string name="player_action_seek_forward_30_seconds">Redirecţionează 30 de secunde</string>
     <string name="player_action_seek_forward_5_seconds">Redirecţionează 5 secunde</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Nu salvează evenimentele de redare utilizate pentru statistici, istoric și sugestii în „Selecții rapide”</string>
     <string name="player_pause_on_volume_zero">Pauză la volum zero</string>
     <string name="player_picture_in_picture_content_description">Alegeți conținutul afișat în fereastra imagine-în-imagine.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Fereastra fotografie afișează coperta piesei.</string>
     <string name="player_picture_in_picture_enabled_description">Permite jucătorului să apară într-o fereastră mică de imagine-în-imagine.</string>
     <string name="player_play_button_rectangular_label">Dreptunghiular</string>
     <string name="player_play_button_square_label">Pătrat</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Coada de amestecare (%d melodii)</string>
     <string name="player_remaining_time_visible_description">Arată timpul rămas în piesa curentă.</string>
     <string name="player_restart_required_message">Playerul trebuie repornit pentru ca modificările să aibă efect!</string>
+    <string name="player_restart_service_unavailable_message">Jucătorul nu este disponibil. Modificările se aplică data viitoare când începe.</string>
+    <string name="player_restart_disconnect_android_auto_message">Deconectează Android Auto pentru a reporni playerul.</string>
     <string name="player_rotating_buttons">Butoane rotative</string>
     <string name="player_seek_backward_five_seconds">Repetă 5 secunde</string>
     <string name="player_seek_backward_thirty_seconds">Reîncarcă 30 de secunde</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Alegeți culoarea personalizată utilizată de această componentă.</string>
     <string name="visualizer_dark_background_description">Utilizați un fundal negru în spatele vizualizării audio.</string>
     <string name="visualizer_dark_background_title">Fundal întunecat pentru vizualizator</string>
+    <string name="visualizer_cover_dimming_opacity">Intensitatea coperții de vizualizare estompează</string>
     <string name="visualizer_debug_background">VisualizerFundal</string>
     <string name="visualizer_enabled_description">Afișează o vizualizare animată care răspunde la audio.</string>
     <string name="visualizer_line_thickness">Grosime linie vizualizator</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Dispozitiv Bluetooth</string>
     <string name="audio_output_usb_audio_label">Audio USB</string>
     <string name="audio_output_external_speaker_label">Difuzor extern</string>
+    <string name="audio_output_device_unavailable">Această ieșire audio nu mai este disponibilă.</string>
     <string name="audio_output_load_failed">Eroare la încărcarea dispozitivelor: %1$s</string>
     <string name="player_audio_mode">Audio</string>
     <string name="player_video_mode">Video</string>
