@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Ponów próbę</string>
     <string name="common_action_save">Zapisz</string>
+    <string name="common_action_scroll_to_top">Przewiń do góry</string>
     <string name="common_action_select">Włącz zaznacznie</string>
     <string name="common_action_show_less">Pokaż mniej</string>
     <string name="common_action_show_more">Pokaż więcej</string>
