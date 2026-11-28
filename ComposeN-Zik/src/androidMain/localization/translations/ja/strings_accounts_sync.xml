@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">GitHub に接続</string>
+    <string name="github_account_background_checks">GitHub のバックグラウンドチェック</string>
+    <string name="github_account_background_checks_description">GitHubアカウントを確認し、ステータスを自動的に確認します。</string>
     <string name="github_account_logout">GitHubの切断</string>
     <string name="github_account_description">Theme Store で GitHub アカウントを使用します。</string>
     <string name="github_account_offline">オンラインで GitHub に接続します。</string>
