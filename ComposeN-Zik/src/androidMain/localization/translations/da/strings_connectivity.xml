@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Forbinder til server</string>
     <string name="listen_together_log_event_connection_closed">Forbindelse lukket</string>
     <string name="listen_together_log_event_connection_failure">Forbindelsesfejl</string>
+    <string name="listen_together_invalid_server_address">Lyt Together serveradressen er ugyldig. Opdater den i indstillinger og prøv igen.</string>
+    <string name="listen_together_session_server_changed">Serveren omdirigerede Lyt Together sessionen til en anden adresse.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Forbindelsesfejl, afventer netværk</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Forbindelse tabt, vil forsøge at genforbinde</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Kassér forsvundet afspilningsbegivenhed</string>
