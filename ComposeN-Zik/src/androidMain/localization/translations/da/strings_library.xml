@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Bogmærk album</string>
     <string name="album_action_open">Gå til album</string>
+    <string name="playlist_action_open">Gå til afspilningsliste</string>
+    <string name="podcast_action_open">Gå til podcast</string>
     <string name="album_alternative_versions">Alternative versioner</string>
     <string name="album_art">Albumillustrationer</string>
-    <string name="album_found_online_verify">Albummet findes online! Kontroller, at det er det rigtige.</string>
     <string name="album_left_swipe">Venstre stryg for album</string>
     <string name="album_loading_song_count_format">Indlæser %1$d sange…</string>
     <string name="album_lookup_failed">Kunne ikke hente album</string>
-    <string name="album_lookup_running">Slår album op på internettet</string>
     <string name="album_no_alternative_version">Dette album har ingen alternativ version</string>
-    <string name="album_not_found">Albummet blev ikke fundet</string>
     <string name="album_related_title">Relaterede album</string>
     <string name="album_right_swipe">Højre stryg for album</string>
     <!-- Artist -->
     <string name="artist_action_follow">Følg</string>
+    <string name="artist_action_unfollow">Affølg</string>
+    <string name="artist_action_open">Gå til kunstner</string>
     <string name="artist_action_play_local_songs">Afspil alle lokale sange</string>
+    <string name="artist_action_play_library_songs">Afspil alle sange i biblioteket</string>
     <string name="artist_deduplication_result">Fusionerede %d duplikerede kunstnere med højre kunstner</string>
     <string name="artist_following_status">Følger</string>
-    <string name="artist_found_online_verify">Kunstner fundet online! Kontroller, at det er den rigtige.</string>
     <string name="artist_link_cleanup_result">Fjernede %d forkerte kunstnerlink</string>
     <string name="artist_lookup_failed">Kunne ikke hente kunstner</string>
-    <string name="artist_lookup_running">Slår %s op online...</string>
     <string name="artist_more_from">Mere af</string>
     <string name="artist_overview_title">Oversigt</string>
     <string name="artist_roundness">Kunstner rundhed</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Kunstner</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Slet gemte afspilningsbegivenheder fra lyttehistorik.</string>
+    <string name="history_clear_listen_history_failed">Kunne ikke afslutte rydning af lyttehistorik.</string>
     <string name="history_clear_search_history_description">Slet gemte søgninger fra hver søgehistorik side uden at ændre historik indstillinger.</string>
     <!-- Home -->
     <string name="home_albums_settings">Hjem Albums</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Du er et nummer én, klik og nyd overraskelsen</string>
     <!-- Library -->
     <string name="library_action_bookmark">Bogmærk</string>
+    <string name="library_action_remove_bookmark">Fjern bogmærke</string>
     <string name="library_action_randomize">Randomizer</string>
     <string name="library_albums_title">Album</string>
     <string name="library_artists_title">Kunstnere</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Eksporter %d cached/downloadede sange?</string>
     <string name="library_favorites_title">Favoritter</string>
     <string name="library_filter_by_title">Filtrér efter</string>
+    <string name="library_filter_nzik_origin_label">Kun N-Zik</string>
     <string name="library_filter_online_songs_label">Online sange</string>
     <string name="library_filter_unmatched_songs_label">Ikke-matchede sange</string>
     <string name="library_history_title">Historik</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM-bibliotek</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Fjern fra dislikes</string>
     <string name="library_dislikes_added">Kan ikke lide %s</string>
     <string name="library_dislikes_removed">Fjernede %s fra dislikes</string>
+    <string name="library_dislikes_added_generic">Tilføjet til dislikes</string>
+    <string name="library_dislikes_removed_generic">Fjernet fra dislikes</string>
     <string name="library_favorites_action_add">Føj til favoritter</string>
+    <string name="library_favorites_action_remove">Fjern fra favoritter</string>
+    <string name="library_favorites_already_added">Allerede i favoritter.</string>
     <string name="library_collection_favorites_action_manage">Administrer favoritter</string>
     <string name="library_favorites_added">Føjet til favoritter</string>
     <string name="library_favorites_removed">Fjernet fra favoritter</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Kunne ikke opdatere favoritter.</string>
     <string name="library_collection_favorites_sync_failed">Kunne ikke synkronisere nogle favoritter med YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Vælg sorteringskriterium</string>
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Albumår</string>
     <string name="library_sort_artist">Kunstner</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Nøgleord</string>
     <string name="metadata_loading">Indlæser…</string>
+    <string name="metadata_link_searching">Søger…</string>
+    <string name="metadata_link_manual_required">ID ikke bekræftet. Link manuelt.</string>
     <string name="metadata_lyricist">Lyricist</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d stemmer på MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Skift Spilleliste Gennemse ID</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Titel</string>
     <string name="metadata_track">Spor</string>
+    <string name="metadata_unknown_album">Ukendt Album</string>
     <string name="metadata_unknown_artist">Ukendt Kunstner</string>
+    <string name="metadata_unknown_author">Ukendt Forfatter</string>
+    <string name="metadata_unknown_playlist">Ukendt Spilleliste</string>
+    <string name="metadata_unknown_podcast">Ukendt Podcast</string>
     <string name="metadata_unknown_title">Ukendt Titel</string>
+    <string name="metadata_unknown_year">Ukendt År</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Likes</string>
     <string name="metadata_video_subscribers_label">Abonnenter</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Føj til playliste</string>
     <string name="playlist_action_add_hint">Tilføj i playliste</string>
+    <string name="playlist_add_destination_locked">Du kan ikke tilføje sange til denne afspilningsliste.</string>
     <string name="playlist_add_destination_unavailable">Denne afspilningsliste er ikke længere tilgængelig for at tilføje enhedssange. Vælg en anden spilleliste.</string>
     <string name="playlist_action_create">Ny playliste</string>
     <string name="playlist_action_delete_selected">Slet afspilningslister</string>
     <string name="playlist_action_export">Eksportér playliste</string>
     <string name="playlist_action_import">Importér playliste</string>
+    <string name="playlist_actions_title">Spillelistens handlinger</string>
+    <string name="playlist_action_import_collection">Importer denne samling</string>
+    <string name="playlist_action_import_from_source">Importer fra en fil eller et link</string>
     <string name="playlist_action_import_favorites">Importér favoritter</string>
     <string name="playlist_action_like_favorites_on_youtube">Like N-Zik\'s \'Kan lide\'-sange på YouTube</string>
     <string name="playlist_action_remove_songs">Fjern fra playliste</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Er du sikker på du vil slette alle %d afspilningslister?</string>
     <string name="playlist_delete_confirmation">Vil du virkelig slette denne playliste?</string>
     <string name="playlist_delete_dialog_title">Slet afspilningsliste</string>
+    <string name="playlist_deletion_failed">Kunne ikke slette spillelisten fra denne enhed.</string>
+    <string name="playlist_deletion_partial">Nogle afspilningslister blev slettet fra denne enhed.</string>
+    <string name="playlist_deletion_local_success">Slettet fra denne enhed.</string>
+    <string name="playlist_deletion_remote_success">Slettet fra YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Kunne ikke slette nogle afspilningslister fra YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Linkede afspilningslister kan også slettes fra YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Slet afspilningslister</string>
     <string name="playlist_delete_selected_confirmation_count_format">Er du sikker på, at du vil slette disse %d afspilningslister?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Kan ikke udføre denne handling med \'Kan ikke lide\'-sange</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Ligesom alle sange</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(Estimeret tid) er påkrævet for at like alle sangene. Du skal lukke appen for at annullere processen. Vil du fortsætte?</string>
     <string name="playlist_name_input_hint">Indtast playlistens navn</string>
+    <string name="playlist_name_reserved">Dette navn er reserveret til Rewind playlister.</string>
     <string name="playlist_operation_wait_message">Vent, det kan tage et par minutter...</string>
     <string name="playlist_pinned_title">Fastgjorte playlister</string>
     <string name="playlist_positions_shuffled">%d positioner blandet</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Hurtige valg ryddes</string>
     <string name="recommendations_reset_content_description">Genindlæs Quick Picks med friske anbefalinger. Din lyttehistorik bevares.</string>
     <string name="recommendations_section_other_youtube_title">Andre sektioner</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle kunne ikke tilføje spor.</string>
     <string name="recommendations_section_visibility_description">Deaktivér, hvis du ikke vil se</string>
     <string name="recommendations_show_section_label">Vis</string>
     <string name="recommendations_smart_song_count_description">Indstil antallet af smarte anbefalinger, eller lad appen justere det automatisk.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Ingen forslag</string>
     <string name="search_suggestions_title">Forslag</string>
     <string name="search_title">Søg...</string>
+    <string name="search_action_edit_query">Rediger søgeforespørgsel</string>
     <string name="search_video_download_unsupported_message">Hentning af videoer understøttes ikke</string>
     <string name="search_videos_title">Videoer</string>
     <string name="search_voice_action_start">Stemme søgning</string>
