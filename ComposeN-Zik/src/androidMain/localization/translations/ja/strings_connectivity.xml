@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">サーバーに接続しています</string>
     <string name="listen_together_log_event_connection_closed">接続が切断されました</string>
     <string name="listen_together_log_event_connection_failure">接続失敗</string>
+    <string name="listen_together_invalid_server_address">Listen Togetherサーバーアドレスが無効です。設定で更新して再度お試し下さい。</string>
+    <string name="listen_together_session_server_changed">サーバが、Listen のセッションを別のアドレスにリダイレクトしました。</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">接続に失敗しました。ネットワークを待機しています</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">接続が失われました。再接続を試みます</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">古い再生イベントを破棄中</string>
