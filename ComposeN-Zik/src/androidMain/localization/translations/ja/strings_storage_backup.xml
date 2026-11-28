@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">データベースと設定を個別にエクスポートします。カスタムカバーが含まれている場合、データベースはZIPを使用します。</string>
     <string name="backup_export_database_with_covers_description">曲、プレイリスト、履歴をSQLiteとして保存します。カスタムカバーがある場合は、エクスポートはデータベースとカバーのあるZIPです。</string>
     <string name="backup_export_profile_state_failed">プロファイル状態のエクスポートに失敗しました</string>
-    <string name="backup_export_settings_description">アプリの設定と設定をエクスポート</string>
+    <string name="backup_export_settings_description">保存されたプロファイル設定をエクスポートします（ガラスを含む）</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">.txt ファイルからプロフィール一覧と顔写真をインポート</string>
     <string name="backup_import_all">すべてインポート</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">プロファイルの状態がインポートされました: %1$d プロファイル</string>
     <string name="backup_import_profile_state_complete_base">インポートされたプロファイルの状態: ベースプロファイル</string>
     <string name="backup_import_profile_state_failed">プロファイル状態のインポートに失敗しました</string>
-    <string name="backup_import_settings_description">アプリの設定と設定をインポート</string>
+    <string name="backup_import_settings_description">保存されたプロファイル設定をマージし、Glass スナップショットを復元する</string>
     <string name="backup_import_target_from_file">ファイルから</string>
     <string name="backup_import_target_profile_title">どのプロファイルにインポートしますか？</string>
     <!-- Cache -->
