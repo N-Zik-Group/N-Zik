@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exporteer de database en instellingen apart. De database gebruikt ZIP als het aangepaste covers bevat.</string>
     <string name="backup_export_database_with_covers_description">Sla nummers, afspeellijsten en geschiedenis op als SQLite. Als je aangepaste covers hebt, is de export een ZIP met de database en dekkingen.</string>
     <string name="backup_export_profile_state_failed">Profielstatus exporteren mislukt</string>
-    <string name="backup_export_settings_description">Exporteer app instellingen en voorkeuren</string>
+    <string name="backup_export_settings_description">Opgeslagen profielinstellingen exporteren, inclusief glas</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importeer de profiellijst en foto\'s van een .txt bestand</string>
     <string name="backup_import_all">Alles importeren</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Profiel status geïmporteerd: %1$d profielen</string>
     <string name="backup_import_profile_state_complete_base">Profiel status geïmporteerd: basisprofiel</string>
     <string name="backup_import_profile_state_failed">Profiel status importeren mislukt</string>
-    <string name="backup_import_settings_description">Importeer app instellingen en voorkeuren</string>
+    <string name="backup_import_settings_description">Profielinstellingen samenvoegen en elke momentopname terugzetten</string>
     <string name="backup_import_target_from_file">Uit het bestand</string>
     <string name="backup_import_target_profile_title">In welk profiel importeren?</string>
     <!-- Cache -->
