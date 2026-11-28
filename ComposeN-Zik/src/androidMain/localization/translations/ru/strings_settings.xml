@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Я чувствую удачу</string>
     <string name="automotive_action_play_all">Проиграть все</string>
+    <string name="automotive_page_range">Страница %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Выберите действие, выполняемое свайпом по альбому слева.</string>
     <string name="gestures_album_track_swipe_right_description">Выберите действие, выполняемое свайпом по альбому справа.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Отражает интерфейс независимо от языка приложения.</string>
     <string name="settings_interface_page_description">Раздел пользовательского интерфейса содержит настройки для изменения глобального интерфейса и навигации</string>
     <string name="settings_interface_page_title">Интерфейс</string>
+    <string name="settings_interface_shortcuts_title">Ярлыки</string>
     <string name="settings_interface_group_display">Отображение</string>
     <string name="settings_interface_group_indicators">Индикаторы</string>
     <string name="settings_group_profile_name">Отображать имя</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Жесты для списков</string>
     <string name="settings_group_home_navigation">Домашняя навигация</string>
     <string name="settings_group_menu_entries">Пункты меню</string>
-    <string name="settings_group_sort_defaults">Порядок сортировки по умолчанию</string>
+    <string name="settings_group_sort_defaults">Порядок меню сортировки</string>
     <string name="settings_group_player_layout">Макет плеера</string>
     <string name="settings_group_background_style">Стиль и цвета фона</string>
     <string name="settings_group_fullscreen_elements">На экране элементы</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Персонализируйте рекомендации, Быстрые советы и прослушивание взглядов.</string>
     <string name="settings_page_audio_description">Настройка звуковой обработки и звуковых эффектов.</string>
     <string name="settings_page_behavior_description">Настройка жестов и действий при просмотре и прослушивании.</string>
-    <string name="settings_page_data_description">Управление загруженной музыкой, кэшированными файлами и резервными копиями.</string>
+    <string name="settings_page_data_description">Управление локальной музыкой, кэшами, резервными копиями и данными приложений.</string>
     <string name="settings_page_downloads_description">Выберите качество и поведение загрузки музыки.</string>
     <string name="settings_page_interface_description">Персонализируйте тему, шрифты, навигацию и расположение интерфейса.</string>
     <string name="settings_page_maintenance_description">Поддерживайте приложение, управляйте расширениями и инструментами восстановления доступа.</string>
     <string name="settings_page_network_description">Настройте подключение, качество потокового вещания и настройки прокси.</string>
-    <string name="settings_page_playback_description">Контроль воспроизведения, поведения очереди и ограничений содержания.</string>
+    <string name="settings_page_playback_description">Выберите, как начинается воспроизведение, продолжает и управляет вашей очередью.</string>
     <string name="settings_page_player_description">Настройте внешний вид плеера, элементы управления, тексты песен и уведомления.</string>
-    <string name="settings_page_privacy_description">Приостановить или очистить историю прослушивания и поиска. Управляйте активностью прав доступа и защитой экрана.</string>
+    <string name="settings_page_privacy_description">Управление сохраненной активностью, историей разрешений и защитой экрана.</string>
     <string name="settings_page_profiles_description">Управляйте личными данными и настройками.</string>
     <string name="settings_page_rewind_description">Настройте свои прослушивающие резюме и плейлисты перемороза.</string>
     <string name="settings_page_services_description">Подключите внешние сервисы и слушайте вместе с другими.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Прозрачный фон</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Кнопка Визуализатора</string>
     <string name="settings_player_action_restart_service">Перезапустить игрока</string>
+    <string name="settings_app_action_restart">Перезапустить приложение</string>
     <string name="settings_player_actions_spaced_evenly_label">Пробел ровно</string>
     <string name="settings_player_album_cover_visible_label">Показать обложку альбома</string>
     <string name="settings_player_appearance_page_description">Раздел внешнего вида содержит настройки внешнего вида игрока</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI рекомендации</string>
     <string name="settings_region_override">Переопределение региона</string>
     <string name="settings_reset">Сбросить</string>
+    <string name="settings_reset_account_usage_notice">Подключенные учетные записи будут отключены. Вы можете снова включить их в настройках.</string>
+    <string name="settings_reset_glass">Сбросить настройки Стекла</string>
+    <string name="settings_reset_glass_appearance_description">Восстановить стандартный стеклянный материал и эффекты.</string>
+    <string name="settings_reset_downloads">Сбросить настройки загрузки</string>
     <string name="settings_reset_all">Сбросить все настройки</string>
     <string name="settings_reset_all_confirm">Сбросить все</string>
     <string name="settings_reset_all_confirmation">Сбросить все настройки приложения? Сохраненные учетные данные, профили, плейлисты, загрузки и файлы будут сохранены.</string>
+    <string name="settings_reset_profile_scope_notice">Это сбрасывает настройки активного профиля и общие настройки на этом устройстве. Другие профили сохраняют свои собственные настройки.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Ваш сервер вместе прослушивать, имя пользователя и заблокированные пользователи сохраняются.</string>
+    <string name="settings_reset_playback_description">Сброс настроек воспроизведения, очереди и родительского контроля.</string>
     <string name="settings_reset_all_description">Восстановить все настройки приложения по умолчанию.</string>
     <string name="settings_reset_choose_scope">Выберите настройки для восстановления</string>
     <string name="settings_reset_choose_scope_description">Выберите раздел настроек, затем восстановите его по умолчанию.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Свайп для действия</string>
     <string name="settings_target_gain_loudness_info">Целевая громкость для нормализации громкости</string>
     <string name="settings_target_unavailable">Эта настройка недоступна с текущей конфигурацией. Ее секция показана.</string>
+    <string name="settings_target_prerequisite">Чтобы использовать этот параметр, сначала настройте %1$s.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Включите хотя бы один из этих параметров, чтобы показать уведомления Перемотка.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Цветовой акцент</string>
     <string name="settings_theme_background_1_color_label">Фон 1</string>
     <string name="settings_theme_background_2_color_label">Фон 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Войти для просмотра</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Использовать учетную запись для поиска</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Очистить все данные, синхронизированные с YouTube? Это удалит понравившиеся песни, альбомы, исполнители и плейлисты, импортированные из YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Очистить синхронизированные данные YouTube</string>
+    <string name="settings_youtube_logout_confirmation">Выйти из YouTube Music в N-Zik? Ваша локальная библиотека и загрузки останутся на этом устройстве.</string>
     <string name="settings_youtube_connection_required_description">Подключитесь к YouTube для включения этой опции</string>
     <string name="settings_youtube_library_sync_content_description">Списки воспроизведения, альбомы, исполнители, история, подобные и т.д.</string>
     <string name="settings_youtube_login_enabled_label">Включить вход в YouTube Music</string>
