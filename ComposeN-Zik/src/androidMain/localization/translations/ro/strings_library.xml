@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Marchează albumul</string>
     <string name="album_action_open">Accesează albumul</string>
+    <string name="playlist_action_open">Du-te la playlist</string>
+    <string name="podcast_action_open">Mergi la podcast</string>
     <string name="album_alternative_versions">Versiuni alternative</string>
     <string name="album_art">Copertă album</string>
-    <string name="album_found_online_verify">Album găsit online! Vă rugăm să verificaţi dacă este cel corect.</string>
     <string name="album_left_swipe">Glisare la stânga în album</string>
     <string name="album_loading_song_count_format">Se încarcă melodiile %1$d…</string>
     <string name="album_lookup_failed">Preluarea albumului a eșuat</string>
-    <string name="album_lookup_running">Privind albumul de pe internet</string>
     <string name="album_no_alternative_version">Acest album nu are nicio versiune alternativă</string>
-    <string name="album_not_found">Albumul nu a fost găsit</string>
     <string name="album_related_title">Albume asemănătoare</string>
     <string name="album_right_swipe">Glisare la dreapta în playlist</string>
     <!-- Artist -->
     <string name="artist_action_follow">Urmărește</string>
+    <string name="artist_action_unfollow">Anulează</string>
+    <string name="artist_action_open">Du-te la artist</string>
     <string name="artist_action_play_local_songs">Redă toate melodiile locale</string>
+    <string name="artist_action_play_library_songs">Redă toate melodiile în bibliotecă</string>
     <string name="artist_deduplication_result">A îmbinat %d duplicat artiști(i) cu artistul drept</string>
     <string name="artist_following_status">Urmărit</string>
-    <string name="artist_found_online_verify">Artist găsit online! Vă rugăm să verificaţi dacă este cel corect.</string>
     <string name="artist_link_cleanup_result">S-a eliminat %d link(uri) incorecte artistice</string>
     <string name="artist_lookup_failed">Preluare aritmie eșuată</string>
-    <string name="artist_lookup_running">Se caută %s online...</string>
     <string name="artist_more_from">Profilul lui</string>
     <string name="artist_overview_title">Prezentare generală</string>
     <string name="artist_roundness">Rotunjirea artistului</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Artist</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Șterge evenimentele de redare salvate din istoricul de ascultare.</string>
+    <string name="history_clear_listen_history_failed">Nu s-a putut termina curățarea istoriei de ascultare.</string>
     <string name="history_clear_search_history_description">Ștergeți căutările salvate din fiecare pagină de căutare și istoric fără a schimba preferințele de căutare.</string>
     <!-- Home -->
     <string name="home_albums_settings">Albume principale</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Ești numărul unu, fă clic și bucură-te de surpriză</string>
     <!-- Library -->
     <string name="library_action_bookmark">Marchează</string>
+    <string name="library_action_remove_bookmark">Eliminaţi marcajul</string>
     <string name="library_action_randomize">Aleator</string>
     <string name="library_albums_title">Albume</string>
     <string name="library_artists_title">Artiști</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Exportă melodiile cache/descărcate %d?</string>
     <string name="library_favorites_title">Favorite</string>
     <string name="library_filter_by_title">Filtrează după</string>
+    <string name="library_filter_nzik_origin_label">N-Zik doar</string>
     <string name="library_filter_online_songs_label">Melodii online</string>
     <string name="library_filter_unmatched_songs_label">Melodii nepotrivite</string>
     <string name="library_history_title">Istoric</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">Biblioteca YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Elimină din dislike-uri</string>
     <string name="library_dislikes_added">Nu aprecia %s</string>
     <string name="library_dislikes_removed">A eliminat %s din displace</string>
+    <string name="library_dislikes_added_generic">Adăugat la dislike-uri</string>
+    <string name="library_dislikes_removed_generic">Eliminat din dislike-uri</string>
     <string name="library_favorites_action_add">Adaugă la favorite</string>
+    <string name="library_favorites_action_remove">Elimină din favorite</string>
+    <string name="library_favorites_already_added">Deja în favorite.</string>
     <string name="library_collection_favorites_action_manage">Gestionează favoritele</string>
     <string name="library_favorites_added">Adăugat la favorite</string>
     <string name="library_favorites_removed">Eliminat din favorite</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Nu s-au putut actualiza favoritele.</string>
     <string name="library_collection_favorites_sync_failed">Nu s-a putut sincroniza unele favorite cu YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Alege criteriul de sortare</string>
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Anul albumului</string>
     <string name="library_sort_artist">Artist</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Cuvinte cheie</string>
     <string name="metadata_loading">Se încarcă…</string>
+    <string name="metadata_link_searching">Se caută…</string>
+    <string name="metadata_link_manual_required">ID-ul nu a fost confirmat. Conectați-l manual.</string>
     <string name="metadata_lyricist">Vertism</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes on MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Schimbă ID de navigare</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Titlu</string>
     <string name="metadata_track">Urmărire</string>
+    <string name="metadata_unknown_album">Album necunoscut</string>
     <string name="metadata_unknown_artist">Artist Necunoscut</string>
+    <string name="metadata_unknown_author">Autor necunoscut</string>
+    <string name="metadata_unknown_playlist">Playlist necunoscut</string>
+    <string name="metadata_unknown_podcast">Podcast necunoscut</string>
     <string name="metadata_unknown_title">Titlu necunoscut</string>
+    <string name="metadata_unknown_year">An necunoscut</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Aprecieri</string>
     <string name="metadata_video_subscribers_label">Abonați</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Adaugă la playlist</string>
     <string name="playlist_action_add_hint">Adaugă la playlist</string>
+    <string name="playlist_add_destination_locked">Nu poți adăuga melodii în această listă de redare.</string>
     <string name="playlist_add_destination_unavailable">Această listă de redare nu mai este disponibilă pentru a adăuga melodiile dispozitivului. Alegeți o altă listă de redare.</string>
     <string name="playlist_action_create">Playlist nou</string>
     <string name="playlist_action_delete_selected">Şterge playlisturile</string>
     <string name="playlist_action_export">Exportă playlist-ul</string>
     <string name="playlist_action_import">Importă playlist-ul</string>
+    <string name="playlist_actions_title">Acțiuni listă de redare</string>
+    <string name="playlist_action_import_collection">Importă această colecție</string>
+    <string name="playlist_action_import_from_source">Importă dintr-un fișier sau link</string>
     <string name="playlist_action_import_favorites">Importă favoritele</string>
     <string name="playlist_action_like_favorites_on_youtube">Îmi place favoritele N-Zik pe YouTube</string>
     <string name="playlist_action_remove_songs">Elimină din playlist</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Ești sigur că vrei să ștergi TOATE playlist-urile %d?</string>
     <string name="playlist_delete_confirmation">Chiar vrei să ștergi acest playlist?</string>
     <string name="playlist_delete_dialog_title">Șterge playlist</string>
+    <string name="playlist_deletion_failed">Nu s-a putut șterge lista de redare de pe acest dispozitiv.</string>
+    <string name="playlist_deletion_partial">Unele liste de redare au fost șterse de pe acest dispozitiv.</string>
+    <string name="playlist_deletion_local_success">Șters de pe acest dispozitiv.</string>
+    <string name="playlist_deletion_remote_success">Şters din YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Nu s-a putut șterge unele liste de redare de pe YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Listele de redare asociate pot fi, de asemenea, șterse de pe YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Şterge playlisturile</string>
     <string name="playlist_delete_selected_confirmation_count_format">Ești sigur că vrei să ștergi aceste liste de redare %d?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Nu se poate efectua această acțiune când toate melodiile nu sunt apreciate</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Precum toate melodiile</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(ora estimată) este necesară pentru a aprecia toate melodiile. Trebuie să închideți aplicația pentru a anula acest proces. Doriți să continuați?</string>
     <string name="playlist_name_input_hint">Introdu numele playlistului</string>
+    <string name="playlist_name_reserved">Acest nume este rezervat pentru listele de redare Rewind</string>
     <string name="playlist_operation_wait_message">Te rugăm să aștepți, aceasta poate dura câteva minute...</string>
     <string name="playlist_pinned_title">Fixate</string>
     <string name="playlist_positions_shuffled">%d positions shuffled</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Selecțiile rapide au fost șterse</string>
     <string name="recommendations_reset_content_description">Reîncarcă Listele Rapide cu noi recomandări. Istoricul tău de ascultare este păstrat.</string>
     <string name="recommendations_section_other_youtube_title">Alte secțiuni</string>
+    <string name="recommendations_smart_shuffle_add_failed">Amestecarea inteligentă nu a putut adăuga nicio piesă.</string>
     <string name="recommendations_section_visibility_description">Dezactivează dacă nu dorești să vezi</string>
     <string name="recommendations_show_section_label">Arată</string>
     <string name="recommendations_smart_song_count_description">Setați numărul de recomandări inteligente sau lăsați aplicația să-l ajusteze automat.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Fără sugestii</string>
     <string name="search_suggestions_title">Sugestii</string>
     <string name="search_title">Căutare</string>
+    <string name="search_action_edit_query">Editare interogare căutare</string>
     <string name="search_video_download_unsupported_message">Descărcarea videoclipurilor nu este suportată</string>
     <string name="search_videos_title">Videoclipuri</string>
     <string name="search_voice_action_start">Căutare vocală</string>
