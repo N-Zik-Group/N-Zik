@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Me siento afortunado</string>
     <string name="automotive_action_play_all">Reproducir todo</string>
+    <string name="automotive_page_range">Página %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Elija la acción realizada deslizando una pista de álbum izquierda.</string>
     <string name="gestures_album_track_swipe_right_description">Elija la acción realizada deslizando una pista de álbum a la derecha.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Ordena la interfaz independientemente del idioma de la aplicación.</string>
     <string name="settings_interface_page_description">La sección de interfaz de usuario contiene opciones para modificar la interfaz global y la navegación</string>
     <string name="settings_interface_page_title">Interfaz</string>
+    <string name="settings_interface_shortcuts_title">Atajos</string>
     <string name="settings_interface_group_display">Mostrar</string>
     <string name="settings_interface_group_indicators">Indicadores</string>
     <string name="settings_group_profile_name">Nombre mostrado</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Listar gestos de deslizamiento</string>
     <string name="settings_group_home_navigation">Navegación en casa</string>
     <string name="settings_group_menu_entries">Entradas de menú</string>
-    <string name="settings_group_sort_defaults">Ordenación por defecto</string>
+    <string name="settings_group_sort_defaults">Ordenar menú</string>
     <string name="settings_group_player_layout">Diseño del jugador</string>
     <string name="settings_group_background_style">Estilo de fondo y colores</string>
     <string name="settings_group_fullscreen_elements">Elementos en pantalla</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Personalizar recomendaciones, trucos rápidos e información de escucha.</string>
     <string name="settings_page_audio_description">Ajustar el procesamiento de sonido y efectos de audio.</string>
     <string name="settings_page_behavior_description">Personalizar gestos y acciones mientras se navega y escucha.</string>
-    <string name="settings_page_data_description">Administrar música descargada, archivos en caché y copias de seguridad.</string>
+    <string name="settings_page_data_description">Administrar música local, cachés, copias de seguridad y datos de aplicaciones almacenados.</string>
     <string name="settings_page_downloads_description">Elija la calidad y el comportamiento de las descargas de música.</string>
     <string name="settings_page_interface_description">Personalizar el tema, fuentes, navegación y diseño de la interfaz.</string>
     <string name="settings_page_maintenance_description">Mantener la aplicación, administrar extensiones y acceder a herramientas de recuperación.</string>
     <string name="settings_page_network_description">Configurar conectividad, calidad de streaming y configuración de proxy.</string>
-    <string name="settings_page_playback_description">Controla la reproducción, el comportamiento de las colas y las restricciones de contenido.</string>
+    <string name="settings_page_playback_description">Elige cómo comienza la reproducción, continúa y gestiona tu cola.</string>
     <string name="settings_page_player_description">Personaliza la apariencia del reproductor, controles, letras y notificaciones.</string>
-    <string name="settings_page_privacy_description">Pausa o borra el historial de escucha y búsqueda. Gestiona la actividad de permisos y la protección de pantalla.</string>
+    <string name="settings_page_privacy_description">Controla la actividad guardada, historial de permisos y protección de pantalla.</string>
     <string name="settings_page_profiles_description">Gestiona la identidad y preferencias de tu perfil.</string>
     <string name="settings_page_rewind_description">Personaliza tus resúmenes de escucha y listas de Rewind.</string>
     <string name="settings_page_services_description">Conecte servicios externos y escuche junto con otros.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Fondo transparente</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Botón Visualizador</string>
     <string name="settings_player_action_restart_service">Reiniciar servicio</string>
+    <string name="settings_app_action_restart">Reiniciar app</string>
     <string name="settings_player_actions_spaced_evenly_label">Espaciado uniforme</string>
     <string name="settings_player_album_cover_visible_label">Mostrar portada del álbum</string>
     <string name="settings_player_appearance_page_description">La sección de apariencia contiene ajustes para la apariencia visual del jugador</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">Recomendaciones de IA</string>
     <string name="settings_region_override">Sobrescribir región</string>
     <string name="settings_reset">Restablecer</string>
+    <string name="settings_reset_account_usage_notice">Las cuentas conectadas se desactivarán. Puedes volver a activarlas en Configuración.</string>
+    <string name="settings_reset_glass">Restablecer ajustes de Cristal</string>
+    <string name="settings_reset_glass_appearance_description">Restaurar el material de vidrio por defecto y los efectos.</string>
+    <string name="settings_reset_downloads">Restablecer ajustes de descarga</string>
     <string name="settings_reset_all">Restablecer todos los ajustes</string>
     <string name="settings_reset_all_confirm">Restablecer todo</string>
     <string name="settings_reset_all_confirmation">¿Restablecer todos los ajustes de la aplicación? Las cuentas guardadas, las credenciales, los perfiles, las listas de reproducción, las descargas y los archivos serán eliminados.</string>
+    <string name="settings_reset_profile_scope_notice">Esto restablece los ajustes y ajustes del perfil activo compartidos en este dispositivo. Otros perfiles mantienen sus propios ajustes.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Tu servidor Listen Together, el nombre de usuario y los usuarios bloqueados se entienden.</string>
+    <string name="settings_reset_playback_description">Reiniciar reproducción, cola y ajustes de control parental.</string>
     <string name="settings_reset_all_description">Restaurar todos los ajustes de la aplicación a sus valores predeterminados.</string>
     <string name="settings_reset_choose_scope">Elija qué ajustes desea restaurar</string>
     <string name="settings_reset_choose_scope_description">Seleccione una sección de configuración, luego restaure sus valores predeterminados.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Deslizar para ejecutar acción</string>
     <string name="settings_target_gain_loudness_info">Ganancia objetivo para la normalización de volumen</string>
     <string name="settings_target_unavailable">Esta configuración no está disponible con la configuración actual. Su sección se muestra en su lugar.</string>
+    <string name="settings_target_prerequisite">Para utilizar esta configuración, configure %1$s primero.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Active al menos una de estas opciones para mostrar notificaciones de rebobinado.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Tono</string>
     <string name="settings_theme_background_1_color_label">Fondo 1</string>
     <string name="settings_theme_background_2_color_label">Fondo 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Iniciar sesión para Navegar</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Usar cuenta para búsquedas</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">¿Borrar todos los datos sincronizados de YouTube? Esto eliminará las canciones, álbumes, artistas y listas de reproducción importados de YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Borrar datos sincronizados de YouTube</string>
+    <string name="settings_youtube_logout_confirmation">¿Cerrar sesión en YouTube Music en N-Zik? Su biblioteca local y sus descargas permanecerán en este dispositivo.</string>
     <string name="settings_youtube_connection_required_description">Conéctate a YouTube primero para activar esta opción</string>
     <string name="settings_youtube_library_sync_content_description">Listas de reproducción, álbumes, artistas, historia, etc.</string>
     <string name="settings_youtube_login_enabled_label">Habilitar inicio de sesión en YouTube Music</string>
