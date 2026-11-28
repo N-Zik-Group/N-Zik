@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Εξαγωγή της βάσης δεδομένων και των ρυθμίσεων ξεχωριστά. Η βάση δεδομένων χρησιμοποιεί ZIP αν περιλαμβάνει προσαρμοσμένα καλύμματα.</string>
     <string name="backup_export_database_with_covers_description">Αποθήκευση τραγουδιών, λιστών αναπαραγωγής και ιστορικού ως SQLite. Αν έχετε προσαρμοσμένα εξώφυλλα, η εξαγωγή είναι ZIP με βάση δεδομένων και καλύμματα.</string>
     <string name="backup_export_profile_state_failed">Η εξαγωγή κατάστασης προφίλ απέτυχε</string>
-    <string name="backup_export_settings_description">Εξαγωγή ρυθμίσεων και προτιμήσεων εφαρμογής</string>
+    <string name="backup_export_settings_description">Εξαγωγή αποθηκευμένων ρυθμίσεων προφίλ, συμπεριλαμβανομένου του γυαλιού</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Εισαγωγή της λίστας προφίλ και των φωτογραφιών προσώπου από ένα αρχείο .txt</string>
     <string name="backup_import_all">Εισαγωγή όλων</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Κατάσταση προφίλ εισήχθη: %1$d προφίλ</string>
     <string name="backup_import_profile_state_complete_base">Η κατάσταση προφίλ εισήχθη: βασικό προφίλ</string>
     <string name="backup_import_profile_state_failed">Η εισαγωγή προφίλ απέτυχε</string>
-    <string name="backup_import_settings_description">Εισαγωγή ρυθμίσεων και προτιμήσεων εφαρμογών</string>
+    <string name="backup_import_settings_description">Συγχώνευση αποθηκευμένων ρυθμίσεων προφίλ και επαναφορά οποιουδήποτε στιγμιότυπου γυαλιού</string>
     <string name="backup_import_target_from_file">Από το αρχείο</string>
     <string name="backup_import_target_profile_title">Εισαγωγή σε ποιο προφίλ?</string>
     <!-- Cache -->
