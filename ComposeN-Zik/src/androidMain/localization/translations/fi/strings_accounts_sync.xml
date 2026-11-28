@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Yhdistä GitHub</string>
+    <string name="github_account_background_checks">GitHub taustatarkistukset</string>
+    <string name="github_account_background_checks_description">Tarkista GitHub tilisi ja tarkista tila automaattisesti.</string>
     <string name="github_account_logout">Katkaise GitHub-yhteys</string>
     <string name="github_account_description">Käytä GitHub tiliäsi teemakaupassa.</string>
     <string name="github_account_offline">Mene online-tilaan yhdistääksesi GitHub.</string>
