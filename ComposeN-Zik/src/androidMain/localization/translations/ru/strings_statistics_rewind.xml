@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Показать сетку месяца в доме Перемотка.</string>
     <string name="rewind_settings_monthly_notification">Уведомление о перемотке на месяц</string>
     <string name="rewind_settings_monthly_notification_description">Получайте уведомления на первом месте о готовности перемотки предыдущего месяца.</string>
+    <string name="rewind_settings_notification_permission_hint">Разрешить уведомления для N-Zik в настройках Android, чтобы получать оповещения Rewind.</string>
     <string name="rewind_settings_notifications">Перемотка уведомлений</string>
     <string name="rewind_settings_playlists_monthly">Ежемесячно перемотать плейлист</string>
     <string name="rewind_settings_playlists_monthly_description">Создать ежемесячный плейлист для перемотки.</string>
