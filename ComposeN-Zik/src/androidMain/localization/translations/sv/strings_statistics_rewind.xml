@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Visa månatliga rutnätet på Rewind hem.</string>
     <string name="rewind_settings_monthly_notification">Månatlig avisering för bakspak</string>
     <string name="rewind_settings_monthly_notification_description">Få meddelande den 1:a att föregående månads spolning är klar.</string>
+    <string name="rewind_settings_notification_permission_hint">Tillåt aviseringar för N-Zik i Android-inställningar för att ta emot Rewind varningar.</string>
     <string name="rewind_settings_notifications">Spola tillbaka aviseringar</string>
     <string name="rewind_settings_playlists_monthly">Spellista för varje månad</string>
     <string name="rewind_settings_playlists_monthly_description">Skapa den månatliga rewind spellistan.</string>
