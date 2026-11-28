@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Vis månedsrutenett på spole hjem.</string>
     <string name="rewind_settings_monthly_notification">Månedlig tilbakekallingsmelding</string>
     <string name="rewind_settings_monthly_notification_description">Få beskjed den første om at den forrige månedens gjenvinden er klar.</string>
+    <string name="rewind_settings_notification_permission_hint">Gi varsler for N-Zik i Android innstillinger for å motta Rewind varsler.</string>
     <string name="rewind_settings_notifications">Spol tilbake varsler</string>
     <string name="rewind_settings_playlists_monthly">Månedlig spole spilleliste</string>
     <string name="rewind_settings_playlists_monthly_description">Lag den månedlige gjenspolde spillelisten.</string>
