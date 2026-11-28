@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">هذا الهاتف</string>
     <string name="audio_output_title">إخراج الصوت</string>
     <string name="audio_output_wired_headphones_label">سماعات الرأس المترابطة</string>
+    <string name="audio_quality_auto_effective_fmt">تلقائي (%1$s)</string>
     <string name="audio_quality_auto_fmt">تلقائي (تم اكتشافه: %1$s)</string>
     <string name="audio_quality_automatic">تلقائي</string>
     <string name="audio_quality_format">جودة الصوت</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">صفيحة</string>
     <string name="audio_reverb_small_room">غرفة صغيرة</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">فقط المضيف يمكنه تغيير الموافقات التلقائية في هذه الغرفة. اترك الغرفة لتحرير الإعدادات الخاصة بك.</string>
     <string name="listen_together_auto_approval_joins_description">الموافقة تلقائياً على طلبات الانضمام دون مراجعتها يدوياً</string>
     <string name="listen_together_auto_approval_suggestions_description">الموافقة تلقائياً على اقتراحات الأغاني من الضيوف و قائمة الانتظار</string>
     <string name="listen_together_blocked_users_description">عرض وإدارة المشاركين المحظورين من غرف الاستماع الخاصة بك.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">اليسار</string>
     <string name="lyrics_alignment_right_label">يمين</string>
     <string name="lyrics_artwork_overlay_description">عرض كلمات الأغاني على العمل الفني للاعب.</string>
+    <string name="lyrics_cover_dimming_title">غلاف غلاف خلف كلمات الأغاني</string>
+    <string name="lyrics_cover_dimming_description">قم بعمل اللاعب الفني عندما يتم عرض كلمات الأغاني عليها.</string>
+    <string name="lyrics_cover_dimming_opacity">غطاء أغاني غطاء تتقلص كثافة</string>
     <string name="lyrics_background_enabled_description">ارسم خلفية خلف كلمات الأغاني لتحسين القدرة على قراءتها.</string>
     <string name="lyrics_background_label">Lyrics Background</string>
     <string name="lyrics_behavior_section_title">السلوك</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">سيحل كاراوكي محله إذا وجد.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">كلمات الكراوكي</string>
+    <string name="lyrics_mode_label">وضع الكلمات</string>
     <string name="lyrics_mode_synchronized_label">كلمات متزامنة</string>
     <string name="lyrics_mode_unsynchronized_label">كلمات غير متزامنة</string>
     <string name="lyrics_not_available">لا توجد كلمات متاحة. الرجاء المحاولة مرة أخرى أو إدخالها يدويا.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">تشغيل التالي</string>
     <string name="player_action_previous">السابق</string>
     <string name="player_action_repeat">كرر</string>
+    <string name="player_repeat_mode_off">متوقف</string>
+    <string name="player_repeat_mode_one">كرر واحدة</string>
+    <string name="player_repeat_mode_all">كرر الكل</string>
     <string name="player_action_seek_forward">إعادة</string>
     <string name="player_action_seek_forward_30_seconds">إعادة توجيه 30 ثانية</string>
     <string name="player_action_seek_forward_5_seconds">إعادة توجيه 5 ثوان</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">لا تحفظ أحداث التشغيل المستخدمة للإحصائيات، التاريخ والاقتراحات في صور سريعة</string>
     <string name="player_pause_on_volume_zero">إيقاف عند مستوى الصوت صفر</string>
     <string name="player_picture_in_picture_content_description">اختر المحتوى المعروض في نافذة الصورة في الصورة.</string>
+    <string name="player_picture_in_picture_fixed_content_description">وتعرض نافذة الصورة في الصورة غلاف المسار.</string>
     <string name="player_picture_in_picture_enabled_description">السماح للاعب بأن يظهر في نافذة صورة صغيرة في الصورة.</string>
     <string name="player_play_button_rectangular_label">مستطيل</string>
     <string name="player_play_button_square_label">مربع</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">قائمة الانتظار تملأ ( أغاني%d)</string>
     <string name="player_remaining_time_visible_description">إظهار الوقت المتبقي في المسار الحالي.</string>
     <string name="player_restart_required_message">Player has to be restarted for the changes to be effective!</string>
+    <string name="player_restart_service_unavailable_message">اللاعب غير متوفر. التغييرات تطبق في المرة القادمة التي يبدأ فيها.</string>
+    <string name="player_restart_disconnect_android_auto_message">قطع اتصال Android تلقائياً لإعادة تشغيل المشغل.</string>
     <string name="player_rotating_buttons">أزرار الدوران</string>
     <string name="player_seek_backward_five_seconds">إرجاع 5 ثوان</string>
     <string name="player_seek_backward_thirty_seconds">إعادة الرياح 30 ثانية</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">اختر اللون المخصص المستخدم من قبل هذا العنصر.</string>
     <string name="visualizer_dark_background_description">استخدام خلفية سوداء خلف التصوير الصوتي.</string>
     <string name="visualizer_dark_background_title">خلفية داكنة للمتصور</string>
+    <string name="visualizer_cover_dimming_opacity">كثافة الغطاء المرئي</string>
     <string name="visualizer_debug_background">الخلفية المرئية</string>
     <string name="visualizer_enabled_description">عرض صورة مرئية متحركة تستجيب للصوت.</string>
     <string name="visualizer_line_thickness">سماكة الخط المرئي</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">جهاز البلوتوث</string>
     <string name="audio_output_usb_audio_label">صوت USB</string>
     <string name="audio_output_external_speaker_label">المتحدث الخارجي</string>
+    <string name="audio_output_device_unavailable">إخراج الصوت هذا لم يعد متوفراً.</string>
     <string name="audio_output_load_failed">فشل تحميل الأجهزة: %1$s</string>
     <string name="player_audio_mode">الصوت</string>
     <string name="player_video_mode">فيديو</string>
