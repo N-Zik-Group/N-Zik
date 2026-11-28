@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">إظهار شبكة الشهر على Rewind المنزل.</string>
     <string name="rewind_settings_monthly_notification">إشعار إعادة الإرسال الشهري</string>
     <string name="rewind_settings_monthly_notification_description">احصل على إشعار في الأول بأن الريح في الشهر السابق جاهزة.</string>
+    <string name="rewind_settings_notification_permission_hint">السماح بالإشعارات لـ N-Zik في إعدادات الأندرويد لتلقي تنبيهات الريع.</string>
     <string name="rewind_settings_notifications">إرجاع الإشعارات</string>
     <string name="rewind_settings_playlists_monthly">قائمة إعادة التشغيل الشهرية</string>
     <string name="rewind_settings_playlists_monthly_description">إنشاء قائمة إعادة تشغيل شهرية.</string>
