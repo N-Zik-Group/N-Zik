@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Desactivar y borrar los registros de depuración</string>
     <string name="logs_action_export">Exportar registros</string>
     <string name="logs_action_export_both">Exportar ambos registros</string>
     <string name="logs_action_export_crash">Exportar registro de fallos</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFICADO</string>
     <string name="updates_build_release_label">RELACIONADO</string>
     <string name="updates_cache_cleared">Caché borrada</string>
+    <string name="updates_cache_clear_failed">No se pudo borrar la caché de actualizaciones.</string>
+    <string name="updates_changelog_search_label">Cambios</string>
     <string name="updates_changelog_title">Novedades en %s</string>
     <string name="updates_channel_name">Actualizaciones</string>
     <string name="updates_check_mode_ask">Preguntar</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Estás cambiando a una versión beta. Esta versión puede contener errores o ser inestable. Es altamente recomendable hacer una copia de seguridad de sus datos antes de continuar o reportar cualquier problema.</string>
     <string name="updates_stable_to_beta_warning_title">Cambiando a la versión beta</string>
     <string name="updates_starting_status">Iniciando…</string>
-    <string name="updates_unavailable_build_description">Si ves este mensaje significa que tu build no tiene habilitada la actualización automática, actualiza la aplicación manualmente desde github</string>
+    <string name="updates_manual_update_install_source_message">Las actualizaciones automáticas no están disponibles en esta compilación. Actualice N-Zik a través del proveedor del que lo ha instalado.</string>
     <string name="updates_up_to_date">Actualizado</string>
     <string name="updates_warning_acknowledge">Entiendo</string>
     <string name="updates_check_failed">No se pudo comprobar si hay actualizaciones.</string>
