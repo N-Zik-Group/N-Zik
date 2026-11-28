@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Підключіть GitHub</string>
+    <string name="github_account_background_checks">Перевірка фону на GitHub</string>
+    <string name="github_account_background_checks_description">Перевірте свій обліковий запис на GitHub, і перевірте статус автоматично.</string>
     <string name="github_account_logout">Відключити GitHub</string>
     <string name="github_account_description">Використовуйте свій обліковий запис GitHub у магазині тем.</string>
     <string name="github_account_offline">Підключіться до мережі GitHub.</string>
