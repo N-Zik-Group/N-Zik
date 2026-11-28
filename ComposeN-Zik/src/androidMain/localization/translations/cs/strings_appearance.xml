@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Zdroj barev skla</string>
     <string name="glass_effect_tint_source_custom">Vlastní</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Vyberte zdroj barev skla, který použije odstín pro nastavení síly odstínu.</string>
     <string name="glass_effect_unsupported">Tento telefon nemá rozostřený hardware, takže každý povrch používá tónovaný film.</string>
     <string name="glass_effect_where_action_buttons">Tlačítka akce</string>
     <string name="glass_effect_where_action_buttons_description">Obvyklé hledání tlačítek a nástrojových lišt. Volby v ostatních skupinách jej mohou nahradit.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Minimální verze N-Zik</string>
     <string name="theme_store_submission_minimum_description">Nejstarší verze, která může použít tento motiv. Nové motivy výchozí pro kód verze %3$d. Používáte N-Zik %1$s (kód verze %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Tento motiv vyžaduje kód verze N-Zik Android %1$d , než jej bude možné publikovat.</string>
+    <string name="theme_store_local_feature_requires_update">Tento motiv vyžaduje kód verze N-Zik Android %1$d , než jej bude možné uložit.</string>
+    <string name="theme_store_submission_appearance_unsupported">Tato verze N-Zik nemůže přečíst uložený vzhled. Aktualizujte N-Zik nebo zvolte Použít aktuální vzhled k nahrazení.</string>
     <string name="theme_store_submission_version_code_label">Minimální kód verze</string>
     <string name="theme_store_submission_find_version_code">Najít verze a kódy N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (kód %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Upravit můj profil</string>
     <string name="theme_store_creator_sign_in">Připojte GitHub a upravte profil svého tvůrce.</string>
+    <string name="theme_store_creator_action_sign_in_required">Připojte svůj GitHub účet pro přístup k této akci tvůrce.</string>
     <string name="theme_store_creator_draft">Změny jsou uloženy v tomto zařízení jako koncept.</string>
     <string name="theme_store_creator_display_name">Veřejný název</string>
     <string name="theme_store_creator_bio">Bio</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d z 5</string>
     <string name="theme_store_support_pending">Kompatibilita ještě není vyřízena. Stále si můžete stáhnout tento motiv.</string>
     <string name="theme_store_support_requires_update">Aktualizujte N-Zik pro použití tohoto motivu.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik nemohl přečíst vzhled tohoto motivu.</string>
     <string name="theme_store_support_minimum">Pracuje s vaší verzí N-Zik.</string>
     <string name="theme_store_preview_normal">Normální</string>
     <string name="theme_store_preview_glass">Sklo</string>
