@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Цей телефон</string>
     <string name="audio_output_title">Вивід звуку</string>
     <string name="audio_output_wired_headphones_label">Гарнітура</string>
+    <string name="audio_quality_auto_effective_fmt">Автоматично (%1$s)</string>
     <string name="audio_quality_auto_fmt">Авто (виявлено: %1$s)</string>
     <string name="audio_quality_automatic">Автоматично</string>
     <string name="audio_quality_format">Якість звуку</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Тарілка</string>
     <string name="audio_reverb_small_room">Мала кімната</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Лише хост може змінити автоматичні схвалення в цій кімнаті. Залиште кімнату, щоб редагувати власні налаштування.</string>
     <string name="listen_together_auto_approval_joins_description">Автоматично затверджувати запити на приєднання, не перевіряючи їх вручну</string>
     <string name="listen_together_auto_approval_suggestions_description">Автоматично затверджувати пропозиції щодо пісень від гостей</string>
     <string name="listen_together_blocked_users_description">Перегляд та керування учасниками заблоковані з ваших кімнат, що прослуховують.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Ліворуч</string>
     <string name="lyrics_alignment_right_label">Праворуч</string>
     <string name="lyrics_artwork_overlay_description">Відображати текст пісні над мистецтвом.</string>
+    <string name="lyrics_cover_dimming_title">Зменшувати обкладинку за текстами</string>
+    <string name="lyrics_cover_dimming_description">Затінені обкладинки гравця, коли тексти пісень з\'являються над нею.</string>
+    <string name="lyrics_cover_dimming_opacity">інтенсивність затемнення тексту</string>
     <string name="lyrics_background_enabled_description">Намалюйте фон за текстами пісень, щоб поліпшити їх зручність.</string>
     <string name="lyrics_background_label">Тло текстів</string>
     <string name="lyrics_behavior_section_title">Поведінка</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Караоке замінить його якщо знайде.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">караоке тексти</string>
+    <string name="lyrics_mode_label">Режим текстів</string>
     <string name="lyrics_mode_synchronized_label">синхронізовані тексти пісень</string>
     <string name="lyrics_mode_unsynchronized_label">несинхронізовані тексти</string>
     <string name="lyrics_not_available">Немає доступних текстів. Будь ласка, спробуйте ще раз або введіть їх вручну.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Грати далі</string>
     <string name="player_action_previous">Попереднє</string>
     <string name="player_action_repeat">Повторити</string>
+    <string name="player_repeat_mode_off">Вимкнено</string>
+    <string name="player_repeat_mode_one">Повторити один раз</string>
+    <string name="player_repeat_mode_all">Повторити все</string>
     <string name="player_action_seek_forward">Переслати</string>
     <string name="player_action_seek_forward_30_seconds">Переслати 30 секунд</string>
     <string name="player_action_seek_forward_5_seconds">Переслати 5 секунд</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Не показувати та не зберігати нову історію відтворення</string>
     <string name="player_pause_on_volume_zero">Пауза при нульовій гучності</string>
     <string name="player_picture_in_picture_content_description">Виберіть вміст, відображений у вікні зображення всередині зображення.</string>
+    <string name="player_picture_in_picture_fixed_content_description">У вікні \"Картинку\" відображається обкладинка треку.</string>
     <string name="player_picture_in_picture_enabled_description">Дозволити гравцю з\'являтися в невеликому вікні зображення.</string>
     <string name="player_play_button_rectangular_label">Прямокутний</string>
     <string name="player_play_button_square_label">Площа</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Queue shuffled (%d songs)</string>
     <string name="player_remaining_time_visible_description">Показувати час, що залишився в поточній композиції.</string>
     <string name="player_restart_required_message">Гравець повинен бути перезапущений для ефективних змін!</string>
+    <string name="player_restart_service_unavailable_message">Плеєр недоступний. Зміни застосовуються наступного разу при старті.</string>
+    <string name="player_restart_disconnect_android_auto_message">Відключіть Android автоматично, щоб перезапустити плеєр.</string>
     <string name="player_rotating_buttons">Поворотні кнопки</string>
     <string name="player_seek_backward_five_seconds">Перемотати 5 секунд</string>
     <string name="player_seek_backward_thirty_seconds">Розморозити 30 секунд</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Виберіть користувацький колір, який використовує цей компонент.</string>
     <string name="visualizer_dark_background_description">Використовувати чорний фон за візуалізацією аудіо.</string>
     <string name="visualizer_dark_background_title">Темне тло для візуалізатора</string>
+    <string name="visualizer_cover_dimming_opacity">Інтенсивність візуалізатора</string>
     <string name="visualizer_debug_background">Тло візуалізації</string>
     <string name="visualizer_enabled_description">Відображати анімовану візуалізацію, яка реагує на звук.</string>
     <string name="visualizer_line_thickness">Товщина лінії візуалізатора</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Пристрій Bluetooth</string>
     <string name="audio_output_usb_audio_label">Звук USB</string>
     <string name="audio_output_external_speaker_label">Зовнішній динамік</string>
+    <string name="audio_output_device_unavailable">Цей вивід аудіо більше не доступний.</string>
     <string name="audio_output_load_failed">Не вдалося завантажити пристрої: %1$s</string>
     <string name="player_audio_mode">Аудіо</string>
     <string name="player_video_mode">Відео</string>
