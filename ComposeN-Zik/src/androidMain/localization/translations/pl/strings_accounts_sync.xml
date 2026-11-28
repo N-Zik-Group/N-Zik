@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Połącz GitHub</string>
+    <string name="github_account_background_checks">Sprawdzanie tła GitHub</string>
+    <string name="github_account_background_checks_description">Sprawdź swoje konto GitHub i sprawdź status automatycznie.</string>
     <string name="github_account_logout">Odłącz GitHub</string>
     <string name="github_account_description">Użyj swojego konta GitHub w Sklepie Motywów.</string>
     <string name="github_account_offline">Przejdź do trybu online, aby połączyć GitHub.</string>
