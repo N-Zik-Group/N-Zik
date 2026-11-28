@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">الاتصال بالخادم</string>
     <string name="listen_together_log_event_connection_closed">تم إغلاق الاتصال</string>
     <string name="listen_together_log_event_connection_failure">فشل الاتصال</string>
+    <string name="listen_together_invalid_server_address">عنوان خادم \"الاستماع معاً\" غير صالح. قم بتحديثه في الإعدادات ثم حاول مرة أخرى.</string>
+    <string name="listen_together_session_server_changed">قام الخادم بإعادة توجيه جلسة الاستماع معا إلى عنوان مختلف.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">فشل الاتصال، في انتظار الشبكة</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">فقدان الاتصال، سوف يحاول إعادة الاتصال</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">تجاهل حدث إعادة التشغيل</string>
