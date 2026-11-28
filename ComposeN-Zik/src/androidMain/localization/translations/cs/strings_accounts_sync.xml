@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Připojit GitHub</string>
+    <string name="github_account_background_checks">Kontrola pozadí GitHubu</string>
+    <string name="github_account_background_checks_description">Zkontrolujte svůj účet na GitHub a automaticky zkontrolujte stav.</string>
     <string name="github_account_logout">Odpojit GitHub</string>
     <string name="github_account_description">Použijte svůj GitHub účet v obchodu s šablonami.</string>
     <string name="github_account_offline">Připojte se k GitHub.</string>
