@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Mostrar la cuadrícula del mes en la casa de rebobinado.</string>
     <string name="rewind_settings_monthly_notification">Notificación de rebobinado mensual</string>
     <string name="rewind_settings_monthly_notification_description">Recibe notificaciones el 1 de enero de que el rebobinado del mes anterior está listo.</string>
+    <string name="rewind_settings_notification_permission_hint">Permitir notificaciones de N-Zik en la configuración de Android para recibir alertas de Rewind.</string>
     <string name="rewind_settings_notifications">Rebobinar notificaciones</string>
     <string name="rewind_settings_playlists_monthly">Lista de reproducción mensual de rebobinado</string>
     <string name="rewind_settings_playlists_monthly_description">Crear la lista de reproducción de rebobinado mensual.</string>
