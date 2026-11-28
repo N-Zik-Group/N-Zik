@@ -653,9 +653,11 @@ internal fun playerActionBarActions(
                         playerActions.add(PlayerActionSlot(buttonId) {
                             PlayerActionIcon(
                                 icon = R.drawable.smart_shuffle,
-                                color = if (smartShuffle?.active == true || smartShuffle?.loading == true) {
-                                    colorPalette().text
-                                } else colorPalette().textDisabled,
+                                color = when {
+                                    smartShuffle?.active == true -> colorPalette().accent
+                                    smartShuffle?.loading == true -> colorPalette().text
+                                    else -> colorPalette().textDisabled
+                                },
                                 enabled = !ltGuestLocked && smartShuffle?.enabled == true,
                                 onClick = { smartShuffle?.toggle?.invoke() },
                                 modifier = Modifier.size(24.dp),

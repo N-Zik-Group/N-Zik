@@ -177,13 +177,20 @@ internal fun MiniPlayerSlotButton(
             )
         }
         MiniPlayerButton.Repeat -> {
-            var currentRepeatMode by remember { mutableIntStateOf(player.repeatMode) }
+            var currentRepeatMode by remember(player) { mutableIntStateOf(player.repeatMode) }
+            DisposableEffect(player) {
+                val listener = object : Player.Listener {
+                    override fun onRepeatModeChanged(repeatMode: Int) { currentRepeatMode = repeatMode }
+                }
+                player.addListener(listener)
+                onDispose { player.removeListener(listener) }
+            }
             val queueLoopType = QueueLoopType.from(currentRepeatMode)
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
                 icon = queueLoopType.iconId,
-                color = if (queueLoopType != QueueLoopType.Default) colorPalette().accent else controlsColorText,
+                color = if (queueLoopType != QueueLoopType.Default) controlsColorText else colorPalette().textDisabled,
                 enabled = !listenTogetherGuestLock,
                 onClick = {
                     if (!listenTogetherGuestLock) {
@@ -279,17 +286,17 @@ internal fun MiniPlayerSlotButton(
             val isRadioActive = binder?.isRadioActive == true
             val offlineMode by OfflineMode.rememberEnabled()
             val radioSeed = mediaItem?.takeUnless { offlineMode || it.isLocal }
-            if (!isRadioActive && radioSeed == null) return
+            val radioAvailable = binder != null && (isRadioActive || radioSeed != null)
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
                 // Issue #866 (gh-866): state icon — radio_stop while the radio is active
                 // (the state change is the press feedback).
                 icon = radioButtonIcon(),
-                color = if (isRadioActive) colorPalette().accent else controlsColorText,
+                color = if (isRadioActive) controlsColorText else colorPalette().textDisabled,
                 // Guest lock: Radio is a stateful ON/OFF control owned by the host
                 // (blocked centrally in NZikRadio.startRadio + grayed here).
-                enabled = !listenTogetherGuestLock,
+                enabled = !listenTogetherGuestLock && radioAvailable,
                 onClick = {
                     if (binder?.stopActiveRadio() != true) {
                         radioSeed?.let { binder?.startRadio(it, isExplicit = true) }
@@ -377,7 +384,7 @@ internal fun MiniPlayerSlotButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
                 icon = R.drawable.song_lyrics,
-                color = if (isLyricsActive) colorPalette().accent else controlsColorText,
+                color = if (isLyricsActive) controlsColorText else colorPalette().textDisabled,
                 onClick = {
                     if (isLyricsActive) {
                         isLyricsActive = false
@@ -400,7 +407,7 @@ internal fun MiniPlayerSlotButton(
                 contentDescription = stringResource(button.labelRes),
                 preserveNativeGeometry = true,
                 icon = R.drawable.sound_effect,
-                color = if (isVisualizerActive) colorPalette().accent else controlsColorText,
+                color = if (isVisualizerActive) controlsColorText else colorPalette().textDisabled,
                 onClick = {
                     if (isVisualizerActive) {
                         isVisualizerActive = false
@@ -432,7 +439,7 @@ internal fun MiniPlayerSlotButton(
             if (offlineMode) return
             val discoverIsEnabled by rememberPreference(discoverKey, false)
             val isAutoFillEnabled by rememberPreference(autoLoadSongsInQueueKey, true)
-            val isDiscoverClickable = binder?.service?.nzikRadio?.isRadioActive == true || isAutoFillEnabled
+            val isDiscoverClickable = binder != null && (binder.isRadioActive || isAutoFillEnabled)
 
             GlassMiniPlayerIconButton(
                 contentDescription = stringResource(button.labelRes),
@@ -440,12 +447,12 @@ internal fun MiniPlayerSlotButton(
                 // Issue #866 (gh-866): state icon — discover_stop while discover mode is ON
                 // (the state change is the feedback).
                 icon = discoverButtonIconRes(discoverIsEnabled),
-                color = if (discoverIsEnabled && isDiscoverClickable) colorPalette().accent else controlsColorText,
+                color = if (discoverIsEnabled && isDiscoverClickable) controlsColorText else colorPalette().textDisabled,
                 // Guest lock: Discover is a stateful ON/OFF control owned by the host
                 // (blocked centrally in NZikRadio.toggleDiscover + grayed here).
-                enabled = !listenTogetherGuestLock,
+                enabled = !listenTogetherGuestLock && isDiscoverClickable,
                 onClick = {
-                    if (!listenTogetherGuestLock) binder?.service?.nzikRadio?.toggleDiscover()
+                    binder?.service?.toggleDiscover()
                     if (effectRotationEnabled) onRotatedChange(!isRotated)
                 },
                 onLongClick = { Toaster.i(R.string.queue_discover_description) },

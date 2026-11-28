@@ -1,6 +1,7 @@
 package app.n_zik.android.ui.screens.player
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.Icon
@@ -24,16 +26,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import app.n_zik.android.R
 import app.n_zik.android.colorPalette
 import app.n_zik.android.typography
-import app.n_zik.android.ui.components.navigation.header.TabToolBar
 import app.n_zik.android.ui.components.tab.toolbar.Button
 import app.n_zik.android.ui.components.tab.toolbar.Icon as ToolbarIcon
 import app.n_zik.android.ui.styling.Dimensions
@@ -42,7 +41,7 @@ import app.n_zik.android.components.glass.GlassQueueToolbarActions
 import app.n_zik.android.components.glass.queueToolbarBottomInset
 import app.n_zik.android.components.glass.GlassQueueToolbar
 import app.n_zik.android.components.glass.QueueEmbeddedMini
-import app.n_zik.android.components.ui.CollectionSmartShuffleCount
+import app.n_zik.android.components.ui.InlineCircularLoader
 
 object QueueToolBarState {
     var mediaItemCount by mutableIntStateOf(0)
@@ -114,31 +113,47 @@ fun QueueToolBar(
                 modifier = Modifier.wrapContentWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(R.drawable.musical_notes),
-                        contentDescription = stringResource(R.string.accessibility_number_of_songs_in_queue),
-                        tint = colorPalette().text,
-                        modifier = Modifier.padding(end = 2.dp)
-                    )
-                    BasicText(
-                        text = QueueToolBarState.mediaItemCount.toString(),
-                        style = TextStyle(
-                            color = colorPalette().text,
-                            fontStyle = typography().l.fontStyle
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                QueueToolbarCount(
+                    R.drawable.musical_notes,
+                    stringResource(R.string.accessibility_number_of_songs_in_queue),
+                    QueueToolBarState.mediaItemCount,
+                )
                 val recommendationCount = QueueToolBarState.recommendationCount
                 val loading = QueueToolBarState.smartShuffleLoading
-                CollectionSmartShuffleCount(recommendationCount > 0 || loading, loading, recommendationCount)
+                AnimatedVisibility(recommendationCount > 0 || loading) {
+                    QueueToolbarCount(
+                        R.drawable.smart_shuffle,
+                        stringResource(R.string.recommendations_action_smart_shuffle),
+                        recommendationCount,
+                        loading,
+                    )
+                }
             }
 
             GlassQueueToolbarActions(
                 buttons = QueueToolBarState.buttons,
                 arrow = queueArrow,
+            )
+        }
+    }
+}
+
+@Composable
+private fun QueueToolbarCount(icon: Int, label: String, count: Int, loading: Boolean = false) {
+    val color = colorPalette().text
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(painterResource(icon), contentDescription = label, tint = color, modifier = Modifier.size(18.dp))
+        if (loading) {
+            InlineCircularLoader(Modifier.size(18.dp), color = color)
+        } else {
+            BasicText(
+                count.toString(),
+                style = typography().s.copy(color = color),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }

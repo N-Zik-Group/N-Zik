@@ -2141,3 +2141,9 @@ Settings:
 - fix(accounts): handle expired YouTube sessions consistently
   - Apply the same YouTube session validity checks during startup, account changes and playback authentication failures.
   - Use the saved detailed-progress preference when running a full YouTube Music sync.
+
+Playback:
+- fix(player): align mini-player states and queue counters
+  - Use the selected mini-player button color for active playback modes and a disabled tint for inactive ones.
+  - Keep the configured Radio button visible and unavailable when it cannot start, and retain Stop for an active radio.
+  - Match the queue counters' icon, text and color. Use the accent for active Smart Shuffle in the full player.
