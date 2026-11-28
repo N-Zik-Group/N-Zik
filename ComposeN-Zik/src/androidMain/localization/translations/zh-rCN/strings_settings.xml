@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">我感到幸运的</string>
     <string name="automotive_action_play_all">播放全部</string>
+    <string name="automotive_page_range">第 %1$d 页 (%2$d - %3$d 页)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">选择向左滑动相册的动作。</string>
     <string name="gestures_album_track_swipe_right_description">选择向右滑动相册的操作。</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">独立于应用语言的界面镜像。</string>
     <string name="settings_interface_page_description">用户界面部分包含修改全局界面和导航的设置</string>
     <string name="settings_interface_page_title">界面</string>
+    <string name="settings_interface_shortcuts_title">快捷键</string>
     <string name="settings_interface_group_display">显示</string>
     <string name="settings_interface_group_indicators">指标</string>
     <string name="settings_group_profile_name">显示名称</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">列出滑动手势</string>
     <string name="settings_group_home_navigation">主导航</string>
     <string name="settings_group_menu_entries">菜单项</string>
-    <string name="settings_group_sort_defaults">默认排序顺序</string>
+    <string name="settings_group_sort_defaults">排序菜单顺序</string>
     <string name="settings_group_player_layout">播放器布局</string>
     <string name="settings_group_background_style">背景风格和颜色</string>
     <string name="settings_group_fullscreen_elements">屏幕元素</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">个性化建议、快速选择和倾听见解。</string>
     <string name="settings_page_audio_description">调整声音处理和音频效果。</string>
     <string name="settings_page_behavior_description">在浏览和收听时自定义手势和动作。</string>
-    <string name="settings_page_data_description">管理已下载音乐、缓存文件和备份。</string>
+    <string name="settings_page_data_description">管理本地音乐、缓存、备份和存储的应用数据。</string>
     <string name="settings_page_downloads_description">选择音乐下载的质量和行为。</string>
     <string name="settings_page_interface_description">自定义主题、字体、导航和界面布局。</string>
     <string name="settings_page_maintenance_description">维护应用，管理扩展和访问恢复工具。</string>
     <string name="settings_page_network_description">配置连接、流质量和代理设置。</string>
-    <string name="settings_page_playback_description">控制播放，排队行为和内容限制。</string>
+    <string name="settings_page_playback_description">选择播放的启动方式，继续和管理您的队列。</string>
     <string name="settings_page_player_description">自定义播放器外观、控制、歌词和通知。</string>
-    <string name="settings_page_privacy_description">暂停或清除监听和搜索历史。管理权限活动和屏幕保护。</string>
+    <string name="settings_page_privacy_description">控制保存的活动、权限历史和屏幕保护。</string>
     <string name="settings_page_profiles_description">管理您的个人资料身份和首选项。</string>
     <string name="settings_page_rewind_description">自定义您的收听摘要和回放播放列表。</string>
     <string name="settings_page_services_description">连接外部服务并与其他人监听。</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">透明背景</string>
     <string name="settings_player_action_bar_visualizer_visible_label">可视化器按钮</string>
     <string name="settings_player_action_restart_service">重启服务</string>
+    <string name="settings_app_action_restart">重启应用</string>
     <string name="settings_player_actions_spaced_evenly_label">平均分布间距</string>
     <string name="settings_player_album_cover_visible_label">显示专辑封面</string>
     <string name="settings_player_appearance_page_description">外观部分包含播放器视觉外观设置</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI 建议</string>
     <string name="settings_region_override">覆盖区域</string>
     <string name="settings_reset">重置</string>
+    <string name="settings_reset_account_usage_notice">已连接的账户将被禁用。您可以在设置中重新开启这些账户。</string>
+    <string name="settings_reset_glass">重置玻璃设置</string>
+    <string name="settings_reset_glass_appearance_description">还原默认的玻璃材料和效果。</string>
+    <string name="settings_reset_downloads">重置下载设置</string>
     <string name="settings_reset_all">重置所有设置</string>
     <string name="settings_reset_all_confirm">重置所有</string>
     <string name="settings_reset_all_confirmation">重置所有应用程序设置吗？保存帐户、凭据、个人资料、播放列表、下载和文件。</string>
+    <string name="settings_reset_profile_scope_notice">这将重置在此设备上共享的活动配置文件设置和设置。其他配置文件则保持自己的设置。</string>
+    <string name="settings_reset_listen_together_preservation_notice">您的监听服务器，用户名和被屏蔽的用户都被保留。</string>
+    <string name="settings_reset_playback_description">重置播放、队列和家长控制设置。</string>
     <string name="settings_reset_all_description">恢复所有应用程序设置为默认值。</string>
     <string name="settings_reset_choose_scope">选择要还原的设置</string>
     <string name="settings_reset_choose_scope_description">选择一个设置部分，然后恢复默认值。</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">滑动操作</string>
     <string name="settings_target_gain_loudness_info">标准化响度的目标增益</string>
     <string name="settings_target_unavailable">此设置与当前配置不可用。其部分被显示。</string>
+    <string name="settings_target_prerequisite">要使用此设置，请先配置 %1$s</string>
+    <string name="settings_target_rewind_notification_prerequisite">Turn on at least one of these settings to show Rewind notifications.\n%1$s</string>
     <string name="settings_theme_accent_color_label">强调色</string>
     <string name="settings_theme_background_1_color_label">背景颜色1</string>
     <string name="settings_theme_background_2_color_label">背景颜色2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">登录以浏览</string>
     <string name="settings_youtube_authenticated_search_description">如果关闭，搜索将作为客人发送，没有您的帐户，所以他们不再在您的 YouTube 搜索历史和建议</string>
     <string name="settings_youtube_authenticated_search_label">用于搜索的帐户</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">清除从 YouTube 同步的所有数据？这将删除从YouTube 导入的喜欢歌曲、专辑、艺术家和播放列表。</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">清除 YouTube 同步数据</string>
+    <string name="settings_youtube_logout_confirmation">在 N Zik中注销YouTube 音乐吗？您的本地库和下载将保持在此设备上。</string>
     <string name="settings_youtube_connection_required_description">首先连接到 YouTube 以启用此选项</string>
     <string name="settings_youtube_library_sync_content_description">播放列表、 专辑、 艺术家、历史记录等</string>
     <string name="settings_youtube_login_enabled_label">启用YouTube音乐登录</string>
