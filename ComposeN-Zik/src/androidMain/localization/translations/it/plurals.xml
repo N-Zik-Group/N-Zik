@@ -45,6 +45,14 @@
         <item quantity="one">Rimuovere %1$d traccia in questa scaletta dai preferiti?</item>
         <item quantity="other">Rimuovere le tracce di %1$d in questa scaletta dai preferiti?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Aggiungere %1$d canzone ai preferiti?</item>
+        <item quantity="other">Aggiungere brani %1$d ai preferiti?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Rimuovere la canzone %1$d dai preferiti?</item>
+        <item quantity="other">Rimuovere le canzoni di %1$d dai preferiti?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Aggiungere %1$d traccia da questo album ai preferiti?</item>
         <item quantity="other">Aggiungere tracce %1$d da questo album ai preferiti?</item>
@@ -104,6 +112,10 @@
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="one">A %1$d brano scaricato manca il file ed è stato rimosso. Si prega di scaricarlo di nuovo.</item>
         <item quantity="other">A %1$d brani scaricati mancano i file e sono stati rimossi. Si prega di scaricarli di nuovo.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Smart Shuffle ha aggiunto %d traccia.</item>
+        <item quantity="other">Smart Shuffle ha aggiunto %d tracce.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d brano consigliato</item>
