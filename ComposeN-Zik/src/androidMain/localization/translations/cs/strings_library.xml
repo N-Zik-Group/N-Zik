@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Záložka album</string>
     <string name="album_action_open">Přejít do alba</string>
+    <string name="playlist_action_open">Přejít na seznam skladeb</string>
+    <string name="podcast_action_open">Přejít na podkanál</string>
     <string name="album_alternative_versions">Alternativní verze</string>
     <string name="album_art">Obal alba</string>
-    <string name="album_found_online_verify">Album nalezeno online! Ověřte, zda je to správné.</string>
     <string name="album_left_swipe">Album přejetím vlevo</string>
     <string name="album_loading_song_count_format">Načítání %1$d skladeb…</string>
     <string name="album_lookup_failed">Nepodařilo se načíst album</string>
-    <string name="album_lookup_running">Vyhledávání alba z internetu</string>
     <string name="album_no_alternative_version">Toto album nemá žádnou alternativní verzi</string>
-    <string name="album_not_found">Album nenalezeno</string>
     <string name="album_related_title">Příbuzná alba</string>
     <string name="album_right_swipe">Album přejetím vpravo</string>
     <!-- Artist -->
     <string name="artist_action_follow">Sledovat</string>
+    <string name="artist_action_unfollow">Přestat sledovat</string>
+    <string name="artist_action_open">Přejít na umělce</string>
     <string name="artist_action_play_local_songs">Přehrát všechny lokální skladby</string>
+    <string name="artist_action_play_library_songs">Přehrát všechny skladby v knihovně</string>
     <string name="artist_deduplication_result">Sloučený %d duplicitní umělci s pravým umělcem</string>
     <string name="artist_following_status">Sledovaní</string>
-    <string name="artist_found_online_verify">Umělec nalezen online! Ověřte, zda je to správné.</string>
     <string name="artist_link_cleanup_result">Removed %d incorrect artist link(s)</string>
     <string name="artist_lookup_failed">Nepodařilo se načíst aritmus</string>
-    <string name="artist_lookup_running">Vyhledávání %s online...</string>
     <string name="artist_more_from">Více o</string>
     <string name="artist_overview_title">Přehled</string>
     <string name="artist_roundness">Okolnost umělce</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Interpret</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Odstranit uložené události přehrávání z historie poslechu.</string>
+    <string name="history_clear_listen_history_failed">Nelze dokončit čištění historie poslechu.</string>
     <string name="history_clear_search_history_description">Odstranit uložená vyhledávání z každé stránky vyhledávací historie bez změny předvolby historie.</string>
     <!-- Home -->
     <string name="home_albums_settings">Domácí alba</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Jste číslo jedna, klikněte a užijte si překvapení</string>
     <!-- Library -->
     <string name="library_action_bookmark">Záložka</string>
+    <string name="library_action_remove_bookmark">Odstranit záložku</string>
     <string name="library_action_randomize">Nárazník</string>
     <string name="library_albums_title">Alba</string>
     <string name="library_artists_title">Interpreti</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Export %d cached/downloaded songs?</string>
     <string name="library_favorites_title">Oblíbené</string>
     <string name="library_filter_by_title">Filtrovat podle</string>
+    <string name="library_filter_nzik_origin_label">Pouze N-Zik</string>
     <string name="library_filter_online_songs_label">Online skladby</string>
     <string name="library_filter_unmatched_songs_label">Neporovnané skladby</string>
     <string name="library_history_title">Historie</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">Knihovna YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Odstranit z nelíbí se mi</string>
     <string name="library_dislikes_added">Nelíbí se mi %s</string>
     <string name="library_dislikes_removed">Odebráno %s z nelíbí se</string>
+    <string name="library_dislikes_added_generic">Přidáno k nelíbí se</string>
+    <string name="library_dislikes_removed_generic">Odstraněno z neoblíbených</string>
     <string name="library_favorites_action_add">Přidat do oblíbených</string>
+    <string name="library_favorites_action_remove">Odebrat z oblíbených</string>
+    <string name="library_favorites_already_added">Již v oblíbených.</string>
     <string name="library_collection_favorites_action_manage">Spravovat oblíbené</string>
     <string name="library_favorites_added">Přidáno do oblíbených</string>
     <string name="library_favorites_removed">Odstraněno z oblíbených</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Nelze aktualizovat oblíbené položky.</string>
     <string name="library_collection_favorites_sync_failed">Nelze synchronizovat některé oblíbené s YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Zvolte kritérium řazení</string>
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Rok vydání alba</string>
     <string name="library_sort_artist">Interpret</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Klíčová slova</string>
     <string name="metadata_loading">Načítání…</string>
+    <string name="metadata_link_searching">Vyhledávání…</string>
+    <string name="metadata_link_manual_required">ID nebylo potvrzeno. Propojte jej ručně.</string>
     <string name="metadata_lyricist">Texikátor</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d hlasů o MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Změnit ID prohlížení playlistu</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Název</string>
     <string name="metadata_track">Stopa</string>
+    <string name="metadata_unknown_album">Neznámé album</string>
     <string name="metadata_unknown_artist">Neznámý interpret</string>
+    <string name="metadata_unknown_author">Neznámý autor</string>
+    <string name="metadata_unknown_playlist">Neznámý playlist</string>
+    <string name="metadata_unknown_podcast">Neznámý Podcast</string>
     <string name="metadata_unknown_title">Neznámý název</string>
+    <string name="metadata_unknown_year">Neznámý rok</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Líbí se mi</string>
     <string name="metadata_video_subscribers_label">Odběratelé</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Přidat do playlistu</string>
     <string name="playlist_action_add_hint">Přidat do playlistu</string>
+    <string name="playlist_add_destination_locked">Nemůžete přidat skladby do tohoto seznamu skladeb.</string>
     <string name="playlist_add_destination_unavailable">Tento seznam skladeb již není k dispozici pro přidání skladeb zařízení. Vyberte jiný seznam skladeb.</string>
     <string name="playlist_action_create">Nový playlist</string>
     <string name="playlist_action_delete_selected">Odstranit playlisty</string>
     <string name="playlist_action_export">Exportovat playlist</string>
     <string name="playlist_action_import">Importovat playlist</string>
+    <string name="playlist_actions_title">Akce playlistu</string>
+    <string name="playlist_action_import_collection">Importovat tuto kolekci</string>
+    <string name="playlist_action_import_from_source">Importovat ze souboru nebo odkazu</string>
     <string name="playlist_action_import_favorites">Importovat oblíbené</string>
     <string name="playlist_action_like_favorites_on_youtube">Jako N-Zik oblíbené na YouTube</string>
     <string name="playlist_action_remove_songs">Odstranit z playlistu</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Opravdu chcete odstranit VŠECHNY %d seznamů skladeb?</string>
     <string name="playlist_delete_confirmation">Opravdu chcete tento playlist smazat?</string>
     <string name="playlist_delete_dialog_title">Odstranit seznam skladeb</string>
+    <string name="playlist_deletion_failed">Nelze odstranit seznam skladeb z tohoto zařízení.</string>
+    <string name="playlist_deletion_partial">Některé seznamy skladeb byly z tohoto zařízení odstraněny.</string>
+    <string name="playlist_deletion_local_success">Z tohoto zařízení bylo smazáno.</string>
+    <string name="playlist_deletion_remote_success">Odstraněno z YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Nelze odstranit některé seznamy skladeb z YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Propojené seznamy skladeb mohou být také odstraněny z YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Odstranit playlisty</string>
     <string name="playlist_delete_selected_confirmation_count_format">Opravdu chcete odstranit tyto %d playlistů?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Tuto akci nelze provést, pokud se nelíbí všechny skladby</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Líbí se vám všechny skladby</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(odhadovaný čas) je vyžadován pro všechny skladby. Pro zrušení tohoto procesu musíte aplikaci zavřít. Chcete pokračovat?</string>
     <string name="playlist_name_input_hint">Zadejte název playlistu</string>
+    <string name="playlist_name_reserved">Tento název je vyhrazen pro přepsání playlistů.</string>
     <string name="playlist_operation_wait_message">Počkejte, může to trvat několik minut...</string>
     <string name="playlist_pinned_title">Připnuté playlisty</string>
     <string name="playlist_positions_shuffled">%d pozic zamícháno</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Rychlý výběr je vymazán</string>
     <string name="recommendations_reset_content_description">Znovu načtěte rychlý výběr s novými doporučeními. Vaše historie poslechu je zachována.</string>
     <string name="recommendations_section_other_youtube_title">S kruhovým příčným průřezem</string>
+    <string name="recommendations_smart_shuffle_add_failed">Inteligentní Zamíchání nelze přidat žádné stopy.</string>
     <string name="recommendations_section_visibility_description">Zakázat, pokud nechcete vidět</string>
     <string name="recommendations_show_section_label">Zobrazit</string>
     <string name="recommendations_smart_song_count_description">Nastavte počet chytrých doporučení, nebo nechte aplikaci automaticky upravovat.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Žádné návrhy</string>
     <string name="search_suggestions_title">Návrhy</string>
     <string name="search_title">Vyhledávání</string>
+    <string name="search_action_edit_query">Upravit vyhledávací dotaz</string>
     <string name="search_video_download_unsupported_message">Stahování videí není podporováno</string>
     <string name="search_videos_title">Videa</string>
     <string name="search_voice_action_start">Hlasové vyhledávání</string>
