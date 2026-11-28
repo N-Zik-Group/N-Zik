@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">玻璃颜色源</string>
     <string name="glass_effect_tint_source_custom">自定义</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">选择用于调整色调强度的玻璃颜色源。</string>
     <string name="glass_effect_unsupported">此手机没有硬件模糊性，所以每张表面都使用色薄膜。</string>
     <string name="glass_effect_where_action_buttons">动作按钮</string>
     <string name="glass_effect_where_action_buttons_description">通常寻找按钮和工具栏。其他组中的选择可以替换它。</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">最小N-Zik版本</string>
     <string name="theme_store_submission_minimum_description">可以应用此主题的最旧版本。新主题默认为版本代码 %3$d。您正在使用 N-Zik %1$s (版本代码 %2$d)。</string>
     <string name="theme_store_submission_feature_requires_update">此主题需要在 N-Zik Android 版本代码 %1$d 后才能发布。</string>
+    <string name="theme_store_local_feature_requires_update">此主题需要N-Zik Android 版本代码 %1$d 才能保存。</string>
+    <string name="theme_store_submission_appearance_unsupported">N-Zik版本无法读取保存的外观。更新 N-Zik，或选择当前外观来替换它。</string>
     <string name="theme_store_submission_version_code_label">最小版本代码</string>
     <string name="theme_store_submission_find_version_code">查找 N-Zik 版本和代码</string>
     <string name="theme_store_submission_version_with_code">%1$s (代码 %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">编辑我的个人资料</string>
     <string name="theme_store_creator_sign_in">连接 GitHub 以编辑您的创建者配置文件。</string>
+    <string name="theme_store_creator_action_sign_in_required">连接您的 GitHub 帐户以访问此创建者操作。</string>
     <string name="theme_store_creator_draft">更改已保存在此设备上作为草稿。</string>
     <string name="theme_store_creator_display_name">公共名称</string>
     <string name="theme_store_creator_bio">个人信息</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">5 中的 %1$d</string>
     <string name="theme_store_support_pending">兼容性正在等待。您仍然可以下载此主题。</string>
     <string name="theme_store_support_requires_update">更新 N-Zik以使用此主题。</string>
+    <string name="theme_store_appearance_unreadable">N-Zik无法阅读这个主题的外观。</string>
     <string name="theme_store_support_minimum">适合您的 N-Zik。</string>
     <string name="theme_store_preview_normal">普通的</string>
     <string name="theme_store_preview_glass">玻璃板</string>
