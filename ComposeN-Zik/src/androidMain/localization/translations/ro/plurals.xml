@@ -56,6 +56,16 @@
         <item quantity="few">Eliminați piesele %1$d din această listă de redare de la favorite?</item>
         <item quantity="other">Eliminați piesele %1$d din această listă de redare de la favorite?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Adaugă o melodie %1$d la favorite?</item>
+        <item quantity="few">Adaugă %1$d melodii la favorite?</item>
+        <item quantity="other">Adaugă %1$d melodii la favorite?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Eliminați melodia %1$d din favorite?</item>
+        <item quantity="few">Eliminați %1$d melodii de la favorite?</item>
+        <item quantity="other">Eliminați %1$d melodii de la favorite?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Adaugă %1$d melodie din acest album la favorite?</item>
         <item quantity="few">Adaugă piesele %1$d din acest album la favorite?</item>
@@ -130,6 +140,11 @@
         <item quantity="one">Melodia descărcată %1$d îi lipsește fișierul și a fost eliminată. Vă rugăm să o descărcați din nou.</item>
         <item quantity="few">%1$d melodii descărcate le lipsesc fișierele și au fost eliminate. Vă rugăm să le descărcați din nou.</item>
         <item quantity="other">%1$d melodii descărcate le lipsesc fișierele și au fost eliminate. Vă rugăm să le descărcați din nou.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Amestecare inteligentă a adăugat piesa %d.</item>
+        <item quantity="few">Amestecare inteligentă a adăugat piesele %d.</item>
+        <item quantity="other">Amestecare inteligentă a adăugat piesele %d.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d a recomandat melodia</item>
