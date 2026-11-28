@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Conectar GitHub</string>
+    <string name="github_account_background_checks">Comprobaciones de fondo de GitHub</string>
+    <string name="github_account_background_checks_description">Revisa tu cuenta de GitHub y revisa el estado automáticamente.</string>
     <string name="github_account_logout">Desconectar GitHub</string>
     <string name="github_account_description">Usa tu cuenta de GitHub en la Tienda de Temas.</string>
     <string name="github_account_offline">Conéctate para conectar a GitHub.</string>
