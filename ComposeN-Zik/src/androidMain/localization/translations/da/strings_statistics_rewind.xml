@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Vis månedens gitter på Rewind hjem.</string>
     <string name="rewind_settings_monthly_notification">Månedlig tilbagebetaling notifikation</string>
     <string name="rewind_settings_monthly_notification_description">Få besked på den 1. om, at den foregående måneds tilbagevind er klar.</string>
+    <string name="rewind_settings_notification_permission_hint">Tillad meddelelser for N-Zik i Android-indstillinger at modtage Rewind advarsler.</string>
     <string name="rewind_settings_notifications">Nulstil notifikationer</string>
     <string name="rewind_settings_playlists_monthly">Månedlig afspilningsliste</string>
     <string name="rewind_settings_playlists_monthly_description">Opret den månedlige afspilningsliste.</string>
