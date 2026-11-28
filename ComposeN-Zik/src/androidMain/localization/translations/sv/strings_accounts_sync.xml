@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Anslut GitHub</string>
+    <string name="github_account_background_checks">GitHub bakgrundskontroller</string>
+    <string name="github_account_background_checks_description">Kontrollera ditt GitHub-konto och granska status automatiskt.</string>
     <string name="github_account_logout">Koppla från GitHub</string>
     <string name="github_account_description">Använd ditt GitHub-konto i Temabutiken.</string>
     <string name="github_account_offline">Gå online för att ansluta GitHub.</string>
