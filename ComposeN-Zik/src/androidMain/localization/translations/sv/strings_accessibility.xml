@@ -11,6 +11,8 @@
     <string name="accessibility_filter">Filtrera</string>
     <string name="accessibility_import_playlist_name">importera spellistans namn</string>
     <string name="accessibility_loading">laddar...</string>
+    <string name="accessibility_menu_closed">Stängd</string>
+    <string name="accessibility_menu_open">Öppna</string>
     <string name="accessibility_new_playlist_name">nytt spellistnamn</string>
     <string name="accessibility_number_of_songs_in_queue">Antal låtar i kö</string>
     <string name="accessibility_origin_indicator">Ursprungsindikator</string>
