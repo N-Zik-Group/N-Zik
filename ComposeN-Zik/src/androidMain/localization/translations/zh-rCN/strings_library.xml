@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">收藏专辑</string>
     <string name="album_action_open">转到专辑</string>
+    <string name="playlist_action_open">转到播放列表</string>
+    <string name="podcast_action_open">转到播客中</string>
     <string name="album_alternative_versions">替代版本</string>
     <string name="album_art">专辑封面</string>
-    <string name="album_found_online_verify">在线找到相册！请确认这是正确的。</string>
     <string name="album_left_swipe">专辑 左滑动</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">获取相册失败</string>
-    <string name="album_lookup_running">从互联网查找相册</string>
     <string name="album_no_alternative_version">这个专辑没有任何其他版本</string>
-    <string name="album_not_found">找不到相册</string>
     <string name="album_related_title">相关专辑</string>
     <string name="album_right_swipe">专辑 右滑动</string>
     <!-- Artist -->
     <string name="artist_action_follow">关注</string>
+    <string name="artist_action_unfollow">取消关注</string>
+    <string name="artist_action_open">转到艺人</string>
     <string name="artist_action_play_local_songs">播放所有本地歌曲</string>
+    <string name="artist_action_play_library_songs">在书库中播放所有歌曲</string>
     <string name="artist_deduplication_result">将 %d 重复的艺人与右边的艺人合并</string>
     <string name="artist_following_status">已关注</string>
-    <string name="artist_found_online_verify">小艺术家在线找到！请确认这是正确的。</string>
     <string name="artist_link_cleanup_result">已删除 %d 不正确的艺人链接 (s)</string>
     <string name="artist_lookup_failed">获取参数失败</string>
-    <string name="artist_lookup_running">在线查找 %s...</string>
     <string name="artist_more_from">更多</string>
     <string name="artist_overview_title">概览</string>
     <string name="artist_roundness">艺术家圆角</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">艺术家</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">从侦听历史中删除保存的回放事件。</string>
+    <string name="history_clear_listen_history_failed">无法完成清除监听历史记录。</string>
     <string name="history_clear_search_history_description">删除从每个搜索历史页面保存的搜索，而不更改历史首选项。</string>
     <!-- Home -->
     <string name="home_albums_settings">家庭专辑</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">您是第一个数字，点击并享受惊喜。</string>
     <!-- Library -->
     <string name="library_action_bookmark">收藏</string>
+    <string name="library_action_remove_bookmark">删除书签</string>
     <string name="library_action_randomize">随机播放器</string>
     <string name="library_albums_title">专辑</string>
     <string name="library_artists_title">艺术家</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">导出 %d 缓存/下载歌曲？</string>
     <string name="library_favorites_title">收藏夹</string>
     <string name="library_filter_by_title">筛选方式</string>
+    <string name="library_filter_nzik_origin_label">仅限N-Zik</string>
     <string name="library_filter_online_songs_label">在线歌曲</string>
     <string name="library_filter_unmatched_songs_label">歌曲不匹配</string>
     <string name="library_history_title">历史记录</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM 库</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">从不喜欢中删除</string>
     <string name="library_dislikes_added">不喜欢的 %s</string>
     <string name="library_dislikes_removed">已从不喜欢的 %s 删除</string>
+    <string name="library_dislikes_added_generic">添加到不喜欢的</string>
+    <string name="library_dislikes_removed_generic">从不喜欢中删除</string>
     <string name="library_favorites_action_add">添加至收藏夹</string>
+    <string name="library_favorites_action_remove">从收藏夹中删除</string>
+    <string name="library_favorites_already_added">已经在收藏中。</string>
     <string name="library_collection_favorites_action_manage">管理收藏夹</string>
     <string name="library_favorites_added">已添加到收藏夹</string>
     <string name="library_favorites_removed">已从收藏夹移除</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">无法更新收藏夹。</string>
     <string name="library_collection_favorites_sync_failed">无法与 YouTube 同步一些收藏夹。</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">选择排序条件</string>
     <string name="library_sort_album">专辑</string>
     <string name="library_sort_album_year">专辑年份</string>
     <string name="library_sort_artist">艺术家</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">关键字</string>
     <string name="metadata_loading">正在加载…</string>
+    <string name="metadata_link_searching">正在搜索…</string>
+    <string name="metadata_link_manual_required">ID未确认。手动链接它。</string>
     <string name="metadata_lyricist">歌词师</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votes on MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">更改播放列表浏览器 ID</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">标题</string>
     <string name="metadata_track">曲目</string>
+    <string name="metadata_unknown_album">未知相册</string>
     <string name="metadata_unknown_artist">未知艺人</string>
+    <string name="metadata_unknown_author">未知作者</string>
+    <string name="metadata_unknown_playlist">未知播放列表</string>
+    <string name="metadata_unknown_podcast">未知播客</string>
     <string name="metadata_unknown_title">未知标题</string>
+    <string name="metadata_unknown_year">未知年份</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">喜欢的</string>
     <string name="metadata_video_subscribers_label">订阅者</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">添加到播放列表</string>
     <string name="playlist_action_add_hint">添加到歌单</string>
+    <string name="playlist_add_destination_locked">您不能将歌曲添加到此播放列表中。</string>
     <string name="playlist_add_destination_unavailable">此播放列表不再可用来添加设备歌曲。选择另一个播放列表。</string>
     <string name="playlist_action_create">新播放列表</string>
     <string name="playlist_action_delete_selected">删除播放列表</string>
     <string name="playlist_action_export">导出播放列表</string>
     <string name="playlist_action_import">导入播放列表</string>
+    <string name="playlist_actions_title">播放列表操作</string>
+    <string name="playlist_action_import_collection">导入此收藏</string>
+    <string name="playlist_action_import_from_source">从文件或链接导入</string>
     <string name="playlist_action_import_favorites">导入收藏夹</string>
     <string name="playlist_action_like_favorites_on_youtube">像 N-Zik 在 YouTube 上的收藏</string>
     <string name="playlist_action_remove_songs">从播放列表中删除</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">您确定要删除所有 %d 播放列表吗？</string>
     <string name="playlist_delete_confirmation">你真的想要删除这个播放列表吗？</string>
     <string name="playlist_delete_dialog_title">删除播放列表</string>
+    <string name="playlist_deletion_failed">无法从此设备上删除播放列表。</string>
+    <string name="playlist_deletion_partial">一些播放列表已从此设备中删除。</string>
+    <string name="playlist_deletion_local_success">已从此设备删除。</string>
+    <string name="playlist_deletion_remote_success">已从 YouTube Music删除。</string>
+    <string name="playlist_deletion_remote_failed">无法从 YouTube Music删除一些播放列表。</string>
+    <string name="playlist_deletion_youtube_confirmation">链接的播放列表也可以从 YouTube Music中删除。</string>
     <string name="playlist_delete_multiple_dialog_title">删除播放列表</string>
     <string name="playlist_delete_selected_confirmation_count_format">您确定要删除这些 %d 播放列表吗？</string>
     <string name="playlist_error_action_on_all_disliked_songs">当所有歌曲都不喜欢时，无法执行此操作</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">喜欢所有歌曲</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(估计时间)需要像所有歌曲一样。您需要关闭应用程序以取消此进程。您想要继续吗？</string>
     <string name="playlist_name_input_hint">输入播放列表名称</string>
+    <string name="playlist_name_reserved">此名称保留给回风播放列表。</string>
     <string name="playlist_operation_wait_message">请稍后，可能需要几分钟...</string>
     <string name="playlist_pinned_title">固定播放列表</string>
     <string name="playlist_positions_shuffled">%d 位置已排序</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">快速选择已清除</string>
     <string name="recommendations_reset_content_description">重新加载快速选项，带有新的建议。您的侦听历史将被保存。</string>
     <string name="recommendations_section_other_youtube_title">其他部分</string>
+    <string name="recommendations_smart_shuffle_add_failed">智能随机播放无法添加任何曲目。</string>
     <string name="recommendations_section_visibility_description">如果你不想看到, 请禁用</string>
     <string name="recommendations_show_section_label">显示</string>
     <string name="recommendations_smart_song_count_description">设置智能建议的数量，或者让应用自动调整。</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">无建议</string>
     <string name="search_suggestions_title">建议</string>
     <string name="search_title">搜索中</string>
+    <string name="search_action_edit_query">编辑搜索查询</string>
     <string name="search_video_download_unsupported_message">不支持下载视频</string>
     <string name="search_videos_title">MV</string>
     <string name="search_voice_action_start">语音搜索</string>
