@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Mostra la griglia mensile sulla casa Rewind.</string>
     <string name="rewind_settings_monthly_notification">Notifica di riavvolgimento mensile</string>
     <string name="rewind_settings_monthly_notification_description">Ricevi una notifica sulla prima volta che il riavvolgimento del mese precedente è pronto.</string>
+    <string name="rewind_settings_notification_permission_hint">Consenti alle notifiche per N-Zik nelle impostazioni Android di ricevere avvisi di Rewind.</string>
     <string name="rewind_settings_notifications">Ricarica le notifiche</string>
     <string name="rewind_settings_playlists_monthly">Riavvolgi la scaletta mensile</string>
     <string name="rewind_settings_playlists_monthly_description">Crea la playlist di riavvolgimento mensile.</string>
