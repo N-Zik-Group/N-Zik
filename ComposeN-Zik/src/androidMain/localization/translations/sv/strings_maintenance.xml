@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Inaktivera och rensa felsökningsloggar</string>
     <string name="logs_action_export">Exportera loggar</string>
     <string name="logs_action_export_both">Exportera båda loggarna</string>
     <string name="logs_action_export_crash">Exportera kraschlogg</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIERAD</string>
     <string name="updates_build_release_label">RELEAS</string>
     <string name="updates_cache_cleared">Cachen rensad</string>
+    <string name="updates_cache_clear_failed">Kunde inte rensa uppdateringscachen.</string>
+    <string name="updates_changelog_search_label">Ändringslogg</string>
     <string name="updates_changelog_title">Vad är nytt i %s</string>
     <string name="updates_channel_name">Appens uppdateringar</string>
     <string name="updates_check_mode_ask">Fråga</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Du byter till en Beta build. Denna version kan innehålla buggar eller vara instabil. Det rekommenderas starkt att säkerhetskopiera dina data innan du fortsätter eller rapporterar några problem.</string>
     <string name="updates_stable_to_beta_warning_title">Byter till Beta Build</string>
     <string name="updates_starting_status">Startar…</string>
-    <string name="updates_unavailable_build_description">Om du ser detta meddelande betyder det att din kompilering inte har automatisk uppdatering aktiverad, pls uppdatera appen manuellt från github</string>
+    <string name="updates_manual_update_install_source_message">Automatiska uppdateringar är inte tillgängliga på denna bygga. Uppdatera N-Zik via leverantören du installerade den från.</string>
     <string name="updates_up_to_date">Senast uppdaterad</string>
     <string name="updates_warning_acknowledge">Jag förstår</string>
     <string name="updates_check_failed">Kunde inte söka efter uppdateringar.</string>
