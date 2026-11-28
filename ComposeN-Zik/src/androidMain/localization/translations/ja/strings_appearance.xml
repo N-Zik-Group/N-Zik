@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">ガラスの色のソース</string>
     <string name="glass_effect_tint_source_custom">カスタム</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">色合いの強度を調整するために、色素を適用するガラス色源を選択します。</string>
     <string name="glass_effect_unsupported">この携帯電話にはハードウェアがぼやけていないため、どの表面にも色付きフィルムが使用されます。</string>
     <string name="glass_effect_where_action_buttons">アクションボタン</string>
     <string name="glass_effect_where_action_buttons_description">ボタンとツールバーの通常の外観。他のグループの選択肢はそれを置き換えることができます。</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">最小値 N-Zik バージョン</string>
     <string name="theme_store_submission_minimum_description">このテーマを適用できる最も古いバージョンです。新しいテーマはデフォルトでバージョンコード %3$dに設定されています。N-Zik %1$s (バージョンコード %2$d ) を使用しています。</string>
     <string name="theme_store_submission_feature_requires_update">このテーマは N-Zik Android のバージョンコード %1$d を公開する前に必要です。</string>
+    <string name="theme_store_local_feature_requires_update">このテーマは、N-Zik Androidのバージョンコード %1$d を保存する前に必要です。</string>
+    <string name="theme_store_submission_appearance_unsupported">このバージョンの N-Zik は保存された外観を読み取ることができません。N-Zik を更新するか、「現在の外観を使用」を選択して置き換えます。</string>
     <string name="theme_store_submission_version_code_label">最小バージョンコード</string>
     <string name="theme_store_submission_find_version_code">N-Zik のバージョンとコードを検索</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">プロフィールを編集</string>
     <string name="theme_store_creator_sign_in">GitHub に接続してクリエイタープロフィールを編集します。</string>
+    <string name="theme_store_creator_action_sign_in_required">GitHub アカウントを接続して、この作成者アクションにアクセスします。</string>
     <string name="theme_store_creator_draft">変更は下書きとしてこのデバイスに保存されます。</string>
     <string name="theme_store_creator_display_name">パブリックネーム</string>
     <string name="theme_store_creator_bio">略歴</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d / 5</string>
     <string name="theme_store_support_pending">互換性は保留中です。このテーマはまだダウンロードできます。</string>
     <string name="theme_store_support_requires_update">このテーマを使用するにはN-Zikを更新してください。</string>
+    <string name="theme_store_appearance_unreadable">N-Zik はこのテーマの外観を読むことができませんでした。</string>
     <string name="theme_store_support_minimum">N-Zikのバージョンで動作します。</string>
     <string name="theme_store_preview_normal">標準</string>
     <string name="theme_store_preview_glass">ガラス</string>
