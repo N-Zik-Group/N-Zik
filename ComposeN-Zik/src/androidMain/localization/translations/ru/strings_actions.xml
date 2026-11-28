@@ -19,6 +19,7 @@
     <string name="common_action_reset">Сбросить</string>
     <string name="common_action_retry">Повторить</string>
     <string name="common_action_save">Сохранить</string>
+    <string name="common_action_scroll_to_top">Прокрутка вверх</string>
     <string name="common_action_select">Выбрать</string>
     <string name="common_action_show_less">Меньше</string>
     <string name="common_action_show_more">Показать еще</string>
