@@ -134,6 +134,9 @@ object Database {
     private val _internal: DatabaseInitializer
         get() = DatabaseInitializer.Instance
 
+    internal fun observeSavedPlaylistChanges(): Flow<Set<String>> =
+        _internal.invalidationTracker.createFlow("Playlist", "SongPlaylistMap", emitInitialState = false)
+
     // Contract §10.3 (bridge, since 1.7.3, feature `library.live`): the library DAOs
     // below are transparent proxies that notify [libraryWriteNotifier] with the changed
     // entity per write, whatever the origin (phone UI, client §10.2 writes, imports,

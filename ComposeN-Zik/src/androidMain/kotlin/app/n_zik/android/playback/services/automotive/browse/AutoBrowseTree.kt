@@ -40,6 +40,7 @@ class AutoBrowseTree(
     private val publicationLock = Any()
     private var cacheProfile: String? = null
     private var profileGeneration = 0L
+    private var playlistRevision = 0L
     private val emittedFolders = linkedMapOf<String, MediaItem>()
     private data class BrowseKey(val browser: Any, val parentId: String)
     internal data class ArtworkChange(val browser: Any, val parentId: String, val itemCount: Int)
@@ -66,6 +67,7 @@ class AutoBrowseTree(
         pageIndex: Int,
         binder: PlayerServiceModern.Binder?,
         browser: Any = Unit,
+        retainVisible: Boolean = true,
     ): List<MediaItem> {
         val requestProfile = getActiveProfile(context)
         val generation = synchronized(publicationLock) {
@@ -82,12 +84,12 @@ class AutoBrowseTree(
         }
         val page = AutoMediaIdContract.parsePage(parentId)
         val actualParentId = page?.parentId ?: parentId
-        val key = cacheKey(requestProfile, generation, actualParentId)
-        val cached = synchronized(publicationLock) {
+        val (revision, cached) = synchronized(publicationLock) {
             if (!ownsPublication(requestProfile, generation)) return emptyList()
             // Ordinary navigation reloads its source; page requests reuse their parent.
             if (page == null) cache.clear()
-            cache.get(key)
+            val revision = playlistRevision.takeIf { isAutoSavedPlaylistParent(actualParentId) }
+            revision to cache.get(cacheKey(requestProfile, generation, actualParentId, revision))
         }
         val labelContext = ContextCompat.getContextForLanguage(context)
         val list = if (cached != null) cached else if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) {
@@ -106,7 +108,7 @@ class AutoBrowseTree(
                     if (browsable) action else selectionStore.capture(suggestion.parentId, listOf(action) + suggestion.items,
                         expectedProfile = requestProfile).firstOrNull()
                 }.filter { it.mediaMetadata.isBrowsable == true || selectionStore.resolveAction(it.mediaId) != null }
-                if (!publishCached(requestProfile, generation, actualParentId, captured)) return emptyList()
+                if (!publishCached(requestProfile, generation, actualParentId, captured, revision)) return emptyList()
                 captured
             }
         } else {
@@ -125,22 +127,43 @@ class AutoBrowseTree(
             synchronized(publicationLock) {
                 // Rejected generations must not mutate retention or legacy parent lookups.
                 if (!ownsPublication(requestProfile, generation)) return emptyList()
+                if (revision != null && revision != playlistRevision) return emptyList()
                 val captureParent = if (handler is SearchBrowseHandler) handler.canonicalParent(actualParentId, context) ?: actualParentId else actualParentId
                 val captured = selectionStore.capture(captureParent, loaded, expectedProfile = requestProfile)
-                if (!publishCached(requestProfile, generation, actualParentId, captured)) return emptyList()
+                if (!publishCached(requestProfile, generation, actualParentId, captured, revision)) return emptyList()
                 captured
             }
         }
         return synchronized(publicationLock) {
-            if (!ownsPublication(requestProfile, generation)) return emptyList()
+            if (!ownsPublication(requestProfile, generation) || (revision != null && revision != playlistRevision)) return emptyList()
             val visible = (if (actualParentId == AutoSuggestedQueueLoader.ROOT_ID) list
                 else PaginationHelper.paginate(labelContext, list, actualParentId, page?.index ?: pageIndex))
                 .map { withCurrentArtwork(it, requestProfile, includeLocal = true) }
-            visible.also {
-                visibleLists[BrowseKey(browser, parentId)] = visible
-                while (visibleLists.size > 32) visibleLists.remove(visibleLists.keys.first())
-            }
+            if (retainVisible) storeVisibleChildren(parentId, browser, visible)
+            visible
         }
+    }
+
+    internal fun savedPlaylistRevision(parentId: String): Long? = synchronized(publicationLock) {
+        playlistRevision.takeIf { isAutoSavedPlaylistParent(parentId) }
+    }
+
+    /** Keep a first page only after the callback has accepted its profile, access and source revision. */
+    internal fun <T> publishChildren(
+        parentId: String,
+        browser: Any,
+        revision: Long?,
+        newSnapshot: List<MediaItem>?,
+        publish: () -> T,
+    ): T? = synchronized(publicationLock) {
+        if (revision != null && revision != playlistRevision) return@synchronized null
+        if (newSnapshot != null) storeVisibleChildren(parentId, browser, newSnapshot)
+        publish()
+    }
+
+    private fun storeVisibleChildren(parentId: String, browser: Any, items: List<MediaItem>) {
+        visibleLists[BrowseKey(browser, parentId)] = items
+        while (visibleLists.size > 32) visibleLists.remove(visibleLists.keys.first())
     }
 
     /** Later standard pages retain the exact rows captured by the first request. */
@@ -226,18 +249,30 @@ class AutoBrowseTree(
     }
 
     /** A late result must never enter the namespace of a newer profile generation. */
-    internal fun publishCached(profile: String, generation: Long, parentId: String, items: List<MediaItem>): Boolean =
-        synchronized(publicationLock) {
-            if (!ownsPublication(profile, generation)) return@synchronized false
-            cache.put(cacheKey(profile, generation, parentId), items)
-            true
+    internal fun publishCached(
+        profile: String,
+        generation: Long,
+        parentId: String,
+        items: List<MediaItem>,
+        revision: Long? = null,
+    ): Boolean = synchronized(publicationLock) {
+        if (!ownsPublication(profile, generation) || (revision != null && revision != playlistRevision)) {
+            return@synchronized false
         }
+        cache.put(cacheKey(profile, generation, parentId, revision), items)
+        true
+    }
+
+    /** Invalidates future playlist loads while preserving already published selections and pages. */
+    internal fun invalidateSavedPlaylistContent() = synchronized(publicationLock) {
+        playlistRevision++
+    }
 
     private fun ownsPublication(profile: String, generation: Long): Boolean =
         cacheProfile == profile && profileGeneration == generation && getActiveProfile(context) == profile
 
-    private fun cacheKey(profile: String, generation: Long, parentId: String): String =
-        "$generation:$profile:$parentId"
+    private fun cacheKey(profile: String, generation: Long, parentId: String, revision: Long?): String =
+        "$generation:$profile:$parentId:${revision ?: 0L}"
 
     private fun withRemoteArtwork(item: MediaItem, profile: String): MediaItem =
         withCurrentArtwork(item, profile, includeLocal = false)

@@ -109,6 +109,45 @@ class AutoBrowseProfilePublicationTest {
     }
 
     @Test
+    fun `playlist refresh keeps displayed tokens and standard pages while future browse sees new rows`() {
+        val playlist = "playlist/42"
+        every { handler.handles(playlist) } returns true
+        var snapshot = "before"
+        coEvery { handler.getChildren(playlist, context, Database, any(), null) } answers { rows(snapshot) }
+        // The browse API is suspend while JUnit methods are synchronous.
+        runBlocking {
+            val firstBrowser = Any()
+            val old = tree.getChildren(playlist, 0, null, firstBrowser)
+            val oldToken = old.first().mediaId
+            snapshot = "after"
+            tree.invalidateSavedPlaylistContent()
+
+            assertEquals(old, tree.retainedChildren(playlist, firstBrowser))
+            val changed = tree.getChildren(AutoMediaIdContract.page(playlist, 1), -1, null)
+            assertEquals("after title 200", changed.first().mediaMetadata.title.toString())
+            assertEquals("before-0", tree.selectionStore.resolve(oldToken)?.items?.first()?.mediaId)
+        }
+    }
+
+    @Test
+    fun `an obsolete first page cannot replace a delivered playlist snapshot`() {
+        val playlist = "playlist/42"
+        val browser = Any()
+        every { handler.handles(playlist) } returns true
+        coEvery { handler.getChildren(playlist, context, Database, any(), null) } answers { rows("before") }
+        runBlocking {
+            val before = tree.getChildren(playlist, 0, null, browser)
+            val outdatedRevision = tree.savedPlaylistRevision(playlist)
+            val candidate = tree.getChildren(playlist, 0, null, browser, retainVisible = false)
+            tree.invalidateSavedPlaylistContent()
+
+            assertNull(tree.publishChildren(playlist, browser, outdatedRevision, candidate) { "published" })
+            assertEquals(before, tree.retainedChildren(playlist, browser))
+            assertEquals("before-0", tree.selectionStore.resolve(before.first().mediaId)?.items?.first()?.mediaId)
+        }
+    }
+
+    @Test
     fun `profile change while loading rejects the old capture before publishing any rows`() {
         coEvery { handler.getChildren(parent, context, Database, any(), null) } answers {
             rows("A").also { switchProfile("B") }

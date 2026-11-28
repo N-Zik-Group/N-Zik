@@ -37,7 +37,18 @@ import app.n_zik.android.core.network.utils.NetworkQualityHelper
 import androidx.media3.session.SessionCommands
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.guava.future
+import kotlinx.coroutines.guava.await
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -68,14 +79,22 @@ import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHo
 import app.n_zik.android.playback.services.automotive.browse.handlers.loadAutoHomeSongs
 import app.n_zik.android.components.ui.screens.home.loadHomeLibraryGroupSongs
 import app.n_zik.android.components.ui.screens.home.loadHomeParentItems
+import app.n_zik.android.components.ui.screens.home.onDevice.localSongRefreshRequests
+import app.n_zik.android.components.playlist.refreshPlaylistSource
 import app.n_zik.android.hasExplicitPrefix
 import app.n_zik.android.core.ondevice.isDeviceAlbumId
 import app.n_zik.android.core.ondevice.isDeviceArtistId
 import app.n_zik.android.core.ondevice.scanDeviceLibrary
+import app.n_zik.android.core.profiles.ProfileWorkOwner
+import app.n_zik.android.core.profiles.boundProcessStorageIdentity
 import app.n_zik.android.playback.services.automotive.browse.loadAutoLibraryPlaylists
 import app.n_zik.android.playback.services.automotive.browse.isUnmatchedPlaylistImport
 import app.n_zik.android.playback.services.automotive.browse.loadAutoFavorites
 import app.n_zik.android.playback.services.automotive.browse.loadAutoPlaylistSongs
+import app.n_zik.android.playback.services.automotive.browse.isAutoSavedPlaylistParent
+import app.n_zik.android.playback.services.automotive.browse.savedPlaylistDetailId
+import app.n_zik.android.playback.services.automotive.browse.savedPlaylistMetadataChanges
+import app.n_zik.android.playback.services.automotive.browse.AutoPlaylistVisits
 import app.n_zik.android.playback.services.automotive.DislikedExclusion
 import app.n_zik.android.playback.services.automotive.models.AutoMediaItemMapper
 import app.n_zik.android.playback.services.automotive.models.AutoAccessPolicy
@@ -83,6 +102,7 @@ import app.n_zik.android.playback.services.automotive.models.AutoSearchState
 import app.n_zik.android.playback.services.automotive.models.SessionMediaItemMapper
 import app.n_zik.android.playback.services.automotive.models.CancellableAutoMediaItemMapper
 import app.n_zik.android.utils.getActiveProfile
+import app.n_zik.android.utils.playlist.PlaylistRefreshPreferences
 import app.n_zik.android.playback.services.automotive.session.AutoSessionConstants.ID_QUICK_PICKS
 import app.n_zik.android.playback.services.diagnostics.PLAYBACK_DIAG_TAG
 import app.n_zik.android.playback.services.diagnostics.SEEK_PLAYER_COMMANDS
@@ -103,6 +123,11 @@ class AutoSessionCallback(
 ) : MediaLibrarySession.Callback {
     private val scope = NzikDispatchers.fireAndForget(NzikDispatchers.UI)
     private var observationJob: Job? = null
+    private var playlistObservationJob: Job? = null
+    private data class PlaylistBrowseScope(val profile: String, val detailIds: Set<Long>)
+    private val playlistBrowseScope = MutableStateFlow<PlaylistBrowseScope?>(null)
+    private val playlistVisits = AutoPlaylistVisits<MediaSession.ControllerInfo>()
+    private val openingPlaylistRefreshes = mutableSetOf<Pair<String, Long>>()
     private val selectionRequestLock = Any()
     private var deferredStartupRestore: (() -> Unit)? = null
     private val startupHandler = Handler(Looper.getMainLooper())
@@ -156,8 +181,10 @@ class AutoSessionCallback(
 
     private val connectionCommands = mutableMapOf<MediaSession.ControllerInfo, Pair<SessionCommands, Player.Commands>>()
 
+    @kotlin.OptIn(ExperimentalCoroutinesApi::class)
     internal fun observeRepository(session: MediaLibrarySession, onNetworkChange: () -> Unit) {
         observationJob?.cancel()
+        playlistObservationJob?.cancel()
         var online = accessPolicy().online
         // A controller may have connected before the real player and network observer were installed.
         refreshAccessCommands(session)
@@ -169,6 +196,74 @@ class AutoSessionCallback(
                     publishAccess(session)
                     onNetworkChange()
                 }
+            }
+        }
+        playlistObservationJob = scope.launch {
+            playlistBrowseScope.map { it?.profile }.distinctUntilChanged().collectLatest { profile ->
+                if (profile == null) return@collectLatest
+                val metadataChanges = playlistBrowseScope.map { browse ->
+                    browse?.takeIf { it.profile == profile }?.detailIds.orEmpty()
+                }.distinctUntilChanged().flatMapLatest { ids ->
+                    if (ids.isEmpty()) emptyFlow() else database.songPlaylistMapTable.observeSavedPlaylistSongMetadata(ids)
+                }.savedPlaylistMetadataChanges().flowOn(NzikDispatchers.DATA)
+                merge(
+                    database.observeSavedPlaylistChanges().map { Unit },
+                    localSongRefreshRequests.forProfile(profile).drop(1).map { Unit },
+                    metadataChanges,
+                ).collect {
+                    notifySavedPlaylistChildren(session, profile)
+                }
+            }
+        }
+    }
+
+    private fun observePlaylistBrowse(profile: String, actualParentId: String) {
+        if (!isAutoSavedPlaylistParent(actualParentId) || getActiveProfile(context) != profile) return
+        val detailId = savedPlaylistDetailId(actualParentId)
+        playlistBrowseScope.update { browse ->
+            val detailIds = browse?.takeIf { it.profile == profile }?.detailIds.orEmpty()
+            val updatedIds = if (detailId == null || detailId in detailIds) detailIds
+                else (detailIds + detailId).toList().takeLast(32).toSet()
+            PlaylistBrowseScope(profile, updatedIds)
+        }
+    }
+
+    private fun notifySavedPlaylistChildren(session: MediaLibrarySession, profile: String) {
+        if (getActiveProfile(context) != profile) return
+        autoBrowseTree.invalidateSavedPlaylistContent()
+        val playlistParents = synchronized(browsedParents) {
+            browsedParents.keys.filter { parent ->
+                isAutoSavedPlaylistParent(AutoMediaIdContract.parsePage(parent)?.parentId ?: parent)
+            }.onEach { browsedParents[it] = Int.MAX_VALUE }
+        }
+        playlistParents.forEach { session.notifyChildrenChanged(it, Int.MAX_VALUE, null) }
+    }
+
+    private fun refreshPlaylistOnVisit(
+        playlistId: Long,
+        profile: String,
+        epoch: Long,
+    ) {
+        val owner = boundProcessStorageIdentity()?.takeIf { it.id == profile } ?: return
+        val key = profile to playlistId
+        val canRefresh = {
+            accessEpoch.get() == epoch && accessPolicy().online && ProfileWorkOwner.isBound(context, owner)
+        }
+        if (!synchronized(openingPlaylistRefreshes) { openingPlaylistRefreshes.add(key) }) return
+        scope.launch(NzikDispatchers.DATA) {
+            try {
+                if (!canRefresh()) return@launch
+                val playlist = database.playlistTable.findById(playlistId).first() ?: return@launch
+                val preferences = PlaylistRefreshPreferences(context)
+                refreshPlaylistSource(playlist, refreshAllowed = {
+                    canRefresh() && preferences.get(playlist)
+                })
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                Timber.tag("AutoSessionCallback").w(error, "Unable to refresh the opened playlist")
+            } finally {
+                synchronized(openingPlaylistRefreshes) { openingPlaylistRefreshes.remove(key) }
             }
         }
     }
@@ -200,18 +295,20 @@ class AutoSessionCallback(
         notifyKnownChildren(session, accessChanged = true)
     }
 
-    private fun refreshAccessCommands(session: MediaLibrarySession) {
+    internal fun refreshAccessCommands(session: MediaLibrarySession) {
         connectionCommands.forEach { (controller, commands) ->
             session.setAvailableCommands(controller, commandsForAccess(commands.first), commands.second)
         }
     }
 
     private fun commandsForAccess(commands: SessionCommands): SessionCommands {
-        if (accessPolicy().online) return commands
+        val access = accessPolicy()
         return commands.buildUpon().apply {
-            NETWORK_COMMANDS.forEach { remove(it) }
-            remove(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH)
-            remove(SessionCommand.COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT)
+            NETWORK_COMMANDS.filterNot { access.allowsCommand(it.customAction) }.forEach { remove(it) }
+            if (!access.online) {
+                remove(SessionCommand.COMMAND_CODE_LIBRARY_SEARCH)
+                remove(SessionCommand.COMMAND_CODE_LIBRARY_GET_SEARCH_RESULT)
+            }
         }.build()
     }
 
@@ -249,8 +346,44 @@ class AutoSessionCallback(
 
     override fun onDisconnected(session: MediaSession, controller: MediaSession.ControllerInfo) {
         connectionCommands.remove(controller)
+        playlistVisits.leave(controller)
         autoBrowseTree.releaseBrowser(controller)
         super.onDisconnected(session, controller)
+    }
+
+    override fun onSubscribe(
+        session: MediaLibrarySession,
+        browser: MediaSession.ControllerInfo,
+        parentId: String,
+        params: MediaLibraryService.LibraryParams?,
+    ): ListenableFuture<LibraryResult<Void>> {
+        val subscription = super.onSubscribe(session, browser, parentId, params)
+        if (!isAutoSavedPlaylistParent(parentId)) return subscription
+        val profile = getActiveProfile(context)
+        val epoch = accessEpoch.get()
+        val playlistId = playlistVisits.enter(browser, parentId)
+        return scope.future(NzikDispatchers.UI) {
+            val result = subscription.await()
+            if (result.resultCode != LibraryResult.RESULT_SUCCESS) {
+                playlistVisits.leave(browser, parentId)
+            } else if (getActiveProfile(context) == profile && accessEpoch.get() == epoch) {
+                observePlaylistBrowse(profile, parentId)
+                // Saved rows render independently of the network refresh.
+                if (playlistId != null && playlistVisits.contains(browser, parentId)) {
+                    refreshPlaylistOnVisit(playlistId, profile, epoch)
+                }
+            }
+            result
+        }
+    }
+
+    override fun onUnsubscribe(
+        session: MediaLibrarySession,
+        browser: MediaSession.ControllerInfo,
+        parentId: String,
+    ): ListenableFuture<LibraryResult<Void>> {
+        playlistVisits.leave(browser, parentId)
+        return super.onUnsubscribe(session, browser, parentId)
     }
 
     private companion object {
@@ -267,6 +400,7 @@ class AutoSessionCallback(
         }
         queueApplicationOwner.release()
         observationJob?.cancel()
+        playlistObservationJob?.cancel()
         autoBrowseTree.selectionStore.clear()
         connectionCommands.clear()
         scope.cancel()
@@ -526,13 +660,17 @@ class AutoSessionCallback(
             val pageId = AutoMediaIdContract.parsePage(parentId)
             val pageIndex = pageId?.index ?: -1
             val actualParentId = pageId?.parentId ?: parentId
+            observePlaylistBrowse(requestProfile, actualParentId)
             noteCurrentContainer(actualParentId)
             repeat(2) { attempt ->
                 if (getActiveProfile(context) != requestProfile) {
                     return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
                 }
-                val list = (if (page > 0) autoBrowseTree.retainedChildren(parentId, browser) else null)
-                    ?: autoBrowseTree.getChildren(parentId, pageIndex, if (::binder.isInitialized) binder else null, browser)
+                val retained = if (page > 0) autoBrowseTree.retainedChildren(parentId, browser) else null
+                val revision = if (retained == null) autoBrowseTree.savedPlaylistRevision(actualParentId) else null
+                val list = retained ?: autoBrowseTree.getChildren(
+                    parentId, pageIndex, if (::binder.isInitialized) binder else null, browser, retainVisible = false,
+                )
                 val visible = PaginationHelper.slice(list, page, pageSize)
                 val credited = refreshAutoArtistCredits(context, database, requestProfile, visible)
                 val retryEpoch = synchronized(selectionRequestLock) {
@@ -540,18 +678,22 @@ class AutoSessionCallback(
                     val currentEpoch = accessEpoch.get()
                     val sameProfile = getActiveProfile(context) == requestProfile
                     if (epoch == currentEpoch && sameProfile && autoBrowseTree.selectionStore.retains(list)) {
-                        autoBrowseTree.retainFolders(visible, requestProfile)
-                        synchronized(browsedParents) {
-                            browsedParents[parentId] = list.size
-                            while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                        val published = autoBrowseTree.publishChildren(
+                            parentId, browser, revision, list.takeIf { retained == null },
+                        ) {
+                            autoBrowseTree.retainFolders(visible, requestProfile)
+                            synchronized(browsedParents) {
+                                browsedParents[parentId] = list.size
+                                while (browsedParents.size > 32) browsedParents.remove(browsedParents.keys.first())
+                            }
+                            LibraryResult.ofItemList(ImmutableList.copyOf(credited), params)
                         }
-                        return@future LibraryResult.ofItemList(ImmutableList.copyOf(credited), params)
+                        if (published != null) return@future published
                     }
-                    // Legacy browsers can render a rejected first page as an empty folder. Rebuild
-                    // after a network change, while preserving explicit policy and paging barriers.
+                    // Rebuild an invalidated first page without reinterpreting an already delivered page.
                     currentEpoch.takeIf {
-                        attempt == 0 && page == 0 && sameProfile &&
-                            epoch < currentEpoch && lastExplicitAccessInvalidation <= epoch
+                        attempt == 0 && page == 0 && sameProfile && lastExplicitAccessInvalidation <= epoch &&
+                            (epoch < currentEpoch || (revision != null && revision != autoBrowseTree.savedPlaylistRevision(actualParentId)))
                     }
                 } ?: return@future LibraryResult.ofError(SessionError.ERROR_BAD_VALUE)
                 epoch = retryEpoch

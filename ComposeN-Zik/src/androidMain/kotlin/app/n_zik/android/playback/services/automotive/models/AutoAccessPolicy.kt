@@ -23,7 +23,12 @@ class AutoAccessPolicy(
     val online: Boolean get() = NetworkQualityHelper.isNetworkConnected(context)
 
     /** Remote actions cannot initiate work while physical or profile-forced offline. */
-    fun allowsCommand(action: String): Boolean = online || action !in NETWORK_COMMANDS
+    fun allowsCommand(action: String): Boolean = when (action) {
+        AutoSessionConstants.ACTION_START_RADIO ->
+            binder?.isRadioActive == true || (online && binder?.player?.currentMediaItem?.isLocal == false)
+        in NETWORK_COMMANDS -> online
+        else -> true
+    }
 
     /** Local files, completed downloads and known-length complete cache spans need no network. */
     private suspend fun offlineIds(candidates: List<String>): Set<String> {

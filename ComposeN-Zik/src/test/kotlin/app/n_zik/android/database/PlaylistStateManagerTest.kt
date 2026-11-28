@@ -9,8 +9,11 @@ import app.n_zik.android.models.Song
 import app.n_zik.android.core.database.DatabaseInitializer
 import app.n_zik.android.core.database.PlaylistStateManager
 import app.n_zik.android.core.database.SongPlaylistMapTable
+import app.n_zik.android.playback.services.automotive.browse.savedPlaylistMetadataChanges
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
@@ -169,5 +172,34 @@ class PlaylistStateManagerTest {
         assertEquals(true, updated["song_b"])
 
         collector.cancel()
+    }
+
+    @Test
+    fun `car playlists observe visible song edits without observing listening counters`() = runBlocking {
+        insertSong("shown")
+        insertSong("other")
+        insertPlaylist(1, "Shown in the car")
+        insertPlaylist(2, "Other playlist")
+        songPlaylistMapDao.map("shown", 1)
+        songPlaylistMapDao.map("other", 2)
+
+        val snapshots = songPlaylistMapDao.observeSavedPlaylistSongMetadata(setOf(1L))
+        val original = snapshots.first()
+        assertEquals(listOf("shown"), original.map { it.id })
+        val observing = CompletableDeferred<Unit>()
+        val change = async {
+            snapshots.onEach { observing.complete(Unit) }.savedPlaylistMetadataChanges().first()
+        }
+        withTimeout(10_000) { observing.await() }
+
+        db.songTable.updateTotalPlayTime("shown", 30_000)
+        db.songTable.updateTitle("other", "Unrelated rename")
+        shadowOf(Looper.getMainLooper()).idle()
+        assertEquals(original, snapshots.first())
+
+        db.songTable.updateTitle("shown", "Renamed track")
+        shadowOf(Looper.getMainLooper()).idle()
+        withTimeout(10_000) { change.await() }
+        assertEquals("Renamed track", snapshots.first().single().title)
     }
 }

@@ -38,6 +38,34 @@ class AutoAccessPolicyTest {
     private fun item(id: String, key: String = id) = MediaItem.Builder().setMediaId(id)
         .setUri("https://example.com/$key").setCustomCacheKey(key).build()
 
+    @Test fun `offline radio commands can stop an active radio but cannot start one`() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns false
+        val binder = mockk<PlayerServiceModern.Binder>()
+        every { binder.isRadioActive } returnsMany listOf(true, false)
+        val policy = AutoAccessPolicy(RuntimeEnvironment.getApplication(), Database, MyDownloadHelper, binder)
+
+        assertTrue(policy.allowsCommand(AutoSessionConstants.ACTION_START_RADIO))
+        assertFalse(policy.allowsCommand(AutoSessionConstants.ACTION_START_RADIO))
+        assertFalse(policy.allowsCommand(AutoSessionConstants.ACTION_TOGGLE_DOWNLOAD))
+    }
+
+    @Test fun `radio needs a remote seed only when starting`() {
+        mockkObject(NetworkQualityHelper)
+        every { NetworkQualityHelper.isNetworkConnected(any()) } returns true
+        val binder = mockk<PlayerServiceModern.Binder>()
+        val player = mockk<androidx.media3.common.Player>()
+        every { binder.player } returns player
+        every { binder.isRadioActive } returnsMany listOf(false, false, false, true)
+        every { player.currentMediaItem } returnsMany listOf(null, item("local:9"), item("remote"))
+        val policy = AutoAccessPolicy(RuntimeEnvironment.getApplication(), Database, MyDownloadHelper, binder)
+
+        assertFalse(policy.allowsCommand(AutoSessionConstants.ACTION_START_RADIO))
+        assertFalse(policy.allowsCommand(AutoSessionConstants.ACTION_START_RADIO))
+        assertTrue(policy.allowsCommand(AutoSessionConstants.ACTION_START_RADIO))
+        assertTrue(policy.allowsCommand(AutoSessionConstants.ACTION_START_RADIO))
+    }
+
     // JUnit is synchronous; bridge the suspend access-policy query.
     @Test fun `offline accepts only completed downloads and local occurrences using canonical cache keys`() = runBlocking {
         mockkObject(NetworkQualityHelper)

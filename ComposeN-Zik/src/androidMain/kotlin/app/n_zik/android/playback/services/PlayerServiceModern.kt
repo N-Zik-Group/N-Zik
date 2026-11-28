@@ -842,7 +842,10 @@ class PlayerServiceModern : MediaLibraryService(),
         radioStateObserverJob = coroutineScope.launch(NzikDispatchers.UI) {
             snapshotFlow { nzikRadio.isRadioActive }
                 .distinctUntilChanged()
-                .collect { updateDefaultNotification() }
+                .collect {
+                    mediaLibrarySessionCallback.refreshAccessCommands(mediaSession)
+                    updateDefaultNotification()
+                }
         }
 
         val filter = IntentFilter().apply {
@@ -1507,7 +1510,12 @@ class PlayerServiceModern : MediaLibraryService(),
         // P16 (2026-10-23): refresh the main-thread locality snapshot read by the load gate.
         val wasLocal = currentMediaIsLocal
         currentMediaIsLocal = mediaItem?.isLocal == true
-        if (wasLocal != currentMediaIsLocal && ::mediaSession.isInitialized) updateDefaultNotification()
+        if ((wasLocal != currentMediaIsLocal || (mediaItem == null) != (currentMediaItem.value == null)) &&
+            ::mediaSession.isInitialized
+        ) {
+            mediaLibrarySessionCallback.refreshAccessCommands(mediaSession)
+            updateDefaultNotification()
+        }
         if (!isInternalCrossfadeSeek && (reason == Player.MEDIA_ITEM_TRANSITION_REASON_SEEK || reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED)) {
             cancelCrossfadeAndReset()
         }
@@ -2461,9 +2469,15 @@ class PlayerServiceModern : MediaLibraryService(),
     }
 
     fun startRadio() {
-        if (!NetworkQualityHelper.isNetworkConnected(this)) return
-        player.currentMediaItem?.let { binder.startRadio(it, false, null, true) }
+        if (!::nzikRadio.isInitialized) return
+        if (nzikRadio.isRadioActive) {
+            nzikRadio.stopRadio(showToast = true)
+        } else {
+            player.currentMediaItem?.takeUnless { it.isLocal }?.let { binder.startRadio(it, isExplicit = true) }
+        }
     }
+
+    private fun isRadioRunning(): Boolean = ::nzikRadio.isInitialized && nzikRadio.isRadioActive
 
     // Issue #866 (gh-866): discover command button (notification + AA overflow) — routed through
     // the central NZikRadio.toggleDiscover() so its guest-lock and radio/auto-fill precheck
@@ -2946,7 +2960,7 @@ class PlayerServiceModern : MediaLibraryService(),
             get() = nzikRadio.isLoading
 
         val isRadioActive: Boolean
-            get() = nzikRadio.isRadioActive
+            get() = isRadioRunning()
 
         val radioActionTextRes: Int
             get() = nzikRadio.radioActionTextRes

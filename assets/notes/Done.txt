@@ -2162,3 +2162,9 @@ Settings:
   - Keep the Restart player action and confirm a fresh service connection after stopping the old service.
   - Wait for the activity to return to the foreground when needed and keep audio initialization outside the restart result.
   - Keep the restart request available when Android Auto still holds the player service.
+
+Android Auto:
+- fix(auto): refresh saved playlists and playback commands
+  - Refresh visible playlist metadata on database changes without reloading for listening counters.
+  - Remember playlist visits within the active profile and refresh action availability when radio or the current track changes.
+  - Preserve Stop radio and prevent unsupported starts on local tracks.

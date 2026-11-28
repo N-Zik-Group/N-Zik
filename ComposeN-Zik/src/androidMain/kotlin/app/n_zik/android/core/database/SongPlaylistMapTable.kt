@@ -18,6 +18,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
 
+data class SavedPlaylistSongMetadata(
+    val id: String,
+    val title: String,
+    val artistsText: String?,
+    val durationText: String?,
+    val thumbnailUrl: String?,
+)
+
 @Dao
 @RewriteQueriesToDropUnusedColumns
 interface SongPlaylistMapTable {
@@ -56,6 +64,15 @@ interface SongPlaylistMapTable {
 
     @Query("SELECT * FROM SongPlaylistMap WHERE songId LIKE 'local:%'")
     fun observeDeviceTrackMappings(): Flow<List<SongPlaylistMap>>
+
+    /** Observes display fields without including listening counters. */
+    @Query("""
+        SELECT DISTINCT S.id, S.title, S.artistsText, S.durationText, S.thumbnailUrl
+        FROM SongPlaylistMap M JOIN Song S ON S.id = M.songId
+        WHERE M.playlistId IN (:playlistIds)
+        ORDER BY S.id
+    """)
+    fun observeSavedPlaylistSongMetadata(playlistIds: Set<Long>): Flow<List<SavedPlaylistSongMetadata>>
 
     /** All [Song]s mapped to the playlist whose [Playlist.id] equals [playlistId]. */
     @Query("""
