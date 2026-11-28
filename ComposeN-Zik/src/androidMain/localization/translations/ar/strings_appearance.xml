@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">مصدر اللون الزجاجي</string>
     <string name="glass_effect_tint_source_custom">مخصص</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">اختر مصدر لون زجاج يطبق صبغة لضبط قوة الصبغة.</string>
     <string name="glass_effect_unsupported">هذا الهاتف ليس لديه جهاز ضبابي، لذلك كل سطح يستخدم الفيلم الملصق.</string>
     <string name="glass_effect_where_action_buttons">أزرار الإجراء</string>
     <string name="glass_effect_where_action_buttons_description">البحث المعتاد للأزرار وأشرطة الأدوات. الخيارات في المجموعات الأخرى يمكن أن تحل محلها.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">الحد الأدنى لإصدار N-Zik</string>
     <string name="theme_store_submission_minimum_description">أقدم إصدار يمكن تطبيق هذا الموضوع. السمات الجديدة الافتراضية إلى رمز الإصدار %3$d. أنت تستخدم N-Zik %1$s (رمز الإصدار %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">يتطلب هذا الموضوع رمز إصدار أندرويد N-Zik %1$d قبل أن يمكن نشره.</string>
+    <string name="theme_store_local_feature_requires_update">يتطلب هذا الموضوع رمز إصدار أندرويد N-Zik %1$d قبل أن يمكن حفظه.</string>
+    <string name="theme_store_submission_appearance_unsupported">هذا الإصدار من N-Zik لا يمكن قراءة المظهر المحفوظ. قم بتحديث N-Zik أو اختر المظهر الحالي لاستبداله.</string>
     <string name="theme_store_submission_version_code_label">رمز الإصدار الأدنى</string>
     <string name="theme_store_submission_find_version_code">العثور على إصدارات أكواد N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (الرمز %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">تحرير ملفي الشخصي</string>
     <string name="theme_store_creator_sign_in">قم بتوصيل GitHub لتعديل الملف الشخصي للمنشئ الخاص بك.</string>
+    <string name="theme_store_creator_action_sign_in_required">قم بتوصيل حسابك في GitHub للوصول إلى عمل هذا المنشئ.</string>
     <string name="theme_store_creator_draft">يتم حفظ التغييرات على هذا الجهاز كمسودة.</string>
     <string name="theme_store_creator_display_name">الاسم العام</string>
     <string name="theme_store_creator_bio">بيو</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d من أصل 5</string>
     <string name="theme_store_support_pending">التوافق معلق. لا يزال بإمكانك تنزيل هذا الموضوع.</string>
     <string name="theme_store_support_requires_update">قم بتحديث N-Zik لاستخدام هذا الموضوع.</string>
+    <string name="theme_store_appearance_unreadable">لم يستطع N-Zik قراءة مظهر هذا الموضوع.</string>
     <string name="theme_store_support_minimum">يعمل مع نسختك من N-Zik.</string>
     <string name="theme_store_preview_normal">عادي</string>
     <string name="theme_store_preview_glass">زجاج</string>
