@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Takaisin</string>
     <string name="common_answer_no">Ei</string>
     <string name="common_artist_conjunction_and">ja</string>
     <string name="common_clipboard_copy_failed">Tekstin kopiointi leikepöydälle epäonnistui, yritä uudelleen</string>
