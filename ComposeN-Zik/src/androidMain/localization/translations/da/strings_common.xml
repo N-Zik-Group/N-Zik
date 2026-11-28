@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Tilbage</string>
     <string name="common_answer_no">Nej</string>
     <string name="common_artist_conjunction_and">og</string>
     <string name="common_clipboard_copy_failed">Kunne ikke kopiere tekst til udklipsholderen, prøv igen</string>
