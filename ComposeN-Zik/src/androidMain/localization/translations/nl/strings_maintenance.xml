@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Schakel debug logs uit en wis</string>
     <string name="logs_action_export">Logs exporteren</string>
     <string name="logs_action_export_both">Exporteer beide logs</string>
     <string name="logs_action_export_crash">Crashlogboek exporteren</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIEERD</string>
     <string name="updates_build_release_label">VERWIJDEREN</string>
     <string name="updates_cache_cleared">Cache gewist</string>
+    <string name="updates_cache_clear_failed">Kan de update-cache niet legen.</string>
+    <string name="updates_changelog_search_label">Wijzigingslogboek</string>
     <string name="updates_changelog_title">Wat is er nieuw in %s</string>
     <string name="updates_channel_name">App updates</string>
     <string name="updates_check_mode_ask">Vragen</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">U schakelt over naar een bètaversie. Deze versie kan bugs of instabiel zijn. Het wordt sterk aanbevolen om uw gegevens te back-uppen voordat u verder gaat of een probleem meldt.</string>
     <string name="updates_stable_to_beta_warning_title">Overschakelen naar Beta Build</string>
     <string name="updates_starting_status">Starting…</string>
-    <string name="updates_unavailable_build_description">Als u dit bericht ziet, betekent dit dat uw versie niet automatisch bijgewerkt heeft, pls de app handmatig updaten vanaf github</string>
+    <string name="updates_manual_update_install_source_message">Automatische updates zijn niet beschikbaar in deze build. Update N-Zik via de provider waaruit je het geïnstalleerd hebt.</string>
     <string name="updates_up_to_date">Bijgewerkt tot</string>
     <string name="updates_warning_acknowledge">Ik begrijp het</string>
     <string name="updates_check_failed">Kon niet controleren op updates.</string>
