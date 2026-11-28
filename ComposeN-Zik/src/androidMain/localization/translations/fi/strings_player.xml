@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Tämä puhelin</string>
     <string name="audio_output_title">Äänen ulostulo</string>
     <string name="audio_output_wired_headphones_label">Langalliset kuulokkeet</string>
+    <string name="audio_quality_auto_effective_fmt">Automaattinen (%1$s)</string>
     <string name="audio_quality_auto_fmt">Automaattinen (havaittu: %1$s)</string>
     <string name="audio_quality_automatic">Automaattinen</string>
     <string name="audio_quality_format">Äänen Laatu</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Levy</string>
     <string name="audio_reverb_small_room">Pieni Huone</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Vain isäntä voi vaihtaa automaattisesti hyväksyntää tässä huoneessa. Jätä huone muokataksesi omia asetuksiasi.</string>
     <string name="listen_together_auto_approval_joins_description">Hyväksy liittymispyynnöt automaattisesti tarkistamatta niitä manuaalisesti</string>
     <string name="listen_together_auto_approval_suggestions_description">Hyväksy ja laita kappaleiden ehdotukset automaattisesti vierailta</string>
     <string name="listen_together_blocked_users_description">Tarkastele ja hallitse osallistujia, jotka on estetty kuunteluhuoneistasi.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Vasen</string>
     <string name="lyrics_alignment_right_label">Oikea</string>
     <string name="lyrics_artwork_overlay_description">Näytä sanoitukset soittimen taiteessa.</string>
+    <string name="lyrics_cover_dimming_title">Himmennä peite sanoitusten taakse</string>
+    <string name="lyrics_cover_dimming_description">Tummenna pelaajan kuvitus, kun sanoitukset näytetään sen päällä.</string>
+    <string name="lyrics_cover_dimming_opacity">Sanoitusten peitteen himmennysvoimakkuus</string>
     <string name="lyrics_background_enabled_description">Piirrä sanoitusten takana oleva tausta parantaaksesi niiden luettavuutta.</string>
     <string name="lyrics_background_label">Sanoitusten tausta</string>
     <string name="lyrics_behavior_section_title">Käyttäytyminen</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Karaoke korvaa sen jos löytyy.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke sanoitukset</string>
+    <string name="lyrics_mode_label">Sanoitusten tila</string>
     <string name="lyrics_mode_synchronized_label">synkronoidut sanoitukset</string>
     <string name="lyrics_mode_unsynchronized_label">synkronoimattomat sanoitukset</string>
     <string name="lyrics_not_available">Ei sanoituksia saatavilla. Yritä uudelleen tai kirjoita ne manuaalisesti.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Soita seuraavaksi</string>
     <string name="player_action_previous">Edellinen</string>
     <string name="player_action_repeat">Uudelleentoisto</string>
+    <string name="player_repeat_mode_off">Pois</string>
+    <string name="player_repeat_mode_one">Toista yksi</string>
+    <string name="player_repeat_mode_all">Toista kaikki</string>
     <string name="player_action_seek_forward">Eteenpäin</string>
     <string name="player_action_seek_forward_30_seconds">Eteenpäin 30 sekuntia</string>
     <string name="player_action_seek_forward_5_seconds">Eteenpäin 5 sekuntia</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Ei tallenna toiston tapahtumia, joita käytetään tilastoissa, historiassa ja pikavalinnan ehdotuksissa</string>
     <string name="player_pause_on_volume_zero">Äänenvoimakkuuden ollessa nolla, laita soitto tauolle</string>
     <string name="player_picture_in_picture_content_description">Valitse kuva -ikkunassa näytettävä sisältö.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Kuvassa näkyvä ikkuna näyttää kappaleen kannen.</string>
     <string name="player_picture_in_picture_enabled_description">Anna pelaajan näkyä pienessä kuvan sisäisessä ikkunassa.</string>
     <string name="player_play_button_rectangular_label">Suorakulmainen</string>
     <string name="player_play_button_square_label">Neliö</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Jono sekoitettu (%d kappaletta)</string>
     <string name="player_remaining_time_visible_description">Näytä aika, joka on jäljellä nykyisessä kappaleessa.</string>
     <string name="player_restart_required_message">Pelaaja on käynnistettävä uudelleen tehokkaiden muutosten vuoksi!</string>
+    <string name="player_restart_service_unavailable_message">Pelaaja ei ole käytettävissä. Muutokset ovat käytössä seuraavan kerran kun se alkaa.</string>
+    <string name="player_restart_disconnect_android_auto_message">Irrota yhteys Android Auto käynnistääksesi soitin uudelleen.</string>
     <string name="player_rotating_buttons">Pyörivät painikkeet</string>
     <string name="player_seek_backward_five_seconds">Rewind 5 sekuntia</string>
     <string name="player_seek_backward_thirty_seconds">Käännä 30 sekuntia</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Valitse tämän komponentin käyttämä mukautettu väri.</string>
     <string name="visualizer_dark_background_description">Käytä mustaa taustaa äänen visualisoinnin takana.</string>
     <string name="visualizer_dark_background_title">Tumma tausta visualisoijalle</string>
+    <string name="visualizer_cover_dimming_opacity">Visualisoijan peitteen himmennysvoimakkuus</string>
     <string name="visualizer_debug_background">Visualisoijan Tausta</string>
     <string name="visualizer_enabled_description">Näytä animoitu visualisointi, joka vastaa ääntä.</string>
     <string name="visualizer_line_thickness">Visualisoijan Viivan Paksuus</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Bluetooth-laite</string>
     <string name="audio_output_usb_audio_label">USB ääni</string>
     <string name="audio_output_external_speaker_label">Ulkoinen kaiutin</string>
+    <string name="audio_output_device_unavailable">Äänen ulostulo ei ole enää käytettävissä.</string>
     <string name="audio_output_load_failed">Laitteiden lataaminen epäonnistui: %1$s</string>
     <string name="player_audio_mode">Ääni</string>
     <string name="player_video_mode">Video</string>
