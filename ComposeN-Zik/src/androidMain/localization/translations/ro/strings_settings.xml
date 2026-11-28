@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Mă simt norocos</string>
     <string name="automotive_action_play_all">Redă tot</string>
+    <string name="automotive_page_range">Pagina %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Alegeți acțiunea efectuată prin glisarea unei melodii album stânga.</string>
     <string name="gestures_album_track_swipe_right_description">Alegeți acțiunea efectuată prin glisarea unui album piesa din dreapta.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Oglindiți interfața independent de limba aplicației.</string>
     <string name="settings_interface_page_description">Secțiunea interfață utilizator conține setări pentru a modifica interfața globală și navigația</string>
     <string name="settings_interface_page_title">Interfață</string>
+    <string name="settings_interface_shortcuts_title">Scurtături</string>
     <string name="settings_interface_group_display">Afişare</string>
     <string name="settings_interface_group_indicators">Indicatori</string>
     <string name="settings_group_profile_name">Nume afișat</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Listă gesturi glisare</string>
     <string name="settings_group_home_navigation">Navigare acasă</string>
     <string name="settings_group_menu_entries">Intrări meniu</string>
-    <string name="settings_group_sort_defaults">Ordine de sortare implicite</string>
+    <string name="settings_group_sort_defaults">Ordinea sortării meniului</string>
     <string name="settings_group_player_layout">Aspect jucător</string>
     <string name="settings_group_background_style">Stilul și culorile fundalului</string>
     <string name="settings_group_fullscreen_elements">Elemente pe ecran</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Personalizează recomandările, Listele Rapide și ascultarea detaliilor.</string>
     <string name="settings_page_audio_description">Reglaţi procesarea sunetului şi efectele audio.</string>
     <string name="settings_page_behavior_description">Personalizați gesturile și acțiunile în timp ce navigați și ascultați.</string>
-    <string name="settings_page_data_description">Gestionează muzica descărcată, fișierele cache și copiile de siguranță.</string>
+    <string name="settings_page_data_description">Gestionați muzica locală, geocutiile, copiile de rezervă și datele aplicațiilor stocate.</string>
     <string name="settings_page_downloads_description">Alegeți calitatea și comportamentul descărcărilor de muzică.</string>
     <string name="settings_page_interface_description">Personalizați tema, fonturile, navigarea și aspectul interfeței.</string>
     <string name="settings_page_maintenance_description">Menține aplicația, gestionează extensiile și accesează instrumentele de recuperare.</string>
     <string name="settings_page_network_description">Configurați conectivitatea, calitatea de streaming și setările proxy.</string>
-    <string name="settings_page_playback_description">Controlați redarea, comportamentul de coadă și restricțiile de conținut.</string>
+    <string name="settings_page_playback_description">Alege cum începe redarea, continuă și gestionează coada de așteptare.</string>
     <string name="settings_page_player_description">Personalizați aspectul jucătorului, controalele, versurile și notificările.</string>
-    <string name="settings_page_privacy_description">Pauză sau curăță ascultarea și istoricul căutării. Gestionează activitatea de permisiune și protecția ecranului.</string>
+    <string name="settings_page_privacy_description">Controlați activitatea salvată, istoricul permisiunilor și protecția ecranului.</string>
     <string name="settings_page_profiles_description">Gestionează identitatea și preferințele profilului tău.</string>
     <string name="settings_page_rewind_description">Personalizează-ți rezumatele de ascultare și listele de redare.</string>
     <string name="settings_page_services_description">Conectează servicii externe și ascultă împreună cu alții.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Fundal transparent</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Buton de vizualizare</string>
     <string name="settings_player_action_restart_service">Repornește playerul</string>
+    <string name="settings_app_action_restart">Reporniți aplicația</string>
     <string name="settings_player_actions_spaced_evenly_label">Distanță uniform</string>
     <string name="settings_player_album_cover_visible_label">Afișează coperta albumului</string>
     <string name="settings_player_appearance_page_description">Secțiunea de aspect conține setări pentru aspectul vizual al jucătorului</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">Recomandări AI</string>
     <string name="settings_region_override">Suprascrie regiunea</string>
     <string name="settings_reset">Resetează</string>
+    <string name="settings_reset_account_usage_notice">Conturile conectate vor fi dezactivate. Le puteţi activa din nou.</string>
+    <string name="settings_reset_glass">Resetare setări Sticlă</string>
+    <string name="settings_reset_glass_appearance_description">Restabiliți materialul de sticlă implicit și efectele.</string>
+    <string name="settings_reset_downloads">Resetează setările de descărcare</string>
     <string name="settings_reset_all">Resetează toate setările</string>
     <string name="settings_reset_all_confirm">Resetează toate</string>
     <string name="settings_reset_all_confirmation">Resetați toate setările aplicației? Conturile salvate, credențialele, profilurile, listele de redare, descărcările și fișierele vor fi păstrate.</string>
+    <string name="settings_reset_profile_scope_notice">Aceasta resetează setările profilului activ și setările partajate pe acest dispozitiv. Alte profiluri își păstrează propriile setări.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Serverul tău de Ascultare Împreună, numele de utilizator și utilizatorii blocați sunt păstrați.</string>
+    <string name="settings_reset_playback_description">Resetează redarea, coada și setările de control parental.</string>
     <string name="settings_reset_all_description">Restabiliți toate setările aplicației la valorile implicite.</string>
     <string name="settings_reset_choose_scope">Alege ce setări să restaurezi</string>
     <string name="settings_reset_choose_scope_description">Selectați o secțiune de setări, apoi restaurați setările implicite.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Glisează pentru acțiune</string>
     <string name="settings_target_gain_loudness_info">Amplificare țintă pentru normalizarea intensității sonore</string>
     <string name="settings_target_unavailable">Această setare nu este disponibilă cu configurația curentă. Secțiunea ei este afișată în schimb.</string>
+    <string name="settings_target_prerequisite">Pentru a folosi această setare, configurați mai întâi %1$s.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Porniți cel puțin una dintre aceste setări pentru a afișa notificările Rewind .\n%1$s</string>
     <string name="settings_theme_accent_color_label">Accent de culoare</string>
     <string name="settings_theme_background_1_color_label">Fundal 1</string>
     <string name="settings_theme_background_2_color_label">Fundal 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Autentificare pentru navigare</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Utilizați contul pentru căutări</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Ștergeți toate datele sincronizate de pe YouTube? Aceasta va elimina melodiile, albumele, artiștii și listele de redare importate din YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Curăță datele sincronizate YouTube</string>
+    <string name="settings_youtube_logout_confirmation">Deconectează-te de pe YouTube Music în N-Zik? Biblioteca și descărcările tale locale vor rămâne pe acest dispozitiv.</string>
     <string name="settings_youtube_connection_required_description">Conectați-vă mai întâi la YouTube pentru a activa această opțiune</string>
     <string name="settings_youtube_library_sync_content_description">Liste de redare, albume, artiști, istorie, lucruri similare etc.</string>
     <string name="settings_youtube_login_enabled_label">Activează conectarea la YouTube Music</string>
