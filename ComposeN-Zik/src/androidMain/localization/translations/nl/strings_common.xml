@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Achterzijde</string>
     <string name="common_answer_no">Nee</string>
     <string name="common_artist_conjunction_and">en</string>
     <string name="common_clipboard_copy_failed">Kan tekst niet kopiëren naar klembord, probeer het opnieuw</string>
