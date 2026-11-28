@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Desativar e limpar logs de depuração</string>
     <string name="logs_action_export">Exportar logs</string>
     <string name="logs_action_export_both">Exportar ambos os logs</string>
     <string name="logs_action_export_crash">Exportar log de erro</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFICADO</string>
     <string name="updates_build_release_label">LANÇAR</string>
     <string name="updates_cache_cleared">Cache limpo</string>
+    <string name="updates_cache_clear_failed">Não foi possível limpar o cache de atualização.</string>
+    <string name="updates_changelog_search_label">Mudanças</string>
     <string name="updates_changelog_title">Novidades em %s</string>
     <string name="updates_channel_name">Atualizações do aplicativo</string>
     <string name="updates_check_mode_ask">Perguntar</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Você está mudando para uma compilação Beta. Esta versão pode conter bugs ou ser instável. É altamente recomendável fazer um backup de seus dados antes de prosseguir ou relatar qualquer problema.</string>
     <string name="updates_stable_to_beta_warning_title">Mudando para versão Beta</string>
     <string name="updates_starting_status">Iniciando…</string>
-    <string name="updates_unavailable_build_description">App installed by an APK distributor should let its distributor update the app!</string>
+    <string name="updates_manual_update_install_source_message">Atualizações automáticas não estão disponíveis nesta compilação. Atualize o N-Zik através do provedor do qual você a instalou.</string>
     <string name="updates_up_to_date">Até a data</string>
     <string name="updates_warning_acknowledge">Eu entendo</string>
     <string name="updates_check_failed">Não foi possível verificar se há atualizações.</string>
