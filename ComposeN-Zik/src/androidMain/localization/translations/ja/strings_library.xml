@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">アルバムをブックマーク</string>
     <string name="album_action_open">アルバムを表示</string>
+    <string name="playlist_action_open">プレイリストへ移動</string>
+    <string name="podcast_action_open">ポッドキャストへ</string>
     <string name="album_alternative_versions">別のバージョン</string>
     <string name="album_art">アルバムアート</string>
-    <string name="album_found_online_verify">オンラインでアルバムが見つかりました！正しいアルバムであることを確認してください。</string>
     <string name="album_left_swipe">アルバム 左スワイプ</string>
     <string name="album_loading_song_count_format">Loading %1$d songs…</string>
     <string name="album_lookup_failed">アルバムの取得に失敗しました</string>
-    <string name="album_lookup_running">インターネットからアルバムを検索</string>
     <string name="album_no_alternative_version">このアルバムには別のバージョンがありません</string>
-    <string name="album_not_found">アルバムが見つかりません</string>
     <string name="album_related_title">関連するアルバム</string>
     <string name="album_right_swipe">アルバム 右スワイプ</string>
     <!-- Artist -->
     <string name="artist_action_follow">フォロー</string>
+    <string name="artist_action_unfollow">フォローを解除</string>
+    <string name="artist_action_open">アーティストに移動</string>
     <string name="artist_action_play_local_songs">すべてのローカル曲を再生</string>
+    <string name="artist_action_play_library_songs">ライブラリ内のすべての曲を再生</string>
     <string name="artist_deduplication_result">%d 右のアーティストと重複したアーティストをマージしました</string>
     <string name="artist_following_status">フォロー中</string>
-    <string name="artist_found_online_verify">アーティストがオンラインで見つかりました！正しいものであることを確認してください。</string>
     <string name="artist_link_cleanup_result">%d 不適切なアーティストリンクを削除しました</string>
     <string name="artist_lookup_failed">aritst の取得に失敗しました</string>
-    <string name="artist_lookup_running">%s をオンラインで検索しています...</string>
     <string name="artist_more_from">表示</string>
     <string name="artist_overview_title">概要</string>
     <string name="artist_roundness">アーティストの丸み</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">アーティスト</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">再生履歴から保存された再生イベントを削除します。</string>
+    <string name="history_clear_listen_history_failed">リスニング履歴の消去を完了できませんでした。</string>
     <string name="history_clear_search_history_description">履歴設定を変更せずに、すべての検索履歴ページから保存された検索を削除します。</string>
     <!-- Home -->
     <string name="home_albums_settings">ホームアルバム</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">あなたはナンバーワンです。クリックして驚きをお楽しみください</string>
     <!-- Library -->
     <string name="library_action_bookmark">ブックマーク</string>
+    <string name="library_action_remove_bookmark">ブックマークを削除</string>
     <string name="library_action_randomize">Randomizer</string>
     <string name="library_albums_title">アルバム</string>
     <string name="library_artists_title">アーティスト</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">%d キャッシュ/ダウンロードした曲をエクスポートしますか？</string>
     <string name="library_favorites_title">お気に入り</string>
     <string name="library_filter_by_title">フィルター</string>
+    <string name="library_filter_nzik_origin_label">N-Zik のみ</string>
     <string name="library_filter_online_songs_label">オンライン曲</string>
     <string name="library_filter_unmatched_songs_label">該当する曲がありません</string>
     <string name="library_history_title">履歴</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM ライブラリ</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">嫌いなものから削除</string>
     <string name="library_dislikes_added">%sを嫌いました</string>
     <string name="library_dislikes_removed">%s が嫌いな状態から削除されました</string>
+    <string name="library_dislikes_added_generic">嫌いに追加されました</string>
+    <string name="library_dislikes_removed_generic">嫌いなものから削除されました</string>
     <string name="library_favorites_action_add">お気に入りに追加</string>
+    <string name="library_favorites_action_remove">お気に入りから削除</string>
+    <string name="library_favorites_already_added">既にお気に入りに登録しています。</string>
     <string name="library_collection_favorites_action_manage">お気に入りを管理</string>
     <string name="library_favorites_added">お気に入りに追加しました</string>
     <string name="library_favorites_removed">お気に入りから削除しました</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">お気に入りを更新できませんでした。</string>
     <string name="library_collection_favorites_sync_failed">YouTubeとお気に入りを同期できませんでした。</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">並べ替え基準を選択</string>
     <string name="library_sort_album">アルバム</string>
     <string name="library_sort_album_year">アルバムの年</string>
     <string name="library_sort_artist">アーティスト</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">キーワード</string>
     <string name="metadata_loading">Loading…</string>
+    <string name="metadata_link_searching">Searching…</string>
+    <string name="metadata_link_manual_required">IDが確認できません。手動でリンクしてください。</string>
     <string name="metadata_lyricist">歌詞リスト</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d が MusicBrainz に投票</string>
     <string name="metadata_playlist_action_change_browse_id">プレイリスト参照IDの変更</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">題名</string>
     <string name="metadata_track">トラック</string>
+    <string name="metadata_unknown_album">不明なアルバム</string>
     <string name="metadata_unknown_artist">不明なアーティスト</string>
+    <string name="metadata_unknown_author">不明な著者</string>
+    <string name="metadata_unknown_playlist">不明なプレイリスト</string>
+    <string name="metadata_unknown_podcast">不明なポッドキャスト</string>
     <string name="metadata_unknown_title">不明なタイトル</string>
+    <string name="metadata_unknown_year">不明な年</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">いいね</string>
     <string name="metadata_video_subscribers_label">Subscribers</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">プレイリストに追加</string>
     <string name="playlist_action_add_hint">プレイリストに追加</string>
+    <string name="playlist_add_destination_locked">このプレイリストに曲を追加することはできません。</string>
     <string name="playlist_add_destination_unavailable">このプレイリストは端末の曲を追加できません。別のプレイリストを選択してください。</string>
     <string name="playlist_action_create">新規プレイリスト</string>
     <string name="playlist_action_delete_selected">プレイリストを削除</string>
     <string name="playlist_action_export">プレイリストのエクスポート</string>
     <string name="playlist_action_import">プレイリストをインポート</string>
+    <string name="playlist_actions_title">プレイリストアクション</string>
+    <string name="playlist_action_import_collection">このコレクションをインポート</string>
+    <string name="playlist_action_import_from_source">ファイルまたはリンクからインポート</string>
     <string name="playlist_action_import_favorites">お気に入りをインポート</string>
     <string name="playlist_action_like_favorites_on_youtube">YouTubeでN-Zikのお気に入り</string>
     <string name="playlist_action_remove_songs">プレイリストから削除</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">すべての %d プレイリストを削除してもよろしいですか？</string>
     <string name="playlist_delete_confirmation">本当にこのプレイリストを削除しますか？</string>
     <string name="playlist_delete_dialog_title">プレイリストを削除</string>
+    <string name="playlist_deletion_failed">このデバイスからプレイリストを削除できませんでした。</string>
+    <string name="playlist_deletion_partial">このデバイスからいくつかのプレイリストが削除されました。</string>
+    <string name="playlist_deletion_local_success">このデバイスから削除されました。</string>
+    <string name="playlist_deletion_remote_success">YouTube音楽から削除されました。</string>
+    <string name="playlist_deletion_remote_failed">YouTubeミュージックからプレイリストを削除できませんでした。</string>
+    <string name="playlist_deletion_youtube_confirmation">リンクされたプレイリストは、YouTubeの音楽から削除することもできます。</string>
     <string name="playlist_delete_multiple_dialog_title">プレイリストを削除</string>
     <string name="playlist_delete_selected_confirmation_count_format">この %d プレイリストを削除してもよろしいですか？</string>
     <string name="playlist_error_action_on_all_disliked_songs">すべての曲が嫌われている場合、このアクションを実行できません</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">すべての曲にいいね！</string>
     <string name="playlist_like_all_duration_confirmation_suffix">すべての曲を気に入るには（推定時間）が必要です。このプロセスをキャンセルするにはアプリを閉じる必要があります。続行しますか？</string>
     <string name="playlist_name_input_hint">プレイリスト名を入力</string>
+    <string name="playlist_name_reserved">この名前はRewindプレイリストのために予約されています。</string>
     <string name="playlist_operation_wait_message">しばらくお待ちください。数分かかる場合があります。</string>
     <string name="playlist_pinned_title">ピン留めしました</string>
     <string name="playlist_positions_shuffled">%d ポジションがシャッフルされました</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">おすすめを消去しました</string>
     <string name="recommendations_reset_content_description">新しいおすすめでクイックピックをリロードします。リスニング履歴は保持されます。</string>
     <string name="recommendations_section_other_youtube_title">その他のセクション</string>
+    <string name="recommendations_smart_shuffle_add_failed">スマートシャッフルはトラックを追加できませんでした。</string>
     <string name="recommendations_section_visibility_description">無効なら非表示:</string>
     <string name="recommendations_show_section_label">表示</string>
     <string name="recommendations_smart_song_count_description">スマートレコメンデーションの数を設定するか、アプリに自動的に調整させます。</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">候補なし</string>
     <string name="search_suggestions_title">候補</string>
     <string name="search_title">検索...</string>
+    <string name="search_action_edit_query">検索クエリを編集</string>
     <string name="search_video_download_unsupported_message">動画のダウンロードはサポートされていません</string>
     <string name="search_videos_title">動画</string>
     <string name="search_voice_action_start">音声検索</string>
