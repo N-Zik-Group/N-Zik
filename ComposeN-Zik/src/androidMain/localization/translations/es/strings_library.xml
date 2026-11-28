@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Marcadores de álbum</string>
     <string name="album_action_open">Ir al álbum</string>
+    <string name="playlist_action_open">Ir a la lista</string>
+    <string name="podcast_action_open">Ir al podcast</string>
     <string name="album_alternative_versions">Versiones alternativas</string>
     <string name="album_art">Arte del álbum</string>
-    <string name="album_found_online_verify">¡Álbum encontrado en línea! Por favor verifique que es el correcto.</string>
     <string name="album_left_swipe">Álbum deslizar a la izquierda</string>
     <string name="album_loading_song_count_format">Cargando %1$d canciones…</string>
     <string name="album_lookup_failed">Error al buscar el álbum</string>
-    <string name="album_lookup_running">Buscar álbum en Internet</string>
     <string name="album_no_alternative_version">El álbum no tiene ninguna versión alternativa</string>
-    <string name="album_not_found">Álbum no encontrado</string>
     <string name="album_related_title">Álbumes relacionados</string>
     <string name="album_right_swipe">Álbum deslizar a la derecha</string>
     <!-- Artist -->
     <string name="artist_action_follow">Seguir</string>
+    <string name="artist_action_unfollow">Dejar de seguir</string>
+    <string name="artist_action_open">Ir al artista</string>
     <string name="artist_action_play_local_songs">Reproducir todas las canciones locales</string>
+    <string name="artist_action_play_library_songs">Reproducir todas las canciones en la biblioteca</string>
     <string name="artist_deduplication_result">Fusionado %d artista(s) duplicado(s) con el artista correcto</string>
     <string name="artist_following_status">Siguiendo</string>
-    <string name="artist_found_online_verify">¡Artista encontrado en línea! Por favor verifique que es el correcto.</string>
     <string name="artist_link_cleanup_result">Eliminado %d enlaces incorrectos del artista</string>
     <string name="artist_lookup_failed">Error al buscar el artista</string>
-    <string name="artist_lookup_running">Buscar %s en línea...</string>
     <string name="artist_more_from">Más de</string>
     <string name="artist_overview_title">Resumen</string>
     <string name="artist_roundness">Redondeo del artista</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Artista</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Borrar eventos de reproducción guardados del historial de escuchas.</string>
+    <string name="history_clear_listen_history_failed">No se pudo terminar de borrar el historial de escucha.</string>
     <string name="history_clear_search_history_description">Eliminar búsquedas guardadas de cada página de historial de búsqueda sin cambiar las preferencias del historial.</string>
     <!-- Home -->
     <string name="home_albums_settings">Álbumes de inicio</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Eres un número uno, haz clic y disfruta de la sorpresa</string>
     <!-- Library -->
     <string name="library_action_bookmark">Marcador</string>
+    <string name="library_action_remove_bookmark">Eliminar marcador</string>
     <string name="library_action_randomize">Aleatorizador</string>
     <string name="library_albums_title">Álbumes</string>
     <string name="library_artists_title">Artistas</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">¿Exportar canciones en caché/descargadas %d?</string>
     <string name="library_favorites_title">Favoritos</string>
     <string name="library_filter_by_title">Filtrar por</string>
+    <string name="library_filter_nzik_origin_label">N-Zik sólo</string>
     <string name="library_filter_online_songs_label">Canciones en línea</string>
     <string name="library_filter_unmatched_songs_label">Canciones sin coincidencia</string>
     <string name="library_history_title">Historial</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">Biblioteca de YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Quitar de las disgustaciones</string>
     <string name="library_dislikes_added">%s con no me gusta</string>
     <string name="library_dislikes_removed">%s eliminado de no me gusta</string>
+    <string name="library_dislikes_added_generic">Añadido a las disgustaciones</string>
+    <string name="library_dislikes_removed_generic">Eliminado de las disgustaciones</string>
     <string name="library_favorites_action_add">Añadir a favoritos</string>
+    <string name="library_favorites_action_remove">Eliminar de favoritos</string>
+    <string name="library_favorites_already_added">Ya está en favoritos.</string>
     <string name="library_collection_favorites_action_manage">Administrar favoritos</string>
     <string name="library_favorites_added">Añadido a favoritos</string>
     <string name="library_favorites_removed">Eliminado de favoritos</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">No se pudo actualizar favoritos.</string>
     <string name="library_collection_favorites_sync_failed">No se pudo sincronizar algunos favoritos con YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Elegir criterio de ordenación</string>
     <string name="library_sort_album">Álbum</string>
     <string name="library_sort_album_year">Año del álbum</string>
     <string name="library_sort_artist">Artista</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Palabras clave</string>
     <string name="metadata_loading">Cargando…</string>
+    <string name="metadata_link_searching">Buscando…</string>
+    <string name="metadata_link_manual_required">ID no confirmado. Enlazalo manualmente.</string>
     <string name="metadata_lyricist">Leicísta</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d votos en MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Cambiar la lista de reproducción ID</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Título</string>
     <string name="metadata_track">Pista</string>
+    <string name="metadata_unknown_album">Álbum desconocido</string>
     <string name="metadata_unknown_artist">Artista desconocido</string>
+    <string name="metadata_unknown_author">Autor desconocido</string>
+    <string name="metadata_unknown_playlist">Lista de reproducción desconocida</string>
+    <string name="metadata_unknown_podcast">Podcast desconocido</string>
     <string name="metadata_unknown_title">Título desconocido</string>
+    <string name="metadata_unknown_year">Año desconocido</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Me gusta</string>
     <string name="metadata_video_subscribers_label">Suscriptores</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Añadir a lista de reproducción</string>
     <string name="playlist_action_add_hint">Añadir a lista de reproducción</string>
+    <string name="playlist_add_destination_locked">No puedes añadir canciones a esta lista.</string>
     <string name="playlist_add_destination_unavailable">Esta lista ya no está disponible para añadir canciones de dispositivos. Elige otra lista de reproducción.</string>
     <string name="playlist_action_create">Nueva lista de reproducción</string>
     <string name="playlist_action_delete_selected">Borrar listas</string>
     <string name="playlist_action_export">Exportar lista de reproducción</string>
     <string name="playlist_action_import">Importar lista de reproducción</string>
+    <string name="playlist_actions_title">Acciones de lista de reproducción</string>
+    <string name="playlist_action_import_collection">Importar esta colección</string>
+    <string name="playlist_action_import_from_source">Importar desde un archivo o enlace</string>
     <string name="playlist_action_import_favorites">Importar favoritos</string>
     <string name="playlist_action_like_favorites_on_youtube">Marcar como favoritas en YouTube las canciones favoritas de N-Zik</string>
     <string name="playlist_action_remove_songs">Eliminar de la lista de reproducción</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">¿Estás seguro de que quieres eliminar TODAS LAS listas de reproducción %d?</string>
     <string name="playlist_delete_confirmation">¿Seguro que quieres eliminar esta lista de reproducción?</string>
     <string name="playlist_delete_dialog_title">Borrar lista</string>
+    <string name="playlist_deletion_failed">No se pudo eliminar la lista de reproducción de este dispositivo.</string>
+    <string name="playlist_deletion_partial">Algunas listas de reproducción fueron eliminadas de este dispositivo.</string>
+    <string name="playlist_deletion_local_success">Eliminado de este dispositivo.</string>
+    <string name="playlist_deletion_remote_success">Eliminado de la música de YouTube.</string>
+    <string name="playlist_deletion_remote_failed">No se pudieron eliminar algunas listas de reproducción de YouTube Música.</string>
+    <string name="playlist_deletion_youtube_confirmation">Las listas de reproducción vinculadas también pueden ser eliminadas de YouTube Música.</string>
     <string name="playlist_delete_multiple_dialog_title">Borrar listas</string>
     <string name="playlist_delete_selected_confirmation_count_format">¿Estás seguro de que quieres eliminar estas listas de reproducción %d?</string>
     <string name="playlist_error_action_on_all_disliked_songs">No se puede realizar esta acción cuando todas las canciones tienen un no me gusta o no tienen coincidencia</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Me gustan todas las canciones</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(tiempo estimado) es necesario para dar me gusta a todas las canciones. Debes cerrar la aplicación para cancelar este proceso. ¿Quieres continuar?</string>
     <string name="playlist_name_input_hint">Ingresar el nombre de la lista de reproducción</string>
+    <string name="playlist_name_reserved">Este nombre está reservado para listas de Rewind.</string>
     <string name="playlist_operation_wait_message">Espera, puede tomar unos minutos...</string>
     <string name="playlist_pinned_title">Listas de reproducción fijadas</string>
     <string name="playlist_positions_shuffled">%d posiciones barajadas</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Selecciones rápidas borradas</string>
     <string name="recommendations_reset_content_description">Recargar Quick Picks con nuevas recomendaciones.</string>
     <string name="recommendations_section_other_youtube_title">Otras secciones</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle no pudo añadir ninguna pista.</string>
     <string name="recommendations_section_visibility_description">Deshabilítalo si no quieres ver</string>
     <string name="recommendations_show_section_label">Mostrar</string>
     <string name="recommendations_smart_song_count_description">Establecer el número de recomendaciones inteligentes, o dejar que la aplicación lo ajuste automáticamente.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">No hay sugerencias</string>
     <string name="search_suggestions_title">Sugerencias</string>
     <string name="search_title">Buscar</string>
+    <string name="search_action_edit_query">Editar consulta de búsqueda</string>
     <string name="search_video_download_unsupported_message">La descarga de vídeos no está soportada</string>
     <string name="search_videos_title">Vídeos</string>
     <string name="search_voice_action_start">Búsqueda por voz</string>
