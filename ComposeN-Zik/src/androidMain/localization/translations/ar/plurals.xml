@@ -89,6 +89,22 @@
         <item quantity="many">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
         <item quantity="other">إزالة المسارات %1$d في قائمة التشغيل هذه من المفضلة؟</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="zero">إضافة أغاني %1$d إلى المفضلة؟</item>
+        <item quantity="one">إضافة أغنية %1$d إلى المفضلة؟</item>
+        <item quantity="two">إضافة أغاني %1$d إلى المفضلة؟</item>
+        <item quantity="few">إضافة أغاني %1$d إلى المفضلة؟</item>
+        <item quantity="many">إضافة أغاني %1$d إلى المفضلة؟</item>
+        <item quantity="other">إضافة أغاني %1$d إلى المفضلة؟</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="zero">إزالة أغاني %1$d من المفضلة؟</item>
+        <item quantity="one">إزالة أغنية %1$d من المفضلة؟</item>
+        <item quantity="two">إزالة أغاني %1$d من المفضلة؟</item>
+        <item quantity="few">إزالة أغاني %1$d من المفضلة؟</item>
+        <item quantity="many">إزالة أغاني %1$d من المفضلة؟</item>
+        <item quantity="other">إزالة أغاني %1$d من المفضلة؟</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="zero">إضافة مسارات %1$d من هذا الألبوم إلى المفضلة؟</item>
         <item quantity="one">إضافة مقطع %1$d من هذا الألبوم إلى المفضلة؟</item>
@@ -208,6 +224,14 @@
         <item quantity="few">%1$d أغاني تم تنزيلها مفقودة وتم إزالتها. الرجاء تنزيلها مرة أخرى.</item>
         <item quantity="many">%1$d أغاني تم تنزيلها مفقودة وتم إزالتها. الرجاء تنزيلها مرة أخرى.</item>
         <item quantity="other">%1$d أغاني تم تنزيلها مفقودة وتم إزالتها. الرجاء تنزيلها مرة أخرى.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="zero">تمت إضافة المسارات %d للخلط الذكي.</item>
+        <item quantity="one">تم إضافة المسار %d للخلط الذكي.</item>
+        <item quantity="two">تمت إضافة المسارات %d للخلط الذكي.</item>
+        <item quantity="few">تمت إضافة المسارات %d للخلط الذكي.</item>
+        <item quantity="many">تمت إضافة المسارات %d للخلط الذكي.</item>
+        <item quantity="other">تمت إضافة المسارات %d للخلط الذكي.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="zero">%1$d recommended songs</item>
