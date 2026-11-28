@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Zurück</string>
     <string name="common_answer_no">Nein</string>
     <string name="common_artist_conjunction_and">und</string>
     <string name="common_clipboard_copy_failed">Fehler beim Kopieren des Textes in die Zwischenablage, erneut versuchen</string>
