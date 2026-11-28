@@ -45,6 +45,14 @@
         <item quantity="one">Ta bort %1$d spår i den här spellistan från favoriter?</item>
         <item quantity="other">Ta bort %1$d låtar i den här spellistan från favoriter?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Lägg till %1$d låt till favoriter?</item>
+        <item quantity="other">Lägg till %1$d låtar till favoriter?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Ta bort %1$d låt från favoriter?</item>
+        <item quantity="other">Ta bort %1$d låtar från favoriter?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Lägg till %1$d låt från detta album till favoriter?</item>
         <item quantity="other">Lägg till %1$d låtar från detta album till favoriter?</item>
@@ -104,6 +112,10 @@
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="one">%1$d hämtade låten saknar sin fil och togs bort. Ladda ner den igen.</item>
         <item quantity="other">%1$d hämtade låtar saknar sina filer och togs bort. Ladda ner dem igen.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Smart Shuffle lagt %d spår.</item>
+        <item quantity="other">Smart Shuffle lagt %d spår.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d rekommenderad låt</item>
