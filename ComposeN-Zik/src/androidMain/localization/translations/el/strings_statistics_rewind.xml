@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Εμφάνιση του καννάβου μήνα στην αρχική οθόνη Rewind</string>
     <string name="rewind_settings_monthly_notification">Μηνιαία ειδοποίηση επαναφόρτισης</string>
     <string name="rewind_settings_monthly_notification_description">Ενημερωθείτε την 1η ότι η επαναφόρτιση του προηγούμενου μήνα είναι έτοιμη.</string>
+    <string name="rewind_settings_notification_permission_hint">Επιτρέψτε στις ειδοποιήσεις για το N-Zik στις ρυθμίσεις Android να λαμβάνουν ειδοποιήσεις Rewind.</string>
     <string name="rewind_settings_notifications">Επαναφορά ειδοποιήσεων</string>
     <string name="rewind_settings_playlists_monthly">Μηνιαία λίστα αναπαραγωγής</string>
     <string name="rewind_settings_playlists_monthly_description">Δημιουργία μηνιαίας λίστας αναπαραγωγής επανατύλιξης.</string>
