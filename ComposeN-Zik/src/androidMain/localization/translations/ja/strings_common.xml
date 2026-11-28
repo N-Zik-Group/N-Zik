@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">戻る</string>
     <string name="common_answer_no">いいえ</string>
     <string name="common_artist_conjunction_and">と</string>
     <string name="common_clipboard_copy_failed">クリップボードにテキストをコピーできませんでした。もう一度やり直してください。</string>
