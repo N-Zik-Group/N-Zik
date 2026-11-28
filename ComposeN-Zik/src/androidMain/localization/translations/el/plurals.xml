@@ -45,6 +45,14 @@
         <item quantity="one">Αφαίρεση %1$d κομματιού σε αυτή τη λίστα από τα αγαπημένα?</item>
         <item quantity="other">Αφαίρεση %1$d κομματιών σε αυτή τη λίστα από τα αγαπημένα?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Προσθήκη τραγουδιού %1$d στα αγαπημένα?</item>
+        <item quantity="other">Προσθήκη %1$d τραγουδιών στα αγαπημένα?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Αφαίρεση τραγουδιού %1$d από τα αγαπημένα?</item>
+        <item quantity="other">Αφαίρεση %1$d τραγουδιών από αγαπημένα?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Προσθήκη %1$d κομματιού από αυτό το άλμπουμ στα αγαπημένα?</item>
         <item quantity="other">Προσθήκη %1$d κομματιών από αυτό το άλμπουμ στα αγαπημένα?</item>
@@ -104,6 +112,10 @@
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="one">Το %1$d ληφθέν τραγούδι λείπει το αρχείο του και αφαιρέθηκε. Παρακαλώ κατεβάστε το ξανά.</item>
         <item quantity="other">%1$d τα κατεβασμένα τραγούδια λείπουν από τα αρχεία τους και αφαιρέθηκαν. Παρακαλώ κατεβάστε τα ξανά.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Η έξυπνη τυχαία σειρά πρόσθεσε το %d κομμάτι.</item>
+        <item quantity="other">Η Έξυπνη Τυχαία αναπαραγωγή πρόσθεσε %d κομμάτια.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">Προτεινόμενο τραγούδι %1$d</item>
