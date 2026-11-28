@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Мені пощастило</string>
     <string name="automotive_action_play_all">Відтворити усі</string>
+    <string name="automotive_page_range">Сторінка %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Оберіть дію виконано, провівши вліво альбом.</string>
     <string name="gestures_album_track_swipe_right_description">Оберіть дію, виконану провівши дію альбом вправо.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Безпосередньо віддзеркалювати інтерфейс із мови програми.</string>
     <string name="settings_interface_page_description">Розділ інтерфейсу користувача містить параметри для зміни глобального інтерфейсу та навігації</string>
     <string name="settings_interface_page_title">Інтерфейс</string>
+    <string name="settings_interface_shortcuts_title">Гарячі клавіші</string>
     <string name="settings_interface_group_display">Відображати</string>
     <string name="settings_interface_group_indicators">Показники</string>
     <string name="settings_group_profile_name">Відображуване ім\'я</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Жести списком</string>
     <string name="settings_group_home_navigation">Домашня навігація</string>
     <string name="settings_group_menu_entries">Статті меню</string>
-    <string name="settings_group_sort_defaults">Сортування замовлень за замовчуванням</string>
+    <string name="settings_group_sort_defaults">Порядок меню сортування</string>
     <string name="settings_group_player_layout">Макет гравця</string>
     <string name="settings_group_background_style">Стиль і кольори тла</string>
     <string name="settings_group_fullscreen_elements">На екрані елементи</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Персоналізуйте рекомендації, швидкі піки та прослуховування аналізу.</string>
     <string name="settings_page_audio_description">Налаштування обробки звуку та аудіо ефектів.</string>
     <string name="settings_page_behavior_description">Налаштувати жести та дії під час перегляду та слухання.</string>
-    <string name="settings_page_data_description">Керування завантаженою музикою, кешованими файлами і резервними копіями.</string>
+    <string name="settings_page_data_description">Керування локальною музикою, кешем, резервними копіями і збереженими даними застосунків.</string>
     <string name="settings_page_downloads_description">Виберіть якість та поведінку музичних завантажень.</string>
     <string name="settings_page_interface_description">Персоналізуйте тему, шрифти, навігацію і зовнішній вигляд.</string>
     <string name="settings_page_maintenance_description">Підтримуйте програму, керуйте розширеннями та отримуйте доступ до інструментів відновлення.</string>
     <string name="settings_page_network_description">Налаштуйте з\'єднання, якість потокового передавання та параметри проксі-сервера.</string>
-    <string name="settings_page_playback_description">Контролюйте відтворення, поведінку черги і обмеження на вміст.</string>
+    <string name="settings_page_playback_description">Оберіть, як починається відтворення, триває і керує Вашою чергою.</string>
     <string name="settings_page_player_description">Налаштуйте зовнішній вигляд програвача, керування, слова пісень і сповіщення.</string>
-    <string name="settings_page_privacy_description">Призупиніть або очистіть історію пошуку. Керуйте правом та захистом екрану.</string>
+    <string name="settings_page_privacy_description">Контроль збереженої діяльності, історія дозволів та захист екрану.</string>
     <string name="settings_page_profiles_description">Керуйте вашим профілем та налаштуваннями.</string>
     <string name="settings_page_rewind_description">Налаштуйте ваші списки відтворення та відтворення підказок.</string>
     <string name="settings_page_services_description">Підключіть зовнішні служби та слухайте разом з іншими.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Прозорий фон</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Кнопка візуалізації</string>
     <string name="settings_player_action_restart_service">Перезапустити плеєр</string>
+    <string name="settings_app_action_restart">Перезапустити додаток</string>
     <string name="settings_player_actions_spaced_evenly_label">Шифрований вечір</string>
     <string name="settings_player_album_cover_visible_label">Показати обкладинку альбому</string>
     <string name="settings_player_appearance_page_description">Зовнішній інтерфейс містить налаштування зовнішнього вигляду гравця</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">Рекомендації ШІ</string>
     <string name="settings_region_override">Перевизначення регіону</string>
     <string name="settings_reset">Скинути</string>
+    <string name="settings_reset_account_usage_notice">Підключені облікові записи буде вимкнено. Ви можете знову ввімкнути їх у налаштуваннях.</string>
+    <string name="settings_reset_glass">Скинути налаштування скла</string>
+    <string name="settings_reset_glass_appearance_description">Відновити типові скляні матеріали та ефекти.</string>
+    <string name="settings_reset_downloads">Скинути налаштування завантажень</string>
     <string name="settings_reset_all">Скинути всі налаштування</string>
     <string name="settings_reset_all_confirm">Скинути все</string>
     <string name="settings_reset_all_confirmation">Скинути всі налаштування програми? Збережені облікові дані, профілі, списки відтворення, завантаження і файли будуть збережені.</string>
+    <string name="settings_reset_profile_scope_notice">Це скидає налаштування та налаштування активного профілю, які з’являються на цьому пристрої. Інші профілі також збережуть їхні власні налаштування.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Ваш прослуховування разом з сервером блокування, зберігаються ім’я користувача та заблоковані користувачі.</string>
+    <string name="settings_reset_playback_description">Скинути налаштування відтворення та батьківського контролю.</string>
     <string name="settings_reset_all_description">Відновити всі налаштування програм до типових налаштувань.</string>
     <string name="settings_reset_choose_scope">Виберіть параметри для відновлення</string>
     <string name="settings_reset_choose_scope_description">Виберіть розділ налаштувань, а потім відновіть типові значення.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Свайп для дії</string>
     <string name="settings_target_gain_loudness_info">Цільова гучність для нормалізації гучності</string>
     <string name="settings_target_unavailable">Цей параметр недоступний для поточної конфігурації. Замість цього відображається його розділ.</string>
+    <string name="settings_target_prerequisite">Щоб використовувати це налаштування, налаштуйте %1$s спочатку.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Turn on at least one of these settings to show Rewind notifications.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Акцент кольору</string>
     <string name="settings_theme_background_1_color_label">Фон 1</string>
     <string name="settings_theme_background_2_color_label">Фон 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Вхід для перегляду</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Використати обліковий запис для пошуку</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Очистити всі дані, синхронізовані з YouTube? Це призведе до видалення вподобаних пісень, альбомів, виконавців та списків відтворення імпортовано з YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Видалити синхронізовані дані YouTube</string>
+    <string name="settings_youtube_logout_confirmation">Вийти з YouTube Music в N-Zik? Ваша локальна бібліотека і завантаження залишаться на цьому пристрої.</string>
     <string name="settings_youtube_connection_required_description">Підключіться до YouTube, щоб увімкнути цей параметр</string>
     <string name="settings_youtube_library_sync_content_description">Плейлісти, альбоми, артисти, історію тощо.</string>
     <string name="settings_youtube_login_enabled_label">Увімкнути запис YouTube Music</string>
