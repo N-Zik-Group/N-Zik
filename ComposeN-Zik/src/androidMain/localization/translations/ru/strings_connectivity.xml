@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Подключение к серверу</string>
     <string name="listen_together_log_event_connection_closed">Соединение закрыто</string>
     <string name="listen_together_log_event_connection_failure">Сбой подключения</string>
+    <string name="listen_together_invalid_server_address">Некорректный адрес сервера Listen Together . Обновите его в настройках и повторите попытку.</string>
+    <string name="listen_together_session_server_changed">Сервер перенаправил сеанс \"Слушать вместе\" на другой адрес.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Ошибка подключения, ожидание сети</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Соединение потеряно, попытается переподключиться</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Удаление устаревших событий воспроизведения</string>
