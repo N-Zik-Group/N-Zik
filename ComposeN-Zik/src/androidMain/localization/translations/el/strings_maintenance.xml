@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Απενεργοποίηση και εκκαθάριση αρχείων καταγραφής σφαλμάτων</string>
     <string name="logs_action_export">Εξαγωγή αρχείων καταγραφής</string>
     <string name="logs_action_export_both">Εξαγωγή και των δύο αρχείων καταγραφής</string>
     <string name="logs_action_export_crash">Εξαγωγή αρχείου καταγραφής κατάρρευσης</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">ΕΛΑΧΙΣΤΟ</string>
     <string name="updates_build_release_label">ΑΠΟΔΟΧΗ</string>
     <string name="updates_cache_cleared">Η κρύπτη διαγράφηκε</string>
+    <string name="updates_cache_clear_failed">Δεν ήταν δυνατή η εκκαθάριση της προσωρινής μνήμης ενημέρωσης.</string>
+    <string name="updates_changelog_search_label">Αρχείο Αλλαγών</string>
     <string name="updates_changelog_title">Τι νέο υπάρχει στο %s</string>
     <string name="updates_channel_name">Ενημερώσεις Εφαρμογών</string>
     <string name="updates_check_mode_ask">Ερώτηση</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Εναλλαγή σε έκδοση Beta. Αυτή η έκδοση μπορεί να περιέχει σφάλματα ή να είναι ασταθής. Συνιστάται να διατηρείτε αντίγραφα ασφαλείας των δεδομένων σας πριν προχωρήσετε ή να αναφέρετε οποιοδήποτε πρόβλημα.</string>
     <string name="updates_stable_to_beta_warning_title">Μετάβαση σε έκδοση Beta</string>
     <string name="updates_starting_status">Έναρξη…</string>
-    <string name="updates_unavailable_build_description">Αν δείτε αυτό το μήνυμα σημαίνει ότι η κατασκευή σας δεν έχει ενεργοποιημένη αυτόματη ενημέρωση, pls ενημέρωση της εφαρμογής χειροκίνητα από το github</string>
+    <string name="updates_manual_update_install_source_message">Αυτόματες ενημερώσεις δεν είναι διαθέσιμες σε αυτήν την έκδοση. Ενημερώστε το N-Zik μέσω του παρόχου από τον οποίο εγκαταστήσατε.</string>
     <string name="updates_up_to_date">Μέχρι σήμερα</string>
     <string name="updates_warning_acknowledge">Κατανοώ</string>
     <string name="updates_check_failed">Αδυναμία ελέγχου για ενημερώσεις.</string>
