@@ -19,6 +19,7 @@
     <string name="common_action_reset">Sıfırla</string>
     <string name="common_action_retry">Yeniden dene</string>
     <string name="common_action_save">Kaydet</string>
+    <string name="common_action_scroll_to_top">Scroll to top</string>
     <string name="common_action_select">Seç</string>
     <string name="common_action_show_less">Daha az göster</string>
     <string name="common_action_show_more">Daha fazla göster</string>
