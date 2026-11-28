@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">تعطيل ومسح سجلات التصحيح</string>
     <string name="logs_action_export">تصدير السجلات</string>
     <string name="logs_action_export_both">تصدير كلا السجلات</string>
     <string name="logs_action_export_crash">تصدير سجل الأعطال</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">ممنوع</string>
     <string name="updates_build_release_label">استدعاء</string>
     <string name="updates_cache_cleared">مسح ذاكرة التخزين المؤقت</string>
+    <string name="updates_cache_clear_failed">تعذر مسح ذاكرة التخزين المؤقت للتحديث.</string>
+    <string name="updates_changelog_search_label">تغيير</string>
     <string name="updates_changelog_title">ما هو الجديد في %s</string>
     <string name="updates_channel_name">تحديثات التطبيق</string>
     <string name="updates_check_mode_ask">اسأل</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">أنت تقوم بالتبديل إلى نسخة بيتا. قد يحتوي هذا الإصدار على أخطاء أو يكون غير مستقر. من المستحسن بشدة النسخ الاحتياطي لبياناتك قبل المضي قدما أو الإبلاغ عن أي مشكلة.</string>
     <string name="updates_stable_to_beta_warning_title">التبديل إلى بناء بيتا</string>
     <string name="updates_starting_status">يبدأ…</string>
-    <string name="updates_unavailable_build_description">إذا رأيت هذه الرسالة، فانها تعني أن الإصدار الخاص بك لا يحتوي على تحديث تلقائي، قم بتحديث التطبيق يدوياً من github</string>
+    <string name="updates_manual_update_install_source_message">التحديثات التلقائية غير متوفرة على هذا الإصدار. قم بتحديث N-Zik من خلال المزود الذي قمت بتثبيته منه.</string>
     <string name="updates_up_to_date">حتى الآن</string>
     <string name="updates_warning_acknowledge">أنا أفهم</string>
     <string name="updates_check_failed">تعذر التحقق من وجود تحديثات.</string>
