@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Disable and clear debug logs</string>
     <string name="logs_action_export">Export logs</string>
     <string name="logs_action_export_both">Export both logs</string>
     <string name="logs_action_export_crash">Export crash log</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIED</string>
     <string name="updates_build_release_label">RELEASE</string>
     <string name="updates_cache_cleared">Cache cleared</string>
+    <string name="updates_cache_clear_failed">Could not clear the update cache.</string>
+    <string name="updates_changelog_search_label">Changelog</string>
     <string name="updates_changelog_title">What\'s new in %s</string>
     <string name="updates_channel_name">App Updates</string>
     <string name="updates_check_mode_ask">Demandar</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">You are switching to a Beta build. This version may contain bugs or be unstable. It is highly recommended to backup your data before proceeding or reporting any issue.</string>
     <string name="updates_stable_to_beta_warning_title">Switching to Beta Build</string>
     <string name="updates_starting_status">Starting…</string>
-    <string name="updates_unavailable_build_description">If you see this message it means that your build doesnt have auto update enabled, pls update the app manually from github</string>
+    <string name="updates_manual_update_install_source_message">Automatic updates are unavailable on this build. Update N-Zik through the provider you installed it from.</string>
     <string name="updates_up_to_date">Up to date</string>
     <string name="updates_warning_acknowledge">I understand</string>
     <string name="updates_check_failed">Could not check for updates.</string>
