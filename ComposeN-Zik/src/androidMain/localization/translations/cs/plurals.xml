@@ -67,6 +67,18 @@
         <item quantity="many">Remove %1$d tracks in this playlist from favorites?</item>
         <item quantity="other">Remove %1$d tracks in this playlist from favorites?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Přidat %1$d k oblíbeným?</item>
+        <item quantity="few">Přidat %1$d skladeb k oblíbeným?</item>
+        <item quantity="many">Přidat %1$d skladeb k oblíbeným?</item>
+        <item quantity="other">Přidat %1$d skladeb k oblíbeným?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Odstranit %1$d skladbu z oblíbených položek?</item>
+        <item quantity="few">Odstranit %1$d skladeb z oblíbených?</item>
+        <item quantity="many">Odstranit %1$d skladeb z oblíbených?</item>
+        <item quantity="other">Odstranit %1$d skladeb z oblíbených?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Add %1$d track from this album to favorites?</item>
         <item quantity="few">Přidat %1$d skladeb z tohoto alba do oblíbených?</item>
@@ -156,6 +168,12 @@
         <item quantity="few">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
         <item quantity="many">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
         <item quantity="other">%1$d stažené skladby chybí jejich soubory a byly odstraněny. Stáhněte je prosím znovu.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Inteligentní Zamíchání přidáno %d skladbu.</item>
+        <item quantity="few">Inteligentní Zamíchání přidáno %d skladeb.</item>
+        <item quantity="many">Inteligentní Zamíchání přidáno %d skladeb.</item>
+        <item quantity="other">Inteligentní Zamíchání přidáno %d skladeb.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d doporučená skladba</item>
