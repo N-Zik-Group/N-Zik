@@ -34,6 +34,12 @@
     <plurals name="library_collection_favorites_remove_playlist_tracks">
         <item quantity="other">从收藏夹中移除此播放列表中的 %1$d 曲目吗？</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="other">添加 %1$d 首歌曲到收藏夹吗？</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="other">从收藏夹中删除 %1$d 首歌曲吗？</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="other">将此相册的 %1$d 曲目添加到收藏夹吗？</item>
     </plurals>
@@ -78,6 +84,9 @@
     </plurals>
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="other">%1$d 下载的歌曲丢失并被删除。请再次下载。</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="other">智能随机播放添加了 %d 音轨。</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="other">%1$d 推荐歌曲</item>
