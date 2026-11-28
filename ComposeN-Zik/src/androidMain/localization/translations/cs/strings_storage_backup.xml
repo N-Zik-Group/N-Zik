@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exportovat databázi a nastavení odděleně. Databáze používá ZIP, pokud obsahuje vlastní kryty.</string>
     <string name="backup_export_database_with_covers_description">Ukládat skladby, playlisty a historii jako SQLite. Pokud máte vlastní obálky, export je ZIP s databází a obálkami.</string>
     <string name="backup_export_profile_state_failed">Export stavu profilu se nezdařil</string>
-    <string name="backup_export_settings_description">Exportovat nastavení a předvolby aplikace</string>
+    <string name="backup_export_settings_description">Exportovat uložená nastavení profilu, včetně skla</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importovat seznam profilů a fotky obličeje ze souboru .txt</string>
     <string name="backup_import_all">Importovat vše</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Stav profilu importován: %1$d profily</string>
     <string name="backup_import_profile_state_complete_base">Stav profilu importován: základní profil</string>
     <string name="backup_import_profile_state_failed">Import stavu profilu se nezdařil</string>
-    <string name="backup_import_settings_description">Importovat nastavení a předvolby aplikace</string>
+    <string name="backup_import_settings_description">Sloučit uložená nastavení profilu a obnovit jakýkoli snímek skla</string>
     <string name="backup_import_target_from_file">Ze souboru</string>
     <string name="backup_import_target_profile_title">Importovat do kterého profilu?</string>
     <!-- Cache -->
