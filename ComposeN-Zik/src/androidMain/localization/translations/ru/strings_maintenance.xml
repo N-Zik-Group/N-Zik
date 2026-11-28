@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Отключить и очистить журналы отладки</string>
     <string name="logs_action_export">Экспорт журналов</string>
     <string name="logs_action_export_both">Экспорт обоих журналов</string>
     <string name="logs_action_export_crash">Экспорт журнала сбоев</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">ВНИМАНО</string>
     <string name="updates_build_release_label">ПОЛЕЗНО</string>
     <string name="updates_cache_cleared">Кэш очищен</string>
+    <string name="updates_cache_clear_failed">Не удалось очистить кэш обновлений.</string>
+    <string name="updates_changelog_search_label">Список изменений</string>
     <string name="updates_changelog_title">Что нового в %s</string>
     <string name="updates_channel_name">Обновления приложений</string>
     <string name="updates_check_mode_ask">Спрашивать</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Вы переходите на бета-сборку. Эта версия может содержать ошибки или быть нестабильной. Настоятельно рекомендуется сделать резервную копию ваших данных перед тем как приступить к рассмотрению или сообщить о каких-либо проблемах.</string>
     <string name="updates_stable_to_beta_warning_title">Переход на бета-сборку</string>
     <string name="updates_starting_status">Запуск…</string>
-    <string name="updates_unavailable_build_description">Если вы видите это сообщение, это означает, что ваша сборка не имеет автоматического обновления, пожалуйста, обновите приложение вручную с github</string>
+    <string name="updates_manual_update_install_source_message">Автоматические обновления не доступны на этой сборке. Обновите N-Zik через провайдера, с которого вы установили его.</string>
     <string name="updates_up_to_date">Актуально</string>
     <string name="updates_warning_acknowledge">Я понимаю</string>
     <string name="updates_check_failed">Не удалось проверить обновления.</string>
