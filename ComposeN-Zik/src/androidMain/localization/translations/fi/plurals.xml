@@ -45,6 +45,14 @@
         <item quantity="one">Poista %1$d kappale tässä soittolistassa suosikeista?</item>
         <item quantity="other">Poista %1$d kappaletta tässä soittolistassa suosikeista?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">Lisää %1$d kappale suosikkeihin?</item>
+        <item quantity="other">Lisää %1$d kappaletta suosikkeihin?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">Poista %1$d kappale suosikeista?</item>
+        <item quantity="other">Poistetaanko %1$d kappaletta suosikeista?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">Lisää %1$d kappale tästä albumista suosikkeihin?</item>
         <item quantity="other">Lisää %1$d kappaletta tästä levystä suosikkeihin?</item>
@@ -104,6 +112,10 @@
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="one">%1$d ladattu kappale puuttuu sen tiedostosta ja se poistettiin. Ole hyvä ja lataa se uudelleen.</item>
         <item quantity="other">%1$d ladatuista kappaleista puuttuu heidän tiedostojaan ja ne poistettiin. Ole hyvä ja lataa ne uudelleen.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Smart Shuffle lisäsi kappaletta %d</item>
+        <item quantity="other">Smart Shuffle lisätty %d kappaletta.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d suositeltu kappale</item>
