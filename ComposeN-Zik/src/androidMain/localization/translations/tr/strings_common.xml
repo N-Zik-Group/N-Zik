@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Geri</string>
     <string name="common_answer_no">Hayır</string>
     <string name="common_artist_conjunction_and">ve</string>
     <string name="common_clipboard_copy_failed">Metin panoya kopyalanamadı, lütfen tekrar deneyin</string>
