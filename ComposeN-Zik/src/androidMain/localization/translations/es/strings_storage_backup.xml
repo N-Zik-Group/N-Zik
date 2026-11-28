@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exportar la base de datos y ajustes por separado. La base de datos utiliza ZIP si incluye portadas personalizadas.</string>
     <string name="backup_export_database_with_covers_description">Guarde canciones, listas de reproducción e historial como SQLite. Si tiene portadas personalizadas, la exportación es un ZIP con la base de datos y portadas.</string>
     <string name="backup_export_profile_state_failed">Error al exportar el estado del perfil</string>
-    <string name="backup_export_settings_description">Exportar ajustes y preferencias de la aplicación</string>
+    <string name="backup_export_settings_description">Exportar ajustes de perfil guardados, incluyendo Cristal</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importar la lista de perfiles y las fotos faciales desde un archivo .txt</string>
     <string name="backup_import_all">Importar todo</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Estado del perfil importado: perfiles %1$d</string>
     <string name="backup_import_profile_state_complete_base">Estado del perfil importado: perfil base</string>
     <string name="backup_import_profile_state_failed">Error al importar el estado del perfil</string>
-    <string name="backup_import_settings_description">Importar ajustes y preferencias de la aplicación</string>
+    <string name="backup_import_settings_description">Combina los ajustes de perfil guardados y restaura cualquier instantánea de cristal</string>
     <string name="backup_import_target_from_file">Desde el archivo</string>
     <string name="backup_import_target_profile_title">¿Importar a qué perfil?</string>
     <!-- Cache -->
