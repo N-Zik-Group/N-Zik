@@ -45,6 +45,14 @@
         <item quantity="one">%1$d Titel in dieser Wiedergabeliste aus den Favoriten entfernen?</item>
         <item quantity="other">%1$d Titel in dieser Wiedergabeliste aus den Favoriten entfernen?</item>
     </plurals>
+    <plurals name="library_collection_favorites_add_artist_tracks">
+        <item quantity="one">%1$d Lied zu Favoriten hinzufügen?</item>
+        <item quantity="other">%1$d Lieder zu Favoriten hinzufügen?</item>
+    </plurals>
+    <plurals name="library_collection_favorites_remove_artist_tracks">
+        <item quantity="one">%1$d Lied aus Favoriten entfernen?</item>
+        <item quantity="other">%1$d Lieder aus Favoriten entfernen?</item>
+    </plurals>
     <plurals name="library_collection_favorites_add_album_tracks">
         <item quantity="one">%1$d Titel von diesem Album zu Favoriten hinzufügen?</item>
         <item quantity="other">%1$d Titel dieses Albums zu Favoriten hinzufügen?</item>
@@ -104,6 +112,10 @@
     <plurals name="downloads_stale_startup_removed_count">
         <item quantity="one">%1$d heruntergeladenes Lied fehlt seine Datei und wurde entfernt. Bitte laden Sie es erneut herunter.</item>
         <item quantity="other">%1$d heruntergeladene Lieder fehlen ihre Dateien und wurden entfernt. Bitte laden Sie sie erneut herunter.</item>
+    </plurals>
+    <plurals name="recommendations_smart_shuffle_added">
+        <item quantity="one">Smart Shuffle hat %d Track hinzugefügt.</item>
+        <item quantity="other">Smart Shuffle hat %d Tracks hinzugefügt.</item>
     </plurals>
     <plurals name="recommendations_quick_picks_song_count">
         <item quantity="one">%1$d empfohlenes Lied</item>
