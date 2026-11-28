@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Verbinden met server</string>
     <string name="listen_together_log_event_connection_closed">Verbinding verbroken</string>
     <string name="listen_together_log_event_connection_failure">Verbinding mislukt</string>
+    <string name="listen_together_invalid_server_address">Het Listen Together serveradres is ongeldig. Werk het bij in de instellingen en probeer het opnieuw.</string>
+    <string name="listen_together_session_server_changed">De server heeft de sessie voor Listen Together omgeleid naar een ander adres.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Verbinding mislukt, wachten op netwerk</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Verbinding verbroken, zal proberen opnieuw te verbinden</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Verschaffen verouderde afspeelgebeurtenis</string>
