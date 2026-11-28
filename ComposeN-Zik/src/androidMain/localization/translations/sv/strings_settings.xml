@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Jag känner mig lycklig</string>
     <string name="automotive_action_play_all">Spela alla</string>
+    <string name="automotive_page_range">Sida %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Välj den åtgärd som utförs genom att svepa ett albumspår till vänster.</string>
     <string name="gestures_album_track_swipe_right_description">Välj den åtgärd som utförs genom att svepa ett album åt höger.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Spegla gränssnittet oberoende av appens språk.</string>
     <string name="settings_interface_page_description">Användargränssnittet innehåller inställningar för att ändra det globala gränssnittet och navigeringen</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">Genvägar</string>
     <string name="settings_interface_group_display">Visa</string>
     <string name="settings_interface_group_indicators">Indikatorer</string>
     <string name="settings_group_profile_name">Visa namn</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Lista svepgester</string>
     <string name="settings_group_home_navigation">Hem navigering</string>
     <string name="settings_group_menu_entries">Menyposter</string>
-    <string name="settings_group_sort_defaults">Standard sorteringsorder</string>
+    <string name="settings_group_sort_defaults">Sortera menyordningen</string>
     <string name="settings_group_player_layout">Spelarens layout</string>
     <string name="settings_group_background_style">Bakgrundsstil och färger</string>
     <string name="settings_group_fullscreen_elements">Element på skärmen</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Anpassa rekommendationer, Snabbplockningar och lyssnande insikter.</string>
     <string name="settings_page_audio_description">Justera ljudbehandling och ljudeffekter.</string>
     <string name="settings_page_behavior_description">Anpassa gester och handlingar medan du surfar och lyssnar.</string>
-    <string name="settings_page_data_description">Hantera hämtad musik, cachade filer och säkerhetskopior.</string>
+    <string name="settings_page_data_description">Hantera lokal musik, cacher, säkerhetskopior och lagrade appdata.</string>
     <string name="settings_page_downloads_description">Välj kvalitet och beteende för nedladdning av musik.</string>
     <string name="settings_page_interface_description">Anpassa temat, typsnitt, navigering och gränssnittslayout.</string>
     <string name="settings_page_maintenance_description">Behåll appen, hantera tillägg och få tillgång till återställningsverktyg.</string>
     <string name="settings_page_network_description">Konfigurera anslutning, strömning kvalitet och proxy inställningar.</string>
-    <string name="settings_page_playback_description">Styr uppspelning, köbeteende och innehållsbegränsningar.</string>
+    <string name="settings_page_playback_description">Välj hur uppspelningen startar, fortsätter och hanterar din kö.</string>
     <string name="settings_page_player_description">Anpassa spelarens utseende, kontroller, texter och meddelanden.</string>
-    <string name="settings_page_privacy_description">Pausa eller rensa lyssnings- och sökhistorik. Hantera behörighetsaktivitet och skärmskydd.</string>
+    <string name="settings_page_privacy_description">Kontrollera sparad aktivitet, behörighetshistorik och skärmskydd.</string>
     <string name="settings_page_profiles_description">Hantera din profilidentitet och dina preferenser.</string>
     <string name="settings_page_rewind_description">Anpassa dina lyssningssammanfattningar och Rewind spellistor.</string>
     <string name="settings_page_services_description">Koppla ihop externa tjänster och lyssna tillsammans med andra.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Transparent bakgrund</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer-knapp</string>
     <string name="settings_player_action_restart_service">Starta om spelare</string>
+    <string name="settings_app_action_restart">Starta om app</string>
     <string name="settings_player_actions_spaced_evenly_label">Rymd jämnt</string>
     <string name="settings_player_album_cover_visible_label">Visa skivomslag</string>
     <string name="settings_player_appearance_page_description">Avsnittet utseende innehåller inställningar för spelarens visuella utseende</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI rekommendationer</string>
     <string name="settings_region_override">Åsidosätt region</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_account_usage_notice">Anslutna konton kommer att inaktiveras. Du kan aktivera dem igen i Inställningar.</string>
+    <string name="settings_reset_glass">Återställ glasinställningar</string>
+    <string name="settings_reset_glass_appearance_description">Återställ standard glasmaterial och effekter.</string>
+    <string name="settings_reset_downloads">Återställ nedladdningsinställningar</string>
     <string name="settings_reset_all">Återställ alla inställningar</string>
     <string name="settings_reset_all_confirm">Återställ alla</string>
     <string name="settings_reset_all_confirmation">Återställ alla programinställningar? Sparade konton, referenser, profiler, spellistor, nedladdningar och filer kommer att behållas.</string>
+    <string name="settings_reset_profile_scope_notice">Detta återställer den aktiva profilens inställningar och inställningar som delas på den här enheten. Andra profiler behåller sina egna inställningar.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Din Lyssna Tillsammans server, användarnamn och blockerade användare behålls.</string>
+    <string name="settings_reset_playback_description">Återställ inställningar för uppspelning, kö och föräldrakontroll.</string>
     <string name="settings_reset_all_description">Återställ alla programinställningar till sina standardinställningar.</string>
     <string name="settings_reset_choose_scope">Välj vilka inställningar du vill återställa</string>
     <string name="settings_reset_choose_scope_description">Välj en inställningssektion och återställ sedan dess standardinställningar.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Svep för åtgärd</string>
     <string name="settings_target_gain_loudness_info">Mål förstärkning för högljudd normalisering</string>
     <string name="settings_target_unavailable">Den här inställningen är inte tillgänglig med den aktuella konfigurationen. Avsnittet visas istället.</string>
+    <string name="settings_target_prerequisite">För att använda denna inställning, konfigurera %1$s först.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Slå på minst en av dessa inställningar för att visa Rewind meddelanden.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Färg accent</string>
     <string name="settings_theme_background_1_color_label">Bakgrund 1</string>
     <string name="settings_theme_background_2_color_label">Bakgrund 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Logga in för Bläddra</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Använd konto för sökningar</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Rensa all data synkroniserad från YouTube? Detta kommer att ta bort gillade låtar, album, artister och spellistor importerade från YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Rensa YouTube synkroniserad data</string>
+    <string name="settings_youtube_logout_confirmation">Logga ut från YouTube Musik i N-Zik? Ditt lokala bibliotek och nedladdningar kommer att stanna på den här enheten.</string>
     <string name="settings_youtube_connection_required_description">Anslut till YouTube först för att aktivera detta alternativ</string>
     <string name="settings_youtube_library_sync_content_description">Spellistor, album, artister, historia, osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktivera YouTube Music inloggning</string>
