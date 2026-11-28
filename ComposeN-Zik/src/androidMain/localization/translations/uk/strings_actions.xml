@@ -19,6 +19,7 @@
     <string name="common_action_reset">Скинути</string>
     <string name="common_action_retry">Повторити спробу</string>
     <string name="common_action_save">Зберегти</string>
+    <string name="common_action_scroll_to_top">Прокрутити вгору</string>
     <string name="common_action_select">Вибрати</string>
     <string name="common_action_show_less">Показати менше</string>
     <string name="common_action_show_more">Показати більше</string>
