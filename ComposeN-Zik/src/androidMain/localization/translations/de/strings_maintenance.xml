@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Debug-Logs deaktivieren und löschen</string>
     <string name="logs_action_export">Logs exportieren</string>
     <string name="logs_action_export_both">Beide Logs exportieren</string>
     <string name="logs_action_export_crash">Absturzprotokoll exportieren</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIED</string>
     <string name="updates_build_release_label">LÖSCHEN</string>
     <string name="updates_cache_cleared">Cache geleert</string>
+    <string name="updates_cache_clear_failed">Update-Cache konnte nicht geleert werden.</string>
+    <string name="updates_changelog_search_label">Changelog</string>
     <string name="updates_changelog_title">Was ist neu in %s</string>
     <string name="updates_channel_name">App-Updates</string>
     <string name="updates_check_mode_ask">Fragen</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Du wechselst zu einem Beta-Build. Diese Version kann Fehler enthalten oder instabil sein. Es wird dringend empfohlen, Ihre Daten zu sichern, bevor Sie fortfahren oder ein Problem melden.</string>
     <string name="updates_stable_to_beta_warning_title">Zum Beta-Build wechseln</string>
     <string name="updates_starting_status">Starte…</string>
-    <string name="updates_unavailable_build_description">Wenn du diese Nachricht siehst, bedeutet dies, dass bei deinem Build keine automatische Aktualisierung aktiviert ist, pls die App manuell von github aktualisieren</string>
+    <string name="updates_manual_update_install_source_message">Automatische Updates sind auf dieser Version nicht verfügbar. Aktualisieren Sie N-Zik über den Provider, von dem Sie es installiert haben.</string>
     <string name="updates_up_to_date">Aktuell</string>
     <string name="updates_warning_acknowledge">Ich verstehe</string>
     <string name="updates_check_failed">Konnte nicht nach Updates suchen.</string>
