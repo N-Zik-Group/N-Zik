@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">重试</string>
     <string name="common_action_save">保存</string>
+    <string name="common_action_scroll_to_top">滚动到顶部</string>
     <string name="common_action_select">选择</string>
     <string name="common_action_show_less">显示更少的</string>
     <string name="common_action_show_more">显示更多</string>
