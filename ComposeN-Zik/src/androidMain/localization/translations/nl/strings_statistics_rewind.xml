@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Toon het maandraster in het Terugspoelhuis.</string>
     <string name="rewind_settings_monthly_notification">Maandelijkse melding voor terugspoeling</string>
     <string name="rewind_settings_monthly_notification_description">Krijg op de 1ste melding dat de terugspoelen van de vorige maand klaar is.</string>
+    <string name="rewind_settings_notification_permission_hint">Sta meldingen voor N-Zik toe in Android-instellingen om meldingen van wind te ontvangen.</string>
     <string name="rewind_settings_notifications">Meldingen terugspoelen</string>
     <string name="rewind_settings_playlists_monthly">Maandelijkse afspeellijst voor terugspoelen</string>
     <string name="rewind_settings_playlists_monthly_description">Maak de maandelijkse terugspoellijst aan.</string>
