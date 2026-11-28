@@ -19,6 +19,7 @@
     <string name="common_action_reset">Zurücksetzen</string>
     <string name="common_action_retry">Wiederholen</string>
     <string name="common_action_save">Speichern</string>
+    <string name="common_action_scroll_to_top">Nach oben scrollen</string>
     <string name="common_action_select">Auswählen</string>
     <string name="common_action_show_less">Weniger anzeigen</string>
     <string name="common_action_show_more">Mehr anzeigen</string>
