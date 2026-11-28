@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Σελιδοδείκτης άλμπουμ</string>
     <string name="album_action_open">Μετάβαση στο άλμπουμ</string>
+    <string name="playlist_action_open">Μετάβαση στη λίστα αναπαραγωγής</string>
+    <string name="podcast_action_open">Μετάβαση στο podcast</string>
     <string name="album_alternative_versions">Εναλλακτικές εκδόσεις</string>
     <string name="album_art">Εξώφυλλο άλμπουμ</string>
-    <string name="album_found_online_verify">Το άλμπουμ βρέθηκε online! Παρακαλώ επιβεβαιώστε ότι είναι το σωστό.</string>
     <string name="album_left_swipe">Άλμπουμ Αριστερά Σύρσιμο</string>
     <string name="album_loading_song_count_format">Φόρτωση %1$d τραγουδιών…</string>
     <string name="album_lookup_failed">Αποτυχία ανάκτησης άλμπουμ</string>
-    <string name="album_lookup_running">Αναζήτηση άλμπουμ από το διαδίκτυο</string>
     <string name="album_no_alternative_version">Αυτό το άλμπουμ δεν έχει άλλες εκδόσεις</string>
-    <string name="album_not_found">Το άλμπουμ δεν βρέθηκε</string>
     <string name="album_related_title">Παρόμοια άλμπουμ</string>
     <string name="album_right_swipe">Σύρσιμο Δεξιά</string>
     <!-- Artist -->
     <string name="artist_action_follow">Ακολουθήστε</string>
+    <string name="artist_action_unfollow">Ακολούθηση</string>
+    <string name="artist_action_open">Μετάβαση στον καλλιτέχνη</string>
     <string name="artist_action_play_local_songs">Αναπαραγωγή όλων των τοπικών τραγουδιών</string>
+    <string name="artist_action_play_library_songs">Αναπαραγωγή όλων των τραγουδιών στη βιβλιοθήκη</string>
     <string name="artist_deduplication_result">Συγχωνευμένος %d διπλός καλλιτέχνης με τον σωστό καλλιτέχνη</string>
     <string name="artist_following_status">Ακολουθεί</string>
-    <string name="artist_found_online_verify">Καλλιτέχνης βρέθηκε online! Παρακαλώ επιβεβαιώστε ότι είναι η σωστή.</string>
     <string name="artist_link_cleanup_result">Αφαιρέθηκε %d εσφαλμένος σύνδεσμος(οι) καλλιτέχνη</string>
     <string name="artist_lookup_failed">Αποτυχία ανάκτησης aritst</string>
-    <string name="artist_lookup_running">Αναζήτηση σε απευθείας σύνδεση %s...</string>
     <string name="artist_more_from">Περισσότερα από</string>
     <string name="artist_overview_title">Επισκόπηση</string>
     <string name="artist_roundness">Στρογγυλή εμφάνιση καλλιτέχνη</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Καλλιτέχνης</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Διαγραφή αποθηκευμένων συμβάντων αναπαραγωγής από το ιστορικό ακρόασης.</string>
+    <string name="history_clear_listen_history_failed">Αδύνατη η ολοκλήρωση της εκκαθάρισης του ιστορικού ακρόασης.</string>
     <string name="history_clear_search_history_description">Διαγραφή αποθηκευμένων αναζητήσεων από κάθε σελίδα αναζήτησης ιστορικού χωρίς να αλλάξετε τις προτιμήσεις ιστορικού.</string>
     <!-- Home -->
     <string name="home_albums_settings">Αρχική Άλμπουμ</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Είστε ένας αριθμός ένα, κάντε κλικ και απολαύστε την έκπληξη</string>
     <!-- Library -->
     <string name="library_action_bookmark">Σελιδοδείκτης</string>
+    <string name="library_action_remove_bookmark">Αφαίρεση σελιδοδείκτη</string>
     <string name="library_action_randomize">Τυχαίος</string>
     <string name="library_albums_title">Άλμπουμ</string>
     <string name="library_artists_title">Καλλιτέχνες</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Εξαγωγή %d cached/downloaded songs?</string>
     <string name="library_favorites_title">Αγαπημένα</string>
     <string name="library_filter_by_title">Φιλτράρισμα Κατά</string>
+    <string name="library_filter_nzik_origin_label">N-Zik μόνο</string>
     <string name="library_filter_online_songs_label">Συνδεδεμένα Τραγούδια</string>
     <string name="library_filter_unmatched_songs_label">Ανεξάρτητα Τραγούδια</string>
     <string name="library_history_title">Ιστορικό</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">Βιβλιοθήκη YTM</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Αφαίρεση από dislikes</string>
     <string name="library_dislikes_added">Αρέθηκε %s</string>
     <string name="library_dislikes_removed">Αφαιρέθηκε %s από dislikes</string>
+    <string name="library_dislikes_added_generic">Προστέθηκε σε dislikes</string>
+    <string name="library_dislikes_removed_generic">Αφαιρέθηκε από dislikes</string>
     <string name="library_favorites_action_add">Προσθήκη στα αγαπημένα</string>
+    <string name="library_favorites_action_remove">Αφαίρεση από τα αγαπημένα</string>
+    <string name="library_favorites_already_added">Ήδη στα αγαπημένα.</string>
     <string name="library_collection_favorites_action_manage">Διαχείριση αγαπημένων</string>
     <string name="library_favorites_added">Προστέθηκε στα αγαπημένα</string>
     <string name="library_favorites_removed">Αφαιρέθηκε από τα αγαπημένα</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Δεν ήταν δυνατή η ενημέρωση των αγαπημένων.</string>
     <string name="library_collection_favorites_sync_failed">Δεν ήταν δυνατός ο συγχρονισμός με το YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Επιλέξτε κριτήριο ταξινόμησης</string>
     <string name="library_sort_album">Άλμπουμ</string>
     <string name="library_sort_album_year">Έτος Άλμπουμ</string>
     <string name="library_sort_artist">Καλλιτέχνης</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Λέξεις-κλειδιά</string>
     <string name="metadata_loading">Φόρτωση…</string>
+    <string name="metadata_link_searching">Αναζήτηση…</string>
+    <string name="metadata_link_manual_required">Το ID δεν επιβεβαιώθηκε. Συνδέστε το χειροκίνητα.</string>
     <string name="metadata_lyricist">Lyricist</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d ψήφοι για MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Αλλαγή Id Περιήγησης Λίστας Αναπαραγωγής</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Τίτλος</string>
     <string name="metadata_track">Κομμάτι</string>
+    <string name="metadata_unknown_album">Άγνωστο Άλμπουμ</string>
     <string name="metadata_unknown_artist">Άγνωστος Καλλιτέχνης</string>
+    <string name="metadata_unknown_author">Άγνωστος Συγγραφέας</string>
+    <string name="metadata_unknown_playlist">Άγνωστη Λίστα Αναπαραγωγής</string>
+    <string name="metadata_unknown_podcast">Άγνωστο Podcast</string>
     <string name="metadata_unknown_title">Άγνωστος Τίτλος</string>
+    <string name="metadata_unknown_year">Άγνωστο Έτος</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Αρέσει</string>
     <string name="metadata_video_subscribers_label">Συνδρομητές</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Προσθήκη σε playlist</string>
     <string name="playlist_action_add_hint">Add in playlist</string>
+    <string name="playlist_add_destination_locked">Δεν μπορείτε να προσθέσετε τραγούδια σε αυτή τη λίστα αναπαραγωγής.</string>
     <string name="playlist_add_destination_unavailable">Αυτή η λίστα αναπαραγωγής δεν είναι πλέον διαθέσιμη για την προσθήκη τραγουδιών συσκευών. Επιλέξτε μια άλλη λίστα αναπαραγωγής.</string>
     <string name="playlist_action_create">Δημιουργία νέου playlist</string>
     <string name="playlist_action_delete_selected">Διαγραφή λιστών αναπαραγωγής</string>
     <string name="playlist_action_export">Εξαγωγή λίστας αναπαραγωγής</string>
     <string name="playlist_action_import">Εισαγωγή λίστας αναπαραγωγής</string>
+    <string name="playlist_actions_title">Ενέργειες λίστας αναπαραγωγής</string>
+    <string name="playlist_action_import_collection">Εισαγωγή αυτής της συλλογής</string>
+    <string name="playlist_action_import_from_source">Εισαγωγή από αρχείο ή σύνδεσμο</string>
     <string name="playlist_action_import_favorites">Εισαγωγή αγαπημένων</string>
     <string name="playlist_action_like_favorites_on_youtube">Όπως τα αγαπημένα N-Zik στο YouTube</string>
     <string name="playlist_action_remove_songs">Αφαίρεση από το playlist</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Είστε βέβαιοι ότι θέλετε να διαγράψετε ΟΛΕΣ τις λίστες αναπαραγωγής %d?</string>
     <string name="playlist_delete_confirmation">Είσαι σίγουρος ότι θέλεις να διαγράψεις αυτό το playlist;</string>
     <string name="playlist_delete_dialog_title">Διαγραφή λίστας αναπαραγωγής</string>
+    <string name="playlist_deletion_failed">Δεν ήταν δυνατή η διαγραφή της λίστας αναπαραγωγής από αυτήν τη συσκευή.</string>
+    <string name="playlist_deletion_partial">Ορισμένες λίστες αναπαραγωγής διαγράφηκαν από αυτήν τη συσκευή.</string>
+    <string name="playlist_deletion_local_success">Διαγράφηκε από αυτήν τη συσκευή.</string>
+    <string name="playlist_deletion_remote_success">Διαγράφηκε από το YouTube Music.</string>
+    <string name="playlist_deletion_remote_failed">Δεν ήταν δυνατή η διαγραφή κάποιων λιστών αναπαραγωγής από το YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Οι συνδεδεμένες λίστες αναπαραγωγής μπορούν επίσης να διαγραφούν από το YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Διαγραφή λιστών αναπαραγωγής</string>
     <string name="playlist_delete_selected_confirmation_count_format">Are you sure you want to delete these %d playlists? (Automatic Copy)</string>
     <string name="playlist_error_action_on_all_disliked_songs">Δεν είναι δυνατή η εκτέλεση αυτής της ενέργειας όταν όλα τα τραγούδια είναι Dislikked</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Όπως όλα τα τραγούδια</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(εκτιμώμενος χρόνος) απαιτείται να αρέσει όλα τα τραγούδια. Θα πρέπει να κλείσετε την εφαρμογή για να ακυρώσετε αυτή τη διαδικασία. Θέλετε να συνεχίσετε?</string>
     <string name="playlist_name_input_hint">Εισάγετε το όνομα του playlist</string>
+    <string name="playlist_name_reserved">Αυτό το όνομα είναι δεσμευμένο για Rewind playlists.</string>
     <string name="playlist_operation_wait_message">Wait, it may take a few minutes...</string>
     <string name="playlist_pinned_title">Pinned Playlists</string>
     <string name="playlist_positions_shuffled">%d θέσεις ανακατεύονται</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Οι γρήγορες επιλογές καθαρίστηκαν</string>
     <string name="recommendations_reset_content_description">Επαναφόρτωση Γρήγορων Επιλογών με νέες συστάσεις. Το ιστορικό ακρόασης σας διατηρείται.</string>
     <string name="recommendations_section_other_youtube_title">Άλλα τμήματα</string>
+    <string name="recommendations_smart_shuffle_add_failed">Το Smart Shuffle δεν μπόρεσε να προσθέσει κανένα κομμάτι.</string>
     <string name="recommendations_section_visibility_description">Απενεργοποίηση αν δεν θέλετε να δείτε</string>
     <string name="recommendations_show_section_label">Εμφάνιση</string>
     <string name="recommendations_smart_song_count_description">Ορίστε τον αριθμό των έξυπνων συστάσεων ή αφήστε την εφαρμογή να προσαρμοστεί αυτόματα. (Automatic Translation)</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Δεν υπάρχουν προτάσεις</string>
     <string name="search_suggestions_title">Προτάσεις</string>
     <string name="search_title">Αναζήτηση...</string>
+    <string name="search_action_edit_query">Επεξεργασία ερωτήματος αναζήτησης</string>
     <string name="search_video_download_unsupported_message">Η λήψη βίντεο δεν υποστηρίζεται</string>
     <string name="search_videos_title">Βίντεο</string>
     <string name="search_voice_action_start">Φωνητική αναζήτηση</string>
