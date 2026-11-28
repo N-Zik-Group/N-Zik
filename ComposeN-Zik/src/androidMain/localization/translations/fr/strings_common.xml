@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Retour</string>
     <string name="common_answer_no">Non</string>
     <string name="common_artist_conjunction_and">et</string>
     <string name="common_clipboard_copy_failed">Impossible de copier le texte dans le presse-papiers, réessayez</string>
