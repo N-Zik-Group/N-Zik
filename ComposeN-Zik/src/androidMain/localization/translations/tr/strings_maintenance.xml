@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Disable and clear debug logs</string>
     <string name="logs_action_export">Günlükleri dışa aktar</string>
     <string name="logs_action_export_both">Her iki günlüğü de dışa aktar</string>
     <string name="logs_action_export_crash">Çökme günlüğünü dışarı aktar</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIED</string>
     <string name="updates_build_release_label">RELEASE</string>
     <string name="updates_cache_cleared">Önbellek temizlendi</string>
+    <string name="updates_cache_clear_failed">Could not clear the update cache.</string>
+    <string name="updates_changelog_search_label">Changelog</string>
     <string name="updates_changelog_title">%s sürümündeki yenilikler</string>
     <string name="updates_channel_name">Uygulama Güncellemeleri</string>
     <string name="updates_check_mode_ask">Sor</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Beta sürümüne geçiyorsunuz. Bu sürümde hatalar bulunabilir veya kararsız çalışabilir. Devam etmeden veya herhangi bir sorunu bildirmeden önce verilerinizi yedeklemeniz şiddetle tavsiye edilir.</string>
     <string name="updates_stable_to_beta_warning_title">Beta Sürümüne Geçiş</string>
     <string name="updates_starting_status">Başlatılıyor…</string>
-    <string name="updates_unavailable_build_description">Bu mesajı görüyorsanız, derlemenizde otomatik güncelleme özelliği etkin değil demektir, lütfen uygulamayı GitHub\'dan manuel olarak güncelleyin.</string>
+    <string name="updates_manual_update_install_source_message">Automatic updates are unavailable on this build. Update N-Zik through the provider you installed it from.</string>
     <string name="updates_up_to_date">Güncel</string>
     <string name="updates_warning_acknowledge">Anlıyorum</string>
     <string name="updates_check_failed">Güncellemeler kontrol edilemedi.</string>
