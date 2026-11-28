@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Kilde av glassfarge</string>
     <string name="glass_effect_tint_source_custom">Egendefinert</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Velg en Glass-farge som bruker en fargetone for å justere fargestyrken.</string>
     <string name="glass_effect_unsupported">Denne telefonen har ikke noe maskinvare uskarpt så alle overflatene bruker den lille filmen.</string>
     <string name="glass_effect_where_action_buttons">Handlingsknapper</string>
     <string name="glass_effect_where_action_buttons_description">Det vanlige er utkikk etter knapper og verktøylinjer. Velger i de andre gruppene kan erstatte den.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Minimum N-Zik versjon</string>
     <string name="theme_store_submission_minimum_description">Den eldste versjonen som kan bruke dette temaet. Nye temaer som standard for versjonskode %3$d. Du bruker N-Zik %1$s (versjonskoden %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Dette temaet krever N-Zik Android-versjonskoden %1$d før det kan bli publisert.</string>
+    <string name="theme_store_local_feature_requires_update">Dette temaet krever N-Zik Android-versjonskoden %1$d før det kan lagres.</string>
+    <string name="theme_store_submission_appearance_unsupported">Denne versjonen av N-Zik kan ikke lese det lagrede utseendet. Oppdater N-Zik eller velg Bruk nåværende utseende for å erstatte det.</string>
     <string name="theme_store_submission_version_code_label">Minimum versjonskode</string>
     <string name="theme_store_submission_find_version_code">Finn N-Zik versjoner og koder</string>
     <string name="theme_store_submission_version_with_code">%1$s (code %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Rediger min profil</string>
     <string name="theme_store_creator_sign_in">Koble GitHub til din skaperprofil.</string>
+    <string name="theme_store_creator_action_sign_in_required">Koble til din GitHub konto for å få tilgang til denne skaperhandlingen.</string>
     <string name="theme_store_creator_draft">Endringene lagres på denne enheten som utkast.</string>
     <string name="theme_store_creator_display_name">Offentlig navn</string>
     <string name="theme_store_creator_bio">Biografi</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d av 5</string>
     <string name="theme_store_support_pending">Kompatibilitet er under behandling. Du kan fortsatt laste ned dette temaet.</string>
     <string name="theme_store_support_requires_update">Oppdater N-Zik til å bruke dette temaet.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik kunne ikke lese utseendet for dette temaet.</string>
     <string name="theme_store_support_minimum">Fungerer med din versjon av N-zik.</string>
     <string name="theme_store_preview_normal">Vanlig</string>
     <string name="theme_store_preview_glass">Glass</string>
