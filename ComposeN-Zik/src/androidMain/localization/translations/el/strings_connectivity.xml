@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Σύνδεση στο διακομιστή</string>
     <string name="listen_together_log_event_connection_closed">Η σύνδεση έκλεισε</string>
     <string name="listen_together_log_event_connection_failure">Αποτυχία σύνδεσης</string>
+    <string name="listen_together_invalid_server_address">Η διεύθυνση διακομιστή Listen Together δεν είναι έγκυρη. Ενημερώστε την στις ρυθμίσεις και προσπαθήστε ξανά.</string>
+    <string name="listen_together_session_server_changed">Ο διακομιστής ανακατευθύνει τη συνεδρία ακρόασης σε μια διαφορετική διεύθυνση.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Αποτυχία σύνδεσης, αναμονή δικτύου</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Η σύνδεση χάθηκε, θα προσπαθήσει να επανασυνδεθεί</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Απόρριψη παλαιού συμβάντος αναπαραγωγής</string>
