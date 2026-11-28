@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Αυτό το τηλέφωνο</string>
     <string name="audio_output_title">Έξοδος ήχου</string>
     <string name="audio_output_wired_headphones_label">Ενσύρματα ακουστικά</string>
+    <string name="audio_quality_auto_effective_fmt">Αυτόματο (%1$s)</string>
     <string name="audio_quality_auto_fmt">Αυτόματα (Ανιχνεύθηκε: %1$s)</string>
     <string name="audio_quality_automatic">Αυτόματο</string>
     <string name="audio_quality_format">Ποιότητα Ήχου</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Πλάκα</string>
     <string name="audio_reverb_small_room">Μικρό Δωμάτιο</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Μόνο ο υπολογιστής μπορεί να αλλάξει αυτόματες εγκρίσεις σε αυτό το δωμάτιο. Αφήστε το χώρο για να επεξεργαστείτε τις δικές σας ρυθμίσεις.</string>
     <string name="listen_together_auto_approval_joins_description">Αυτόματη έγκριση αιτήσεων συμμετοχής χωρίς χειροκίνητη αναθεώρηση</string>
     <string name="listen_together_auto_approval_suggestions_description">Αυτόματη έγκριση και προτάσεις τραγουδιού ουράς από τους επισκέπτες</string>
     <string name="listen_together_blocked_users_description">Δείτε και διαχειριστείτε τους συμμετέχοντες αποκλεισμένους από τις αίθουσες ακρόασης σας.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Αριστερά</string>
     <string name="lyrics_alignment_right_label">Δεξιά</string>
     <string name="lyrics_artwork_overlay_description">Εμφάνιση στίχων πάνω από το εξώφυλλο του παίκτη.</string>
+    <string name="lyrics_cover_dimming_title">Μείωσε το εξώφυλλο πίσω από στίχους</string>
+    <string name="lyrics_cover_dimming_description">Σκούρο το εξώφυλλο του παίκτη όταν οι στίχοι εμφανίζονται πάνω του.</string>
+    <string name="lyrics_cover_dimming_opacity">Ένταση εξώφυλλου στίχων</string>
     <string name="lyrics_background_enabled_description">Σχεδιάστε ένα φόντο πίσω από στίχους για να βελτιώσετε την αναγνωσιμότητά τους.</string>
     <string name="lyrics_background_label">Lyrics Background</string>
     <string name="lyrics_behavior_section_title">Συμπεριφορά</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Το Karaoke θα το αντικαταστήσει αν βρεθεί.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">καραόκε στίχους</string>
+    <string name="lyrics_mode_label">Λειτουργία στίχων</string>
     <string name="lyrics_mode_synchronized_label">συγχρονισμένων στίχων</string>
     <string name="lyrics_mode_unsynchronized_label">μη συγχρονισμένων στίχων</string>
     <string name="lyrics_not_available">Δεν υπάρχουν διαθέσιμοι στίχοι. Παρακαλώ δοκιμάστε ξανά ή εισαγάγετε τους χειροκίνητα.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Αναπαραγωγή επόμενου</string>
     <string name="player_action_previous">Προηγούμενο</string>
     <string name="player_action_repeat">Επανάληψη</string>
+    <string name="player_repeat_mode_off">Ανενεργό</string>
+    <string name="player_repeat_mode_one">Επανάληψη ενός</string>
+    <string name="player_repeat_mode_all">Επανάληψη όλων</string>
     <string name="player_action_seek_forward">Μπροστά</string>
     <string name="player_action_seek_forward_30_seconds">Εμπρός 30 δευτερόλεπτα</string>
     <string name="player_action_seek_forward_5_seconds">Μπροστά 5 δευτερόλεπτα</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Δεν αποθηκεύει τα συμβάντα αναπαραγωγής που χρησιμοποιούνται για στατιστικές, ιστορικό και προτάσεις σε γρήγορες φωτογραφίες</string>
     <string name="player_pause_on_volume_zero">Παύση στην ένταση μηδέν</string>
     <string name="player_picture_in_picture_content_description">Επιλέξτε το περιεχόμενο που εμφανίζεται στο παράθυρο εικόνας-σε-εικόνα.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Το παράθυρο εικόνας-σε-εικόνα εμφανίζει το εξώφυλλο της διαδρομής.</string>
     <string name="player_picture_in_picture_enabled_description">Αφήστε τον παίκτη να εμφανιστεί σε ένα μικρό παράθυρο εικόνας-σε-εικόνα.</string>
     <string name="player_play_button_rectangular_label">Ορθογωνικό</string>
     <string name="player_play_button_square_label">Τετράγωνο</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Ανακατέψτε την ουρά (%d τραγούδια)</string>
     <string name="player_remaining_time_visible_description">Εμφάνιση του χρόνου που απομένει στο τρέχον κομμάτι.</string>
     <string name="player_restart_required_message">Player has to be restarted for the changes to be effective!</string>
+    <string name="player_restart_service_unavailable_message">Ο παίκτης δεν είναι διαθέσιμος. Οι αλλαγές ισχύουν την επόμενη φορά που θα ξεκινήσει.</string>
+    <string name="player_restart_disconnect_android_auto_message">Αποσυνδέστε το Android Auto για να επανεκκινήσετε τον παίκτη.</string>
     <string name="player_rotating_buttons">Περιστρεφόμενα κουμπιά</string>
     <string name="player_seek_backward_five_seconds">Επαναφορά 5 δευτερολέπτων</string>
     <string name="player_seek_backward_thirty_seconds">Επαναλάβετε τα 30 δευτερόλεπτα</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Επιλέξτε το προσαρμοσμένο χρώμα που χρησιμοποιείται από αυτήν την εφαρμογή.</string>
     <string name="visualizer_dark_background_description">Χρησιμοποιήστε ένα μαύρο φόντο πίσω από την απεικόνιση ήχου.</string>
     <string name="visualizer_dark_background_title">Σκούρο φόντο για οπτικοποιητή</string>
+    <string name="visualizer_cover_dimming_opacity">Ένταση εξασθένισης καλύμματος οπτικού εφέ</string>
     <string name="visualizer_debug_background">VisualizerΦόντο</string>
     <string name="visualizer_enabled_description">Εμφάνιση μιας κινούμενης οπτικοποίησης που ανταποκρίνεται στον ήχο.</string>
     <string name="visualizer_line_thickness">Πάχος Γραμμής Οπτικοποίησης</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Συσκευή Bluetooth</string>
     <string name="audio_output_usb_audio_label">Ήχος USB</string>
     <string name="audio_output_external_speaker_label">Εξωτερικό ηχείο</string>
+    <string name="audio_output_device_unavailable">Αυτή η έξοδος ήχου δεν είναι πλέον διαθέσιμη.</string>
     <string name="audio_output_load_failed">Αποτυχία φόρτωσης συσκευών: %1$s</string>
     <string name="player_audio_mode">Ήχος</string>
     <string name="player_video_mode">Βίντεο</string>
