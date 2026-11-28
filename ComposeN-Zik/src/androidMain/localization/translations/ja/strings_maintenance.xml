@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">デバッグログを無効にして消去する</string>
     <string name="logs_action_export">ログをエクスポート</string>
     <string name="logs_action_export_both">両方のログをエクスポート</string>
     <string name="logs_action_export_crash">クラッシュログをエクスポート</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">分割済み</string>
     <string name="updates_build_release_label">リリース</string>
     <string name="updates_cache_cleared">キャッシュをクリアしました</string>
+    <string name="updates_cache_clear_failed">更新キャッシュをクリアできませんでした。</string>
+    <string name="updates_changelog_search_label">更新履歴</string>
     <string name="updates_changelog_title">%s の新機能</string>
     <string name="updates_channel_name">アプリの更新</string>
     <string name="updates_check_mode_ask">確認</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">ベータビルドに切り替えています。このバージョンにはバグが含まれているか、不安定である可能性があります。 問題を進めたり報告する前に、データをバックアップすることを強くお勧めします。</string>
     <string name="updates_stable_to_beta_warning_title">ベータビルドに切り替え中</string>
     <string name="updates_starting_status">Starting…</string>
-    <string name="updates_unavailable_build_description">このメッセージが表示された場合、ビルドに自動更新が有効になっていないことを意味します。plsはgithubからアプリを手動で更新します。</string>
+    <string name="updates_manual_update_install_source_message">このビルドでは自動更新は利用できません。インストールしたプロバイダ経由で N-Zik を更新してください。</string>
     <string name="updates_up_to_date">最新です</string>
     <string name="updates_warning_acknowledge">了解しました</string>
     <string name="updates_check_failed">更新を確認できませんでした。</string>
