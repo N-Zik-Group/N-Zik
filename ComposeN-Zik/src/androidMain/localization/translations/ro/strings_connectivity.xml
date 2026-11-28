@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Conectare la server</string>
     <string name="listen_together_log_event_connection_closed">Conexiune închisă</string>
     <string name="listen_together_log_event_connection_failure">Eroare de conexiune</string>
+    <string name="listen_together_invalid_server_address">Adresa serverului Ascultare Împreună este invalidă. Actualizați-o în setări și încercați din nou.</string>
+    <string name="listen_together_session_server_changed">Serverul a redirecționat sesiunea Ascultă Împreună către o adresă diferită.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Eroare conexiune, aşteptare pentru reţea</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Conexiune pierdută, va încerca reconectarea</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Evenimentul de redare în impas</string>
