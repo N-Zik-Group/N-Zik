@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Експортувати налаштування бази даних окремо. База даних використовує ZIP, якщо вона включає в себе індивідуальні обкладинки.</string>
     <string name="backup_export_database_with_covers_description">Збережіть пісні, списки відтворення та історію як SQLite. Якщо у вас є користувацькі обкладинки, то експорт це ZIP з базою даних і обкладинками.</string>
     <string name="backup_export_profile_state_failed">Не вдалося експортувати стан профілю</string>
-    <string name="backup_export_settings_description">Налаштування та параметри додатку</string>
+    <string name="backup_export_settings_description">Експортувати збережені параметри профілю, включаючи скло</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Імпорт списку профілів і фотографій обличчя з файлу .txt</string>
     <string name="backup_import_all">Імпортувати всі</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Стан профілю імпортовано: профілі %1$d</string>
     <string name="backup_import_profile_state_complete_base">Стан профілю імпортовано: базовий профіль</string>
     <string name="backup_import_profile_state_failed">Помилка імпорту стану профілю</string>
-    <string name="backup_import_settings_description">Імпортувати налаштування та параметри програми</string>
+    <string name="backup_import_settings_description">Об\'єднати збережені налаштування профілю та відновити будь-який скляний знімок</string>
     <string name="backup_import_target_from_file">З файлу</string>
     <string name="backup_import_target_profile_title">Імпортувати в який профіль?</string>
     <!-- Cache -->
