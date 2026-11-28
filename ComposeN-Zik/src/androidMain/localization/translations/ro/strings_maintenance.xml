@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Dezactivați și ștergeți jurnalele de depanare</string>
     <string name="logs_action_export">Exportă jurnalele</string>
     <string name="logs_action_export_both">Exportă ambele jurnale</string>
     <string name="logs_action_export_crash">Jurnal de export crash</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFAT</string>
     <string name="updates_build_release_label">COMUNICAT</string>
     <string name="updates_cache_cleared">Geocutie ştearsă</string>
+    <string name="updates_cache_clear_failed">Nu s-a putut şterge cache-ul actualizării.</string>
+    <string name="updates_changelog_search_label">Jurnal modificări</string>
     <string name="updates_changelog_title">Ce este nou în %s</string>
     <string name="updates_channel_name">Actualizări aplicație</string>
     <string name="updates_check_mode_ask">Întreabă</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Vă comutați la un build Beta. Această versiune poate conține erori sau poate fi instabilă. Este foarte recomandat să vă salvați datele înainte de a continua sau de a raporta orice problemă.</string>
     <string name="updates_stable_to_beta_warning_title">Trecerea la versiunea Beta</string>
     <string name="updates_starting_status">Pornire…</string>
-    <string name="updates_unavailable_build_description">Dacă vedeți acest mesaj, înseamnă că construcția dvs. are activată actualizarea automată, vă permite să actualizați aplicația manual de la github</string>
+    <string name="updates_manual_update_install_source_message">Actualizările automate sunt indisponibile pe această construcție. Actualizați N-Zik prin furnizorul de la care ați instalat.</string>
     <string name="updates_up_to_date">Actualizare actualizată</string>
     <string name="updates_warning_acknowledge">Am înțeles</string>
     <string name="updates_check_failed">Nu s-au putut verifica actualizările.</string>
