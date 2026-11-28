@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">单独导出数据库和设置。如果包含自定义封面，数据库使用ZIP。</string>
     <string name="backup_export_database_with_covers_description">将歌曲、播放列表和历史记录另存为 SQLite。如果您有自定义封面，导出是一个带有数据库和封面的 ZIP 。</string>
     <string name="backup_export_profile_state_failed">配置文件状态导出失败</string>
-    <string name="backup_export_settings_description">导出应用设置和首选项</string>
+    <string name="backup_export_settings_description">导出保存的配置文件设置，包括Glass</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">从 .txt 文件导入配置文件列表和面部照片</string>
     <string name="backup_import_all">全部导入</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">配置文件状态已导入： %1$d 配置文件</string>
     <string name="backup_import_profile_state_complete_base">配置文件状态：基础配置文件</string>
     <string name="backup_import_profile_state_failed">配置文件状态导入失败</string>
-    <string name="backup_import_settings_description">导入应用设置和首选项</string>
+    <string name="backup_import_settings_description">合并保存的配置文件设置并还原任何玻璃快照</string>
     <string name="backup_import_target_from_file">从文件</string>
     <string name="backup_import_target_profile_title">导入到哪个配置文件？</string>
     <!-- Cache -->
