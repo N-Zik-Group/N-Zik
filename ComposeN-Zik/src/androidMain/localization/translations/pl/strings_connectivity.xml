@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Łączenie z serwerem</string>
     <string name="listen_together_log_event_connection_closed">Połączenie zamknięte</string>
     <string name="listen_together_log_event_connection_failure">Błąd połączenia</string>
+    <string name="listen_together_invalid_server_address">Adres serwera Listen Together jest nieprawidłowy. Zaktualizuj go w ustawieniach i spróbuj ponownie.</string>
+    <string name="listen_together_session_server_changed">Serwer przekierował sesję Listen Together na inny adres.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Błąd połączenia, oczekiwanie na sieć</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Połączenie utracone, spróbuje ponownie połączyć</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Odrzucanie wydarzenia przestarzałego odtwarzania</string>
