@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Connessione al server</string>
     <string name="listen_together_log_event_connection_closed">Connessione chiusa</string>
     <string name="listen_together_log_event_connection_failure">Errore di connessione</string>
+    <string name="listen_together_invalid_server_address">L\'indirizzo del server Ascolta insieme non è valido. Aggiornarlo nelle impostazioni e riprovare.</string>
+    <string name="listen_together_session_server_changed">Il server ha reindirizzato la sessione Ascolta insieme a un indirizzo diverso.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Errore di connessione, in attesa della rete</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Connessione persa, tenterà di riconnettersi</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Eliminare l\'evento di riproduzione stabile</string>
