@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Этот телефон</string>
     <string name="audio_output_title">Аудиовыход</string>
     <string name="audio_output_wired_headphones_label">Проводные наушники</string>
+    <string name="audio_quality_auto_effective_fmt">Автоматически (%1$s)</string>
     <string name="audio_quality_auto_fmt">Авто (обнаружено: %1$s)</string>
     <string name="audio_quality_automatic">Авто</string>
     <string name="audio_quality_format">Качество звука</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Пластинчатый</string>
     <string name="audio_reverb_small_room">Маленькая комната</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Только хост может изменять автоматические разрешения в этой комнате. Оставьте комнату, чтобы изменить свои собственные настройки.</string>
     <string name="listen_together_auto_approval_joins_description">Автоматически подтверждать запросы на присоединение без проверки их вручную</string>
     <string name="listen_together_auto_approval_suggestions_description">Автоматически одобрять и ставить в очередь предложения от гостей</string>
     <string name="listen_together_blocked_users_description">Просмотр и управление участниками, заблокированными из ваших прослушивающих комнат.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Слева</string>
     <string name="lyrics_alignment_right_label">Справа</string>
     <string name="lyrics_artwork_overlay_description">Отображение текстов песен поверх обложки плеера.</string>
+    <string name="lyrics_cover_dimming_title">Затемнить обложку за текстами песен</string>
+    <string name="lyrics_cover_dimming_description">Затемните обложку игрока, когда текст песни отображается поверх него.</string>
+    <string name="lyrics_cover_dimming_opacity">Интенсивность обложки песен</string>
     <string name="lyrics_background_enabled_description">Нарисуйте фон за текстами, чтобы улучшить их читаемость.</string>
     <string name="lyrics_background_label">Фон текста песни</string>
     <string name="lyrics_behavior_section_title">Поведение</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Караокек заменит его, если он найден.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">караоке-тексты</string>
+    <string name="lyrics_mode_label">Режим текста песни</string>
     <string name="lyrics_mode_synchronized_label">синхронизированные тексты</string>
     <string name="lyrics_mode_unsynchronized_label">несинхронизированные тексты</string>
     <string name="lyrics_not_available">Текст песни недоступен. Попробуйте еще раз или введите его вручную.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Играть следующим</string>
     <string name="player_action_previous">Предыдущий</string>
     <string name="player_action_repeat">Повторить</string>
+    <string name="player_repeat_mode_off">Выкл</string>
+    <string name="player_repeat_mode_one">Повторить один</string>
+    <string name="player_repeat_mode_all">Повторить все</string>
     <string name="player_action_seek_forward">Вперёд</string>
     <string name="player_action_seek_forward_30_seconds">Переслать на 30 секунд</string>
     <string name="player_action_seek_forward_5_seconds">Переслать на 5 секунд</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Не показывать и не сохранять новую историю воспроизведения</string>
     <string name="player_pause_on_volume_zero">Пауза при нулевой громкости</string>
     <string name="player_picture_in_picture_content_description">Выберите содержимое, отображаемое в окне изображения в изображении.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Окно изображения в картинке отображает обложку дорожки.</string>
     <string name="player_picture_in_picture_enabled_description">Разрешить проигрывателю отображать небольшое окно изображения в изображении.</string>
     <string name="player_play_button_rectangular_label">Прямоугольник</string>
     <string name="player_play_button_square_label">Квадрат</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Очередь перемешивается (%d песен)</string>
     <string name="player_remaining_time_visible_description">Показать оставшееся время в текущем треке.</string>
     <string name="player_restart_required_message">Необходимо перезапустить игрок, чтобы внести изменения</string>
+    <string name="player_restart_service_unavailable_message">Игрок недоступен. Измените применение при следующем запуске.</string>
+    <string name="player_restart_disconnect_android_auto_message">Отключите Android Auto для перезапуска игрока.</string>
     <string name="player_rotating_buttons">Поворот кнопок</string>
     <string name="player_seek_backward_five_seconds">Перемотка на 5 секунд</string>
     <string name="player_seek_backward_thirty_seconds">Перемотка 30 секунд</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Выберите пользовательский цвет, используемый этим компонентом.</string>
     <string name="visualizer_dark_background_description">Используйте чёрный фон за аудиовизуализацией.</string>
     <string name="visualizer_dark_background_title">Темный фон для визуализации</string>
+    <string name="visualizer_cover_dimming_opacity">Интенсивность затемнения покрытия визуализатора</string>
     <string name="visualizer_debug_background">Визуализатор фон</string>
     <string name="visualizer_enabled_description">Отображение анимированной визуализации, которая отвечает на аудио.</string>
     <string name="visualizer_line_thickness">Толщина линии визуализации</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Устройство Bluetooth</string>
     <string name="audio_output_usb_audio_label">USB-аудио</string>
     <string name="audio_output_external_speaker_label">Внешний динамик</string>
+    <string name="audio_output_device_unavailable">Этот аудиовыход больше не доступен.</string>
     <string name="audio_output_load_failed">Не удалось загрузить устройства: %1$s</string>
     <string name="player_audio_mode">Аудио</string>
     <string name="player_video_mode">Видео</string>
