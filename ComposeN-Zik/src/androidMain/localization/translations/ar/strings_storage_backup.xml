@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">تصدير قاعدة البيانات والإعدادات بشكل منفصل. تستخدم قاعدة البيانات الرمز البريدي إذا كان يحتوي على أغلفة مخصصة.</string>
     <string name="backup_export_database_with_covers_description">حفظ الأغاني وقوائم التشغيل والسجل كـ SQLite. إذا كان لديك أغلفة مخصصة، التصدير هو ZIP مع قاعدة البيانات والغلاف.</string>
     <string name="backup_export_profile_state_failed">فشل تصدير حالة الملف الشخصي</string>
-    <string name="backup_export_settings_description">تصدير إعدادات التطبيق والتفضيلات</string>
+    <string name="backup_export_settings_description">تصدير إعدادات الملف الشخصي المحفوظ، بما في ذلك الزجاج</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">استيراد قائمة الملف الشخصي وصور الوجه من ملف .txt</string>
     <string name="backup_import_all">استيراد الكل</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">حالة الملف الشخصي المستورد: %1$d ملفات شخصية</string>
     <string name="backup_import_profile_state_complete_base">حالة الملف الشخصي المستورد: الملف الشخصي الأساسي</string>
     <string name="backup_import_profile_state_failed">فشل استيراد الحالة الشخصية</string>
-    <string name="backup_import_settings_description">استيراد إعدادات التطبيق والتفضيلات</string>
+    <string name="backup_import_settings_description">دمج إعدادات الملف الشخصي المحفوظ واستعادة أي لقطة زجاجية</string>
     <string name="backup_import_target_from_file">من الملف</string>
     <string name="backup_import_target_profile_title">استيراد أي ملف شخصي؟</string>
     <!-- Cache -->
