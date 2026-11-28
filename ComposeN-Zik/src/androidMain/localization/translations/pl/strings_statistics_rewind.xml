@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Pokaż siatkę miesięczną w domu Rewind</string>
     <string name="rewind_settings_monthly_notification">Miesięczne powiadomienie o przewróceniu</string>
     <string name="rewind_settings_monthly_notification_description">Otrzymuj powiadomienie pierwszego o tym, że przewijanie z poprzedniego miesiąca jest gotowe.</string>
+    <string name="rewind_settings_notification_permission_hint">Zezwalaj na powiadomienia dla N-Zik w ustawieniach Androida aby otrzymywać alerty Rewind</string>
     <string name="rewind_settings_notifications">Przewiń powiadomienia</string>
     <string name="rewind_settings_playlists_monthly">Miesięczna lista odtwarzania</string>
     <string name="rewind_settings_playlists_monthly_description">Utwórz miesięczną listę odtwarzania.</string>
