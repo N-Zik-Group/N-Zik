@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Eksporter databasen og indstillinger separat. Databasen bruger ZIP hvis den indeholder brugerdefinerede omslag.</string>
     <string name="backup_export_database_with_covers_description">Gem sange, afspilningslister og historik som SQLite. Hvis du har brugerdefinerede omslag, er eksporten en ZIP med databasen og omslag.</string>
     <string name="backup_export_profile_state_failed">Profil tilstand eksport mislykkedes</string>
-    <string name="backup_export_settings_description">Eksporter app-indstillinger og præferencer</string>
+    <string name="backup_export_settings_description">Eksporter gemte profilindstillinger, herunder Glass</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importér profillisten og ansigtsbillederne fra en .txt-fil</string>
     <string name="backup_import_all">Importer alle</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Profil tilstand importeret: %1$d profiler</string>
     <string name="backup_import_profile_state_complete_base">Profil tilstand importeret: base profil</string>
     <string name="backup_import_profile_state_failed">Profil tilstand import mislykkedes</string>
-    <string name="backup_import_settings_description">Importer app-indstillinger og præferencer</string>
+    <string name="backup_import_settings_description">Flet gemte profilindstillinger og gendanne ethvert Glass snapshot</string>
     <string name="backup_import_target_from_file">Fra filen</string>
     <string name="backup_import_target_profile_title">Importer til hvilken profil?</string>
     <!-- Cache -->
