@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Kobler til server</string>
     <string name="listen_together_log_event_connection_closed">Forbindelsen ble lukket</string>
     <string name="listen_together_log_event_connection_failure">Feil ved tilkobling</string>
+    <string name="listen_together_invalid_server_address">Lytten Gia Servers adresse er ugyldig. Oppdater den i innstillingene og prøv igjen.</string>
+    <string name="listen_together_session_server_changed">Serveren omdirigerte Lytt Sammen til en annen adresse.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Tilkoblingsfeil, venter på nettverket</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Forbindelsen ble brutt, prøver å gjenopprette</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Forkast utdatert avspillingshendelse</string>
