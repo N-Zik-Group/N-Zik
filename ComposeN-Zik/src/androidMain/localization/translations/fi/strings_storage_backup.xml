@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Vie tietokanta ja asetukset erikseen. Tietokanta käyttää ZIP jos se sisältää mukautettuja kannet.</string>
     <string name="backup_export_database_with_covers_description">Tallenna kappaleita, soittolistoja ja historiaa SQLitenä. Jos sinulla on mukautettuja kansia, vienti on ZIP tietokannan ja kannet.</string>
     <string name="backup_export_profile_state_failed">Profiilin tilan vienti epäonnistui</string>
-    <string name="backup_export_settings_description">Vie sovellusasetukset ja asetukset</string>
+    <string name="backup_export_settings_description">Vie tallennetut profiiliasetukset, mukaan lukien lasi</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Tuo profiililuettelo ja kasvokuvat .txt tiedostosta</string>
     <string name="backup_import_all">Tuo kaikki</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Profiilin tila tuotu: %1$d profiilia</string>
     <string name="backup_import_profile_state_complete_base">Profiilin tila tuotu: perusprofiili</string>
     <string name="backup_import_profile_state_failed">Profiilin tilan tuonti epäonnistui</string>
-    <string name="backup_import_settings_description">Tuo sovellusasetukset ja asetukset</string>
+    <string name="backup_import_settings_description">Yhdistä tallennetut profiiliasetukset ja palauta mikä tahansa lasinen tilannekuva</string>
     <string name="backup_import_target_from_file">Tiedostosta alkaen</string>
     <string name="backup_import_target_profile_title">Tuo mihin profiiliin?</string>
     <!-- Cache -->
