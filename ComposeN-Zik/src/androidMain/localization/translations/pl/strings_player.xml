@@ -15,6 +15,7 @@
     <string name="audio_output_this_phone_label">Ten telefon</string>
     <string name="audio_output_title">Wyjście audio</string>
     <string name="audio_output_wired_headphones_label">Słuchawki przewodowe</string>
+    <string name="audio_quality_auto_effective_fmt">Automatyczne (%1$s)</string>
     <string name="audio_quality_auto_fmt">Auto (Wykryto: %1$s)</string>
     <string name="audio_quality_automatic">Automatyczne</string>
     <string name="audio_quality_format">Jakość dźwięku</string>
@@ -40,6 +41,7 @@
     <string name="audio_reverb_plate">Płyta</string>
     <string name="audio_reverb_small_room">Mały pokój</string>
     <!-- Listen -->
+    <string name="listen_together_auto_approval_guest_hint">Tylko host może zmienić automatyczne zatwierdzenia w tym pokoju. Pozostaw pokój, aby edytować swoje ustawienia.</string>
     <string name="listen_together_auto_approval_joins_description">Automatycznie zatwierdzaj prośby o dołączenie bez sprawdzania ich ręcznie</string>
     <string name="listen_together_auto_approval_suggestions_description">Automatycznie zatwierdzaj i kolejkuj sugestie piosenki od gości</string>
     <string name="listen_together_blocked_users_description">Przeglądaj i zarządzaj uczestnikami zablokowanymi w pomieszczeniach słuchawczych.</string>
@@ -68,6 +70,9 @@
     <string name="lyrics_alignment_left_label">Lewo</string>
     <string name="lyrics_alignment_right_label">Prawo</string>
     <string name="lyrics_artwork_overlay_description">Wyświetlaj teksty piosenek nad graczem</string>
+    <string name="lyrics_cover_dimming_title">Przyciemnij okładkę za tekstem</string>
+    <string name="lyrics_cover_dimming_description">Przyciemnij gracza gracza gdy tekst jest wyświetlany nad nim.</string>
+    <string name="lyrics_cover_dimming_opacity">Tekst pokrywa intensywność przyciemniania</string>
     <string name="lyrics_background_enabled_description">Narysuj tło za tekstami piosenek, aby poprawić ich czytelność.</string>
     <string name="lyrics_background_label">Tło tekstu piosenki</string>
     <string name="lyrics_behavior_section_title">Zachowanie</string>
@@ -110,6 +115,7 @@
     <string name="lyrics_karaoke_upgrade_hint">Karaoke zastąpi go, jeśli zostanie znaleziony.</string>
     <string name="lyrics_mode_automatic_label">Auto</string>
     <string name="lyrics_mode_karaoke_label">karaoke tekst piosenki</string>
+    <string name="lyrics_mode_label">Tryb tekstu</string>
     <string name="lyrics_mode_synchronized_label">zsynchronizowany tekst</string>
     <string name="lyrics_mode_unsynchronized_label">niezsynchronizowany tekst</string>
     <string name="lyrics_not_available">Brak dostępnych tekstów. Spróbuj ponownie lub wprowadź je ręcznie.</string>
@@ -166,6 +172,9 @@
     <string name="player_action_play_next">Odtwórz jako następne</string>
     <string name="player_action_previous">Poprzedni</string>
     <string name="player_action_repeat">Powtórz</string>
+    <string name="player_repeat_mode_off">Wyłączony</string>
+    <string name="player_repeat_mode_one">Powtórz jeden</string>
+    <string name="player_repeat_mode_all">Powtórz wszystkie</string>
     <string name="player_action_seek_forward">Przekaż</string>
     <string name="player_action_seek_forward_30_seconds">Przekaż 30 sekund</string>
     <string name="player_action_seek_forward_5_seconds">Przekaż 5 sekund</string>
@@ -280,6 +289,7 @@
     <string name="player_pause_listen_history_info">Nie zapisuj odtworzeń do statystyk, historii i sugestii w szybkim wyborze</string>
     <string name="player_pause_on_volume_zero">Wstrzymaj przy zerowej głośności</string>
     <string name="player_picture_in_picture_content_description">Wybierz zawartość wyświetlaną w oknie obrazka w obrazku.</string>
+    <string name="player_picture_in_picture_fixed_content_description">Zdjęcie w obrazku wyświetla okno utworu.</string>
     <string name="player_picture_in_picture_enabled_description">Pozwól graczowi na pojawienie się w małym oknie obrazkowym.</string>
     <string name="player_play_button_rectangular_label">Prostokątny</string>
     <string name="player_play_button_square_label">Kwadratowy</string>
@@ -300,6 +310,8 @@
     <string name="player_queue_shuffled_count_format">Kolejka losowana (%d utworów)</string>
     <string name="player_remaining_time_visible_description">Pokaż czas pozostały w bieżącej ścieżce.</string>
     <string name="player_restart_required_message">Gracz musi zostać zrestartowany w celu wprowadzenia skutecznych zmian!</string>
+    <string name="player_restart_service_unavailable_message">Odtwarzacz jest niedostępny. Zmiany zastosuj go przy następnym uruchomieniu.</string>
+    <string name="player_restart_disconnect_android_auto_message">Odłącz Android Auto restartuj odtwarzacza.</string>
     <string name="player_rotating_buttons">Obracanie przycisków</string>
     <string name="player_seek_backward_five_seconds">Przewiń 5 sekund</string>
     <string name="player_seek_backward_thirty_seconds">Przewijanie 30 sekund</string>
@@ -380,6 +392,7 @@
     <string name="visualizer_custom_color_description">Wybierz niestandardowy kolor używany przez ten komponent.</string>
     <string name="visualizer_dark_background_description">Użyj czarnego tła za wizualizacją dźwięku.</string>
     <string name="visualizer_dark_background_title">Ciemne tło dla wizualizatora</string>
+    <string name="visualizer_cover_dimming_opacity">Intensywność przyciemniania wizualizatora</string>
     <string name="visualizer_debug_background">Wizualizuj tło</string>
     <string name="visualizer_enabled_description">Wyświetl animowaną wizualizację, która odpowiada na dźwięk.</string>
     <string name="visualizer_line_thickness">Grubość linii wizualizatora</string>
@@ -398,6 +411,7 @@
     <string name="audio_output_bluetooth_device_label">Urządzenie Bluetooth</string>
     <string name="audio_output_usb_audio_label">Dźwięk USB</string>
     <string name="audio_output_external_speaker_label">Głośnik zewnętrzny</string>
+    <string name="audio_output_device_unavailable">To wyjście audio nie jest już dostępne.</string>
     <string name="audio_output_load_failed">Nie udało się załadować urządzeń: %1$s</string>
     <string name="player_audio_mode">Dźwięk</string>
     <string name="player_video_mode">Wideo</string>
