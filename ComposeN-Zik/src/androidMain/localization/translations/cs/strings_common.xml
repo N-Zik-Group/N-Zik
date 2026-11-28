@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">Zpět</string>
     <string name="common_answer_no">Ne</string>
     <string name="common_artist_conjunction_and">a</string>
     <string name="common_clipboard_copy_failed">Nepodařilo se zkopírovat text do schránky, zkuste to znovu</string>
