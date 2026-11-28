@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exporte o banco de dados e as configurações separadamente. O banco de dados usa ZIP se inclui capas personalizadas.</string>
     <string name="backup_export_database_with_covers_description">Salve músicas, listas de reprodução e histórico como SQLite. Se você tiver capas personalizadas, a exportação é um ZIP com o banco de dados e capas.</string>
     <string name="backup_export_profile_state_failed">Falha ao exportar estado do perfil</string>
-    <string name="backup_export_settings_description">Exportar configurações e preferências do aplicativo</string>
+    <string name="backup_export_settings_description">Exportar configurações de perfil salvas, incluindo Vidro</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importar a lista de perfil e as fotos de rosto de um arquivo .txt</string>
     <string name="backup_import_all">Importar tudo</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Estado do perfil importado: perfis %1$d</string>
     <string name="backup_import_profile_state_complete_base">Estado do perfil importado: perfil base</string>
     <string name="backup_import_profile_state_failed">Falha ao importar estado do perfil</string>
-    <string name="backup_import_settings_description">Importar configurações e preferências do aplicativo</string>
+    <string name="backup_import_settings_description">Mesclar configurações de perfil salvas e restaurar qualquer snapshot de Vidro</string>
     <string name="backup_import_target_from_file">Do arquivo</string>
     <string name="backup_import_target_profile_title">Importar para qual perfil?</string>
     <!-- Cache -->
