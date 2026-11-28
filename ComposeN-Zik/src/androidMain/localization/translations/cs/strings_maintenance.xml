@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Zakázat a vymazat protokoly ladění</string>
     <string name="logs_action_export">Exportovat protokoly</string>
     <string name="logs_action_export_both">Exportovat oba logy</string>
     <string name="logs_action_export_crash">Exportovat protokol pádu</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIKOVANÉ</string>
     <string name="updates_build_release_label">ODSTRANIT</string>
     <string name="updates_cache_cleared">Mezipaměť vymazána</string>
+    <string name="updates_cache_clear_failed">Nelze vymazat cache aktualizací.</string>
+    <string name="updates_changelog_search_label">Seznam změn</string>
     <string name="updates_changelog_title">Co je nového v %s</string>
     <string name="updates_channel_name">Aktualizace aplikací</string>
     <string name="updates_check_mode_ask">Zeptat se</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Přepínáte na beta verzi. Tato verze může obsahovat chyby nebo může být nestabilní. Před pokračováním nebo hlášením problému se důrazně doporučuje zálohovat vaše údaje.</string>
     <string name="updates_stable_to_beta_warning_title">Přechod na Beta sestavení</string>
     <string name="updates_starting_status">Začínáme…</string>
-    <string name="updates_unavailable_build_description">Pokud vidíte tuto zprávu, znamená to, že vaše sestavení nemá povolenou automatickou aktualizaci, pls aktualizuje aplikaci ručně z githubu</string>
+    <string name="updates_manual_update_install_source_message">Automatické aktualizace nejsou k dispozici na tomto sestavení. Aktualizujte N-Zik prostřednictvím poskytovatele, ze kterého jste ho nainstalovali.</string>
     <string name="updates_up_to_date">Aktuální</string>
     <string name="updates_warning_acknowledge">Chápu</string>
     <string name="updates_check_failed">Nelze zkontrolovat aktualizace.</string>
