@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Bokmärk album</string>
     <string name="album_action_open">Gå till album</string>
+    <string name="playlist_action_open">Gå till spellista</string>
+    <string name="podcast_action_open">Gå till podcast</string>
     <string name="album_alternative_versions">Alternativa versioner</string>
     <string name="album_art">Skivomslag</string>
-    <string name="album_found_online_verify">Album hittades online! Vänligen kontrollera att det är rätt.</string>
     <string name="album_left_swipe">Album vänster svep</string>
     <string name="album_loading_song_count_format">Laddar %1$d låtar…</string>
     <string name="album_lookup_failed">Det gick inte att hämta album</string>
-    <string name="album_lookup_running">Ser upp album från internet</string>
     <string name="album_no_alternative_version">Detta album har ingen alternativ version</string>
-    <string name="album_not_found">Album hittades inte</string>
     <string name="album_related_title">Relaterade album</string>
     <string name="album_right_swipe">Album höger svep</string>
     <!-- Artist -->
     <string name="artist_action_follow">Följ</string>
+    <string name="artist_action_unfollow">Sluta följa</string>
+    <string name="artist_action_open">Gå till artist</string>
     <string name="artist_action_play_local_songs">Spela alla lokala låtar</string>
+    <string name="artist_action_play_library_songs">Spela alla låtar i biblioteket</string>
     <string name="artist_deduplication_result">Sammanfogade %d dublettkonstnär(er) med rätt artist</string>
     <string name="artist_following_status">Följer</string>
-    <string name="artist_found_online_verify">Artist hittades online! Vänligen kontrollera att det är rätt.</string>
     <string name="artist_link_cleanup_result">Tog bort %d felaktiga artistlänkar</string>
     <string name="artist_lookup_failed">Det gick inte att hämta aritst</string>
-    <string name="artist_lookup_running">Letar upp %s online...</string>
     <string name="artist_more_from">Mer av</string>
     <string name="artist_overview_title">Översikt</string>
     <string name="artist_roundness">Konstnärens rundhet</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Konstnären</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Ta bort sparade uppspelningshändelser från lyssningshistorik.</string>
+    <string name="history_clear_listen_history_failed">Det gick inte att rensa lyssningshistoriken.</string>
     <string name="history_clear_search_history_description">Ta bort sparade sökningar från varje sökhistoriksida utan att ändra historikinställningar.</string>
     <!-- Home -->
     <string name="home_albums_settings">Hem album</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Du är nummer ett, klicka och njut av överraskningen</string>
     <!-- Library -->
     <string name="library_action_bookmark">Bokmärke</string>
+    <string name="library_action_remove_bookmark">Ta bort bokmärke</string>
     <string name="library_action_randomize">Slumpmässig</string>
     <string name="library_albums_title">Album</string>
     <string name="library_artists_title">Artister</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Exportera %d cachade/hämtade låtar?</string>
     <string name="library_favorites_title">Favoriter</string>
     <string name="library_filter_by_title">Filtrera på</string>
+    <string name="library_filter_nzik_origin_label">N-Zik endast</string>
     <string name="library_filter_online_songs_label">Låtar online</string>
     <string name="library_filter_unmatched_songs_label">Omatchade låtar</string>
     <string name="library_history_title">Historik</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM-bibliotek</string>
     <string name="library_youtube_playlists_label">YT/YTM</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Ta bort från ogillade</string>
     <string name="library_dislikes_added">Tyckte inte om %s</string>
     <string name="library_dislikes_removed">Tog bort %s från ogillade</string>
+    <string name="library_dislikes_added_generic">Lades till i ogillande</string>
+    <string name="library_dislikes_removed_generic">Borttagen från ogillade</string>
     <string name="library_favorites_action_add">Lägg till i favoriter</string>
+    <string name="library_favorites_action_remove">Ta bort från favoriter</string>
+    <string name="library_favorites_already_added">Redan i favoriter.</string>
     <string name="library_collection_favorites_action_manage">Hantera favoriter</string>
     <string name="library_favorites_added">Lades till i favoriter</string>
     <string name="library_favorites_removed">Borttagen från favoriter</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Det gick inte att uppdatera favoriter.</string>
     <string name="library_collection_favorites_sync_failed">Det gick inte att synkronisera några favoriter med YouTube.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Välj sorteringskriterium</string>
     <string name="library_sort_album">Album</string>
     <string name="library_sort_album_year">Album år</string>
     <string name="library_sort_artist">Konstnären</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Nyckelord</string>
     <string name="metadata_loading">Laddar…</string>
+    <string name="metadata_link_searching">Söker…</string>
+    <string name="metadata_link_manual_required">ID bekräftades inte. Länka det manuellt.</string>
     <string name="metadata_lyricist">Låttext</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d röster på MusicBrainz</string>
     <string name="metadata_playlist_action_change_browse_id">Ändra spellista Bläddra ID</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Titel</string>
     <string name="metadata_track">Spår</string>
+    <string name="metadata_unknown_album">Okänt album</string>
     <string name="metadata_unknown_artist">Okänd konstnär</string>
+    <string name="metadata_unknown_author">Okänd författare</string>
+    <string name="metadata_unknown_playlist">Okänd spellista</string>
+    <string name="metadata_unknown_podcast">Okänd podcast</string>
     <string name="metadata_unknown_title">Okänd titel</string>
+    <string name="metadata_unknown_year">Okänt år</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Gillar</string>
     <string name="metadata_video_subscribers_label">Prenumeranter</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Lägg till i spellistan</string>
     <string name="playlist_action_add_hint">Lägg till i spellistan</string>
+    <string name="playlist_add_destination_locked">Du kan inte lägga till låtar till den här spellistan.</string>
     <string name="playlist_add_destination_unavailable">Den här spellistan är inte längre tillgänglig för att lägga till låtar. Välj en annan spellista.</string>
     <string name="playlist_action_create">Ny spellista</string>
     <string name="playlist_action_delete_selected">Ta bort spellistor</string>
     <string name="playlist_action_export">Exportera spellista</string>
     <string name="playlist_action_import">Importera spellista</string>
+    <string name="playlist_actions_title">Åtgärder för spellista</string>
+    <string name="playlist_action_import_collection">Importera denna samling</string>
+    <string name="playlist_action_import_from_source">Importera från en fil eller länk</string>
     <string name="playlist_action_import_favorites">Importera favoriter</string>
     <string name="playlist_action_like_favorites_on_youtube">Gilla N-Zik favoriter på YouTube</string>
     <string name="playlist_action_remove_songs">Ta bort från spellistan</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Är du säker på att du vill ta bort ALLA %d spellistor?</string>
     <string name="playlist_delete_confirmation">Vill du verkligen ta bort denna spellista?</string>
     <string name="playlist_delete_dialog_title">Ta bort spellista</string>
+    <string name="playlist_deletion_failed">Det gick inte att ta bort spellistan från denna enhet.</string>
+    <string name="playlist_deletion_partial">Vissa spellistor har tagits bort från denna enhet.</string>
+    <string name="playlist_deletion_local_success">Tog bort från den här enheten.</string>
+    <string name="playlist_deletion_remote_success">Borttagen från YouTube-musik.</string>
+    <string name="playlist_deletion_remote_failed">Det gick inte att ta bort några spellistor från YouTube Music.</string>
+    <string name="playlist_deletion_youtube_confirmation">Länkade spellistor kan också tas bort från YouTube Music.</string>
     <string name="playlist_delete_multiple_dialog_title">Ta bort spellistor</string>
     <string name="playlist_delete_selected_confirmation_count_format">Är du säker på att du vill ta bort dessa %d spellistor?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Kan inte utföra denna åtgärd när alla låtar är ogillade</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Gilla alla låtar</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(beräknad tid) krävs för att gilla alla låtar. Du måste stänga appen för att avbryta processen. Vill du fortsätta?</string>
     <string name="playlist_name_input_hint">Ange namnet på spellistan</string>
+    <string name="playlist_name_reserved">Detta namn är reserverat för Rewind spellistor.</string>
     <string name="playlist_operation_wait_message">Vänligen vänta, detta kan ta några minuter...</string>
     <string name="playlist_pinned_title">Klistrad</string>
     <string name="playlist_positions_shuffled">%d positioner blandas</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Snabbval rensas</string>
     <string name="recommendations_reset_content_description">Ladda om Snabbval med färska rekommendationer. Din lyssningshistorik behålls.</string>
     <string name="recommendations_section_other_youtube_title">Andra sektioner</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle kunde inte lägga till några spår.</string>
     <string name="recommendations_section_visibility_description">Inaktivera om du inte vill se</string>
     <string name="recommendations_show_section_label">Visa</string>
     <string name="recommendations_smart_song_count_description">Ställ in antalet smarta rekommendationer, eller låt appen justera den automatiskt.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Inga förslag</string>
     <string name="search_suggestions_title">Förslag</string>
     <string name="search_title">Sök</string>
+    <string name="search_action_edit_query">Redigera sökfråga</string>
     <string name="search_video_download_unsupported_message">Nedladdning av videor stöds inte</string>
     <string name="search_videos_title">Videor</string>
     <string name="search_voice_action_start">Röstsökning</string>
