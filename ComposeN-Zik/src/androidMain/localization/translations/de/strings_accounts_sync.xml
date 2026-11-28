@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">GitHub verbinden</string>
+    <string name="github_account_background_checks">GitHub Hintergrundprüfungen</string>
+    <string name="github_account_background_checks_description">Überprüfen Sie Ihr GitHub Konto und überprüfen Sie den Status automatisch.</string>
     <string name="github_account_logout">GitHub trennen</string>
     <string name="github_account_description">Verwenden Sie Ihr GitHub Konto im Theme Store.</string>
     <string name="github_account_offline">Geh online um GitHub zu verbinden.</string>
