@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Wyłącz i wyczyść dzienniki debugowania</string>
     <string name="logs_action_export">Eksportuj logi</string>
     <string name="logs_action_export_both">Eksportuj oba logi</string>
     <string name="logs_action_export_crash">Eksport dziennika awarii</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">ZAKOŃCZONO</string>
     <string name="updates_build_release_label">ZWOLNIENIE</string>
     <string name="updates_cache_cleared">Pamięć podręczna usunięta</string>
+    <string name="updates_cache_clear_failed">Nie można wyczyścić pamięci podręcznej aktualizacji.</string>
+    <string name="updates_changelog_search_label">Lista zmian</string>
     <string name="updates_changelog_title">Co nowego w %s</string>
     <string name="updates_channel_name">Aktualizacje aplikacji</string>
     <string name="updates_check_mode_ask">Zapytaj</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Przełączyłeś się na wersję Beta. Ta wersja może zawierać błędy lub być niestabilna. Zalecane jest tworzenie kopii zapasowej danych przed przystąpieniem lub zgłoszeniem jakichkolwiek problemów.</string>
     <string name="updates_stable_to_beta_warning_title">Przełączanie na wersję beta</string>
     <string name="updates_starting_status">Uruchamianie…</string>
-    <string name="updates_unavailable_build_description">Jeśli widzisz tę wiadomość, oznacza to, że twoja kompilacja nie ma włączonej automatycznej aktualizacji, pls aktualizuje aplikację ręcznie z github</string>
+    <string name="updates_manual_update_install_source_message">Automatyczne aktualizacje są niedostępne na tej kompilacji. Zaktualizuj N-Zik przez dostawcę, z którego go zainstalowałeś.</string>
     <string name="updates_up_to_date">Aktualne</string>
     <string name="updates_warning_acknowledge">Rozumiem</string>
     <string name="updates_check_failed">Nie można sprawdzić aktualizacji.</string>
