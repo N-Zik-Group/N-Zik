@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">在返回家园显示月份网格。</string>
     <string name="rewind_settings_monthly_notification">每月后风通知</string>
     <string name="rewind_settings_monthly_notification_description">第一个月的后风已准备就绪。</string>
+    <string name="rewind_settings_notification_permission_hint">允许在 Android 设置中的 N-Zik 接收回风警报。</string>
     <string name="rewind_settings_notifications">退货通知</string>
     <string name="rewind_settings_playlists_monthly">每月后退播放列表</string>
     <string name="rewind_settings_playlists_monthly_description">创建每月回风播放列表。</string>
