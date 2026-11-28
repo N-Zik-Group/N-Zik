@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reiniciar</string>
     <string name="common_action_retry">Repetir</string>
     <string name="common_action_save">Guardar</string>
+    <string name="common_action_scroll_to_top">Rolar para o topo</string>
     <string name="common_action_select">Selecionar</string>
     <string name="common_action_show_less">Mostre menos</string>
     <string name="common_action_show_more">Mostre mais</string>
