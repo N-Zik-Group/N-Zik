@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Poista vianjäljityslokit käytöstä ja tyhjennä ne</string>
     <string name="logs_action_export">Vie lokit</string>
     <string name="logs_action_export_both">Vie molemmat lokit</string>
     <string name="logs_action_export_crash">Vie kaatumisloki</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">VÄHENNETTY</string>
     <string name="updates_build_release_label">VAPAA</string>
     <string name="updates_cache_cleared">Välimuisti tyhjennetty</string>
+    <string name="updates_cache_clear_failed">Päivitysvälimuistia ei voitu tyhjentää.</string>
+    <string name="updates_changelog_search_label">Muutosloki</string>
     <string name="updates_changelog_title">Mitä uutta kohteessa %s</string>
     <string name="updates_channel_name">Sovelluksen Päivitykset</string>
     <string name="updates_check_mode_ask">Kysy</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Olet siirtymässä Beta-versioon. Tämä versio saattaa sisältää vikoja tai olla epävakaa. On erittäin suositeltavaa varmuuskopioida tietosi ennen kuin käsittelet tai raportoit ongelmista.</string>
     <string name="updates_stable_to_beta_warning_title">Vaihdetaan Beta-versioon</string>
     <string name="updates_starting_status">Aloitetaan…</string>
-    <string name="updates_unavailable_build_description">Jos näet tämän viestin, se tarkoittaa, että versio ei ole automaattinen päivitys käytössä, pls päivittää sovelluksen manuaalisesti GitHub</string>
+    <string name="updates_manual_update_install_source_message">Automaattiset päivitykset eivät ole saatavilla tässä rakennuksessa. Päivitä N-Zik asentamasi palveluntarjoajan kautta.</string>
     <string name="updates_up_to_date">Ajan tasalla</string>
     <string name="updates_warning_acknowledge">Minä ymmärrän</string>
     <string name="updates_check_failed">Päivityksiä ei voitu tarkistaa.</string>
