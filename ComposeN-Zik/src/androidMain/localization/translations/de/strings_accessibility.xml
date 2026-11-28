@@ -11,6 +11,8 @@
     <string name="accessibility_filter">Filtern</string>
     <string name="accessibility_import_playlist_name">importiere Playlist-Name</string>
     <string name="accessibility_loading">lade...</string>
+    <string name="accessibility_menu_closed">Geschlossen</string>
+    <string name="accessibility_menu_open">Öffnen</string>
     <string name="accessibility_new_playlist_name">neuer Playlist-Name</string>
     <string name="accessibility_number_of_songs_in_queue">Anzahl der Lieder in der Warteschlange</string>
     <string name="accessibility_origin_indicator">origin_Indikator</string>
