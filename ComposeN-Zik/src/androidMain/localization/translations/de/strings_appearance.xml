@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Glas-Farbquelle</string>
     <string name="glass_effect_tint_source_custom">Benutzerdefiniert</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Wählen Sie eine Glas-Farbquelle, die einen Farbton anwendet, um die Farbstärke anzupassen.</string>
     <string name="glass_effect_unsupported">Dieses Telefon hat keine Hardware verschwommen, so dass jede Oberfläche verwendet die getönten Film.</string>
     <string name="glass_effect_where_action_buttons">Aktionstasten</string>
     <string name="glass_effect_where_action_buttons_description">Die übliche Suche nach Schaltflächen und Symbolleisten. Die Auswahl in den anderen Gruppen kann sie ersetzen.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Minimale N-Zik Version</string>
     <string name="theme_store_submission_minimum_description">Die älteste Version, die dieses Theme anwenden kann. Neue Themes standardmäßig auf Versionscode %3$d. Sie verwenden N-Zik %1$s (Versionscode %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Dieses Theme benötigt N-Zik Android Versionscode %1$d bevor es veröffentlicht werden kann.</string>
+    <string name="theme_store_local_feature_requires_update">Dieses Theme benötigt N-Zik Android-Versionscode %1$d , bevor es gespeichert werden kann.</string>
+    <string name="theme_store_submission_appearance_unsupported">Diese Version von N-Zik kann das gespeicherte Aussehen nicht lesen. Aktualisiere N-Zik oder wähle Aktuelle Ansicht verwenden um es zu ersetzen.</string>
     <string name="theme_store_submission_version_code_label">Minimaler Versionscode</string>
     <string name="theme_store_submission_find_version_code">N-Zik-Versionen und -Codes finden</string>
     <string name="theme_store_submission_version_with_code">%1$s (Code %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Mein Profil bearbeiten</string>
     <string name="theme_store_creator_sign_in">Verbinde GitHub um dein Erstellerprofil zu bearbeiten.</string>
+    <string name="theme_store_creator_action_sign_in_required">Verbinden Sie Ihr GitHub Konto, um auf diese Erstellungsaktion zuzugreifen.</string>
     <string name="theme_store_creator_draft">Änderungen werden auf diesem Gerät als Entwurf gespeichert.</string>
     <string name="theme_store_creator_display_name">Öffentlicher Name</string>
     <string name="theme_store_creator_bio">Bio</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d von 5</string>
     <string name="theme_store_support_pending">Kompatibilität ist noch ausstehend. Sie können dieses Theme noch herunterladen.</string>
     <string name="theme_store_support_requires_update">N-Zik aktualisieren, um dieses Theme zu verwenden.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik konnte das Erscheinungsbild für dieses Thema nicht lesen.</string>
     <string name="theme_store_support_minimum">Funktioniert mit Ihrer Version von N-Zik.</string>
     <string name="theme_store_preview_normal">Normal</string>
     <string name="theme_store_preview_glass">Glas</string>
