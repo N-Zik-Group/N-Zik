@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Jeg føler mig heldig</string>
     <string name="automotive_action_play_all">Afspil Alle</string>
+    <string name="automotive_page_range">Side %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Vælg handlingen udført ved at stryge et albumspor tilbage.</string>
     <string name="gestures_album_track_swipe_right_description">Vælg handlingen udført ved at stryge et albumspor til højre.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Spejl grænsefladen uafhængigt af appens sprog.</string>
     <string name="settings_interface_page_description">Afsnittet brugergrænseflade indeholder indstillinger til at ændre den globale grænseflade og navigation</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">Genveje</string>
     <string name="settings_interface_group_display">Vis</string>
     <string name="settings_interface_group_indicators">Indikatorer</string>
     <string name="settings_group_profile_name">Vis navn</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Vis strygebevægelser</string>
     <string name="settings_group_home_navigation">Hjem navigation</string>
     <string name="settings_group_menu_entries">Menupunkter</string>
-    <string name="settings_group_sort_defaults">Standard sorteringsordrer</string>
+    <string name="settings_group_sort_defaults">Sortér menuordre</string>
     <string name="settings_group_player_layout">Spiller layout</string>
     <string name="settings_group_background_style">Baggrundsstil og farver</string>
     <string name="settings_group_fullscreen_elements">Elementer på skærmen</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Personliggør anbefalinger, Quick Picks og lytter indsigt.</string>
     <string name="settings_page_audio_description">Justér lydbehandling og lydeffekter.</string>
     <string name="settings_page_behavior_description">Tilpas bevægelser og handlinger, mens du browser og lytter.</string>
-    <string name="settings_page_data_description">Håndtér downloadede musik, cachelagrede filer og sikkerhedskopier.</string>
+    <string name="settings_page_data_description">Administrer lokal musik, cacher, sikkerhedskopier og lagrede appdata.</string>
     <string name="settings_page_downloads_description">Vælg kvalitet og opførsel af musik downloads.</string>
     <string name="settings_page_interface_description">Personliggør tema, skrifttyper, navigation og interface layout.</string>
     <string name="settings_page_maintenance_description">Opretholde app, administrere udvidelser og adgang opsving værktøjer.</string>
     <string name="settings_page_network_description">Konfigurere tilslutningsmuligheder, streaming kvalitet og proxy indstillinger.</string>
-    <string name="settings_page_playback_description">Styr afspilning, kø adfærd og indhold restriktioner.</string>
+    <string name="settings_page_playback_description">Vælg hvordan afspilning starter, fortsætter og styrer din kø.</string>
     <string name="settings_page_player_description">Tilpas spillerens udseende, kontroller, sangtekster og meddelelser.</string>
-    <string name="settings_page_privacy_description">Pause eller ryd lytte- og søgehistorik. Administrer tilladelsesaktivitet og skærmbeskyttelse.</string>
+    <string name="settings_page_privacy_description">Kontrollér gemte aktiviteter, tilladelseshistorik og skærmbeskyttelse.</string>
     <string name="settings_page_profiles_description">Administrer din profil identitet og præferencer.</string>
     <string name="settings_page_rewind_description">Tilpas dine lytteoversigter og Rewind afspilningslister.</string>
     <string name="settings_page_services_description">Forbind eksterne tjenester og lyt sammen med andre.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Gennemsigtig baggrund</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer knap</string>
     <string name="settings_player_action_restart_service">Genstart tjeneste</string>
+    <string name="settings_app_action_restart">Genstart app</string>
     <string name="settings_player_actions_spaced_evenly_label">Jævnt fordelt</string>
     <string name="settings_player_album_cover_visible_label">Vis albumcover</string>
     <string name="settings_player_appearance_page_description">Afsnittet udseende indeholder indstillinger for spillerens visuelle udseende</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI Anbefalinger</string>
     <string name="settings_region_override">Tilsidesæt Region</string>
     <string name="settings_reset">Nulstil</string>
+    <string name="settings_reset_account_usage_notice">Tilsluttede konti vil blive deaktiveret. Du kan slå dem tilbage i Indstillinger.</string>
+    <string name="settings_reset_glass">Nulstil glasindstillinger</string>
+    <string name="settings_reset_glass_appearance_description">Gendan standard Glas materiale og effekter.</string>
+    <string name="settings_reset_downloads">Nulstil download-indstillinger</string>
     <string name="settings_reset_all">Nulstil alle indstillinger</string>
     <string name="settings_reset_all_confirm">Nulstil alle</string>
     <string name="settings_reset_all_confirmation">Nulstil alle programindstillinger? Gemte konti, legitimationsoplysninger, profiler, afspilningslister, downloads og filer vil blive gemt.</string>
+    <string name="settings_reset_profile_scope_notice">Dette nulstiller den aktive profils indstillinger og indstillinger, der deles på denne enhed. Andre profiler bevarer deres egne indstillinger.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Din Lyt Sammen server, brugernavn og blokerede brugere holdes.</string>
+    <string name="settings_reset_playback_description">Nulstil indstillingerne for afspilning, kø og forældrekontrol.</string>
     <string name="settings_reset_all_description">Gendan alle programindstillinger til deres standardindstillinger.</string>
     <string name="settings_reset_choose_scope">Vælg hvilke indstillinger der skal gendannes</string>
     <string name="settings_reset_choose_scope_description">Vælg et afsnit af indstillinger, og gendan derefter standardindstillingerne.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Stryg for handling</string>
     <string name="settings_target_gain_loudness_info">Målforstærkning for lydstyrkenormalisering</string>
     <string name="settings_target_unavailable">Denne indstilling er ikke tilgængelig med den aktuelle konfiguration. Afsnittet vises i stedet.</string>
+    <string name="settings_target_prerequisite">For at bruge denne indstilling, konfigurer %1$s først.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Slå mindst en af disse indstillinger til for at vise Rewind notifikationer.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Accent</string>
     <string name="settings_theme_background_1_color_label">Baggrund 1</string>
     <string name="settings_theme_background_2_color_label">Baggrund 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Log ind for at søge</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Brug konto til søgninger</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Ryd alle data synkroniseret fra YouTube? Dette vil fjerne ønsket sange, album, kunstnere og afspilningslister importeret fra YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Ryd YouTube-synkroniserede data</string>
+    <string name="settings_youtube_logout_confirmation">Log af fra YouTube Music i N-Zik? Dit lokale bibliotek og downloads vil forblive på denne enhed.</string>
     <string name="settings_youtube_connection_required_description">Opret forbindelse til YouTube først for at aktivere denne indstilling</string>
     <string name="settings_youtube_library_sync_content_description">Spillelister, album, kunstnere, historie, lignende osv.</string>
     <string name="settings_youtube_login_enabled_label">Aktivér Youtube Musik-login</string>
