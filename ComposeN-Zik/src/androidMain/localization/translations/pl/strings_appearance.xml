@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Źródło koloru szkła</string>
     <string name="glass_effect_tint_source_custom">Niestandardowy</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Wybierz źródło koloru szkła, które nakłada kolor aby dostosować siłę koloru.</string>
     <string name="glass_effect_unsupported">Ten telefon nie ma rozmycia sprzętowego, więc każda powierzchnia używa barwionej folii.</string>
     <string name="glass_effect_where_action_buttons">Przyciski akcji</string>
     <string name="glass_effect_where_action_buttons_description">Zazwyczaj szukaj przycisków i pasków narzędzi. Wybory w innych grupach mogą go zastąpić.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Minimalna wersja N-Zik</string>
     <string name="theme_store_submission_minimum_description">Najstarsza wersja, która może zastosować ten motyw. Nowe motywy domyślnie dla kodu wersji %3$d. Używasz N-Zik %1$s (kod wersji %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Ten motyw wymaga kodu wersji N-Zik Android %1$d zanim będzie mógł zostać opublikowany.</string>
+    <string name="theme_store_local_feature_requires_update">Ten motyw wymaga kodu wersji N-Zik Android %1$d zanim będzie można go zapisać.</string>
+    <string name="theme_store_submission_appearance_unsupported">Ta wersja N-Zik nie może odczytać zapisanego wyglądu. Zaktualizuj N-Zik lub wybierz Użyj bieżącego wyglądu, aby go zastąpić.</string>
     <string name="theme_store_submission_version_code_label">Minimalny kod wersji</string>
     <string name="theme_store_submission_find_version_code">Znajdź wersje i kody N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (kod %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Edytuj mój profil</string>
     <string name="theme_store_creator_sign_in">Połącz GitHub, aby edytować swój profil twórcy.</string>
+    <string name="theme_store_creator_action_sign_in_required">Połącz swoje konto GitHub, aby uzyskać dostęp do tej akcji twórcy.</string>
     <string name="theme_store_creator_draft">Zmiany są zapisywane na tym urządzeniu jako szkic.</string>
     <string name="theme_store_creator_display_name">Nazwa publiczna</string>
     <string name="theme_store_creator_bio">Bio</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d z 5</string>
     <string name="theme_store_support_pending">Kompatybilność jest w toku. Nadal możesz pobrać ten motyw.</string>
     <string name="theme_store_support_requires_update">Zaktualizuj N-Zik, aby użyć tego motywu.</string>
+    <string name="theme_store_appearance_unreadable">N-Zik nie mógł odczytać wyglądu dla tego motywu.</string>
     <string name="theme_store_support_minimum">Działa z Twoją wersją N-Zik.</string>
     <string name="theme_store_preview_normal">Normalny</string>
     <string name="theme_store_preview_glass">Szkło</string>
