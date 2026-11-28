@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Ik voel me geluk</string>
     <string name="automotive_action_play_all">Alles afspelen</string>
+    <string name="automotive_page_range">Pagina %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Kies de actie die wordt uitgevoerd door te swipen naar een album spoor over.</string>
     <string name="gestures_album_track_swipe_right_description">Kies de actie die wordt uitgevoerd door te swipen naar een album nummer naar rechts.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Spiegel de interface onafhankelijk van de app-taal.</string>
     <string name="settings_interface_page_description">De gebruikersinterface sectie bevat instellingen om de globale interface en navigatie te wijzigen</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">Snelkoppelingen</string>
     <string name="settings_interface_group_display">Weergeven</string>
     <string name="settings_interface_group_indicators">Indicatoren</string>
     <string name="settings_group_profile_name">Toon naam</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Toon veeggebaren</string>
     <string name="settings_group_home_navigation">Thuis navigatie</string>
     <string name="settings_group_menu_entries">Menu items</string>
-    <string name="settings_group_sort_defaults">Standaard sorteerorders</string>
+    <string name="settings_group_sort_defaults">Sorteer menu volgorde</string>
     <string name="settings_group_player_layout">Speler lay-out</string>
     <string name="settings_group_background_style">Achtergrond stijl en kleuren</string>
     <string name="settings_group_fullscreen_elements">Onderdelen op het scherm</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Personaliseer aanbevelingen, Quick Picks en luister inzichten.</string>
     <string name="settings_page_audio_description">Geluidsverwerking en audioeffecten aanpassen.</string>
     <string name="settings_page_behavior_description">Aanpassen van gebaren en acties tijdens browsen en luisteren.</string>
-    <string name="settings_page_data_description">Beheer gedownloade muziek, opgeslagen bestanden en back-ups.</string>
+    <string name="settings_page_data_description">Lokale muziek, caches, back-ups en opgeslagen app-gegevens beheren.</string>
     <string name="settings_page_downloads_description">Kies de kwaliteit en het gedrag van muziek downloaden.</string>
     <string name="settings_page_interface_description">Personaliseer het thema, fonts, navigatie en interface lay-out.</string>
     <string name="settings_page_maintenance_description">Behoud de app, beheer extensies en toegang tot herstel hulpmiddelen.</string>
     <string name="settings_page_network_description">Configureer connectiviteit, streamingkwaliteit en proxyinstellingen.</string>
-    <string name="settings_page_playback_description">Afspelen, queue gedrag en inhoudsbeperkingen bedienen.</string>
+    <string name="settings_page_playback_description">Kies hoe het afspelen begint, doorgaat en beheert uw wachtrij.</string>
     <string name="settings_page_player_description">Pas het uiterlijk van de speler, besturing, songteksten en meldingen aan.</string>
-    <string name="settings_page_privacy_description">Pauzeer of wis luister- en zoekgeschiedenis. Beheer rechten activiteit en scherm beveiliging.</string>
+    <string name="settings_page_privacy_description">Beheer opgeslagen activiteit, rechtengeschiedenis en schermbeveiliging.</string>
     <string name="settings_page_profiles_description">Beheer de profielidentiteit en voorkeuren.</string>
     <string name="settings_page_rewind_description">Pas je luisteroverzichten aan en wind afspeellijsten terug.</string>
     <string name="settings_page_services_description">Verbind externe diensten en luister samen met anderen.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Transparante achtergrond</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Visualizer knop</string>
     <string name="settings_player_action_restart_service">Speler herstarten</string>
+    <string name="settings_app_action_restart">Herstart app</string>
     <string name="settings_player_actions_spaced_evenly_label">Gelijk gespaard</string>
     <string name="settings_player_album_cover_visible_label">Toon albumhoes</string>
     <string name="settings_player_appearance_page_description">De weergavesectie bevat instellingen voor het uiterlijk van de speler</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">AI aanbevelingen</string>
     <string name="settings_region_override">Regio overschrijven</string>
     <string name="settings_reset">Reset</string>
+    <string name="settings_reset_account_usage_notice">Verbonden accounts worden uitgeschakeld. Je kunt ze weer inschakelen in Instellingen.</string>
+    <string name="settings_reset_glass">Reset glasinstellingen</string>
+    <string name="settings_reset_glass_appearance_description">Herstel het standaard glas materiaal en de effecten.</string>
+    <string name="settings_reset_downloads">Downloadinstellingen opnieuw instellen</string>
     <string name="settings_reset_all">Reset alle instellingen</string>
     <string name="settings_reset_all_confirm">Alles resetten</string>
     <string name="settings_reset_all_confirmation">Alle applicatieinstellingen resetten? Opgeslagen accounts, inloggegevens, profielen, afspeellijsten, downloads en bestanden worden bewaard.</string>
+    <string name="settings_reset_profile_scope_notice">Hiermee worden de actieve profielinstellingen en instellingen gedeeld op dit apparaat gereset. Andere profielen houden hun eigen instellingen aan.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Je Listen Together server, gebruikersnaam en geblokkeerde gebruikers worden bewaard.</string>
+    <string name="settings_reset_playback_description">Afspeel-, wachtrij- en ouderlijk toezicht opnieuw instellen.</string>
     <string name="settings_reset_all_description">Herstel alle applicatie-instellingen naar hun standaardinstellingen.</string>
     <string name="settings_reset_choose_scope">Kies welke instellingen u wilt herstellen</string>
     <string name="settings_reset_choose_scope_description">Selecteer een sectie instellingen om de standaardwaarden te herstellen.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Veeg voor actie</string>
     <string name="settings_target_gain_loudness_info">Doelwinst voor normalisatie van het geluid</string>
     <string name="settings_target_unavailable">Deze instelling is niet beschikbaar met de huidige configuratie. De sectie wordt in plaats daarvan weergegeven.</string>
+    <string name="settings_target_prerequisite">Om deze instelling te gebruiken, configureer eerst %1$s.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Schakel ten minste één van deze instellingen in om terugkoppelingsmeldingen te tonen.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Kleur accenten</string>
     <string name="settings_theme_background_1_color_label">Achtergrond 1</string>
     <string name="settings_theme_background_2_color_label">Achtergrond 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Login om te bladeren</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Account gebruiken voor zoekopdrachten</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Alle gegevens die zijn gesynchroniseerd op YouTube wissen? Dit verwijdert liked nummers, albums, artiesten en afspeellijsten die zijn geïmporteerd uit YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">YouTube-gesynchroniseerde gegevens wissen</string>
+    <string name="settings_youtube_logout_confirmation">Afmelden van YouTube muziek in N-Zik? Uw lokale bibliotheek en downloads blijven op dit apparaat staan.</string>
     <string name="settings_youtube_connection_required_description">Verbind eerst met YouTube om deze optie in te schakelen</string>
     <string name="settings_youtube_library_sync_content_description">Afspeellijsten, albums, artiesten, geschiedenis, enz.</string>
     <string name="settings_youtube_login_enabled_label">YouTube-muziek-login inschakelen</string>
