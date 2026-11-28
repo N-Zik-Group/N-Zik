@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Koble til GitHub</string>
+    <string name="github_account_background_checks">Bakgrunnssjekk til GitHub</string>
+    <string name="github_account_background_checks_description">Kontroller din GitHub-konto og gjennomgå status automatisk.</string>
     <string name="github_account_logout">Koble fra GitHub</string>
     <string name="github_account_description">Bruk GitHub-kontoen din i Tema Store.</string>
     <string name="github_account_offline">Gå på nettet for å koble til GitHub.</string>
