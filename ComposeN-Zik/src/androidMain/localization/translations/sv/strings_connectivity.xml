@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Ansluter till server</string>
     <string name="listen_together_log_event_connection_closed">Anslutning stängd</string>
     <string name="listen_together_log_event_connection_failure">Anslutningen misslyckades</string>
+    <string name="listen_together_invalid_server_address">Serveradressen Lyssna Tillsammans är ogiltig. Uppdatera den i inställningarna och försök igen.</string>
+    <string name="listen_together_session_server_changed">Servern omdirigerade sessionen Lyssna tillsammans till en annan adress.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Anslutning misslyckades, väntar på nätverk</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Anslutning förlorad, försöker återansluta</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Ignorera falsk uppspelningshändelse</string>
