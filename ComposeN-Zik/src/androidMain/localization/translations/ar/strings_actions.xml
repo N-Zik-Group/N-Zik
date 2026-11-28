@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">إعادة المحاولة</string>
     <string name="common_action_save">حفظ</string>
+    <string name="common_action_scroll_to_top">التمرير إلى الأعلى</string>
     <string name="common_action_select">حدد</string>
     <string name="common_action_show_less">إظهار أقل</string>
     <string name="common_action_show_more">إظهار المزيد</string>
