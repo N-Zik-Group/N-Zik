@@ -11,6 +11,8 @@
     <string name="accessibility_filter">筛选器</string>
     <string name="accessibility_import_playlist_name">导入播放列表名称</string>
     <string name="accessibility_loading">正在加载...</string>
+    <string name="accessibility_menu_closed">已关闭</string>
+    <string name="accessibility_menu_open">打开</string>
     <string name="accessibility_new_playlist_name">新播放列表名称</string>
     <string name="accessibility_number_of_songs_in_queue">队列中歌曲数</string>
     <string name="accessibility_origin_indicator">原始指示器</string>
