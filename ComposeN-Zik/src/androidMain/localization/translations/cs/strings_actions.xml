@@ -19,6 +19,7 @@
     <string name="common_action_reset">Obnovit</string>
     <string name="common_action_retry">Opakovat</string>
     <string name="common_action_save">Uložit</string>
+    <string name="common_action_scroll_to_top">Přejít na začátek</string>
     <string name="common_action_select">Vybrat</string>
     <string name="common_action_show_less">Zobrazit méně</string>
     <string name="common_action_show_more">Zobrazit více</string>
