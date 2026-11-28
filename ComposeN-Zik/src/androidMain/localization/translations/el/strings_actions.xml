@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Επανάληψη</string>
     <string name="common_action_save">Αποθήκευση</string>
+    <string name="common_action_scroll_to_top">Κύλιση στην κορυφή</string>
     <string name="common_action_select">Επιλογή</string>
     <string name="common_action_show_less">Εμφάνιση λιγότερων</string>
     <string name="common_action_show_more">Εμφάνιση περισσότερων</string>
