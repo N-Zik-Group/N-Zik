@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Conectando ao servidor</string>
     <string name="listen_together_log_event_connection_closed">Conexão fechada</string>
     <string name="listen_together_log_event_connection_failure">Falha na conexão</string>
+    <string name="listen_together_invalid_server_address">O endereço do servidor Outen Together é inválido. Atualize-o nas configurações e tente novamente.</string>
+    <string name="listen_together_session_server_changed">O servidor redirecionou a sessão de Ouvir Juntos para um endereço diferente.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Falha na conexão, aguardando rede</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Conexão perdida, tentará se reconectar</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Descartando evento obsoleto de reprodução</string>
