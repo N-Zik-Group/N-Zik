@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exportera databasen och inställningar separat. Databasen använder ZIP om den innehåller anpassade omslag.</string>
     <string name="backup_export_database_with_covers_description">Spara låtar, spellistor och historik som SQLite. Om du har anpassade omslag, är exporten en ZIP med databasen och omslag.</string>
     <string name="backup_export_profile_state_failed">Exportera profilstatus misslyckades</string>
-    <string name="backup_export_settings_description">Exportera appinställningar och inställningar</string>
+    <string name="backup_export_settings_description">Exportera sparade profilinställningar, inklusive glas</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importera profillistan och ansiktsfoton från en .txt-fil</string>
     <string name="backup_import_all">Importera alla</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Profilstatus importerad: %1$d profiler</string>
     <string name="backup_import_profile_state_complete_base">Profilstatus importerad: basprofil</string>
     <string name="backup_import_profile_state_failed">Import av profilstatus misslyckades</string>
-    <string name="backup_import_settings_description">Importera appinställningar och inställningar</string>
+    <string name="backup_import_settings_description">Slå samman sparade profilinställningar och återställ alla glasögonbilder</string>
     <string name="backup_import_target_from_file">Från filen</string>
     <string name="backup_import_target_profile_title">Importera till vilken profil?</string>
     <!-- Cache -->
