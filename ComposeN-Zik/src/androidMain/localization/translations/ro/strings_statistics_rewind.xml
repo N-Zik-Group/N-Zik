@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Arată grila lunară pe casa Rewind</string>
     <string name="rewind_settings_monthly_notification">Notificare lunară repetitivă</string>
     <string name="rewind_settings_monthly_notification_description">Primește notificări de la 1 că vântul din luna precedentă este gata.</string>
+    <string name="rewind_settings_notification_permission_hint">Permite notificărilor pentru N-Zik în setările Android să primească alerte Rewind</string>
     <string name="rewind_settings_notifications">Derulare notificări</string>
     <string name="rewind_settings_playlists_monthly">Redarea lunară a playlist-ului</string>
     <string name="rewind_settings_playlists_monthly_description">Crează lista lunară de redare.</string>
