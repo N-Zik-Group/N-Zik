@@ -213,6 +213,7 @@
     <string name="rewind_settings_monthly_description">Zeigt das Monatsraster auf dem Zuhause zurück.</string>
     <string name="rewind_settings_monthly_notification">Monatliche Rückspulen-Benachrichtigung</string>
     <string name="rewind_settings_monthly_notification_description">Erhalten Sie am ersten Tag die Benachrichtigung, dass der Rückwind des Vormonats bereit ist.</string>
+    <string name="rewind_settings_notification_permission_hint">Erlaube Benachrichtigungen für N-Zik in den Android-Einstellungen, um Rewind Benachrichtigungen zu erhalten.</string>
     <string name="rewind_settings_notifications">Benachrichtigungen zurückziehen</string>
     <string name="rewind_settings_playlists_monthly">Wiedergabeliste für monatlichen Aufwind</string>
     <string name="rewind_settings_playlists_monthly_description">Erstellen Sie die monatliche Rewind Playlist.</string>
