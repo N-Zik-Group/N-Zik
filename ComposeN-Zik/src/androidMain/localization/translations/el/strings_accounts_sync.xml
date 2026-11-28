@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="github_account_login">Σύνδεση Στο GitHub</string>
+    <string name="github_account_background_checks">Έλεγχοι φόντου GitHub</string>
+    <string name="github_account_background_checks_description">Ελέγξτε τον λογαριασμό σας GitHub και αξιολογήστε την κατάσταση αυτόματα.</string>
     <string name="github_account_logout">Αποσύνδεση Του GitHub</string>
     <string name="github_account_description">Χρησιμοποιήστε τον λογαριασμό σας GitHub στο Κατάστημα Θεμάτων.</string>
     <string name="github_account_offline">Συνδεθείτε για να συνδεθείτε στο GitHub.</string>
