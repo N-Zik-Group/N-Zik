@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Veritabanını ve ayarları ayrı ayrı dışa aktarın. Veritabanında özel kapaklar varsa ZIP formatı kullanılır.</string>
     <string name="backup_export_database_with_covers_description">Şarkıları, çalma listelerini ve geçmişi SQLite olarak kaydedin. Özel albüm kapaklarınız varsa dışa aktarım işlemi, veritabanı ve albüm kapaklarını içeren bir ZIP dosyası olarak gerçekleştirilir.</string>
     <string name="backup_export_profile_state_failed">Profil durumunun dışa aktarılması başarısız oldu</string>
-    <string name="backup_export_settings_description">Uygulama ayarlarını ve tercihlerini dışa aktar</string>
+    <string name="backup_export_settings_description">Export saved profile settings, including Glass</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Profil listesini ve yüz fotoğraflarını bir .txt dosyasından içe aktar</string>
     <string name="backup_import_all">Tümünü içe aktar</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Profil durumu içe aktarıldı: %1$d profil</string>
     <string name="backup_import_profile_state_complete_base">İçe aktarılan profil durumu: temel profil</string>
     <string name="backup_import_profile_state_failed">Profil durumunun içe aktarılması başarısız oldu</string>
-    <string name="backup_import_settings_description">Uygulama ayarlarını ve tercihlerini içe aktar</string>
+    <string name="backup_import_settings_description">Merge saved profile settings and restore any Glass snapshot</string>
     <string name="backup_import_target_from_file">Dosyadan</string>
     <string name="backup_import_target_profile_title">Hangi profile aktarılsın?</string>
     <!-- Cache -->
