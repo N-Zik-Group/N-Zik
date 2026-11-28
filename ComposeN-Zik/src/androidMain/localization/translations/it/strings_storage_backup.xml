@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Esporta il database e le impostazioni separatamente. Il database utilizza ZIP se include copertine personalizzate.</string>
     <string name="backup_export_database_with_covers_description">Salva canzoni, playlist e cronologia come SQLite. Se hai copertine personalizzate, l\'esportazione è un ZIP con il database e le copertine.</string>
     <string name="backup_export_profile_state_failed">Esportazione stato profilo fallita</string>
-    <string name="backup_export_settings_description">Esporta impostazioni e preferenze app</string>
+    <string name="backup_export_settings_description">Esporta le impostazioni del profilo salvato, incluso Glass</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importa l\'elenco dei profili e le foto delle facce da un file .txt</string>
     <string name="backup_import_all">Importa tutto</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Stato profilo importato: profili %1$d</string>
     <string name="backup_import_profile_state_complete_base">Stato profilo importato: profilo base</string>
     <string name="backup_import_profile_state_failed">Importazione stato profilo fallita</string>
-    <string name="backup_import_settings_description">Importa impostazioni e preferenze app</string>
+    <string name="backup_import_settings_description">Unisce le impostazioni del profilo salvato e ripristina qualsiasi istantanea di vetro</string>
     <string name="backup_import_target_from_file">Dal file</string>
     <string name="backup_import_target_profile_title">Importare in quale profilo?</string>
     <!-- Cache -->
