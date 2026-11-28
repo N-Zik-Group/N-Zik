@@ -3,6 +3,8 @@
     <!-- Automotive -->
     <string name="automotive_action_lucky_shuffle">Cítím se štěstí</string>
     <string name="automotive_action_play_all">Přehrát vše</string>
+    <string name="automotive_page_range">Stránka %1$d (%2$d - %3$d)</string>
+    <string name="automotive_search_next_page">%1$s (%2$d)</string>
     <!-- Gestures -->
     <string name="gestures_album_track_swipe_left_description">Vyberte akci provedenou přejetím vlevo skladby alba.</string>
     <string name="gestures_album_track_swipe_right_description">Vyberte akci provedenou přejetím skladby alba vpravo.</string>
@@ -221,6 +223,7 @@
     <string name="settings_interface_right_to_left_description">Zrcadlí rozhraní nezávisle na jazyku aplikace.</string>
     <string name="settings_interface_page_description">Sekce uživatelského rozhraní obsahuje nastavení pro změnu globálního rozhraní a navigace</string>
     <string name="settings_interface_page_title">UI</string>
+    <string name="settings_interface_shortcuts_title">Zkratky</string>
     <string name="settings_interface_group_display">Zobrazení</string>
     <string name="settings_interface_group_indicators">Ukazatele</string>
     <string name="settings_group_profile_name">Zobrazovaný název</string>
@@ -246,7 +249,7 @@
     <string name="settings_group_list_swipes">Vypsat gesta přejetím prstem</string>
     <string name="settings_group_home_navigation">Domovská navigace</string>
     <string name="settings_group_menu_entries">Položky menu</string>
-    <string name="settings_group_sort_defaults">Výchozí řazení</string>
+    <string name="settings_group_sort_defaults">Řazení nabídky</string>
     <string name="settings_group_player_layout">Rozložení přehrávače</string>
     <string name="settings_group_background_style">Styl a barvy pozadí</string>
     <string name="settings_group_fullscreen_elements">Prvky na obrazovce</string>
@@ -392,14 +395,14 @@
     <string name="settings_page_ai_description">Přizpůsobte si doporučení, rychlý výběr a poslouchání postřehů.</string>
     <string name="settings_page_audio_description">Upravte zpracování zvuku a zvukové efekty.</string>
     <string name="settings_page_behavior_description">Přizpůsobit gesta a akce při prohlížení a poslouchání.</string>
-    <string name="settings_page_data_description">Spravovat staženou hudbu, uložené soubory a zálohy.</string>
+    <string name="settings_page_data_description">Spravovat místní hudbu, keše, zálohy a uložená data aplikací.</string>
     <string name="settings_page_downloads_description">Vyberte kvalitu a chování stahování hudby.</string>
     <string name="settings_page_interface_description">Přizpůsobte si motiv, písma, navigaci a rozložení rozhraní.</string>
     <string name="settings_page_maintenance_description">Udržujte aplikaci, spravujte rozšíření a přistupujte k nástrojům obnovy.</string>
     <string name="settings_page_network_description">Konfigurace připojení, kvality streamování a nastavení proxy serveru.</string>
-    <string name="settings_page_playback_description">Ovládání přehrávání, chování fronty a omezení obsahu.</string>
+    <string name="settings_page_playback_description">Vyberte si, jak přehrávání začíná, pokračuje a spravuje vaši frontu.</string>
     <string name="settings_page_player_description">Přizpůsobit vzhled, ovládání, texty a oznámení.</string>
-    <string name="settings_page_privacy_description">Pozastavit nebo vymazat historii poslechu a vyhledávání. Správa oprávnění a ochrany obrazovky.</string>
+    <string name="settings_page_privacy_description">Kontrola uložených aktivit, historie oprávnění a ochrana obrazovky.</string>
     <string name="settings_page_profiles_description">Spravujte svou identitu a předvolby profilu.</string>
     <string name="settings_page_rewind_description">Přizpůsobte si vaše poslech a přepište seznamy skladeb.</string>
     <string name="settings_page_services_description">Připojte externí služby a poslouchejte společně s ostatními.</string>
@@ -444,6 +447,7 @@
     <string name="settings_player_action_bar_transparent_background_label">Průhledné pozadí</string>
     <string name="settings_player_action_bar_visualizer_visible_label">Tlačítko vizualizace</string>
     <string name="settings_player_action_restart_service">Restartovat přehrávač</string>
+    <string name="settings_app_action_restart">Restartovat aplikaci</string>
     <string name="settings_player_actions_spaced_evenly_label">Rovnoměrné rozložení</string>
     <string name="settings_player_album_cover_visible_label">Zobrazit obal alba</string>
     <string name="settings_player_appearance_page_description">Sekce vzhledu obsahuje nastavení vizuálního vzhledu hráče</string>
@@ -525,9 +529,16 @@
     <string name="settings_recommendations_title">Doporučení AI</string>
     <string name="settings_region_override">Přepsat oblast</string>
     <string name="settings_reset">Obnovit</string>
+    <string name="settings_reset_account_usage_notice">Připojené účty budou zakázány. Můžete je znovu zapnout v Nastavení.</string>
+    <string name="settings_reset_glass">Obnovit nastavení Glass</string>
+    <string name="settings_reset_glass_appearance_description">Obnovit výchozí skleněný materiál a efekty.</string>
+    <string name="settings_reset_downloads">Obnovit nastavení stahování</string>
     <string name="settings_reset_all">Obnovit všechna nastavení</string>
     <string name="settings_reset_all_confirm">Obnovit vše</string>
     <string name="settings_reset_all_confirmation">Obnovit všechna nastavení aplikace? Uložené účty, přihlašovací údaje, profily, playlisty, stahování a soubory budou zachovány.</string>
+    <string name="settings_reset_profile_scope_notice">Toto obnoví nastavení a nastavení aktivního profilu, které jsou sdíleny na tomto zařízení. Ostatní profily si ponechávají vlastní nastavení.</string>
+    <string name="settings_reset_listen_together_preservation_notice">Váš naslouchat serveru, uživatelskému jménu a blokovaným uživatelům jsou zachovány.</string>
+    <string name="settings_reset_playback_description">Obnovit nastavení přehrávání, fronty a rodičovského ovládání.</string>
     <string name="settings_reset_all_description">Obnovit všechna nastavení aplikace do výchozích hodnot.</string>
     <string name="settings_reset_choose_scope">Vyberte, která nastavení chcete obnovit</string>
     <string name="settings_reset_choose_scope_description">Vyberte sekci nastavení, poté obnovte její výchozí hodnoty.</string>
@@ -561,6 +572,8 @@
     <string name="settings_swipe_actions_title">Akce přejetím</string>
     <string name="settings_target_gain_loudness_info">Cílové zesílení pro normalizaci hlasitosti</string>
     <string name="settings_target_unavailable">Toto nastavení není dostupné s aktuální konfigurací. Namísto toho je zobrazena jeho sekce.</string>
+    <string name="settings_target_prerequisite">Pro použití tohoto nastavení nejprve nakonfigurujte %1$s.</string>
+    <string name="settings_target_rewind_notification_prerequisite">Zapněte alespoň jedno z těchto nastavení pro zobrazení oznámení po převrácení.\n%1$s</string>
     <string name="settings_theme_accent_color_label">Akcent</string>
     <string name="settings_theme_background_1_color_label">Pozadí 1</string>
     <string name="settings_theme_background_2_color_label">Pozadí 2</string>
@@ -598,8 +611,7 @@
     <string name="settings_youtube_authenticated_browsing_label">Přihlaste se pro procházení</string>
     <string name="settings_youtube_authenticated_search_description">When off, searches are sent as a guest, without your account - they stay out of your YouTube search history and suggestions</string>
     <string name="settings_youtube_authenticated_search_label">Použít účet pro vyhledávání</string>
-    <string name="settings_youtube_clear_synced_data_confirmation">Vymazat všechna data synchronizovaná z YouTube? Tímto odstraníte oblíbené písně, alba, umělce a seznamy skladeb importované z YouTube.</string>
-    <string name="settings_youtube_clear_synced_data_dialog_title">Vymazat synchronizovaná data YouTube</string>
+    <string name="settings_youtube_logout_confirmation">Odhlásit se z YouTube Music v N-Zik? Vaše lokální knihovna a stahování zůstanou na tomto zařízení.</string>
     <string name="settings_youtube_connection_required_description">Pro povolení této volby se nejprve připojte k YouTube</string>
     <string name="settings_youtube_library_sync_content_description">Playlisty, alba, umělci, historie, atd.</string>
     <string name="settings_youtube_login_enabled_label">Povolení přihlášení k službě YouTube Music</string>
