@@ -3,26 +3,26 @@
     <!-- Album -->
     <string name="album_action_bookmark">Merkitse albumi</string>
     <string name="album_action_open">Siirry albumiin</string>
+    <string name="playlist_action_open">Siirry soittolistaan</string>
+    <string name="podcast_action_open">Siirry podcastiin</string>
     <string name="album_alternative_versions">Vaihtoehtoiset versiot</string>
     <string name="album_art">Albumin taide</string>
-    <string name="album_found_online_verify">Albumi löytyi verkosta! Varmista, että se on oikea.</string>
     <string name="album_left_swipe">Albumi pyyhkäisemällä vasemmalle</string>
     <string name="album_loading_song_count_format">Ladataan %1$d kappaletta…</string>
     <string name="album_lookup_failed">Albumin noutaminen epäonnistui</string>
-    <string name="album_lookup_running">Etsitään albumia internetistä</string>
     <string name="album_no_alternative_version">Tällä albumilla ei ole vaihtoehtoista versiota</string>
-    <string name="album_not_found">Albumia ei löydy</string>
     <string name="album_related_title">Samankaltaiset albumit</string>
     <string name="album_right_swipe">Albumi pyyhkäisemällä oikealle</string>
     <!-- Artist -->
     <string name="artist_action_follow">Seuraa</string>
+    <string name="artist_action_unfollow">Lopeta</string>
+    <string name="artist_action_open">Siirry esittäjään</string>
     <string name="artist_action_play_local_songs">Soita kaikki paikalliset kappaleet</string>
+    <string name="artist_action_play_library_songs">Soita kaikki kappaleet kirjastossa</string>
     <string name="artist_deduplication_result">Yhdistettiin %d kaksoiskappaletta artisti(t) oikeaan artistiin</string>
     <string name="artist_following_status">Seuraan tätä</string>
-    <string name="artist_found_online_verify">Esittäjä löytyi verkosta! Varmista, että se on oikea.</string>
     <string name="artist_link_cleanup_result">Poistettu %d virheellinen artistilinkki</string>
     <string name="artist_lookup_failed">Aritstin noutaminen epäonnistui</string>
-    <string name="artist_lookup_running">Etsitään %s verkossa...</string>
     <string name="artist_more_from">Lisää artistilta</string>
     <string name="artist_overview_title">Yhteenveto</string>
     <string name="artist_roundness">Taiteilijan pyöreys</string>
@@ -32,6 +32,7 @@
     <string name="artist_title">Artisti</string>
     <!-- History -->
     <string name="history_clear_listen_history_description">Poista tallennetut toistotapahtumat kuuntelemasta historiaa.</string>
+    <string name="history_clear_listen_history_failed">Kuulemishistorian tyhjentäminen ei onnistunut.</string>
     <string name="history_clear_search_history_description">Poista tallennetut haut jokaisesta hakuhistoria-sivulta muuttamatta historia-asetuksia.</string>
     <!-- Home -->
     <string name="home_albums_settings">Etusivu Albumit</string>
@@ -59,6 +60,7 @@
     <string name="home_easter_egg_number_one">Olet ykkös, klikkaa ja nauti yllätyksestä</string>
     <!-- Library -->
     <string name="library_action_bookmark">Kirjanmerkki</string>
+    <string name="library_action_remove_bookmark">Poista kirjanmerkki</string>
     <string name="library_action_randomize">Satunnaistin</string>
     <string name="library_albums_title">Albumit</string>
     <string name="library_artists_title">Artistit</string>
@@ -68,6 +70,7 @@
     <string name="library_export_cached_songs_confirmation_format">Vie %d välimuisti/ladatut kappaleet?</string>
     <string name="library_favorites_title">Suosikit</string>
     <string name="library_filter_by_title">Suodatusperuste</string>
+    <string name="library_filter_nzik_origin_label">Vain N-Zik</string>
     <string name="library_filter_online_songs_label">Verkossa olevat kappaleet</string>
     <string name="library_filter_unmatched_songs_label">Vastaamattomat Kappaleet</string>
     <string name="library_history_title">Historia</string>
@@ -93,9 +96,15 @@
     <string name="library_youtube_music_title">YTM-kirjasto</string>
     <string name="library_youtube_playlists_label">YouTube / YouTube Music</string>
     <!-- Library Favorites -->
+    <string name="library_dislikes_action_add">Dislike</string>
+    <string name="library_dislikes_action_remove">Poista distykeistä</string>
     <string name="library_dislikes_added">Pidetty %s</string>
     <string name="library_dislikes_removed">Poistettu %s distyreistä</string>
+    <string name="library_dislikes_added_generic">Lisätty ei-tykkyihin</string>
+    <string name="library_dislikes_removed_generic">Poistettu ei-tykistöistä</string>
     <string name="library_favorites_action_add">Lisää suosikkeihin</string>
+    <string name="library_favorites_action_remove">Poista suosikeista</string>
+    <string name="library_favorites_already_added">Jo suosikeissa.</string>
     <string name="library_collection_favorites_action_manage">Hallinnoi suosikkeja</string>
     <string name="library_favorites_added">Lisätty suosikkeihin</string>
     <string name="library_favorites_removed">Poistettu suosikeista</string>
@@ -103,6 +112,7 @@
     <string name="library_collection_favorites_update_failed">Suosikkejä ei voitu päivittää.</string>
     <string name="library_collection_favorites_sync_failed">YouTuben kanssa ei voitu synkronoida joitain suosikkeja.</string>
     <!-- Library Sort -->
+    <string name="library_sort_action_choose_criterion">Valitse lajittelukriteeri</string>
     <string name="library_sort_album">Albumi</string>
     <string name="library_sort_album_year">Albumin julkaisuvuosi</string>
     <string name="library_sort_artist">Artisti</string>
@@ -149,6 +159,8 @@
     <string name="metadata_isrc">ISRC</string>
     <string name="metadata_keywords_title">Avainsanat</string>
     <string name="metadata_loading">Ladataan…</string>
+    <string name="metadata_link_searching">Etsitään…</string>
+    <string name="metadata_link_manual_required">Tunnistetta ei ole vahvistettu. Linkitä se manuaalisesti.</string>
     <string name="metadata_lyricist">Lyrikko</string>
     <string name="metadata_musicbrainz_rating_votes_attribution">%1$d ääntä MusicBrainzissa</string>
     <string name="metadata_playlist_action_change_browse_id">Vaihda Soittolistaa Selaa Id</string>
@@ -156,8 +168,13 @@
     <string name="metadata_remixer">Remixer</string>
     <string name="metadata_title">Nimi</string>
     <string name="metadata_track">Kappale</string>
+    <string name="metadata_unknown_album">Tuntematon Albumi</string>
     <string name="metadata_unknown_artist">Tuntematon Esittäjä</string>
+    <string name="metadata_unknown_author">Tuntematon Tekijä</string>
+    <string name="metadata_unknown_playlist">Tuntematon Soittolista</string>
+    <string name="metadata_unknown_podcast">Tuntematon Podcast</string>
     <string name="metadata_unknown_title">Tuntematon Otsikko</string>
+    <string name="metadata_unknown_year">Tuntematon Vuosi</string>
     <string name="metadata_video_dislikes_label">Dislikes</string>
     <string name="metadata_video_likes_label">Tykkäykset</string>
     <string name="metadata_video_subscribers_label">Tilaajat</string>
@@ -197,11 +214,15 @@
     <!-- Playlist -->
     <string name="playlist_action_add">Lisää soittolistaan</string>
     <string name="playlist_action_add_hint">Lisää soittolistaan</string>
+    <string name="playlist_add_destination_locked">Kappaleita ei voi lisätä tähän soittolistaan.</string>
     <string name="playlist_add_destination_unavailable">Tämä soittolista ei ole enää käytettävissä laitteen kappaleiden lisäämiseen. Valitse toinen soittolista.</string>
     <string name="playlist_action_create">Uusi soittolista</string>
     <string name="playlist_action_delete_selected">Poista soittolistat</string>
     <string name="playlist_action_export">Vie soittolista</string>
     <string name="playlist_action_import">Tuo soittolista</string>
+    <string name="playlist_actions_title">Soittolistan toiminnot</string>
+    <string name="playlist_action_import_collection">Tuo tämä kokoelma</string>
+    <string name="playlist_action_import_from_source">Tuo tiedostosta tai linkistä</string>
     <string name="playlist_action_import_favorites">Tuo suosikit</string>
     <string name="playlist_action_like_favorites_on_youtube">Tykkää N-Zik suosikeista YouTubessa</string>
     <string name="playlist_action_remove_songs">Poista soittolistasta</string>
@@ -217,6 +238,12 @@
     <string name="playlist_delete_all_confirmation_count_format">Oletko varma, että haluat poistaa KAIKKI %d soittolistat?</string>
     <string name="playlist_delete_confirmation">Haluatko varmasti poistaa tämän soittolistan?</string>
     <string name="playlist_delete_dialog_title">Poista soittolista</string>
+    <string name="playlist_deletion_failed">Soittolistaa ei voitu poistaa tältä laitteelta.</string>
+    <string name="playlist_deletion_partial">Jotkut soittolistat on poistettu tältä laitteelta.</string>
+    <string name="playlist_deletion_local_success">Poistettu tältä laitteelta.</string>
+    <string name="playlist_deletion_remote_success">Poistettu YouTube musiikista.</string>
+    <string name="playlist_deletion_remote_failed">Joitakin soittolistoja ei voitu poistaa YouTube Musiikista.</string>
+    <string name="playlist_deletion_youtube_confirmation">Linkitetyt soittolistat voidaan poistaa myös YouTube Musiikista.</string>
     <string name="playlist_delete_multiple_dialog_title">Poista soittolistat</string>
     <string name="playlist_delete_selected_confirmation_count_format">Oletko varma, että haluat poistaa nämä %d soittolistat?</string>
     <string name="playlist_error_action_on_all_disliked_songs">Tätä toimintoa ei voi suorittaa, kun kaikki kappaleet on poistettu käytöstä</string>
@@ -234,6 +261,7 @@
     <string name="playlist_like_all_dialog_title">Tykkää kaikista kappaleista</string>
     <string name="playlist_like_all_duration_confirmation_suffix">(Arvioitu aika) vaaditaan pitämään kaikki kappaleet. Sinun täytyy sulkea sovellus peruuttaaksesi tämän prosessin. Haluatko jatkaa?</string>
     <string name="playlist_name_input_hint">Anna soittolistan nimi</string>
+    <string name="playlist_name_reserved">Tämä nimi on varattu Rewind-soittolistoille.</string>
     <string name="playlist_operation_wait_message">Odota, tämä voi kestää muutaman minuutin...</string>
     <string name="playlist_pinned_title">Kiinnitetty</string>
     <string name="playlist_positions_shuffled">%d sijaintia sekoitettu</string>
@@ -317,6 +345,7 @@
     <string name="recommendations_reset_complete">Pikavalinnat nollattu</string>
     <string name="recommendations_reset_content_description">Lataa pikavalinnat tuoreilla suosituksilla. Kuunteluhistoriasi on säilytetty.</string>
     <string name="recommendations_section_other_youtube_title">Muut osat</string>
+    <string name="recommendations_smart_shuffle_add_failed">Smart Shuffle ei voinut lisätä yhtään kappaletta.</string>
     <string name="recommendations_section_visibility_description">Poista käytöstä, jos et halua nähdä</string>
     <string name="recommendations_show_section_label">Näytä</string>
     <string name="recommendations_smart_song_count_description">Aseta älykkäiden suositusten määrä tai anna sovelluksen säätää sitä automaattisesti.</string>
@@ -357,6 +386,7 @@
     <string name="search_suggestions_empty_message">Ei ehdotuksia</string>
     <string name="search_suggestions_title">Ehdotuksia</string>
     <string name="search_title">Search...</string>
+    <string name="search_action_edit_query">Muokkaa hakua</string>
     <string name="search_video_download_unsupported_message">Videoiden lataamista ei tueta</string>
     <string name="search_videos_title">Videot</string>
     <string name="search_voice_action_start">Äänen haku</string>
