@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Opnieuw</string>
     <string name="common_action_save">Opslaan</string>
+    <string name="common_action_scroll_to_top">Scroll naar boven</string>
     <string name="common_action_select">Selecteren</string>
     <string name="common_action_show_less">Minder weergeven</string>
     <string name="common_action_show_more">Toon meer</string>
