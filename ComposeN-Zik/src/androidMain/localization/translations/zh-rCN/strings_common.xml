@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Common -->
+    <string name="common_action_back">后退</string>
     <string name="common_answer_no">否</string>
     <string name="common_artist_conjunction_and">和</string>
     <string name="common_clipboard_copy_failed">复制文本到剪贴板失败，请重试</string>
