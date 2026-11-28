@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Підключення до сервера</string>
     <string name="listen_together_log_event_connection_closed">З\'єднання закрито</string>
     <string name="listen_together_log_event_connection_failure">Помилка з’єднання</string>
+    <string name="listen_together_invalid_server_address">Неприпустима адреса сервера Listen Together . Оновіть його в налаштуваннях та повторіть спробу.</string>
+    <string name="listen_together_session_server_changed">Сервер перенаправлений на іншу адресу сеансу Listen Together на іншу адресу.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Помилка з’єднання, очікується мережа</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">З\'єднання втрачено, спроба повторного підключення</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Відхилення стайної події відтворення</string>
