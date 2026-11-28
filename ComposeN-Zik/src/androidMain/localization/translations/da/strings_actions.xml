@@ -19,6 +19,7 @@
     <string name="common_action_reset">Nulstil</string>
     <string name="common_action_retry">Forsøg igen</string>
     <string name="common_action_save">Gem</string>
+    <string name="common_action_scroll_to_top">Rul til toppen</string>
     <string name="common_action_select">Vælg</string>
     <string name="common_action_show_less">Vis mindre</string>
     <string name="common_action_show_more">Vis mere</string>
