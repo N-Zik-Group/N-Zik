@@ -134,6 +134,7 @@
     <string name="glass_effect_tint_source">Πηγή χρώματος γυαλιού</string>
     <string name="glass_effect_tint_source_custom">Προσαρμοσμένο</string>
     <string name="glass_effect_tint_strength">Tint strength</string>
+    <string name="glass_effect_tint_strength_requires_color">Επιλέξτε μια πηγή χρώματος Glass που εφαρμόζει μια απόχρωση για να ρυθμίσετε τη δύναμη απόχρωσης.</string>
     <string name="glass_effect_unsupported">Αυτό το τηλέφωνο δεν έχει θόλωση υλικού, έτσι ώστε κάθε επιφάνεια χρησιμοποιεί την χρωματισμένη ταινία.</string>
     <string name="glass_effect_where_action_buttons">Πλήκτρα ενεργειών</string>
     <string name="glass_effect_where_action_buttons_description">Η συνήθης εμφάνιση κουμπιών και γραμμών εργαλείων. Οι επιλογές στις άλλες ομάδες μπορούν να το αντικαταστήσουν.</string>
@@ -268,6 +269,8 @@
     <string name="theme_store_submission_minimum_version">Ελάχιστη έκδοση N-Zik</string>
     <string name="theme_store_submission_minimum_description">Η παλαιότερη έκδοση που μπορεί να εφαρμόσει αυτό το θέμα. Νέα θέματα προεπιλεγμένα στον κώδικα έκδοσης %3$d. Χρησιμοποιείτε το N-Zik %1$s (κωδικός έκδοσης %2$d).</string>
     <string name="theme_store_submission_feature_requires_update">Αυτό το θέμα απαιτεί τον κωδικό έκδοσης Android N-Zik %1$d για να μπορεί να δημοσιευθεί.</string>
+    <string name="theme_store_local_feature_requires_update">Αυτό το θέμα απαιτεί τον κωδικό έκδοσης Android N-Zik %1$d για να μπορέσει να αποθηκευτεί.</string>
+    <string name="theme_store_submission_appearance_unsupported">Αυτή η έκδοση του N-Zik δεν μπορεί να διαβάσει την αποθηκευμένη εμφάνιση. Ενημερώστε το N-Zik ή επιλέξτε Χρήση τρέχουσας εμφάνισης για να την αντικαταστήσετε.</string>
     <string name="theme_store_submission_version_code_label">Ελάχιστος κωδικός έκδοσης</string>
     <string name="theme_store_submission_find_version_code">Βρείτε εκδόσεις και κωδικούς N-Zik</string>
     <string name="theme_store_submission_version_with_code">%1$s (κωδικός %2$d)</string>
@@ -335,6 +338,7 @@
     <string name="theme_store_creator_open_github">Open GitHub</string>
     <string name="theme_store_edit_creator">Επεξεργασία του προφίλ μου</string>
     <string name="theme_store_creator_sign_in">Συνδέστε το GitHub για να επεξεργαστείτε το προφίλ δημιουργού σας.</string>
+    <string name="theme_store_creator_action_sign_in_required">Συνδέστε τον λογαριασμό σας στο GitHub για να αποκτήσετε πρόσβαση σε αυτήν την ενέργεια δημιουργού.</string>
     <string name="theme_store_creator_draft">Οι αλλαγές αποθηκεύονται σε αυτήν τη συσκευή ως πρόχειρο.</string>
     <string name="theme_store_creator_display_name">Δημόσιο όνομα</string>
     <string name="theme_store_creator_bio">Βιογραφικό</string>
@@ -382,6 +386,7 @@
     <string name="theme_store_review_rating">%1$d από 5</string>
     <string name="theme_store_support_pending">Η συμβατότητα εκκρεμεί. Μπορείτε ακόμα να κατεβάσετε αυτό το θέμα.</string>
     <string name="theme_store_support_requires_update">Ενημέρωση N-Zik για χρήση αυτού του θέματος.</string>
+    <string name="theme_store_appearance_unreadable">Το N-Zik δεν μπορούσε να διαβάσει την εμφάνιση για αυτό το θέμα.</string>
     <string name="theme_store_support_minimum">Λειτουργεί με την έκδοση του N-Zik.</string>
     <string name="theme_store_preview_normal">Κανονικό</string>
     <string name="theme_store_preview_glass">Γυαλί</string>
