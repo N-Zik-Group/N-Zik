@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">连接到服务器</string>
     <string name="listen_together_log_event_connection_closed">连接已关闭</string>
     <string name="listen_together_log_event_connection_failure">连接失败</string>
+    <string name="listen_together_invalid_server_address">综合监听服务器地址无效。请在设置中更新，然后重试。</string>
+    <string name="listen_together_session_server_changed">服务器将共听会话重定向到另一个地址。</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">连接失败，等待网络</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">连接丢失，将尝试重新连接</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">丢弃过时的播放事件</string>
