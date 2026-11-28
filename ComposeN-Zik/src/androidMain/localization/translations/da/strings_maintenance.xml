@@ -2,6 +2,7 @@
 <resources>
     <string name="maintenance_cache_usage_status_format">%1$s%2$s (%3$s)</string>
     <!-- Logs -->
+    <string name="navigation_action_disable_and_clear_debug_logs">Deaktivér og fjern fejlfindingslogs</string>
     <string name="logs_action_export">Eksporter logs</string>
     <string name="logs_action_export_both">Eksporter begge logs</string>
     <string name="logs_action_export_crash">Eksporter nedbrudslog</string>
@@ -283,6 +284,8 @@
     <string name="updates_build_minified_label">MINIFIKERET</string>
     <string name="updates_build_release_label">FRIGIVELSE</string>
     <string name="updates_cache_cleared">Cache ryddet</string>
+    <string name="updates_cache_clear_failed">Kunne ikke rydde opdaterings cachen.</string>
+    <string name="updates_changelog_search_label">Ændringslog</string>
     <string name="updates_changelog_title">Hvad er nyt i %s</string>
     <string name="updates_channel_name">App Opdateringer</string>
     <string name="updates_check_mode_ask">Spørg</string>
@@ -317,7 +320,7 @@
     <string name="updates_stable_to_beta_warning_message">Du skifter til en Beta build. Denne version kan indeholde fejl eller være ustabil. Det anbefales stærkt at sikkerhedskopiere dine data, før du fortsætter eller rapporterer noget problem.</string>
     <string name="updates_stable_to_beta_warning_title">Skift til Beta Build</string>
     <string name="updates_starting_status">Starter…</string>
-    <string name="updates_unavailable_build_description">Hvis du ser denne besked, betyder det, at din build ikke har automatisk opdatering aktiveret, pls opdatere appen manuelt fra github</string>
+    <string name="updates_manual_update_install_source_message">Automatiske opdateringer er ikke tilgængelige på denne bygning. Opdater N-Zik via den udbyder, du har installeret det fra.</string>
     <string name="updates_up_to_date">Op til dato</string>
     <string name="updates_warning_acknowledge">Jeg forstår</string>
     <string name="updates_check_failed">Kunne ikke søge efter opdateringer.</string>
