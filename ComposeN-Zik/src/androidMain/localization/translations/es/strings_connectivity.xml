@@ -249,6 +249,8 @@
     <string name="listen_together_log_event_connecting_to_server">Conectando con el servidor</string>
     <string name="listen_together_log_event_connection_closed">Conexión cerrada</string>
     <string name="listen_together_log_event_connection_failure">Fallo de conexión</string>
+    <string name="listen_together_invalid_server_address">La dirección del servidor Listen Together no es válida. Actualízala en ajustes e inténtalo de nuevo.</string>
+    <string name="listen_together_session_server_changed">El servidor redirigió la sesión Listen Together a una dirección diferente.</string>
     <string name="listen_together_log_event_connection_failure_waiting_for_network">Error de conexión, esperando a la red</string>
     <string name="listen_together_log_event_connection_lost_will_attempt_to_reconnect">Conexión perdida, intentará reconectar</string>
     <string name="listen_together_log_event_discarding_stale_playback_event">Descartar evento de reproducción obsoleto</string>
