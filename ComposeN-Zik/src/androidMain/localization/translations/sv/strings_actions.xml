@@ -19,6 +19,7 @@
     <string name="common_action_reset">Reset</string>
     <string name="common_action_retry">Försök igen</string>
     <string name="common_action_save">Spara</string>
+    <string name="common_action_scroll_to_top">Rulla till toppen</string>
     <string name="common_action_select">Välj</string>
     <string name="common_action_show_less">Visa mindre</string>
     <string name="common_action_show_more">Visa mer</string>
