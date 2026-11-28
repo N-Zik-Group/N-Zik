@@ -165,7 +165,7 @@
     <string name="backup_export_database_with_covers_and_settings_description">Exportieren Sie die Datenbank und die Einstellungen separat. Die Datenbank verwendet ZIP, wenn sie benutzerdefinierte Cover enthält.</string>
     <string name="backup_export_database_with_covers_description">Speichere Songs, Wiedergabelisten und Verlauf als SQLite. Wenn du eigene Cover hast, ist der Export ein ZIP mit der Datenbank und Covers.</string>
     <string name="backup_export_profile_state_failed">Export des Profilstatus fehlgeschlagen</string>
-    <string name="backup_export_settings_description">Einstellungen und Einstellungen der App exportieren</string>
+    <string name="backup_export_settings_description">Gespeicherte Profileinstellungen exportieren, inklusive Glas</string>
     <!-- Backup Import -->
     <string name="backup_import_accounts_description">Importiere die Profilliste und die Gesichtsfotos aus einer .txt-Datei</string>
     <string name="backup_import_all">Alle importieren</string>
@@ -176,7 +176,7 @@
     <string name="backup_import_profile_state_complete">Profilstatus importiert: %1$d Profile</string>
     <string name="backup_import_profile_state_complete_base">Profilstatus importiert: Basisprofil</string>
     <string name="backup_import_profile_state_failed">Import des Profilstatus fehlgeschlagen</string>
-    <string name="backup_import_settings_description">Importiere App-Einstellungen und Einstellungen</string>
+    <string name="backup_import_settings_description">Gespeicherte Profileinstellungen zusammenführen und Glas-Schnappschuss wiederherstellen</string>
     <string name="backup_import_target_from_file">Aus der Datei</string>
     <string name="backup_import_target_profile_title">In welchem Profil importieren?</string>
     <!-- Cache -->
